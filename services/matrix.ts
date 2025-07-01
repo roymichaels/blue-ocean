@@ -194,11 +194,7 @@ export class MatrixService {
       }
 
       const registerData = await registerResponse.json();
-      const accessToken = registerData.access_token;
       const userId = registerData.user_id;
-
-      // Initialize client with the new credentials
-      await this.initializeMatrixClient(accessToken, userId);
 
       // Create profile in Supabase
       const { error } = await supabase.from('user_profiles').insert([
@@ -218,20 +214,7 @@ export class MatrixService {
         return false;
       }
 
-      // Update auth state
-      this.isAuthenticated = true;
-      this.currentUser = {
-        id: userId,
-        username,
-        isAdmin: false,
-        displayName,
-        role: 'user',
-        email
-      };
-
-      await this.saveAuthState(accessToken, userId);
-      this.notifyListeners();
-
+      // Signup succeeded but we don't automatically log the user in
       return true;
     } catch (error) {
       console.error('Matrix signup error:', error);
@@ -241,7 +224,7 @@ export class MatrixService {
 
   async login(username: string, password: string): Promise<boolean> {
     try {
-      // Check if this is the admin user first
+      // Determine if this user should be treated as an admin
       const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
       const isAdmin = username === adminUsername;
 
@@ -294,18 +277,7 @@ export class MatrixService {
         const existingProfile = userProfiles && userProfiles.length > 0 ? userProfiles[0] : null;
         
         if (existingProfile) {
-          // User exists in database, check if they're admin
-          if (existingProfile.role !== 'admin') {
-            // If not admin in database and not the admin username, logout
-            if (matrixLoginSuccess && this.matrixClient) {
-              await this.matrixClient.logout();
-              this.matrixClient.stopClient();
-              this.matrixClient = null;
-            }
-            return false;
-          }
-          
-          // Set authentication state
+          // Set authentication state for existing users
           this.isAuthenticated = true;
           this.currentUser = {
             id: userId,
