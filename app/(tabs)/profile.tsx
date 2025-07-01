@@ -29,7 +29,7 @@ const NOTIFICATIONS_STORAGE_KEY = 'settings_notifications';
 
 export default function ProfileScreen() {
   const { isLoggedIn, isAdmin, user, logout } = useAuth();
-  const { t } = useLanguage();
+  const { t, currentLanguage, setLanguage } = useLanguage();
   const { theme, toggleTheme, colors } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showOrderTracking, setShowOrderTracking] = useState(false);
@@ -105,8 +105,8 @@ export default function ProfileScreen() {
   };
 
   const handleLanguageSwitch = async () => {
-    const newLanguage = t.currentLanguage === 'en' ? 'he' : 'en';
-    await t.setLanguage(newLanguage);
+    const newLanguage = currentLanguage === 'en' ? 'he' : 'en';
+    await setLanguage(newLanguage);
   };
 
   return (
@@ -251,7 +251,9 @@ export default function ProfileScreen() {
               <Text style={[styles.menuText, { color: colors.text.primary }]}>שפה</Text>
             </View>
             <View style={styles.languageContainer}>
-              <Text style={[styles.languageText, { color: colors.text.secondary }]}>עברית</Text>
+              <Text style={[styles.languageText, { color: colors.text.secondary }]}>
+                {currentLanguage === 'en' ? t('profile.english') : t('profile.hebrew')}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
