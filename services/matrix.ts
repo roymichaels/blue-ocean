@@ -167,9 +167,75 @@ export class MatrixService {
     }
   }
 
+  async signup(
+    username: string,
+    email: string,
+    displayName: string,
+    password: string
+  ): Promise<boolean> {
+    try {
+      // Determine the registration auth flow. Some servers require a token.
+      const registrationToken = process.env.EXPO_PUBLIC_MATRIX_REGISTRATION_TOKEN;
+      const auth = registrationToken
+        ? { type: 'm.login.registration_token', token: registrationToken }
+        : { type: 'm.login.dummy' };
+
+      // Register the user with the Matrix server
+      const registerResponse = await fetch(
+        `${MATRIX_SERVER_URL}/_matrix/client/v3/register`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username,
+            password,
+            auth
+          })
+        }
+      );
+
+      if (!registerResponse.ok) {
+        const errorText = await registerResponse.text();
+        console.error('Matrix signup failed:', errorText);
+        // Provide a clearer error when registration is disabled
+        if (registerResponse.status === 403) {
+          throw new Error('Matrix server does not allow public registration.');
+        }
+        return false;
+      }
+
+      const registerData = await registerResponse.json();
+      const userId = registerData.user_id;
+
+      // Create profile in Supabase
+      const { error } = await supabase.from('user_profiles').insert([
+        {
+          matrix_user_id: userId,
+          app_username: username,
+          email,
+          display_name: displayName,
+          role: 'user',
+          kyc_status: 'none',
+          customer_tier: 'new'
+        }
+      ]);
+
+      if (error) {
+        console.error('Error creating user profile:', error);
+        return false;
+      }
+
+      // Signup succeeded but we don't automatically log the user in
+      return true;
+    } catch (error) {
+      console.error('Matrix signup error:', error);
+      return false;
+    }
+  }
+
   async login(username: string, password: string): Promise<boolean> {
     try {
-      // Check if this is the admin user first
+      // Determine if this user should be treated as an admin
       const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
       const isAdmin = username === adminUsername;
 
@@ -222,18 +288,7 @@ export class MatrixService {
         const existingProfile = userProfiles && userProfiles.length > 0 ? userProfiles[0] : null;
         
         if (existingProfile) {
-          // User exists in database, check if they're admin
-          if (existingProfile.role !== 'admin') {
-            // If not admin in database and not the admin username, logout
-            if (matrixLoginSuccess && this.matrixClient) {
-              await this.matrixClient.logout();
-              this.matrixClient.stopClient();
-              this.matrixClient = null;
-            }
-            return false;
-          }
-          
-          // Set authentication state
+          // Set authentication state for existing users
           this.isAuthenticated = true;
           this.currentUser = {
             id: userId,
