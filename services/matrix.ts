@@ -189,8 +189,14 @@ export class MatrixService {
       );
 
       if (!registerResponse.ok) {
-        console.error('Matrix signup failed:', await registerResponse.text());
-        return false;
+        const errorText = await registerResponse.text();
+        console.error('Matrix signup failed:', errorText);
+        try {
+          const err = JSON.parse(errorText);
+          throw new Error(err.error || 'Registration failed');
+        } catch {
+          throw new Error(errorText || 'Registration failed');
+        }
       }
 
       const registerData = await registerResponse.json();
@@ -235,7 +241,7 @@ export class MatrixService {
       return true;
     } catch (error) {
       console.error('Matrix signup error:', error);
-      return false;
+      throw error;
     }
   }
 
