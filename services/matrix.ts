@@ -167,6 +167,78 @@ export class MatrixService {
     }
   }
 
+  async signup(
+    username: string,
+    email: string,
+    displayName: string,
+    password: string
+  ): Promise<boolean> {
+    try {
+      // Register the user with the Matrix server
+      const registerResponse = await fetch(
+        `${MATRIX_SERVER_URL}/_matrix/client/v3/register`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username,
+            password,
+            auth: { type: 'm.login.dummy' }
+          })
+        }
+      );
+
+      if (!registerResponse.ok) {
+        console.error('Matrix signup failed:', await registerResponse.text());
+        return false;
+      }
+
+      const registerData = await registerResponse.json();
+      const accessToken = registerData.access_token;
+      const userId = registerData.user_id;
+
+      // Initialize client with the new credentials
+      await this.initializeMatrixClient(accessToken, userId);
+
+      // Create profile in Supabase
+      const { error } = await supabase.from('user_profiles').insert([
+        {
+          matrix_user_id: userId,
+          app_username: username,
+          email,
+          display_name: displayName,
+          role: 'user',
+          kyc_status: 'none',
+          customer_tier: 'new'
+        }
+      ]);
+
+      if (error) {
+        console.error('Error creating user profile:', error);
+        return false;
+      }
+
+      // Update auth state
+      this.isAuthenticated = true;
+      this.currentUser = {
+        id: userId,
+        username,
+        isAdmin: false,
+        displayName,
+        role: 'user',
+        email
+      };
+
+      await this.saveAuthState(accessToken, userId);
+      this.notifyListeners();
+
+      return true;
+    } catch (error) {
+      console.error('Matrix signup error:', error);
+      return false;
+    }
+  }
+
   async login(username: string, password: string): Promise<boolean> {
     try {
       // Check if this is the admin user first
