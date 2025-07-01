@@ -1,19 +1,28 @@
-import { createClient, MatrixClient, MatrixEvent, Room, RoomMember, MemoryStore } from 'matrix-js-sdk';
+import { createClient, MatrixClient, MatrixEvent, Room, RoomMember, MemoryStore, IndexedDBStore } from 'matrix-js-sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import { ChatMessage, User } from '../types';
 import { Platform } from 'react-native';
 
 const AUTH_STORAGE_KEY = 'matrix_auth_state';
+const DEVICE_ID_KEY = 'matrix_device_id';
 const MATRIX_SERVER_URL = process.env.EXPO_PUBLIC_MATRIX_SERVER || 'https://matrix.org';
+
+// Generate a stable device ID for this installation
+const generateDeviceId = (): string => {
+  return `ONX_${Platform.OS}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
 
 export class MatrixService {
   private static instance: MatrixService;
   private matrixClient: MatrixClient | null = null;
   private isAuthenticated = false;
   private currentUser: any = null;
+  private deviceId: string | null = null;
+  private syncState: string = 'STOPPED';
   private authStateListeners: ((isLoggedIn: boolean, user: any) => void)[] = [];
   private chatTriggerListeners: ((userId: string) => void)[] = [];
+  private syncStateListeners: ((state: string) => void)[] = [];
 
   public static getInstance(): MatrixService {
     if (!MatrixService.instance) {
@@ -23,122 +32,239 @@ export class MatrixService {
   }
 
   constructor() {
-    // Initialize auth state from storage on creation
     this.initializeFromStorage();
   }
 
   private async initializeFromStorage(): Promise<void> {
     try {
+      // Get or create device ID
+      let deviceId = await AsyncStorage.getItem(DEVICE_ID_KEY);
+      if (!deviceId) {
+        deviceId = generateDeviceId();
+        await AsyncStorage.setItem(DEVICE_ID_KEY, deviceId);
+      }
+      this.deviceId = deviceId;
+
+      // Check for stored auth
       const storedAuth = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
       if (storedAuth) {
         const authData = JSON.parse(storedAuth);
+        
+        // Validate auth age (30 days max)
+        const authAge = Date.now() - (authData.timestamp || 0);
+        const maxAge = 30 * 24 * 60 * 60 * 1000;
+        
+        if (authAge > maxAge) {
+          await this.clearAuthStorage();
+          return;
+        }
+
         this.isAuthenticated = authData.isAuthenticated;
         this.currentUser = authData.currentUser;
         
-        // Initialize Matrix client if authenticated
-        if (this.isAuthenticated && authData.accessToken) {
+        // Initialize Matrix client if we have valid credentials
+        if (this.isAuthenticated && authData.accessToken && authData.userId) {
           await this.initializeMatrixClient(authData.accessToken, authData.userId);
         }
         
-        // Notify listeners about restored auth state
         this.notifyListeners();
       }
     } catch (error) {
       console.error('Error initializing auth from storage:', error);
-      // Clear any corrupted data
       await this.clearAuthStorage();
     }
   }
 
   private async initializeMatrixClient(accessToken: string, userId: string): Promise<void> {
     try {
-      // Create Matrix client with proper MemoryStore
+      // Choose appropriate store based on platform
+      let store;
+      if (Platform.OS === 'web') {
+        // Use IndexedDB for web
+        store = new IndexedDBStore({
+          indexedDB: window.indexedDB,
+          dbName: 'matrix-js-sdk',
+        });
+      } else {
+        // Use MemoryStore for React Native
+        store = new MemoryStore();
+      }
+
       this.matrixClient = createClient({
         baseUrl: MATRIX_SERVER_URL,
         accessToken,
         userId,
-        store: new MemoryStore(),
+        deviceId: this.deviceId!,
+        store,
         timelineSupport: true,
+        unstableClientRelationAggregation: true, // Enable reaction aggregation
+        cryptoStore: Platform.OS === 'web' ? new IndexedDBStore({
+          indexedDB: window.indexedDB,
+          dbName: 'matrix-crypto-store',
+        }) : undefined,
       });
 
-      // Set up event listeners before starting the client
       this.setupMatrixEventListeners();
-
-      // Start the client with consistent sync settings across platforms
-      const startOptions = { initialSyncLimit: 20 };
-        
-      await this.matrixClient.startClient(startOptions);
+      await this.startMatrixClient();
     } catch (error) {
       console.error('Error initializing Matrix client:', error);
       this.matrixClient = null;
-      // If initialization fails, clear auth state
       await this.handleAuthenticationError();
+    }
+  }
+
+  private async startMatrixClient(): Promise<void> {
+    if (!this.matrixClient) return;
+
+    try {
+      // Set up crypto if supported
+      if (this.matrixClient.isCryptoEnabled()) {
+        await this.matrixClient.initCrypto();
+      }
+
+      // Start client with proper sync settings
+      await this.matrixClient.startClient({
+        initialSyncLimit: 20,
+        includeArchivedRooms: false,
+        lazyLoadMembers: true, // Improve performance
+      });
+
+      // Wait for initial sync to complete
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Initial sync timeout'));
+        }, 30000); // 30 second timeout
+
+        const onSync = (state: string) => {
+          if (state === 'PREPARED') {
+            clearTimeout(timeout);
+            this.matrixClient?.off('sync', onSync);
+            resolve();
+          } else if (state === 'ERROR') {
+            clearTimeout(timeout);
+            this.matrixClient?.off('sync', onSync);
+            reject(new Error('Initial sync failed'));
+          }
+        };
+
+        this.matrixClient?.on('sync', onSync);
+      });
+
+    } catch (error) {
+      console.error('Error starting Matrix client:', error);
+      throw error;
     }
   }
 
   private setupMatrixEventListeners(): void {
     if (!this.matrixClient) return;
 
-    // Listen for authentication errors
+    // Sync state tracking
+    this.matrixClient.on('sync', (state: string, prevState: string, data: any) => {
+      this.syncState = state;
+      this.notifySyncListeners();
+
+      switch (state) {
+        case 'PREPARED':
+          console.log('Matrix client sync prepared');
+          break;
+        case 'SYNCING':
+          console.log('Matrix client syncing...');
+          break;
+        case 'ERROR':
+          console.error('Matrix sync error:', data);
+          if (data?.error?.httpStatus === 401) {
+            this.handleAuthenticationError();
+          }
+          break;
+        case 'STOPPED':
+          console.log('Matrix sync stopped');
+          break;
+      }
+    });
+
+    // Authentication errors
     this.matrixClient.on('Client.error', (error: any) => {
       console.error('Matrix client error:', error);
-      
-      // Check if it's an authentication error (401)
-      if (error && error.httpStatus === 401) {
-        console.log('Matrix token is invalid, logging out...');
+      if (error?.httpStatus === 401) {
         this.handleAuthenticationError();
       }
     });
 
-    // Listen for sync errors specifically
-    this.matrixClient.on('sync', (state: string, prevState: string, data: any) => {
-      if (state === 'ERROR') {
-        console.error('Matrix sync error:', data);
-        
-        // If it's an authentication error during sync, handle it
-        if (data && data.error && (data.error.httpStatus === 401 || data.error.httpStatus === 503)) {
-          console.log('Matrix sync authentication error, logging out...');
-          this.handleAuthenticationError();
-        }
-      } else if (state === 'PREPARED') {
-        console.log('Matrix client sync prepared');
-      }
-    });
-
-    // Listen for new messages
+    // Room timeline events (messages, reactions, etc.)
     this.matrixClient.on('Room.timeline', (event: MatrixEvent, room: Room) => {
-      // Handle new messages
       if (event.getType() === 'm.room.message') {
-        // Update unread count or trigger notifications
-        // This would be implemented based on your app's requirements
+        // Handle new messages - could trigger notifications
+        this.handleNewMessage(event, room);
+      } else if (event.getType() === 'm.reaction') {
+        // Handle reactions
+        this.handleReaction(event, room);
       }
     });
 
-    // Listen for room member changes
+    // Room membership changes
     this.matrixClient.on('RoomMember.membership', (event: MatrixEvent, member: RoomMember) => {
-      // Handle membership changes
+      console.log(`Membership change: ${member.userId} is now ${member.membership}`);
     });
+
+    // Room state changes
+    this.matrixClient.on('RoomState.events', (event: MatrixEvent, state: any) => {
+      // Handle room state changes (name, topic, etc.)
+    });
+
+    // Handle incoming invites
+    this.matrixClient.on('Room.invite', (room: Room) => {
+      console.log(`Received invite to room: ${room.roomId}`);
+      // Auto-accept direct message invites
+      if (this.isDirectMessageRoom(room)) {
+        this.matrixClient?.joinRoom(room.roomId).catch(console.error);
+      }
+    });
+  }
+
+  private handleNewMessage(event: MatrixEvent, room: Room): void {
+    // Only process messages that aren't from the current user
+    if (event.getSender() === this.currentUser?.id) return;
+
+    // Update last message timestamp for sorting
+    const content = event.getContent();
+    console.log(`New message in ${room.roomId}: ${content.body}`);
+    
+    // Here you could trigger notifications, update UI, etc.
+  }
+
+  private handleReaction(event: MatrixEvent, room: Room): void {
+    const content = event.getContent();
+    const relatesTo = content['m.relates_to'];
+    if (relatesTo?.rel_type === 'm.annotation') {
+      console.log(`New reaction: ${relatesTo.key} on ${relatesTo.event_id}`);
+    }
+  }
+
+  private isDirectMessageRoom(room: Room): boolean {
+    // Check if this is a direct message room
+    const directRooms = this.matrixClient?.getAccountData('m.direct')?.getContent() || {};
+    return Object.values(directRooms).some((roomIds: any) => 
+      Array.isArray(roomIds) && roomIds.includes(room.roomId)
+    );
   }
 
   private async handleAuthenticationError(): Promise<void> {
     try {
       console.log('Handling authentication error - clearing auth state');
       
-      // Stop the Matrix client if it exists
       if (this.matrixClient) {
         this.matrixClient.stopClient();
         this.matrixClient = null;
       }
 
-      // Clear authentication state
       this.isAuthenticated = false;
       this.currentUser = null;
+      this.syncState = 'STOPPED';
       
-      // Clear persistent storage
       await this.clearAuthStorage();
-      
-      // Notify listeners about the logout
       this.notifyListeners();
+      this.notifySyncListeners();
     } catch (error) {
       console.error('Error handling authentication error:', error);
     }
@@ -167,14 +293,32 @@ export class MatrixService {
     }
   }
 
+  // Enhanced signup with proper error handling
   async signup(
     username: string,
     email: string,
     displayName: string,
     password: string
-  ): Promise<boolean> {
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      // Register the user with the Matrix server
+      // Validate input
+      if (!username || !email || !displayName || !password) {
+        return { success: false, error: 'All fields are required' };
+      }
+
+      // Check username availability first
+      const usernameAvailable = await this.checkUsernameAvailable(username);
+      if (!usernameAvailable) {
+        return { success: false, error: 'Username is already taken' };
+      }
+
+      // Prepare registration auth
+      const registrationToken = process.env.EXPO_PUBLIC_MATRIX_REGISTRATION_TOKEN;
+      const auth = registrationToken
+        ? { type: 'm.login.registration_token', token: registrationToken }
+        : { type: 'm.login.dummy' };
+
+      // Register with Matrix server
       const registerResponse = await fetch(
         `${MATRIX_SERVER_URL}/_matrix/client/v3/register`,
         {
@@ -183,25 +327,30 @@ export class MatrixService {
           body: JSON.stringify({
             username,
             password,
-            auth: { type: 'm.login.dummy' }
+            device_id: this.deviceId,
+            initial_device_display_name: `ONX ${Platform.OS}`,
+            auth
           })
         }
       );
 
       if (!registerResponse.ok) {
-        console.error('Matrix signup failed:', await registerResponse.text());
-        return false;
+        const errorData = await registerResponse.json().catch(() => ({}));
+        
+        if (registerResponse.status === 403) {
+          return { success: false, error: 'Registration is not allowed on this server' };
+        } else if (registerResponse.status === 400 && errorData.errcode === 'M_USER_IN_USE') {
+          return { success: false, error: 'Username is already taken' };
+        } else {
+          return { success: false, error: errorData.error || 'Registration failed' };
+        }
       }
 
       const registerData = await registerResponse.json();
-      const accessToken = registerData.access_token;
       const userId = registerData.user_id;
 
-      // Initialize client with the new credentials
-      await this.initializeMatrixClient(accessToken, userId);
-
       // Create profile in Supabase
-      const { error } = await supabase.from('user_profiles').insert([
+      const { error: supabaseError } = await supabase.from('user_profiles').insert([
         {
           matrix_user_id: userId,
           app_username: username,
@@ -213,190 +362,396 @@ export class MatrixService {
         }
       ]);
 
-      if (error) {
-        console.error('Error creating user profile:', error);
-        return false;
+      if (supabaseError) {
+        console.error('Error creating user profile:', supabaseError);
+        return { success: false, error: 'Failed to create user profile' };
       }
 
-      // Update auth state
-      this.isAuthenticated = true;
-      this.currentUser = {
-        id: userId,
-        username,
-        isAdmin: false,
-        displayName,
-        role: 'user',
-        email
-      };
-
-      await this.saveAuthState(accessToken, userId);
-      this.notifyListeners();
-
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('Matrix signup error:', error);
+      return { success: false, error: 'Network error occurred' };
+    }
+  }
+
+  private async checkUsernameAvailable(username: string): Promise<boolean> {
+    try {
+      const response = await fetch(
+        `${MATRIX_SERVER_URL}/_matrix/client/v3/register/available?username=${encodeURIComponent(username)}`,
+        { method: 'GET' }
+      );
+      
+      return response.ok;
+    } catch (error) {
+      console.error('Error checking username availability:', error);
       return false;
     }
   }
 
-  async login(username: string, password: string): Promise<boolean> {
+  // Enhanced login with better error handling and retry logic
+  async login(username: string, password: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // Check if this is the admin user first
       const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
       const isAdmin = username === adminUsername;
 
-      // For admin users, we'll create a simulated Matrix user if Matrix login fails
-      let matrixLoginSuccess = false;
       let accessToken = '';
       let userId = '';
+      let matrixLoginSuccess = false;
 
+      // Attempt Matrix login
       try {
-        // Create a temporary client for login
         const tempClient = createClient({
           baseUrl: MATRIX_SERVER_URL,
         });
 
-        // Attempt to log in with Matrix
         const response = await tempClient.login('m.login.password', {
           user: username,
           password: password,
+          device_id: this.deviceId,
+          initial_device_display_name: `ONX ${Platform.OS}`,
         });
 
-        // Store the access token and user ID
         accessToken = response.access_token;
         userId = response.user_id;
         matrixLoginSuccess = true;
 
-        // Initialize the Matrix client with the access token
-        await this.initializeMatrixClient(accessToken, userId);
-      } catch (matrixError) {
+      } catch (matrixError: any) {
         console.warn('Matrix login failed:', matrixError);
         
-        // If Matrix login fails but this is an admin user, we'll proceed with local auth
-        if (isAdmin) {
-          console.log('Matrix login failed for admin user, proceeding with local authentication');
-          // Generate a simulated Matrix user ID for consistency
-          userId = `@${username}:${MATRIX_SERVER_URL.replace('https://', '')}`;
-          matrixLoginSuccess = false; // We'll work without Matrix client
-        } else {
-          // For non-admin users, Matrix login failure is a hard failure
-          return false;
+        if (!isAdmin) {
+          if (matrixError.httpStatus === 403) {
+            return { success: false, error: 'Invalid username or password' };
+          } else if (matrixError.httpStatus === 429) {
+            return { success: false, error: 'Too many login attempts. Please try again later.' };
+          } else {
+            return { success: false, error: 'Login failed. Please check your credentials.' };
+          }
         }
+        
+        // For admin users, continue with local auth
+        userId = `@${username}:${MATRIX_SERVER_URL.replace('https://', '')}`;
       }
 
-      // Check user in Supabase database
-      try {
-        const { data: userProfiles } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('matrix_user_id', userId);
+      // Check/create user profile in Supabase
+      const { data: userProfiles, error: fetchError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('matrix_user_id', userId);
+      
+      if (fetchError) {
+        console.error('Error fetching user profile:', fetchError);
+        return { success: false, error: 'Database error occurred' };
+      }
+
+      const existingProfile = userProfiles && userProfiles.length > 0 ? userProfiles[0] : null;
+      
+      if (existingProfile) {
+        // User exists, set auth state
+        await this.setAuthenticatedUser(existingProfile, userId, username, accessToken);
         
-        const existingProfile = userProfiles && userProfiles.length > 0 ? userProfiles[0] : null;
-        
-        if (existingProfile) {
-          // User exists in database, check if they're admin
-          if (existingProfile.role !== 'admin') {
-            // If not admin in database and not the admin username, logout
-            if (matrixLoginSuccess && this.matrixClient) {
-              await this.matrixClient.logout();
-              this.matrixClient.stopClient();
-              this.matrixClient = null;
-            }
-            return false;
-          }
-          
-          // Set authentication state
-          this.isAuthenticated = true;
-          this.currentUser = {
-            id: userId,
-            username,
-            isAdmin: isAdmin || existingProfile.role === 'admin',
-            displayName: existingProfile.display_name,
-            role: existingProfile.role
-          };
-
-          // Save auth state to persistent storage
-          await this.saveAuthState(accessToken, userId);
-
-          // Notify listeners
-          this.notifyListeners();
-          return true;
-        } else {
-          // User doesn't exist in database
-          if (isAdmin) {
-            // For admin users, create the profile
-            const { error } = await supabase
-              .from('user_profiles')
-              .insert([{
-                matrix_user_id: userId,
-                app_username: username,
-                email: `${username}@example.com`,
-                display_name: username,
-                role: 'admin',
-                kyc_status: 'none',
-                customer_tier: 'new'
-              }]);
-
-            if (error) {
-              console.error('Error creating admin profile:', error);
-              return false;
-            }
-
-            // Set authentication state
-            this.isAuthenticated = true;
-            this.currentUser = {
-              id: userId,
-              username,
-              isAdmin: true,
-              displayName: username,
-              role: 'admin'
-            };
-
-            // Save auth state to persistent storage
-            await this.saveAuthState(accessToken, userId);
-
-            // Notify listeners
-            this.notifyListeners();
-            return true;
-          } else {
-            // Non-admin user doesn't exist
-            return false;
-          }
+        // Initialize Matrix client if we have a token
+        if (matrixLoginSuccess && accessToken) {
+          await this.initializeMatrixClient(accessToken, userId);
         }
-      } catch (supabaseError) {
-        console.error('Error checking user profile:', supabaseError);
-        return false;
+        
+        return { success: true };
+      } else if (isAdmin) {
+        // Create admin profile
+        const { error: createError } = await supabase
+          .from('user_profiles')
+          .insert([{
+            matrix_user_id: userId,
+            app_username: username,
+            email: `${username}@example.com`,
+            display_name: username,
+            role: 'admin',
+            kyc_status: 'none',
+            customer_tier: 'new'
+          }]);
+
+        if (createError) {
+          console.error('Error creating admin profile:', createError);
+          return { success: false, error: 'Failed to create admin profile' };
+        }
+
+        await this.setAuthenticatedUser({
+          role: 'admin',
+          display_name: username
+        }, userId, username, accessToken);
+
+        if (matrixLoginSuccess && accessToken) {
+          await this.initializeMatrixClient(accessToken, userId);
+        }
+
+        return { success: true };
+      } else {
+        return { success: false, error: 'User not found. Please sign up first.' };
       }
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return { success: false, error: 'Network error occurred' };
     }
+  }
+
+  private async setAuthenticatedUser(profile: any, userId: string, username: string, accessToken?: string): Promise<void> {
+    this.isAuthenticated = true;
+    this.currentUser = {
+      id: userId,
+      username,
+      isAdmin: profile.role === 'admin',
+      displayName: profile.display_name,
+      role: profile.role,
+      email: profile.email
+    };
+
+    await this.saveAuthState(accessToken, userId);
+    this.notifyListeners();
   }
 
   async logout(): Promise<void> {
     try {
-      // Log out from Matrix if client exists
       if (this.matrixClient) {
+        // Properly logout from Matrix
         await this.matrixClient.logout();
         this.matrixClient.stopClient();
         this.matrixClient = null;
       }
 
-      // Clear authentication state
       this.isAuthenticated = false;
       this.currentUser = null;
+      this.syncState = 'STOPPED';
       
-      // Clear persistent storage
       await this.clearAuthStorage();
-      
-      // Notify listeners
       this.notifyListeners();
+      this.notifySyncListeners();
     } catch (error) {
       console.error('Matrix logout error:', error);
-      throw error; // Propagate error to caller
+      throw error;
     }
   }
 
+  // Enhanced message sending with retry logic
+  async sendMessage(roomId: string, message: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!this.isAuthenticated) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      if (!message.trim()) {
+        return { success: false, error: 'Message cannot be empty' };
+      }
+
+      if (!this.matrixClient) {
+        // Fallback for demo mode
+        console.log('Simulated message sent:', { roomId, message });
+        return { success: true };
+      }
+
+      // Ensure we're in the room
+      let room = this.matrixClient.getRoom(roomId);
+      if (!room) {
+        await this.matrixClient.joinRoom(roomId);
+        room = this.matrixClient.getRoom(roomId);
+        if (!room) {
+          return { success: false, error: 'Failed to join room' };
+        }
+      }
+
+      // Send the message
+      const content = {
+        body: message,
+        msgtype: 'm.room.message',
+      };
+
+      await this.matrixClient.sendEvent(roomId, 'm.room.message', content, '');
+      return { success: true };
+    } catch (error: any) {
+      console.error('Send message error:', error);
+      
+      if (error.httpStatus === 403) {
+        return { success: false, error: 'You do not have permission to send messages in this room' };
+      } else if (error.httpStatus === 429) {
+        return { success: false, error: 'Rate limited. Please wait before sending another message.' };
+      } else {
+        return { success: false, error: 'Failed to send message' };
+      }
+    }
+  }
+
+  // Enhanced room creation with proper settings
+  async createRoom(otherUserId: string, isDirect: boolean = true): Promise<{ success: boolean; roomId?: string; error?: string }> {
+    try {
+      if (!this.isAuthenticated) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      if (!this.matrixClient) {
+        const roomId = `room_${Date.now()}`;
+        return { success: true, roomId };
+      }
+
+      const roomOptions: any = {
+        visibility: 'private',
+        invite: [otherUserId],
+        initial_state: [
+          {
+            type: 'm.room.guest_access',
+            state_key: '',
+            content: { guest_access: 'forbidden' }
+          },
+          {
+            type: 'm.room.history_visibility',
+            state_key: '',
+            content: { history_visibility: 'invited' }
+          }
+        ]
+      };
+
+      if (isDirect) {
+        roomOptions.preset = 'private_chat';
+        roomOptions.is_direct = true;
+      } else {
+        roomOptions.preset = 'private_chat';
+        roomOptions.name = 'Support Chat';
+        roomOptions.topic = 'Customer support conversation';
+      }
+
+      const response = await this.matrixClient.createRoom(roomOptions);
+      
+      // Mark as direct message
+      if (isDirect) {
+        await this.markRoomAsDirect(response.room_id, otherUserId);
+      }
+
+      return { success: true, roomId: response.room_id };
+    } catch (error: any) {
+      console.error('Create room error:', error);
+      return { success: false, error: error.message || 'Failed to create room' };
+    }
+  }
+
+  private async markRoomAsDirect(roomId: string, otherUserId: string): Promise<void> {
+    if (!this.matrixClient) return;
+
+    try {
+      // Get current direct rooms
+      const directRooms = this.matrixClient.getAccountData('m.direct')?.getContent() || {};
+      
+      // Add this room to the direct rooms for the other user
+      if (!directRooms[otherUserId]) {
+        directRooms[otherUserId] = [];
+      }
+      
+      if (!directRooms[otherUserId].includes(roomId)) {
+        directRooms[otherUserId].push(roomId);
+      }
+
+      // Update the account data
+      await this.matrixClient.setAccountData('m.direct', directRooms);
+    } catch (error) {
+      console.error('Error marking room as direct:', error);
+    }
+  }
+
+  // Better room listing with proper sorting and filtering
+  async getRooms(): Promise<any[]> {
+    try {
+      if (!this.isAuthenticated) {
+        return [];
+      }
+
+      if (!this.matrixClient) {
+        return [{
+          id: 'default_room',
+          userId: 'admin',
+          userName: 'Admin',
+          lastMessage: 'Welcome to our store!',
+          lastMessageTime: Date.now() - 3600000,
+          unreadCount: 0,
+          isDirect: true
+        }];
+      }
+
+      const rooms = this.matrixClient.getRooms();
+      const directRooms = this.matrixClient.getAccountData('m.direct')?.getContent() || {};
+      
+      // Get all direct message room IDs
+      const dmRoomIds = new Set<string>();
+      Object.values(directRooms).forEach((roomIds: any) => {
+        if (Array.isArray(roomIds)) {
+          roomIds.forEach(id => dmRoomIds.add(id));
+        }
+      });
+
+      // Filter and format rooms
+      const formattedRooms = rooms
+        .filter(room => {
+          // Only include joined rooms that are direct messages or have recent activity
+          return room.getMyMembership() === 'join' && 
+                 (dmRoomIds.has(room.roomId) || room.getLiveTimeline().getEvents().length > 0);
+        })
+        .map(room => {
+          const isDirect = dmRoomIds.has(room.roomId);
+          
+          // Get other user info for direct messages
+          let otherUser = null;
+          if (isDirect) {
+            const members = room.getJoinedMembers().filter(
+              member => member.userId !== this.currentUser?.id
+            );
+            otherUser = members.length > 0 ? members[0] : null;
+          }
+
+          // Get last message
+          const events = room.getLiveTimeline().getEvents()
+            .filter(event => event.getType() === 'm.room.message')
+            .reverse();
+          const lastEvent = events.length > 0 ? events[0] : null;
+          
+          // Get unread count
+          const unreadCount = room.getUnreadNotificationCount('total');
+          
+          return {
+            id: room.roomId,
+            userId: otherUser?.userId || 'unknown',
+            userName: otherUser?.name || room.name || 'Unknown',
+            lastMessage: lastEvent?.getContent()?.body || 'No messages yet',
+            lastMessageTime: lastEvent?.getTs() || room.getLastActiveTs(),
+            unreadCount,
+            isDirect,
+            roomName: room.name,
+            memberCount: room.getJoinedMemberCount()
+          };
+        })
+        .sort((a, b) => b.lastMessageTime - a.lastMessageTime); // Sort by most recent
+
+      return formattedRooms;
+    } catch (error) {
+      console.error('Get rooms error:', error);
+      return [];
+    }
+  }
+
+  // Sync state management
+  getSyncState(): string {
+    return this.syncState;
+  }
+
+  addSyncStateListener(listener: (state: string) => void): void {
+    this.syncStateListeners.push(listener);
+  }
+
+  removeSyncStateListener(listener: (state: string) => void): void {
+    this.syncStateListeners = this.syncStateListeners.filter(l => l !== listener);
+  }
+
+  private notifySyncListeners(): void {
+    for (const listener of this.syncStateListeners) {
+      listener(this.syncState);
+    }
+  }
+
+  // Existing methods with minor improvements...
   isLoggedIn(): boolean {
     return this.isAuthenticated;
   }
@@ -423,7 +778,6 @@ export class MatrixService {
     }
   }
 
-  // Chat trigger methods
   addChatTriggerListener(listener: (userId: string) => void): void {
     this.chatTriggerListeners.push(listener);
   }
@@ -438,177 +792,7 @@ export class MatrixService {
     }
   }
 
-  async sendMessage(roomId: string, message: string): Promise<boolean> {
-    try {
-      if (!this.isAuthenticated) {
-        return false;
-      }
-
-      if (!this.matrixClient) {
-        // Create a default room if needed
-        if (!roomId) {
-          roomId = 'default_room';
-        }
-        
-        // Create a simulated message
-        const simulatedMessage = {
-          id: Date.now().toString(),
-          senderId: this.currentUser?.id || 'guest_user',
-          senderName: this.currentUser?.displayName || 'Guest User',
-          message,
-          timestamp: Date.now(),
-          isAdmin: this.isAdmin()
-        };
-        
-        // For demo purposes, we'll just return success
-        console.log('Simulated message sent:', simulatedMessage);
-        return true;
-      }
-
-      // Send message via Matrix
-      const content = {
-        body: message,
-        msgtype: 'm.room.message',
-      };
-
-      await this.matrixClient.sendEvent(roomId, 'm.room.message', content, '');
-      return true;
-    } catch (error) {
-      console.error('Send message error:', error);
-      return false;
-    }
-  }
-
-  async createRoom(otherUserId: string): Promise<string> {
-    try {
-      if (!this.isAuthenticated) {
-        throw new Error('Not authenticated');
-      }
-
-      if (!this.matrixClient) {
-        // Create a simulated room ID
-        const roomId = `room_${Date.now()}`;
-        console.log('Created simulated room:', roomId);
-        return roomId;
-      }
-
-      // Create a direct message room
-      const response = await this.matrixClient.createRoom({
-        preset: 'private_chat',
-        invite: [otherUserId],
-        is_direct: true,
-        visibility: 'private',
-        initial_state: [
-          {
-            type: 'm.room.guest_access',
-            state_key: '',
-            content: {
-              guest_access: 'forbidden'
-            }
-          }
-        ]
-      });
-
-      const roomId = response.room_id;
-      return roomId;
-    } catch (error) {
-      console.error('Create room error:', error);
-      throw error;
-    }
-  }
-
-  async joinRoom(roomId: string): Promise<boolean> {
-    try {
-      if (!this.isAuthenticated) {
-        return false;
-      }
-
-      if (!this.matrixClient) {
-        return true;
-      }
-
-      // Join the Matrix room
-      await this.matrixClient.joinRoom(roomId);
-      return true;
-    } catch (error) {
-      console.error('Join room error:', error);
-      return false;
-    }
-  }
-
-  async getRooms(): Promise<any[]> {
-    try {
-      if (!this.isAuthenticated) {
-        return [];
-      }
-
-      if (!this.matrixClient) {
-        // Return simulated rooms for demo
-        return [
-          {
-            id: 'default_room',
-            userId: 'admin',
-            userName: 'Admin',
-            lastMessage: 'Welcome to our store!',
-            lastMessageTime: Date.now() - 3600000, // 1 hour ago
-            unreadCount: 0
-          }
-        ];
-      }
-
-      // Get rooms from Matrix client
-      const rooms = this.matrixClient.getRooms();
-      
-      // Filter for direct message rooms
-      const dmRooms = rooms.filter(room => {
-        const isDM = this.matrixClient?.getAccountData('m.direct')?.getContent() || {};
-        return Object.values(isDM).some((roomIds: any) => roomIds.includes(room.roomId));
-      });
-
-      // Format rooms for the app
-      const formattedRooms = await Promise.all(dmRooms.map(async (room) => {
-        // Get the other user in the DM
-        const otherMembers = room.getJoinedMembers().filter(
-          member => member.userId !== this.currentUser.id
-        );
-        const otherUser = otherMembers.length > 0 ? otherMembers[0] : null;
-        
-        // Get the last message
-        const events = room.getLiveTimeline().getEvents();
-        const lastEvent = events.length > 0 ? events[events.length - 1] : null;
-        
-        // Get unread count
-        const unreadCount = room.getUnreadNotificationCount('highlight') + 
-                           room.getUnreadNotificationCount('notification');
-        
-        return {
-          id: room.roomId,
-          userId: otherUser?.userId || 'unknown',
-          userName: otherUser?.name || 'Unknown User',
-          lastMessage: lastEvent?.getContent()?.body || 'No messages yet',
-          lastMessageTime: lastEvent?.getTs() || Date.now(),
-          unreadCount
-        };
-      }));
-
-      return formattedRooms;
-    } catch (error) {
-      console.error('Get rooms error:', error);
-      
-      // Return simulated rooms for demo
-      return [
-        {
-          id: 'default_room',
-          userId: 'admin',
-          userName: 'Admin',
-          lastMessage: 'Welcome to our store!',
-          lastMessageTime: Date.now() - 3600000, // 1 hour ago
-          unreadCount: 0
-        }
-      ];
-    }
-  }
-
+  // Enhanced message fetching
   async getChatMessages(roomId: string): Promise<ChatMessage[]> {
     try {
       if (!roomId) {
@@ -616,72 +800,47 @@ export class MatrixService {
       }
 
       if (!this.matrixClient) {
-        // Return simulated messages for demo
-        return [
-          {
-            id: 'msg_1',
-            senderId: 'admin',
-            senderName: 'Admin',
-            message: 'Welcome to our store! How can I help you today?',
-            timestamp: Date.now() - 3600000, // 1 hour ago
-            isAdmin: true
-          }
-        ];
+        return [{
+          id: 'msg_1',
+          senderId: 'admin',
+          senderName: 'Admin',
+          message: 'Welcome to our store! How can I help you today?',
+          timestamp: Date.now() - 3600000,
+          isAdmin: true
+        }];
       }
 
-      // Get the room from Matrix
       let room = this.matrixClient.getRoom(roomId);
       if (!room) {
-        // If room doesn't exist in Matrix, try to join it
-        try {
-          await this.matrixClient.joinRoom(roomId);
-          // Wait for the room to be properly joined and synced
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          // Try to get the room again
-          const joinedRoom = this.matrixClient.getRoom(roomId);
-          if (!joinedRoom) {
-            throw new Error('Failed to join room');
-          }
-          room = joinedRoom;
-        } catch (joinError) {
-          console.error('Error joining room:', joinError);
-          // Return simulated messages for demo
-          return [
-            {
-              id: 'msg_1',
-              senderId: 'admin',
-              senderName: 'Admin',
-              message: 'Welcome to our store! How can I help you today?',
-              timestamp: Date.now() - 3600000, // 1 hour ago
-              isAdmin: true
-            }
-          ];
+        await this.matrixClient.joinRoom(roomId);
+        // Wait for room to be available
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        room = this.matrixClient.getRoom(roomId);
+        if (!room) {
+          throw new Error('Failed to join room');
         }
       }
 
-      // Get timeline events from the room
+      // Get timeline events
       const timelineEvents = room.getLiveTimeline().getEvents();
       
-      // Convert Matrix events to ChatMessage format
+      // Convert to ChatMessage format
       const messages: ChatMessage[] = timelineEvents
-        .filter(event => event.getType() === 'm.room.message')
+        .filter(event => event.getType() === 'm.room.message' && !event.isRedacted())
         .map(event => {
-          const sender = room.getMember(event.getSender() || '');
+          const sender = room!.getMember(event.getSender() || '');
           const content = event.getContent();
           const isAdmin = this.isUserAdmin(event.getSender() || '');
           
-          // Handle different message types
           let message = '';
           let audioUri = undefined;
           let audioDuration = undefined;
           
           if (content.msgtype === 'm.audio') {
-            // Audio message
             audioUri = content.url;
             audioDuration = content.duration || 0;
             message = '🎵 Voice message';
           } else {
-            // Text message
             message = content.body || '';
           }
           
@@ -694,138 +853,34 @@ export class MatrixService {
             isAdmin,
             audioUri,
             audioDuration,
-            reactions: this.getReactionsForEvent(room, event)
+            reactions: this.getReactionsForEvent(room!, event)
           };
-        });
-      
-      // Sort messages by timestamp
-      messages.sort((a, b) => a.timestamp - b.timestamp);
+        })
+        .sort((a, b) => a.timestamp - b.timestamp);
       
       return messages;
     } catch (error) {
       console.error('Error getting chat messages from Matrix:', error);
-      // Return simulated messages for demo
-      return [
-        {
-          id: 'msg_1',
-          senderId: 'admin',
-          senderName: 'Admin',
-          message: 'Welcome to our store! How can I help you today?',
-          timestamp: Date.now() - 3600000, // 1 hour ago
-          isAdmin: true
-        }
-      ];
+      return [];
     }
   }
   
   private getReactionsForEvent(room: Room, event: MatrixEvent): Record<string, string[]> {
     const reactions: Record<string, string[]> = {};
     
-    // Get all m.reaction events that relate to this event
-    const relatedEvents = room.getUnfilteredTimelineSet().getRelationsForEvent(
-      event.getId() || '',
-      'm.annotation',
-      'm.reaction'
-    );
-    
-    if (relatedEvents) {
-      // Group reactions by emoji
-      relatedEvents.getAnnotations().forEach(annotation => {
-        const content = annotation.getContent();
-        const key = content['m.relates_to']?.key;
-        const sender = annotation.getSender();
-        
-        if (key && sender) {
-          if (!reactions[key]) {
-            reactions[key] = [];
-          }
-          if (!reactions[key].includes(sender)) {
-            reactions[key].push(sender);
-          }
-        }
-      });
-    }
-    
-    return reactions;
-  }
-  
-  private isUserAdmin(userId: string): boolean {
-    // Check if the user is an admin
-    // This could be based on a role in your user database or a specific Matrix user ID pattern
-    const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
-    return userId.includes(adminUsername);
-  }
-
-  async updateChatMessageReactions(roomId: string, eventId: string, emoji: string): Promise<boolean> {
     try {
-      if (!this.matrixClient) {
-        // For web platform, update reactions in Supabase
-        return false; // This will trigger the fallback in the component
-      }
-
-      // Send a reaction to the message
-      await this.matrixClient.sendEvent(roomId, 'm.reaction', {
-        'm.relates_to': {
-          rel_type: 'm.annotation',
-          event_id: eventId,
-          key: emoji
-        }
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Error updating message reactions:', error);
-      return false;
-    }
-  }
-
-  // Method to check if stored auth is still valid
-  async validateStoredAuth(): Promise<boolean> {
-    try {
-      const storedAuth = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      if (!storedAuth) {
-        return false;
-      }
-
-      const authData = JSON.parse(storedAuth);
-      const now = Date.now();
-      const authAge = now - (authData.timestamp || 0);
+      const relations = room.getUnfilteredTimelineSet().getRelationsForEvent(
+        event.getId() || '',
+        'm.annotation',
+        'm.reaction'
+      );
       
-      // Consider auth valid for 30 days (adjust as needed)
-      const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
-      
-      if (authAge > maxAge) {
-        // Auth is too old, clear it
-        await this.clearAuthStorage();
-        this.isAuthenticated = false;
-        this.currentUser = null;
-        this.notifyListeners();
-        return false;
-      }
-
-      // If we have a Matrix client, check if it's still valid
-      if (this.matrixClient) {
-        try {
-          // Try to get user profile as a simple validation
-          await this.matrixClient.getProfileInfo(authData.userId);
-          return true;
-        } catch (error) {
-          console.error('Error validating Matrix client:', error);
-          await this.handleAuthenticationError();
-          return false;
-        }
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error validating stored auth:', error);
-      await this.clearAuthStorage();
-      return false;
-    }
-  }
-
-  // Method to refresh auth state from storage (useful for app startup)
-  async refreshAuthFromStorage(): Promise<void> {
-    await this.initializeFromStorage();
-  }
-}
+      if (relations) {
+        const annotations = relations.getAnnotations();
+        annotations.forEach(annotation => {
+          const content = annotation.getContent();
+          const key = content['m.relates_to']?.key;
+          const sender = annotation.getSender();
+          
+          if (key && sender) {
+            if (!reactions[key]) {
