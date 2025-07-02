@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import { ChatMessage, User } from '../types';
 import { Platform } from 'react-native';
+import { debugLog } from '../utils/logger';
 
 const AUTH_STORAGE_KEY = 'matrix_auth_state';
 const MATRIX_SERVER_URL = process.env.EXPO_PUBLIC_MATRIX_SERVER || 'https://matrix.org';
@@ -85,7 +86,7 @@ export class MatrixService {
       
       // Check if it's an authentication error (401)
       if (error && error.httpStatus === 401) {
-        console.log('Matrix token is invalid, logging out...');
+        console.warn('Matrix token is invalid, logging out...');
         this.handleAuthenticationError();
       }
     });
@@ -97,11 +98,11 @@ export class MatrixService {
         
         // If it's an authentication error during sync, handle it
         if (data && data.error && (data.error.httpStatus === 401 || data.error.httpStatus === 503)) {
-          console.log('Matrix sync authentication error, logging out...');
+          console.warn('Matrix sync authentication error, logging out...');
           this.handleAuthenticationError();
         }
       } else if (state === 'PREPARED') {
-        console.log('Matrix client sync prepared');
+        debugLog('Matrix client sync prepared');
       }
     });
 
@@ -122,7 +123,7 @@ export class MatrixService {
 
   private async handleAuthenticationError(): Promise<void> {
     try {
-      console.log('Handling authentication error - clearing auth state');
+      debugLog('Handling authentication error - clearing auth state');
       
       // Stop the Matrix client if it exists
       if (this.matrixClient) {
@@ -280,7 +281,7 @@ export class MatrixService {
         
         // If Matrix login fails but this is an admin user, we'll proceed with local auth
         if (isAdmin) {
-          console.log('Matrix login failed for admin user, proceeding with local authentication');
+          console.warn('Matrix login failed for admin user, proceeding with local authentication');
           // Generate a simulated Matrix user ID for consistency
           userId = `@${username}:${MATRIX_SERVER_URL.replace('https://', '')}`;
           matrixLoginSuccess = false; // We'll work without Matrix client
@@ -467,7 +468,7 @@ export class MatrixService {
         };
         
         // For demo purposes, we'll just return success
-        console.log('Simulated message sent:', simulatedMessage);
+        debugLog('Simulated message sent:', simulatedMessage);
         return true;
       }
 
@@ -494,7 +495,7 @@ export class MatrixService {
       if (!this.matrixClient) {
         // Create a simulated room ID
         const roomId = `room_${Date.now()}`;
-        console.log('Created simulated room:', roomId);
+        debugLog('Created simulated room:', roomId);
         return roomId;
       }
 

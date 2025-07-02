@@ -1,5 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
+import { debugLog } from '../utils/logger';
 
 // Pinata API configuration
 const PINATA_API_KEY = process.env.EXPO_PUBLIC_PINATA_API_KEY || 'YOUR_PINATA_API_KEY';
@@ -29,17 +30,17 @@ class PinataService {
     try {
       // Check if the URI is already an IPFS or HTTP URL
       if (uri.startsWith('http') || uri.startsWith('https') || uri.startsWith('ipfs://')) {
-        console.log('File is already a URL, skipping upload:', uri);
+        debugLog('File is already a URL, skipping upload:', uri);
         return uri;
       }
 
       // For web platform or when using remote images, just return the URI
       if (uri.startsWith('data:') || uri.includes('pexels.com') || uri.includes('gateway.pinata.cloud')) {
-        console.log('Using existing image URL:', uri);
+        debugLog('Using existing image URL:', uri);
         return uri;
       }
 
-      console.log('Uploading file to Pinata:', name);
+      debugLog('Uploading file to Pinata:', name);
 
       // Create form data for the file upload
       const formData = new FormData();
@@ -76,7 +77,7 @@ class PinataService {
       // Return the IPFS URL
       const ipfsHash = response.data.IpfsHash;
       const ipfsUrl = `${PINATA_GATEWAY_URL}${ipfsHash}`;
-      console.log('File uploaded to Pinata:', ipfsUrl);
+      debugLog('File uploaded to Pinata:', ipfsUrl);
       return ipfsUrl;
     } catch (error) {
       console.error('Error uploading to Pinata:', error);
