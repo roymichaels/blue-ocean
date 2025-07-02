@@ -19,6 +19,7 @@ import DatabaseService from '../services/database';
 import MediaUploader from './MediaUploader';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
+import SubcategoryPicker from './SubcategoryPicker';
 
 interface MediaItem {
   id: string;
@@ -392,49 +393,18 @@ export default function ProductFormModal({
         </SafeAreaView>
       </Modal>
 
-      <Modal visible={showSubcategorySelector} animationType="slide" transparent onRequestClose={() => setShowSubcategorySelector(false)}>
-        <View style={styles.categorySelectorOverlay}>
-          <View style={[styles.categorySelectorContent, { backgroundColor: colors.surface.elevated }]}>
-            <View style={styles.categorySelectorHeader}>
-              <Text style={[styles.categorySelectorTitle, { color: colors.text.primary }]}>בחר תת-קטגוריה</Text>
-              <TouchableOpacity onPress={() => setShowSubcategorySelector(false)}>
-                <X size={24} color={colors.text.primary} />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.categorySelectorList}>
-              {availableSubcategories.length > 0 ? (
-                availableSubcategories.map(sub => (
-                  <TouchableOpacity key={sub.id} style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]} onPress={() => selectSubcategory(sub.id)}>
-                    <View style={styles.categorySelectorItemContent}>
-                      <Text style={styles.categorySelectorItemIcon}>{sub.icon}</Text>
-                      <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{sub.name}</Text>
-                    </View>
-                    <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{sub.id}</Text>
-                  </TouchableOpacity>
-                ))
-              ) : (
-                <View style={styles.categorySelectorItemContent}>
-                  <Text style={[styles.categorySelectorItemText, { color: colors.text.secondary }]}>אין תת-קטגוריות זמינות</Text>
-                </View>
-              )}
-              <TouchableOpacity
-                style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary, backgroundColor: colors.interactive.secondary }]}
-                onPress={() => {
-                  setShowSubcategorySelector(false);
-                  if (editingProduct.category) {
-                    router.push(`/category/${editingProduct.category}`);
-                  }
-                }}
-              >
-                <View style={styles.categorySelectorItemContent}>
-                  <Plus size={20} color={colors.gold} />
-                  <Text style={[styles.categorySelectorItemText, { color: colors.gold }]}>הוסף תת-קטגוריה חדשה</Text>
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      <SubcategoryPicker
+        visible={showSubcategorySelector}
+        subcategories={availableSubcategories}
+        onSelect={selectSubcategory}
+        onClose={() => setShowSubcategorySelector(false)}
+        onAdd={() => {
+          setShowSubcategorySelector(false);
+          if (editingProduct.category) {
+            router.push(`/category/${editingProduct.category}`);
+          }
+        }}
+      />
 
       <Modal visible={showCategorySelector} animationType="slide" transparent onRequestClose={() => setShowCategorySelector(false)}>
         <View style={styles.categorySelectorOverlay}>
