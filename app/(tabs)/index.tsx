@@ -8,13 +8,13 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
-  Modal,
   Alert,
   I18nManager,
   TextInput,
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
+import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Heart, Plus, Pencil, X, Save, Trash2, Filter, ArrowUpDown } from 'lucide-react-native';
@@ -574,10 +574,12 @@ export default function HomeScreen() {
 
       {/* Banner Edit/Add Modal */}
       <Modal
-        visible={showBannerModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowBannerModal(false)}
+        isVisible={showBannerModal}
+        onBackdropPress={() => setShowBannerModal(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.fullscreenModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { 
@@ -696,20 +698,245 @@ export default function HomeScreen() {
         </SafeAreaView>
       </Modal>
 
-      <ProductFormModal
-        visible={productFormVisible}
-        onClose={() => setProductFormVisible(false)}
-        product={productToEdit ?? undefined}
-        onSaved={handleProductSaved}
-        onDeleted={handleProductDeleted}
-      />
+
+      {/* Product Edit/Add Modal */}
+      <Modal
+        isVisible={showProductModal}
+        onBackdropPress={() => setShowProductModal(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.fullscreenModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+      >
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { 
+            borderBottomColor: colors.border.primary 
+          }]}>
+            <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+              {editingProduct ? t('product.editProduct') : 'הוספת מוצר חדש'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowProductModal(false)}>
+              <X size={24} color={colors.text.primary} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <MediaUploader
+              media={productMedia}
+              onMediaChange={setProductMedia}
+              maxFiles={6}
+              allowVideos={true}
+            />
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם המוצר *</Text>
+              <TextInput
+                style={[styles.formInput, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary 
+                }]}
+                value={newProduct.name}
+                onChangeText={(text) => setNewProduct({...newProduct, name: text})}
+                placeholder="הכנס שם מוצר"
+                textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר *</Text>
+              <TextInput
+                style={[styles.formInput, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary 
+                }]}
+                value={newProduct.price?.toString()}
+                onChangeText={(text) => setNewProduct({...newProduct, price: parseFloat(text) || 0})}
+                placeholder="הכנס מחיר"
+                keyboardType="numeric"
+                textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר מקורי (אופציונלי)</Text>
+              <TextInput
+                style={[styles.formInput, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary 
+                }]}
+                value={newProduct.originalPrice?.toString() || ''}
+                onChangeText={(text) => setNewProduct({...newProduct, originalPrice: parseFloat(text) || undefined})}
+                placeholder="הכנס מחיר מקורי"
+                keyboardType="numeric"
+                textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תיאור *</Text>
+              <TextInput
+                style={[styles.formInput, styles.textArea, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary 
+                }]}
+                value={newProduct.description}
+                onChangeText={(text) => setNewProduct({...newProduct, description: text})}
+                placeholder="הכנס תיאור מוצר"
+                multiline
+                numberOfLines={4}
+                textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>קטגוריה *</Text>
+              <TouchableOpacity 
+                style={[styles.categorySelector, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary 
+                }]}
+                onPress={() => setShowCategorySelector(true)}
+              >
+                <Text style={[
+                  styles.categorySelectorText,
+                  { color: newProduct.category ? colors.text.primary : colors.text.tertiary }
+                ]}>
+                  {newProduct.category ? 
+                    categories.find(c => c.id === newProduct.category)?.name || newProduct.category 
+                    : "בחר קטגוריה"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תת-קטגוריה (אופציונלי)</Text>
+              <TouchableOpacity 
+                style={[styles.categorySelector, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary 
+                }]}
+                onPress={() => {
+                  if (newProduct.category) {
+                    setShowSubcategorySelector(true);
+                  } else {
+                    Alert.alert('שגיאה', 'אנא בחר קטגוריה תחילה');
+                  }
+                }}
+              >
+                <Text style={[
+                  styles.categorySelectorText,
+                  { color: newProduct.subcategory ? colors.text.primary : colors.text.tertiary }
+                ]}>
+                  {newProduct.subcategory ? 
+                    subcategories.find(s => s.id === newProduct.subcategory)?.name || newProduct.subcategory 
+                    : "בחר תת-קטגוריה"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>קבוצת מיקס (אופציונלי)</Text>
+              <TouchableOpacity
+                style={[styles.categorySelector, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary
+                }]}
+                onPress={() => setShowMixGroupSelector(true)}
+              >
+                <Text style={[
+                  styles.categorySelectorText,
+                  { color: newProduct.mixGroupId ? colors.text.primary : colors.text.tertiary }
+                ]}>
+                  {newProduct.mixGroupId ?
+                    mixGroups.find(g => g.id === newProduct.mixGroupId)?.name || newProduct.mixGroupId
+                    : "בחר קבוצת מיקס"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מלאי *</Text>
+              <TextInput
+                style={[styles.formInput, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary 
+                }]}
+                value={newProduct.stock?.toString()}
+                onChangeText={(text) => setNewProduct({...newProduct, stock: parseInt(text) || 0})}
+                placeholder="הכנס כמות במלאי"
+                keyboardType="numeric"
+                textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תגיות (אופציונלי)</Text>
+              <TextInput
+                style={[styles.formInput, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary 
+                }]}
+                value={newProduct.badges?.join(', ')}
+                onChangeText={(text) => {
+                  const badges = text.split(',').map(b => b.trim()).filter(b => b);
+                  setNewProduct({...newProduct, badges});
+                }}
+                placeholder="הכנס תגיות מופרדות בפסיקים (למשל: חדש, מבצע, מומלץ)"
+                textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
+              />
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={[styles.saveButton, { backgroundColor: colors.gold }]}
+                onPress={saveProduct}
+                disabled={loading}
+              >
+                {loading ? (
+                  <LoadingSpinner size="small" color={colors.text.inverse} style={styles.buttonSpinner} />
+                ) : (
+                  <>
+                    <Save size={20} color={colors.text.inverse} />
+                    <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>שמור מוצר</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              {editingProduct && (
+                <TouchableOpacity 
+                  style={[styles.deleteButton, { backgroundColor: colors.status.error }]}
+                  onPress={deleteProduct}
+                  disabled={loading}
+                >
+                  <Trash2 size={20} color={colors.text.inverse} />
+                  <Text style={[styles.deleteButtonText, { color: colors.text.inverse }]}>מחק מוצר</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
 
       {/* Category Selector Modal */}
       <Modal
-        visible={showCategorySelector}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowCategorySelector(false)}
+        isVisible={showCategorySelector}
+        onBackdropPress={() => setShowCategorySelector(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.categorySelectorContent, { 
@@ -759,13 +986,120 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
+      {/* Subcategory Selector Modal */}
+      <Modal
+        isVisible={showSubcategorySelector}
+        onBackdropPress={() => setShowSubcategorySelector(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+      >
+        <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <View style={[styles.categorySelectorContent, { 
+            backgroundColor: colors.surface.elevated,
+            borderColor: colors.border.primary 
+          }]}>
+            <View style={styles.categorySelectorHeader}>
+              <Text style={[styles.categorySelectorTitle, { color: colors.text.primary }]}>בחר תת-קטגוריה</Text>
+              <TouchableOpacity onPress={() => setShowSubcategorySelector(false)}>
+                <X size={24} color={colors.text.primary} />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.categorySelectorList}>
+              {getFilteredSubcategories().map((subcategory) => (
+                <TouchableOpacity
+                  key={subcategory.id}
+                  style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]}
+                  onPress={() => selectSubcategory(subcategory.id)}
+                >
+                  <View style={styles.categorySelectorItemContent}>
+                    <Text style={styles.categorySelectorItemIcon}>{subcategory.icon}</Text>
+                    <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{subcategory.name}</Text>
+                  </View>
+                  <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{subcategory.id}</Text>
+                </TouchableOpacity>
+              ))}
+              
+              {getFilteredSubcategories().length === 0 && (
+                <View style={styles.emptySubcategories}>
+                  <Text style={[styles.emptySubcategoriesText, { color: colors.text.secondary }]}>
+                    אין תת-קטגוריות לקטגוריה זו
+                  </Text>
+                </View>
+              )}
+              
+              {/* Add new subcategory option */}
+              <TouchableOpacity
+                style={[styles.categorySelectorItem, { 
+                  borderBottomColor: colors.border.secondary,
+                  backgroundColor: colors.interactive.secondary
+                }]}
+                onPress={() => {
+                  setShowSubcategorySelector(false);
+                  if (newProduct.category) {
+                    router.push(`/category/${newProduct.category}`);
+                  }
+                }}
+              >
+                <View style={styles.categorySelectorItemContent}>
+                  <Plus size={20} color={colors.gold} />
+                  <Text style={[styles.categorySelectorItemText, { color: colors.gold }]}>הוסף תת-קטגוריה חדשה</Text>
+                </View>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Mix Group Selector Modal */}
+      <Modal
+        isVisible={showMixGroupSelector}
+        onBackdropPress={() => setShowMixGroupSelector(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+      >
+        <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <View style={[styles.categorySelectorContent, {
+            backgroundColor: colors.surface.elevated,
+            borderColor: colors.border.primary
+          }]}>
+            <View style={styles.categorySelectorHeader}>
+              <Text style={[styles.categorySelectorTitle, { color: colors.text.primary }]}>בחר קבוצת מיקס</Text>
+              <TouchableOpacity onPress={() => setShowMixGroupSelector(false)}>
+                <X size={24} color={colors.text.primary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.categorySelectorList}>
+              {mixGroups.map(group => (
+                <TouchableOpacity
+                  key={group.id}
+                  style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]}
+                  onPress={() => selectMixGroup(group.id)}
+                >
+                  <View style={styles.categorySelectorItemContent}>
+                    <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{group.name}</Text>
+                  </View>
+                  <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{group.id}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {/* Sort Modal */}
       <Modal
-        visible={showSortModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowSortModal(false)}
+        isVisible={showSortModal}
+        onBackdropPress={() => setShowSortModal(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <View style={[styles.sortModalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.sortModalContent, { 
