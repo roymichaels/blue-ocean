@@ -63,28 +63,17 @@ export default function MediaUploader({
       const newMediaItems: MediaItem[] = [];
 
       for (const asset of pickerResult.assets) {
-        // For web, we need to handle File objects
-        if (Platform.OS === 'web') {
-          // In a real implementation, you would upload to Pinata here
-          // For now, we'll just use the local URI
-          const uri = asset.uri;
-          
-          newMediaItems.push({
-            id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-            uri: uri,
-            type: asset.type === 'video' ? 'video' : 'image',
-            name: asset.fileName || `media_${Date.now()}`
-          });
-        } else {
-          // For native platforms, we need to upload the file to Pinata
-          // For now, we'll just use the local URI
-          newMediaItems.push({
-            id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-            uri: asset.uri,
-            type: asset.type === 'video' ? 'video' : 'image',
-            name: asset.fileName || `media_${Date.now()}`
-          });
-        }
+        const uploadedUri = await mediaService.uploadMedia(
+          asset.uri,
+          asset.fileName || `media_${Date.now()}`
+        );
+
+        newMediaItems.push({
+          id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+          uri: uploadedUri,
+          type: asset.type === 'video' ? 'video' : 'image',
+          name: asset.fileName || `media_${Date.now()}`
+        });
       }
 
       // Make sure we don't exceed maxFiles

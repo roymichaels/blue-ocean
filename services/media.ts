@@ -1,5 +1,4 @@
-import axios from 'axios';
-import FormData from 'form-data';
+import PinataService from './pinata';
 
 class MediaService {
   private static instance: MediaService;
@@ -14,24 +13,12 @@ class MediaService {
   }
 
   /**
-   * Upload media to a service
-   * In a real implementation, this would use Pinata or another IPFS service
-   * For now, we'll just return the original URI
+   * Upload media to Pinata IPFS
    */
   async uploadMedia(uri: string, name: string): Promise<string> {
     try {
-      // For demo purposes, we'll just return the original URI
-      // In a real implementation, you would upload to Pinata or another service
-      
-      // If the URI is already a URL, just return it
-      if (uri.startsWith('http') || uri.startsWith('https')) {
-        return uri;
-      }
-      
-      // For local files, we would upload them to a service
-      // But for now, we'll just return a placeholder URL
-      const randomId = Math.floor(Math.random() * 1000000);
-      return `https://images.pexels.com/photos/${randomId}/pexels-photo-${randomId}.jpeg`;
+      const pinataService = PinataService.getInstance();
+      return await pinataService.uploadFile(uri, name);
     } catch (error) {
       console.error('Error uploading media:', error);
       // Return the original URI as fallback
