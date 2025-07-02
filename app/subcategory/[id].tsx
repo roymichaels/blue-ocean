@@ -313,6 +313,8 @@ export default function SubcategoryScreen() {
 
   const confirmDeleteProduct = () => {
     if (!editingProduct) return;
+    // Close the edit modal so the confirmation modal is visible on web
+    setShowProductModal(false);
     setConfirmDeleteVisible(true);
   };
 
@@ -962,7 +964,11 @@ export default function SubcategoryScreen() {
             deleteProduct(editingProduct.id);
           }
         }}
-        onCancel={() => setConfirmDeleteVisible(false)}
+        onCancel={() => {
+          setConfirmDeleteVisible(false);
+          // Reopen the edit modal if the user cancels deletion
+          setShowProductModal(true);
+        }}
         destructive={true}
       />
     </SafeAreaView>

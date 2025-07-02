@@ -323,6 +323,8 @@ export default function ProductDetailScreen() {
   };
 
   const confirmDeleteProduct = () => {
+    // Close the edit modal so the confirmation modal is visible on web
+    setShowEditModal(false);
     setConfirmDeleteModal(true);
   };
 
@@ -987,7 +989,11 @@ export default function ProductDetailScreen() {
           setConfirmDeleteModal(false);
           deleteProduct();
         }}
-        onCancel={() => setConfirmDeleteModal(false)}
+        onCancel={() => {
+          setConfirmDeleteModal(false);
+          // Reopen the edit modal if the user cancels deletion
+          setShowEditModal(true);
+        }}
         destructive={true}
       />
     </SafeAreaView>
