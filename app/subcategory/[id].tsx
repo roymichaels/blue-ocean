@@ -65,6 +65,8 @@ export default function SubcategoryScreen() {
   const [showPricingTierSelector, setShowPricingTierSelector] = useState(false);
   const [availableSubcategories, setAvailableSubcategories] = useState<Subcategory[]>([]);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  const [showSubcategoryEditModal, setShowSubcategoryEditModal] = useState(false);
+  const [editSubcategoryData, setEditSubcategoryData] = useState<Partial<Subcategory>>({name: "", icon: ""});
   const { isAdmin } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
@@ -167,6 +169,50 @@ export default function SubcategoryScreen() {
     });
     setProductMedia([]);
     setShowProductModal(true);
+  };
+
+  const openEditSubcategory = () => {
+    if (!subcategory) return;
+    setEditSubcategoryData({ name: subcategory.name, icon: subcategory.icon });
+    setShowSubcategoryEditModal(true);
+  };
+
+  const saveSubcategoryChanges = async () => {
+    if (!subcategory) return;
+    if (!editSubcategoryData.name || !editSubcategoryData.icon) {
+      setInfoModal({ visible: true, title: "שגיאה", message: "אנא מלא את כל השדות", type: "error" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const db = DatabaseService.getInstance();
+      await db.updateSubcategory(subcategory.id, editSubcategoryData);
+      await loadSubcategoryData();
+      setShowSubcategoryEditModal(false);
+      setInfoModal({ visible: true, title: "הצלחה", message: "תת-הקטגוריה עודכנה בהצלחה", type: "success" });
+    } catch (error) {
+      console.error("Error updating subcategory:", error);
+      setInfoModal({ visible: true, title: "שגיאה", message: "עדכון תת-הקטגוריה נכשל", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteCurrentSubcategory = async () => {
+    if (!subcategory) return;
+    setLoading(true);
+    try {
+      const db = DatabaseService.getInstance();
+      await db.deleteSubcategory(subcategory.id);
+      setShowSubcategoryEditModal(false);
+      setInfoModal({ visible: true, title: "הצלחה", message: "תת-הקטגוריה נמחקה בהצלחה", type: "success" });
+      router.back();
+    } catch (error) {
+      console.error("Error deleting subcategory:", error);
+      setInfoModal({ visible: true, title: "שגיאה", message: "מחיקת תת-הקטגוריה נכשלה", type: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const editProduct = (product: Product) => {
@@ -505,9 +551,20 @@ export default function SubcategoryScreen() {
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{subcategory.name}</Text>
         <View style={styles.headerActions}>
           {isAdmin && (
-            <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={addProduct}>
-              <Plus size={20} color={colors.text.inverse} />
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                style={[styles.addButton, { backgroundColor: colors.gold }]}
+                onPress={addProduct}
+              >
+                <Plus size={20} color={colors.text.inverse} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.editButton, { backgroundColor: colors.interactive.secondary }]}
+                onPress={openEditSubcategory}
+              >
+                <Pencil size={20} color={colors.text.inverse} />
+              </TouchableOpacity>
+            </>
           )}
         </View>
       </View>
@@ -773,6 +830,81 @@ export default function SubcategoryScreen() {
         </SafeAreaView>
       </Modal>
 
+      {/* Subcategory Edit Modal */}
+      <Modal
+        visible={showSubcategoryEditModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowSubcategoryEditModal(false)}
+      >
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.border.primary }]}>
+            <Text style={[styles.modalTitle, { color: colors.text.primary }]}>עריכת תת-קטגוריה</Text>
+            <TouchableOpacity onPress={() => setShowSubcategoryEditModal(false)}>
+              <X size={24} color={colors.text.primary} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם תת-הקטגוריה *</Text>
+              <TextInput
+                style={[styles.formInput, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary,
+                }]}
+                value={editSubcategoryData.name}
+                onChangeText={(text) => setEditSubcategoryData({ ...editSubcategoryData, name: text })}
+                placeholder="הכנס שם תת-קטגוריה"
+                textAlign="right"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>אייקון (אמוג'י) *</Text>
+              <TextInput
+                style={[styles.formInput, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary,
+                }]}
+                value={editSubcategoryData.icon}
+                onChangeText={(text) => setEditSubcategoryData({ ...editSubcategoryData, icon: text })}
+                placeholder="הכנס אמוג'י (למשל: 💻)"
+                textAlign="center"
+              />
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.saveButton, { backgroundColor: colors.gold }]}
+                onPress={saveSubcategoryChanges}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color={colors.text.inverse} />
+                ) : (
+                  <>
+                    <Save size={20} color={colors.text.inverse} />
+                    <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>שמור תת-קטגוריה</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.deleteButton, { backgroundColor: colors.status.error }]}
+                onPress={deleteCurrentSubcategory}
+                disabled={loading}
+              >
+                <Trash2 size={20} color={colors.text.inverse} />
+                <Text style={[styles.deleteButtonText, { color: colors.text.inverse }]}>מחק תת-קטגוריה</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
       {/* Category Selector Modal */}
       <Modal
         visible={showCategorySelector}
@@ -995,8 +1127,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   headerActions: {
-    width: 40,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   addButton: {
     borderRadius: 20,
@@ -1004,6 +1136,14 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  editButton: {
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
   },
   scrollContainer: {
     flex: 1,
