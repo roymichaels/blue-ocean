@@ -58,8 +58,16 @@ class PinataService {
       const fileExtension = uri.split('.').pop() || 'jpg';
 
       // Add the file to the form data
-      const blob = await this.uriToBlob(uri);
-      formData.append('file', blob, `${name}.${fileExtension}`);
+      if (uri.startsWith('file://')) {
+        const mimeType = this.getMimeTypeFromExtension(fileExtension);
+        formData.append(
+          'file',
+          { uri, name: `${name}.${fileExtension}`, type: mimeType } as any
+        );
+      } else {
+        const blob = await this.uriToBlob(uri);
+        formData.append('file', blob, `${name}.${fileExtension}`);
+      }
 
       // Add metadata
       formData.append(
@@ -120,6 +128,23 @@ class PinataService {
       console.error('Error converting URI to Blob:', error);
       throw error;
     }
+  }
+
+  /**
+   * Get MIME type from file extension
+   */
+  private getMimeTypeFromExtension(ext: string): string {
+    const map: Record<string, string> = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      mp4: 'video/mp4',
+      webm: 'video/webm',
+      ogg: 'video/ogg',
+    };
+    return map[ext.toLowerCase()] || 'application/octet-stream';
   }
 
   /**
