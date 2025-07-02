@@ -375,12 +375,12 @@ class DatabaseService {
 
   async deleteSubcategory(id: string): Promise<void> {
     try {
-      // First move any products referencing this subcategory to the generic
-      // "all" category so that the delete will not violate foreign key
-      // constraints.
+      // First remove the subcategory reference from any products that currently
+      // use it. This prevents a foreign key violation when deleting the
+      // subcategory itself.
       const { error: updateError } = await supabase
         .from('products')
-        .update({ category: 'all', subcategory: null })
+        .update({ subcategory: null })
         .eq('subcategory', id);
 
       if (updateError) {
