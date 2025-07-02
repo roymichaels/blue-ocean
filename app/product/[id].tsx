@@ -306,6 +306,7 @@ export default function ProductDetailScreen() {
   }
 
   const allMedia = getAllMedia();
+  const bannerImageUri = categoryBanner?.image || product.images?.[0];
   const currentPricingTier = pricingTiers.find(
     (tier) => tier.id === product.pricingTier,
   );
@@ -372,37 +373,42 @@ export default function ProductDetailScreen() {
           </View>
         </View>
 
-        {categoryBanner && (
+        {(categoryBanner || (product.images && product.images.length > 0)) && (
           <View style={styles.heroBanner}>
             <Image
-              source={{ uri: categoryBanner.image }}
+              source={{ uri: bannerImageUri }}
               style={styles.heroImage}
             />
-            <View style={styles.heroOverlay}>
-              <View style={styles.heroContent}>
-                <Text
-                  style={[
-                    styles.heroDiscount,
-                    {
-                      color: colors.text.inverse,
-                      backgroundColor: colors.gold,
-                    },
-                  ]}
-                >
-                  {categoryBanner.discount} הנחה
-                </Text>
-                <Text
-                  style={[styles.heroTitle, { color: colors.text.inverse }]}
-                >
-                  {categoryBanner.title}
-                </Text>
-                <Text
-                  style={[styles.heroSubtitle, { color: colors.text.inverse }]}
-                >
-                  {categoryBanner.subtitle}
-                </Text>
+            {categoryBanner && (
+              <View style={styles.heroOverlay}>
+                <View style={styles.heroContent}>
+                  <Text
+                    style={[
+                      styles.heroDiscount,
+                      {
+                        color: colors.text.inverse,
+                        backgroundColor: colors.gold,
+                      },
+                    ]}
+                  >
+                    {categoryBanner.discount} הנחה
+                  </Text>
+                  <Text
+                    style={[styles.heroTitle, { color: colors.text.inverse }]}
+                  >
+                    {categoryBanner.title}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.heroSubtitle,
+                      { color: colors.text.inverse },
+                    ]}
+                  >
+                    {categoryBanner.subtitle}
+                  </Text>
+                </View>
               </View>
-            </View>
+            )}
           </View>
         )}
 
