@@ -1290,6 +1290,10 @@ class DatabaseService {
         .order('added_at', { ascending: false });
 
       if (error) {
+        // Table might not exist if migrations haven't run
+        if (error.code === '42P01') {
+          throw new Error('WISHLIST_TABLE_MISSING');
+        }
         console.error('Error fetching wishlist items:', error);
         return [];
       }
@@ -1314,6 +1318,12 @@ class DatabaseService {
 
       return wishlistWithProducts.filter(Boolean) as WishlistItem[];
     } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'WISHLIST_TABLE_MISSING'
+      ) {
+        throw error;
+      }
       console.error('Error in getWishlistItems:', error);
       return [];
     }
@@ -1326,6 +1336,10 @@ class DatabaseService {
         .insert([{ user_id: userId, product_id: productId }]);
 
       if (error) {
+        if (error.code === '42P01') {
+          // Wishlist not supported on this backend
+          return;
+        }
         console.error('Error adding wishlist item:', error);
         throw new Error('Failed to add wishlist item');
       }
@@ -1344,6 +1358,9 @@ class DatabaseService {
         .eq('product_id', productId);
 
       if (error) {
+        if (error.code === '42P01') {
+          return;
+        }
         console.error('Error removing wishlist item:', error);
         throw new Error('Failed to remove wishlist item');
       }
