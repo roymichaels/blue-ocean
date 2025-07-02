@@ -1,5 +1,6 @@
-import 'react-native-crypto';
+// Ensure the getRandomValues polyfill is loaded before the crypto shim
 import 'react-native-get-random-values';
+import 'react-native-crypto';
 import 'react-native-url-polyfill/auto';
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
