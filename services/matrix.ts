@@ -4,9 +4,11 @@ import { supabase } from './supabase';
 import { ChatMessage, User } from '../types';
 import { Platform } from 'react-native';
 import { debugLog } from '../utils/logger';
+import { getSanitizedMatrixUrl } from '../utils/matrix';
 
 const AUTH_STORAGE_KEY = 'matrix_auth_state';
 const MATRIX_SERVER_URL = process.env.EXPO_PUBLIC_MATRIX_SERVER || 'https://matrix.org';
+const MATRIX_DOMAIN = getSanitizedMatrixUrl() || 'matrix.org';
 
 export class MatrixService {
   private static instance: MatrixService;
@@ -55,7 +57,7 @@ export class MatrixService {
     try {
       // Create Matrix client with proper MemoryStore
       this.matrixClient = createClient({
-        baseUrl: MATRIX_SERVER_URL,
+        baseUrl: `https://${MATRIX_DOMAIN}`,
         accessToken,
         userId,
         store: new MemoryStore(),
@@ -177,7 +179,7 @@ export class MatrixService {
     try {
       // Register the user with the Matrix server
       const registerResponse = await fetch(
-        `${MATRIX_SERVER_URL}/_matrix/client/v3/register`,
+        `https://${MATRIX_DOMAIN}/_matrix/client/v3/register`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -260,7 +262,7 @@ export class MatrixService {
       try {
         // Create a temporary client for login
         const tempClient = createClient({
-          baseUrl: MATRIX_SERVER_URL,
+          baseUrl: `https://${MATRIX_DOMAIN}`,
         });
 
         // Attempt to log in with Matrix
@@ -283,7 +285,7 @@ export class MatrixService {
         if (isAdmin) {
           console.warn('Matrix login failed for admin user, proceeding with local authentication');
           // Generate a simulated Matrix user ID for consistency
-          userId = `@${username}:${MATRIX_SERVER_URL.replace('https://', '')}`;
+          userId = `@${username}:${MATRIX_DOMAIN}`;
           matrixLoginSuccess = false; // We'll work without Matrix client
         } else {
           // For non-admin users, Matrix login failure is a hard failure
@@ -578,8 +580,7 @@ export class MatrixService {
       }
 
       const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
-      const domain = MATRIX_SERVER_URL.replace(/^https?:\/\//, '');
-      const adminUserId = `@${adminUsername}:${domain}`;
+      const adminUserId = `@${adminUsername}:${MATRIX_DOMAIN}`;
 
       if (!this.matrixClient) {
         return 'default_room';
