@@ -7,13 +7,13 @@ import {
   Modal,
   TextInput,
   ScrollView,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   Image,
   I18nManager,
   Pressable,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, Send, X, Minimize2, Search, ChevronLeft, Mic, MicOff, Play, Pause, Smile } from 'lucide-react-native';
 import { Audio } from 'expo-av';
 import { MatrixService } from '../services/matrix';

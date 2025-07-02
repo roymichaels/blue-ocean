@@ -5,13 +5,13 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  SafeAreaView,
   Modal,
   Text,
   StatusBar,
   Platform,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, ChevronLeft, ChevronRight, Share2, Download } from 'lucide-react-native';
 import { PanGestureHandler, PinchGestureHandler, State } from 'react-native-gesture-handler';
 import Animated, {
