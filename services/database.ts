@@ -45,7 +45,7 @@ class DatabaseService {
         name_en: prod.name_en,
         name_he: prod.name_he,
         price: prod.price,
-        originalPrice: prod.originalPrice ?? undefined,
+        originalPrice: (prod as any).original_price ?? undefined,
         description: prod.description,
         description_en: prod.description_en,
         description_he: prod.description_he,
@@ -90,7 +90,7 @@ class DatabaseService {
         name_en: data.name_en,
         name_he: data.name_he,
         price: data.price,
-        originalPrice: data.originalPrice ?? undefined,
+        originalPrice: (data as any).original_price ?? undefined,
         description: data.description,
         description_en: data.description_en,
         description_he: data.description_he,
@@ -118,7 +118,7 @@ class DatabaseService {
     try {
       const dbProduct: any = {
         ...product,
-        originalPrice: (product as any).originalPrice,
+        original_price: (product as any).originalPrice,
         pricing_tier: (product as any).pricingTier,
         created_at: (product as any).createdAt,
         updated_at: (product as any).updatedAt,
@@ -159,7 +159,7 @@ class DatabaseService {
     try {
       const dbProduct: any = {
         ...product,
-        originalPrice: (product as any).originalPrice,
+        original_price: (product as any).originalPrice,
         pricing_tier: (product as any).pricingTier,
         updated_at: (product as any).updatedAt,
       };
@@ -799,7 +799,7 @@ class DatabaseService {
         .from('hero_banners')
         .select('*')
         .eq('is_active', true)
-        .order('order_index', { ascending: true });
+        .order('order', { ascending: true });
 
       if (error) {
         console.error('Error fetching hero banners:', error);
@@ -820,7 +820,7 @@ class DatabaseService {
         discount_he: banner.discount_he,
         category: banner.category,
         isActive: banner.is_active,
-        order: banner.order_index,
+        order: banner.order,
         createdAt: banner.created_at,
         updatedAt: banner.updated_at,
       }));
