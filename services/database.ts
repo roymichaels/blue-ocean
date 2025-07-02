@@ -689,17 +689,25 @@ class DatabaseService {
   // Pricing Tiers
   async getPricingTiers(): Promise<PricingTier[]> {
     try {
-      const { data, error } = await supabase
+      const { data: tiersData, error: tiersError } = await supabase
         .from('pricing_tiers')
         .select('*')
-        .order('min_quantity', { ascending: true });
+        .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching pricing tiers:', error);
+      if (tiersError) {
+        console.error('Error fetching pricing tiers:', tiersError);
         return [];
       }
 
-      return (data || []).map(tier => ({
+      const { data: rulesData, error: rulesError } = await supabase
+        .from('price_tier_rules')
+        .select('*');
+
+      if (rulesError) {
+        console.error('Error fetching pricing tier rules:', rulesError);
+      }
+
+      return (tiersData || []).map(tier => ({
         id: tier.id,
         name: tier.name,
         name_en: tier.name_en,
@@ -709,7 +717,20 @@ class DatabaseService {
         description: tier.description,
         description_en: tier.description_en,
         description_he: tier.description_he,
-        createdAt: tier.created_at
+        createdAt: tier.created_at,
+        rules: (rulesData || [])
+          .filter(r => r.tier_id === tier.id)
+          .sort((a, b) => a.min_qty - b.min_qty)
+          .map(r => ({
+            id: r.id,
+            tierId: r.tier_id,
+            minQty: r.min_qty,
+            maxQty: r.max_qty,
+            pricePerUnit: r.price_per_unit,
+            discountPct: r.discount_pct,
+            createdAt: r.created_at,
+            updatedAt: r.updated_at
+          }))
       }));
     } catch (error) {
       console.error('Error in getPricingTiers:', error);
@@ -732,6 +753,16 @@ class DatabaseService {
 
       if (!data) return null;
 
+      const { data: rulesData, error: rulesError } = await supabase
+        .from('price_tier_rules')
+        .select('*')
+        .eq('tier_id', id)
+        .order('min_qty', { ascending: true });
+
+      if (rulesError) {
+        console.error('Error fetching pricing tier rules:', rulesError);
+      }
+
       return {
         id: data.id,
         name: data.name,
@@ -742,7 +773,17 @@ class DatabaseService {
         description: data.description,
         description_en: data.description_en,
         description_he: data.description_he,
-        createdAt: data.created_at
+        createdAt: data.created_at,
+        rules: (rulesData || []).map(r => ({
+          id: r.id,
+          tierId: r.tier_id,
+          minQty: r.min_qty,
+          maxQty: r.max_qty,
+          pricePerUnit: r.price_per_unit,
+          discountPct: r.discount_pct,
+          createdAt: r.created_at,
+          updatedAt: r.updated_at
+        }))
       };
     } catch (error) {
       console.error('Error in getPricingTier:', error);
@@ -770,6 +811,23 @@ class DatabaseService {
         console.error('Error adding pricing tier:', error);
         throw new Error('Failed to add pricing tier');
       }
+
+      if (tier.rules && tier.rules.length > 0) {
+        const rulesToInsert = tier.rules.map(r => ({
+          tier_id: tier.id,
+          min_qty: r.minQty,
+          max_qty: r.maxQty,
+          price_per_unit: r.pricePerUnit,
+          discount_pct: r.discountPct
+        }));
+        const { error: ruleError } = await supabase
+          .from('price_tier_rules')
+          .insert(rulesToInsert);
+        if (ruleError) {
+          console.error('Error adding pricing tier rules:', ruleError);
+          throw new Error('Failed to add pricing tier rules');
+        }
+      }
     } catch (error) {
       console.error('Error in addPricingTier:', error);
       throw error;
@@ -795,6 +853,30 @@ class DatabaseService {
       if (error) {
         console.error('Error updating pricing tier:', error);
         throw new Error('Failed to update pricing tier');
+      }
+
+      if (tier.rules) {
+        await supabase
+          .from('price_tier_rules')
+          .delete()
+          .eq('tier_id', id);
+
+        if (tier.rules.length > 0) {
+          const rulesToInsert = tier.rules.map(r => ({
+            tier_id: id,
+            min_qty: r.minQty,
+            max_qty: r.maxQty,
+            price_per_unit: r.pricePerUnit,
+            discount_pct: r.discountPct
+          }));
+          const { error: ruleError } = await supabase
+            .from('price_tier_rules')
+            .insert(rulesToInsert);
+          if (ruleError) {
+            console.error('Error updating pricing tier rules:', ruleError);
+            throw new Error('Failed to update pricing tier rules');
+          }
+        }
       }
     } catch (error) {
       console.error('Error in updatePricingTier:', error);
