@@ -16,6 +16,7 @@ import {
   Visibility,
 } from 'matrix-js-sdk';
 import * as olm from '@matrix-org/olm';
+import olmWasm from '@matrix-org/olm/olm.wasm';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import { ChatMessage, User } from '../types';
@@ -82,7 +83,7 @@ export class MatrixService {
     try {
       // Load the Olm WASM module for end-to-end encryption support
       if (!this.olmInitialized) {
-        await olm.init();
+        await olm.init({ locateFile: () => olmWasm });
         this.olmInitialized = true;
       }
 
@@ -317,7 +318,7 @@ export class MatrixService {
       try {
         // Create a temporary client for login
         if (!this.olmInitialized) {
-          await olm.init();
+          await olm.init({ locateFile: () => olmWasm });
           this.olmInitialized = true;
         }
 
