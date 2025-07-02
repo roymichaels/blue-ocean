@@ -49,7 +49,6 @@ export default function PricingTiersScreen() {
       if (r.minQty < 1) return 'כמות מינימלית חייבת להיות מספר גדול מ-0';
       if (r.maxQty < r.minQty) return 'ערך מקסימום חייב להיות גדול או שווה למינימום';
       if (r.pricePerBaseUnit == null && r.discountPct == null) return 'יש להזין מחיר או הנחה לכל כלל';
-      if (i === 0 && r.minQty !== 1) return 'הטווח הראשון חייב להתחיל ב-1';
       if (i > 0) {
         const prev = sorted[i - 1];
         if (r.minQty !== prev.maxQty + 1) return 'טווחי הכמויות חופפים או מכילים חוסרים';
