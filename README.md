@@ -24,13 +24,16 @@ import 'react-native-crypto';
 
 React Native 0.79 no longer provides the Node.js `Buffer` global. Some
 dependencies (like `react-native-crypto`) expect it to exist. The project loads
-the polyfill in `app/_layout.tsx`:
+the polyfill in `app/_layout.tsx`. Buffer must be defined before importing
+`react-native-crypto`:
 
 ```ts
 import { Buffer } from 'buffer';
 if (typeof global.Buffer === 'undefined') {
   (global as any).Buffer = Buffer;
 }
+import 'react-native-get-random-values';
+import 'react-native-crypto';
 ```
 
 If you create a new entry file, make sure to include this snippet before other
