@@ -43,6 +43,13 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 I18nManager.allowRTL(true);
 I18nManager.forceRTL(true);
 
+interface MediaItem {
+  id: string;
+  uri: string;
+  type: 'image' | 'video';
+  name?: string;
+}
+
 const { width } = Dimensions.get('window');
 
 export default function ProductDetailScreen() {
@@ -243,7 +250,7 @@ export default function ProductDetailScreen() {
     await addToCart();
     // Navigate to cart or checkout
     router.push({
-      pathname: '/(tabs)/',
+      pathname: '/(tabs)',
       params: { showCart: 'true' },
     });
   };

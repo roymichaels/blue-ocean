@@ -171,6 +171,7 @@ export interface CartItem {
   unitPrice?: number;
   tierName?: string;
   effectiveQty?: number;
+  selectedColor?: string;
 }
 
 export interface WishlistItem {
