@@ -99,8 +99,8 @@ export default function MediaUploader({
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: allowVideos
-          ? [ImagePicker.MediaType.Images, ImagePicker.MediaType.Videos]
-          : ImagePicker.MediaType.Images,
+          ? ImagePicker.MediaTypeOptions.All
+          : ImagePicker.MediaTypeOptions.Images,
         allowsEditing: false,
         aspect: [16, 9],
         quality: 0.8,

@@ -16,9 +16,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Heart, Plus, Pencil, X, Save, Trash2, Filter, ArrowUpDown } from 'lucide-react-native';
+import {
+  Heart,
+  Plus,
+  Pencil,
+  X,
+  Filter,
+  ArrowUpDown,
+} from 'lucide-react-native';
 import DatabaseService from '../../services/database';
-import PinataService from '../../services/pinata';
 import { Product, Category, HeroBanner } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -27,24 +33,15 @@ import GlobalHeader from '../../components/GlobalHeader';
 import ProductCard from '../../components/ProductCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
-import MediaUploader from '../../components/MediaUploader';
+import BannerFormModal from '../../components/BannerFormModal';
 import CartModal from '../../components/CartModal';
 import ProductFormModal from '../../components/ProductFormModal';
-import InfoModal from '../../components/InfoModal';
-import ConfirmationModal from '../../components/ConfirmationModal';
 
 // Enable RTL for Hebrew
 I18nManager.allowRTL(true);
 I18nManager.forceRTL(true);
 
 const { width } = Dimensions.get('window');
-
-interface MediaItem {
-  id: string;
-  uri: string;
-  type: 'image' | 'video';
-  name?: string;
-}
 
 export default function HomeScreen() {
   const params = useLocalSearchParams<{ showCart?: string }>();
@@ -55,33 +52,17 @@ export default function HomeScreen() {
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-  const [showBannerModal, setShowBannerModal] = useState(false);
+  const [bannerFormVisible, setBannerFormVisible] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
-  const [newBanner, setNewBanner] = useState<Partial<HeroBanner>>({
-    title: '',
-    subtitle: '',
-    image: '',
-    discount: '',
-    category: '',
-    isActive: true,
-    order: 1
-  });
-  const [bannerMedia, setBannerMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'rating'>('newest');
+  const [sortBy, setSortBy] = useState<
+    'newest' | 'price-low' | 'price-high' | 'rating'
+  >('newest');
   const [showSortModal, setShowSortModal] = useState(false);
   const [productFormVisible, setProductFormVisible] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-  const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
-  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
-  const [infoModal, setInfoModal] = useState({
-    visible: false,
-    title: '',
-    message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
-  });
   const { isAdmin } = useAuth();
   const { t } = useLanguage();
   const { colors } = useTheme();
@@ -104,9 +85,9 @@ export default function HomeScreen() {
       const bannerInterval = setInterval(() => {
         setCurrentBannerIndex((prevIndex) => {
           const nextIndex = (prevIndex + 1) % heroBanners.length;
-          bannerScrollRef.current?.scrollTo({ 
-            x: nextIndex * (width - 32), 
-            animated: true 
+          bannerScrollRef.current?.scrollTo({
+            x: nextIndex * (width - 32),
+            animated: true,
           });
           return nextIndex;
         });
@@ -127,7 +108,7 @@ export default function HomeScreen() {
       const [productsData, categoriesData, bannersData] = await Promise.all([
         db.getProducts(),
         db.getCategories(),
-        db.getHeroBanners()
+        db.getHeroBanners(),
       ]);
       setProducts(productsData);
       setCategories(categoriesData);
@@ -150,10 +131,13 @@ export default function HomeScreen() {
 
     // Filter by search query
     if (searchQuery.trim()) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          product.category.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -168,7 +152,10 @@ export default function HomeScreen() {
           return b.rating - a.rating;
         case 'newest':
         default:
-          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+          return (
+            new Date(b.createdAt || 0).getTime() -
+            new Date(a.createdAt || 0).getTime()
+          );
       }
     });
 
@@ -177,146 +164,24 @@ export default function HomeScreen() {
 
   const addBanner = () => {
     setEditingBanner(null);
-    setNewBanner({
-      title: '',
-      subtitle: '',
-      image: '',
-      discount: '',
-      category: '',
-      isActive: true,
-      order: heroBanners.length + 1
-    });
-    setBannerMedia([]);
-    setShowBannerModal(true);
+    setBannerFormVisible(true);
   };
 
   const editBanner = (banner: HeroBanner) => {
     setEditingBanner(banner);
-    setNewBanner({...banner});
-    // Convert existing image to media format
-    setBannerMedia(banner.image ? [{
-      id: '1',
-      uri: banner.image,
-      type: 'image',
-      name: 'banner_image'
-    }] : []);
-    setShowBannerModal(true);
+    setBannerFormVisible(true);
   };
 
-  const saveBanner = async () => {
-    if (!newBanner.title || !newBanner.subtitle || !newBanner.discount || !newBanner.category) {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'אנא מלא את כל השדות',
-        type: 'error'
-      });
-      return;
-    }
-
-    if (bannerMedia.length === 0) {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'Please upload a banner image',
-        type: 'error'
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const pinata = PinataService.getInstance();
-      const uploadedUrl = await pinata.uploadFile(bannerMedia[0].uri, 'banner');
-
-      if (!uploadedUrl ||
-          (uploadedUrl === bannerMedia[0].uri &&
-           !bannerMedia[0].uri.startsWith('http'))) {
-        setInfoModal({
-          visible: true,
-          title: 'שגיאה',
-          message: 'העלאת הבאנר נכשלה',
-          type: 'error'
-        });
-        return;
-      }
-
-      const db = DatabaseService.getInstance();
-      const bannerData = {
-        ...newBanner,
-        image: uploadedUrl
-      };
-      
-      if (editingBanner) {
-        // Update existing banner
-        await db.updateHeroBanner(editingBanner.id, bannerData);
-        setHeroBanners(prev => prev.map(b => b.id === editingBanner.id ? {...b, ...bannerData} : b));
-      } else {
-        // Add new banner
-        const bannerId = await db.addHeroBanner(bannerData as Omit<HeroBanner, 'id' | 'createdAt' | 'updatedAt'>);
-        const addedBanner = {
-          ...bannerData, 
-          id: bannerId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        } as HeroBanner;
-        setHeroBanners(prev => [...prev, addedBanner]);
-      }
-      
-      setShowBannerModal(false);
-      setInfoModal({
-        visible: true,
-        title: 'הצלחה',
-        message: 'הבאנר נשמר בהצלחה',
-        type: 'success'
-      });
-    } catch (error) {
-      console.error('Error saving banner:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'שמירת הבאנר נכשלה',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
+  const handleBannerSaved = (b: HeroBanner, isNew: boolean) => {
+    if (isNew) {
+      setHeroBanners((prev) => [...prev, b]);
+    } else {
+      setHeroBanners((prev) => prev.map((h) => (h.id === b.id ? b : h)));
     }
   };
 
-  const confirmDeleteBanner = () => {
-    if (!editingBanner) return;
-    setShowBannerModal(false);
-    setTimeout(() => {
-      setConfirmDeleteVisible(true);
-    }, 300);
-  };
-
-  const deleteBanner = async () => {
-    if (!editingBanner) return;
-
-    try {
-      setLoading(true);
-      const db = DatabaseService.getInstance();
-      await db.deleteHeroBanner(editingBanner.id);
-      setHeroBanners(prev => prev.filter(b => b.id !== editingBanner.id));
-      setShowBannerModal(false);
-      setInfoModal({
-        visible: true,
-        title: 'הצלחה',
-        message: 'הבאנר נמחק בהצלחה',
-        type: 'success'
-      });
-    } catch (error) {
-      console.error('Error deleting banner:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'מחיקת הבאנר נכשלה',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleBannerDeleted = (id: string) => {
+    setHeroBanners((prev) => prev.filter((b) => b.id !== id));
   };
 
   const addProduct = () => {
@@ -329,47 +194,53 @@ export default function HomeScreen() {
     setProductFormVisible(true);
   };
 
-  const selectCategory = (category: string) => {
-    if (showBannerModal) {
-      setNewBanner({ ...newBanner, category });
-    }
-    setShowCategorySelector(false);
-  };
-
   const handleProductSaved = (p: Product, isNew: boolean) => {
     if (isNew) {
-      setProducts(prev => [...prev, p]);
+      setProducts((prev) => [...prev, p]);
     } else {
-      setProducts(prev => prev.map(prod => (prod.id === p.id ? p : prod)));
+      setProducts((prev) => prev.map((prod) => (prod.id === p.id ? p : prod)));
     }
   };
 
   const handleProductDeleted = (id: string) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+    setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
-      style={[styles.categoryCard, { 
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary 
-      }]}
+      style={[
+        styles.categoryCard,
+        {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+        },
+      ]}
       onPress={() => router.push(`/category/${item.id}`)}
     >
-      <View style={[styles.categoryIcon, { 
-        backgroundColor: colors.interactive.secondary,
-        borderColor: colors.gold 
-      }]}>
+      <View
+        style={[
+          styles.categoryIcon,
+          {
+            backgroundColor: colors.interactive.secondary,
+            borderColor: colors.gold,
+          },
+        ]}
+      >
         <Text style={styles.categoryEmoji}>{item.icon}</Text>
       </View>
-      <Text style={[styles.categoryName, { color: colors.text.primary }]}>{item.name}</Text>
+      <Text style={[styles.categoryName, { color: colors.text.primary }]}>
+        {item.name}
+      </Text>
       {isAdmin && (
         <View style={styles.categoryAdminActions}>
-          <TouchableOpacity 
-            style={[styles.categoryAdminButton, { 
-              backgroundColor: colors.background,
-              borderColor: colors.gold 
-            }]}
+          <TouchableOpacity
+            style={[
+              styles.categoryAdminButton,
+              {
+                backgroundColor: colors.background,
+                borderColor: colors.gold,
+              },
+            ]}
             onPress={() => router.push(`/category/${item.id}`)}
           >
             <Pencil size={10} color={colors.gold} />
@@ -381,29 +252,37 @@ export default function HomeScreen() {
 
   const renderBanner = (item: HeroBanner, index: number) => (
     <View key={item.id} style={styles.heroBanner}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.bannerTouchable}
         onPress={() => router.push(`/category/${item.category}`)}
       >
-        <Image
-          source={{ uri: item.image }}
-          style={styles.heroImage}
-        />
+        <Image source={{ uri: item.image }} style={styles.heroImage} />
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>
-            <Text style={[styles.heroDiscount, { 
-              color: colors.text.inverse,
-              backgroundColor: colors.gold 
-            }]}>{item.discount} הנחה</Text>
-            <Text style={[styles.heroTitle, { color: colors.text.inverse }]}>{item.title}</Text>
-            <Text style={[styles.heroSubtitle, { color: colors.text.inverse }]}>{item.subtitle}</Text>
+            <Text
+              style={[
+                styles.heroDiscount,
+                {
+                  color: colors.text.inverse,
+                  backgroundColor: colors.gold,
+                },
+              ]}
+            >
+              {item.discount} הנחה
+            </Text>
+            <Text style={[styles.heroTitle, { color: colors.text.inverse }]}>
+              {item.title}
+            </Text>
+            <Text style={[styles.heroSubtitle, { color: colors.text.inverse }]}>
+              {item.subtitle}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
-      
+
       {isAdmin && (
         <View style={styles.bannerAdminActions}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.bannerAdminButton}
             onPress={() => editBanner(item)}
           >
@@ -430,20 +309,24 @@ export default function HomeScreen() {
 
   const getSortLabel = () => {
     switch (sortBy) {
-      case 'price-low': return t('home.priceLowHigh');
-      case 'price-high': return t('home.priceHighLow');
-      case 'rating': return t('home.highRating');
+      case 'price-low':
+        return t('home.priceLowHigh');
+      case 'price-high':
+        return t('home.priceHighLow');
+      case 'rating':
+        return t('home.highRating');
       case 'newest':
-      default: return t('home.newest');
+      default:
+        return t('home.newest');
     }
   };
 
-      
-
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <GlobalHeader 
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <GlobalHeader
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           showSearch={true}
@@ -454,14 +337,16 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <GlobalHeader 
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <GlobalHeader
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         showSearch={true}
       />
-      
-      <ScrollView 
+
+      <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -471,16 +356,23 @@ export default function HomeScreen() {
         <View style={styles.bannerContainer}>
           <View style={styles.bannerHeader}>
             {isAdmin && (
-              <TouchableOpacity 
-                style={[styles.addBannerButton, { backgroundColor: colors.gold }]}
+              <TouchableOpacity
+                style={[
+                  styles.addBannerButton,
+                  { backgroundColor: colors.gold },
+                ]}
                 onPress={addBanner}
               >
                 <Plus size={20} color={colors.text.inverse} />
-                <Text style={[styles.addBannerText, { color: colors.text.inverse }]}>{t('banner.addBanner')}</Text>
+                <Text
+                  style={[styles.addBannerText, { color: colors.text.inverse }]}
+                >
+                  {t('banner.addBanner')}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
-          
+
           {heroBanners.length > 0 ? (
             <>
               <ScrollView
@@ -490,7 +382,7 @@ export default function HomeScreen() {
                 showsHorizontalScrollIndicator={false}
                 onMomentumScrollEnd={(event) => {
                   const newIndex = Math.round(
-                    event.nativeEvent.contentOffset.x / (width - 32)
+                    event.nativeEvent.contentOffset.x / (width - 32),
                   );
                   setCurrentBannerIndex(newIndex);
                 }}
@@ -498,7 +390,7 @@ export default function HomeScreen() {
               >
                 {heroBanners.map((item, index) => renderBanner(item, index))}
               </ScrollView>
-              
+
               {/* Banner Indicators */}
               {heroBanners.length > 1 && (
                 <View style={styles.bannerIndicators}>
@@ -507,7 +399,10 @@ export default function HomeScreen() {
                       key={index}
                       style={[
                         styles.indicator,
-                        index === currentBannerIndex && [styles.activeIndicator, { backgroundColor: colors.gold }]
+                        index === currentBannerIndex && [
+                          styles.activeIndicator,
+                          { backgroundColor: colors.gold },
+                        ],
                       ]}
                     />
                   ))}
@@ -518,7 +413,9 @@ export default function HomeScreen() {
             <EmptyState
               icon={Plus}
               title={t('home.noBanners')}
-              message={isAdmin ? t('home.addBanners') : t('home.bannersComingSoon')}
+              message={
+                isAdmin ? t('home.addBanners') : t('home.bannersComingSoon')
+              }
               actionText={isAdmin ? t('banner.addBanner') : undefined}
               onAction={isAdmin ? addBanner : undefined}
             />
@@ -528,12 +425,16 @@ export default function HomeScreen() {
         {/* Categories Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>{t('home.categories')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+              {t('home.categories')}
+            </Text>
             <TouchableOpacity onPress={() => router.push('/(tabs)/categories')}>
-              <Text style={[styles.seeAll, { color: colors.gold }]}>{t('common.viewAll')}</Text>
+              <Text style={[styles.seeAll, { color: colors.gold }]}>
+                {t('common.viewAll')}
+              </Text>
             </TouchableOpacity>
           </View>
-          
+
           {categories.length > 0 ? (
             <ScrollView
               horizontal
@@ -559,25 +460,35 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-              {searchQuery ? t('home.searchResults', { query: searchQuery }) : t('home.products')}
+              {searchQuery
+                ? t('home.searchResults', { query: searchQuery })
+                : t('home.products')}
             </Text>
             <View style={styles.sectionActions}>
-              <TouchableOpacity 
-                style={[styles.sortButton, { 
-                  backgroundColor: colors.surface.primary,
-                  borderColor: colors.border.primary 
-                }]}
+              <TouchableOpacity
+                style={[
+                  styles.sortButton,
+                  {
+                    backgroundColor: colors.surface.primary,
+                    borderColor: colors.border.primary,
+                  },
+                ]}
                 onPress={() => setShowSortModal(true)}
               >
                 <ArrowUpDown size={16} color={colors.gold} />
-                <Text style={[styles.sortText, { color: colors.gold }]}>{getSortLabel()}</Text>
+                <Text style={[styles.sortText, { color: colors.gold }]}>
+                  {getSortLabel()}
+                </Text>
               </TouchableOpacity>
               {isAdmin && (
-                <TouchableOpacity 
-                  style={[styles.addProductButton, { 
-                    backgroundColor: colors.interactive.secondary,
-                    borderColor: colors.gold 
-                  }]}
+                <TouchableOpacity
+                  style={[
+                    styles.addProductButton,
+                    {
+                      backgroundColor: colors.interactive.secondary,
+                      borderColor: colors.gold,
+                    },
+                  ]}
                   onPress={addProduct}
                 >
                   <Plus size={16} color={colors.gold} />
@@ -585,15 +496,15 @@ export default function HomeScreen() {
               )}
             </View>
           </View>
-          
+
           {filteredProducts.length > 0 ? (
             <View style={styles.productsGrid}>
               {filteredProducts.map((item) => (
-                <View 
-                  key={item.id} 
+                <View
+                  key={item.id}
                   style={[
                     styles.productWrapper,
-                    { width: getProductItemWidth() }
+                    { width: getProductItemWidth() },
                   ]}
                 >
                   <ProductCard
@@ -608,138 +519,26 @@ export default function HomeScreen() {
             <EmptyState
               icon={searchQuery ? Filter : Plus}
               title={searchQuery ? t('home.noResults') : t('home.noProducts')}
-              message={searchQuery ? t('home.tryDifferentSearch') : t('home.productsComingSoon')}
+              message={
+                searchQuery
+                  ? t('home.tryDifferentSearch')
+                  : t('home.productsComingSoon')
+              }
               actionText={isAdmin && !searchQuery ? 'הוסף מוצר' : undefined}
               onAction={isAdmin && !searchQuery ? addProduct : undefined}
             />
           )}
         </View>
-
       </ScrollView>
 
-      {/* Banner Edit/Add Modal */}
-      <Modal
-        visible={showBannerModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowBannerModal(false)}
-      >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-          <View style={[styles.modalHeader, { 
-            borderBottomColor: colors.border.primary 
-          }]}>
-            <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-              {editingBanner ? t('banner.editBanner') : t('banner.addNewBanner')}
-            </Text>
-            <TouchableOpacity onPress={() => setShowBannerModal(false)}>
-              <X size={24} color={colors.text.primary} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.modalContent}>
-            <MediaUploader
-              media={bannerMedia}
-              onMediaChange={setBannerMedia}
-              maxFiles={1}
-              allowVideos={false}
-            />
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>כותרת *</Text>
-              <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newBanner.title}
-                onChangeText={(text) => setNewBanner({...newBanner, title: text})}
-                placeholder="הכנס כותרת באנר"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>כותרת משנה *</Text>
-              <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newBanner.subtitle}
-                onChangeText={(text) => setNewBanner({...newBanner, subtitle: text})}
-                placeholder="הכנס כותרת משנה"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>הנחה *</Text>
-              <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newBanner.discount}
-                onChangeText={(text) => setNewBanner({...newBanner, discount: text})}
-                placeholder="למשל: 50% או חדש"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>קטגוריה *</Text>
-              <TouchableOpacity 
-                style={[styles.categorySelector, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary 
-                }]}
-                onPress={() => setShowCategorySelector(true)}
-              >
-                <Text style={[
-                  styles.categorySelectorText,
-                  { color: newBanner.category ? colors.text.primary : colors.text.tertiary }
-                ]}>
-                  {newBanner.category || "בחר קטגוריה"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity 
-                style={[styles.saveButton, { backgroundColor: colors.gold }]}
-                onPress={saveBanner}
-                disabled={loading}
-              >
-                {loading ? (
-                  <LoadingSpinner size="small" color={colors.text.inverse} style={styles.buttonSpinner} />
-                ) : (
-                  <>
-                    <Save size={20} color={colors.text.inverse} />
-                    <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>שמור באנר</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-
-              {editingBanner && (
-                <TouchableOpacity
-                  style={[styles.deleteButton, { backgroundColor: colors.status.error }]}
-                  onPress={confirmDeleteBanner}
-                  disabled={loading}
-                >
-                  <Trash2 size={20} color={colors.text.inverse} />
-                  <Text style={[styles.deleteButtonText, { color: colors.text.inverse }]}>מחק באנר</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
+      <BannerFormModal
+        visible={bannerFormVisible}
+        onClose={() => setBannerFormVisible(false)}
+        banner={editingBanner || undefined}
+        categories={categories}
+        onSaved={handleBannerSaved}
+        onDeleted={handleBannerDeleted}
+      />
       <ProductFormModal
         visible={productFormVisible}
         onClose={() => setProductFormVisible(false)}
@@ -748,62 +547,6 @@ export default function HomeScreen() {
         onDeleted={handleProductDeleted}
       />
 
-      {/* Category Selector Modal */}
-      <Modal
-        visible={showCategorySelector}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowCategorySelector(false)}
-      >
-        <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.categorySelectorContent, { 
-            backgroundColor: colors.surface.elevated,
-            borderColor: colors.border.primary 
-          }]}>
-            <View style={styles.categorySelectorHeader}>
-              <Text style={[styles.categorySelectorTitle, { color: colors.text.primary }]}>בחר קטגוריה</Text>
-              <TouchableOpacity onPress={() => setShowCategorySelector(false)}>
-                <X size={24} color={colors.text.primary} />
-              </TouchableOpacity>
-            </View>
-            
-            <ScrollView style={styles.categorySelectorList}>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]}
-                  onPress={() => selectCategory(category.id)}
-                >
-                  <View style={styles.categorySelectorItemContent}>
-                    <Text style={styles.categorySelectorItemIcon}>{category.icon}</Text>
-                    <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{category.name}</Text>
-                  </View>
-                  <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{category.id}</Text>
-                </TouchableOpacity>
-              ))}
-              
-              {/* Add new category option */}
-              <TouchableOpacity
-                style={[styles.categorySelectorItem, { 
-                  borderBottomColor: colors.border.secondary,
-                  backgroundColor: colors.interactive.secondary
-                }]}
-                onPress={() => {
-                  setShowCategorySelector(false);
-                  router.push('/(tabs)/categories');
-                }}
-              >
-                <View style={styles.categorySelectorItemContent}>
-                  <Plus size={20} color={colors.gold} />
-                  <Text style={[styles.categorySelectorItemText, { color: colors.gold }]}>הוסף קטגוריה חדשה</Text>
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-
       {/* Sort Modal */}
       <Modal
         visible={showSortModal}
@@ -811,13 +554,27 @@ export default function HomeScreen() {
         transparent={true}
         onRequestClose={() => setShowSortModal(false)}
       >
-        <View style={[styles.sortModalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.sortModalContent, { 
-            backgroundColor: colors.surface.elevated,
-            borderColor: colors.border.primary 
-          }]}>
+        <View
+          style={[
+            styles.sortModalOverlay,
+            { backgroundColor: 'rgba(0,0,0,0.5)' },
+          ]}
+        >
+          <View
+            style={[
+              styles.sortModalContent,
+              {
+                backgroundColor: colors.surface.elevated,
+                borderColor: colors.border.primary,
+              },
+            ]}
+          >
             <View style={styles.sortModalHeader}>
-              <Text style={[styles.sortModalTitle, { color: colors.text.primary }]}>מיון מוצרים</Text>
+              <Text
+                style={[styles.sortModalTitle, { color: colors.text.primary }]}
+              >
+                מיון מוצרים
+              </Text>
               <TouchableOpacity onPress={() => setShowSortModal(false)}>
                 <X size={24} color={colors.text.primary} />
               </TouchableOpacity>
@@ -834,22 +591,32 @@ export default function HomeScreen() {
                 style={[
                   styles.sortOption,
                   { borderBottomColor: colors.border.secondary },
-                  sortBy === option.key && [styles.selectedSortOption, { backgroundColor: colors.interactive.secondary }]
+                  sortBy === option.key && [
+                    styles.selectedSortOption,
+                    { backgroundColor: colors.interactive.secondary },
+                  ],
                 ]}
                 onPress={() => {
                   setSortBy(option.key as any);
                   setShowSortModal(false);
                 }}
               >
-                <Text style={[
-                  styles.sortOptionText,
-                  { color: colors.text.primary },
-                  sortBy === option.key && { color: colors.gold }
-                ]}>
+                <Text
+                  style={[
+                    styles.sortOptionText,
+                    { color: colors.text.primary },
+                    sortBy === option.key && { color: colors.gold },
+                  ]}
+                >
                   {option.label}
                 </Text>
                 {sortBy === option.key && (
-                  <View style={[styles.selectedDot, { backgroundColor: colors.gold }]} />
+                  <View
+                    style={[
+                      styles.selectedDot,
+                      { backgroundColor: colors.gold },
+                    ]}
+                  />
                 )}
               </TouchableOpacity>
             ))}
@@ -861,33 +628,6 @@ export default function HomeScreen() {
       <CartModal
         visible={showCartModal}
         onClose={() => setShowCartModal(false)}
-      />
-
-      {/* Info Modal */}
-      <InfoModal
-        visible={infoModal.visible}
-        title={infoModal.title}
-        message={infoModal.message}
-        type={infoModal.type}
-        onClose={() => setInfoModal({ ...infoModal, visible: false })}
-      />
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        visible={confirmDeleteVisible}
-        title="אישור מחיקה"
-        message="האם אתה בטוח שברצונך למחוק את הבאנר?"
-        confirmText="מחק"
-        cancelText="ביטול"
-        onConfirm={() => {
-          setConfirmDeleteVisible(false);
-          deleteBanner();
-        }}
-        onCancel={() => {
-          setConfirmDeleteVisible(false);
-          setShowBannerModal(true);
-        }}
-        destructive={true}
       />
     </SafeAreaView>
   );
@@ -1098,73 +838,6 @@ const styles = StyleSheet.create({
   },
   productWrapper: {
     marginBottom: 16,
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  modalContent: {
-    padding: 16,
-  },
-  formGroup: {
-    marginBottom: 20,
-  },
-  formLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'right',
-  },
-  formInput: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  modalActions: {
-    gap: 16,
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  saveButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  deleteButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
   },
   sortModalOverlay: {
     flex: 1,
