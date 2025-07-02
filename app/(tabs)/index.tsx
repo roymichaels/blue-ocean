@@ -8,13 +8,13 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
+  Modal,
   Alert,
   I18nManager,
   TextInput,
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Heart, Plus, Pencil, X, Save, Trash2, Filter, ArrowUpDown } from 'lucide-react-native';
@@ -574,12 +574,10 @@ export default function HomeScreen() {
 
       {/* Banner Edit/Add Modal */}
       <Modal
-        isVisible={showBannerModal}
-        onBackdropPress={() => setShowBannerModal(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.fullscreenModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showBannerModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowBannerModal(false)}
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { 
@@ -701,12 +699,10 @@ export default function HomeScreen() {
 
       {/* Product Edit/Add Modal */}
       <Modal
-        isVisible={showProductModal}
-        onBackdropPress={() => setShowProductModal(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.fullscreenModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showProductModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowProductModal(false)}
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { 
@@ -931,12 +927,10 @@ export default function HomeScreen() {
 
       {/* Category Selector Modal */}
       <Modal
-        isVisible={showCategorySelector}
-        onBackdropPress={() => setShowCategorySelector(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.bottomModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showCategorySelector}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowCategorySelector(false)}
       >
         <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.categorySelectorContent, { 
@@ -988,12 +982,10 @@ export default function HomeScreen() {
 
       {/* Subcategory Selector Modal */}
       <Modal
-        isVisible={showSubcategorySelector}
-        onBackdropPress={() => setShowSubcategorySelector(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.bottomModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showSubcategorySelector}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowSubcategorySelector(false)}
       >
         <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.categorySelectorContent, { 
@@ -1055,12 +1047,10 @@ export default function HomeScreen() {
 
       {/* Mix Group Selector Modal */}
       <Modal
-        isVisible={showMixGroupSelector}
-        onBackdropPress={() => setShowMixGroupSelector(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.bottomModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showMixGroupSelector}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowMixGroupSelector(false)}
       >
         <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.categorySelectorContent, {
@@ -1094,12 +1084,10 @@ export default function HomeScreen() {
 
       {/* Sort Modal */}
       <Modal
-        isVisible={showSortModal}
-        onBackdropPress={() => setShowSortModal(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.bottomModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showSortModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowSortModal(false)}
       >
         <View style={[styles.sortModalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.sortModalContent, { 

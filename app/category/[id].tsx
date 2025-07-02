@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   I18nManager,
+  Modal,
   TextInput,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
@@ -284,12 +284,10 @@ export default function CategoryScreen() {
 
       {/* Subcategory Edit/Add Modal */}
       <Modal
-        isVisible={showSubcategoryModal}
-        onBackdropPress={() => setShowSubcategoryModal(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.fullscreenModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showSubcategoryModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowSubcategoryModal(false)}
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.border.primary }]}>
@@ -504,9 +502,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
-  },
-  fullscreenModal: {
-    margin: 0,
   },
   modalContainer: {
     flex: 1,

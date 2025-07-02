@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
+  Modal,
   Alert,
   I18nManager,
   Platform,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft, Trash2 } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -669,12 +669,10 @@ export default function ReviewsScreen() {
 
       {/* Write Review Modal */}
       <Modal
-        isVisible={showWriteReview}
-        onBackdropPress={() => setShowWriteReview(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.fullscreenModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showWriteReview}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowWriteReview(false)}
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.border.primary }]}>
@@ -828,12 +826,10 @@ export default function ReviewsScreen() {
 
       {/* Filter Modal */}
       <Modal
-        isVisible={showFilterModal}
-        onBackdropPress={() => setShowFilterModal(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.bottomModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showFilterModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowFilterModal(false)}
       >
         <View style={styles.filterModalOverlay}>
           <View style={[styles.filterModalContent, { backgroundColor: colors.surface.elevated }]}>
@@ -1372,12 +1368,5 @@ const styles = StyleSheet.create({
   applyFilterButtonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  fullscreenModal: {
-    margin: 0,
-  },
-  bottomModal: {
-    justifyContent: 'flex-end',
-    margin: 0,
   },
 });

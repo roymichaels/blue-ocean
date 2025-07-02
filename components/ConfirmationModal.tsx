@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
+  Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
   Platform,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { useTheme } from '../contexts/ThemeContext';
 import { X } from 'lucide-react-native';
 
@@ -38,54 +38,59 @@ export default function ConfirmationModal({
 
   return (
     <Modal
-      isVisible={visible}
-      onBackdropPress={onCancel}
-      useNativeDriver={Platform.OS !== 'web'}
-      backdropOpacity={0.5}
-      style={styles.centered}
+      visible={visible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onCancel}
     >
-      <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
-        <View style={[styles.modalContainer, { backgroundColor: colors.surface.elevated }]}>
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
-            <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
-              <X size={20} color={colors.text.secondary} />
-            </TouchableOpacity>
-          </View>
+      <TouchableWithoutFeedback onPress={onCancel}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
+            <View style={[styles.modalContainer, { backgroundColor: colors.surface.elevated }]}>
+              <View style={styles.header}>
+                <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
+                <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
+                  <X size={20} color={colors.text.secondary} />
+                </TouchableOpacity>
+              </View>
               
-          <View style={styles.content}>
-            <Text style={[styles.message, { color: colors.text.secondary }]}>{message}</Text>
-          </View>
-
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={[
-                styles.button,
-                styles.cancelButton,
-                { borderColor: colors.border.primary }
-              ]}
-              onPress={onCancel}
-            >
-              <Text style={[styles.buttonText, { color: colors.text.primary }]}>
-                {cancelText}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.button,
-                styles.confirmButton,
-                { backgroundColor: destructive ? colors.status.error : colors.gold }
-              ]}
-              onPress={() => {
-                onConfirm();
-              }}
-            >
-              <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
-                {confirmText}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              <View style={styles.content}>
+                <Text style={[styles.message, { color: colors.text.secondary }]}>
+                  {message}
+                </Text>
+              </View>
+              
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.cancelButton,
+                    { borderColor: colors.border.primary }
+                  ]}
+                  onPress={onCancel}
+                >
+                  <Text style={[styles.buttonText, { color: colors.text.primary }]}>
+                    {cancelText}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.confirmButton,
+                    { backgroundColor: destructive ? colors.status.error : colors.gold }
+                  ]}
+                  onPress={() => {
+                    onConfirm();
+                  }}
+                >
+                  <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
+                    {confirmText}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
     </Modal>
@@ -93,10 +98,12 @@ export default function ConfirmationModal({
 }
 
 const styles = StyleSheet.create({
-  centered: {
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 0,
+    padding: 20,
   },
   modalContainer: {
     width: '100%',
