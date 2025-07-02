@@ -41,7 +41,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
   const { t } = useLanguage();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
