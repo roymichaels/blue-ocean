@@ -114,7 +114,10 @@ class OrderService {
     items: CartItem[],
     shippingAddress: ShippingAddress
   ): Promise<Order> {
-    const total = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    const total = items.reduce((sum, item) => {
+      const price = item.unitPrice ?? item.product.price;
+      return sum + price * item.quantity;
+    }, 0);
     
     const order: Order = {
       id: `order_${Date.now()}`,

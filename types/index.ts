@@ -168,6 +168,9 @@ export interface CartItem {
   product: Product;
   quantity: number;
   addedAt: string;
+  unitPrice?: number;
+  tierName?: string;
+  effectiveQty?: number;
 }
 
 export interface WishlistItem {

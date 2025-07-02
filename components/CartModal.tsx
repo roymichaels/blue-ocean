@@ -115,7 +115,10 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   };
 
   const getTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => {
+      const price = item.unitPrice ?? item.product.price;
+      return total + price * item.quantity;
+    }, 0);
   };
 
   const getTotalItems = () => {
@@ -308,7 +311,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           {item.product.name}
         </Text>
         
-        <Text style={[styles.productPrice, { color: colors.gold }]}>{currencySymbol}{item.product.price.toFixed(2)}</Text>
+        <Text style={[styles.productPrice, { color: colors.gold }]}>{currencySymbol}{(item.unitPrice ?? item.product.price).toFixed(2)}</Text>
+        {item.tierName && (
+          <Text style={[styles.tierInfo, { color: colors.text.secondary }]}>\n            {item.tierName} • EQ {item.effectiveQty}
+          </Text>
+        )}
       </View>
 
       <View style={styles.quantityControls}>
@@ -592,7 +599,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           {cartItems.map(item => (
             <View key={item.id} style={styles.summaryItem}>
               <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>{item.product.name} x{item.quantity}</Text>
-              <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>{currencySymbol}{(item.product.price * item.quantity).toFixed(2)}</Text>
+              <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>{currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}</Text>
             </View>
           ))}
           <View style={styles.summaryRow}>
@@ -688,7 +695,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           {cartItems.map(item => (
             <View key={item.id} style={styles.summaryItem}>
               <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>{item.product.name} x{item.quantity}</Text>
-              <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>{currencySymbol}{(item.product.price * item.quantity).toFixed(2)}</Text>
+              <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>{currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}</Text>
             </View>
           ))}
           <View style={styles.summaryRow}>
@@ -951,6 +958,10 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'right',
+  },
+  tierInfo: {
+    fontSize: 12,
     textAlign: 'right',
   },
   quantityControls: {

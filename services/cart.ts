@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CartItem, WishlistItem, Product } from '../types';
+import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
+import DatabaseService from './database';
 
 const CART_STORAGE_KEY = 'cart_items';
 const WISHLIST_STORAGE_KEY = 'wishlist_items';
@@ -9,6 +10,8 @@ class CartService {
   private cartItems: CartItem[] = [];
   private wishlistItems: WishlistItem[] = [];
   private listeners: (() => void)[] = [];
+  private tierCache: Record<string, PricingTier> = {};
+  private groupCache: Record<string, MixGroup> = {};
 
   public static getInstance(): CartService {
     if (!CartService.instance) {
@@ -34,7 +37,8 @@ class CartService {
       if (wishlistData) {
         this.wishlistItems = JSON.parse(wishlistData);
       }
-      
+
+      await this.recalcPricing();
       this.notifyListeners();
     } catch (error) {
       console.error('Error loading cart/wishlist from storage:', error);
@@ -64,6 +68,72 @@ class CartService {
     this.listeners = this.listeners.filter(l => l !== listener);
   }
 
+  private async getPricingTier(id: string): Promise<PricingTier | null> {
+    if (!id) return null;
+    if (!this.tierCache[id]) {
+      const db = DatabaseService.getInstance();
+      const tier = await db.getPricingTier(id);
+      if (tier) this.tierCache[id] = tier;
+    }
+    return this.tierCache[id] || null;
+  }
+
+  private async getMixGroup(id: string): Promise<MixGroup | null> {
+    if (!id) return null;
+    if (!this.groupCache[id]) {
+      const db = DatabaseService.getInstance();
+      const group = await db.getMixGroup(id);
+      if (group) this.groupCache[id] = group;
+    }
+    return this.groupCache[id] || null;
+  }
+
+  private async recalcPricing(): Promise<void> {
+    const combos: Record<string, CartItem[]> = {};
+
+    for (const item of this.cartItems) {
+      const key = `${item.product.mixGroupId || 'none'}|${item.product.pricingTier || 'none'}`;
+      if (!combos[key]) combos[key] = [];
+      combos[key].push(item);
+    }
+
+    for (const key of Object.keys(combos)) {
+      const items = combos[key];
+      if (items.length === 0) continue;
+      const mixGroupId = items[0].product.mixGroupId || '';
+      const tierId = items[0].product.pricingTier || '';
+
+      const group = await this.getMixGroup(mixGroupId);
+      const tier = await this.getPricingTier(tierId);
+
+      const conversionFactor = group?.conversionFactor ?? 1;
+      const effectiveQty = items.reduce((sum, it) => sum + it.quantity * conversionFactor, 0);
+
+      let rule: PricingTierRule | undefined;
+      if (tier?.rules && tier.rules.length > 0) {
+        rule = tier.rules.find(r => effectiveQty >= r.minQty && effectiveQty <= r.maxQty);
+        if (!rule) {
+          rule = tier.rules
+            .filter(r => effectiveQty >= r.minQty)
+            .sort((a, b) => b.minQty - a.minQty)[0];
+        }
+      }
+
+      for (const it of items) {
+        it.effectiveQty = effectiveQty;
+        it.tierName = rule ? tier?.name : undefined;
+
+        if (rule?.pricePerUnit !== undefined && rule.pricePerUnit !== null) {
+          it.unitPrice = rule.pricePerUnit * conversionFactor;
+        } else if (rule?.discountPct !== undefined && rule.discountPct !== null) {
+          it.unitPrice = it.product.price * (1 - rule.discountPct / 100);
+        } else {
+          it.unitPrice = it.product.price;
+        }
+      }
+    }
+  }
+
   // Cart methods
   public async addToCart(product: Product, quantity: number = 1): Promise<void> {
     const existingItemIndex = this.cartItems.findIndex(
@@ -83,12 +153,14 @@ class CartService {
       this.cartItems.push(cartItem);
     }
 
+    await this.recalcPricing();
     await this.saveToStorage();
     this.notifyListeners();
   }
 
   public async removeFromCart(itemId: string): Promise<void> {
     this.cartItems = this.cartItems.filter(item => item.id !== itemId);
+    await this.recalcPricing();
     await this.saveToStorage();
     this.notifyListeners();
   }
@@ -100,6 +172,7 @@ class CartService {
         await this.removeFromCart(itemId);
       } else {
         this.cartItems[itemIndex].quantity = quantity;
+        await this.recalcPricing();
         await this.saveToStorage();
         this.notifyListeners();
       }
@@ -108,6 +181,7 @@ class CartService {
 
   public async clearCart(): Promise<void> {
     this.cartItems = [];
+    await this.recalcPricing();
     await this.saveToStorage();
     this.notifyListeners();
   }
@@ -118,7 +192,8 @@ class CartService {
 
   public getCartTotal(): number {
     return this.cartItems.reduce((total, item) => {
-      return total + (item.product.price * item.quantity);
+      const price = item.unitPrice ?? item.product.price;
+      return total + price * item.quantity;
     }, 0);
   }
 
