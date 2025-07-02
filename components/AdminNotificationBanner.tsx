@@ -9,24 +9,33 @@ import {
 } from 'react-native';
 import { Bell, X } from 'lucide-react-native';
 import NotificationService from '../services/notification';
+import { useAuth } from '../components/AuthContext';
 
 export default function AdminNotificationBanner() {
   const [visible, setVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const translateY = new Animated.Value(-60);
+  const { user } = useAuth();
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+
     checkUnreadNotifications();
-    
+
     // Check for new notifications periodically
     const interval = setInterval(checkUnreadNotifications, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   const checkUnreadNotifications = async () => {
+    if (!user) {
+      return;
+    }
     try {
       const notificationService = NotificationService.getInstance();
-      const count = await notificationService.getUnreadCount();
+      const count = await notificationService.getUnreadCount(user?.id);
       
       setUnreadCount(count);
       
