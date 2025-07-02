@@ -604,6 +604,30 @@ class DatabaseService {
     }
   }
 
+  async searchUserProfiles(
+    term: string
+  ): Promise<{ matrix_user_id: string; display_name: string; app_username: string }[]> {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('matrix_user_id, display_name, app_username')
+        .or(
+          `display_name.ilike.%${term}%,app_username.ilike.%${term}%`
+        )
+        .limit(10);
+
+      if (error) {
+        console.error('Error searching user profiles:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in searchUserProfiles:', error);
+      return [];
+    }
+  }
+
   async updateUserRole(userId: string, role: 'user' | 'admin'): Promise<void> {
     try {
       const { error } = await supabase

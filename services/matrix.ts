@@ -19,6 +19,7 @@ import * as olm from '@matrix-org/olm';
 import olmWasm from '@matrix-org/olm/olm.wasm';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
+import DatabaseService from './database';
 import { ChatMessage, User } from '../types';
 import { Platform } from 'react-native';
 import { debugLog } from '../utils/logger';
@@ -608,17 +609,29 @@ export class MatrixService {
 
   async searchUsers(
     term: string
-  ): Promise<{ user_id: string; display_name?: string }[]> {
+  ): Promise<{ user_id: string; display_name?: string; app_username?: string }[]> {
     try {
-      if (!this.matrixClient) {
-        return [];
+      let results: { user_id: string; display_name?: string; app_username?: string }[] = [];
+
+      if (this.matrixClient) {
+        const searchRes = await (this.matrixClient as any).searchUserDirectory({
+          term,
+          limit: 10,
+        });
+        results = searchRes?.results || [];
       }
 
-      const result = await (this.matrixClient as any).searchUserDirectory({
-        term,
-        limit: 10,
-      });
-      return result?.results || [];
+      if (!this.matrixClient || results.length === 0) {
+        const db = DatabaseService.getInstance();
+        const dbResults = await db.searchUserProfiles(term);
+        results = dbResults.map(r => ({
+          user_id: r.matrix_user_id,
+          display_name: r.display_name,
+          app_username: r.app_username,
+        }));
+      }
+
+      return results;
     } catch (error) {
       console.error('Error searching user directory:', error);
       return [];
