@@ -556,6 +556,20 @@ export class MatrixService {
     }
   }
 
+  async getProfileInfo(userId: string): Promise<{ displayname?: string; avatar_url?: string } | null> {
+    try {
+      if (!this.matrixClient) {
+        return null;
+      }
+
+      const info = await this.matrixClient.getProfileInfo(userId);
+      return info as any;
+    } catch (error) {
+      console.error('Error fetching profile info:', error);
+      return null;
+    }
+  }
+
   async getOrCreateAdminRoom(): Promise<string> {
     try {
       if (!this.isAuthenticated) {
