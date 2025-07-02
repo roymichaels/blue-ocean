@@ -115,6 +115,15 @@ export default function ChatWidget() {
         const results = await matrixService.searchUsers(searchQuery.trim());
         const mapped = await Promise.all(
           results.map(async (r: any) => {
+            if (r.matrix_user_id) {
+              return {
+                id: r.matrix_user_id,
+                displayName:
+                  r.display_name || r.app_username || r.matrix_user_id,
+                isAppUser: true,
+              };
+            }
+
             const profile = await db.findUserProfileByMatrixId(r.user_id);
             return {
               id: r.user_id,
