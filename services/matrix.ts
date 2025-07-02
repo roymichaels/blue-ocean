@@ -115,13 +115,12 @@ export class MatrixService {
           console.error('Matrix sync error:', data);
 
           // If it's an authentication error during sync, handle it
-          if (
-            data &&
-            data.error &&
-            (data.error.httpStatus === 401 || data.error.httpStatus === 503)
-          ) {
+          if (data && data.error && data.error.httpStatus === 401) {
             console.warn('Matrix sync authentication error, logging out...');
             this.handleAuthenticationError();
+          } else if (data && data.error && data.error.httpStatus === 503) {
+            console.warn('Matrix sync server unavailable, will retry soon');
+            // Do not log out on server unavailability; allow retry
           }
         } else if (state === 'PREPARED') {
           debugLog('Matrix client sync prepared');
