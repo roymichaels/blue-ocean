@@ -22,6 +22,7 @@ import PinataService from '../services/pinata';
 import { ChatMessage, ChatRoom, User } from '../types';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import InfoModal from './InfoModal';
 import UserProfileModal from './UserProfileModal';
 
@@ -47,6 +48,7 @@ export default function ChatWidget() {
   const [searchResults, setSearchResults] = useState<{ id: string; displayName: string; isAppUser: boolean }[]>([]);
   const { isAdmin, isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const recordingTimer = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<ScrollView>(null);
   const matrixService = MatrixService.getInstance();
@@ -111,28 +113,38 @@ export default function ChatWidget() {
   useEffect(() => {
     const fetchResults = async () => {
       if (isAdmin && searchQuery.trim()) {
-        const db = DatabaseService.getInstance();
-        const results = await matrixService.searchUsers(searchQuery.trim());
-        const mapped = await Promise.all(
-          results.map(async (r: any) => {
-            if (r.matrix_user_id) {
-              return {
-                id: r.matrix_user_id,
-                displayName:
-                  r.display_name || r.app_username || r.matrix_user_id,
-                isAppUser: true,
-              };
-            }
+        try {
+          const db = DatabaseService.getInstance();
+          const results = await matrixService.searchUsers(searchQuery.trim());
+          const mapped = await Promise.all(
+            results.map(async (r: any) => {
+              if (r.matrix_user_id) {
+                return {
+                  id: r.matrix_user_id,
+                  displayName:
+                    r.display_name || r.app_username || r.matrix_user_id,
+                  isAppUser: true,
+                };
+              }
 
-            const profile = await db.findUserProfileByMatrixId(r.user_id);
-            return {
-              id: r.user_id,
-              displayName: r.display_name || r.user_id,
-              isAppUser: !!profile,
-            };
-          })
-        );
-        setSearchResults(mapped);
+              const profile = await db.findUserProfileByMatrixId(r.user_id);
+              return {
+                id: r.user_id,
+                displayName: r.display_name || r.user_id,
+                isAppUser: !!profile,
+              };
+            })
+          );
+          setSearchResults(mapped);
+        } catch (error) {
+          console.error('Error searching users:', error);
+          setInfoModal({
+            visible: true,
+            title: t('errors.somethingWentWrong'),
+            message: t('chat.searchFailed'),
+            type: 'error',
+          });
+        }
       } else {
         setSearchResults([]);
       }
