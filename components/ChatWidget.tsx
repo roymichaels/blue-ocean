@@ -123,18 +123,19 @@ export default function ChatWidget() {
 
   const loadOrCreateDefaultRoom = async () => {
     try {
-      // For non-admin users, always use a default room
+      const roomId = await matrixService.getOrCreateAdminRoom();
+
       const defaultRoom = {
-        id: 'default_room',
+        id: roomId,
         userId: user?.id || 'guest_user',
         userName: user?.displayName || 'Guest User',
         lastMessage: 'Welcome to our store!',
         lastMessageTime: Date.now() - 3600000, // 1 hour ago
         unreadCount: 0
       };
-      
+
       setSelectedRoom(defaultRoom);
-      await loadMessages(defaultRoom.id);
+      await loadMessages(roomId);
     } catch (error) {
       console.error('Error creating default room:', error);
       setInfoModal({
@@ -176,8 +177,8 @@ export default function ChatWidget() {
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
-    
-    const roomId = selectedRoom ? selectedRoom.id : 'default_room';
+
+    const roomId = selectedRoom ? selectedRoom.id : await matrixService.getOrCreateAdminRoom();
     
     try {
       // Send message using Matrix service
@@ -300,7 +301,7 @@ export default function ChatWidget() {
         // In a real app, you would upload to Pinata here
         console.log('Voice message recorded:', uri);
         
-        const roomId = selectedRoom ? selectedRoom.id : 'default_room';
+        const roomId = selectedRoom ? selectedRoom.id : await matrixService.getOrCreateAdminRoom();
         const voiceMessage: ChatMessage = {
           id: Date.now().toString(),
           senderId: isAdmin ? (process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin') : (user?.id || 'user_guest'),
@@ -400,7 +401,7 @@ export default function ChatWidget() {
       setShowReactions(null);
       
       // Try to update in Matrix
-      const roomId = selectedRoom?.id || 'default_room';
+      const roomId = selectedRoom?.id || await matrixService.getOrCreateAdminRoom();
       await matrixService.updateChatMessageReactions(roomId, messageId, emoji);
     } catch (error) {
       console.error('Error adding reaction:', error);

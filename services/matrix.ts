@@ -542,6 +542,48 @@ export class MatrixService {
     }
   }
 
+  async getOrCreateAdminRoom(): Promise<string> {
+    try {
+      if (!this.isAuthenticated) {
+        throw new Error('Not authenticated');
+      }
+
+      const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
+      const domain = MATRIX_SERVER_URL.replace(/^https?:\/\//, '');
+      const adminUserId = `@${adminUsername}:${domain}`;
+
+      if (!this.matrixClient) {
+        return 'default_room';
+      }
+
+      const directData = this.matrixClient.getAccountData('m.direct')?.getContent() || {};
+      let roomId: string | undefined = directData[adminUserId]?.[0];
+
+      if (!roomId) {
+        const rooms = this.matrixClient.getRooms();
+        for (const room of rooms) {
+          const isDM = Object.values(directData).some((ids: any) => ids.includes(room.roomId));
+          if (isDM) {
+            const members = room.getJoinedMembers();
+            if (members.some(m => m.userId === adminUserId)) {
+              roomId = room.roomId;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!roomId) {
+        roomId = await this.createRoom(adminUserId);
+      }
+
+      return roomId;
+    } catch (error) {
+      console.error('Error getting or creating admin room:', error);
+      return 'default_room';
+    }
+  }
+
   async getRooms(): Promise<any[]> {
     try {
       if (!this.isAuthenticated) {
