@@ -25,8 +25,6 @@ import { debugLog } from '../utils/logger';
 import { getSanitizedMatrixUrl } from '../utils/matrix';
 
 const AUTH_STORAGE_KEY = 'matrix_auth_state';
-const MATRIX_SERVER_URL =
-  process.env.EXPO_PUBLIC_MATRIX_SERVER || 'https://matrix.org';
 const MATRIX_DOMAIN = getSanitizedMatrixUrl() || 'matrix.org';
 
 export class MatrixService {
