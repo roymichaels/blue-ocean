@@ -542,6 +542,20 @@ export class MatrixService {
     }
   }
 
+  async searchUsers(term: string): Promise<{ user_id: string; display_name?: string }[]> {
+    try {
+      if (!this.matrixClient) {
+        return [];
+      }
+
+      const result = await (this.matrixClient as any).searchUserDirectory({ term, limit: 10 });
+      return result?.results || [];
+    } catch (error) {
+      console.error('Error searching user directory:', error);
+      return [];
+    }
+  }
+
   async getOrCreateAdminRoom(): Promise<string> {
     try {
       if (!this.isAuthenticated) {

@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, Send, X, Minimize2, Search, ChevronLeft, Mic, MicOff, Play, Pause, Smile } from 'lucide-react-native';
 import { Audio } from 'expo-av';
 import { MatrixService } from '../services/matrix';
+import DatabaseService from '../services/database';
 import { ChatMessage, ChatRoom, User } from '../types';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -42,6 +43,7 @@ export default function ChatWidget() {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [playingAudio, setPlayingAudio] = useState<{ [key: string]: Audio.Sound }>({});
   const [showReactions, setShowReactions] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<{ id: string; displayName: string; isAppUser: boolean }[]>([]);
   const { isAdmin, isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const recordingTimer = useRef<NodeJS.Timeout | null>(null);
@@ -102,6 +104,30 @@ export default function ChatWidget() {
       matrixService.removeChatTriggerListener(handleChatTrigger);
     };
   }, [chatRooms, isAdmin]);
+
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (isAdmin && searchQuery.trim()) {
+        const db = DatabaseService.getInstance();
+        const results = await matrixService.searchUsers(searchQuery.trim());
+        const mapped = await Promise.all(
+          results.map(async (r: any) => {
+            const profile = await db.findUserProfileByMatrixId(r.user_id);
+            return {
+              id: r.user_id,
+              displayName: r.display_name || r.user_id,
+              isAppUser: !!profile,
+            };
+          })
+        );
+        setSearchResults(mapped);
+      } else {
+        setSearchResults([]);
+      }
+    };
+
+    fetchResults();
+  }, [searchQuery, isAdmin]);
 
   const loadChatRooms = async () => {
     try {
@@ -173,6 +199,33 @@ export default function ChatWidget() {
   const openChat = async (room: ChatRoom) => {
     setSelectedRoom(room);
     await loadMessages(room.id);
+  };
+
+  const openSearchResult = async (result: { id: string; displayName: string; isAppUser: boolean }) => {
+    try {
+      let room = chatRooms.find(r => r.userId === result.id);
+      let roomId = room?.id;
+
+      if (!roomId) {
+        roomId = await matrixService.createRoom(result.id);
+        room = {
+          id: roomId,
+          userId: result.id,
+          userName: result.displayName,
+          lastMessage: '',
+          lastMessageTime: Date.now(),
+          unreadCount: 0,
+        };
+        setChatRooms(prev => [room!, ...prev]);
+      }
+
+      setSelectedRoom(room!);
+      setSearchQuery('');
+      setSearchResults([]);
+      await loadMessages(roomId);
+    } catch (error) {
+      console.error('Error opening chat with user:', error);
+    }
   };
 
   const sendMessage = async () => {
@@ -574,6 +627,33 @@ export default function ChatWidget() {
     </TouchableOpacity>
   );
 
+  const renderSearchResult = (item: { id: string; displayName: string; isAppUser: boolean }) => (
+    <TouchableOpacity
+      key={item.id}
+      style={[styles.chatRoomItem, {
+        backgroundColor: colors.surface.primary,
+        borderColor: colors.border.primary
+      }]}
+      onPress={() => openSearchResult(item)}
+    >
+      <View style={[styles.userAvatar, { backgroundColor: colors.gold }]}> 
+        <Text style={[styles.userInitial, { color: colors.text.inverse }]}> 
+          {item.displayName ? item.displayName.charAt(0).toUpperCase() : '?'}
+        </Text>
+      </View>
+      <View style={styles.chatRoomInfo}>
+        <View style={styles.chatRoomHeader}>
+          <Text style={[styles.userName, { color: colors.text.primary }]}> 
+            {item.displayName}
+          </Text>
+        </View>
+        <Text style={[styles.userTypeLabel, { color: colors.text.secondary }]}> 
+          {item.isAppUser ? 'App user' : 'Matrix only'}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   const filteredRooms = chatRooms.filter(room =>
     room.userName && room.userName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -670,20 +750,36 @@ export default function ChatWidget() {
                     />
                   </View>
 
-                  {/* Chat Rooms List */}
-                  <ScrollView
-                    style={styles.chatRoomsList}
-                    showsVerticalScrollIndicator={false}
-                  >
-                    {filteredRooms.length > 0 ? (
-                      filteredRooms.map(renderChatRoom)
-                    ) : (
-                      <View style={styles.emptyContainer}>
-                        <MessageCircle size={60} color={colors.interactive.disabled} />
-                        <Text style={[styles.emptyText, { color: colors.text.secondary }]}>לא נמצאו חדרי צ'אט</Text>
-                      </View>
-                    )}
-                  </ScrollView>
+                  {/* Results / Chat Rooms List */}
+                  {searchQuery.trim() ? (
+                    <ScrollView
+                      style={styles.chatRoomsList}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {searchResults.length > 0 ? (
+                        searchResults.map(renderSearchResult)
+                      ) : (
+                        <View style={styles.emptyContainer}>
+                          <MessageCircle size={60} color={colors.interactive.disabled} />
+                          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>לא נמצאו משתמשים</Text>
+                        </View>
+                      )}
+                    </ScrollView>
+                  ) : (
+                    <ScrollView
+                      style={styles.chatRoomsList}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {filteredRooms.length > 0 ? (
+                        filteredRooms.map(renderChatRoom)
+                      ) : (
+                        <View style={styles.emptyContainer}>
+                          <MessageCircle size={60} color={colors.interactive.disabled} />
+                          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>לא נמצאו חדרי צ'אט</Text>
+                        </View>
+                      )}
+                    </ScrollView>
+                  )}
                 </>
               ) : (
                 // Chat Messages View
@@ -1115,5 +1211,8 @@ const styles = StyleSheet.create({
   },
   emptyMessagesSubtext: {
     fontSize: 14,
+  },
+  userTypeLabel: {
+    fontSize: 12,
   },
 });
