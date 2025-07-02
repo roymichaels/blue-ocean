@@ -45,7 +45,7 @@ class DatabaseService {
         name_en: prod.name_en,
         name_he: prod.name_he,
         price: prod.price,
-        originalPrice: (prod as any).original_price ?? undefined,
+        originalPrice: (prod as any).originalPrice ?? undefined,
         description: prod.description,
         description_en: prod.description_en,
         description_he: prod.description_he,
@@ -90,7 +90,7 @@ class DatabaseService {
         name_en: data.name_en,
         name_he: data.name_he,
         price: data.price,
-        originalPrice: (data as any).original_price ?? undefined,
+        originalPrice: (data as any).originalPrice ?? undefined,
         description: data.description,
         description_en: data.description_en,
         description_he: data.description_he,
@@ -118,7 +118,6 @@ class DatabaseService {
     try {
       const dbProduct: any = {
         ...product,
-        original_price: (product as any).originalPrice,
         pricing_tier: (product as any).pricingTier,
         created_at: (product as any).createdAt,
         updated_at: (product as any).updatedAt,
@@ -159,7 +158,6 @@ class DatabaseService {
     try {
       const dbProduct: any = {
         ...product,
-        original_price: (product as any).originalPrice,
         pricing_tier: (product as any).pricingTier,
         updated_at: (product as any).updatedAt,
       };
@@ -1307,7 +1305,7 @@ class DatabaseService {
           name_en: item.product.name_en,
           name_he: item.product.name_he,
           price: item.product.price,
-          originalPrice: item.product.original_price ?? undefined,
+          originalPrice: item.product.originalPrice ?? undefined,
           description: item.product.description,
           description_en: item.product.description_en,
           description_he: item.product.description_he,

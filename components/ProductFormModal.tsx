@@ -243,21 +243,6 @@ export default function ProductFormModal({
               />
             </View>
 
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר מקורי (אופציונלי)</Text>
-              <TextInput
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={editingProduct.originalPrice?.toString() || ''}
-                onChangeText={text => setEditingProduct({ ...editingProduct, originalPrice: parseFloat(text) || undefined })}
-                placeholder="הכנס מחיר מקורי"
-                keyboardType="numeric"
-                textAlign="right"
-              />
-            </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>מדרג מחירים *</Text>
