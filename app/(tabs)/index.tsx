@@ -20,7 +20,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Heart, Plus, Pencil, X, Save, Trash2, Filter, ArrowUpDown } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import PinataService from '../../services/pinata';
-import { Product, Category, HeroBanner, Subcategory, MixGroup } from '../../types';
+import { Product, Category, HeroBanner } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -30,6 +30,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import MediaUploader from '../../components/MediaUploader';
 import CartModal from '../../components/CartModal';
+import ProductFormModal from '../../components/ProductFormModal';
 
 // Enable RTL for Hebrew
 I18nManager.allowRTL(true);
@@ -50,8 +51,6 @@ export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [mixGroups, setMixGroups] = useState<MixGroup[]>([]);
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
@@ -71,26 +70,9 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'rating'>('newest');
   const [showSortModal, setShowSortModal] = useState(false);
-  const [showProductModal, setShowProductModal] = useState(false);
+  const [productFormVisible, setProductFormVisible] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
-  const [showSubcategorySelector, setShowSubcategorySelector] = useState(false);
-  const [showMixGroupSelector, setShowMixGroupSelector] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [newProduct, setNewProduct] = useState<Partial<Product>>({
-    name: '',
-    price: 0,
-    description: '',
-    category: '',
-    subcategory: '',
-    mixGroupId: '',
-    images: [],
-    videos: [],
-    stock: 0,
-    rating: 0,
-    reviews: 0,
-    badges: []
-  });
-  const [productMedia, setProductMedia] = useState<MediaItem[]>([]);
   const [showCartModal, setShowCartModal] = useState(false);
   const { isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -134,26 +116,14 @@ export default function HomeScreen() {
     try {
       setLoading(true);
       const db = DatabaseService.getInstance();
-      const [productsData, categoriesData, bannersData, mixGroupsData] = await Promise.all([
+      const [productsData, categoriesData, bannersData] = await Promise.all([
         db.getProducts(),
         db.getCategories(),
-        db.getHeroBanners(),
-        db.getMixGroups()
+        db.getHeroBanners()
       ]);
       setProducts(productsData);
       setCategories(categoriesData);
-      
-      // Extract all subcategories from categories
-      const allSubcategories: Subcategory[] = [];
-      categoriesData.forEach(category => {
-        if (category.subcategories && category.subcategories.length > 0) {
-          allSubcategories.push(...category.subcategories);
-        }
-      });
-      setSubcategories(allSubcategories);
-      
       setHeroBanners(bannersData);
-      setMixGroups(mixGroupsData);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -305,154 +275,32 @@ export default function HomeScreen() {
   };
 
   const addProduct = () => {
-    setEditingProduct(null);
-    setNewProduct({
-      name: '',
-      price: 0,
-      description: '',
-      category: '',
-      subcategory: '',
-      mixGroupId: '',
-      images: [],
-      videos: [],
-      stock: 0,
-      rating: 0,
-      reviews: 0,
-      badges: []
-    });
-    setProductMedia([]);
-    setShowProductModal(true);
+    setProductToEdit(null);
+    setProductFormVisible(true);
   };
 
   const editProduct = (product: Product) => {
-    setEditingProduct(product);
-    setNewProduct({...product});
-    // Convert existing images and videos to media format
-    const media: MediaItem[] = [];
-    
-    product.images?.forEach((uri, index) => {
-      media.push({
-        id: `image_${index}`,
-        uri,
-        type: 'image',
-        name: `Image ${index + 1}`
-      });
-    });
-    
-    product.videos?.forEach((uri, index) => {
-      media.push({
-        id: `video_${index}`,
-        uri,
-        type: 'video',
-        name: `Video ${index + 1}`
-      });
-    });
-    
-    setProductMedia(media);
-    setShowProductModal(true);
-  };
-
-  const saveProduct = async () => {
-    if (!newProduct.name || !newProduct.description || !newProduct.price || newProduct.price <= 0) {
-      Alert.alert('שגיאה', 'אנא מלא את כל השדות הנדרשים');
-      return;
-    }
-
-    if (productMedia.length === 0) {
-      Alert.alert('שגיאה', 'אנא העלה לפחות תמונת מוצר אחת');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const db = DatabaseService.getInstance();
-      const productData = {
-        ...newProduct,
-        images: productMedia.filter(m => m.type === 'image').map(m => m.uri),
-        videos: productMedia.filter(m => m.type === 'video').map(m => m.uri)
-      };
-      
-      if (editingProduct) {
-        // Update existing product
-        await db.updateProduct(editingProduct.id, productData);
-        setProducts(prev => prev.map(p => p.id === editingProduct.id ? {...p, ...productData} : p));
-      } else {
-        // Add new product
-        const productId = await db.addProduct(productData as Omit<Product, 'id'>);
-        const addedProduct = {...productData, id: productId} as Product;
-        setProducts(prev => [...prev, addedProduct]);
-      }
-      
-      setShowProductModal(false);
-      Alert.alert('הצלחה', 'המוצר נשמר בהצלחה');
-    } catch (error) {
-      console.error('Error saving product:', error);
-      Alert.alert('שגיאה', 'שמירת המוצר נכשלה');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteProduct = async () => {
-    if (!editingProduct) return;
-
-    Alert.alert(
-      'אישור מחיקה',
-      'האם אתה בטוח שברצונך למחוק את המוצר?',
-      [
-        {
-          text: 'ביטול',
-          style: 'cancel',
-        },
-        {
-          text: 'מחק',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const db = DatabaseService.getInstance();
-              await db.deleteProduct(editingProduct.id);
-              setProducts(prev => prev.filter(p => p.id !== editingProduct.id));
-              setShowProductModal(false);
-              Alert.alert('הצלחה', 'המוצר נמחק בהצלחה');
-            } catch (error) {
-              console.error('Error deleting product:', error);
-              Alert.alert('שגיאה', 'מחיקת המוצר נכשלה');
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+    setProductToEdit(product);
+    setProductFormVisible(true);
   };
 
   const selectCategory = (category: string) => {
     if (showBannerModal) {
-      setNewBanner({...newBanner, category});
-    } else if (showProductModal) {
-      setNewProduct({...newProduct, category, subcategory: ''});
+      setNewBanner({ ...newBanner, category });
     }
     setShowCategorySelector(false);
   };
 
-  const selectSubcategory = (subcategory: string) => {
-    if (showProductModal) {
-      setNewProduct({...newProduct, subcategory});
+  const handleProductSaved = (p: Product, isNew: boolean) => {
+    if (isNew) {
+      setProducts(prev => [...prev, p]);
+    } else {
+      setProducts(prev => prev.map(prod => (prod.id === p.id ? p : prod)));
     }
-    setShowSubcategorySelector(false);
   };
 
-  const selectMixGroup = (groupId: string) => {
-    if (showProductModal) {
-      setNewProduct({ ...newProduct, mixGroupId: groupId });
-    }
-    setShowMixGroupSelector(false);
-  };
-
-  const getFilteredSubcategories = () => {
-    if (!newProduct.category) return [];
-    return subcategories.filter(sub => sub.categoryId === newProduct.category);
+  const handleProductDeleted = (id: string) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
   };
 
   const renderCategory = ({ item }: { item: Category }) => (
@@ -855,233 +703,13 @@ export default function HomeScreen() {
         </SafeAreaView>
       </Modal>
 
-      {/* Product Edit/Add Modal */}
-      <Modal
-        visible={showProductModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowProductModal(false)}
-      >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-          <View style={[styles.modalHeader, { 
-            borderBottomColor: colors.border.primary 
-          }]}>
-            <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-              {editingProduct ? t('product.editProduct') : 'הוספת מוצר חדש'}
-            </Text>
-            <TouchableOpacity onPress={() => setShowProductModal(false)}>
-              <X size={24} color={colors.text.primary} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.modalContent}>
-            <MediaUploader
-              media={productMedia}
-              onMediaChange={setProductMedia}
-              maxFiles={6}
-              allowVideos={true}
-            />
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם המוצר *</Text>
-              <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newProduct.name}
-                onChangeText={(text) => setNewProduct({...newProduct, name: text})}
-                placeholder="הכנס שם מוצר"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר *</Text>
-              <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newProduct.price?.toString()}
-                onChangeText={(text) => setNewProduct({...newProduct, price: parseFloat(text) || 0})}
-                placeholder="הכנס מחיר"
-                keyboardType="numeric"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר מקורי (אופציונלי)</Text>
-              <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newProduct.originalPrice?.toString() || ''}
-                onChangeText={(text) => setNewProduct({...newProduct, originalPrice: parseFloat(text) || undefined})}
-                placeholder="הכנס מחיר מקורי"
-                keyboardType="numeric"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תיאור *</Text>
-              <TextInput
-                style={[styles.formInput, styles.textArea, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newProduct.description}
-                onChangeText={(text) => setNewProduct({...newProduct, description: text})}
-                placeholder="הכנס תיאור מוצר"
-                multiline
-                numberOfLines={4}
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>קטגוריה *</Text>
-              <TouchableOpacity 
-                style={[styles.categorySelector, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary 
-                }]}
-                onPress={() => setShowCategorySelector(true)}
-              >
-                <Text style={[
-                  styles.categorySelectorText,
-                  { color: newProduct.category ? colors.text.primary : colors.text.tertiary }
-                ]}>
-                  {newProduct.category ? 
-                    categories.find(c => c.id === newProduct.category)?.name || newProduct.category 
-                    : "בחר קטגוריה"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תת-קטגוריה (אופציונלי)</Text>
-              <TouchableOpacity 
-                style={[styles.categorySelector, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary 
-                }]}
-                onPress={() => {
-                  if (newProduct.category) {
-                    setShowSubcategorySelector(true);
-                  } else {
-                    Alert.alert('שגיאה', 'אנא בחר קטגוריה תחילה');
-                  }
-                }}
-              >
-                <Text style={[
-                  styles.categorySelectorText,
-                  { color: newProduct.subcategory ? colors.text.primary : colors.text.tertiary }
-                ]}>
-                  {newProduct.subcategory ? 
-                    subcategories.find(s => s.id === newProduct.subcategory)?.name || newProduct.subcategory 
-                    : "בחר תת-קטגוריה"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>קבוצת מיקס (אופציונלי)</Text>
-              <TouchableOpacity
-                style={[styles.categorySelector, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary
-                }]}
-                onPress={() => setShowMixGroupSelector(true)}
-              >
-                <Text style={[
-                  styles.categorySelectorText,
-                  { color: newProduct.mixGroupId ? colors.text.primary : colors.text.tertiary }
-                ]}>
-                  {newProduct.mixGroupId ?
-                    mixGroups.find(g => g.id === newProduct.mixGroupId)?.name || newProduct.mixGroupId
-                    : "בחר קבוצת מיקס"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מלאי *</Text>
-              <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newProduct.stock?.toString()}
-                onChangeText={(text) => setNewProduct({...newProduct, stock: parseInt(text) || 0})}
-                placeholder="הכנס כמות במלאי"
-                keyboardType="numeric"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תגיות (אופציונלי)</Text>
-              <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary 
-                }]}
-                value={newProduct.badges?.join(', ')}
-                onChangeText={(text) => {
-                  const badges = text.split(',').map(b => b.trim()).filter(b => b);
-                  setNewProduct({...newProduct, badges});
-                }}
-                placeholder="הכנס תגיות מופרדות בפסיקים (למשל: חדש, מבצע, מומלץ)"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity 
-                style={[styles.saveButton, { backgroundColor: colors.gold }]}
-                onPress={saveProduct}
-                disabled={loading}
-              >
-                {loading ? (
-                  <LoadingSpinner size="small" color={colors.text.inverse} style={styles.buttonSpinner} />
-                ) : (
-                  <>
-                    <Save size={20} color={colors.text.inverse} />
-                    <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>שמור מוצר</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-
-              {editingProduct && (
-                <TouchableOpacity 
-                  style={[styles.deleteButton, { backgroundColor: colors.status.error }]}
-                  onPress={deleteProduct}
-                  disabled={loading}
-                >
-                  <Trash2 size={20} color={colors.text.inverse} />
-                  <Text style={[styles.deleteButtonText, { color: colors.text.inverse }]}>מחק מוצר</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
+      <ProductFormModal
+        visible={productFormVisible}
+        onClose={() => setProductFormVisible(false)}
+        product={productToEdit ?? undefined}
+        onSaved={handleProductSaved}
+        onDeleted={handleProductDeleted}
+      />
 
       {/* Category Selector Modal */}
       <Modal
@@ -1138,107 +766,6 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      {/* Subcategory Selector Modal */}
-      <Modal
-        visible={showSubcategorySelector}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowSubcategorySelector(false)}
-      >
-        <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.categorySelectorContent, { 
-            backgroundColor: colors.surface.elevated,
-            borderColor: colors.border.primary 
-          }]}>
-            <View style={styles.categorySelectorHeader}>
-              <Text style={[styles.categorySelectorTitle, { color: colors.text.primary }]}>בחר תת-קטגוריה</Text>
-              <TouchableOpacity onPress={() => setShowSubcategorySelector(false)}>
-                <X size={24} color={colors.text.primary} />
-              </TouchableOpacity>
-            </View>
-            
-            <ScrollView style={styles.categorySelectorList}>
-              {getFilteredSubcategories().map((subcategory) => (
-                <TouchableOpacity
-                  key={subcategory.id}
-                  style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]}
-                  onPress={() => selectSubcategory(subcategory.id)}
-                >
-                  <View style={styles.categorySelectorItemContent}>
-                    <Text style={styles.categorySelectorItemIcon}>{subcategory.icon}</Text>
-                    <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{subcategory.name}</Text>
-                  </View>
-                  <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{subcategory.id}</Text>
-                </TouchableOpacity>
-              ))}
-              
-              {getFilteredSubcategories().length === 0 && (
-                <View style={styles.emptySubcategories}>
-                  <Text style={[styles.emptySubcategoriesText, { color: colors.text.secondary }]}>
-                    אין תת-קטגוריות לקטגוריה זו
-                  </Text>
-                </View>
-              )}
-              
-              {/* Add new subcategory option */}
-              <TouchableOpacity
-                style={[styles.categorySelectorItem, { 
-                  borderBottomColor: colors.border.secondary,
-                  backgroundColor: colors.interactive.secondary
-                }]}
-                onPress={() => {
-                  setShowSubcategorySelector(false);
-                  if (newProduct.category) {
-                    router.push(`/category/${newProduct.category}`);
-                  }
-                }}
-              >
-                <View style={styles.categorySelectorItemContent}>
-                  <Plus size={20} color={colors.gold} />
-                  <Text style={[styles.categorySelectorItemText, { color: colors.gold }]}>הוסף תת-קטגוריה חדשה</Text>
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Mix Group Selector Modal */}
-      <Modal
-        visible={showMixGroupSelector}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowMixGroupSelector(false)}
-      >
-        <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.categorySelectorContent, {
-            backgroundColor: colors.surface.elevated,
-            borderColor: colors.border.primary
-          }]}>
-            <View style={styles.categorySelectorHeader}>
-              <Text style={[styles.categorySelectorTitle, { color: colors.text.primary }]}>בחר קבוצת מיקס</Text>
-              <TouchableOpacity onPress={() => setShowMixGroupSelector(false)}>
-                <X size={24} color={colors.text.primary} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.categorySelectorList}>
-              {mixGroups.map(group => (
-                <TouchableOpacity
-                  key={group.id}
-                  style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]}
-                  onPress={() => selectMixGroup(group.id)}
-                >
-                  <View style={styles.categorySelectorItemContent}>
-                    <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{group.name}</Text>
-                  </View>
-                  <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{group.id}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
 
       {/* Sort Modal */}
       <Modal
