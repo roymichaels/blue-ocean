@@ -1,4 +1,11 @@
-import { createClient, MatrixClient, MatrixEvent, Room, RoomMember, MemoryStore } from 'matrix-js-sdk';
+import {
+  createClient,
+  MatrixClient,
+  MatrixEvent,
+  Room,
+  RoomMember,
+  MemoryStore,
+} from 'matrix-js-sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import { ChatMessage, User } from '../types';
@@ -7,8 +14,9 @@ import { debugLog } from '../utils/logger';
 import { getSanitizedMatrixUrl } from '../utils/matrix';
 
 const AUTH_STORAGE_KEY = 'matrix_auth_state';
-const MATRIX_SERVER_URL = process.env.EXPO_PUBLIC_MATRIX_SERVER || 'https://matrix.org';
-const MATRIX_DOMAIN = getSanitizedMatrixUrl() || 'matrix.org';
+const MATRIX_SERVER_URL =
+  process.env.EXPO_PUBLIC_MATRIX_SERVER || 'https://envs.net';
+const MATRIX_DOMAIN = getSanitizedMatrixUrl() || 'envs.net';
 
 export class MatrixService {
   private static instance: MatrixService;
@@ -37,12 +45,15 @@ export class MatrixService {
         const authData = JSON.parse(storedAuth);
         this.isAuthenticated = authData.isAuthenticated;
         this.currentUser = authData.currentUser;
-        
+
         // Initialize Matrix client if authenticated
         if (this.isAuthenticated && authData.accessToken) {
-          await this.initializeMatrixClient(authData.accessToken, authData.userId);
+          await this.initializeMatrixClient(
+            authData.accessToken,
+            authData.userId
+          );
         }
-        
+
         // Notify listeners about restored auth state
         this.notifyListeners();
       }
@@ -53,7 +64,10 @@ export class MatrixService {
     }
   }
 
-  private async initializeMatrixClient(accessToken: string, userId: string): Promise<void> {
+  private async initializeMatrixClient(
+    accessToken: string,
+    userId: string
+  ): Promise<void> {
     try {
       // Create Matrix client with proper MemoryStore
       this.matrixClient = createClient({
@@ -69,7 +83,7 @@ export class MatrixService {
 
       // Start the client with consistent sync settings across platforms
       const startOptions = { initialSyncLimit: 20 };
-        
+
       await this.matrixClient.startClient(startOptions);
     } catch (error) {
       console.error('Error initializing Matrix client:', error);
@@ -85,7 +99,7 @@ export class MatrixService {
     // Listen for authentication errors
     this.matrixClient.on('Client.error', (error: any) => {
       console.error('Matrix client error:', error);
-      
+
       // Check if it's an authentication error (401)
       if (error && error.httpStatus === 401) {
         console.warn('Matrix token is invalid, logging out...');
@@ -94,19 +108,26 @@ export class MatrixService {
     });
 
     // Listen for sync errors specifically
-    this.matrixClient.on('sync', (state: string, prevState: string, data: any) => {
-      if (state === 'ERROR') {
-        console.error('Matrix sync error:', data);
-        
-        // If it's an authentication error during sync, handle it
-        if (data && data.error && (data.error.httpStatus === 401 || data.error.httpStatus === 503)) {
-          console.warn('Matrix sync authentication error, logging out...');
-          this.handleAuthenticationError();
+    this.matrixClient.on(
+      'sync',
+      (state: string, prevState: string, data: any) => {
+        if (state === 'ERROR') {
+          console.error('Matrix sync error:', data);
+
+          // If it's an authentication error during sync, handle it
+          if (
+            data &&
+            data.error &&
+            (data.error.httpStatus === 401 || data.error.httpStatus === 503)
+          ) {
+            console.warn('Matrix sync authentication error, logging out...');
+            this.handleAuthenticationError();
+          }
+        } else if (state === 'PREPARED') {
+          debugLog('Matrix client sync prepared');
         }
-      } else if (state === 'PREPARED') {
-        debugLog('Matrix client sync prepared');
       }
-    });
+    );
 
     // Listen for new messages
     this.matrixClient.on('Room.timeline', (event: MatrixEvent, room: Room) => {
@@ -118,15 +139,18 @@ export class MatrixService {
     });
 
     // Listen for room member changes
-    this.matrixClient.on('RoomMember.membership', (event: MatrixEvent, member: RoomMember) => {
-      // Handle membership changes
-    });
+    this.matrixClient.on(
+      'RoomMember.membership',
+      (event: MatrixEvent, member: RoomMember) => {
+        // Handle membership changes
+      }
+    );
   }
 
   private async handleAuthenticationError(): Promise<void> {
     try {
       debugLog('Handling authentication error - clearing auth state');
-      
+
       // Stop the Matrix client if it exists
       if (this.matrixClient) {
         this.matrixClient.stopClient();
@@ -136,10 +160,10 @@ export class MatrixService {
       // Clear authentication state
       this.isAuthenticated = false;
       this.currentUser = null;
-      
+
       // Clear persistent storage
       await this.clearAuthStorage();
-      
+
       // Notify listeners about the logout
       this.notifyListeners();
     } catch (error) {
@@ -147,14 +171,17 @@ export class MatrixService {
     }
   }
 
-  private async saveAuthState(accessToken?: string, userId?: string): Promise<void> {
+  private async saveAuthState(
+    accessToken?: string,
+    userId?: string
+  ): Promise<void> {
     try {
       const authData = {
         isAuthenticated: this.isAuthenticated,
         currentUser: this.currentUser,
         accessToken,
         userId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
     } catch (error) {
@@ -186,8 +213,8 @@ export class MatrixService {
           body: JSON.stringify({
             username,
             password,
-            auth: { type: 'm.login.dummy' }
-          })
+            auth: { type: 'm.login.dummy' },
+          }),
         }
       );
 
@@ -218,8 +245,8 @@ export class MatrixService {
           display_name: displayName,
           role: 'user',
           kyc_status: 'none',
-          customer_tier: 'new'
-        }
+          customer_tier: 'new',
+        },
       ]);
 
       if (error) {
@@ -235,7 +262,7 @@ export class MatrixService {
         isAdmin: false,
         displayName,
         role: 'user',
-        email
+        email,
       };
 
       await this.saveAuthState(accessToken, userId);
@@ -251,7 +278,8 @@ export class MatrixService {
   async login(username: string, password: string): Promise<boolean> {
     try {
       // Check if this is the admin user first
-      const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
+      const adminUsername =
+        process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
       const isAdmin = username === adminUsername;
 
       // For admin users, we'll create a simulated Matrix user if Matrix login fails
@@ -280,10 +308,12 @@ export class MatrixService {
         await this.initializeMatrixClient(accessToken, userId);
       } catch (matrixError) {
         console.warn('Matrix login failed:', matrixError);
-        
+
         // If Matrix login fails but this is an admin user, we'll proceed with local auth
         if (isAdmin) {
-          console.warn('Matrix login failed for admin user, proceeding with local authentication');
+          console.warn(
+            'Matrix login failed for admin user, proceeding with local authentication'
+          );
           // Generate a simulated Matrix user ID for consistency
           userId = `@${username}:${MATRIX_DOMAIN}`;
           matrixLoginSuccess = false; // We'll work without Matrix client
@@ -299,9 +329,10 @@ export class MatrixService {
           .from('user_profiles')
           .select('*')
           .eq('matrix_user_id', userId);
-        
-        const existingProfile = userProfiles && userProfiles.length > 0 ? userProfiles[0] : null;
-        
+
+        const existingProfile =
+          userProfiles && userProfiles.length > 0 ? userProfiles[0] : null;
+
         if (existingProfile) {
           // User exists in database, check if they're admin
           if (existingProfile.role !== 'admin') {
@@ -313,7 +344,7 @@ export class MatrixService {
             }
             return false;
           }
-          
+
           // Set authentication state
           this.isAuthenticated = true;
           this.currentUser = {
@@ -321,7 +352,7 @@ export class MatrixService {
             username,
             isAdmin: isAdmin || existingProfile.role === 'admin',
             displayName: existingProfile.display_name,
-            role: existingProfile.role
+            role: existingProfile.role,
           };
 
           // Save auth state to persistent storage
@@ -334,17 +365,17 @@ export class MatrixService {
           // User doesn't exist in database
           if (isAdmin) {
             // For admin users, create the profile
-            const { error } = await supabase
-              .from('user_profiles')
-              .insert([{
+            const { error } = await supabase.from('user_profiles').insert([
+              {
                 matrix_user_id: userId,
                 app_username: username,
                 email: `${username}@example.com`,
                 display_name: username,
                 role: 'admin',
                 kyc_status: 'none',
-                customer_tier: 'new'
-              }]);
+                customer_tier: 'new',
+              },
+            ]);
 
             if (error) {
               console.error('Error creating admin profile:', error);
@@ -358,7 +389,7 @@ export class MatrixService {
               username,
               isAdmin: true,
               displayName: username,
-              role: 'admin'
+              role: 'admin',
             };
 
             // Save auth state to persistent storage
@@ -394,10 +425,10 @@ export class MatrixService {
       // Clear authentication state
       this.isAuthenticated = false;
       this.currentUser = null;
-      
+
       // Clear persistent storage
       await this.clearAuthStorage();
-      
+
       // Notify listeners
       this.notifyListeners();
     } catch (error) {
@@ -418,12 +449,18 @@ export class MatrixService {
     return this.currentUser?.isAdmin || false;
   }
 
-  addAuthStateListener(listener: (isLoggedIn: boolean, user: any) => void): void {
+  addAuthStateListener(
+    listener: (isLoggedIn: boolean, user: any) => void
+  ): void {
     this.authStateListeners.push(listener);
   }
 
-  removeAuthStateListener(listener: (isLoggedIn: boolean, user: any) => void): void {
-    this.authStateListeners = this.authStateListeners.filter(l => l !== listener);
+  removeAuthStateListener(
+    listener: (isLoggedIn: boolean, user: any) => void
+  ): void {
+    this.authStateListeners = this.authStateListeners.filter(
+      (l) => l !== listener
+    );
   }
 
   private notifyListeners(): void {
@@ -438,7 +475,9 @@ export class MatrixService {
   }
 
   removeChatTriggerListener(listener: (userId: string) => void): void {
-    this.chatTriggerListeners = this.chatTriggerListeners.filter(l => l !== listener);
+    this.chatTriggerListeners = this.chatTriggerListeners.filter(
+      (l) => l !== listener
+    );
   }
 
   triggerChatOpen(userId: string): void {
@@ -458,7 +497,7 @@ export class MatrixService {
         if (!roomId) {
           roomId = 'default_room';
         }
-        
+
         // Create a simulated message
         const simulatedMessage = {
           id: Date.now().toString(),
@@ -466,9 +505,9 @@ export class MatrixService {
           senderName: this.currentUser?.displayName || 'Guest User',
           message,
           timestamp: Date.now(),
-          isAdmin: this.isAdmin()
+          isAdmin: this.isAdmin(),
         };
-        
+
         // For demo purposes, we'll just return success
         debugLog('Simulated message sent:', simulatedMessage);
         return true;
@@ -512,10 +551,10 @@ export class MatrixService {
             type: 'm.room.guest_access',
             state_key: '',
             content: {
-              guest_access: 'forbidden'
-            }
-          }
-        ]
+              guest_access: 'forbidden',
+            },
+          },
+        ],
       });
 
       const roomId = response.room_id;
@@ -545,13 +584,18 @@ export class MatrixService {
     }
   }
 
-  async searchUsers(term: string): Promise<{ user_id: string; display_name?: string }[]> {
+  async searchUsers(
+    term: string
+  ): Promise<{ user_id: string; display_name?: string }[]> {
     try {
       if (!this.matrixClient) {
         return [];
       }
 
-      const result = await (this.matrixClient as any).searchUserDirectory({ term, limit: 10 });
+      const result = await (this.matrixClient as any).searchUserDirectory({
+        term,
+        limit: 10,
+      });
       return result?.results || [];
     } catch (error) {
       console.error('Error searching user directory:', error);
@@ -559,7 +603,9 @@ export class MatrixService {
     }
   }
 
-  async getProfileInfo(userId: string): Promise<{ displayname?: string; avatar_url?: string } | null> {
+  async getProfileInfo(
+    userId: string
+  ): Promise<{ displayname?: string; avatar_url?: string } | null> {
     try {
       if (!this.matrixClient) {
         return null;
@@ -579,23 +625,27 @@ export class MatrixService {
         throw new Error('Not authenticated');
       }
 
-      const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
+      const adminUsername =
+        process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
       const adminUserId = `@${adminUsername}:${MATRIX_DOMAIN}`;
 
       if (!this.matrixClient) {
         return 'default_room';
       }
 
-      const directData = this.matrixClient.getAccountData('m.direct')?.getContent() || {};
+      const directData =
+        this.matrixClient.getAccountData('m.direct')?.getContent() || {};
       let roomId: string | undefined = directData[adminUserId]?.[0];
 
       if (!roomId) {
         const rooms = this.matrixClient.getRooms();
         for (const room of rooms) {
-          const isDM = Object.values(directData).some((ids: any) => ids.includes(room.roomId));
+          const isDM = Object.values(directData).some((ids: any) =>
+            ids.includes(room.roomId)
+          );
           if (isDM) {
             const members = room.getJoinedMembers();
-            if (members.some(m => m.userId === adminUserId)) {
+            if (members.some((m) => m.userId === adminUserId)) {
               roomId = room.roomId;
               break;
             }
@@ -629,50 +679,57 @@ export class MatrixService {
             userName: 'Admin',
             lastMessage: 'Welcome to our store!',
             lastMessageTime: Date.now() - 3600000, // 1 hour ago
-            unreadCount: 0
-          }
+            unreadCount: 0,
+          },
         ];
       }
 
       // Get rooms from Matrix client
       const rooms = this.matrixClient.getRooms();
-      
+
       // Filter for direct message rooms
-      const dmRooms = rooms.filter(room => {
-        const isDM = this.matrixClient?.getAccountData('m.direct')?.getContent() || {};
-        return Object.values(isDM).some((roomIds: any) => roomIds.includes(room.roomId));
+      const dmRooms = rooms.filter((room) => {
+        const isDM =
+          this.matrixClient?.getAccountData('m.direct')?.getContent() || {};
+        return Object.values(isDM).some((roomIds: any) =>
+          roomIds.includes(room.roomId)
+        );
       });
 
       // Format rooms for the app
-      const formattedRooms = await Promise.all(dmRooms.map(async (room) => {
-        // Get the other user in the DM
-        const otherMembers = room.getJoinedMembers().filter(
-          member => member.userId !== this.currentUser.id
-        );
-        const otherUser = otherMembers.length > 0 ? otherMembers[0] : null;
-        
-        // Get the last message
-        const events = room.getLiveTimeline().getEvents();
-        const lastEvent = events.length > 0 ? events[events.length - 1] : null;
-        
-        // Get unread count
-        const unreadCount = room.getUnreadNotificationCount('highlight') + 
-                           room.getUnreadNotificationCount('notification');
-        
-        return {
-          id: room.roomId,
-          userId: otherUser?.userId || 'unknown',
-          userName: otherUser?.name || 'Unknown User',
-          lastMessage: lastEvent?.getContent()?.body || 'No messages yet',
-          lastMessageTime: lastEvent?.getTs() || Date.now(),
-          unreadCount
-        };
-      }));
+      const formattedRooms = await Promise.all(
+        dmRooms.map(async (room) => {
+          // Get the other user in the DM
+          const otherMembers = room
+            .getJoinedMembers()
+            .filter((member) => member.userId !== this.currentUser.id);
+          const otherUser = otherMembers.length > 0 ? otherMembers[0] : null;
+
+          // Get the last message
+          const events = room.getLiveTimeline().getEvents();
+          const lastEvent =
+            events.length > 0 ? events[events.length - 1] : null;
+
+          // Get unread count
+          const unreadCount =
+            room.getUnreadNotificationCount('highlight') +
+            room.getUnreadNotificationCount('notification');
+
+          return {
+            id: room.roomId,
+            userId: otherUser?.userId || 'unknown',
+            userName: otherUser?.name || 'Unknown User',
+            lastMessage: lastEvent?.getContent()?.body || 'No messages yet',
+            lastMessageTime: lastEvent?.getTs() || Date.now(),
+            unreadCount,
+          };
+        })
+      );
 
       return formattedRooms;
     } catch (error) {
       console.error('Get rooms error:', error);
-      
+
       // Return simulated rooms for demo
       return [
         {
@@ -681,8 +738,8 @@ export class MatrixService {
           userName: 'Admin',
           lastMessage: 'Welcome to our store!',
           lastMessageTime: Date.now() - 3600000, // 1 hour ago
-          unreadCount: 0
-        }
+          unreadCount: 0,
+        },
       ];
     }
   }
@@ -702,8 +759,8 @@ export class MatrixService {
             senderName: 'Admin',
             message: 'Welcome to our store! How can I help you today?',
             timestamp: Date.now() - 3600000, // 1 hour ago
-            isAdmin: true
-          }
+            isAdmin: true,
+          },
         ];
       }
 
@@ -714,7 +771,7 @@ export class MatrixService {
         try {
           await this.matrixClient.joinRoom(roomId);
           // Wait for the room to be properly joined and synced
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           // Try to get the room again
           const joinedRoom = this.matrixClient.getRoom(roomId);
           if (!joinedRoom) {
@@ -731,28 +788,28 @@ export class MatrixService {
               senderName: 'Admin',
               message: 'Welcome to our store! How can I help you today?',
               timestamp: Date.now() - 3600000, // 1 hour ago
-              isAdmin: true
-            }
+              isAdmin: true,
+            },
           ];
         }
       }
 
       // Get timeline events from the room
       const timelineEvents = room.getLiveTimeline().getEvents();
-      
+
       // Convert Matrix events to ChatMessage format
       const messages: ChatMessage[] = timelineEvents
-        .filter(event => event.getType() === 'm.room.message')
-        .map(event => {
+        .filter((event) => event.getType() === 'm.room.message')
+        .map((event) => {
           const sender = room.getMember(event.getSender() || '');
           const content = event.getContent();
           const isAdmin = this.isUserAdmin(event.getSender() || '');
-          
+
           // Handle different message types
           let message = '';
           let audioUri = undefined;
           let audioDuration = undefined;
-          
+
           if (content.msgtype === 'm.audio') {
             // Audio message
             audioUri = content.url;
@@ -762,7 +819,7 @@ export class MatrixService {
             // Text message
             message = content.body || '';
           }
-          
+
           return {
             id: event.getId() || Date.now().toString(),
             senderId: event.getSender() || '',
@@ -772,13 +829,13 @@ export class MatrixService {
             isAdmin,
             audioUri,
             audioDuration,
-            reactions: this.getReactionsForEvent(room, event)
+            reactions: this.getReactionsForEvent(room, event),
           };
         });
-      
+
       // Sort messages by timestamp
       messages.sort((a, b) => a.timestamp - b.timestamp);
-      
+
       return messages;
     } catch (error) {
       console.error('Error getting chat messages from Matrix:', error);
@@ -790,29 +847,30 @@ export class MatrixService {
           senderName: 'Admin',
           message: 'Welcome to our store! How can I help you today?',
           timestamp: Date.now() - 3600000, // 1 hour ago
-          isAdmin: true
-        }
+          isAdmin: true,
+        },
       ];
     }
   }
-  
-  private getReactionsForEvent(room: Room, event: MatrixEvent): Record<string, string[]> {
+
+  private getReactionsForEvent(
+    room: Room,
+    event: MatrixEvent
+  ): Record<string, string[]> {
     const reactions: Record<string, string[]> = {};
-    
+
     // Get all m.reaction events that relate to this event
-    const relatedEvents = room.getUnfilteredTimelineSet().getRelationsForEvent(
-      event.getId() || '',
-      'm.annotation',
-      'm.reaction'
-    );
-    
+    const relatedEvents = room
+      .getUnfilteredTimelineSet()
+      .getRelationsForEvent(event.getId() || '', 'm.annotation', 'm.reaction');
+
     if (relatedEvents) {
       // Group reactions by emoji
-      relatedEvents.getAnnotations().forEach(annotation => {
+      relatedEvents.getAnnotations().forEach((annotation) => {
         const content = annotation.getContent();
         const key = content['m.relates_to']?.key;
         const sender = annotation.getSender();
-        
+
         if (key && sender) {
           if (!reactions[key]) {
             reactions[key] = [];
@@ -823,18 +881,23 @@ export class MatrixService {
         }
       });
     }
-    
+
     return reactions;
   }
-  
+
   private isUserAdmin(userId: string): boolean {
     // Check if the user is an admin
     // This could be based on a role in your user database or a specific Matrix user ID pattern
-    const adminUsername = process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
+    const adminUsername =
+      process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'roymichaels';
     return userId.includes(adminUsername);
   }
 
-  async updateChatMessageReactions(roomId: string, eventId: string, emoji: string): Promise<boolean> {
+  async updateChatMessageReactions(
+    roomId: string,
+    eventId: string,
+    emoji: string
+  ): Promise<boolean> {
     try {
       if (!this.matrixClient) {
         // For web platform, update reactions in Supabase
@@ -846,8 +909,8 @@ export class MatrixService {
         'm.relates_to': {
           rel_type: 'm.annotation',
           event_id: eventId,
-          key: emoji
-        }
+          key: emoji,
+        },
       });
 
       return true;
@@ -868,10 +931,10 @@ export class MatrixService {
       const authData = JSON.parse(storedAuth);
       const now = Date.now();
       const authAge = now - (authData.timestamp || 0);
-      
+
       // Consider auth valid for 30 days (adjust as needed)
       const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
-      
+
       if (authAge > maxAge) {
         // Auth is too old, clear it
         await this.clearAuthStorage();

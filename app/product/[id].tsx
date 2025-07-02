@@ -16,7 +16,18 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Heart, Minus, Plus, ShoppingCart, Share2, Pencil, X, Image as ImageIcon } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Heart,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Share2,
+  Star,
+  Pencil,
+  X,
+  Image as ImageIcon,
+} from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import CartService from '../../services/cart';
 import { Product, Category, PricingTier } from '../../types';
@@ -33,7 +44,6 @@ I18nManager.allowRTL(true);
 I18nManager.forceRTL(true);
 
 const { width } = Dimensions.get('window');
-
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -55,7 +65,7 @@ export default function ProductDetailScreen() {
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
 
   useEffect(() => {
@@ -82,7 +92,7 @@ export default function ProductDetailScreen() {
     try {
       const db = DatabaseService.getInstance();
       const products = await db.getProducts();
-      const foundProduct = products.find(p => p.id === id);
+      const foundProduct = products.find((p) => p.id === id);
       setProduct(foundProduct || null);
     } catch (error) {
       console.error('Error loading product:', error);
@@ -90,7 +100,7 @@ export default function ProductDetailScreen() {
         visible: true,
         title: 'שגיאה',
         message: 'טעינת המוצר נכשלה',
-        type: 'error'
+        type: 'error',
       });
     }
   };
@@ -118,27 +128,27 @@ export default function ProductDetailScreen() {
   const getAllMedia = () => {
     if (!product) return [];
     const media: MediaItem[] = [];
-    
+
     // Add images
     product.images?.forEach((uri, index) => {
       media.push({
         id: `image_${index}`,
         uri,
         type: 'image',
-        name: `Image ${index + 1}`
+        name: `Image ${index + 1}`,
       });
     });
-    
+
     // Add videos
     product.videos?.forEach((uri, index) => {
       media.push({
         id: `video_${index}`,
         uri,
         type: 'video',
-        name: `Video ${index + 1}`
+        name: `Video ${index + 1}`,
       });
     });
-    
+
     return media;
   };
 
@@ -161,7 +171,7 @@ export default function ProductDetailScreen() {
 
   const toggleFavorite = async () => {
     if (!product) return;
-    
+
     const cartService = CartService.getInstance();
     if (isFavorite) {
       await cartService.removeFromWishlist(product.id);
@@ -173,19 +183,21 @@ export default function ProductDetailScreen() {
   const shareProduct = () => {
     if (Platform.OS === 'web') {
       if (navigator.share) {
-        navigator.share({
-          title: product?.name || 'Check out this product',
-          text: product?.description || 'I found this amazing product',
-          url: window.location.href,
-        }).catch((error) => {
-          console.error('Error sharing:', error);
-        });
+        navigator
+          .share({
+            title: product?.name || 'Check out this product',
+            text: product?.description || 'I found this amazing product',
+            url: window.location.href,
+          })
+          .catch((error) => {
+            console.error('Error sharing:', error);
+          });
       } else {
         setInfoModal({
           visible: true,
           title: 'שיתוף',
           message: 'שיתוף אינו נתמך בדפדפן זה',
-          type: 'info'
+          type: 'info',
         });
       }
     } else {
@@ -193,21 +205,21 @@ export default function ProductDetailScreen() {
         visible: true,
         title: 'שיתוף',
         message: 'פונקציונליות השיתוף תתווסף בקרוב',
-        type: 'info'
+        type: 'info',
       });
     }
   };
 
   const addToCart = async () => {
     if (!product) return;
-    
+
     const cartService = CartService.getInstance();
     await cartService.addToCart(product, quantity);
     setInfoModal({
       visible: true,
       title: 'נוסף לעגלה',
       message: `${product.name} נוסף לעגלה בכמות ${quantity}`,
-      type: 'success'
+      type: 'success',
     });
   };
 
@@ -216,7 +228,7 @@ export default function ProductDetailScreen() {
     // Navigate to cart or checkout
     router.push({
       pathname: '/(tabs)/',
-      params: { showCart: 'true' }
+      params: { showCart: 'true' },
     });
   };
 
@@ -232,38 +244,43 @@ export default function ProductDetailScreen() {
     router.back();
   };
 
-
   // Calculate effective price based on pricing tier and quantity
   const getEffectivePrice = (basePrice: number, quantity: number): number => {
     if (!product?.pricingTier) return basePrice;
-    
-    const tier = pricingTiers.find(t => t.id === product.pricingTier);
+
+    const tier = pricingTiers.find((t) => t.id === product.pricingTier);
     if (!tier) return basePrice;
-    
+
     // If quantity meets minimum requirement and tier has a price per unit
     if (quantity >= tier.minQuantity && typeof tier.pricePerUnit === 'number') {
       return tier.pricePerUnit;
     }
-    
+
     return basePrice;
   };
 
   // Calculate total price based on quantity and pricing tier
   const getTotalPrice = (): number => {
     if (!product) return 0;
-    
+
     const effectivePrice = getEffectivePrice(product.price, quantity);
     return effectivePrice * quantity;
   };
 
   if (!product) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <View
+          style={[styles.header, { borderBottomColor: colors.border.primary }]}
+        >
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+            טוען...
+          </Text>
           <View style={{ width: 24 }} />
         </View>
         <LoadingSpinner />
@@ -272,12 +289,19 @@ export default function ProductDetailScreen() {
   }
 
   const allMedia = getAllMedia();
-  const currentPricingTier = pricingTiers.find(tier => tier.id === product.pricingTier);
+  const currentPricingTier = pricingTiers.find(
+    (tier) => tier.id === product.pricingTier
+  );
   const effectivePrice = getEffectivePrice(product.price, quantity);
-  const showTieredPricing = currentPricingTier && typeof currentPricingTier.pricePerUnit === 'number' && quantity >= currentPricingTier.minQuantity;
+  const showTieredPricing =
+    currentPricingTier &&
+    typeof currentPricingTier.pricePerUnit === 'number' &&
+    quantity >= currentPricingTier.minQuantity;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -285,21 +309,46 @@ export default function ProductDetailScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <View style={styles.headerActions}>
-            <TouchableOpacity style={[styles.headerButton, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]} onPress={shareProduct}>
+            <TouchableOpacity
+              style={[
+                styles.headerButton,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                },
+              ]}
+              onPress={shareProduct}
+            >
               <Share2 size={24} color={colors.text.primary} />
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.headerButton, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }, isFavorite && styles.favoriteActive]} 
+            <TouchableOpacity
+              style={[
+                styles.headerButton,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                },
+                isFavorite && styles.favoriteActive,
+              ]}
               onPress={toggleFavorite}
             >
-              <Heart 
-                size={24} 
+              <Heart
+                size={24}
                 color={isFavorite ? colors.status.error : colors.text.primary}
                 fill={isFavorite ? colors.status.error : 'transparent'}
               />
             </TouchableOpacity>
             {isAdmin && (
-              <TouchableOpacity style={[styles.headerButton, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]} onPress={openEditModal}>
+              <TouchableOpacity
+                style={[
+                  styles.headerButton,
+                  {
+                    backgroundColor: colors.surface.primary,
+                    borderColor: colors.border.primary,
+                  },
+                ]}
+                onPress={openEditModal}
+              >
                 <Pencil size={24} color={colors.gold} />
               </TouchableOpacity>
             )}
@@ -307,19 +356,28 @@ export default function ProductDetailScreen() {
         </View>
 
         {/* Main Cover Image */}
-        <View style={[styles.coverImageContainer, { backgroundColor: colors.surface.primary }]}>
+        <View
+          style={[
+            styles.coverImageContainer,
+            { backgroundColor: colors.surface.primary },
+          ]}
+        >
           {product.images && product.images.length > 0 ? (
             <TouchableOpacity onPress={() => openMediaViewer(0)}>
-              <Image 
-                source={{ uri: product.images[0] }} 
-                style={styles.coverImage} 
+              <Image
+                source={{ uri: product.images[0] }}
+                style={styles.coverImage}
                 resizeMode="cover"
               />
             </TouchableOpacity>
           ) : (
             <View style={styles.noImageContainer}>
               <ImageIcon size={60} color={colors.interactive.disabled} />
-              <Text style={[styles.noImageText, { color: colors.text.secondary }]}>אין תמונה</Text>
+              <Text
+                style={[styles.noImageText, { color: colors.text.secondary }]}
+              >
+                אין תמונה
+              </Text>
             </View>
           )}
         </View>
@@ -330,8 +388,15 @@ export default function ProductDetailScreen() {
           {product.badges && product.badges.length > 0 && (
             <View style={styles.badgesContainer}>
               {product.badges.map((badge, index) => (
-                <View key={index} style={[styles.badge, { backgroundColor: colors.gold }]}>
-                  <Text style={[styles.badgeText, { color: colors.text.inverse }]}>{badge}</Text>
+                <View
+                  key={index}
+                  style={[styles.badge, { backgroundColor: colors.gold }]}
+                >
+                  <Text
+                    style={[styles.badgeText, { color: colors.text.inverse }]}
+                  >
+                    {badge}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -340,17 +405,33 @@ export default function ProductDetailScreen() {
           {/* Price */}
           <View style={styles.priceContainer}>
             <Text style={[styles.currentPrice, { color: colors.gold }]}>
-              {currencySymbol}{product.price.toFixed(2)}
+              {currencySymbol}
+              {product.price.toFixed(2)}
             </Text>
             {product.originalPrice && (
-              <Text style={[styles.originalPrice, { color: colors.text.tertiary }]}>
-                {currencySymbol}{product.originalPrice.toFixed(2)}
+              <Text
+                style={[styles.originalPrice, { color: colors.text.tertiary }]}
+              >
+                {currencySymbol}
+                {product.originalPrice.toFixed(2)}
               </Text>
             )}
             {product.originalPrice && (
-              <View style={[styles.discountBadge, { backgroundColor: colors.status.error }]}>
-                <Text style={[styles.discountText, { color: colors.text.primary }]}>
-                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% הנחה
+              <View
+                style={[
+                  styles.discountBadge,
+                  { backgroundColor: colors.status.error },
+                ]}
+              >
+                <Text
+                  style={[styles.discountText, { color: colors.text.primary }]}
+                >
+                  {Math.round(
+                    ((product.originalPrice - product.price) /
+                      product.originalPrice) *
+                      100
+                  )}
+                  % הנחה
                 </Text>
               </View>
             )}
@@ -360,31 +441,51 @@ export default function ProductDetailScreen() {
           <View style={styles.ratingContainer}>
             <View style={styles.stars}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star 
-                  key={star} 
-                  size={16} 
-                  color={star <= Math.floor(product.rating) ? colors.gold : colors.interactive.disabled}
-                  fill={star <= Math.floor(product.rating) ? colors.gold : 'transparent'}
+                <Star
+                  key={star}
+                  size={16}
+                  color={
+                    star <= Math.floor(product.rating)
+                      ? colors.gold
+                      : colors.interactive.disabled
+                  }
+                  fill={
+                    star <= Math.floor(product.rating)
+                      ? colors.gold
+                      : 'transparent'
+                  }
                 />
               ))}
-              <Text style={[styles.ratingText, { color: colors.text.secondary }]}>
+              <Text
+                style={[styles.ratingText, { color: colors.text.secondary }]}
+              >
                 {product.rating} ({product.reviews} ביקורות)
               </Text>
             </View>
           </View>
 
           {/* Title */}
-          <Text style={[styles.title, { color: colors.text.primary }]}>{product.name}</Text>
+          <Text style={[styles.title, { color: colors.text.primary }]}>
+            {product.name}
+          </Text>
 
           {/* Pricing Tier */}
           {currentPricingTier && (
             <View style={styles.pricingTierContainer}>
               <Text style={[styles.pricingTierText, { color: colors.gold }]}>
                 {currentPricingTier.name}
-                {typeof currentPricingTier.pricePerUnit === 'number' && ` - מחיר ליחידה: ${currencySymbol}${currentPricingTier.pricePerUnit.toFixed(2)}`}
+                {typeof currentPricingTier.pricePerUnit === 'number' &&
+                  ` - מחיר ליחידה: ${currencySymbol}${currentPricingTier.pricePerUnit.toFixed(
+                    2
+                  )}`}
               </Text>
               {currentPricingTier.minQuantity > 1 && (
-                <Text style={[styles.pricingTierMinQuantity, { color: colors.text.secondary }]}>
+                <Text
+                  style={[
+                    styles.pricingTierMinQuantity,
+                    { color: colors.text.secondary },
+                  ]}
+                >
                   (מינימום {currentPricingTier.minQuantity} יחידות)
                 </Text>
               )}
@@ -393,33 +494,59 @@ export default function ProductDetailScreen() {
 
           {/* Stock Status */}
           <View style={styles.stockContainer}>
-            <Text style={[
-              styles.stockText,
-              { color: product.stock > 0 ? colors.status.success : colors.status.error }
-            ]}>
-              {product.stock > 0 ? `במלאי (${product.stock} יחידות)` : 'אזל מהמלאי'}
+            <Text
+              style={[
+                styles.stockText,
+                {
+                  color:
+                    product.stock > 0
+                      ? colors.status.success
+                      : colors.status.error,
+                },
+              ]}
+            >
+              {product.stock > 0
+                ? `במלאי (${product.stock} יחידות)`
+                : 'אזל מהמלאי'}
             </Text>
           </View>
 
           {/* Media Gallery */}
           {allMedia.length > 1 && (
             <View style={styles.galleryContainer}>
-              <Text style={[styles.galleryTitle, { color: colors.text.primary }]}>גלריית מדיה</Text>
-              <ScrollView 
-                horizontal 
+              <Text
+                style={[styles.galleryTitle, { color: colors.text.primary }]}
+              >
+                גלריית מדיה
+              </Text>
+              <ScrollView
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.galleryContent}
               >
                 {allMedia.map((media, index) => (
-                  <TouchableOpacity 
-                    key={media.id} 
-                    style={[styles.galleryItem, { borderColor: colors.border.primary }]}
+                  <TouchableOpacity
+                    key={media.id}
+                    style={[
+                      styles.galleryItem,
+                      { borderColor: colors.border.primary },
+                    ]}
                     onPress={() => openMediaViewer(index)}
                   >
-                    <Image source={{ uri: media.uri }} style={styles.galleryImage} />
+                    <Image
+                      source={{ uri: media.uri }}
+                      style={styles.galleryImage}
+                    />
                     {media.type === 'video' && (
                       <View style={styles.videoIndicator}>
-                        <Text style={[styles.videoIndicatorText, { color: colors.text.inverse }]}>▶</Text>
+                        <Text
+                          style={[
+                            styles.videoIndicatorText,
+                            { color: colors.text.inverse },
+                          ]}
+                        >
+                          ▶
+                        </Text>
                       </View>
                     )}
                   </TouchableOpacity>
@@ -429,19 +556,38 @@ export default function ProductDetailScreen() {
           )}
 
           {/* Description */}
-          <Text style={[styles.description, { color: colors.text.secondary }]}>{product.description}</Text>
+          <Text style={[styles.description, { color: colors.text.secondary }]}>
+            {product.description}
+          </Text>
 
           {/* Tiered Pricing Info */}
           {showTieredPricing && (
-            <View style={[styles.tieredPricingInfo, { 
-              backgroundColor: colors.interactive.secondary,
-              borderColor: colors.gold 
-            }]}>
-              <Text style={[styles.tieredPricingTitle, { color: colors.text.primary }]}>
+            <View
+              style={[
+                styles.tieredPricingInfo,
+                {
+                  backgroundColor: colors.interactive.secondary,
+                  borderColor: colors.gold,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.tieredPricingTitle,
+                  { color: colors.text.primary },
+                ]}
+              >
                 מחיר מדורג פעיל!
               </Text>
-              <Text style={[styles.tieredPricingText, { color: colors.text.secondary }]}>
-                {`מחיר ליחידה: ${currencySymbol}${effectivePrice.toFixed(2)} (במקום ${currencySymbol}${product.price.toFixed(2)})`}
+              <Text
+                style={[
+                  styles.tieredPricingText,
+                  { color: colors.text.secondary },
+                ]}
+              >
+                {`מחיר ליחידה: ${currencySymbol}${effectivePrice.toFixed(
+                  2
+                )} (במקום ${currencySymbol}${product.price.toFixed(2)})`}
               </Text>
               <Text style={[styles.tieredPricingTotal, { color: colors.gold }]}>
                 {`סה"כ: ${currencySymbol}${getTotalPrice().toFixed(2)}`}
@@ -452,30 +598,62 @@ export default function ProductDetailScreen() {
           {/* Quantity Selection */}
           {product.stock > 0 && (
             <View style={styles.quantitySection}>
-              <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>כמות</Text>
+              <Text
+                style={[styles.sectionTitle, { color: colors.text.primary }]}
+              >
+                כמות
+              </Text>
               <View style={styles.quantityContainer}>
                 <TouchableOpacity
                   style={[
-                    styles.quantityButton, 
-                    { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
-                    quantity === 1 && { backgroundColor: colors.interactive.disabled }
+                    styles.quantityButton,
+                    {
+                      backgroundColor: colors.surface.primary,
+                      borderColor: colors.border.primary,
+                    },
+                    quantity === 1 && {
+                      backgroundColor: colors.interactive.disabled,
+                    },
                   ]}
                   onPress={decrementQuantity}
                   disabled={quantity === 1}
                 >
-                  <Minus size={20} color={quantity === 1 ? colors.interactive.disabled : colors.text.primary} />
+                  <Minus
+                    size={20}
+                    color={
+                      quantity === 1
+                        ? colors.interactive.disabled
+                        : colors.text.primary
+                    }
+                  />
                 </TouchableOpacity>
-                <Text style={[styles.quantityText, { color: colors.text.primary }]}>{quantity}</Text>
+                <Text
+                  style={[styles.quantityText, { color: colors.text.primary }]}
+                >
+                  {quantity}
+                </Text>
                 <TouchableOpacity
                   style={[
-                    styles.quantityButton, 
-                    { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
-                    quantity >= product.stock && { backgroundColor: colors.interactive.disabled }
+                    styles.quantityButton,
+                    {
+                      backgroundColor: colors.surface.primary,
+                      borderColor: colors.border.primary,
+                    },
+                    quantity >= product.stock && {
+                      backgroundColor: colors.interactive.disabled,
+                    },
                   ]}
                   onPress={incrementQuantity}
                   disabled={quantity >= product.stock}
                 >
-                  <Plus size={20} color={quantity >= product.stock ? colors.interactive.disabled : colors.text.primary} />
+                  <Plus
+                    size={20}
+                    color={
+                      quantity >= product.stock
+                        ? colors.interactive.disabled
+                        : colors.text.primary
+                    }
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -484,29 +662,41 @@ export default function ProductDetailScreen() {
       </ScrollView>
 
       {/* Bottom Actions */}
-      <View style={[styles.bottomActions, { borderTopColor: colors.border.primary, backgroundColor: colors.background }]}>
-        <TouchableOpacity 
+      <View
+        style={[
+          styles.bottomActions,
+          {
+            borderTopColor: colors.border.primary,
+            backgroundColor: colors.background,
+          },
+        ]}
+      >
+        <TouchableOpacity
           style={[
-            styles.buyNowButton, 
+            styles.buyNowButton,
             { borderColor: colors.gold },
-            product.stock === 0 && styles.buttonDisabled
+            product.stock === 0 && styles.buttonDisabled,
           ]}
           onPress={buyNow}
           disabled={product.stock === 0}
         >
-          <Text style={[styles.buyNowText, { color: colors.gold }]}>קנה עכשיו</Text>
+          <Text style={[styles.buyNowText, { color: colors.gold }]}>
+            קנה עכשיו
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
-            styles.addToCartButton, 
+            styles.addToCartButton,
             { backgroundColor: colors.gold },
-            product.stock === 0 && styles.buttonDisabled
+            product.stock === 0 && styles.buttonDisabled,
           ]}
           onPress={addToCart}
           disabled={product.stock === 0}
         >
           <ShoppingCart size={20} color={colors.text.inverse} />
-          <Text style={[styles.addToCartText, { color: colors.text.inverse }]}>הוסף לעגלה</Text>
+          <Text style={[styles.addToCartText, { color: colors.text.inverse }]}>
+            הוסף לעגלה
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -532,9 +722,8 @@ export default function ProductDetailScreen() {
         title={infoModal.title}
         message={infoModal.message}
         type={infoModal.type}
-        onClose={() => setInfoModal({...infoModal, visible: false})}
+        onClose={() => setInfoModal({ ...infoModal, visible: false })}
       />
-
     </SafeAreaView>
   );
 }
