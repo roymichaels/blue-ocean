@@ -36,7 +36,23 @@ class CartService {
       const user = MatrixService.getInstance().getCurrentUser();
       if (isSupabaseConfigured() && user?.id) {
         const db = DatabaseService.getInstance();
-        this.wishlistItems = await db.getWishlistItems(user.id);
+        try {
+          this.wishlistItems = await db.getWishlistItems(user.id);
+        } catch (err) {
+          if (
+            err instanceof Error &&
+            err.message === 'WISHLIST_TABLE_MISSING'
+          ) {
+            const wishlistData = await AsyncStorage.getItem(
+              WISHLIST_STORAGE_KEY
+            );
+            if (wishlistData) {
+              this.wishlistItems = JSON.parse(wishlistData);
+            }
+          } else {
+            console.error('Error fetching wishlist from Supabase:', err);
+          }
+        }
       } else {
         const wishlistData = await AsyncStorage.getItem(WISHLIST_STORAGE_KEY);
         if (wishlistData) {

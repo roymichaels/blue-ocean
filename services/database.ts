@@ -1285,47 +1285,45 @@ class DatabaseService {
     try {
       const { data, error } = await supabase
         .from('wishlist_items')
-        .select(
-          `id, product_id, added_at, product:products!wishlist_items_product_id_fkey(*)`
-        )
+        .select('id, product_id, added_at')
         .eq('user_id', userId)
         .order('added_at', { ascending: false });
 
       if (error) {
+        // Table might not exist if migrations haven't run
+        if (error.code === '42P01') {
+          throw new Error('WISHLIST_TABLE_MISSING');
+        }
         console.error('Error fetching wishlist items:', error);
         return [];
       }
 
-      return (data || []).map((item: any) => ({
-        id: item.id,
-        productId: item.product_id,
-        product: {
-          id: item.product.id,
-          name: item.product.name,
-          name_en: item.product.name_en,
-          name_he: item.product.name_he,
-          price: item.product.price,
-          originalPrice: item.product.originalPrice ?? undefined,
-          description: item.product.description,
-          description_en: item.product.description_en,
-          description_he: item.product.description_he,
-          category: item.product.category,
-          subcategory: item.product.subcategory,
-          images: item.product.images,
-          videos: item.product.videos ?? undefined,
-          colors: item.product.colors ?? undefined,
-          rating: item.product.rating,
-          reviews: item.product.reviews,
-          badges: item.product.badges ?? undefined,
-          pricingTier: item.product.pricing_tier ?? undefined,
-          mixGroupId: item.product.mix_group_id ?? undefined,
-          stock: item.product.stock,
-          createdAt: item.product.created_at,
-          updatedAt: item.product.updated_at,
-        },
-        addedAt: item.added_at,
-      }));
+      const items = data || [];
+
+      const wishlistWithProducts = await Promise.all(
+        items.map(async (item: any) => {
+          const product = await this.getProduct(item.product_id);
+          if (!product) {
+            return null;
+          }
+
+          return {
+            id: item.id,
+            productId: item.product_id,
+            product,
+            addedAt: item.added_at,
+          } as WishlistItem;
+        })
+      );
+
+      return wishlistWithProducts.filter(Boolean) as WishlistItem[];
     } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'WISHLIST_TABLE_MISSING'
+      ) {
+        throw error;
+      }
       console.error('Error in getWishlistItems:', error);
       return [];
     }
@@ -1338,6 +1336,10 @@ class DatabaseService {
         .insert([{ user_id: userId, product_id: productId }]);
 
       if (error) {
+        if (error.code === '42P01') {
+          // Wishlist not supported on this backend
+          return;
+        }
         console.error('Error adding wishlist item:', error);
         throw new Error('Failed to add wishlist item');
       }
@@ -1356,6 +1358,9 @@ class DatabaseService {
         .eq('product_id', productId);
 
       if (error) {
+        if (error.code === '42P01') {
+          return;
+        }
         console.error('Error removing wishlist item:', error);
         throw new Error('Failed to remove wishlist item');
       }
