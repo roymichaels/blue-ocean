@@ -108,9 +108,8 @@ export default function ProductDetailScreen() {
   const loadProduct = async () => {
     try {
       const db = DatabaseService.getInstance();
-      const products = await db.getProducts();
-      const foundProduct = products.find((p) => p.id === id);
-      setProduct(foundProduct || null);
+      const fetched = await db.getProduct(id);
+      setProduct(fetched);
     } catch (error) {
       console.error('Error loading product:', error);
       setInfoModal({
