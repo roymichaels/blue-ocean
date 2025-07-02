@@ -62,7 +62,7 @@ export interface PricingTierRule {
   tierId: string;
   minQty: number;
   maxQty: number;
-  pricePerUnit?: number;
+  pricePerBaseUnit?: number;
   discountPct?: number;
   createdAt?: string;
   updatedAt?: string;
