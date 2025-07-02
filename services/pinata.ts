@@ -78,14 +78,19 @@ class PinataService {
       );
 
       // Upload to Pinata
+      const headers: any = {};
+      if (PINATA_JWT) {
+        headers.Authorization = `Bearer ${PINATA_JWT}`;
+      } else {
+        headers.pinata_api_key = PINATA_API_KEY;
+        headers.pinata_secret_api_key = PINATA_SECRET_API_KEY;
+      }
+
       const response = await axios.post(
         'https://api.pinata.cloud/pinning/pinFileToIPFS',
         formData,
         {
-          headers: {
-            // Let axios set the correct multipart boundary automatically
-            Authorization: `Bearer ${PINATA_JWT}`,
-          },
+          headers,
         }
       );
 
