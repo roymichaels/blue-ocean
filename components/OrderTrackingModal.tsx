@@ -237,7 +237,7 @@ ${order.shippingAddress.phone}
 ${order.shippingAddress.notes ? `הערות: ${order.shippingAddress.notes}` : ''}
 
 פריטים:
-${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currencySymbol}${(item.product.price * item.quantity).toFixed(2)}`).join('\n')}
+${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currencySymbol}${((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}`).join('\n')}
       `.trim();
 
       await Clipboard.setStringAsync(formattedDetails);
@@ -459,7 +459,7 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
                 <View style={styles.itemInfo}>
                   <Text style={[styles.itemName, { color: colors.text.primary }]}>{item.product.name}</Text>
                   <Text style={[styles.itemDetails, { color: colors.text.secondary }]}>
-                    כמות: {item.quantity} | מחיר: {currencySymbol}{item.product.price.toFixed(2)}
+                    כמות: {item.quantity} | מחיר: {currencySymbol}{(item.unitPrice ?? item.product.price).toFixed(2)}
                   </Text>
                   {item.selectedColor && (
                     <View style={styles.itemColor}>
@@ -472,7 +472,7 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
                   )}
                 </View>
                 <Text style={[styles.itemTotal, { color: colors.gold }]}>
-                  {currencySymbol}{(item.product.price * item.quantity).toFixed(2)}
+                  {currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
                 </Text>
               </View>
             ))}
