@@ -124,6 +124,10 @@ class DatabaseService {
         updated_at: (product as any).updatedAt,
       } as any;
 
+      if (!dbProduct.subcategory) {
+        delete dbProduct.subcategory;
+      }
+
       delete dbProduct.originalPrice;
       delete dbProduct.pricingTier;
       delete dbProduct.mixGroupId;
@@ -138,7 +142,7 @@ class DatabaseService {
 
       if (error) {
         console.error('Error adding product:', error);
-        throw new Error('Failed to add product');
+        throw new Error(error.message || 'Failed to add product');
       }
 
       return data.id;
@@ -157,6 +161,10 @@ class DatabaseService {
         mix_group_id: (product as any).mixGroupId,
         updated_at: (product as any).updatedAt,
       } as any;
+
+      if (!dbProduct.subcategory) {
+        delete dbProduct.subcategory;
+      }
 
       delete dbProduct.originalPrice;
       delete dbProduct.pricingTier;
