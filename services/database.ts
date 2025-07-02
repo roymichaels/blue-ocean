@@ -900,6 +900,9 @@ class DatabaseService {
         }
       }
 
+      const effectiveRules =
+        rulesError && rulesError.code === '42P01' ? [] : (rulesData || []);
+
       return {
         id: data.id,
         name: data.name,
