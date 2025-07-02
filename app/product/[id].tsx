@@ -373,42 +373,38 @@ export default function ProductDetailScreen() {
           </View>
         </View>
 
-        {(categoryBanner || (product.images && product.images.length > 0)) && (
+
+        {categoryBanner && (
           <View style={styles.heroBanner}>
             <Image
-              source={{ uri: bannerImageUri }}
+              source={{ uri: categoryBanner.image }}
               style={styles.heroImage}
             />
-            {categoryBanner && (
-              <View style={styles.heroOverlay}>
-                <View style={styles.heroContent}>
-                  <Text
-                    style={[
-                      styles.heroDiscount,
-                      {
-                        color: colors.text.inverse,
-                        backgroundColor: colors.gold,
-                      },
-                    ]}
-                  >
-                    {categoryBanner.discount} הנחה
-                  </Text>
-                  <Text
-                    style={[styles.heroTitle, { color: colors.text.inverse }]}
-                  >
-                    {categoryBanner.title}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.heroSubtitle,
-                      { color: colors.text.inverse },
-                    ]}
-                  >
-                    {categoryBanner.subtitle}
-                  </Text>
-                </View>
+            <View style={styles.heroOverlay}>
+              <View style={styles.heroContent}>
+                <Text
+                  style={[
+                    styles.heroDiscount,
+                    {
+                      color: colors.text.inverse,
+                      backgroundColor: colors.gold,
+                    },
+                  ]}
+                >
+                  {categoryBanner.discount} הנחה
+                </Text>
+                <Text
+                  style={[styles.heroTitle, { color: colors.text.inverse }]}
+                >
+                  {categoryBanner.title}
+                </Text>
+                <Text
+                  style={[styles.heroSubtitle, { color: colors.text.inverse }]}
+                >
+                  {categoryBanner.subtitle}
+                </Text>
               </View>
-            )}
+            </View>
           </View>
         )}
 

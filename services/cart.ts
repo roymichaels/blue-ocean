@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
+import { MatrixService } from './matrix';
+import { isSupabaseConfigured } from './supabase';
 
 const CART_STORAGE_KEY = 'cart_items';
 const WISHLIST_STORAGE_KEY = 'wishlist_items';
@@ -26,16 +28,20 @@ class CartService {
 
   private async loadFromStorage() {
     try {
-      const [cartData, wishlistData] = await Promise.all([
-        AsyncStorage.getItem(CART_STORAGE_KEY),
-        AsyncStorage.getItem(WISHLIST_STORAGE_KEY)
-      ]);
-
+      const cartData = await AsyncStorage.getItem(CART_STORAGE_KEY);
       if (cartData) {
         this.cartItems = JSON.parse(cartData);
       }
-      if (wishlistData) {
-        this.wishlistItems = JSON.parse(wishlistData);
+
+      const user = MatrixService.getInstance().getCurrentUser();
+      if (isSupabaseConfigured() && user?.id) {
+        const db = DatabaseService.getInstance();
+        this.wishlistItems = await db.getWishlistItems(user.id);
+      } else {
+        const wishlistData = await AsyncStorage.getItem(WISHLIST_STORAGE_KEY);
+        if (wishlistData) {
+          this.wishlistItems = JSON.parse(wishlistData);
+        }
       }
 
       await this.recalcPricing();
@@ -47,10 +53,15 @@ class CartService {
 
   private async saveToStorage() {
     try {
-      await Promise.all([
-        AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.cartItems)),
-        AsyncStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(this.wishlistItems))
-      ]);
+      await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.cartItems));
+
+      const user = MatrixService.getInstance().getCurrentUser();
+      if (!(isSupabaseConfigured() && user?.id)) {
+        await AsyncStorage.setItem(
+          WISHLIST_STORAGE_KEY,
+          JSON.stringify(this.wishlistItems)
+        );
+      }
     } catch (error) {
       console.error('Error saving cart/wishlist to storage:', error);
     }
@@ -214,12 +225,34 @@ class CartService {
     };
 
     this.wishlistItems.push(wishlistItem);
+
+    const user = MatrixService.getInstance().getCurrentUser();
+    if (isSupabaseConfigured() && user?.id) {
+      const db = DatabaseService.getInstance();
+      try {
+        await db.addWishlistItem(user.id, product.id);
+      } catch (err) {
+        console.error('Error saving wishlist item to Supabase:', err);
+      }
+    }
+
     await this.saveToStorage();
     this.notifyListeners();
   }
 
   public async removeFromWishlist(productId: string): Promise<void> {
     this.wishlistItems = this.wishlistItems.filter(item => item.productId !== productId);
+
+    const user = MatrixService.getInstance().getCurrentUser();
+    if (isSupabaseConfigured() && user?.id) {
+      const db = DatabaseService.getInstance();
+      try {
+        await db.removeWishlistItem(user.id, productId);
+      } catch (err) {
+        console.error('Error removing wishlist item from Supabase:', err);
+      }
+    }
+
     await this.saveToStorage();
     this.notifyListeners();
   }
