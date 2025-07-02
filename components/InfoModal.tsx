@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
   Animated,
   Platform,
 } from 'react-native';
+import Modal from 'react-native-modal';
 import { useTheme } from '../contexts/ThemeContext';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 
@@ -97,24 +97,23 @@ export default function InfoModal({
 
   return (
     <Modal
-      visible={visible}
-      transparent={true}
-      animationType="none"
-      onRequestClose={onClose}
+      isVisible={visible}
+      onBackdropPress={onClose}
+      useNativeDriver={Platform.OS !== 'web'}
+      backdropOpacity={0.5}
+      style={styles.centered}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
-            <Animated.View 
-              style={[
-                styles.modalContainer, 
-                { 
-                  backgroundColor: colors.surface.elevated,
-                  transform: [{ scale: scaleAnim }],
-                  opacity: opacityAnim,
-                }
-              ]}
-            >
+      <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
+        <Animated.View
+          style={[
+            styles.modalContainer,
+            {
+              backgroundColor: colors.surface.elevated,
+              transform: [{ scale: scaleAnim }],
+              opacity: opacityAnim,
+            },
+          ]}
+        >
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <X size={20} color={colors.text.secondary} />
               </TouchableOpacity>
@@ -139,21 +138,17 @@ export default function InfoModal({
                   {buttonText}
                 </Text>
               </TouchableOpacity>
-            </Animated.View>
-          </TouchableWithoutFeedback>
-        </View>
+        </Animated.View>
       </TouchableWithoutFeedback>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  centered: {
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    margin: 0,
   },
   modalContainer: {
     width: '100%',

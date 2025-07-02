@@ -6,12 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Modal,
   TextInput,
   I18nManager,
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, Heart } from 'lucide-react-native';
@@ -597,10 +597,12 @@ export default function SubcategoryScreen() {
 
       {/* Product Edit/Add Modal */}
       <Modal
-        visible={showProductModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowProductModal(false)}
+        isVisible={showProductModal}
+        onBackdropPress={() => setShowProductModal(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.fullscreenModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { 
@@ -907,10 +909,12 @@ export default function SubcategoryScreen() {
 
       {/* Category Selector Modal */}
       <Modal
-        visible={showCategorySelector}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowCategorySelector(false)}
+        isVisible={showCategorySelector}
+        onBackdropPress={() => setShowCategorySelector(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <View style={styles.categorySelectorOverlay}>
           <View style={[styles.categorySelectorContent, { backgroundColor: colors.surface.elevated }]}>
@@ -959,10 +963,12 @@ export default function SubcategoryScreen() {
 
       {/* Subcategory Selector Modal */}
       <Modal
-        visible={showSubcategorySelector}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowSubcategorySelector(false)}
+        isVisible={showSubcategorySelector}
+        onBackdropPress={() => setShowSubcategorySelector(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <View style={styles.categorySelectorOverlay}>
           <View style={[styles.categorySelectorContent, { backgroundColor: colors.surface.elevated }]}>
@@ -1019,10 +1025,12 @@ export default function SubcategoryScreen() {
 
       {/* Pricing Tier Selector Modal */}
       <Modal
-        visible={showPricingTierSelector}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowPricingTierSelector(false)}
+        isVisible={showPricingTierSelector}
+        onBackdropPress={() => setShowPricingTierSelector(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <View style={styles.categorySelectorOverlay}>
           <View style={[styles.categorySelectorContent, { backgroundColor: colors.surface.elevated }]}>
@@ -1376,6 +1384,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  fullscreenModal: {
+    margin: 0,
+  },
+  bottomModal: {
+    justifyContent: 'flex-end',
+    margin: 0,
   },
   helperText: {
     fontSize: 12,
