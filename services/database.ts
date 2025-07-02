@@ -799,7 +799,7 @@ class DatabaseService {
         .from('hero_banners')
         .select('*')
         .eq('is_active', true)
-        .order('order_index', { ascending: true });
+        .order('order', { ascending: true });
 
       if (error) {
         console.error('Error fetching hero banners:', error);
@@ -820,7 +820,7 @@ class DatabaseService {
         discount_he: banner.discount_he,
         category: banner.category,
         isActive: banner.is_active,
-        order: banner.order_index,
+        order: banner.order,
         createdAt: banner.created_at,
         updatedAt: banner.updated_at,
       }));
