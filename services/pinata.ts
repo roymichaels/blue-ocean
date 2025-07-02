@@ -1,5 +1,4 @@
 import axios from 'axios';
-import FormData from 'form-data';
 import { debugLog } from '../utils/logger';
 
 // Pinata API configuration
@@ -84,7 +83,7 @@ class PinataService {
         formData,
         {
           headers: {
-            'Content-Type': `multipart/form-data;`,
+            // Let axios set the correct multipart boundary automatically
             Authorization: `Bearer ${PINATA_JWT}`,
           },
         }
