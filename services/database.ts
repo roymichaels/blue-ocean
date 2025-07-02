@@ -38,7 +38,30 @@ class DatabaseService {
         return [];
       }
 
-      return data || [];
+      return (data || []).map(prod => ({
+        id: prod.id,
+        name: prod.name,
+        name_en: prod.name_en,
+        name_he: prod.name_he,
+        price: prod.price,
+        originalPrice: prod.original_price ?? undefined,
+        description: prod.description,
+        description_en: prod.description_en,
+        description_he: prod.description_he,
+        category: prod.category,
+        subcategory: prod.subcategory,
+        images: prod.images,
+        videos: prod.videos ?? undefined,
+        colors: prod.colors ?? undefined,
+        rating: prod.rating,
+        reviews: prod.reviews,
+        badges: prod.badges ?? undefined,
+        pricingTier: prod.pricing_tier ?? undefined,
+        mixGroupId: prod.mix_group_id ?? undefined,
+        stock: prod.stock,
+        createdAt: prod.created_at,
+        updatedAt: prod.updated_at,
+      }));
     } catch (error) {
       console.error('Error in getProducts:', error);
       return [];
@@ -58,7 +81,32 @@ class DatabaseService {
         return null;
       }
 
-      return data;
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        name: data.name,
+        name_en: data.name_en,
+        name_he: data.name_he,
+        price: data.price,
+        originalPrice: data.original_price ?? undefined,
+        description: data.description,
+        description_en: data.description_en,
+        description_he: data.description_he,
+        category: data.category,
+        subcategory: data.subcategory,
+        images: data.images,
+        videos: data.videos ?? undefined,
+        colors: data.colors ?? undefined,
+        rating: data.rating,
+        reviews: data.reviews,
+        badges: data.badges ?? undefined,
+        pricingTier: data.pricing_tier ?? undefined,
+        mixGroupId: data.mix_group_id ?? undefined,
+        stock: data.stock,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      };
     } catch (error) {
       console.error('Error in getProduct:', error);
       return null;
@@ -67,9 +115,24 @@ class DatabaseService {
 
   async addProduct(product: Omit<Product, 'id'>): Promise<string> {
     try {
+      const dbProduct = {
+        ...product,
+        original_price: (product as any).originalPrice,
+        pricing_tier: (product as any).pricingTier,
+        mix_group_id: (product as any).mixGroupId,
+        created_at: (product as any).createdAt,
+        updated_at: (product as any).updatedAt,
+      } as any;
+
+      delete dbProduct.originalPrice;
+      delete dbProduct.pricingTier;
+      delete dbProduct.mixGroupId;
+      delete dbProduct.createdAt;
+      delete dbProduct.updatedAt;
+
       const { data, error } = await supabase
         .from('products')
-        .insert([product])
+        .insert([dbProduct])
         .select()
         .single();
 
@@ -87,9 +150,22 @@ class DatabaseService {
 
   async updateProduct(id: string, product: Partial<Product>): Promise<void> {
     try {
+      const dbProduct = {
+        ...product,
+        original_price: (product as any).originalPrice,
+        pricing_tier: (product as any).pricingTier,
+        mix_group_id: (product as any).mixGroupId,
+        updated_at: (product as any).updatedAt,
+      } as any;
+
+      delete dbProduct.originalPrice;
+      delete dbProduct.pricingTier;
+      delete dbProduct.mixGroupId;
+      delete dbProduct.updatedAt;
+
       const { error } = await supabase
         .from('products')
-        .update(product)
+        .update(dbProduct)
         .eq('id', id);
 
       if (error) {
