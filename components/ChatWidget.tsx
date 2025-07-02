@@ -21,8 +21,8 @@ import DatabaseService from '../services/database';
 import { ChatMessage, ChatRoom, User } from '../types';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { router } from 'expo-router';
 import InfoModal from './InfoModal';
+import UserProfileModal from './UserProfileModal';
 
 // Enable RTL for Hebrew
 I18nManager.allowRTL(true);
@@ -57,6 +57,8 @@ export default function ChatWidget() {
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning'
   });
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && isLoggedIn) {
@@ -464,12 +466,13 @@ export default function ChatWidget() {
 
   const navigateToUserProfile = async (userId: string) => {
     if (!isAdmin) return;
-    
+
     try {
       setIsOpen(false);
-      router.push(`/user/${encodeURIComponent(userId)}`);
+      setProfileUserId(userId);
+      setProfileModalVisible(true);
     } catch (error) {
-      console.error('Error navigating to user profile:', error);
+      console.error('Error opening user profile modal:', error);
     }
   };
 
@@ -874,6 +877,15 @@ export default function ChatWidget() {
           onPress={() => setShowReactions(null)}
         />
       )}
+
+      <UserProfileModal
+        visible={profileModalVisible}
+        userId={profileUserId || ''}
+        onClose={() => {
+          setProfileModalVisible(false);
+          setProfileUserId(null);
+        }}
+      />
 
       {/* Info Modal */}
       <InfoModal
