@@ -9,7 +9,6 @@ import {
   FlatList,
   Dimensions,
   Modal,
-  Alert,
   I18nManager,
   TextInput,
   RefreshControl,
@@ -31,6 +30,8 @@ import EmptyState from '../../components/EmptyState';
 import MediaUploader from '../../components/MediaUploader';
 import CartModal from '../../components/CartModal';
 import ProductFormModal from '../../components/ProductFormModal';
+import InfoModal from '../../components/InfoModal';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 // Enable RTL for Hebrew
 I18nManager.allowRTL(true);
@@ -74,6 +75,13 @@ export default function HomeScreen() {
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  const [infoModal, setInfoModal] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+  });
   const { isAdmin } = useAuth();
   const { t } = useLanguage();
   const { colors } = useTheme();
@@ -197,12 +205,22 @@ export default function HomeScreen() {
 
   const saveBanner = async () => {
     if (!newBanner.title || !newBanner.subtitle || !newBanner.discount || !newBanner.category) {
-      Alert.alert('שגיאה', 'אנא מלא את כל השדות');
+      setInfoModal({
+        visible: true,
+        title: 'שגיאה',
+        message: 'אנא מלא את כל השדות',
+        type: 'error'
+      });
       return;
     }
 
     if (bannerMedia.length === 0) {
-      Alert.alert('שגיאה', 'Please upload a banner image');
+      setInfoModal({
+        visible: true,
+        title: 'שגיאה',
+        message: 'Please upload a banner image',
+        type: 'error'
+      });
       return;
     }
 
@@ -214,7 +232,12 @@ export default function HomeScreen() {
       if (!uploadedUrl ||
           (uploadedUrl === bannerMedia[0].uri &&
            !bannerMedia[0].uri.startsWith('http'))) {
-        Alert.alert('שגיאה', 'העלאת הבאנר נכשלה');
+        setInfoModal({
+          visible: true,
+          title: 'שגיאה',
+          message: 'העלאת הבאנר נכשלה',
+          type: 'error'
+        });
         return;
       }
 
@@ -241,47 +264,59 @@ export default function HomeScreen() {
       }
       
       setShowBannerModal(false);
-      Alert.alert('הצלחה', 'הבאנר נשמר בהצלחה');
+      setInfoModal({
+        visible: true,
+        title: 'הצלחה',
+        message: 'הבאנר נשמר בהצלחה',
+        type: 'success'
+      });
     } catch (error) {
       console.error('Error saving banner:', error);
-      Alert.alert('שגיאה', 'שמירת הבאנר נכשלה');
+      setInfoModal({
+        visible: true,
+        title: 'שגיאה',
+        message: 'שמירת הבאנר נכשלה',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  const confirmDeleteBanner = () => {
+    if (!editingBanner) return;
+    setShowBannerModal(false);
+    setTimeout(() => {
+      setConfirmDeleteVisible(true);
+    }, 300);
+  };
+
   const deleteBanner = async () => {
     if (!editingBanner) return;
 
-    Alert.alert(
-      'אישור מחיקה',
-      'האם אתה בטוח שברצונך למחוק את הבאנר?',
-      [
-        {
-          text: 'ביטול',
-          style: 'cancel',
-        },
-        {
-          text: 'מחק',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const db = DatabaseService.getInstance();
-              await db.deleteHeroBanner(editingBanner.id);
-              setHeroBanners(prev => prev.filter(b => b.id !== editingBanner.id));
-              setShowBannerModal(false);
-              Alert.alert('הצלחה', 'הבאנר נמחק בהצלחה');
-            } catch (error) {
-              console.error('Error deleting banner:', error);
-              Alert.alert('שגיאה', 'מחיקת הבאנר נכשלה');
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+    try {
+      setLoading(true);
+      const db = DatabaseService.getInstance();
+      await db.deleteHeroBanner(editingBanner.id);
+      setHeroBanners(prev => prev.filter(b => b.id !== editingBanner.id));
+      setShowBannerModal(false);
+      setInfoModal({
+        visible: true,
+        title: 'הצלחה',
+        message: 'הבאנר נמחק בהצלחה',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Error deleting banner:', error);
+      setInfoModal({
+        visible: true,
+        title: 'שגיאה',
+        message: 'מחיקת הבאנר נכשלה',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addProduct = () => {
@@ -692,9 +727,9 @@ export default function HomeScreen() {
               </TouchableOpacity>
 
               {editingBanner && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.deleteButton, { backgroundColor: colors.status.error }]}
-                  onPress={deleteBanner}
+                  onPress={confirmDeleteBanner}
                   disabled={loading}
                 >
                   <Trash2 size={20} color={colors.text.inverse} />
@@ -823,9 +858,36 @@ export default function HomeScreen() {
       </Modal>
 
       {/* Cart Modal */}
-      <CartModal 
-        visible={showCartModal} 
-        onClose={() => setShowCartModal(false)} 
+      <CartModal
+        visible={showCartModal}
+        onClose={() => setShowCartModal(false)}
+      />
+
+      {/* Info Modal */}
+      <InfoModal
+        visible={infoModal.visible}
+        title={infoModal.title}
+        message={infoModal.message}
+        type={infoModal.type}
+        onClose={() => setInfoModal({ ...infoModal, visible: false })}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={confirmDeleteVisible}
+        title="אישור מחיקה"
+        message="האם אתה בטוח שברצונך למחוק את הבאנר?"
+        confirmText="מחק"
+        cancelText="ביטול"
+        onConfirm={() => {
+          setConfirmDeleteVisible(false);
+          deleteBanner();
+        }}
+        onCancel={() => {
+          setConfirmDeleteVisible(false);
+          setShowBannerModal(true);
+        }}
+        destructive={true}
       />
     </SafeAreaView>
   );
