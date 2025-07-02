@@ -315,7 +315,10 @@ export default function SubcategoryScreen() {
     if (!editingProduct) return;
     // Close the edit modal so the confirmation modal is visible on web
     setShowProductModal(false);
-    setConfirmDeleteVisible(true);
+    // Wait for the modal to close before showing the confirmation dialog
+    setTimeout(() => {
+      setConfirmDeleteVisible(true);
+    }, 300);
   };
 
   const deleteProduct = async (productId: string) => {

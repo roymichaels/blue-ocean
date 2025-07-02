@@ -325,7 +325,10 @@ export default function ProductDetailScreen() {
   const confirmDeleteProduct = () => {
     // Close the edit modal so the confirmation modal is visible on web
     setShowEditModal(false);
-    setConfirmDeleteModal(true);
+    // Wait for the modal to close before showing the confirmation dialog
+    setTimeout(() => {
+      setConfirmDeleteModal(true);
+    }, 300);
   };
 
   const deleteProduct = async () => {
