@@ -673,8 +673,8 @@ export default function ChatWidget() {
             {item.displayName}
           </Text>
         </View>
-        <Text style={[styles.userTypeLabel, { color: colors.text.secondary }]}> 
-          {item.isAppUser ? 'App user' : 'Matrix only'}
+        <Text style={[styles.userTypeLabel, { color: colors.text.secondary }]}>
+          {item.isAppUser ? t('chat.appUser') : t('chat.matrixOnly')}
         </Text>
       </View>
     </TouchableOpacity>
@@ -722,14 +722,14 @@ export default function ChatWidget() {
             )}
             <View style={styles.headerContent}>
               <Text style={[styles.chatTitle, { color: colors.text.inverse }]}>
-                {isAdmin 
-                  ? (selectedRoom ? selectedRoom.userName : "צ'אט מנהל") 
-                  : "תמיכת לקוחות"}
+                {isAdmin
+                  ? (selectedRoom ? selectedRoom.userName : t('chat.adminChat'))
+                  : t('chat.customerSupport')}
               </Text>
               <Text style={styles.chatSubtitle}>
-                {isAdmin 
-                  ? (selectedRoom ? "צ'אט תמיכת לקוחות" : "בחר צ'אט להתחלה") 
-                  : "צ'אט עם הצוות שלנו"}
+                {isAdmin
+                  ? (selectedRoom ? t('chat.customerSupportChat') : t('chat.selectChatToStart'))
+                  : t('chat.chatWithTeam')}
               </Text>
             </View>
             <View style={styles.headerButtons}>
@@ -768,7 +768,7 @@ export default function ChatWidget() {
                     <Search size={20} color="#999" />
                     <TextInput
                       style={[styles.searchInput, { color: colors.text.primary }]}
-                      placeholder="חיפוש משתמשים..."
+                      placeholder={t('chat.searchUsers')}
                       value={searchQuery}
                       onChangeText={setSearchQuery}
                       textAlign="right"
@@ -787,7 +787,9 @@ export default function ChatWidget() {
                       ) : (
                         <View style={styles.emptyContainer}>
                           <MessageCircle size={60} color={colors.interactive.disabled} />
-                          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>לא נמצאו משתמשים</Text>
+                          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
+                            {t('chat.noUsersFound')}
+                          </Text>
                         </View>
                       )}
                     </ScrollView>
@@ -801,7 +803,9 @@ export default function ChatWidget() {
                       ) : (
                         <View style={styles.emptyContainer}>
                           <MessageCircle size={60} color={colors.interactive.disabled} />
-                          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>לא נמצאו חדרי צ'אט</Text>
+                          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
+                            {t('chat.noChatRooms')}
+                          </Text>
                         </View>
                       )}
                     </ScrollView>
@@ -820,8 +824,12 @@ export default function ChatWidget() {
                       messages.map(renderMessage)
                     ) : (
                       <View style={styles.emptyMessagesContainer}>
-                        <Text style={[styles.emptyMessagesText, { color: colors.text.secondary }]}>אין הודעות עדיין</Text>
-                        <Text style={[styles.emptyMessagesSubtext, { color: colors.text.tertiary }]}>התחל את השיחה!</Text>
+                        <Text style={[styles.emptyMessagesText, { color: colors.text.secondary }]}>
+                          {t('chat.noMessagesYet')}
+                        </Text>
+                        <Text style={[styles.emptyMessagesSubtext, { color: colors.text.tertiary }]}>
+                          {t('chat.startConversation')}
+                        </Text>
                       </View>
                     )}
                   </ScrollView>
@@ -855,7 +863,7 @@ export default function ChatWidget() {
                           }]}
                           value={newMessage}
                           onChangeText={setNewMessage}
-                          placeholder="הקלד את ההודעה שלך..."
+                          placeholder={t('chat.typeMessage')}
                           multiline
                           maxLength={500}
                           textAlign="right"
