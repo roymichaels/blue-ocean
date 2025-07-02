@@ -3,6 +3,7 @@ declare module 'matrix-js-sdk' {
 
   export interface MatrixClient {
     [key: string]: any;
+    initRustCrypto(options?: { useIndexedDB?: boolean }): Promise<CryptoApi>;
   }
 
   export interface MatrixEvent {
@@ -24,6 +25,10 @@ declare module 'matrix-js-sdk' {
 
   export class IndexedDBCryptoStore {
     constructor(...args: any[]);
+    [key: string]: any;
+  }
+
+  export interface CryptoApi {
     [key: string]: any;
   }
 

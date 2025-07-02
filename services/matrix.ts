@@ -5,7 +5,6 @@ import {
   Room,
   RoomMember,
   MemoryStore,
-  IndexedDBCryptoStore,
   ClientEvent,
   RoomEvent,
   RoomMemberEvent,
@@ -15,8 +14,6 @@ import {
   Preset,
   Visibility,
 } from 'matrix-js-sdk';
-import * as olm from '@matrix-org/olm';
-import olmWasm from '@matrix-org/olm/olm.wasm';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import DatabaseService from './database';
@@ -35,7 +32,6 @@ export class MatrixService {
   private currentUser: any = null;
   private authStateListeners: ((isLoggedIn: boolean, user: any) => void)[] = [];
   private chatTriggerListeners: ((userId: string) => void)[] = [];
-  private olmInitialized = false;
 
   public static getInstance(): MatrixService {
     if (!MatrixService.instance) {
@@ -80,33 +76,22 @@ export class MatrixService {
     userId: string
   ): Promise<void> {
     try {
-      // Load the Olm WASM module for end-to-end encryption support
-      if (!this.olmInitialized) {
-        await olm.init({ locateFile: () => olmWasm });
-        this.olmInitialized = true;
-      }
-
-      const cryptoStore =
-        typeof window !== 'undefined' && (window as any).indexedDB
-          ? new IndexedDBCryptoStore(window.indexedDB, 'matrix-crypto-store')
-          : undefined;
-
-      // Create Matrix client with proper MemoryStore and crypto configuration
+      // Create Matrix client
       this.matrixClient = createClient({
         baseUrl: `https://${MATRIX_DOMAIN}`,
         accessToken,
         userId,
         store: new MemoryStore(),
-        cryptoStore,
-        olmLibrary: olm,
         timelineSupport: true,
       });
 
       // Set up event listeners before starting the client
       this.setupMatrixEventListeners();
 
-      // Initialise crypto and start the client
-      await this.matrixClient.initCrypto();
+      // Initialise rust crypto and start the client
+      await this.matrixClient.initRustCrypto({
+        useIndexedDB: typeof window !== 'undefined',
+      });
 
       const startOptions = { initialSyncLimit: 20 };
       await this.matrixClient.startClient(startOptions);
@@ -306,14 +291,8 @@ export class MatrixService {
 
       try {
         // Create a temporary client for login
-        if (!this.olmInitialized) {
-          await olm.init({ locateFile: () => olmWasm });
-          this.olmInitialized = true;
-        }
-
         const tempClient = createClient({
           baseUrl: `https://${MATRIX_DOMAIN}`,
-          olmLibrary: olm,
         });
 
         // Attempt to log in with Matrix
