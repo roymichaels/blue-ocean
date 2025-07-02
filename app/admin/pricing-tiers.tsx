@@ -4,13 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   TextInput,
   Modal,
   I18nManager,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, DollarSign, Percent, Package, Users } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';

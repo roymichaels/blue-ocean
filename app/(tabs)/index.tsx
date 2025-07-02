@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
-  SafeAreaView,
   Dimensions,
   Modal,
   Alert,
@@ -16,6 +15,7 @@ import {
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Heart, Plus, Pencil, X, Save, Trash2, Filter, ArrowUpDown } from 'lucide-react-native';
 import DatabaseService from '../../services/database';

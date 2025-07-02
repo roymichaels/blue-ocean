@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, MessageCircle, Send, X } from 'lucide-react-native';
 import { ChatRoom, ChatMessage } from '../types';
 import DatabaseService from '../services/database';

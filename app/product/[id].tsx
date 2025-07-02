@@ -14,6 +14,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Heart, Minus, Plus, ShoppingCart, Tag, Share2, Pencil, X, Save, Trash2, Image as ImageIcon } from 'lucide-react-native';
 import DatabaseService from '../../services/database';

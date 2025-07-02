@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   Alert,
   I18nManager,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, CircleCheck as CheckCircle, Circle as XCircle, Clock, User, Mail, FileText, Calendar } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';

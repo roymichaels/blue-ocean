@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import {
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  SafeAreaView, 
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
   I18nManager,
   ActivityIndicator,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, UserPlus } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';

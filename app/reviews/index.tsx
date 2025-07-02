@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Image,
   TextInput,
   Modal,
@@ -13,6 +12,7 @@ import {
   I18nManager,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft, Trash2 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import DatabaseService from '../../services/database';

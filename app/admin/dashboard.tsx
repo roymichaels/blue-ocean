@@ -4,10 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   I18nManager,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Package, MessageCircle, Users, Bell, Star, TrendingUp, ShoppingCart, Eye, Shield, Clock, DollarSign, Settings } from 'lucide-react-native';
 import { MatrixService } from '../../services/matrix';
