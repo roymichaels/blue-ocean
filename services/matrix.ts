@@ -5,6 +5,14 @@ import {
   Room,
   RoomMember,
   MemoryStore,
+  ClientEvent,
+  RoomEvent,
+  RoomMemberEvent,
+  HttpApiEvent,
+  SyncState,
+  NotificationCountType,
+  Preset,
+  Visibility,
 } from 'matrix-js-sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
@@ -97,11 +105,11 @@ export class MatrixService {
     if (!this.matrixClient) return;
 
     // Listen for authentication errors
-    this.matrixClient.on('Client.error', (error: any) => {
+    this.matrixClient.on(HttpApiEvent.SessionLoggedOut, (error) => {
       console.error('Matrix client error:', error);
 
       // Check if it's an authentication error (401)
-      if (error && error.httpStatus === 401) {
+      if (error && (error as any).httpStatus === 401) {
         console.warn('Matrix token is invalid, logging out...');
         this.handleAuthenticationError();
       }
@@ -109,9 +117,9 @@ export class MatrixService {
 
     // Listen for sync errors specifically
     this.matrixClient.on(
-      'sync',
-      (state: string, prevState: string, data: any) => {
-        if (state === 'ERROR') {
+      ClientEvent.Sync,
+      (state: SyncState, prevState: SyncState | null, data?: any) => {
+        if (state === SyncState.Error) {
           console.error('Matrix sync error:', data);
 
           // If it's an authentication error during sync, handle it
@@ -123,14 +131,14 @@ export class MatrixService {
             console.warn('Matrix sync authentication error, logging out...');
             this.handleAuthenticationError();
           }
-        } else if (state === 'PREPARED') {
+        } else if (state === SyncState.Prepared) {
           debugLog('Matrix client sync prepared');
         }
       }
     );
 
     // Listen for new messages
-    this.matrixClient.on('Room.timeline', (event: MatrixEvent, room: Room) => {
+    this.matrixClient.on(RoomEvent.Timeline, (event: MatrixEvent, room: Room) => {
       // Handle new messages
       if (event.getType() === 'm.room.message') {
         // Update unread count or trigger notifications
@@ -140,7 +148,7 @@ export class MatrixService {
 
     // Listen for room member changes
     this.matrixClient.on(
-      'RoomMember.membership',
+      RoomMemberEvent.Membership,
       (event: MatrixEvent, member: RoomMember) => {
         // Handle membership changes
       }
@@ -542,10 +550,10 @@ export class MatrixService {
 
       // Create a direct message room
       const response = await this.matrixClient.createRoom({
-        preset: 'private_chat',
+        preset: Preset.PrivateChat,
         invite: [otherUserId],
         is_direct: true,
-        visibility: 'private',
+        visibility: Visibility.Private,
         initial_state: [
           {
             type: 'm.room.guest_access',
@@ -712,8 +720,8 @@ export class MatrixService {
 
           // Get unread count
           const unreadCount =
-            room.getUnreadNotificationCount('highlight') +
-            room.getUnreadNotificationCount('notification');
+            room.getUnreadNotificationCount(NotificationCountType.Highlight) +
+            room.getUnreadNotificationCount(NotificationCountType.Total);
 
           return {
             id: room.roomId,
@@ -860,13 +868,13 @@ export class MatrixService {
     const reactions: Record<string, string[]> = {};
 
     // Get all m.reaction events that relate to this event
-    const relatedEvents = room
-      .getUnfilteredTimelineSet()
+    const relatedEvents = (room
+      .getUnfilteredTimelineSet() as any)
       .getRelationsForEvent(event.getId() || '', 'm.annotation', 'm.reaction');
 
     if (relatedEvents) {
       // Group reactions by emoji
-      relatedEvents.getAnnotations().forEach((annotation) => {
+      relatedEvents.getAnnotations().forEach((annotation: MatrixEvent) => {
         const content = annotation.getContent();
         const key = content['m.relates_to']?.key;
         const sender = annotation.getSender();
