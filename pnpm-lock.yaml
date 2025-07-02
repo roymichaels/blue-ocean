@@ -109,6 +109,9 @@ importers:
       react-native:
         specifier: 0.79.1
         version: 0.79.1(@babel/core@7.27.7)(@types/react@19.0.14)(react@19.0.0)
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
       react-native-crypto:
         specifier: ^2.2.1
         version: 2.2.1(patch_hash=ad338bdd860e7b0087ad02bc7e5c0002118bafbfdc814f94845f19fee21db779)
@@ -7033,6 +7036,12 @@ snapshots:
       isarray: 1.0.0
 
   buffer@5.7.1:
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
+
+  buffer@6.0.3:
+    resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
