@@ -208,10 +208,20 @@ export default function HomeScreen() {
 
     try {
       setLoading(true);
+      const pinata = PinataService.getInstance();
+      const uploadedUrl = await pinata.uploadFile(bannerMedia[0].uri, 'banner');
+
+      if (!uploadedUrl ||
+          (uploadedUrl === bannerMedia[0].uri &&
+           !bannerMedia[0].uri.startsWith('http'))) {
+        Alert.alert('שגיאה', 'העלאת הבאנר נכשלה');
+        return;
+      }
+
       const db = DatabaseService.getInstance();
       const bannerData = {
         ...newBanner,
-        image: bannerMedia[0].uri
+        image: uploadedUrl
       };
       
       if (editingBanner) {
