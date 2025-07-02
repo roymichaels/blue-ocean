@@ -6,11 +6,12 @@ import {
   ChatMessage, 
   ChatRoom, 
   User, 
-  Notification, 
-  Review, 
+  Notification,
+  Review,
   HeroBanner,
   PricingTier,
-  MixGroup
+  MixGroup,
+  WishlistItem
 } from '../types';
 
 class DatabaseService {
@@ -1169,6 +1170,91 @@ class DatabaseService {
       }
     } catch (error) {
       console.error('Error in deleteMixGroup:', error);
+      throw error;
+    }
+  }
+
+  // Wishlist
+  async getWishlistItems(userId: string): Promise<WishlistItem[]> {
+    try {
+      const { data, error } = await supabase
+        .from('wishlist_items')
+        .select(
+          'id, product_id, added_at, products(*)'
+        )
+        .eq('user_id', userId)
+        .order('added_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching wishlist items:', error);
+        return [];
+      }
+
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        productId: item.product_id,
+        product: {
+          id: item.products.id,
+          name: item.products.name,
+          name_en: item.products.name_en,
+          name_he: item.products.name_he,
+          price: item.products.price,
+          originalPrice: item.products.original_price ?? undefined,
+          description: item.products.description,
+          description_en: item.products.description_en,
+          description_he: item.products.description_he,
+          category: item.products.category,
+          subcategory: item.products.subcategory,
+          images: item.products.images,
+          videos: item.products.videos ?? undefined,
+          colors: item.products.colors ?? undefined,
+          rating: item.products.rating,
+          reviews: item.products.reviews,
+          badges: item.products.badges ?? undefined,
+          pricingTier: item.products.pricing_tier ?? undefined,
+          mixGroupId: item.products.mix_group_id ?? undefined,
+          stock: item.products.stock,
+          createdAt: item.products.created_at,
+          updatedAt: item.products.updated_at,
+        },
+        addedAt: item.added_at,
+      }));
+    } catch (error) {
+      console.error('Error in getWishlistItems:', error);
+      return [];
+    }
+  }
+
+  async addWishlistItem(userId: string, productId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('wishlist_items')
+        .insert([{ user_id: userId, product_id: productId }]);
+
+      if (error) {
+        console.error('Error adding wishlist item:', error);
+        throw new Error('Failed to add wishlist item');
+      }
+    } catch (error) {
+      console.error('Error in addWishlistItem:', error);
+      throw error;
+    }
+  }
+
+  async removeWishlistItem(userId: string, productId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('wishlist_items')
+        .delete()
+        .eq('user_id', userId)
+        .eq('product_id', productId);
+
+      if (error) {
+        console.error('Error removing wishlist item:', error);
+        throw new Error('Failed to remove wishlist item');
+      }
+    } catch (error) {
+      console.error('Error in removeWishlistItem:', error);
       throw error;
     }
   }
