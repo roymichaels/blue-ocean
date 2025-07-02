@@ -306,6 +306,7 @@ export default function ProductDetailScreen() {
   }
 
   const allMedia = getAllMedia();
+  const bannerImageUri = categoryBanner?.image || product.images?.[0];
   const currentPricingTier = pricingTiers.find(
     (tier) => tier.id === product.pricingTier,
   );
@@ -371,6 +372,7 @@ export default function ProductDetailScreen() {
             )}
           </View>
         </View>
+
 
         {categoryBanner && (
           <View style={styles.heroBanner}>
