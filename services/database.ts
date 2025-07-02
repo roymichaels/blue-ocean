@@ -727,7 +727,7 @@ class DatabaseService {
             tierId: r.tier_id,
             minQty: r.min_qty,
             maxQty: r.max_qty,
-            pricePerUnit: r.price_per_unit,
+            pricePerBaseUnit: r.price_per_unit,
             discountPct: r.discount_pct,
             createdAt: r.created_at,
             updatedAt: r.updated_at
@@ -780,7 +780,7 @@ class DatabaseService {
           tierId: r.tier_id,
           minQty: r.min_qty,
           maxQty: r.max_qty,
-          pricePerUnit: r.price_per_unit,
+          pricePerBaseUnit: r.price_per_unit,
           discountPct: r.discount_pct,
           createdAt: r.created_at,
           updatedAt: r.updated_at
@@ -818,7 +818,7 @@ class DatabaseService {
           tier_id: tier.id,
           min_qty: r.minQty,
           max_qty: r.maxQty,
-          price_per_unit: r.pricePerUnit,
+          price_per_unit: r.pricePerBaseUnit,
           discount_pct: r.discountPct
         }));
         const { error: ruleError } = await supabase
@@ -867,7 +867,7 @@ class DatabaseService {
             tier_id: id,
             min_qty: r.minQty,
             max_qty: r.maxQty,
-            price_per_unit: r.pricePerUnit,
+            price_per_unit: r.pricePerBaseUnit,
             discount_pct: r.discountPct
           }));
           const { error: ruleError } = await supabase

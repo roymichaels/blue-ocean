@@ -35,12 +35,28 @@ export default function PricingTiersScreen() {
     name: '',
     description: '',
     rules: [
-      { minQty: 1, maxQty: 1, pricePerUnit: undefined, discountPct: undefined } as any
+      { minQty: 1, maxQty: 1, pricePerBaseUnit: undefined, discountPct: undefined } as any
     ]
   });
   const { isAdmin } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+
+  const validateRules = (rules: { minQty: number; maxQty: number; pricePerBaseUnit?: number; discountPct?: number; }[]): string | null => {
+    const sorted = [...rules].sort((a, b) => a.minQty - b.minQty);
+    for (let i = 0; i < sorted.length; i++) {
+      const r = sorted[i];
+      if (r.minQty < 1) return 'כמות מינימלית חייבת להיות מספר גדול מ-0';
+      if (r.maxQty < r.minQty) return 'ערך מקסימום חייב להיות גדול או שווה למינימום';
+      if (r.pricePerBaseUnit == null && r.discountPct == null) return 'יש להזין מחיר או הנחה לכל כלל';
+      if (i === 0 && r.minQty !== 1) return 'הטווח הראשון חייב להתחיל ב-1';
+      if (i > 0) {
+        const prev = sorted[i - 1];
+        if (r.minQty !== prev.maxQty + 1) return 'טווחי הכמויות חופפים או מכילים חוסרים';
+      }
+    }
+    return null;
+  };
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -85,7 +101,7 @@ export default function PricingTiersScreen() {
       name: '',
       description: '',
       rules: [
-        { minQty: 1, maxQty: 1, pricePerUnit: undefined, discountPct: undefined } as any
+        { minQty: 1, maxQty: 1, pricePerBaseUnit: undefined, discountPct: undefined } as any
       ]
     });
     setShowTierModal(true);
@@ -108,14 +124,12 @@ export default function PricingTiersScreen() {
       return;
     }
 
-    if (newTier.rules && newTier.rules.some(r => r.minQty < 1)) {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'כמות מינימלית חייבת להיות מספר גדול מ-0',
-        type: 'error'
-      });
-      return;
+    if (newTier.rules) {
+      const errorMsg = validateRules(newTier.rules);
+      if (errorMsg) {
+        setInfoModal({ visible: true, title: 'שגיאה', message: errorMsg, type: 'error' });
+        return;
+      }
     }
 
     setLoading(true);
@@ -207,7 +221,7 @@ export default function PricingTiersScreen() {
           backgroundColor: colors.interactive.secondary,
           borderColor: colors.gold
         }]}>
-          {typeof (tier.rules?.[0]?.pricePerUnit) === 'number' ? (
+          {typeof (tier.rules?.[0]?.pricePerBaseUnit) === 'number' ? (
             <DollarSign size={24} color={colors.gold} />
           ) : (
             <Percent size={24} color={colors.gold} />
@@ -216,8 +230,8 @@ export default function PricingTiersScreen() {
         <View style={styles.tierInfo}>
           <Text style={[styles.tierName, { color: colors.text.primary }]}>{tier.name}</Text>
           <Text style={[styles.tierDiscount, { color: colors.gold }]}>
-            {typeof (tier.rules?.[0]?.pricePerUnit) === 'number'
-              ? `${currencySymbol}${tier.rules![0].pricePerUnit!.toFixed(2)} ליחידה`
+            {typeof (tier.rules?.[0]?.pricePerBaseUnit) === 'number'
+              ? `${currencySymbol}${tier.rules![0].pricePerBaseUnit!.toFixed(2)} ליחידה`
               : 'מחיר רגיל'}
           </Text>
         </View>
@@ -407,10 +421,10 @@ export default function PricingTiersScreen() {
                       backgroundColor: colors.surface.primary,
                       color: colors.text.primary
                     }]}
-                    value={rule.pricePerUnit?.toString() || ''}
+                    value={rule.pricePerBaseUnit?.toString() || ''}
                     onChangeText={(text) => {
                       const updated = [...(newTier.rules || [])];
-                      updated[idx].pricePerUnit = text ? parseFloat(text) : undefined;
+                      updated[idx].pricePerBaseUnit = text ? parseFloat(text) : undefined;
                       setNewTier({...newTier, rules: updated});
                     }}
                     keyboardType="numeric"
@@ -444,7 +458,7 @@ export default function PricingTiersScreen() {
                 </TouchableOpacity>
               </View>
             ))}
-            <TouchableOpacity onPress={() => setNewTier({...newTier, rules: [...(newTier.rules||[]), {minQty:1, maxQty:1, pricePerUnit: undefined, discountPct: undefined}]})} style={{marginBottom:10}}>
+            <TouchableOpacity onPress={() => setNewTier({...newTier, rules: [...(newTier.rules||[]), {minQty:1, maxQty:1, pricePerBaseUnit: undefined, discountPct: undefined}]})} style={{marginBottom:10}}>
               <Text style={{color: colors.gold}}>הוסף כלל</Text>
             </TouchableOpacity>
 

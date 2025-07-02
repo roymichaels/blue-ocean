@@ -123,8 +123,8 @@ class CartService {
         it.effectiveQty = effectiveQty;
         it.tierName = rule ? tier?.name : undefined;
 
-        if (rule?.pricePerUnit !== undefined && rule.pricePerUnit !== null) {
-          it.unitPrice = rule.pricePerUnit * conversionFactor;
+        if (rule?.pricePerBaseUnit !== undefined && rule.pricePerBaseUnit !== null) {
+          it.unitPrice = rule.pricePerBaseUnit * conversionFactor;
         } else if (rule?.discountPct !== undefined && rule.discountPct !== null) {
           it.unitPrice = it.product.price * (1 - rule.discountPct / 100);
         } else {
