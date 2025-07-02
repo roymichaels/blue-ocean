@@ -44,7 +44,7 @@ class DatabaseService {
         name_en: prod.name_en,
         name_he: prod.name_he,
         price: prod.price,
-        originalPrice: prod.original_price ?? undefined,
+        originalPrice: prod.originalPrice ?? undefined,
         description: prod.description,
         description_en: prod.description_en,
         description_he: prod.description_he,
@@ -89,7 +89,7 @@ class DatabaseService {
         name_en: data.name_en,
         name_he: data.name_he,
         price: data.price,
-        originalPrice: data.original_price ?? undefined,
+        originalPrice: data.originalPrice ?? undefined,
         description: data.description,
         description_en: data.description_en,
         description_he: data.description_he,
@@ -117,7 +117,7 @@ class DatabaseService {
     try {
       const dbProduct: any = {
         ...product,
-        original_price: (product as any).originalPrice,
+        originalPrice: (product as any).originalPrice,
         pricing_tier: (product as any).pricingTier,
         created_at: (product as any).createdAt,
         updated_at: (product as any).updatedAt,
@@ -131,7 +131,6 @@ class DatabaseService {
         delete dbProduct.subcategory;
       }
 
-      delete dbProduct.originalPrice;
       delete dbProduct.pricingTier;
       delete dbProduct.mixGroupId;
       delete dbProduct.createdAt;
@@ -159,7 +158,7 @@ class DatabaseService {
     try {
       const dbProduct: any = {
         ...product,
-        original_price: (product as any).originalPrice,
+        originalPrice: (product as any).originalPrice,
         pricing_tier: (product as any).pricingTier,
         updated_at: (product as any).updatedAt,
       };
@@ -172,7 +171,6 @@ class DatabaseService {
         delete dbProduct.subcategory;
       }
 
-      delete dbProduct.originalPrice;
       delete dbProduct.pricingTier;
       delete dbProduct.mixGroupId;
       delete dbProduct.updatedAt;
