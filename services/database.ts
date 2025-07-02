@@ -843,6 +843,81 @@ class DatabaseService {
     }
   }
 
+  async addHeroBanner(
+    banner: Omit<HeroBanner, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<string> {
+    try {
+      const dbBanner: any = {
+        ...banner,
+        is_active: banner.isActive,
+      };
+
+      delete dbBanner.isActive;
+
+      const { data, error } = await supabase
+        .from('hero_banners')
+        .insert([dbBanner])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding hero banner:', error);
+        throw new Error('Failed to add hero banner');
+      }
+
+      return data.id;
+    } catch (error) {
+      console.error('Error in addHeroBanner:', error);
+      throw error;
+    }
+  }
+
+  async updateHeroBanner(
+    id: string,
+    banner: Partial<HeroBanner>
+  ): Promise<void> {
+    try {
+      const dbBanner: any = {
+        ...banner,
+        is_active: banner.isActive,
+        updated_at: (banner as any).updatedAt,
+      };
+
+      delete dbBanner.isActive;
+      delete dbBanner.updatedAt;
+
+      const { error } = await supabase
+        .from('hero_banners')
+        .update(dbBanner)
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating hero banner:', error);
+        throw new Error('Failed to update hero banner');
+      }
+    } catch (error) {
+      console.error('Error in updateHeroBanner:', error);
+      throw error;
+    }
+  }
+
+  async deleteHeroBanner(id: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('hero_banners')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting hero banner:', error);
+        throw new Error('Failed to delete hero banner');
+      }
+    } catch (error) {
+      console.error('Error in deleteHeroBanner:', error);
+      throw error;
+    }
+  }
+
   // Pricing Tiers
   async getPricingTiers(): Promise<PricingTier[]> {
     try {
