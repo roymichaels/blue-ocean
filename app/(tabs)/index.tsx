@@ -20,7 +20,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Heart, Plus, Pencil, X, Save, Trash2, Filter, ArrowUpDown } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import PinataService from '../../services/pinata';
-import { Product, Category, HeroBanner, Subcategory, MixGroup } from '../../types';
+import { Product, Category, HeroBanner } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -30,6 +30,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import MediaUploader from '../../components/MediaUploader';
 import CartModal from '../../components/CartModal';
+import ProductFormModal from '../../components/ProductFormModal';
 
 // Enable RTL for Hebrew
 I18nManager.allowRTL(true);
@@ -50,8 +51,6 @@ export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [mixGroups, setMixGroups] = useState<MixGroup[]>([]);
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
@@ -71,26 +70,9 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'rating'>('newest');
   const [showSortModal, setShowSortModal] = useState(false);
-  const [showProductModal, setShowProductModal] = useState(false);
+  const [productFormVisible, setProductFormVisible] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
-  const [showSubcategorySelector, setShowSubcategorySelector] = useState(false);
-  const [showMixGroupSelector, setShowMixGroupSelector] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [newProduct, setNewProduct] = useState<Partial<Product>>({
-    name: '',
-    price: 0,
-    description: '',
-    category: '',
-    subcategory: '',
-    mixGroupId: '',
-    images: [],
-    videos: [],
-    stock: 0,
-    rating: 0,
-    reviews: 0,
-    badges: []
-  });
-  const [productMedia, setProductMedia] = useState<MediaItem[]>([]);
   const [showCartModal, setShowCartModal] = useState(false);
   const { isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -134,26 +116,14 @@ export default function HomeScreen() {
     try {
       setLoading(true);
       const db = DatabaseService.getInstance();
-      const [productsData, categoriesData, bannersData, mixGroupsData] = await Promise.all([
+      const [productsData, categoriesData, bannersData] = await Promise.all([
         db.getProducts(),
         db.getCategories(),
-        db.getHeroBanners(),
-        db.getMixGroups()
+        db.getHeroBanners()
       ]);
       setProducts(productsData);
       setCategories(categoriesData);
-      
-      // Extract all subcategories from categories
-      const allSubcategories: Subcategory[] = [];
-      categoriesData.forEach(category => {
-        if (category.subcategories && category.subcategories.length > 0) {
-          allSubcategories.push(...category.subcategories);
-        }
-      });
-      setSubcategories(allSubcategories);
-      
       setHeroBanners(bannersData);
-      setMixGroups(mixGroupsData);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -305,154 +275,32 @@ export default function HomeScreen() {
   };
 
   const addProduct = () => {
-    setEditingProduct(null);
-    setNewProduct({
-      name: '',
-      price: 0,
-      description: '',
-      category: '',
-      subcategory: '',
-      mixGroupId: '',
-      images: [],
-      videos: [],
-      stock: 0,
-      rating: 0,
-      reviews: 0,
-      badges: []
-    });
-    setProductMedia([]);
-    setShowProductModal(true);
+    setProductToEdit(null);
+    setProductFormVisible(true);
   };
 
   const editProduct = (product: Product) => {
-    setEditingProduct(product);
-    setNewProduct({...product});
-    // Convert existing images and videos to media format
-    const media: MediaItem[] = [];
-    
-    product.images?.forEach((uri, index) => {
-      media.push({
-        id: `image_${index}`,
-        uri,
-        type: 'image',
-        name: `Image ${index + 1}`
-      });
-    });
-    
-    product.videos?.forEach((uri, index) => {
-      media.push({
-        id: `video_${index}`,
-        uri,
-        type: 'video',
-        name: `Video ${index + 1}`
-      });
-    });
-    
-    setProductMedia(media);
-    setShowProductModal(true);
-  };
-
-  const saveProduct = async () => {
-    if (!newProduct.name || !newProduct.description || !newProduct.price || newProduct.price <= 0) {
-      Alert.alert('שגיאה', 'אנא מלא את כל השדות הנדרשים');
-      return;
-    }
-
-    if (productMedia.length === 0) {
-      Alert.alert('שגיאה', 'אנא העלה לפחות תמונת מוצר אחת');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const db = DatabaseService.getInstance();
-      const productData = {
-        ...newProduct,
-        images: productMedia.filter(m => m.type === 'image').map(m => m.uri),
-        videos: productMedia.filter(m => m.type === 'video').map(m => m.uri)
-      };
-      
-      if (editingProduct) {
-        // Update existing product
-        await db.updateProduct(editingProduct.id, productData);
-        setProducts(prev => prev.map(p => p.id === editingProduct.id ? {...p, ...productData} : p));
-      } else {
-        // Add new product
-        const productId = await db.addProduct(productData as Omit<Product, 'id'>);
-        const addedProduct = {...productData, id: productId} as Product;
-        setProducts(prev => [...prev, addedProduct]);
-      }
-      
-      setShowProductModal(false);
-      Alert.alert('הצלחה', 'המוצר נשמר בהצלחה');
-    } catch (error) {
-      console.error('Error saving product:', error);
-      Alert.alert('שגיאה', 'שמירת המוצר נכשלה');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteProduct = async () => {
-    if (!editingProduct) return;
-
-    Alert.alert(
-      'אישור מחיקה',
-      'האם אתה בטוח שברצונך למחוק את המוצר?',
-      [
-        {
-          text: 'ביטול',
-          style: 'cancel',
-        },
-        {
-          text: 'מחק',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const db = DatabaseService.getInstance();
-              await db.deleteProduct(editingProduct.id);
-              setProducts(prev => prev.filter(p => p.id !== editingProduct.id));
-              setShowProductModal(false);
-              Alert.alert('הצלחה', 'המוצר נמחק בהצלחה');
-            } catch (error) {
-              console.error('Error deleting product:', error);
-              Alert.alert('שגיאה', 'מחיקת המוצר נכשלה');
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+    setProductToEdit(product);
+    setProductFormVisible(true);
   };
 
   const selectCategory = (category: string) => {
     if (showBannerModal) {
-      setNewBanner({...newBanner, category});
-    } else if (showProductModal) {
-      setNewProduct({...newProduct, category, subcategory: ''});
+      setNewBanner({ ...newBanner, category });
     }
     setShowCategorySelector(false);
   };
 
-  const selectSubcategory = (subcategory: string) => {
-    if (showProductModal) {
-      setNewProduct({...newProduct, subcategory});
+  const handleProductSaved = (p: Product, isNew: boolean) => {
+    if (isNew) {
+      setProducts(prev => [...prev, p]);
+    } else {
+      setProducts(prev => prev.map(prod => (prod.id === p.id ? p : prod)));
     }
-    setShowSubcategorySelector(false);
   };
 
-  const selectMixGroup = (groupId: string) => {
-    if (showProductModal) {
-      setNewProduct({ ...newProduct, mixGroupId: groupId });
-    }
-    setShowMixGroupSelector(false);
-  };
-
-  const getFilteredSubcategories = () => {
-    if (!newProduct.category) return [];
-    return subcategories.filter(sub => sub.categoryId === newProduct.category);
+  const handleProductDeleted = (id: string) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
   };
 
   const renderCategory = ({ item }: { item: Category }) => (
@@ -703,17 +551,10 @@ export default function HomeScreen() {
                     { width: getProductItemWidth() }
                   ]}
                 >
-                  <ProductCard 
-                    product={item} 
+                  <ProductCard
+                    product={item}
                     isAdmin={isAdmin}
                     onEdit={editProduct}
-                    onDelete={(productId) => {
-                      const product = products.find(p => p.id === productId);
-                      if (product) {
-                        setEditingProduct(product);
-                        deleteProduct();
-                      }
-                    }}
                   />
                 </View>
               ))}
@@ -856,6 +697,7 @@ export default function HomeScreen() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
 
       {/* Product Edit/Add Modal */}
       <Modal

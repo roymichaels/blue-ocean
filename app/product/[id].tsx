@@ -23,10 +23,9 @@ import { Product, Category, PricingTier } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import MediaUploader from '../../components/MediaUploader';
 import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
-import ConfirmationModal from '../../components/ConfirmationModal';
+import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 // Enable RTL for Hebrew
@@ -35,12 +34,6 @@ I18nManager.forceRTL(true);
 
 const { width } = Dimensions.get('window');
 
-interface MediaItem {
-  id: string;
-  uri: string;
-  type: 'image' | 'video';
-  name?: string;
-}
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -52,10 +45,6 @@ export default function ProductDetailScreen() {
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Partial<Product>>({});
-  const [productMedia, setProductMedia] = useState<MediaItem[]>([]);
-  const [showCategorySelector, setShowCategorySelector] = useState(false);
-  const [showPricingTierSelector, setShowPricingTierSelector] = useState(false);
   const [loading, setLoading] = useState(false);
   const { isAdmin } = useAuth();
   const { colors } = useTheme();
@@ -68,7 +57,6 @@ export default function ProductDetailScreen() {
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning'
   });
-  const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
 
   useEffect(() => {
     loadProduct();
@@ -236,150 +224,9 @@ export default function ProductDetailScreen() {
   };
 
   const openEditModal = () => {
-    // Convert existing images and videos to media format
-    const media: MediaItem[] = [];
-    
-    product?.images?.forEach((uri, index) => {
-      media.push({
-        id: `image_${index}`,
-        uri,
-        type: 'image',
-        name: `Image ${index + 1}`
-      });
-    });
-    
-    product?.videos?.forEach((uri, index) => {
-      media.push({
-        id: `video_${index}`,
-        uri,
-        type: 'video',
-        name: `Video ${index + 1}`
-      });
-    });
-    
-    setProductMedia(media);
     setShowEditModal(true);
   };
 
-  const saveProduct = async () => {
-    // Validate product ID
-    if (!id || typeof id !== 'string' || id === 'undefined') {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'מזהה המוצר לא תקין',
-        type: 'error'
-      });
-      return;
-    }
-
-    if (!editingProduct.name || !editingProduct.description || !editingProduct.price || editingProduct.price <= 0) {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'אנא מלא את כל השדות הנדרשים',
-        type: 'error'
-      });
-      return;
-    }
-
-    if (productMedia.length === 0) {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'אנא העלה לפחות קובץ מדיה אחד',
-        type: 'error'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const db = DatabaseService.getInstance();
-      const productData = {
-        ...editingProduct,
-        images: productMedia.filter(m => m.type === 'image').map(m => m.uri),
-        videos: productMedia.filter(m => m.type === 'video').map(m => m.uri)
-      };
-      
-      await db.updateProduct(id, productData);
-      setProduct({...product, ...productData} as Product);
-      setShowEditModal(false);
-      setInfoModal({
-        visible: true,
-        title: 'הצלחה',
-        message: 'המוצר עודכן בהצלחה',
-        type: 'success'
-      });
-    } catch (error) {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'עדכון המוצר נכשל',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const confirmDeleteProduct = () => {
-    // Close the edit modal so the confirmation modal is visible on web
-    setShowEditModal(false);
-    // Wait for the modal to close before showing the confirmation dialog
-    setTimeout(() => {
-      setConfirmDeleteModal(true);
-    }, 300);
-  };
-
-  const deleteProduct = async () => {
-    // Validate product ID
-    if (!id || typeof id !== 'string' || id === 'undefined') {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'מזהה המוצר לא תקין',
-        type: 'error'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const db = DatabaseService.getInstance();
-      await db.deleteProduct(id);
-      setInfoModal({
-        visible: true,
-        title: 'הצלחה',
-        message: 'המוצר נמחק בהצלחה',
-        type: 'success'
-      });
-      
-      // Navigate back after successful deletion
-      setTimeout(() => {
-        router.back();
-      }, 1500);
-    } catch (error) {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'מחיקת המוצר נכשלה',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const selectCategory = (category: string) => {
-    setEditingProduct({...editingProduct, category});
-    setShowCategorySelector(false);
-  };
-
-  const selectPricingTier = (tierId: string) => {
-    setEditingProduct({...editingProduct, pricingTier: tierId});
-    setShowPricingTierSelector(false);
-  };
 
   // Calculate effective price based on pricing tier and quantity
   const getEffectivePrice = (basePrice: number, quantity: number): number => {
@@ -665,6 +512,7 @@ export default function ProductDetailScreen() {
         initialIndex={selectedMediaIndex}
         onClose={() => setMediaViewerVisible(false)}
       />
+
 
       {/* Edit Product Modal */}
       <Modal
@@ -988,24 +836,6 @@ export default function ProductDetailScreen() {
         onClose={() => setInfoModal({...infoModal, visible: false})}
       />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        visible={confirmDeleteModal}
-        title="אישור מחיקה"
-        message="האם אתה בטוח שברצונך למחוק את המוצר?"
-        confirmText="מחק"
-        cancelText="ביטול"
-        onConfirm={() => {
-          setConfirmDeleteModal(false);
-          deleteProduct();
-        }}
-        onCancel={() => {
-          setConfirmDeleteModal(false);
-          // Reopen the edit modal if the user cancels deletion
-          setShowEditModal(true);
-        }}
-        destructive={true}
-      />
     </SafeAreaView>
   );
 }
