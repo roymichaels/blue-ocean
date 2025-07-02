@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
-import { Product, Category, PricingTier } from '../types';
+import { Product, Category, Subcategory, PricingTier } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DatabaseService from '../services/database';
@@ -49,6 +49,8 @@ export default function ProductFormModal({
   const [categories, setCategories] = useState<Category[]>([]);
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
+  const [showSubcategorySelector, setShowSubcategorySelector] = useState(false);
+  const [availableSubcategories, setAvailableSubcategories] = useState<Subcategory[]>([]);
   const [showPricingTierSelector, setShowPricingTierSelector] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -67,6 +69,11 @@ export default function ProductFormModal({
       loadPricingTiers();
     }
   }, [visible, product]);
+
+  useEffect(() => {
+    const category = categories.find(c => c.id === editingProduct.category);
+    setAvailableSubcategories(category?.subcategories || []);
+  }, [editingProduct.category, categories]);
 
   const initForm = () => {
     setEditingProduct(
@@ -90,6 +97,10 @@ export default function ProductFormModal({
       const db = DatabaseService.getInstance();
       const data = await db.getCategories();
       setCategories(data);
+      if (editingProduct.category) {
+        const category = data.find(c => c.id === editingProduct.category);
+        setAvailableSubcategories(category?.subcategories || []);
+      }
     } catch (error) {
       console.error('Error loading categories:', error);
     }
@@ -106,8 +117,15 @@ export default function ProductFormModal({
   };
 
   const selectCategory = (id: string) => {
-    setEditingProduct({ ...editingProduct, category: id });
+    setEditingProduct({ ...editingProduct, category: id, subcategory: '' });
+    const category = categories.find(c => c.id === id);
+    setAvailableSubcategories(category?.subcategories || []);
     setShowCategorySelector(false);
+  };
+
+  const selectSubcategory = (id: string) => {
+    setEditingProduct({ ...editingProduct, subcategory: id });
+    setShowSubcategorySelector(false);
   };
 
   const selectPricingTier = (id: string) => {
@@ -275,22 +293,47 @@ export default function ProductFormModal({
               />
             </View>
 
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>קטגוריה *</Text>
-              <TouchableOpacity
-                style={[styles.categorySelector, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                }]}
-                onPress={() => setShowCategorySelector(true)}
-              >
-                <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.category && { color: colors.text.tertiary }]}>\
-                  {editingProduct.category
-                    ? categories.find(c => c.id === editingProduct.category)?.name || editingProduct.category
-                    : 'בחר קטגוריה'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+              <View style={styles.formGroup}>
+                <Text style={[styles.formLabel, { color: colors.text.primary }]}>קטגוריה *</Text>
+                <TouchableOpacity
+                  style={[styles.categorySelector, {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.surface.primary,
+                  }]}
+                  onPress={() => setShowCategorySelector(true)}
+                >
+                  <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.category && { color: colors.text.tertiary }]}>\
+                    {editingProduct.category
+                      ? categories.find(c => c.id === editingProduct.category)?.name || editingProduct.category
+                      : 'בחר קטגוריה'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={[styles.formLabel, { color: colors.text.primary }]}>תת-קטגוריה</Text>
+                <TouchableOpacity
+                  style={[styles.categorySelector, {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.surface.primary,
+                    opacity: editingProduct.category ? 1 : 0.5,
+                  }]}
+                  onPress={() => {
+                    if (editingProduct.category) {
+                      setShowSubcategorySelector(true);
+                    } else {
+                      setInfoModal({ visible: true, title: 'שגיאה', message: 'אנא בחר קטגוריה תחילה', type: 'error' });
+                    }
+                  }}
+                  disabled={!editingProduct.category}
+                >
+                  <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.subcategory && { color: colors.text.tertiary }]}>\
+                    {editingProduct.subcategory
+                      ? availableSubcategories.find(s => s.id === editingProduct.subcategory)?.name || editingProduct.subcategory
+                      : 'בחר תת-קטגוריה'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>מלאי *</Text>
@@ -347,6 +390,50 @@ export default function ProductFormModal({
             </View>
           </ScrollView>
         </SafeAreaView>
+      </Modal>
+
+      <Modal visible={showSubcategorySelector} animationType="slide" transparent onRequestClose={() => setShowSubcategorySelector(false)}>
+        <View style={styles.categorySelectorOverlay}>
+          <View style={[styles.categorySelectorContent, { backgroundColor: colors.surface.elevated }]}>
+            <View style={styles.categorySelectorHeader}>
+              <Text style={[styles.categorySelectorTitle, { color: colors.text.primary }]}>בחר תת-קטגוריה</Text>
+              <TouchableOpacity onPress={() => setShowSubcategorySelector(false)}>
+                <X size={24} color={colors.text.primary} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.categorySelectorList}>
+              {availableSubcategories.length > 0 ? (
+                availableSubcategories.map(sub => (
+                  <TouchableOpacity key={sub.id} style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]} onPress={() => selectSubcategory(sub.id)}>
+                    <View style={styles.categorySelectorItemContent}>
+                      <Text style={styles.categorySelectorItemIcon}>{sub.icon}</Text>
+                      <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{sub.name}</Text>
+                    </View>
+                    <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{sub.id}</Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={styles.categorySelectorItemContent}>
+                  <Text style={[styles.categorySelectorItemText, { color: colors.text.secondary }]}>אין תת-קטגוריות זמינות</Text>
+                </View>
+              )}
+              <TouchableOpacity
+                style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary, backgroundColor: colors.interactive.secondary }]}
+                onPress={() => {
+                  setShowSubcategorySelector(false);
+                  if (editingProduct.category) {
+                    router.push(`/category/${editingProduct.category}`);
+                  }
+                }}
+              >
+                <View style={styles.categorySelectorItemContent}>
+                  <Plus size={20} color={colors.gold} />
+                  <Text style={[styles.categorySelectorItemText, { color: colors.gold }]}>הוסף תת-קטגוריה חדשה</Text>
+                </View>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
       </Modal>
 
       <Modal visible={showCategorySelector} animationType="slide" transparent onRequestClose={() => setShowCategorySelector(false)}>
