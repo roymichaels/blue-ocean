@@ -551,17 +551,10 @@ export default function HomeScreen() {
                     { width: getProductItemWidth() }
                   ]}
                 >
-                  <ProductCard 
-                    product={item} 
+                  <ProductCard
+                    product={item}
                     isAdmin={isAdmin}
                     onEdit={editProduct}
-                    onDelete={(productId) => {
-                      const product = products.find(p => p.id === productId);
-                      if (product) {
-                        setEditingProduct(product);
-                        deleteProduct();
-                      }
-                    }}
                   />
                 </View>
               ))}
