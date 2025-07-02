@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  Modal,
   Alert,
   I18nManager,
   ActivityIndicator,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Search, User, Mail, Calendar, Shield, UserCheck, UserX, Filter, X, Save, ChevronDown } from 'lucide-react-native';
@@ -411,12 +411,10 @@ export default function UserManagementScreen() {
 
       {/* Edit User Modal */}
       <Modal
-        isVisible={showEditModal}
-        onBackdropPress={() => setShowEditModal(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.bottomModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showEditModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowEditModal(false)}
       >
         <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.modalContainer, { 
@@ -607,12 +605,10 @@ export default function UserManagementScreen() {
 
       {/* Filter Modal */}
       <Modal
-        isVisible={showFilterModal}
-        onBackdropPress={() => setShowFilterModal(false)}
-        useNativeDriver={Platform.OS !== 'web'}
-        style={styles.bottomModal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
+        visible={showFilterModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowFilterModal(false)}
       >
         <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.filterModalContainer, { 
@@ -1171,9 +1167,5 @@ const styles = StyleSheet.create({
   applyFiltersBtnText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  bottomModal: {
-    justifyContent: 'flex-end',
-    margin: 0,
   },
 });
