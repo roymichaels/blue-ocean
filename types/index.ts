@@ -53,6 +53,18 @@ export interface PricingTier {
   description_en?: string;
   description_he?: string;
   createdAt?: string;
+  rules?: PricingTierRule[];
+}
+
+export interface PricingTierRule {
+  id: string;
+  tierId: string;
+  minQty: number;
+  maxQty: number;
+  pricePerUnit?: number;
+  discountPct?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ChatMessage {

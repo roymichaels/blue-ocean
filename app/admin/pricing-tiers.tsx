@@ -33,9 +33,10 @@ export default function PricingTiersScreen() {
   const [newTier, setNewTier] = useState<Partial<PricingTier>>({
     id: '',
     name: '',
-    pricePerUnit: undefined,
-    minQuantity: 1,
-    description: ''
+    description: '',
+    rules: [
+      { minQty: 1, maxQty: 1, pricePerUnit: undefined, discountPct: undefined } as any
+    ]
   });
   const { isAdmin } = useAuth();
   const { colors } = useTheme();
@@ -82,9 +83,10 @@ export default function PricingTiersScreen() {
     setNewTier({
       id: '',
       name: '',
-      pricePerUnit: undefined,
-      minQuantity: 1,
-      description: ''
+      description: '',
+      rules: [
+        { minQty: 1, maxQty: 1, pricePerUnit: undefined, discountPct: undefined } as any
+      ]
     });
     setShowTierModal(true);
   };
@@ -106,17 +108,7 @@ export default function PricingTiersScreen() {
       return;
     }
 
-    if (newTier.pricePerUnit !== undefined && (typeof newTier.pricePerUnit !== 'number' || newTier.pricePerUnit <= 0)) {
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'מחיר ליחידה חייב להיות מספר חיובי',
-        type: 'error'
-      });
-      return;
-    }
-
-    if (typeof newTier.minQuantity !== 'number' || newTier.minQuantity < 1) {
+    if (newTier.rules && newTier.rules.some(r => r.minQty < 1)) {
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -211,11 +203,11 @@ export default function PricingTiersScreen() {
       onPress={() => editTier(tier)}
     >
       <View style={styles.tierHeader}>
-        <View style={[styles.tierIcon, { 
+        <View style={[styles.tierIcon, {
           backgroundColor: colors.interactive.secondary,
-          borderColor: colors.gold 
+          borderColor: colors.gold
         }]}>
-          {typeof tier.pricePerUnit === 'number' ? (
+          {typeof (tier.rules?.[0]?.pricePerUnit) === 'number' ? (
             <DollarSign size={24} color={colors.gold} />
           ) : (
             <Percent size={24} color={colors.gold} />
@@ -224,8 +216,8 @@ export default function PricingTiersScreen() {
         <View style={styles.tierInfo}>
           <Text style={[styles.tierName, { color: colors.text.primary }]}>{tier.name}</Text>
           <Text style={[styles.tierDiscount, { color: colors.gold }]}>
-            {typeof tier.pricePerUnit === 'number' 
-              ? `${currencySymbol}${tier.pricePerUnit.toFixed(2)} ליחידה` 
+            {typeof (tier.rules?.[0]?.pricePerUnit) === 'number'
+              ? `${currencySymbol}${tier.rules![0].pricePerUnit!.toFixed(2)} ליחידה`
               : 'מחיר רגיל'}
           </Text>
         </View>
@@ -244,7 +236,7 @@ export default function PricingTiersScreen() {
         <View style={styles.tierDetailItem}>
           <Package size={16} color={colors.text.secondary} />
           <Text style={[styles.tierDetailText, { color: colors.text.secondary }]}>
-            מינימום {tier.minQuantity} יחידות
+            מינימום {tier.rules?.[0]?.minQty ?? 1} יחידות
           </Text>
         </View>
         <Text style={[styles.tierDescription, { color: colors.text.secondary }]}>
@@ -369,45 +361,92 @@ export default function PricingTiersScreen() {
               />
             </View>
 
-            <View style={styles.formRow}>
-              <View style={styles.formGroupHalf}>
-                <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר ליחידה</Text>
-                <TextInput
-                  style={[styles.formInput, { 
-                    borderColor: colors.border.primary,
-                    backgroundColor: colors.surface.primary,
-                    color: colors.text.primary 
-                  }]}
-                  value={newTier.pricePerUnit?.toString() || ''}
-                  onChangeText={(text) => {
-                    const price = text ? parseFloat(text) : undefined;
-                    setNewTier({...newTier, pricePerUnit: price});
-                  }}
-                  placeholder={`מחיר ליחידה (${currencySymbol})`}
-                  keyboardType="numeric"
-                  textAlign="right"
-                />
+            {newTier.rules?.map((rule, idx) => (
+              <View key={idx} style={styles.formRow}>
+                <View style={styles.formGroupHalf}>
+                  <Text style={[styles.formLabel, { color: colors.text.primary }]}>מינימום</Text>
+                  <TextInput
+                    style={[styles.formInput, {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.surface.primary,
+                      color: colors.text.primary
+                    }]}
+                    value={rule.minQty.toString()}
+                    onChangeText={(text) => {
+                      const updated = [...(newTier.rules || [])];
+                      updated[idx].minQty = parseInt(text) || 1;
+                      setNewTier({...newTier, rules: updated});
+                    }}
+                    keyboardType="numeric"
+                    textAlign="right"
+                  />
+                </View>
+                <View style={styles.formGroupHalf}>
+                  <Text style={[styles.formLabel, { color: colors.text.primary }]}>מקסימום</Text>
+                  <TextInput
+                    style={[styles.formInput, {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.surface.primary,
+                      color: colors.text.primary
+                    }]}
+                    value={rule.maxQty.toString()}
+                    onChangeText={(text) => {
+                      const updated = [...(newTier.rules || [])];
+                      updated[idx].maxQty = parseInt(text) || 0;
+                      setNewTier({...newTier, rules: updated});
+                    }}
+                    keyboardType="numeric"
+                    textAlign="right"
+                  />
+                </View>
+                <View style={styles.formGroupHalf}>
+                  <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר ליחידה</Text>
+                  <TextInput
+                    style={[styles.formInput, {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.surface.primary,
+                      color: colors.text.primary
+                    }]}
+                    value={rule.pricePerUnit?.toString() || ''}
+                    onChangeText={(text) => {
+                      const updated = [...(newTier.rules || [])];
+                      updated[idx].pricePerUnit = text ? parseFloat(text) : undefined;
+                      setNewTier({...newTier, rules: updated});
+                    }}
+                    keyboardType="numeric"
+                    textAlign="right"
+                  />
+                </View>
+                <View style={styles.formGroupHalf}>
+                  <Text style={[styles.formLabel, { color: colors.text.primary }]}>הנחה %</Text>
+                  <TextInput
+                    style={[styles.formInput, {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.surface.primary,
+                      color: colors.text.primary
+                    }]}
+                    value={rule.discountPct?.toString() || ''}
+                    onChangeText={(text) => {
+                      const updated = [...(newTier.rules || [])];
+                      updated[idx].discountPct = text ? parseFloat(text) : undefined;
+                      setNewTier({...newTier, rules: updated});
+                    }}
+                    keyboardType="numeric"
+                    textAlign="right"
+                  />
+                </View>
+                <TouchableOpacity onPress={() => {
+                  const updated = [...(newTier.rules || [])];
+                  updated.splice(idx,1);
+                  setNewTier({...newTier, rules: updated});
+                }}>
+                  <Trash2 size={20} color={colors.status.error} />
+                </TouchableOpacity>
               </View>
-
-              <View style={styles.formGroupHalf}>
-                <Text style={[styles.formLabel, { color: colors.text.primary }]}>כמות מינימלית *</Text>
-                <TextInput
-                  style={[styles.formInput, { 
-                    borderColor: colors.border.primary,
-                    backgroundColor: colors.surface.primary,
-                    color: colors.text.primary 
-                  }]}
-                  value={newTier.minQuantity?.toString()}
-                  onChangeText={(text) => {
-                    const minQuantity = parseInt(text) || 1;
-                    setNewTier({...newTier, minQuantity: Math.max(1, minQuantity)});
-                  }}
-                  placeholder="מינימום 1"
-                  keyboardType="numeric"
-                  textAlign="right"
-                />
-              </View>
-            </View>
+            ))}
+            <TouchableOpacity onPress={() => setNewTier({...newTier, rules: [...(newTier.rules||[]), {minQty:1, maxQty:1, pricePerUnit: undefined, discountPct: undefined}]})} style={{marginBottom:10}}>
+              <Text style={{color: colors.gold}}>הוסף כלל</Text>
+            </TouchableOpacity>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>תיאור *</Text>
