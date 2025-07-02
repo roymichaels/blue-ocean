@@ -258,11 +258,13 @@ export class MatrixService {
       }
 
       const registerData = await registerResponse.json();
-      const accessToken = registerData.access_token;
       const userId = registerData.user_id;
 
-      // Initialize client with the new credentials
-      await this.initializeMatrixClient(accessToken, userId);
+      // NOTE: We previously attempted to immediately initialise the Matrix
+      // client after registration. This requires loading the `olm` WebAssembly
+      // module which fails on web during signup, preventing account creation.
+      // Since the signup screen redirects the user to the login page anyway we
+      // do not need to log the user in here, so we skip client initialisation.
 
       // Create profile in Supabase
       const { error } = await supabase.from('user_profiles').insert([
@@ -282,20 +284,8 @@ export class MatrixService {
         return false;
       }
 
-      // Update auth state
-      this.isAuthenticated = true;
-      this.currentUser = {
-        id: userId,
-        username,
-        isAdmin: false,
-        displayName,
-        role: 'user',
-        email,
-      };
-
-      await this.saveAuthState(accessToken, userId);
-      this.notifyListeners();
-
+      // We do not automatically log the user in after registration. The
+      // newly created account will be used on the next login attempt.
       return true;
     } catch (error) {
       console.error('Matrix signup error:', error);
