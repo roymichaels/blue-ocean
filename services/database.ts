@@ -1288,7 +1288,7 @@ class DatabaseService {
       const { data, error } = await supabase
         .from('wishlist_items')
         .select(
-          'id, product_id, added_at, products(*)'
+          `id, product_id, added_at, product:products!wishlist_items_product_id_fkey(*)`
         )
         .eq('user_id', userId)
         .order('added_at', { ascending: false });
@@ -1302,28 +1302,28 @@ class DatabaseService {
         id: item.id,
         productId: item.product_id,
         product: {
-          id: item.products.id,
-          name: item.products.name,
-          name_en: item.products.name_en,
-          name_he: item.products.name_he,
-          price: item.products.price,
-          originalPrice: item.products.original_price ?? undefined,
-          description: item.products.description,
-          description_en: item.products.description_en,
-          description_he: item.products.description_he,
-          category: item.products.category,
-          subcategory: item.products.subcategory,
-          images: item.products.images,
-          videos: item.products.videos ?? undefined,
-          colors: item.products.colors ?? undefined,
-          rating: item.products.rating,
-          reviews: item.products.reviews,
-          badges: item.products.badges ?? undefined,
-          pricingTier: item.products.pricing_tier ?? undefined,
-          mixGroupId: item.products.mix_group_id ?? undefined,
-          stock: item.products.stock,
-          createdAt: item.products.created_at,
-          updatedAt: item.products.updated_at,
+          id: item.product.id,
+          name: item.product.name,
+          name_en: item.product.name_en,
+          name_he: item.product.name_he,
+          price: item.product.price,
+          originalPrice: item.product.original_price ?? undefined,
+          description: item.product.description,
+          description_en: item.product.description_en,
+          description_he: item.product.description_he,
+          category: item.product.category,
+          subcategory: item.product.subcategory,
+          images: item.product.images,
+          videos: item.product.videos ?? undefined,
+          colors: item.product.colors ?? undefined,
+          rating: item.product.rating,
+          reviews: item.product.reviews,
+          badges: item.product.badges ?? undefined,
+          pricingTier: item.product.pricing_tier ?? undefined,
+          mixGroupId: item.product.mix_group_id ?? undefined,
+          stock: item.product.stock,
+          createdAt: item.product.created_at,
+          updatedAt: item.product.updated_at,
         },
         addedAt: item.added_at,
       }));
