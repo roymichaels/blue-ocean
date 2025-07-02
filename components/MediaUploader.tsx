@@ -66,16 +66,11 @@ export default function MediaUploader({
       const newMediaItems: MediaItem[] = [];
 
       for (const asset of pickerResult.assets) {
-        let uploadedUri = asset.uri;
 
-        // Upload to Pinata if configured
-        if (pinata.isPinataConfigured()) {
-          debugLog('Uploading media to Pinata:', asset.uri);
-          uploadedUri = await pinata.uploadFile(asset.uri, asset.fileName || `media_${Date.now()}`);
-        } else {
-          debugLog('Pinata not configured, skipping upload');
-          uploadedUri = await mediaService.uploadMedia(asset.uri, asset.fileName || `media_${Date.now()}`);
-        }
+        const uploadedUri = await mediaService.uploadMedia(
+          asset.uri,
+          asset.fileName || `media_${Date.now()}`
+        );
 
         newMediaItems.push({
           id: Date.now().toString() + Math.random().toString(36).substring(2, 9),

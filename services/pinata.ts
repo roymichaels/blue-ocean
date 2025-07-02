@@ -3,8 +3,10 @@ import FormData from 'form-data';
 import { debugLog } from '../utils/logger';
 
 // Pinata API configuration
-const PINATA_API_KEY = process.env.EXPO_PUBLIC_PINATA_API_KEY || 'YOUR_PINATA_API_KEY';
-const PINATA_SECRET_API_KEY = process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY || 'YOUR_PINATA_SECRET_KEY';
+const PINATA_API_KEY =
+  process.env.EXPO_PUBLIC_PINATA_API_KEY || 'YOUR_PINATA_API_KEY';
+const PINATA_SECRET_API_KEY =
+  process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY || 'YOUR_PINATA_SECRET_KEY';
 const PINATA_JWT = process.env.EXPO_PUBLIC_PINATA_JWT || 'YOUR_PINATA_JWT';
 const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
 
@@ -29,13 +31,21 @@ class PinataService {
   public async uploadFile(uri: string, name: string): Promise<string> {
     try {
       // Check if the URI is already an IPFS or HTTP URL
-      if (uri.startsWith('http') || uri.startsWith('https') || uri.startsWith('ipfs://')) {
+      if (
+        uri.startsWith('http') ||
+        uri.startsWith('https') ||
+        uri.startsWith('ipfs://')
+      ) {
         debugLog('File is already a URL, skipping upload:', uri);
         return uri;
       }
 
       // For web platform or when using remote images, just return the URI
-      if (uri.startsWith('data:') || uri.includes('pexels.com') || uri.includes('gateway.pinata.cloud')) {
+      if (
+        uri.startsWith('data:') ||
+        uri.includes('pexels.com') ||
+        uri.includes('gateway.pinata.cloud')
+      ) {
         debugLog('Using existing image URL:', uri);
         return uri;
       }
@@ -44,23 +54,29 @@ class PinataService {
 
       // Create form data for the file upload
       const formData = new FormData();
-      
+
       // Get the file extension
       const fileExtension = uri.split('.').pop() || 'jpg';
-      
+
       // Add the file to the form data
       const blob = await this.uriToBlob(uri);
       formData.append('file', blob, `${name}.${fileExtension}`);
 
       // Add metadata
-      formData.append('pinataMetadata', JSON.stringify({
-        name: name,
-      }));
+      formData.append(
+        'pinataMetadata',
+        JSON.stringify({
+          name: name,
+        })
+      );
 
       // Add options
-      formData.append('pinataOptions', JSON.stringify({
-        cidVersion: 1,
-      }));
+      formData.append(
+        'pinataOptions',
+        JSON.stringify({
+          cidVersion: 1,
+        })
+      );
 
       // Upload to Pinata
       const response = await axios.post(
@@ -69,7 +85,7 @@ class PinataService {
         {
           headers: {
             'Content-Type': `multipart/form-data;`,
-            'Authorization': `Bearer ${PINATA_JWT}`,
+            Authorization: `Bearer ${PINATA_JWT}`,
           },
         }
       );

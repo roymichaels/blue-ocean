@@ -25,8 +25,8 @@ import { getSanitizedMatrixUrl } from '../utils/matrix';
 
 const AUTH_STORAGE_KEY = 'matrix_auth_state';
 const MATRIX_SERVER_URL =
-  process.env.EXPO_PUBLIC_MATRIX_SERVER || 'https://tedomum.net';
-const MATRIX_DOMAIN = getSanitizedMatrixUrl() || 'tedomum.net';
+  process.env.EXPO_PUBLIC_MATRIX_SERVER || 'https://matrix.org';
+const MATRIX_DOMAIN = getSanitizedMatrixUrl() || 'matrix.org';
 
 export class MatrixService {
   private static instance: MatrixService;
@@ -154,13 +154,16 @@ export class MatrixService {
     );
 
     // Listen for new messages
-    this.matrixClient.on(RoomEvent.Timeline, (event: MatrixEvent, room: Room) => {
-      // Handle new messages
-      if (event.getType() === 'm.room.message') {
-        // Update unread count or trigger notifications
-        // This would be implemented based on your app's requirements
+    this.matrixClient.on(
+      RoomEvent.Timeline,
+      (event: MatrixEvent, room: Room) => {
+        // Handle new messages
+        if (event.getType() === 'm.room.message') {
+          // Update unread count or trigger notifications
+          // This would be implemented based on your app's requirements
+        }
       }
-    });
+    );
 
     // Listen for room member changes
     this.matrixClient.on(
@@ -890,9 +893,9 @@ export class MatrixService {
     const reactions: Record<string, string[]> = {};
 
     // Get all m.reaction events that relate to this event
-    const relatedEvents = (room
-      .getUnfilteredTimelineSet() as any)
-      .getRelationsForEvent(event.getId() || '', 'm.annotation', 'm.reaction');
+    const relatedEvents = (
+      room.getUnfilteredTimelineSet() as any
+    ).getRelationsForEvent(event.getId() || '', 'm.annotation', 'm.reaction');
 
     if (relatedEvents) {
       // Group reactions by emoji
