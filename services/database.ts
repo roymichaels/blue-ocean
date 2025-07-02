@@ -705,8 +705,15 @@ class DatabaseService {
         .select('*');
 
       if (rulesError) {
-        console.error('Error fetching pricing tier rules:', rulesError);
+        if (rulesError.code === '42P01') {
+          console.warn('price_tier_rules table missing, skipping rules fetch');
+        } else {
+          console.error('Error fetching pricing tier rules:', rulesError);
+        }
       }
+
+      const effectiveRules =
+        rulesError && rulesError.code === '42P01' ? [] : (rulesData || []);
 
       return (tiersData || []).map(tier => ({
         id: tier.id,
@@ -719,7 +726,7 @@ class DatabaseService {
         description_en: tier.description_en,
         description_he: tier.description_he,
         createdAt: tier.created_at,
-        rules: (rulesData || [])
+        rules: effectiveRules
           .filter(r => r.tier_id === tier.id)
           .sort((a, b) => a.min_qty - b.min_qty)
           .map(r => ({
@@ -761,7 +768,11 @@ class DatabaseService {
         .order('min_qty', { ascending: true });
 
       if (rulesError) {
-        console.error('Error fetching pricing tier rules:', rulesError);
+        if (rulesError.code === '42P01') {
+          console.warn('price_tier_rules table missing, skipping rules fetch');
+        } else {
+          console.error('Error fetching pricing tier rules:', rulesError);
+        }
       }
 
       return {
@@ -775,7 +786,7 @@ class DatabaseService {
         description_en: data.description_en,
         description_he: data.description_he,
         createdAt: data.created_at,
-        rules: (rulesData || []).map(r => ({
+        rules: effectiveRules.map(r => ({
           id: r.id,
           tierId: r.tier_id,
           minQty: r.min_qty,
@@ -825,8 +836,14 @@ class DatabaseService {
           .from('price_tier_rules')
           .insert(rulesToInsert);
         if (ruleError) {
-          console.error('Error adding pricing tier rules:', ruleError);
-          throw new Error('Failed to add pricing tier rules');
+          if (ruleError.code === '42P01') {
+            console.warn(
+              'price_tier_rules table missing, skipping rules insertion'
+            );
+          } else {
+            console.error('Error adding pricing tier rules:', ruleError);
+            throw new Error('Failed to add pricing tier rules');
+          }
         }
       }
     } catch (error) {
@@ -857,10 +874,15 @@ class DatabaseService {
       }
 
       if (tier.rules) {
-        await supabase
+        const { error: deleteError } = await supabase
           .from('price_tier_rules')
           .delete()
           .eq('tier_id', id);
+
+        if (deleteError && deleteError.code !== '42P01') {
+          console.error('Error clearing pricing tier rules:', deleteError);
+          throw new Error('Failed to update pricing tier rules');
+        }
 
         if (tier.rules.length > 0) {
           const rulesToInsert = tier.rules.map(r => ({
@@ -874,8 +896,14 @@ class DatabaseService {
             .from('price_tier_rules')
             .insert(rulesToInsert);
           if (ruleError) {
-            console.error('Error updating pricing tier rules:', ruleError);
-            throw new Error('Failed to update pricing tier rules');
+            if (ruleError.code === '42P01') {
+              console.warn(
+                'price_tier_rules table missing, skipping rules insertion'
+              );
+            } else {
+              console.error('Error updating pricing tier rules:', ruleError);
+              throw new Error('Failed to update pricing tier rules');
+            }
           }
         }
       }
