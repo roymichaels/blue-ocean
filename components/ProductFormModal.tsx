@@ -16,6 +16,7 @@ import { Product, Category, Subcategory, PricingTier } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DatabaseService from '../services/database';
+import MediaService from '../services/media';
 import MediaUploader from './MediaUploader';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
@@ -146,11 +147,33 @@ export default function ProductFormModal({
 
     setLoading(true);
     try {
+      const mediaService = MediaService.getInstance();
+
+      // Ensure all media are uploaded (IPFS URLs)
+      const uploadedMedia: MediaItem[] = await Promise.all(
+        productMedia.map(async item => {
+          if (
+            item.uri.startsWith('http') ||
+            item.uri.startsWith('https') ||
+            item.uri.startsWith('ipfs://')
+          ) {
+            return item;
+          }
+          const uploadedUri = await mediaService.uploadMedia(
+            item.uri,
+            item.name || `media_${Date.now()}`
+          );
+          return { ...item, uri: uploadedUri };
+        })
+      );
+
+      setProductMedia(uploadedMedia);
+
       const db = DatabaseService.getInstance();
       const data = {
         ...editingProduct,
-        images: productMedia.filter(m => m.type === 'image').map(m => m.uri),
-        videos: productMedia.filter(m => m.type === 'video').map(m => m.uri),
+        images: uploadedMedia.filter(m => m.type === 'image').map(m => m.uri),
+        videos: uploadedMedia.filter(m => m.type === 'video').map(m => m.uri),
       };
 
       let saved: Product;

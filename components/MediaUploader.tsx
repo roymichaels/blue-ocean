@@ -14,6 +14,8 @@ import { Camera, Upload, X, Play, Video } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../contexts/ThemeContext';
 import MediaService from '../services/media';
+import PinataService from '../services/pinata';
+import { debugLog } from '../utils/logger';
 
 interface MediaItem {
   id: string;
@@ -60,31 +62,27 @@ export default function MediaUploader({
     setUploading(true);
     try {
       const mediaService = MediaService.getInstance();
+      const pinata = PinataService.getInstance();
       const newMediaItems: MediaItem[] = [];
 
       for (const asset of pickerResult.assets) {
-        // For web, we need to handle File objects
-        if (Platform.OS === 'web') {
-          // In a real implementation, you would upload to Pinata here
-          // For now, we'll just use the local URI
-          const uri = asset.uri;
-          
-          newMediaItems.push({
-            id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-            uri: uri,
-            type: asset.type === 'video' ? 'video' : 'image',
-            name: asset.fileName || `media_${Date.now()}`
-          });
+        let uploadedUri = asset.uri;
+
+        // Upload to Pinata if configured
+        if (pinata.isPinataConfigured()) {
+          debugLog('Uploading media to Pinata:', asset.uri);
+          uploadedUri = await pinata.uploadFile(asset.uri, asset.fileName || `media_${Date.now()}`);
         } else {
-          // For native platforms, we need to upload the file to Pinata
-          // For now, we'll just use the local URI
-          newMediaItems.push({
-            id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-            uri: asset.uri,
-            type: asset.type === 'video' ? 'video' : 'image',
-            name: asset.fileName || `media_${Date.now()}`
-          });
+          debugLog('Pinata not configured, skipping upload');
+          uploadedUri = await mediaService.uploadMedia(asset.uri, asset.fileName || `media_${Date.now()}`);
         }
+
+        newMediaItems.push({
+          id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+          uri: uploadedUri,
+          type: asset.type === 'video' ? 'video' : 'image',
+          name: asset.fileName || `media_${Date.now()}`
+        });
       }
 
       // Make sure we don't exceed maxFiles
