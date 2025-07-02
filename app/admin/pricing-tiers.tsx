@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Modal,
   I18nManager,
   Platform,
 } from 'react-native';
+import Modal from 'react-native-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, DollarSign, Percent, Package, Users } from 'lucide-react-native';
@@ -314,10 +314,12 @@ export default function PricingTiersScreen() {
 
       {/* Pricing Tier Edit/Add Modal */}
       <Modal
-        visible={showTierModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowTierModal(false)}
+        isVisible={showTierModal}
+        onBackdropPress={() => setShowTierModal(false)}
+        useNativeDriver={Platform.OS !== 'web'}
+        style={styles.fullscreenModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.border.primary }]}>
@@ -735,6 +737,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  fullscreenModal: {
+    margin: 0,
   },
   buttonSpinner: {
     marginRight: 8,
