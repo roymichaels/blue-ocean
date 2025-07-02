@@ -799,14 +799,31 @@ class DatabaseService {
         .from('hero_banners')
         .select('*')
         .eq('is_active', true)
-        .order('order', { ascending: true });
+        .order('order_index', { ascending: true });
 
       if (error) {
         console.error('Error fetching hero banners:', error);
         return [];
       }
 
-      return data || [];
+      return (data || []).map((banner: any) => ({
+        id: banner.id,
+        title: banner.title,
+        title_en: banner.title_en,
+        title_he: banner.title_he,
+        subtitle: banner.subtitle,
+        subtitle_en: banner.subtitle_en,
+        subtitle_he: banner.subtitle_he,
+        image: banner.image,
+        discount: banner.discount,
+        discount_en: banner.discount_en,
+        discount_he: banner.discount_he,
+        category: banner.category,
+        isActive: banner.is_active,
+        order: banner.order_index,
+        createdAt: banner.created_at,
+        updatedAt: banner.updated_at,
+      }));
     } catch (error) {
       console.error('Error in getHeroBanners:', error);
       return [];
