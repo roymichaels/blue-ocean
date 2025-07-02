@@ -121,7 +121,7 @@ export class MatrixService {
     if (!this.matrixClient) return;
 
     // Listen for authentication errors
-    this.matrixClient.on(HttpApiEvent.SessionLoggedOut, (error) => {
+    this.matrixClient.on(HttpApiEvent.SessionLoggedOut, (error: unknown) => {
       console.error('Matrix client error:', error);
 
       // Check if it's an authentication error (401)
@@ -667,7 +667,7 @@ export class MatrixService {
           );
           if (isDM) {
             const members = room.getJoinedMembers();
-            if (members.some((m) => m.userId === adminUserId)) {
+            if (members.some((m: RoomMember) => m.userId === adminUserId)) {
               roomId = room.roomId;
               break;
             }
@@ -710,7 +710,7 @@ export class MatrixService {
       const rooms = this.matrixClient.getRooms();
 
       // Filter for direct message rooms
-      const dmRooms = rooms.filter((room) => {
+      const dmRooms = rooms.filter((room: Room) => {
         const isDM =
           this.matrixClient?.getAccountData('m.direct')?.getContent() || {};
         return Object.values(isDM).some((roomIds: any) =>
@@ -720,11 +720,11 @@ export class MatrixService {
 
       // Format rooms for the app
       const formattedRooms = await Promise.all(
-        dmRooms.map(async (room) => {
+        dmRooms.map(async (room: Room) => {
           // Get the other user in the DM
           const otherMembers = room
             .getJoinedMembers()
-            .filter((member) => member.userId !== this.currentUser.id);
+            .filter((member: RoomMember) => member.userId !== this.currentUser.id);
           const otherUser = otherMembers.length > 0 ? otherMembers[0] : null;
 
           // Get the last message
@@ -821,8 +821,8 @@ export class MatrixService {
 
       // Convert Matrix events to ChatMessage format
       const messages: ChatMessage[] = timelineEvents
-        .filter((event) => event.getType() === 'm.room.message')
-        .map((event) => {
+        .filter((event: MatrixEvent) => event.getType() === 'm.room.message')
+        .map((event: MatrixEvent) => {
           const sender = room.getMember(event.getSender() || '');
           const content = event.getContent();
           const isAdmin = this.isUserAdmin(event.getSender() || '');
