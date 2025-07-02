@@ -17,6 +17,7 @@ export interface Product {
   reviews: number;
   badges?: string[];
   pricingTier?: string;
+  mixGroupId?: string;
   stock: number;
   createdAt?: string;
   updatedAt?: string;
@@ -65,6 +66,13 @@ export interface PricingTierRule {
   discountPct?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface MixGroup {
+  id: string;
+  name: string;
+  conversionFactor: number;
+  createdAt?: string;
 }
 
 export interface ChatMessage {

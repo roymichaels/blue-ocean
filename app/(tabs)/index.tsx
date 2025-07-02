@@ -20,7 +20,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Heart, Plus, Pencil, X, Save, Trash2, Filter, ArrowUpDown } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import PinataService from '../../services/pinata';
-import { Product, Category, HeroBanner, Subcategory } from '../../types';
+import { Product, Category, HeroBanner, Subcategory, MixGroup } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -51,6 +51,7 @@ export default function HomeScreen() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [mixGroups, setMixGroups] = useState<MixGroup[]>([]);
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
@@ -73,6 +74,7 @@ export default function HomeScreen() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [showSubcategorySelector, setShowSubcategorySelector] = useState(false);
+  const [showMixGroupSelector, setShowMixGroupSelector] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     name: '',
@@ -80,6 +82,7 @@ export default function HomeScreen() {
     description: '',
     category: '',
     subcategory: '',
+    mixGroupId: '',
     images: [],
     videos: [],
     stock: 0,
@@ -131,10 +134,11 @@ export default function HomeScreen() {
     try {
       setLoading(true);
       const db = DatabaseService.getInstance();
-      const [productsData, categoriesData, bannersData] = await Promise.all([
+      const [productsData, categoriesData, bannersData, mixGroupsData] = await Promise.all([
         db.getProducts(),
         db.getCategories(),
-        db.getHeroBanners()
+        db.getHeroBanners(),
+        db.getMixGroups()
       ]);
       setProducts(productsData);
       setCategories(categoriesData);
@@ -149,6 +153,7 @@ export default function HomeScreen() {
       setSubcategories(allSubcategories);
       
       setHeroBanners(bannersData);
+      setMixGroups(mixGroupsData);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -307,6 +312,7 @@ export default function HomeScreen() {
       description: '',
       category: '',
       subcategory: '',
+      mixGroupId: '',
       images: [],
       videos: [],
       stock: 0,
@@ -435,6 +441,13 @@ export default function HomeScreen() {
       setNewProduct({...newProduct, subcategory});
     }
     setShowSubcategorySelector(false);
+  };
+
+  const selectMixGroup = (groupId: string) => {
+    if (showProductModal) {
+      setNewProduct({ ...newProduct, mixGroupId: groupId });
+    }
+    setShowMixGroupSelector(false);
   };
 
   const getFilteredSubcategories = () => {
@@ -984,6 +997,26 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>קבוצת מיקס (אופציונלי)</Text>
+              <TouchableOpacity
+                style={[styles.categorySelector, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary
+                }]}
+                onPress={() => setShowMixGroupSelector(true)}
+              >
+                <Text style={[
+                  styles.categorySelectorText,
+                  { color: newProduct.mixGroupId ? colors.text.primary : colors.text.tertiary }
+                ]}>
+                  {newProduct.mixGroupId ?
+                    mixGroups.find(g => g.id === newProduct.mixGroupId)?.name || newProduct.mixGroupId
+                    : "בחר קבוצת מיקס"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>מלאי *</Text>
               <TextInput
                 style={[styles.formInput, { 
@@ -1165,6 +1198,43 @@ export default function HomeScreen() {
                   <Text style={[styles.categorySelectorItemText, { color: colors.gold }]}>הוסף תת-קטגוריה חדשה</Text>
                 </View>
               </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Mix Group Selector Modal */}
+      <Modal
+        visible={showMixGroupSelector}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowMixGroupSelector(false)}
+      >
+        <View style={[styles.categorySelectorOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <View style={[styles.categorySelectorContent, {
+            backgroundColor: colors.surface.elevated,
+            borderColor: colors.border.primary
+          }]}>
+            <View style={styles.categorySelectorHeader}>
+              <Text style={[styles.categorySelectorTitle, { color: colors.text.primary }]}>בחר קבוצת מיקס</Text>
+              <TouchableOpacity onPress={() => setShowMixGroupSelector(false)}>
+                <X size={24} color={colors.text.primary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.categorySelectorList}>
+              {mixGroups.map(group => (
+                <TouchableOpacity
+                  key={group.id}
+                  style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]}
+                  onPress={() => selectMixGroup(group.id)}
+                >
+                  <View style={styles.categorySelectorItemContent}>
+                    <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{group.name}</Text>
+                  </View>
+                  <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{group.id}</Text>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
         </View>
