@@ -380,37 +380,36 @@ export default function ProductDetailScreen() {
         </View>
 
 
-        {categoryBanner && (
+        {bannerImageUri && (
           <View style={styles.heroBanner}>
-            <Image
-              source={{ uri: categoryBanner.image }}
-              style={styles.heroImage}
-            />
-            <View style={styles.heroOverlay}>
-              <View style={styles.heroContent}>
-                <Text
-                  style={[
-                    styles.heroDiscount,
-                    {
-                      color: colors.text.inverse,
-                      backgroundColor: colors.gold,
-                    },
-                  ]}
-                >
-                  {categoryBanner.discount} הנחה
-                </Text>
-                <Text
-                  style={[styles.heroTitle, { color: colors.text.inverse }]}
-                >
-                  {categoryBanner.title}
-                </Text>
-                <Text
-                  style={[styles.heroSubtitle, { color: colors.text.inverse }]}
-                >
-                  {categoryBanner.subtitle}
-                </Text>
+            <Image source={{ uri: bannerImageUri }} style={styles.heroImage} />
+            {categoryBanner && (
+              <View style={styles.heroOverlay}>
+                <View style={styles.heroContent}>
+                  <Text
+                    style={[
+                      styles.heroDiscount,
+                      {
+                        color: colors.text.inverse,
+                        backgroundColor: colors.gold,
+                      },
+                    ]}
+                  >
+                    {categoryBanner.discount} הנחה
+                  </Text>
+                  <Text
+                    style={[styles.heroTitle, { color: colors.text.inverse }]}
+                  >
+                    {categoryBanner.title}
+                  </Text>
+                  <Text
+                    style={[styles.heroSubtitle, { color: colors.text.inverse }]}
+                  >
+                    {categoryBanner.subtitle}
+                  </Text>
+                </View>
               </View>
-            </View>
+            )}
           </View>
         )}
 
