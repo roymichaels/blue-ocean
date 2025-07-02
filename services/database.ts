@@ -467,6 +467,43 @@ class DatabaseService {
     }
   }
 
+  async findUserProfileByMatrixId(matrixId: string): Promise<User | null> {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('matrix_user_id', matrixId)
+        .single();
+
+      if (error) {
+        console.error('Error finding user profile:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        id: data.matrix_user_id,
+        username: data.app_username,
+        displayName: data.display_name,
+        email: data.email,
+        isAdmin: data.role === 'admin',
+        role: data.role,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+        kycStatus: data.kyc_status,
+        customerTier: data.customer_tier,
+        kycRequestNotes: data.kyc_request_notes,
+        kycRequestedAt: data.kyc_requested_at,
+        kycApprovedBy: data.kyc_approved_by,
+        kycApprovedAt: data.kyc_approved_at,
+      };
+    } catch (error) {
+      console.error('Error in findUserProfileByMatrixId:', error);
+      return null;
+    }
+  }
+
   async updateUserRole(userId: string, role: 'user' | 'admin'): Promise<void> {
     try {
       const { error } = await supabase
