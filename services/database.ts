@@ -115,14 +115,17 @@ class DatabaseService {
 
   async addProduct(product: Omit<Product, 'id'>): Promise<string> {
     try {
-      const dbProduct = {
+      const dbProduct: any = {
         ...product,
         original_price: (product as any).originalPrice,
         pricing_tier: (product as any).pricingTier,
-        mix_group_id: (product as any).mixGroupId,
         created_at: (product as any).createdAt,
         updated_at: (product as any).updatedAt,
-      } as any;
+      };
+
+      if ((product as any).mixGroupId !== undefined) {
+        dbProduct.mix_group_id = (product as any).mixGroupId;
+      }
 
       if (!dbProduct.subcategory) {
         delete dbProduct.subcategory;
@@ -154,13 +157,16 @@ class DatabaseService {
 
   async updateProduct(id: string, product: Partial<Product>): Promise<void> {
     try {
-      const dbProduct = {
+      const dbProduct: any = {
         ...product,
         original_price: (product as any).originalPrice,
         pricing_tier: (product as any).pricingTier,
-        mix_group_id: (product as any).mixGroupId,
         updated_at: (product as any).updatedAt,
-      } as any;
+      };
+
+      if ((product as any).mixGroupId !== undefined) {
+        dbProduct.mix_group_id = (product as any).mixGroupId;
+      }
 
       if (!dbProduct.subcategory) {
         delete dbProduct.subcategory;
