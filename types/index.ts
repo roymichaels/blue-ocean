@@ -17,6 +17,7 @@ export interface Product {
   reviews: number;
   badges?: string[];
   pricingTier?: string;
+  mixGroupId?: string;
   stock: number;
   createdAt?: string;
   updatedAt?: string;
@@ -52,6 +53,13 @@ export interface PricingTier {
   description: string;
   description_en?: string;
   description_he?: string;
+  createdAt?: string;
+}
+
+export interface MixGroup {
+  id: string;
+  name: string;
+  conversionFactor: number;
   createdAt?: string;
 }
 

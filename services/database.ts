@@ -8,8 +8,9 @@ import {
   User, 
   Notification, 
   Review, 
-  HeroBanner, 
-  PricingTier 
+  HeroBanner,
+  PricingTier,
+  MixGroup
 } from '../types';
 
 class DatabaseService {
@@ -822,6 +823,117 @@ class DatabaseService {
       }
     } catch (error) {
       console.error('Error in deletePricingTier:', error);
+      throw error;
+    }
+  }
+
+  // Mix Groups
+  async getMixGroups(): Promise<MixGroup[]> {
+    try {
+      const { data, error } = await supabase
+        .from('mix_groups')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching mix groups:', error);
+        return [];
+      }
+
+      return (data || []).map(group => ({
+        id: group.id,
+        name: group.name,
+        conversionFactor: group.conversion_factor,
+        createdAt: group.created_at
+      }));
+    } catch (error) {
+      console.error('Error in getMixGroups:', error);
+      return [];
+    }
+  }
+
+  async getMixGroup(id: string): Promise<MixGroup | null> {
+    try {
+      const { data, error } = await supabase
+        .from('mix_groups')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching mix group:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        name: data.name,
+        conversionFactor: data.conversion_factor,
+        createdAt: data.created_at
+      };
+    } catch (error) {
+      console.error('Error in getMixGroup:', error);
+      return null;
+    }
+  }
+
+  async addMixGroup(group: MixGroup): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('mix_groups')
+        .insert([{ id: group.id, name: group.name, conversion_factor: group.conversionFactor }]);
+
+      if (error) {
+        console.error('Error adding mix group:', error);
+        throw new Error('Failed to add mix group');
+      }
+    } catch (error) {
+      console.error('Error in addMixGroup:', error);
+      throw error;
+    }
+  }
+
+  async updateMixGroup(id: string, group: Partial<MixGroup>): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('mix_groups')
+        .update({
+          name: group.name,
+          conversion_factor: group.conversionFactor
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating mix group:', error);
+        throw new Error('Failed to update mix group');
+      }
+    } catch (error) {
+      console.error('Error in updateMixGroup:', error);
+      throw error;
+    }
+  }
+
+  async deleteMixGroup(id: string): Promise<void> {
+    try {
+      // Remove reference from products first
+      await supabase
+        .from('products')
+        .update({ mix_group_id: null })
+        .eq('mix_group_id', id);
+
+      const { error } = await supabase
+        .from('mix_groups')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting mix group:', error);
+        throw new Error('Failed to delete mix group');
+      }
+    } catch (error) {
+      console.error('Error in deleteMixGroup:', error);
       throw error;
     }
   }
