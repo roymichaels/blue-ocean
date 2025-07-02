@@ -375,6 +375,19 @@ class DatabaseService {
 
   async deleteSubcategory(id: string): Promise<void> {
     try {
+      // First move any products referencing this subcategory to the generic
+      // "all" category so that the delete will not violate foreign key
+      // constraints.
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ category: 'all', subcategory: null })
+        .eq('subcategory', id);
+
+      if (updateError) {
+        console.error('Error reassigning products from subcategory:', updateError);
+        throw new Error('Failed to reassign products from subcategory');
+      }
+
       const { error } = await supabase
         .from('subcategories')
         .delete()
