@@ -60,7 +60,8 @@ export default function BannerFormModal({
     if (visible) {
       initForm();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // The exhaustive-deps rule is not enabled in this project
+    // so the following dependency array is intentional.
   }, [visible, banner]);
 
   const initForm = () => {
