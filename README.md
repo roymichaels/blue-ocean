@@ -30,7 +30,7 @@ the polyfill in `app/_layout.tsx`. Buffer must be defined before importing
 ```ts
 import { Buffer } from 'buffer';
 if (typeof global.Buffer === 'undefined') {
-  (global as any).Buffer = Buffer;
+  global.Buffer = Buffer;
 }
 import 'react-native-get-random-values';
 import 'react-native-crypto';

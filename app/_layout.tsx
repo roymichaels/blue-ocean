@@ -2,7 +2,7 @@
 import { Buffer } from 'buffer';
 // Expose Buffer globally for dependencies that rely on the Node.js API
 if (typeof global.Buffer === 'undefined') {
-  (global as any).Buffer = Buffer;
+  global.Buffer = Buffer;
 }
 import 'react-native-get-random-values';
 import 'react-native-crypto';
