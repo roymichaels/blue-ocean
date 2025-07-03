@@ -1,12 +1,15 @@
-// Ensure the getRandomValues polyfill is loaded before the crypto shim
 import { Buffer } from 'buffer';
-// Expose Buffer globally for dependencies that rely on the Node.js API
+import { Platform } from 'react-native';
+
 if (typeof global.Buffer === 'undefined') {
   global.Buffer = Buffer;
 }
-import 'react-native-get-random-values';
-import 'react-native-crypto';
-import 'react-native-url-polyfill/auto';
+if (Platform.OS === 'web') {
+  require('react-native-url-polyfill/auto');
+  if (typeof global.crypto === 'undefined') {
+    global.crypto = require('crypto').webcrypto;
+  }
+}
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
