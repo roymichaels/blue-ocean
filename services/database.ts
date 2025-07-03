@@ -325,7 +325,7 @@ class DatabaseService {
   }
 
   // Subcategories
-  async addSubcategory(subcategory: Omit<Subcategory, 'id'>): Promise<void> {
+  async addSubcategory(subcategory: Subcategory): Promise<void> {
     try {
       const { error } = await supabase
         .from('subcategories')
@@ -486,7 +486,7 @@ class DatabaseService {
         .update({
           last_message: message.message || '🎵 Voice message',
           last_message_time: message.timestamp,
-          unread_count: supabase.sql`unread_count + 1`
+          unread_count: (supabase as any).sql`unread_count + 1`
         })
         .eq('id', roomId);
     } catch (error) {

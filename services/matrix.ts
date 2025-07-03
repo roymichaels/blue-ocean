@@ -89,12 +89,12 @@ export class MatrixService {
       this.setupMatrixEventListeners();
 
       // Initialise rust crypto and start the client
-      await this.matrixClient.initRustCrypto({
+      await this.matrixClient?.initRustCrypto({
         useIndexedDB: typeof window !== 'undefined',
       });
 
       const startOptions = { initialSyncLimit: 20 };
-      await this.matrixClient.startClient(startOptions);
+      await this.matrixClient?.startClient(startOptions);
     } catch (error) {
       console.error('Error initializing Matrix client:', error);
       this.matrixClient = null;

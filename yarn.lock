@@ -2924,7 +2924,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
+"@types/node@npm:*, @types/node@npm:^24.0.10":
   version: 24.0.10
   resolution: "@types/node@npm:24.0.10"
   dependencies:
@@ -3956,6 +3956,7 @@ __metadata:
     "@react-navigation/bottom-tabs": "npm:^7.2.0"
     "@react-navigation/native": "npm:^7.0.14"
     "@supabase/supabase-js": "npm:^2.39.0"
+    "@types/node": "npm:^24.0.10"
     "@types/react": "npm:~19.0.14"
     "@types/react-native": "npm:^0.73.0"
     axios: "npm:^1.6.2"
