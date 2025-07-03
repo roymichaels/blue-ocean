@@ -1,6 +1,13 @@
 import { Buffer } from 'buffer';
 
-export function randomBytes(length: number, cb?: (err: Error | null, buf: Buffer) => void) {
+/**
+ * Generate cryptographically secure random bytes if possible.
+ *
+ * @param {number} length
+ * @param {(err: Error | null, buf: Buffer) => void} [cb]
+ * @returns {Buffer | void}
+ */
+export function randomBytes(length, cb) {
   const arr = new Uint8Array(length);
   if (typeof global.crypto !== 'undefined' && global.crypto.getRandomValues) {
     global.crypto.getRandomValues(arr);
