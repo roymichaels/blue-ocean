@@ -314,7 +314,7 @@ export default function ProductDetailScreen() {
   const allMedia = getAllMedia();
   const bannerImageUri = categoryBanner?.image || product.images?.[0];
   const currentPricingTier = pricingTiers.find(
-    (tier) => tier.id === product.pricingTier,
+    (tier) => tier.id === product.pricingTier
   );
   const effectivePrice = getEffectivePrice(product.price, quantity);
   const showTieredPricing =
@@ -379,66 +379,45 @@ export default function ProductDetailScreen() {
           </View>
         </View>
 
-
-        {bannerImageUri && (
-          <View style={styles.heroBanner}>
-            <Image source={{ uri: bannerImageUri }} style={styles.heroImage} />
-            {categoryBanner && (
-              <View style={styles.heroOverlay}>
-                <View style={styles.heroContent}>
-                  <Text
-                    style={[
-                      styles.heroDiscount,
-                      {
-                        color: colors.text.inverse,
-                        backgroundColor: colors.gold,
-                      },
-                    ]}
-                  >
-                    {categoryBanner.discount} הנחה
-                  </Text>
-                  <Text
-                    style={[styles.heroTitle, { color: colors.text.inverse }]}
-                  >
-                    {categoryBanner.title}
-                  </Text>
-                  <Text
-                    style={[styles.heroSubtitle, { color: colors.text.inverse }]}
-                  >
-                    {categoryBanner.subtitle}
-                  </Text>
-                </View>
-              </View>
-            )}
+        {/* ——— Product Media Carousel ——— */}
+        {allMedia.length > 0 && (
+          <View style={styles.galleryContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.galleryContent}
+            >
+              {allMedia.map((media, idx) => (
+                <TouchableOpacity
+                  key={media.id}
+                  style={[
+                    styles.galleryItem,
+                    { borderColor: colors.border.primary },
+                  ]}
+                  onPress={() => openMediaViewer(idx)}
+                >
+                  <Image
+                    source={{ uri: media.uri }}
+                    style={styles.galleryImage}
+                    resizeMode="cover"
+                  />
+                  {media.type === 'video' && (
+                    <View style={styles.videoIndicator}>
+                      <Text
+                        style={[
+                          styles.videoIndicatorText,
+                          { color: colors.text.inverse },
+                        ]}
+                      >
+                        ▶
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         )}
-
-        {/* Main Cover Image */}
-        <View
-          style={[
-            styles.coverImageContainer,
-            { backgroundColor: colors.surface.primary },
-          ]}
-        >
-          {product.images && product.images.length > 0 ? (
-            <TouchableOpacity onPress={() => openMediaViewer(0)}>
-              <Image
-                source={{ uri: product.images[0] }}
-                style={styles.coverImage}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.noImageContainer}>
-              <ImageIcon size={60} color={colors.interactive.disabled} />
-              <Text
-                style={[styles.noImageText, { color: colors.text.secondary }]}
-              >
-                אין תמונה
-              </Text>
-            </View>
-          )}
-        </View>
 
         {/* Product Info */}
         <View style={styles.productInfo}>
@@ -487,7 +466,7 @@ export default function ProductDetailScreen() {
                   {Math.round(
                     ((product.originalPrice - product.price) /
                       product.originalPrice) *
-                      100,
+                      100
                   )}
                   % הנחה
                 </Text>
@@ -534,7 +513,7 @@ export default function ProductDetailScreen() {
                 {currentPricingTier.name}
                 {typeof currentPricingTier.pricePerUnit === 'number' &&
                   ` - מחיר ליחידה: ${currencySymbol}${currentPricingTier.pricePerUnit.toFixed(
-                    2,
+                    2
                   )}`}
               </Text>
               {currentPricingTier.minQuantity > 1 && (
@@ -644,7 +623,7 @@ export default function ProductDetailScreen() {
                 ]}
               >
                 {`מחיר ליחידה: ${currencySymbol}${effectivePrice.toFixed(
-                  2,
+                  2
                 )} (במקום ${currencySymbol}${product.price.toFixed(2)})`}
               </Text>
               <Text style={[styles.tieredPricingTotal, { color: colors.gold }]}>
