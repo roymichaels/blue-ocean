@@ -9,7 +9,7 @@ index f644543d689793341fff087b9e30ce84d11cf6e6..2531da525a404b1099ab14a1054375e4
 +import 'react-native-get-random-values'
 +import { Buffer } from 'buffer'
 +if (typeof global.Buffer === 'undefined') {
-+  (global as any).Buffer = Buffer
++  global.Buffer = Buffer
 +}
 +
 +function randomBytes(size) {
