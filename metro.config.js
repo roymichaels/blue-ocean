@@ -2,6 +2,7 @@ const { getDefaultConfig } = require('@expo/metro-config');
 const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('wasm');
 config.resolver.extraNodeModules = {
-  crypto: require.resolve('react-native-crypto')
+  crypto: require.resolve('react-native-crypto'),
+  'react-native-randombytes': require.resolve('./polyfills/react-native-randombytes')
 };
 module.exports = config;
