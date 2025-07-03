@@ -14,6 +14,8 @@ import { Camera, Upload, X, Play, Video } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../contexts/ThemeContext';
 import MediaService from '../services/media';
+import PinataService from '../services/pinata';
+import { debugLog } from '../utils/logger';
 
 interface MediaItem {
   id: string;
@@ -60,9 +62,11 @@ export default function MediaUploader({
     setUploading(true);
     try {
       const mediaService = MediaService.getInstance();
+      const pinata = PinataService.getInstance();
       const newMediaItems: MediaItem[] = [];
 
       for (const asset of pickerResult.assets) {
+
         const uploadedUri = await mediaService.uploadMedia(
           asset.uri,
           asset.fileName || `media_${Date.now()}`
