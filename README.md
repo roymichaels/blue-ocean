@@ -4,10 +4,17 @@ This Expo project uses React Native with the Expo Router. It requires a polyfill
 
 ## Setup
 
-Install dependencies using `pnpm`:
+Run `pnpm install` to populate `node_modules`:
 
 ```sh
 pnpm install
+```
+
+To patch dependencies after installation, use:
+
+```sh
+pnpm patch <pkg>
+pnpm patch-commit
 ```
 
 ### Crypto polyfill
