@@ -4,7 +4,7 @@ import { Video as LucideIcon } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface EmptyStateProps {
-  icon: LucideIcon;
+  icon: typeof LucideIcon;
   title: string;
   message: string;
   actionText?: string;

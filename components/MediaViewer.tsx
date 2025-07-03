@@ -37,7 +37,7 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
   const translateY = useSharedValue(0);
 
   const pinchHandler = useAnimatedGestureHandler({
-    onActive: (event) => {
+    onActive: (event: any) => {
       scale.value = event.scale;
     },
     onEnd: () => {
@@ -50,11 +50,11 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
   });
 
   const panHandler = useAnimatedGestureHandler({
-    onActive: (event) => {
+    onActive: (event: any) => {
       translateX.value = event.translationX;
       translateY.value = event.translationY;
     },
-    onEnd: (event) => {
+    onEnd: (event: any) => {
       // If dragged down significantly, close the viewer
       if (Math.abs(event.translationY) > 100) {
         runOnJS(onClose)();

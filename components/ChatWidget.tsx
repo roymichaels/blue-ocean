@@ -49,7 +49,7 @@ export default function ChatWidget() {
   const { isAdmin, isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const { t } = useLanguage();
-  const recordingTimer = useRef<NodeJS.Timeout | null>(null);
+  const recordingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const messagesEndRef = useRef<ScrollView>(null);
   const matrixService = MatrixService.getInstance();
 
@@ -456,7 +456,7 @@ export default function ChatWidget() {
       // Update local state
       setMessages(prev => prev.map(msg => {
         if (msg.id === messageId) {
-          const reactions = { ...msg.reactions } || {};
+          const reactions = { ...(msg.reactions || {}) };
           if (!reactions[emoji]) {
             reactions[emoji] = [];
           }

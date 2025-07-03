@@ -95,7 +95,7 @@ export default function FullScreenMediaViewer({
   };
 
   const pinchHandler = useAnimatedGestureHandler({
-    onActive: (event) => {
+    onActive: (event: any) => {
       scale.value = Math.max(0.5, Math.min(event.scale, 4));
     },
     onEnd: () => {
@@ -110,7 +110,7 @@ export default function FullScreenMediaViewer({
   });
 
   const panHandler = useAnimatedGestureHandler({
-    onActive: (event) => {
+    onActive: (event: any) => {
       if (scale.value > 1) {
         translateX.value = event.translationX;
         translateY.value = event.translationY;
@@ -118,7 +118,7 @@ export default function FullScreenMediaViewer({
         translateY.value = event.translationY;
       }
     },
-    onEnd: (event) => {
+    onEnd: (event: any) => {
       if (scale.value <= 1 && Math.abs(event.translationY) > 100) {
         runOnJS(onClose)();
       } else if (scale.value <= 1) {
