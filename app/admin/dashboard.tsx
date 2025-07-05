@@ -126,7 +126,7 @@ export default function AdminDashboardScreen() {
   };
 
   const navigateToProducts = () => {
-    router.push('/(tabs)/');
+    router.push('/(tabs)');
   };
 
   const navigateToReviews = () => {
