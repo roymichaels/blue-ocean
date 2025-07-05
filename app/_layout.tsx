@@ -55,6 +55,7 @@ function AppContent() {
         <Stack.Screen name="category/[id]" />
         <Stack.Screen name="subcategory/[id]" />
         <Stack.Screen name="user/[id]" />
+        <Stack.Screen name="driver-dashboard" />
         <Stack.Screen name="reviews/index" options={{ title: 'Reviews' }} />
         <Stack.Screen name="admin" />
         <Stack.Screen name="auth" />

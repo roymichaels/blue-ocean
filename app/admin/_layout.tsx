@@ -7,6 +7,7 @@ export default function AdminLayout() {
       <Stack.Screen name="kyc-approvals" />
       <Stack.Screen name="user-management" />
       <Stack.Screen name="pricing-tiers" />
+      <Stack.Screen name="deliveries" />
     </Stack>
   );
 }

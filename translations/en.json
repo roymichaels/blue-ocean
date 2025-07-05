@@ -224,6 +224,8 @@
     "account": "Account",
     "management": "Management",
     "dashboard": "Dashboard",
+    "driverDashboard": "Driver Dashboard",
+    "deliveries": "Deliveries",
     "manageCategories": "Manage Categories",
     "darkMode": "Dark Mode",
     "pushNotifications": "Push Notifications",

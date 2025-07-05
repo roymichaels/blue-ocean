@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Settings, User, Shield, Moon, Sun, Globe, Bell } from 'lucide-react-native';
+import { Settings, User, Shield, Moon, Sun, Globe, Bell, Truck, Package } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
@@ -28,7 +28,7 @@ I18nManager.forceRTL(true);
 const NOTIFICATIONS_STORAGE_KEY = 'settings_notifications';
 
 export default function ProfileScreen() {
-  const { isLoggedIn, isAdmin, user, logout } = useAuth();
+  const { isLoggedIn, isAdmin, isDriver, user, logout } = useAuth();
   const { t, currentLanguage, setLanguage } = useLanguage();
   const { theme, toggleTheme, colors } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -162,16 +162,47 @@ export default function ProfileScreen() {
         {isLoggedIn && isAdmin && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>ניהול</Text>
-            <TouchableOpacity 
-              style={[styles.menuItem, { 
+            <TouchableOpacity
+              style={[styles.menuItem, {
                 backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary 
+                borderColor: colors.border.primary
               }]}
               onPress={() => router.push('/admin/dashboard')}
             >
               <View style={styles.menuItemContent}>
                 <Shield size={24} color={colors.gold} />
                 <Text style={[styles.menuText, { color: colors.text.primary }]}>לוח בקרה</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.menuItem, {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary
+              }]}
+              onPress={() => router.push('/admin/deliveries')}
+            >
+              <View style={styles.menuItemContent}>
+                <Package size={24} color={colors.gold} />
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>משלוחים</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Driver Menu */}
+        {isLoggedIn && (isDriver || isAdmin) && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>נהג</Text>
+            <TouchableOpacity
+              style={[styles.menuItem, {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary
+              }]}
+              onPress={() => router.push('/driver-dashboard')}
+            >
+              <View style={styles.menuItemContent}>
+                <Truck size={24} color={colors.gold} />
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>לוח נהג</Text>
               </View>
             </TouchableOpacity>
           </View>

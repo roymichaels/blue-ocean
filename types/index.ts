@@ -209,6 +209,24 @@ export interface OrderTrackingStep {
   completed: boolean;
 }
 
+export type DeliveryJobStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled';
+
+export interface DeliveryJob {
+  id: string;
+  orderId: string;
+  driverId: string;
+  status: DeliveryJobStatus;
+  pickupTime?: string;
+  dropoffTime?: string;
+  proofUri?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ShippingAddress {
   id?: string;
   name: string;
