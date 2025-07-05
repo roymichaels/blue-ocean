@@ -32,6 +32,7 @@ export class MatrixService {
   private currentUser: any = null;
   private authStateListeners: ((isLoggedIn: boolean, user: any) => void)[] = [];
   private chatTriggerListeners: ((userId: string) => void)[] = [];
+  private jobChatTriggerListeners: ((jobId: string) => void)[] = [];
 
   public static getInstance(): MatrixService {
     if (!MatrixService.instance) {
@@ -494,6 +495,23 @@ export class MatrixService {
     }
   }
 
+  // Job chat trigger methods
+  addJobChatTriggerListener(listener: (jobId: string) => void): void {
+    this.jobChatTriggerListeners.push(listener);
+  }
+
+  removeJobChatTriggerListener(listener: (jobId: string) => void): void {
+    this.jobChatTriggerListeners = this.jobChatTriggerListeners.filter(
+      (l) => l !== listener
+    );
+  }
+
+  triggerJobChatOpen(jobId: string): void {
+    for (const listener of this.jobChatTriggerListeners) {
+      listener(jobId);
+    }
+  }
+
   async sendMessage(roomId: string, message: string): Promise<boolean> {
     try {
       if (!this.isAuthenticated) {
@@ -681,6 +699,54 @@ export class MatrixService {
     } catch (error) {
       console.error('Error getting or creating admin room:', error);
       return 'default_room';
+    }
+  }
+
+  async getOrCreateJobRoom(jobId: string): Promise<string> {
+    try {
+      if (!this.isAuthenticated) {
+        throw new Error('Not authenticated');
+      }
+
+      if (!this.matrixClient) {
+        return `job_${jobId}`;
+      }
+
+      const alias = `#job-${jobId}:${MATRIX_DOMAIN}`;
+
+      try {
+        const res = await this.matrixClient.getRoomIdForAlias(alias);
+        const roomId = res.room_id;
+        await this.matrixClient.joinRoom(roomId);
+        return roomId;
+      } catch {
+        const response = await this.matrixClient.createRoom({
+          room_alias_name: `job-${jobId}`,
+          name: `Job ${jobId}`,
+          preset: Preset.PrivateChat,
+          visibility: Visibility.Private,
+        });
+        return response.room_id;
+      }
+    } catch (error) {
+      console.error('Error getting or creating job room:', error);
+      return `job_${jobId}`;
+    }
+  }
+
+  async archiveJobRoom(jobId: string): Promise<void> {
+    if (!this.matrixClient) {
+      return;
+    }
+
+    const alias = `#job-${jobId}:${MATRIX_DOMAIN}`;
+    try {
+      const res = await this.matrixClient.getRoomIdForAlias(alias);
+      const roomId = res.room_id;
+      await this.matrixClient.leave(roomId);
+      await this.matrixClient.forget(roomId);
+    } catch (error) {
+      console.error('Error archiving job room:', error);
     }
   }
 

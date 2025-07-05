@@ -111,6 +111,28 @@ export default function ChatWidget() {
   }, [chatRooms, isAdmin, isDriver]);
 
   useEffect(() => {
+    const handleJobChat = async (jobId: string) => {
+      const roomId = await matrixService.getOrCreateJobRoom(jobId);
+      const jobRoom: ChatRoom = {
+        id: roomId,
+        userId: jobId,
+        userName: `Job ${jobId}`,
+        lastMessage: '',
+        lastMessageTime: Date.now(),
+        unreadCount: 0,
+      };
+      setIsOpen(true);
+      setSelectedRoom(jobRoom);
+      await loadMessages(roomId);
+    };
+
+    matrixService.addJobChatTriggerListener(handleJobChat);
+    return () => {
+      matrixService.removeJobChatTriggerListener(handleJobChat);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchResults = async () => {
       if ((isAdmin || isDriver) && searchQuery.trim()) {
         try {

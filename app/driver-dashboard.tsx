@@ -15,6 +15,7 @@ import ProofUploader from '../components/ProofUploader';
 import { useAuth } from '../components/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
+import { MatrixService } from '../services/matrix';
 import { DeliveryJob } from '../types';
 
 I18nManager.allowRTL(true);
@@ -25,6 +26,7 @@ export default function DriverDashboardScreen() {
   const { colors } = useTheme();
   const [jobs, setJobs] = useState<DeliveryJob[]>([]);
   const [loading, setLoading] = useState(true);
+  const matrixService = MatrixService.getInstance();
 
   useEffect(() => {
     if (!isDriver && !isAdmin) {
@@ -50,10 +52,17 @@ export default function DriverDashboardScreen() {
     }
   };
 
+  const openJobChat = (job: DeliveryJob) => {
+    matrixService.triggerJobChatOpen(job.id);
+  };
+
   const updateStatus = async (jobId: string, status: 'pending' | 'in_progress' | 'completed' | 'cancelled') => {
     try {
       const db = DatabaseService.getInstance();
       await db.updateDeliveryJobStatus(jobId, status);
+      if (status === 'completed') {
+        matrixService.archiveJobRoom(jobId);
+      }
       loadJobs();
     } catch (error) {
       console.error('Error updating status:', error);
@@ -78,7 +87,7 @@ export default function DriverDashboardScreen() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {jobs.map(job => (
-          <View key={job.id} style={[styles.jobCard, {
+          <TouchableOpacity key={job.id} onPress={() => openJobChat(job)} style={[styles.jobCard, {
             backgroundColor: colors.surface.primary,
             borderColor: colors.border.primary,
           }]}>
@@ -104,28 +113,7 @@ export default function DriverDashboardScreen() {
                 </TouchableOpacity>
               )}
               {job.status !== 'completed' && (
-                <TouchableOpacity
-                  style={[styles.actionButton, { borderColor: colors.border.primary }]}
-                  onPress={() => updateStatus(job.id, 'completed')}
-                >
-                  <CheckCircle size={20} color={colors.text.primary} />
-                  <Text style={[styles.actionText, { color: colors.text.primary }]}>הושלם</Text>
-                </TouchableOpacity>
-              )}
-              {job.status !== 'cancelled' && job.status !== 'completed' && (
-                <TouchableOpacity
-                  style={[styles.actionButton, { borderColor: colors.border.primary }]}
-                  onPress={() => updateStatus(job.id, 'cancelled')}
-                >
-                  <XCircle size={20} color={colors.text.primary} />
-                  <Text style={[styles.actionText, { color: colors.text.primary }]}>בטל</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            {job.status === 'completed' && (
               <ProofUploader jobId={job.id} proofUri={job.proofUri} />
-            )}
-          </View>
         ))}
         {!loading && jobs.length === 0 && (
           <View style={styles.emptyContainer}>
