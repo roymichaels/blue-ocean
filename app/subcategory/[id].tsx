@@ -110,10 +110,11 @@ export default function SubcategoryScreen() {
       setCategories(categoriesData);
 
       // Find the subcategory
-      let foundSubcategory = null;
-      for (const category of categoriesData) {
-        if (category.subcategories) {
-          foundSubcategory = category.subcategories.find(sub => sub.id === id);
+        let foundSubcategory: Subcategory | null = null;
+        for (const category of categoriesData) {
+          if (category.subcategories) {
+          foundSubcategory =
+            category.subcategories.find(sub => sub.id === id) || null;
           if (foundSubcategory) {
             // Set default category for new products
             setNewProduct(prev => ({...prev, category: category.id, subcategory: foundSubcategory?.id || ''}));

@@ -24,15 +24,18 @@ declare module 'lucide-react-native' {
   export const Clock: FC<LucideProps>;
   export const Copy: FC<LucideProps>;
   export const CreditCard: FC<LucideProps>;
+  export const CheckCircle: FC<LucideProps>;
   export const DollarSign: FC<LucideProps>;
   export const Download: FC<LucideProps>;
   export const ExternalLink: FC<LucideProps>;
   export const Eye: FC<LucideProps>;
   export const FileText: FC<LucideProps>;
+  export const File: FC<LucideProps>;
   export const Filter: FC<LucideProps>;
   export const Globe: FC<LucideProps>;
   export const Grid3x3: FC<LucideProps>;
   export const Heart: FC<LucideProps>;
+  export const Image: FC<LucideProps>;
   export const Info: FC<LucideProps>;
   export const Lock: FC<LucideProps>;
   export const LogIn: FC<LucideProps>;
@@ -77,6 +80,7 @@ declare module 'lucide-react-native' {
   export const Users: FC<LucideProps>;
   export const Video: FC<LucideProps>;
   export const X: FC<LucideProps>;
+  export const XCircle: FC<LucideProps>;
   export const createLucideIcon: (name: string, iconNode: any[]) => FC<LucideProps>;
   export default {} as Record<string, FC<LucideProps>>;
 }

@@ -457,7 +457,20 @@ export default function PricingTiersScreen() {
                 </TouchableOpacity>
               </View>
             ))}
-            <TouchableOpacity onPress={() => setNewTier({...newTier, rules: [...(newTier.rules||[]), {minQty:1, maxQty:1, pricePerBaseUnit: undefined, discountPct: undefined}]})} style={{marginBottom:10}}>
+              <TouchableOpacity onPress={() => setNewTier({
+                ...newTier,
+                rules: [
+                  ...(newTier.rules || []),
+                  {
+                    id: '',
+                    tierId: '',
+                    minQty: 1,
+                    maxQty: 1,
+                    pricePerBaseUnit: undefined,
+                    discountPct: undefined,
+                  },
+                ],
+              })} style={{marginBottom:10}}>
               <Text style={{color: colors.gold}}>הוסף כלל</Text>
             </TouchableOpacity>
 

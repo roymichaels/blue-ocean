@@ -15,9 +15,9 @@ import { router } from 'expo-router';
 import {
   ArrowLeft,
   Truck,
-  CheckCircle,
+  CircleCheck as CheckCircle,
   Clock,
-  XCircle,
+  Circle as XCircle,
 } from 'lucide-react-native';
 import ProofUploader from '../components/ProofUploader';
 import { useAuth } from '../components/AuthContext';
@@ -46,7 +46,7 @@ export default function DriverDashboardScreen() {
     try {
       setLoading(true);
       const db = DatabaseService.getInstance();
-      const myJobs = await db.getDriverJobs(user?.id || '');
+      const myJobs = await db.getDeliveryJobsForDriver(user?.id || '');
       setJobs(myJobs);
     } catch (error) {
       console.error('Error loading jobs:', error);
