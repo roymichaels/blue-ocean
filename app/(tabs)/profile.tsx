@@ -179,7 +179,9 @@ export default function ProfileScreen() {
                 backgroundColor: colors.surface.primary,
                 borderColor: colors.border.primary
               }]}
-              onPress={() => router.push('/admin/deliveries')}
+              onPress={() =>
+                router.push({ pathname: '/admin/deliveries' })
+              }
             >
               <View style={styles.menuItemContent}>
                 <Package size={24} color={colors.gold} />
@@ -198,7 +200,9 @@ export default function ProfileScreen() {
                 backgroundColor: colors.surface.primary,
                 borderColor: colors.border.primary
               }]}
-              onPress={() => router.push('/driver-dashboard')}
+              onPress={() =>
+                router.push({ pathname: '/driver-dashboard' })
+              }
             >
               <View style={styles.menuItemContent}>
                 <Truck size={24} color={colors.gold} />
