@@ -41,7 +41,7 @@ export default function AdminDashboardScreen() {
     totalUsers: 0
   });
   const { showNotification } = useNotifications();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
 
   // Modal states
@@ -54,13 +54,13 @@ export default function AdminDashboardScreen() {
 
   useEffect(() => {
     // Check if user is logged in as admin
-    if (!isAdmin) {
+    if (!isAdmin && !isDriver) {
       router.replace('/auth/login');
       return;
     }
 
     loadData();
-  }, [isAdmin]);
+  }, [isAdmin, isDriver]);
 
   const loadData = async () => {
     try {

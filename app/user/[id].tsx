@@ -26,17 +26,17 @@ export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { isAdmin } = useAuth();
+  const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAdmin && !isDriver) {
       router.back();
       return;
     }
-    
+
     loadUserProfile();
-  }, [id, isAdmin]);
+  }, [id, isAdmin, isDriver]);
 
   const loadUserProfile = async () => {
     if (!id) return;
@@ -67,6 +67,8 @@ export default function UserProfileScreen() {
     switch (role) {
       case 'admin':
         return colors.gold;
+      case 'driver':
+        return colors.status.warning;
       case 'user':
         return colors.interactive.primary;
       default:
@@ -78,6 +80,8 @@ export default function UserProfileScreen() {
     switch (role) {
       case 'admin':
         return 'מנהל';
+      case 'driver':
+        return 'נהג';
       case 'user':
         return 'משתמש';
       default:
@@ -103,7 +107,7 @@ export default function UserProfileScreen() {
     }
   };
 
-  if (!isAdmin) {
+  if (!isAdmin && !isDriver) {
     return null;
   }
 

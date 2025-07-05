@@ -25,11 +25,11 @@ I18nManager.forceRTL(true);
 export default function KycApprovalsScreen() {
   const [pendingRequests, setPendingRequests] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, isDriver, user } = useAuth();
   const { colors } = useTheme();
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAdmin && !isDriver) {
       Alert.alert('גישה מוגבלת', 'רק מנהלים יכולים לגשת לדף זה', [
         { text: 'אישור', onPress: () => router.replace('/') }
       ]);
@@ -37,7 +37,7 @@ export default function KycApprovalsScreen() {
     }
 
     loadPendingRequests();
-  }, [isAdmin]);
+  }, [isAdmin, isDriver]);
 
   const loadPendingRequests = async () => {
     setLoading(true);
