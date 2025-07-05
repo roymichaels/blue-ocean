@@ -16,6 +16,25 @@ If dependencies need patching, run `patch-package` after installation:
 yarn postinstall
 ```
 
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in the required values:
+
+```sh
+cp .env.example .env
+# then edit .env and provide your keys
+```
+
+## Running the Project
+
+Start the Expo development server with:
+
+```sh
+yarn dev
+```
+
+`yarn start` works as an alias of `yarn dev`.
+
 ### Buffer polyfill
 
 React Native 0.79 no longer provides the Node.js `Buffer` global. The project
