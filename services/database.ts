@@ -1493,6 +1493,23 @@ class DatabaseService {
     }
   }
 
+  async updateDeliveryJobProof(jobId: string, proofUri: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('delivery_jobs')
+        .update({ proof_uri: proofUri })
+        .eq('id', jobId);
+
+      if (error) {
+        console.error('Error updating delivery job proof:', error);
+        throw new Error('Failed to update delivery job proof');
+      }
+    } catch (error) {
+      console.error('Error in updateDeliveryJobProof:', error);
+      throw error;
+    }
+  }
+
   // Settings
   async getSetting(key: string): Promise<string | null> {
     try {

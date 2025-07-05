@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Truck, CheckCircle, Clock, XCircle } from 'lucide-react-native';
+import ProofUploader from '../components/ProofUploader';
 import { useAuth } from '../components/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
@@ -121,6 +122,9 @@ export default function DriverDashboardScreen() {
                 </TouchableOpacity>
               )}
             </View>
+            {job.status === 'completed' && (
+              <ProofUploader jobId={job.id} proofUri={job.proofUri} />
+            )}
           </View>
         ))}
         {!loading && jobs.length === 0 && (
