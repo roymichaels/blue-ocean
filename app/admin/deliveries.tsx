@@ -15,6 +15,7 @@ import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
+import { MatrixService } from '../../services/matrix';
 import { DeliveryJob, User } from '../../types';
 
 I18nManager.allowRTL(true);
@@ -29,6 +30,7 @@ export default function AdminDeliveriesScreen() {
   const [selectedDriver, setSelectedDriver] = useState<User | null>(null);
   const [showDriverDropdown, setShowDriverDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
+  const matrixService = MatrixService.getInstance();
 
   useEffect(() => {
     if (!isAdmin) {
@@ -75,11 +77,18 @@ export default function AdminDeliveriesScreen() {
     try {
       const db = DatabaseService.getInstance();
       await db.updateDeliveryJobStatus(jobId, status);
+      if (status === 'completed') {
+        matrixService.archiveJobRoom(jobId);
+      }
       loadData();
     } catch (error) {
       console.error('Error updating job:', error);
       Alert.alert('שגיאה', 'עדכון סטטוס נכשל');
     }
+  };
+
+  const openJobChat = (job: DeliveryJob) => {
+    matrixService.triggerJobChatOpen(job.id);
   };
 
   const formatDate = (date?: string) => {
@@ -136,7 +145,7 @@ export default function AdminDeliveriesScreen() {
         </View>
 
         {jobs.map(job => (
-          <View key={job.id} style={[styles.jobCard, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}>
+          <TouchableOpacity key={job.id} onPress={() => openJobChat(job)} style={[styles.jobCard, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}>
             <View style={styles.jobHeader}>
               <Truck size={24} color={colors.gold} />
               <Text style={[styles.jobTitle, { color: colors.text.primary }]}>הזמנה #{job.orderId.slice(-6)}</Text>
@@ -171,7 +180,7 @@ export default function AdminDeliveriesScreen() {
                 </TouchableOpacity>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </SafeAreaView>
