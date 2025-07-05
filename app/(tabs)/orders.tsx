@@ -200,7 +200,7 @@ export default function OrdersScreen() {
               </Text>
               <TouchableOpacity 
                 style={[styles.shopButton, { backgroundColor: colors.gold }]}
-                onPress={() => router.push('/(tabs)/')}
+                onPress={() => router.push('/(tabs)')}
               >
                 <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחל לקנות</Text>
               </TouchableOpacity>

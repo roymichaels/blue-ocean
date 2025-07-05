@@ -826,16 +826,16 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </View>
 
           {/* Checkout Progress Indicator */}
-          {checkoutStep !== 'cart' && !orderPlaced && (
+          {checkoutStep !== ('cart' as any) && !orderPlaced && (
             <View style={styles.progressContainer}>
               <View style={styles.progressStep}>
                 <View style={[styles.progressDot, styles.progressDotActive, { backgroundColor: colors.gold }]} />
                 <Text style={[styles.progressText, styles.progressTextActive, { color: colors.gold }]}>עגלה</Text>
               </View>
-              <View style={[styles.progressLine, checkoutStep !== 'cart' ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
+              <View style={[styles.progressLine, checkoutStep !== ('cart' as any) ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
               <View style={styles.progressStep}>
-                <View style={[styles.progressDot, checkoutStep !== 'cart' ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
-                <Text style={[styles.progressText, checkoutStep !== 'cart' ? { color: colors.gold } : { color: colors.text.secondary }]}>משלוח</Text>
+                <View style={[styles.progressDot, checkoutStep !== ('cart' as any) ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
+                <Text style={[styles.progressText, checkoutStep !== ('cart' as any) ? { color: colors.gold } : { color: colors.text.secondary }]}>משלוח</Text>
               </View>
               <View style={[styles.progressLine, (checkoutStep === 'payment' || checkoutStep === 'confirmation') ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
               <View style={styles.progressStep}>

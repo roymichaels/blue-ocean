@@ -251,7 +251,7 @@ export default function AdminDeliveriesScreen() {
               </Text>
             )}
             {job.proofUri && (
-              <TouchableOpacity onPress={() => openProof(job.proofUri)}>
+              <TouchableOpacity onPress={() => openProof(job.proofUri!)}>
                 <Image
                   source={{ uri: job.proofUri }}
                   style={styles.proofImage}

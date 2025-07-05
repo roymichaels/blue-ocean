@@ -11,14 +11,14 @@ type Language = 'en' | 'he';
 interface LanguageContextType {
   currentLanguage: Language;
   setLanguage: (language: Language) => Promise<void>;
-  t: (key: string, options?: Record<string, string> | string) => string;
+  t: (key: string, options?: Record<string, string | number> | string) => string;
   isRTL: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   currentLanguage: 'he',
   setLanguage: async () => {},
-  t: (key: string, options?: Record<string, string> | string) =>
+  t: (key: string, options?: Record<string, string | number> | string) =>
     typeof options === 'string' ? options : key,
   isRTL: true,
 });
@@ -77,11 +77,11 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
   const t = (
     key: string,
-    options?: Record<string, string> | string
+    options?: Record<string, string | number> | string
   ): string => {
     const keys = key.split('.');
     let value: any = translations;
-    let params: Record<string, string> | undefined;
+    let params: Record<string, string | number> | undefined;
     let fallback: string | undefined;
 
     if (typeof options === 'string') {
@@ -98,10 +98,10 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       }
     }
 
-    if (typeof value === 'string') {
-      if (params) {
-        return value.replace(/\{(.*?)\}/g, (_, p) => params?.[p] ?? '');
-      }
+      if (typeof value === 'string') {
+        if (params) {
+          return value.replace(/\{(.*?)\}/g, (_, p) => String(params?.[p] ?? ''));
+        }
       return value;
     }
 

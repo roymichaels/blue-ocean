@@ -38,12 +38,13 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
     return true;
   };
 
-  const pickDocument = async () => {
-    if (!(await requestMediaPermission())) return;
-    const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: false });
-    if (result.type === 'cancel') return;
-    await uploadFile(result.uri, result.name || `proof_${Date.now()}`);
-  };
+    const pickDocument = async () => {
+      if (!(await requestMediaPermission())) return;
+      const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: false });
+      if (result.canceled || !result.assets?.length) return;
+      const asset = result.assets[0];
+      await uploadFile(asset.uri, asset.name || `proof_${Date.now()}`);
+    };
 
   const pickImage = async () => {
     if (!(await requestMediaPermission())) return;
