@@ -91,7 +91,7 @@ export default function FloatingCartWidget() {
 
     const goToCheckout = () => {
       setIsExpanded(false);
-      router.push('/(tabs)/?showCart=true');
+      router.push({ pathname: '/(tabs)', params: { showCart: 'true' } });
     };
 
   if (cartItems.length === 0) {
