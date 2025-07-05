@@ -8,6 +8,7 @@ import InfoModal from './InfoModal';
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
+  isDriver: boolean;
   user: any | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<boolean>;
@@ -19,6 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   isAdmin: false,
+  isDriver: false,
   user: null,
   loading: true,
   login: async () => false,
@@ -36,6 +38,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isDriver, setIsDriver] = useState(false);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [showMatrixUserModal, setShowMatrixUserModal] = useState(false);
@@ -61,6 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (mounted.current) {
         setIsLoggedIn(loggedIn);
         setIsAdmin(currentUser?.isAdmin || false);
+        setIsDriver(currentUser?.isDriver || false);
         setUser(currentUser);
         setLoading(false);
       }
@@ -92,6 +96,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (mounted.current) {
           setIsLoggedIn(loggedIn);
           setIsAdmin(matrixService.isAdmin());
+          setIsDriver(matrixService.isDriver());
           setUser(currentUser);
           setLoading(false);
         }
@@ -113,6 +118,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setUser(prev => ({
                 ...prev,
                 displayName: userProfile.display_name,
+                isDriver: userProfile.role === 'driver',
                 role: userProfile.role,
                 kycStatus: userProfile.kyc_status,
                 customerTier: userProfile.customer_tier
@@ -129,6 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (mounted.current) {
           setIsLoggedIn(false);
           setIsAdmin(false);
+          setIsDriver(false);
           setUser(null);
           setLoading(false);
         }
@@ -138,6 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (mounted.current) {
         setIsLoggedIn(false);
         setIsAdmin(false);
+        setIsDriver(false);
         setUser(null);
         setLoading(false);
       }
@@ -179,6 +187,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (mounted.current) {
             setIsLoggedIn(true);
             setIsAdmin(matrixService.isAdmin() || existingProfile.role === 'admin');
+            setIsDriver(existingProfile.role === 'driver');
             setUser({
               ...currentUser,
               displayName: existingProfile.display_name,
@@ -243,6 +252,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (mounted.current) {
         setIsLoggedIn(true);
         setIsAdmin(matrixService.isAdmin());
+        setIsDriver(false);
         setUser({
           ...currentUser,
           displayName: displayName
@@ -331,10 +341,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider 
-      value={{ 
-        isLoggedIn, 
-        isAdmin, 
-        user, 
+      value={{
+        isLoggedIn,
+        isAdmin,
+        isDriver,
+        user,
         loading,
         login, 
         signup,
