@@ -46,7 +46,7 @@ export default function ChatWidget() {
   const [playingAudio, setPlayingAudio] = useState<{ [key: string]: Audio.Sound }>({});
   const [showReactions, setShowReactions] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<{ id: string; displayName: string; isAppUser: boolean }[]>([]);
-  const { isAdmin, isLoggedIn, user } = useAuth();
+  const { isAdmin, isDriver, isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const { t } = useLanguage();
   const recordingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -65,13 +65,13 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (isOpen && isLoggedIn) {
-      if (isAdmin) {
+      if (isAdmin || isDriver) {
         loadChatRooms();
       } else {
         loadOrCreateDefaultRoom();
       }
     }
-  }, [isOpen, isAdmin, isLoggedIn]);
+  }, [isOpen, isAdmin, isDriver, isLoggedIn]);
 
   useEffect(() => {
     return () => {
@@ -88,7 +88,7 @@ export default function ChatWidget() {
   useEffect(() => {
     // Listen for chat trigger events
     const handleChatTrigger = (userId: string) => {
-      if (isAdmin) {
+      if (isAdmin || isDriver) {
         // Find or create a room for this user
         const room = chatRooms.find(r => r.userId === userId);
         if (room) {
@@ -108,11 +108,11 @@ export default function ChatWidget() {
     return () => {
       matrixService.removeChatTriggerListener(handleChatTrigger);
     };
-  }, [chatRooms, isAdmin]);
+  }, [chatRooms, isAdmin, isDriver]);
 
   useEffect(() => {
     const fetchResults = async () => {
-      if (isAdmin && searchQuery.trim()) {
+      if ((isAdmin || isDriver) && searchQuery.trim()) {
         try {
           const db = DatabaseService.getInstance();
           const results = await matrixService.searchUsers(searchQuery.trim());
@@ -151,7 +151,7 @@ export default function ChatWidget() {
     };
 
     fetchResults();
-  }, [searchQuery, isAdmin]);
+  }, [searchQuery, isAdmin, isDriver]);
 
   const loadChatRooms = async () => {
     try {
@@ -262,14 +262,14 @@ export default function ChatWidget() {
       const success = await matrixService.sendMessage(roomId, newMessage.trim());
       
       // Add message to local state
-      const message: ChatMessage = {
-        id: Date.now().toString(),
-        senderId: isAdmin ? (process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin') : (user?.id || 'user_guest'),
-        senderName: isAdmin ? 'מנהל' : (user?.displayName || 'משתמש אורח'),
-        message: newMessage.trim(),
-        timestamp: Date.now(),
-        isAdmin: isAdmin,
-      };
+    const message: ChatMessage = {
+      id: Date.now().toString(),
+      senderId: (isAdmin || isDriver) ? (process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin') : (user?.id || 'user_guest'),
+      senderName: isAdmin || isDriver ? 'מנהל' : (user?.displayName || 'משתמש אורח'),
+      message: newMessage.trim(),
+      timestamp: Date.now(),
+      isAdmin: isAdmin || isDriver,
+    };
 
       setMessages(prev => [...prev, message]);
       setNewMessage('');
@@ -280,7 +280,7 @@ export default function ChatWidget() {
       }, 100);
 
       // If not admin, simulate admin response after a delay
-      if (!isAdmin) {
+      if (!isAdmin && !isDriver) {
         setTimeout(() => {
           const adminResponse: ChatMessage = {
             id: (Date.now() + 1).toString(),
@@ -382,11 +382,11 @@ export default function ChatWidget() {
         const roomId = selectedRoom ? selectedRoom.id : await matrixService.getOrCreateAdminRoom();
         const voiceMessage: ChatMessage = {
           id: Date.now().toString(),
-          senderId: isAdmin ? (process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin') : (user?.id || 'user_guest'),
-          senderName: isAdmin ? 'מנהל' : (user?.displayName || 'משתמש אורח'),
+          senderId: (isAdmin || isDriver) ? (process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin') : (user?.id || 'user_guest'),
+          senderName: isAdmin || isDriver ? 'מנהל' : (user?.displayName || 'משתמש אורח'),
           message: '',
           timestamp: Date.now(),
-          isAdmin: isAdmin,
+          isAdmin: isAdmin || isDriver,
           audioUri: uploadedUrl,
           audioDuration: recordingDuration
         };
@@ -488,7 +488,7 @@ export default function ChatWidget() {
   };
 
   const navigateToUserProfile = async (userId: string) => {
-    if (!isAdmin) return;
+    if (!isAdmin && !isDriver) return;
 
     try {
       setIsOpen(false);
@@ -524,13 +524,13 @@ export default function ChatWidget() {
       onLongPress={() => setShowReactions(item.id)}
     >
       <View style={styles.messageHeader}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigateToUserProfile(item.senderId)}
-          disabled={!isAdmin}
+          disabled={!(isAdmin || isDriver)}
         >
           <Text style={[
             styles.senderName,
-            isAdmin && styles.clickableSender
+            (isAdmin || isDriver) && styles.clickableSender
           ]}>
             {item.senderName}
           </Text>
@@ -712,7 +712,7 @@ export default function ChatWidget() {
             borderBottomColor: colors.border.primary,
             backgroundColor: colors.gold 
           }]}>
-            {isAdmin && selectedRoom && (
+            {(isAdmin || isDriver) && selectedRoom && (
               <TouchableOpacity 
                 style={styles.backButton}
                 onPress={backToRoomList}
@@ -722,12 +722,12 @@ export default function ChatWidget() {
             )}
             <View style={styles.headerContent}>
               <Text style={[styles.chatTitle, { color: colors.text.inverse }]}>
-                {isAdmin
+                {isAdmin || isDriver
                   ? (selectedRoom ? selectedRoom.userName : t('chat.adminChat'))
                   : t('chat.customerSupport')}
               </Text>
               <Text style={styles.chatSubtitle}>
-                {isAdmin
+                {(isAdmin || isDriver)
                   ? (selectedRoom ? t('chat.customerSupportChat') : t('chat.selectChatToStart'))
                   : t('chat.chatWithTeam')}
               </Text>
@@ -757,7 +757,7 @@ export default function ChatWidget() {
               style={styles.chatContent}
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-              {isAdmin && !selectedRoom ? (
+              {(isAdmin || isDriver) && !selectedRoom ? (
                 // Admin Chat List View
                 <>
                   {/* Search */}

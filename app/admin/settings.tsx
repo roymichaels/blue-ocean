@@ -28,7 +28,7 @@ export default function SettingsScreen() {
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { isAdmin } = useAuth();
+  const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
   const { t } = useLanguage();
@@ -42,13 +42,13 @@ export default function SettingsScreen() {
   });
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAdmin && !isDriver) {
       router.replace('/');
       return;
     }
     
     loadSettings();
-  }, [isAdmin]);
+  }, [isAdmin, isDriver]);
 
   useEffect(() => {
     // Update local state when context changes

@@ -40,12 +40,12 @@ export default function UserManagementScreen() {
   const [filterKyc, setFilterKyc] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
   
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, isDriver, user } = useAuth();
   const { colors } = useTheme();
   const { showNotification } = useNotifications();
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAdmin && !isDriver) {
       Alert.alert('גישה מוגבלת', 'רק מנהלים יכולים לגשת לדף זה', [
         { text: 'אישור', onPress: () => router.replace('/') }
       ]);
@@ -53,7 +53,7 @@ export default function UserManagementScreen() {
     }
 
     loadUsers();
-  }, [isAdmin]);
+  }, [isAdmin, isDriver]);
 
   useEffect(() => {
     applyFilters();

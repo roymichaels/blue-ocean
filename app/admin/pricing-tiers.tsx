@@ -38,7 +38,7 @@ export default function PricingTiersScreen() {
       { minQty: 1, maxQty: 1, pricePerBaseUnit: undefined, discountPct: undefined } as any
     ]
   });
-  const { isAdmin } = useAuth();
+  const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
 
@@ -66,13 +66,13 @@ export default function PricingTiersScreen() {
   });
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAdmin && !isDriver) {
       router.replace('/');
       return;
     }
     
     loadPricingTiers();
-  }, [isAdmin]);
+  }, [isAdmin, isDriver]);
 
   const loadPricingTiers = async () => {
     setLoading(true);
