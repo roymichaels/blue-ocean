@@ -6,11 +6,21 @@ import {
   TouchableOpacity,
   I18nManager,
   ScrollView,
-  Switch
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Settings, User, Shield, Moon, Sun, Globe, Bell, Truck, Package } from 'lucide-react-native';
+import {
+  Settings,
+  User,
+  Shield,
+  Moon,
+  Sun,
+  Globe,
+  Bell,
+  Truck,
+  Package,
+} from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
@@ -38,13 +48,13 @@ export default function ProfileScreen() {
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  
+
   // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
 
@@ -55,8 +65,10 @@ export default function ProfileScreen() {
 
   const loadSettings = async () => {
     try {
-      const notificationsSetting = await AsyncStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
-      
+      const notificationsSetting = await AsyncStorage.getItem(
+        NOTIFICATIONS_STORAGE_KEY
+      );
+
       if (notificationsSetting !== null) {
         setNotificationsEnabled(notificationsSetting === 'true');
       }
@@ -75,7 +87,7 @@ export default function ProfileScreen() {
   };
 
   const handleLogin = () => {
-    router.push('/auth');
+    router.push('/auth' as any);
   };
 
   const handleLogout = () => {
@@ -91,7 +103,7 @@ export default function ProfileScreen() {
         visible: true,
         title: 'התנתקות',
         message: 'התנתקת בהצלחה',
-        type: 'success'
+        type: 'success',
       });
     } catch (error) {
       console.error('Logout error:', error);
@@ -99,7 +111,7 @@ export default function ProfileScreen() {
         visible: true,
         title: 'שגיאה',
         message: 'אירעה שגיאה בהתנתקות',
-        type: 'error'
+        type: 'error',
       });
     }
   };
@@ -110,50 +122,86 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <GlobalHeader showSearch={false} />
-      
-      <ScrollView 
+
+      <ScrollView
         ref={scrollViewRef}
-        style={styles.content} 
+        style={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Header */}
-        <View style={[styles.profileHeader, { borderBottomColor: colors.border.primary }]}>
+        <View
+          style={[
+            styles.profileHeader,
+            { borderBottomColor: colors.border.primary },
+          ]}
+        >
           <View style={[styles.avatarContainer, { borderColor: colors.gold }]}>
             <User size={40} color={colors.interactive.disabled} />
           </View>
           <Text style={[styles.userName, { color: colors.text.primary }]}>
-            {isLoggedIn ? user?.displayName || user?.username : t('profile.guest')}
+            {isLoggedIn
+              ? user?.displayName || user?.username
+              : t('profile.guest')}
           </Text>
           <Text style={[styles.userEmail, { color: colors.text.secondary }]}>
-            {isLoggedIn ? (isAdmin ? t('profile.admin') : t('profile.customer')) : t('profile.guestBrowsing')}
+            {isLoggedIn
+              ? isAdmin
+                ? t('profile.admin')
+                : t('profile.customer')
+              : t('profile.guestBrowsing')}
           </Text>
           {isAdmin && (
             <View style={[styles.adminBadge, { backgroundColor: colors.gold }]}>
               <Shield size={16} color={colors.text.inverse} />
-              <Text style={[styles.adminBadgeText, { color: colors.text.inverse }]}>{t('profile.admin')}</Text>
+              <Text
+                style={[styles.adminBadgeText, { color: colors.text.inverse }]}
+              >
+                {t('profile.admin')}
+              </Text>
             </View>
           )}
         </View>
 
         {/* Quick Stats for logged in users */}
         {isLoggedIn && (
-          <View style={[styles.statsContainer, { 
-            backgroundColor: colors.surface.primary,
-            borderColor: colors.border.primary 
-          }]}>
+          <View
+            style={[
+              styles.statsContainer,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+              },
+            ]}
+          >
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.gold }]}>{userOrders.length}</Text>
-              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>הזמנות</Text>
+              <Text style={[styles.statNumber, { color: colors.gold }]}>
+                {userOrders.length}
+              </Text>
+              <Text
+                style={[styles.statLabel, { color: colors.text.secondary }]}
+              >
+                הזמנות
+              </Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.gold }]}>8</Text>
-              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>מועדפים</Text>
+              <Text
+                style={[styles.statLabel, { color: colors.text.secondary }]}
+              >
+                מועדפים
+              </Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.gold }]}>5</Text>
-              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>ביקורות</Text>
+              <Text
+                style={[styles.statLabel, { color: colors.text.secondary }]}
+              >
+                ביקורות
+              </Text>
             </View>
           </View>
         )}
@@ -161,31 +209,41 @@ export default function ProfileScreen() {
         {/* Admin Menu */}
         {isLoggedIn && isAdmin && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>ניהול</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+              ניהול
+            </Text>
             <TouchableOpacity
-              style={[styles.menuItem, {
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary
-              }]}
-              onPress={() => router.push('/admin/dashboard')}
+              style={[
+                styles.menuItem,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                },
+              ]}
+              onPress={() => router.push('/admin/dashboard' as any)}
             >
               <View style={styles.menuItemContent}>
                 <Shield size={24} color={colors.gold} />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>לוח בקרה</Text>
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  לוח בקרה
+                </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.menuItem, {
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary
-              }]}
-              onPress={() =>
-                router.push({ pathname: '/admin/deliveries' })
-              }
+              style={[
+                styles.menuItem,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                },
+              ]}
+              onPress={() => router.push('/admin/deliveries' as any)}
             >
               <View style={styles.menuItemContent}>
                 <Package size={24} color={colors.gold} />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>משלוחים</Text>
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  משלוחים
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -194,19 +252,24 @@ export default function ProfileScreen() {
         {/* Driver Menu */}
         {isLoggedIn && (isDriver || isAdmin) && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>נהג</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+              נהג
+            </Text>
             <TouchableOpacity
-              style={[styles.menuItem, {
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary
-              }]}
-              onPress={() =>
-                router.push({ pathname: '/driver-dashboard' })
-              }
+              style={[
+                styles.menuItem,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                },
+              ]}
+              onPress={() => router.push('/driver-dashboard' as any)}
             >
               <View style={styles.menuItemContent}>
                 <Truck size={24} color={colors.gold} />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>לוח נהג</Text>
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  לוח נהג
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -215,16 +278,23 @@ export default function ProfileScreen() {
         {/* Main Menu - Only show for logged in users */}
         {isLoggedIn && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>חשבון</Text>
-            <TouchableOpacity 
-              style={[styles.menuItem, { 
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary 
-              }]}
-              onPress={() => router.push('/(tabs)/orders')}
+            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+              חשבון
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.menuItem,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                },
+              ]}
+              onPress={() => router.push('/(tabs)/orders' as any)}
             >
               <View style={styles.menuItemContent}>
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>ההזמנות שלי</Text>
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  ההזמנות שלי
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -232,12 +302,19 @@ export default function ProfileScreen() {
 
         {/* Settings */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>הגדרות</Text>
-          
-          <View style={[styles.menuItem, { 
-            backgroundColor: colors.surface.primary,
-            borderColor: colors.border.primary 
-          }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+            הגדרות
+          </Text>
+
+          <View
+            style={[
+              styles.menuItem,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+              },
+            ]}
+          >
             <View style={styles.menuItemContent}>
               {theme === 'dark' ? (
                 <Moon size={24} color={colors.gold} />
@@ -251,43 +328,71 @@ export default function ProfileScreen() {
             <Switch
               value={theme === 'dark'}
               onValueChange={toggleTheme}
-              trackColor={{ false: colors.interactive.disabled, true: colors.gold }}
-              thumbColor={theme === 'dark' ? colors.text.inverse : colors.text.primary}
+              trackColor={{
+                false: colors.interactive.disabled,
+                true: colors.gold,
+              }}
+              thumbColor={
+                theme === 'dark' ? colors.text.inverse : colors.text.primary
+              }
             />
           </View>
 
           {isLoggedIn && (
-            <View style={[styles.menuItem, { 
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary 
-            }]}>
+            <View
+              style={[
+                styles.menuItem,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                },
+              ]}
+            >
               <View style={styles.menuItemContent}>
                 <Bell size={24} color={colors.gold} />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>התראות פוש</Text>
+                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                  התראות פוש
+                </Text>
               </View>
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotificationsToggle}
-                trackColor={{ false: colors.interactive.disabled, true: colors.gold }}
-                thumbColor={notificationsEnabled ? colors.text.inverse : colors.text.primary}
+                trackColor={{
+                  false: colors.interactive.disabled,
+                  true: colors.gold,
+                }}
+                thumbColor={
+                  notificationsEnabled
+                    ? colors.text.inverse
+                    : colors.text.primary
+                }
               />
             </View>
           )}
 
-          <TouchableOpacity 
-            style={[styles.menuItem, { 
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary 
-            }]}
+          <TouchableOpacity
+            style={[
+              styles.menuItem,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+              },
+            ]}
             onPress={handleLanguageSwitch}
           >
             <View style={styles.menuItemContent}>
               <Globe size={24} color={colors.gold} />
-              <Text style={[styles.menuText, { color: colors.text.primary }]}>שפה</Text>
+              <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                שפה
+              </Text>
             </View>
             <View style={styles.languageContainer}>
-              <Text style={[styles.languageText, { color: colors.text.secondary }]}>
-                {currentLanguage === 'en' ? t('profile.english') : t('profile.hebrew')}
+              <Text
+                style={[styles.languageText, { color: colors.text.secondary }]}
+              >
+                {currentLanguage === 'en'
+                  ? t('profile.english')
+                  : t('profile.hebrew')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -296,18 +401,28 @@ export default function ProfileScreen() {
         {/* Auth Actions */}
         <View style={styles.section}>
           {!isLoggedIn ? (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.authButton, { backgroundColor: colors.gold }]}
               onPress={handleLogin}
             >
-              <Text style={[styles.authButtonText, { color: colors.text.inverse }]}>התחבר</Text>
+              <Text
+                style={[styles.authButtonText, { color: colors.text.inverse }]}
+              >
+                התחבר
+              </Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity 
-              style={[styles.authButton, styles.logoutButton, { backgroundColor: colors.status.error }]}
+            <TouchableOpacity
+              style={[
+                styles.authButton,
+                styles.logoutButton,
+                { backgroundColor: colors.status.error },
+              ]}
               onPress={handleLogout}
             >
-              <Text style={[styles.authButtonText, { color: colors.text.inverse }]}>
+              <Text
+                style={[styles.authButtonText, { color: colors.text.inverse }]}
+              >
                 התנתק
               </Text>
             </TouchableOpacity>
@@ -316,8 +431,12 @@ export default function ProfileScreen() {
 
         {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={[styles.appVersion, { color: colors.text.tertiary }]}>גרסה 1.0.0</Text>
-          <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}>© 2024 הקונגרס הציוני</Text>
+          <Text style={[styles.appVersion, { color: colors.text.tertiary }]}>
+            גרסה 1.0.0
+          </Text>
+          <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}>
+            © 2024 הקונגרס הציוני
+          </Text>
         </View>
       </ScrollView>
 
@@ -334,7 +453,7 @@ export default function ProfileScreen() {
         title={infoModal.title}
         message={infoModal.message}
         type={infoModal.type}
-        onClose={() => setInfoModal({...infoModal, visible: false})}
+        onClose={() => setInfoModal({ ...infoModal, visible: false })}
       />
 
       {/* Logout Confirmation Modal */}
