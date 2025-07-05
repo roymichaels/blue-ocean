@@ -517,6 +517,7 @@ class DatabaseService {
         displayName: data.display_name,
         email: data.email,
         isAdmin: data.role === 'admin',
+        isDriver: data.role === 'driver',
         role: data.role,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
@@ -551,6 +552,7 @@ class DatabaseService {
         displayName: profile.display_name,
         email: profile.email,
         isAdmin: profile.role === 'admin',
+        isDriver: profile.role === 'driver',
         role: profile.role,
         createdAt: profile.created_at,
         updatedAt: profile.updated_at,
@@ -588,6 +590,7 @@ class DatabaseService {
         displayName: data.display_name,
         email: data.email,
         isAdmin: data.role === 'admin',
+        isDriver: data.role === 'driver',
         role: data.role,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
@@ -628,7 +631,7 @@ class DatabaseService {
     }
   }
 
-  async updateUserRole(userId: string, role: 'user' | 'admin'): Promise<void> {
+  async updateUserRole(userId: string, role: 'user' | 'driver' | 'admin'): Promise<void> {
     try {
       const { error } = await supabase
         .from('user_profiles')
@@ -721,6 +724,7 @@ class DatabaseService {
         displayName: profile.display_name,
         email: profile.email,
         isAdmin: profile.role === 'admin',
+        isDriver: profile.role === 'driver',
         role: profile.role,
         createdAt: profile.created_at,
         updatedAt: profile.updated_at,

@@ -103,6 +103,7 @@ export interface User {
   id: string;
   username: string;
   isAdmin: boolean;
+  isDriver?: boolean;
   displayName: string;
   avatar?: string;
   email?: string;
