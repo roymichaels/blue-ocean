@@ -8,10 +8,14 @@ import {
   TextInput,
   Alert,
   I18nManager,
+  Image,
+  Linking,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
+import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
@@ -30,6 +34,8 @@ export default function AdminDeliveriesScreen() {
   const [selectedDriver, setSelectedDriver] = useState<User | null>(null);
   const [showDriverDropdown, setShowDriverDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [proofMedia, setProofMedia] = useState<{ id: string; uri: string; type: 'image' | 'video' }[]>([]);
+  const [viewerVisible, setViewerVisible] = useState(false);
   const matrixService = MatrixService.getInstance();
 
   useEffect(() => {
@@ -87,6 +93,17 @@ export default function AdminDeliveriesScreen() {
     }
   };
 
+  const openProof = (uri: string) => {
+    if (uri.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      setProofMedia([{ id: '1', uri, type: 'image' }]);
+      setViewerVisible(true);
+    } else {
+      if (Platform.OS === 'web') {
+        window.open(uri, '_blank');
+      } else {
+        Linking.openURL(uri);
+      }
+    }
   const openJobChat = (job: DeliveryJob) => {
     matrixService.triggerJobChatOpen(job.id);
   };
@@ -154,6 +171,11 @@ export default function AdminDeliveriesScreen() {
             <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>סטטוס: {job.status}</Text>
             {job.pickupTime && <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>איסוף: {formatDate(job.pickupTime)}</Text>}
             {job.dropoffTime && <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>מסירה: {formatDate(job.dropoffTime)}</Text>}
+            {job.proofUri && (
+              <TouchableOpacity onPress={() => openProof(job.proofUri)}>
+                <Image source={{ uri: job.proofUri }} style={styles.proofImage} />
+              </TouchableOpacity>
+            )}
             <View style={styles.actionsRow}>
               {job.status !== 'in_progress' && job.status !== 'completed' && (
                 <TouchableOpacity
@@ -183,6 +205,12 @@ export default function AdminDeliveriesScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      <FullScreenMediaViewer
+        visible={viewerVisible}
+        media={proofMedia}
+        initialIndex={0}
+        onClose={() => setViewerVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -272,6 +300,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     marginLeft: 8,
+  },
+  proofImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginTop: 8,
   },
   actionText: { fontSize: 14 },
 });

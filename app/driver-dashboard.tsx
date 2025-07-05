@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Truck, CheckCircle, Clock, XCircle } from 'lucide-react-native';
+import ProofUploader from '../components/ProofUploader';
 import { useAuth } from '../components/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
@@ -112,25 +113,7 @@ export default function DriverDashboardScreen() {
                 </TouchableOpacity>
               )}
               {job.status !== 'completed' && (
-                <TouchableOpacity
-                  style={[styles.actionButton, { borderColor: colors.border.primary }]}
-                  onPress={() => updateStatus(job.id, 'completed')}
-                >
-                  <CheckCircle size={20} color={colors.text.primary} />
-                  <Text style={[styles.actionText, { color: colors.text.primary }]}>הושלם</Text>
-                </TouchableOpacity>
-              )}
-              {job.status !== 'cancelled' && job.status !== 'completed' && (
-                <TouchableOpacity
-                  style={[styles.actionButton, { borderColor: colors.border.primary }]}
-                  onPress={() => updateStatus(job.id, 'cancelled')}
-                >
-                  <XCircle size={20} color={colors.text.primary} />
-                  <Text style={[styles.actionText, { color: colors.text.primary }]}>בטל</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </TouchableOpacity>
+              <ProofUploader jobId={job.id} proofUri={job.proofUri} />
         ))}
         {!loading && jobs.length === 0 && (
           <View style={styles.emptyContainer}>
