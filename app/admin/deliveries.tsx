@@ -34,7 +34,9 @@ export default function AdminDeliveriesScreen() {
   const [selectedDriver, setSelectedDriver] = useState<User | null>(null);
   const [showDriverDropdown, setShowDriverDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [proofMedia, setProofMedia] = useState<{ id: string; uri: string; type: 'image' | 'video' }[]>([]);
+  const [proofMedia, setProofMedia] = useState<
+    { id: string; uri: string; type: 'image' | 'video' }[]
+  >([]);
   const [viewerVisible, setViewerVisible] = useState(false);
   const matrixService = MatrixService.getInstance();
 
@@ -55,7 +57,7 @@ export default function AdminDeliveriesScreen() {
         db.getAllUserProfiles(),
       ]);
       setJobs(allJobs);
-      setDrivers(users.filter(u => u.role === 'driver'));
+      setDrivers(users.filter((u) => u.role === 'driver'));
     } catch (error) {
       console.error('Error loading deliveries:', error);
       Alert.alert('שגיאה', 'טעינת המשלוחים נכשלה');
@@ -79,7 +81,10 @@ export default function AdminDeliveriesScreen() {
     }
   };
 
-  const updateStatus = async (jobId: string, status: 'pending' | 'in_progress' | 'completed' | 'cancelled') => {
+  const updateStatus = async (
+    jobId: string,
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+  ) => {
     try {
       const db = DatabaseService.getInstance();
       await db.updateDeliveryJobStatus(jobId, status);
@@ -104,6 +109,8 @@ export default function AdminDeliveriesScreen() {
         Linking.openURL(uri);
       }
     }
+  };
+
   const openJobChat = (job: DeliveryJob) => {
     matrixService.triggerJobChatOpen(job.id);
   };
@@ -114,19 +121,31 @@ export default function AdminDeliveriesScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <View
+        style={[styles.header, { borderBottomColor: colors.border.primary }]}
+      >
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>משלוחים</Text>
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+          משלוחים
+        </Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.newJob, { borderColor: colors.border.primary }]}>
           <TextInput
-            style={[styles.input, { color: colors.text.primary, borderColor: colors.border.primary }]}
+            style={[
+              styles.input,
+              {
+                color: colors.text.primary,
+                borderColor: colors.border.primary,
+              },
+            ]}
             placeholder="Order ID"
             placeholderTextColor={colors.text.secondary}
             value={orderId}
@@ -134,71 +153,155 @@ export default function AdminDeliveriesScreen() {
           />
           <View style={styles.dropdownContainer}>
             <TouchableOpacity
-              style={[styles.dropdown, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}
+              style={[
+                styles.dropdown,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                },
+              ]}
               onPress={() => setShowDriverDropdown(!showDriverDropdown)}
             >
-              <Text style={[styles.dropdownText, { color: colors.text.primary }]}>
+              <Text
+                style={[styles.dropdownText, { color: colors.text.primary }]}
+              >
                 {selectedDriver?.displayName || 'בחר נהג'}
               </Text>
               <ChevronDown size={20} color={colors.text.secondary} />
             </TouchableOpacity>
             {showDriverDropdown && (
-              <View style={[styles.dropdownMenu, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}>
-                {drivers.map(driver => (
+              <View
+                style={[
+                  styles.dropdownMenu,
+                  {
+                    backgroundColor: colors.surface.primary,
+                    borderColor: colors.border.primary,
+                  },
+                ]}
+              >
+                {drivers.map((driver) => (
                   <TouchableOpacity
                     key={driver.id}
-                    style={[styles.dropdownItem, selectedDriver?.id === driver.id && { backgroundColor: colors.interactive.secondary }]}
-                    onPress={() => { setSelectedDriver(driver); setShowDriverDropdown(false); }}
+                    style={[
+                      styles.dropdownItem,
+                      selectedDriver?.id === driver.id && {
+                        backgroundColor: colors.interactive.secondary,
+                      },
+                    ]}
+                    onPress={() => {
+                      setSelectedDriver(driver);
+                      setShowDriverDropdown(false);
+                    }}
                   >
-                    <Text style={[styles.dropdownItemText, { color: colors.text.primary }]}>{driver.displayName}</Text>
+                    <Text
+                      style={[
+                        styles.dropdownItemText,
+                        { color: colors.text.primary },
+                      ]}
+                    >
+                      {driver.displayName}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
             )}
           </View>
-          <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={createJob}>
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: colors.gold }]}
+            onPress={createJob}
+          >
             <Plus size={20} color={colors.text.inverse} />
           </TouchableOpacity>
         </View>
 
-        {jobs.map(job => (
-          <TouchableOpacity key={job.id} onPress={() => openJobChat(job)} style={[styles.jobCard, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}>
+        {jobs.map((job) => (
+          <TouchableOpacity
+            key={job.id}
+            onPress={() => openJobChat(job)}
+            style={[
+              styles.jobCard,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+              },
+            ]}
+          >
             <View style={styles.jobHeader}>
               <Truck size={24} color={colors.gold} />
-              <Text style={[styles.jobTitle, { color: colors.text.primary }]}>הזמנה #{job.orderId.slice(-6)}</Text>
+              <Text style={[styles.jobTitle, { color: colors.text.primary }]}>
+                הזמנה #{job.orderId.slice(-6)}
+              </Text>
             </View>
-            <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>נהג: {drivers.find(d => d.id === job.driverId)?.displayName || job.driverId}</Text>
-            <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>סטטוס: {job.status}</Text>
-            {job.pickupTime && <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>איסוף: {formatDate(job.pickupTime)}</Text>}
-            {job.dropoffTime && <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>מסירה: {formatDate(job.dropoffTime)}</Text>}
+            <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>
+              נהג:{' '}
+              {drivers.find((d) => d.id === job.driverId)?.displayName ||
+                job.driverId}
+            </Text>
+            <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>
+              סטטוס: {job.status}
+            </Text>
+            {job.pickupTime && (
+              <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>
+                איסוף: {formatDate(job.pickupTime)}
+              </Text>
+            )}
+            {job.dropoffTime && (
+              <Text style={[styles.jobInfo, { color: colors.text.secondary }]}>
+                מסירה: {formatDate(job.dropoffTime)}
+              </Text>
+            )}
             {job.proofUri && (
               <TouchableOpacity onPress={() => openProof(job.proofUri)}>
-                <Image source={{ uri: job.proofUri }} style={styles.proofImage} />
+                <Image
+                  source={{ uri: job.proofUri }}
+                  style={styles.proofImage}
+                />
               </TouchableOpacity>
             )}
             <View style={styles.actionsRow}>
               {job.status !== 'in_progress' && job.status !== 'completed' && (
                 <TouchableOpacity
-                  style={[styles.actionButton, { borderColor: colors.border.primary }]}
+                  style={[
+                    styles.actionButton,
+                    { borderColor: colors.border.primary },
+                  ]}
                   onPress={() => updateStatus(job.id, 'in_progress')}
                 >
-                  <Text style={[styles.actionText, { color: colors.text.primary }]}>התחל</Text>
+                  <Text
+                    style={[styles.actionText, { color: colors.text.primary }]}
+                  >
+                    התחל
+                  </Text>
                 </TouchableOpacity>
               )}
               {job.status !== 'completed' && (
                 <TouchableOpacity
-                  style={[styles.actionButton, { borderColor: colors.border.primary }]}
+                  style={[
+                    styles.actionButton,
+                    { borderColor: colors.border.primary },
+                  ]}
                   onPress={() => updateStatus(job.id, 'completed')}
                 >
-                  <Text style={[styles.actionText, { color: colors.text.primary }]}>הושלם</Text>
+                  <Text
+                    style={[styles.actionText, { color: colors.text.primary }]}
+                  >
+                    הושלם
+                  </Text>
                 </TouchableOpacity>
               )}
               {job.status !== 'cancelled' && job.status !== 'completed' && (
                 <TouchableOpacity
-                  style={[styles.actionButton, { borderColor: colors.border.primary }]}
+                  style={[
+                    styles.actionButton,
+                    { borderColor: colors.border.primary },
+                  ]}
                   onPress={() => updateStatus(job.id, 'cancelled')}
                 >
-                  <Text style={[styles.actionText, { color: colors.text.primary }]}>בטל</Text>
+                  <Text
+                    style={[styles.actionText, { color: colors.text.primary }]}
+                  >
+                    בטל
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
