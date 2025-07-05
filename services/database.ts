@@ -11,7 +11,9 @@ import {
   HeroBanner,
   PricingTier,
   MixGroup,
-  WishlistItem
+  WishlistItem,
+  DeliveryJob,
+  DeliveryJobStatus
 } from '../types';
 
 class DatabaseService {
@@ -1394,6 +1396,99 @@ class DatabaseService {
       }
     } catch (error) {
       console.error('Error in removeWishlistItem:', error);
+      throw error;
+    }
+  }
+
+  // Delivery Jobs
+  async getDeliveryJobsForDriver(driverId: string): Promise<DeliveryJob[]> {
+    try {
+      const { data, error } = await supabase
+        .from('delivery_jobs')
+        .select('*')
+        .eq('driver_id', driverId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching delivery jobs:', error);
+        return [];
+      }
+
+      return (data || []).map(job => ({
+        id: job.id,
+        orderId: job.order_id,
+        driverId: job.driver_id,
+        status: job.status,
+        pickupTime: job.pickup_time || undefined,
+        dropoffTime: job.dropoff_time || undefined,
+        proofUri: job.proof_uri || undefined,
+        createdAt: job.created_at,
+        updatedAt: job.updated_at,
+      }));
+    } catch (error) {
+      console.error('Error in getDeliveryJobsForDriver:', error);
+      return [];
+    }
+  }
+
+  async getAllDeliveryJobs(): Promise<DeliveryJob[]> {
+    try {
+      const { data, error } = await supabase
+        .from('delivery_jobs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching delivery jobs:', error);
+        return [];
+      }
+
+      return (data || []).map(job => ({
+        id: job.id,
+        orderId: job.order_id,
+        driverId: job.driver_id,
+        status: job.status,
+        pickupTime: job.pickup_time || undefined,
+        dropoffTime: job.dropoff_time || undefined,
+        proofUri: job.proof_uri || undefined,
+        createdAt: job.created_at,
+        updatedAt: job.updated_at,
+      }));
+    } catch (error) {
+      console.error('Error in getAllDeliveryJobs:', error);
+      return [];
+    }
+  }
+
+  async createDeliveryJob(orderId: string, driverId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('delivery_jobs')
+        .insert([{ order_id: orderId, driver_id: driverId, status: 'pending' }]);
+
+      if (error) {
+        console.error('Error creating delivery job:', error);
+        throw new Error('Failed to create delivery job');
+      }
+    } catch (error) {
+      console.error('Error in createDeliveryJob:', error);
+      throw error;
+    }
+  }
+
+  async updateDeliveryJobStatus(jobId: string, status: DeliveryJobStatus): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('delivery_jobs')
+        .update({ status })
+        .eq('id', jobId);
+
+      if (error) {
+        console.error('Error updating delivery job status:', error);
+        throw new Error('Failed to update delivery job status');
+      }
+    } catch (error) {
+      console.error('Error in updateDeliveryJobStatus:', error);
       throw error;
     }
   }
