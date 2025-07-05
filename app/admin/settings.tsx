@@ -31,7 +31,7 @@ export default function SettingsScreen() {
   const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -221,7 +221,7 @@ export default function SettingsScreen() {
             
             <View style={[styles.infoBox, { backgroundColor: colors.interactive.secondary }]}>
               <Text style={[styles.infoText, { color: colors.text.primary }]}>
-                שפה נוכחית: {t.currentLanguage === 'he' ? 'עברית' : 'English'}
+                שפה נוכחית: {currentLanguage === 'he' ? 'עברית' : 'English'}
               </Text>
             </View>
           </View>
