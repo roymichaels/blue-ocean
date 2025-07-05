@@ -115,7 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               const userProfile = userProfiles[0];
               
               // Enhance user object with Supabase data
-              setUser(prev => ({
+              setUser((prev: any) => ({
                 ...prev,
                 displayName: userProfile.display_name,
                 isDriver: userProfile.role === 'driver',

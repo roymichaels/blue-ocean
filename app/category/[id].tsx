@@ -122,7 +122,7 @@ export default function CategoryScreen() {
         });
       } else {
         // Add new subcategory
-        await db.addSubcategory(newSubcategory as Omit<Subcategory, 'id'>);
+        await db.addSubcategory(newSubcategory as Subcategory);
         
         // Refresh category data
         await loadCategory();

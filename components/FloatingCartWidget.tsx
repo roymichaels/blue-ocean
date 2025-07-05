@@ -89,13 +89,10 @@ export default function FloatingCartWidget() {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  const goToCheckout = () => {
-    setIsExpanded(false);
-    router.push({
-      pathname: '/(tabs)/',
-      params: { showCart: 'true' }
-    });
-  };
+    const goToCheckout = () => {
+      setIsExpanded(false);
+      router.push({ pathname: '/(tabs)', params: { showCart: 'true' } });
+    };
 
   if (cartItems.length === 0) {
     return null;
