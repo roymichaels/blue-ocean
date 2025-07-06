@@ -9,8 +9,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';
+import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAppInfo } from '../contexts/AppInfoContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const AGE_VERIFICATION_KEY = 'age_verified';
 
@@ -18,6 +21,8 @@ export default function AgeVerificationModal() {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const { colors } = useTheme();
+  const { platformName, platformLogo } = useAppInfo();
+  const { t } = useLanguage();
 
   useEffect(() => {
     checkAgeVerification();
@@ -68,14 +73,18 @@ export default function AgeVerificationModal() {
           <View style={styles.content}>
             {/* Logo Section */}
             <View style={styles.logoSection}>
-              <View style={[styles.logoContainer, { 
+            <View style={[styles.logoContainer, {
                 backgroundColor: colors.interactive.secondary,
-                borderColor: colors.gold 
+                borderColor: colors.gold
               }]}>
-                <Shield size={60} color={colors.gold} />
+                {platformLogo ? (
+                  <Image source={{ uri: platformLogo }} style={{ width: 60, height: 60 }} resizeMode="contain" />
+                ) : (
+                  <Shield size={60} color={colors.gold} />
+                )}
               </View>
-              <Text style={[styles.platformName, { color: colors.gold }]}>הקונגרס הציוני</Text>
-              <Text style={[styles.platformSubtitle, { color: colors.text.secondary }]}>פלטפורמה דיגיטלית מתקדמת</Text>
+              <Text style={[styles.platformName, { color: colors.gold }]}>{platformName || t('ageVerification.platformName')}</Text>
+              <Text style={[styles.platformSubtitle, { color: colors.text.secondary }]}>{t('ageVerification.platformSubtitle')}</Text>
             </View>
 
             {/* Age Verification Section */}
@@ -87,9 +96,9 @@ export default function AgeVerificationModal() {
                 <Calendar size={48} color={colors.gold} />
               </View>
               
-              <Text style={[styles.title, { color: colors.text.primary }]}>אישור גיל</Text>
+              <Text style={[styles.title, { color: colors.text.primary }]}>{t('ageVerification.ageVerification')}</Text>
               <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-                כדי להמשיך, עליך לאשר שאתה בן 18 ומעלה
+                {t('ageVerification.verificationRequired')}
               </Text>
               
               <View style={[styles.warningBox, { 
@@ -97,15 +106,15 @@ export default function AgeVerificationModal() {
                 borderColor: colors.status.warning 
               }]}>
                 <Text style={[styles.warningText, { color: colors.status.warning }]}>
-                  ⚠️ תוכן זה מיועד לבוגרים בלבד
+                  {t('ageVerification.adultContentWarning')}
                 </Text>
                 <Text style={[styles.warningSubtext, { color: colors.text.secondary }]}>
-                  הפלטפורמה מכילה תוכן המיועד לבני 18 ומעלה בהתאם לחוקי המדינה
+                  {t('ageVerification.adultContentDescription')}
                 </Text>
               </View>
 
               <Text style={[styles.question, { color: colors.text.primary }]}>
-                האם אתה בן 18 ומעלה?
+                {t('ageVerification.ageQuestion')}
               </Text>
             </View>
 
@@ -115,21 +124,23 @@ export default function AgeVerificationModal() {
                 style={[styles.confirmButton, { backgroundColor: colors.gold }]}
                 onPress={handleConfirm}
               >
-                <Text style={[styles.confirmButtonText, { color: colors.text.inverse }]}>כן, אני בן 18 ומעלה</Text>
+                <Text style={[styles.confirmButtonText, { color: colors.text.inverse }]}>
+                  {t('ageVerification.yes18Plus')}
+                </Text>
               </TouchableOpacity>
               
               <TouchableOpacity
                 style={[styles.denyButton, { borderColor: colors.interactive.disabled }]}
                 onPress={handleDeny}
               >
-                <Text style={[styles.denyButtonText, { color: colors.text.primary }]}>לא, אני מתחת לגיל 18</Text>
+                <Text style={[styles.denyButtonText, { color: colors.text.primary }]}>{t('ageVerification.noUnder18')}</Text>
               </TouchableOpacity>
             </View>
 
             {/* Footer */}
             <View style={[styles.footer, { borderTopColor: colors.border.secondary }]}>
               <Text style={[styles.footerText, { color: colors.text.tertiary }]}>
-                על ידי המשך השימוש, אתה מאשר שקראת והסכמת לתנאי השימוש
+                {t('ageVerification.termsAgreement')}
               </Text>
             </View>
           </View>
