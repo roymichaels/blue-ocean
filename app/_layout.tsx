@@ -22,6 +22,7 @@ import { AuthProvider, useAuth } from '../components/AuthContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { CurrencyProvider } from '../contexts/CurrencyContext';
+import { AppInfoProvider } from '../contexts/AppInfoContext';
 import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
 import { View, ActivityIndicator } from 'react-native';
@@ -76,16 +77,18 @@ export default function RootLayout() {
   useFrameworkReady();
 
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <CurrencyProvider>
-            <NotificationProvider>
-              <AppContent />
-            </NotificationProvider>
-          </CurrencyProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+    <AppInfoProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <CurrencyProvider>
+              <NotificationProvider>
+                <AppContent />
+              </NotificationProvider>
+            </CurrencyProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </AppInfoProvider>
   );
 }
