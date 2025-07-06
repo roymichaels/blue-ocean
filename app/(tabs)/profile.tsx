@@ -86,7 +86,7 @@ export default function ProfileScreen() {
   };
 
   const handleLogin = () => {
-    router.push('/auth' as any);
+    router.push('/auth');
   };
 
   const handleLogout = () => {
@@ -219,7 +219,7 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => router.push('/admin/dashboard' as any)}
+              onPress={() => router.push('/admin/dashboard')}
             >
               <View style={styles.menuItemContent}>
                 <Shield size={24} color={colors.gold} />
@@ -236,7 +236,7 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => router.push('/admin/deliveries' as any)}
+              onPress={() => router.push('/admin/deliveries')}
             >
               <View style={styles.menuItemContent}>
                 <Package size={24} color={colors.gold} />
@@ -262,7 +262,7 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => router.push('/driver-dashboard' as any)}
+              onPress={() => router.push('/driver-dashboard')}
             >
               <View style={styles.menuItemContent}>
                 <Truck size={24} color={colors.gold} />
@@ -288,7 +288,7 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => router.push('/(tabs)/orders' as any)}
+              onPress={() => router.push('/(tabs)/orders')}
             >
               <View style={styles.menuItemContent}>
                 <Text style={[styles.menuText, { color: colors.text.primary }]}>

@@ -21,6 +21,7 @@
     "axios": "^1.6.2",
     "buffer": "^6.0.3",
     "cross-env": "^7.0.3",
+
     "expo": "^53.0.16",
     "expo-audio": "~0.4.8",
     "expo-video": "~2.2.2",

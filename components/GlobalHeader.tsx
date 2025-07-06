@@ -56,11 +56,14 @@ export default function GlobalHeader({
         <View style={styles.headerTop}>
           <View style={styles.logo}>
             {platformLogo ? (
-              <Image source={{ uri: platformLogo }} style={styles.logoIcon} />
+
+              <Image source={{ uri: platformLogo }} style={styles.logoImage} resizeMode="contain" />
             ) : (
               <View style={[styles.logoIcon, { backgroundColor: colors.gold }]} />
             )}
-            <Text style={[styles.logoText, { color: colors.gold }]}> {platformName || t('ageVerification.platformName')}</Text>
+            <Text style={[styles.logoText, { color: colors.gold }]}>\
+              {platformName || t('ageVerification.platformName')}
+            </Text>
           </View>
           <View style={styles.headerIcons}>
             <TouchableOpacity 
@@ -128,6 +131,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  logoImage: {
     width: 24,
     height: 24,
     borderRadius: 12,

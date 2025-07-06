@@ -24,15 +24,17 @@ import { useAppInfo } from '../../contexts/AppInfoContext';
 
 export default function SettingsScreen() {
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
-  const [platformName, setPlatformNameState] = useState('');
-  const [platformLogoMedia, setPlatformLogoMedia] = useState<any[]>([]);
+
+  const [name, setName] = useState('');
+  const [logoMedia, setLogoMedia] = useState<any[]>([]);
+  const [themeColor, setThemeColorState] = useState('#B99C5A');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
   const { t, currentLanguage } = useLanguage();
-  const { platformName: contextPlatformName, platformLogo: contextPlatformLogo, setPlatformName, setPlatformLogo } = useAppInfo();
+  const { platformName, platformLogo, themeColor: contextThemeColor, setPlatformName, setPlatformLogo, setThemeColor } = useAppInfo();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -54,25 +56,27 @@ export default function SettingsScreen() {
   useEffect(() => {
     // Update local state when context changes
     setCurrencySymbolState(contextCurrencySymbol);
-    setPlatformNameState(contextPlatformName);
-    setPlatformLogoMedia(
-      contextPlatformLogo
-        ? [{ id: '1', uri: contextPlatformLogo, type: 'image' }]
-        : []
-    );
-  }, [contextCurrencySymbol, contextPlatformName, contextPlatformLogo]);
+
+    setName(platformName);
+    setThemeColorState(contextThemeColor);
+    if (platformLogo) {
+      setLogoMedia([{ id: 'logo', uri: platformLogo, type: 'image' }]);
+    } else {
+      setLogoMedia([]);
+    }
+  }, [contextCurrencySymbol, platformName, platformLogo, contextThemeColor]);
 
   const loadSettings = async () => {
     setLoading(true);
     try {
       // Currency symbol is already loaded from context
       setCurrencySymbolState(contextCurrencySymbol);
-      setPlatformNameState(contextPlatformName);
-      setPlatformLogoMedia(
-        contextPlatformLogo
-          ? [{ id: '1', uri: contextPlatformLogo, type: 'image' }]
-          : []
-      );
+
+      setName(platformName);
+      setThemeColorState(contextThemeColor);
+      if (platformLogo) {
+        setLogoMedia([{ id: 'logo', uri: platformLogo, type: 'image' }]);
+      }
     } catch (error) {
       console.error('Error loading settings:', error);
       setInfoModal({
@@ -91,8 +95,11 @@ export default function SettingsScreen() {
     try {
       // Update currency symbol in context (which will update database)
       await setCurrencySymbol(currencySymbol);
-      await setPlatformName(platformName);
-      await setPlatformLogo(platformLogoMedia[0]?.uri || '');
+
+      await setPlatformName(name);
+      await setThemeColor(themeColor);
+      const logoUri = logoMedia[0]?.uri || '';
+      await setPlatformLogo(logoUri);
       
       setInfoModal({
         visible: true,
@@ -159,39 +166,79 @@ export default function SettingsScreen() {
               shadowOpacity: 0.1,
               shadowRadius: 4,
             },
-            android: { elevation: 2 },
-            web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
+
+            android: {
+              elevation: 2,
+            },
+            web: {
+              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
+            }
           }),
         }]}>
           <View style={styles.settingHeader}>
-            <ImageIcon size={20} color={colors.gold} />
+            <SettingsIcon size={20} color={colors.gold} />
             <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות מיתוג</Text>
           </View>
 
           <View style={styles.settingContent}>
-            <Text style={[styles.settingDescription, { color: colors.text.secondary }]}>נהל את שם המערכת והלוגו המוצג באפליקציה</Text>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>שם המערכת</Text>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>שם הפלטפורמה</Text>
               <TextInput
                 style={[styles.input, {
                   borderColor: colors.border.primary,
                   backgroundColor: colors.surface.secondary,
                   color: colors.text.primary
                 }]}
-                value={platformName}
-                onChangeText={setPlatformNameState}
-                placeholder="הקונגרס הציוני"
+
+                value={name}
+                onChangeText={setName}
+                placeholder={t('ageVerification.platformName')}
                 textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
               />
             </View>
 
-            <MediaUploader
-              media={platformLogoMedia}
-              onMediaChange={setPlatformLogoMedia}
-              maxFiles={1}
-              allowVideos={false}
-            />
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>לוגו</Text>
+              <MediaUploader
+                media={logoMedia}
+                onMediaChange={setLogoMedia}
+                maxFiles={1}
+                allowVideos={false}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>צבע נושא</Text>
+              {Platform.OS === 'web' ? (
+                <input
+                  type="color"
+                  value={themeColor}
+                  onChange={(e) => setThemeColorState(e.target.value)}
+                  style={{ width: 40, height: 40, borderWidth: 0, backgroundColor: 'transparent' }}
+                />
+              ) : (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                  {['#B99C5A', '#FF0000', '#00FF00', '#0000FF', '#FF00FF', '#00FFFF'].map((c) => (
+                    <TouchableOpacity
+                      key={c}
+                      onPress={() => setThemeColorState(c)}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: c,
+                        marginRight: 8,
+                        marginBottom: 8,
+                        borderWidth: themeColor === c ? 3 : 1,
+                        borderColor: themeColor === c ? colors.gold : colors.border.primary,
+                      }}
+                    />
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
         </View>
 

@@ -77,18 +77,18 @@ export default function RootLayout() {
   useFrameworkReady();
 
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <AppInfoProvider>
+    <AppInfoProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
             <CurrencyProvider>
               <NotificationProvider>
                 <AppContent />
               </NotificationProvider>
             </CurrencyProvider>
-          </AppInfoProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </AppInfoProvider>
   );
 }
