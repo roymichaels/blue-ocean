@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  I18nManager,
   Image,
   Linking,
   Platform,
@@ -21,9 +20,6 @@ import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
 import { MatrixService } from '../../services/matrix';
 import { DeliveryJob, User } from '../../types';
-
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
 
 export default function AdminDeliveriesScreen() {
   const { isAdmin } = useAuth();

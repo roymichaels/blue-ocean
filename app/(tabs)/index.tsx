@@ -9,7 +9,6 @@ import {
   FlatList,
   Dimensions,
   Modal,
-  I18nManager,
   TextInput,
   RefreshControl,
   useWindowDimensions,
@@ -37,9 +36,7 @@ import BannerFormModal from '../../components/BannerFormModal';
 import CartModal from '../../components/CartModal';
 import ProductFormModal from '../../components/ProductFormModal';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 const { width } = Dimensions.get('window');
 

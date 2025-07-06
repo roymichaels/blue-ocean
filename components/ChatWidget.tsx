@@ -10,25 +10,21 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-  I18nManager,
   Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, Send, X, Minimize2, Search, ChevronLeft, Mic, MicOff, Play, Pause, Smile } from 'lucide-react-native';
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 import { MatrixService } from '../services/matrix';
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
+import { debugLog } from '../utils/logger';
 import { ChatMessage, ChatRoom, User } from '../types';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import InfoModal from './InfoModal';
 import UserProfileModal from './UserProfileModal';
-
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
 
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 
@@ -399,7 +395,7 @@ export default function ChatWidget() {
       if (uri) {
         const pinata = PinataService.getInstance();
         const uploadedUrl = await pinata.uploadFile(uri, 'voice');
-        console.log('Voice message recorded:', uploadedUrl);
+        debugLog('Voice message recorded:', uploadedUrl);
 
         const roomId = selectedRoom ? selectedRoom.id : await matrixService.getOrCreateAdminRoom();
         const voiceMessage: ChatMessage = {
