@@ -19,6 +19,7 @@ import { Audio } from 'expo-audio';
 import { MatrixService } from '../services/matrix';
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
+import { debugLog } from '../utils/logger';
 import { ChatMessage, ChatRoom, User } from '../types';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -399,7 +400,7 @@ export default function ChatWidget() {
       if (uri) {
         const pinata = PinataService.getInstance();
         const uploadedUrl = await pinata.uploadFile(uri, 'voice');
-        console.log('Voice message recorded:', uploadedUrl);
+        debugLog('Voice message recorded:', uploadedUrl);
 
         const roomId = selectedRoom ? selectedRoom.id : await matrixService.getOrCreateAdminRoom();
         const voiceMessage: ChatMessage = {
