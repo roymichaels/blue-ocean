@@ -7,7 +7,6 @@ import {
   ScrollView,
   TextInput,
   Modal,
-  I18nManager,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,9 +20,7 @@ import { PricingTier } from '../../types';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function PricingTiersScreen() {
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);

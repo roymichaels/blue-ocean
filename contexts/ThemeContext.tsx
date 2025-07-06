@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors as DarkColors } from '../constants/Colors';
 import { LightColors } from '../constants/LightColors';
+import { useAppInfo } from './AppInfoContext';
 
 const THEME_STORAGE_KEY = 'app_theme';
 
@@ -30,10 +31,15 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<ThemeMode>('dark');
   const [colors, setColors] = useState(DarkColors);
+  const { themeColor } = useAppInfo();
 
   useEffect(() => {
     loadStoredTheme();
   }, []);
+
+  useEffect(() => {
+    applyTheme(theme, themeColor);
+  }, [theme, themeColor]);
 
   const loadStoredTheme = async () => {
     try {
@@ -46,10 +52,25 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
+  const applyTheme = (mode: ThemeMode, color: string) => {
+    const base = mode === 'light' ? LightColors : DarkColors;
+    setColors({
+      ...base,
+      gold: color,
+      interactive: {
+        ...base.interactive,
+        primary: color,
+        primaryHover: color,
+      },
+      tabBar: { ...base.tabBar, active: color },
+      border: { ...base.border, focus: color },
+    });
+  };
+
   const setTheme = async (newTheme: ThemeMode) => {
     try {
       setThemeState(newTheme);
-      setColors(newTheme === 'light' ? LightColors : DarkColors);
+      applyTheme(newTheme, themeColor);
       await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
     } catch (error) {
       console.error('Error setting theme:', error);

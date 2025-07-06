@@ -5,11 +5,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Image,
 } from 'react-native';
 import { Heart, Search, Star } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAppInfo } from '../contexts/AppInfoContext';
 import UserAvatar from './UserAvatar';
 import WishlistModal from './WishlistModal';
 import CartService from '../services/cart';
@@ -27,6 +29,7 @@ export default function GlobalHeader({
 }: GlobalHeaderProps) {
   const { t } = useLanguage();
   const { colors } = useTheme();
+  const { platformName, platformLogo } = useAppInfo();
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [wishlistItemsCount, setWishlistItemsCount] = useState(0);
 
@@ -52,8 +55,14 @@ export default function GlobalHeader({
       <View style={[styles.header, { backgroundColor: colors.background }]}>
         <View style={styles.headerTop}>
           <View style={styles.logo}>
-            <View style={[styles.logoIcon, { backgroundColor: colors.gold }]} />
-            <Text style={[styles.logoText, { color: colors.gold }]}>{t('ageVerification.platformName')}</Text>
+            {platformLogo ? (
+              <Image source={{ uri: platformLogo }} style={styles.logoImage} resizeMode="contain" />
+            ) : (
+              <View style={[styles.logoIcon, { backgroundColor: colors.gold }]} />
+            )}
+            <Text style={[styles.logoText, { color: colors.gold }]}>\
+              {platformName || t('ageVerification.platformName')}
+            </Text>
           </View>
           <View style={styles.headerIcons}>
             <TouchableOpacity 
@@ -121,6 +130,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  logoImage: {
     width: 24,
     height: 24,
     borderRadius: 12,

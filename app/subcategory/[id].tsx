@@ -8,7 +8,6 @@ import {
   Image,
   Modal,
   TextInput,
-  I18nManager,
   Platform,
   ActivityIndicator,
 } from 'react-native';
@@ -25,9 +24,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 interface MediaItem {
   id: string;

@@ -9,7 +9,6 @@ import {
   Image,
   Animated,
   Easing,
-  I18nManager,
   Alert,
 } from 'react-native';
 import { X, CircleCheck as CheckCircle, Circle, Package, Truck, MapPin, Star, Phone, MessageCircle, Copy } from 'lucide-react-native';
@@ -23,9 +22,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useAuth } from './AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 interface OrderTrackingModalProps {
   visible: boolean;

@@ -8,7 +8,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  I18nManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -25,8 +24,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
 import { DeliveryJob } from '../types';
 
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function DriverDashboardScreen() {
   const { user, isDriver, isAdmin } = useAuth();
