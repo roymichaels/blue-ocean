@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  I18nManager,
   ScrollView,
   Switch,
 } from 'react-native';
@@ -30,9 +29,7 @@ import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import AuthTabsModal from '../../components/AuthTabsModal';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 // Storage keys for settings
 const NOTIFICATIONS_STORAGE_KEY = 'settings_notifications';

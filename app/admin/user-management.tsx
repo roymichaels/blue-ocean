@@ -8,7 +8,6 @@ import {
   TextInput,
   Modal,
   Alert,
-  I18nManager,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,10 +18,6 @@ import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
 import { User as UserType, CustomerTier } from '../../types';
 import { useNotifications } from '../../components/NotificationContext';
-
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
 
 export default function UserManagementScreen() {
   const [users, setUsers] = useState<UserType[]>([]);

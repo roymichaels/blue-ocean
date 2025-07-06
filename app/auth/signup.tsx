@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  I18nManager,
   ActivityIndicator,
   ScrollView,
   KeyboardAvoidingView,
@@ -19,9 +18,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import InfoModal from '../../components/InfoModal';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function AuthSignupScreen() {
   const [username, setUsername] = useState('');

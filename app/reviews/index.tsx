@@ -9,7 +9,6 @@ import {
   TextInput,
   Modal,
   Alert,
-  I18nManager,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,9 +23,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import AuthTabsModal from '../../components/AuthTabsModal';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function ReviewsScreen() {
   const [reviews, setReviews] = useState<Review[]>([]);

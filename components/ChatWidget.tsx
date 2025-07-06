@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-  I18nManager,
   Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,10 +25,6 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import InfoModal from './InfoModal';
 import UserProfileModal from './UserProfileModal';
-
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
 
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 

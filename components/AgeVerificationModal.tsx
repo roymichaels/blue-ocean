@@ -6,16 +6,11 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  I18nManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
-
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
 
 const AGE_VERIFICATION_KEY = 'age_verified';
 

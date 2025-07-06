@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  I18nManager,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,9 +17,7 @@ import DatabaseService from '../../services/database';
 import { User as UserType } from '../../types';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function KycApprovalsScreen() {
   const [pendingRequests, setPendingRequests] = useState<UserType[]>([]);

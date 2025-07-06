@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  I18nManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Package, Tag, MessageCircle, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info } from 'lucide-react-native';
@@ -20,9 +19,7 @@ import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
 import AuthTabsModal from '../../components/AuthTabsModal';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);

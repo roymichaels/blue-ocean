@@ -10,7 +10,6 @@ import {
   Dimensions,
   Modal,
   TextInput,
-  I18nManager,
   Platform,
   ActivityIndicator,
 } from 'react-native';
@@ -39,9 +38,7 @@ import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 interface MediaItem {
   id: string;
