@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { I18nManager } from 'react-native';
+import { configureRTL } from '../utils/rtl';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import translation files
@@ -40,6 +40,10 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     loadStoredLanguage();
   }, []);
 
+  useEffect(() => {
+    configureRTL(isRTL);
+  }, [isRTL]);
+
   const loadStoredLanguage = async () => {
     try {
       const storedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
@@ -59,14 +63,11 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       if (language === 'en') {
         setTranslations(enTranslations);
         setIsRTL(false);
-        I18nManager.allowRTL(false);
-        I18nManager.forceRTL(false);
       } else {
         setTranslations(heTranslations);
         setIsRTL(true);
-        I18nManager.allowRTL(true);
-        I18nManager.forceRTL(true);
       }
+      configureRTL(language === 'he');
 
       // Store language preference
       await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);

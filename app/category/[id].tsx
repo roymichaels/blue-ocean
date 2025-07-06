@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  I18nManager,
   Modal,
   TextInput,
 } from 'react-native';
@@ -19,9 +18,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  I18nManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -20,9 +19,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function AdminDashboardScreen() {
   const [products, setProducts] = useState<Product[]>([]);

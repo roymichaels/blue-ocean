@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  I18nManager,
   Modal,
   TextInput,
 } from 'react-native';
@@ -20,9 +19,7 @@ import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-// Enable RTL for Hebrew
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+
 
 export default function CategoriesScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
