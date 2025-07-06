@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, Send, X, Minimize2, Search, ChevronLeft, Mic, MicOff, Play, Pause, Smile } from 'lucide-react-native';
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 import { MatrixService } from '../services/matrix';
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
