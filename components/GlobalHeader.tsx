@@ -56,6 +56,7 @@ export default function GlobalHeader({
         <View style={styles.headerTop}>
           <View style={styles.logo}>
             {platformLogo ? (
+
               <Image source={{ uri: platformLogo }} style={styles.logoImage} resizeMode="contain" />
             ) : (
               <View style={[styles.logoIcon, { backgroundColor: colors.gold }]} />

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';
+import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
@@ -74,6 +75,7 @@ export default function AgeVerificationModal() {
           <View style={styles.content}>
             {/* Logo Section */}
             <View style={styles.logoSection}>
+
               <View
                 style={[styles.logoContainer, {
                   backgroundColor: colors.interactive.secondary,
@@ -90,6 +92,7 @@ export default function AgeVerificationModal() {
                   <Shield size={60} color={colors.gold} />
                 )}
               </View>
+
               <Text style={[styles.platformName, { color: colors.gold }]}> 
                 {platformName || t('ageVerification.platformName')}
               </Text>
@@ -107,6 +110,7 @@ export default function AgeVerificationModal() {
                 <Calendar size={48} color={colors.gold} />
               </View>
               
+
               <Text style={[styles.title, { color: colors.text.primary }]}>\
                 {t('ageVerification.ageVerification')}
               </Text>
@@ -118,6 +122,7 @@ export default function AgeVerificationModal() {
                 backgroundColor: 'rgba(255, 193, 7, 0.1)',
                 borderColor: colors.status.warning 
               }]}>
+
                 <Text style={[styles.warningText, { color: colors.status.warning }]}>\
                   {t('ageVerification.adultContentWarning')}
                 </Text>
@@ -125,6 +130,7 @@ export default function AgeVerificationModal() {
                   {t('ageVerification.adultContentDescription')}
                 </Text>
               </View>
+
 
               <Text style={[styles.question, { color: colors.text.primary }]}>\
                 {t('ageVerification.ageQuestion')}
@@ -137,6 +143,7 @@ export default function AgeVerificationModal() {
                 style={[styles.confirmButton, { backgroundColor: colors.gold }]}
                 onPress={handleConfirm}
               >
+
                 <Text style={[styles.confirmButtonText, { color: colors.text.inverse }]}>\
                   {t('ageVerification.yes18Plus')}
                 </Text>
@@ -146,6 +153,7 @@ export default function AgeVerificationModal() {
                 style={[styles.denyButton, { borderColor: colors.interactive.disabled }]}
                 onPress={handleDeny}
               >
+
                 <Text style={[styles.denyButtonText, { color: colors.text.primary }]}>\
                   {t('ageVerification.noUnder18')}
                 </Text>
@@ -154,6 +162,7 @@ export default function AgeVerificationModal() {
 
             {/* Footer */}
             <View style={[styles.footer, { borderTopColor: colors.border.secondary }]}>
+
               <Text style={[styles.footerText, { color: colors.text.tertiary }]}>\
                 {t('ageVerification.termsAgreement')}
               </Text>

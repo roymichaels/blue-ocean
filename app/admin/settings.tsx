@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, Save, Settings as SettingsIcon, DollarSign, Globe, Bell } from 'lucide-react-native';
+import { ArrowLeft, Save, Settings as SettingsIcon, DollarSign, Globe, Bell, Image as ImageIcon } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -24,6 +24,7 @@ import { useAppInfo } from '../../contexts/AppInfoContext';
 
 export default function SettingsScreen() {
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
+
   const [name, setName] = useState('');
   const [logoMedia, setLogoMedia] = useState<any[]>([]);
   const [themeColor, setThemeColorState] = useState('#B99C5A');
@@ -55,6 +56,7 @@ export default function SettingsScreen() {
   useEffect(() => {
     // Update local state when context changes
     setCurrencySymbolState(contextCurrencySymbol);
+
     setName(platformName);
     setThemeColorState(contextThemeColor);
     if (platformLogo) {
@@ -69,6 +71,7 @@ export default function SettingsScreen() {
     try {
       // Currency symbol is already loaded from context
       setCurrencySymbolState(contextCurrencySymbol);
+
       setName(platformName);
       setThemeColorState(contextThemeColor);
       if (platformLogo) {
@@ -92,6 +95,7 @@ export default function SettingsScreen() {
     try {
       // Update currency symbol in context (which will update database)
       await setCurrencySymbol(currencySymbol);
+
       await setPlatformName(name);
       await setThemeColor(themeColor);
       const logoUri = logoMedia[0]?.uri || '';
@@ -162,6 +166,7 @@ export default function SettingsScreen() {
               shadowOpacity: 0.1,
               shadowRadius: 4,
             },
+
             android: {
               elevation: 2,
             },
@@ -176,6 +181,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.settingContent}>
+
             <View style={styles.inputContainer}>
               <Text style={[styles.inputLabel, { color: colors.text.primary }]}>שם הפלטפורמה</Text>
               <TextInput
@@ -184,6 +190,7 @@ export default function SettingsScreen() {
                   backgroundColor: colors.surface.secondary,
                   color: colors.text.primary
                 }]}
+
                 value={name}
                 onChangeText={setName}
                 placeholder={t('ageVerification.platformName')}

@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DatabaseService from '../services/database';
@@ -25,6 +26,7 @@ export const useAppInfo = () => useContext(AppInfoContext);
 interface AppInfoProviderProps {
   children: ReactNode;
 }
+
 
 const NAME_KEY = 'app_platform_name';
 const LOGO_KEY = 'app_platform_logo';

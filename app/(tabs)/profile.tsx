@@ -25,6 +25,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAppInfo } from '../../contexts/AppInfoContext';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import AuthTabsModal from '../../components/AuthTabsModal';
@@ -38,6 +39,7 @@ export default function ProfileScreen() {
   const { isLoggedIn, isAdmin, isDriver, user, logout } = useAuth();
   const { t, currentLanguage, setLanguage } = useLanguage();
   const { theme, toggleTheme, colors } = useTheme();
+  const { platformName } = useAppInfo();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showOrderTracking, setShowOrderTracking] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -428,12 +430,8 @@ export default function ProfileScreen() {
 
         {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={[styles.appVersion, { color: colors.text.tertiary }]}>
-            גרסה 1.0.0
-          </Text>
-          <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}>
-            © 2024 הקונגרס הציוני
-          </Text>
+          <Text style={[styles.appVersion, { color: colors.text.tertiary }]}>{t('profile.version')}</Text>
+          <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}>© 2024 {platformName || t('ageVerification.platformName')}</Text>
         </View>
       </ScrollView>
 
