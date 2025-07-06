@@ -22,7 +22,7 @@ import Animated, {
   runOnJS,
   withTiming,
 } from 'react-native-reanimated';
-import { Video, ResizeMode } from 'expo-video';
+import { Video, ResizeMode } from 'expo-av';
 import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
