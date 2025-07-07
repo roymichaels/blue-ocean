@@ -194,10 +194,11 @@ export default function FloatingCartWidget() {
                   <Text style={[styles.itemPrice, { color: colors.gold }]}>
                     {currencySymbol}{(item.unitPrice ?? item.product.price).toFixed(2)}
                   </Text>
-                  {item.tierName && (
-                    <Text style={[styles.tierInfo, { color: colors.text.secondary }]}>\n                      {item.tierName} • EQ {item.effectiveQty}
-                    </Text>
-                  )}
+                    {item.tierName && (
+                      <Text style={[styles.tierInfo, { color: colors.text.secondary }]}>{'\n'}
+                      {item.tierName} • EQ {item.effectiveQty}
+                      </Text>
+                    )}
                 </View>
 
                 <View style={styles.quantityControls}>

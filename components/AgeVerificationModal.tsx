@@ -124,10 +124,10 @@ export default function AgeVerificationModal() {
               </View>
 
               <Text style={[styles.title, { color: colors.text.primary }]}>
-                \{t('ageVerification.ageVerification')}
+                 {t('ageVerification.ageVerification')}
               </Text>
               <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-                \{t('ageVerification.verificationRequired')}
+                 {t('ageVerification.verificationRequired')}
               </Text>
 
               <View
@@ -142,7 +142,7 @@ export default function AgeVerificationModal() {
                 <Text
                   style={[styles.warningText, { color: colors.status.warning }]}
                 >
-                  \{t('ageVerification.adultContentWarning')}
+                   {t('ageVerification.adultContentWarning')}
                 </Text>
                 <Text
                   style={[
@@ -150,12 +150,12 @@ export default function AgeVerificationModal() {
                     { color: colors.text.secondary },
                   ]}
                 >
-                  \{t('ageVerification.adultContentDescription')}
+                   {t('ageVerification.adultContentDescription')}
                 </Text>
               </View>
 
               <Text style={[styles.question, { color: colors.text.primary }]}>
-                \{t('ageVerification.ageQuestion')}
+                 {t('ageVerification.ageQuestion')}
               </Text>
             </View>
 
@@ -171,7 +171,7 @@ export default function AgeVerificationModal() {
                     { color: colors.text.inverse },
                   ]}
                 >
-                  \{t('ageVerification.yes18Plus')}
+                   {t('ageVerification.yes18Plus')}
                 </Text>
               </TouchableOpacity>
 
@@ -188,7 +188,7 @@ export default function AgeVerificationModal() {
                     { color: colors.text.primary },
                   ]}
                 >
-                  \{t('ageVerification.noUnder18')}
+                   {t('ageVerification.noUnder18')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -203,7 +203,7 @@ export default function AgeVerificationModal() {
               <Text
                 style={[styles.footerText, { color: colors.text.tertiary }]}
               >
-                \{t('ageVerification.termsAgreement')}
+                 {t('ageVerification.termsAgreement')}
               </Text>
             </View>
           </View>

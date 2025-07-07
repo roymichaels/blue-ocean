@@ -61,7 +61,7 @@ export default function GlobalHeader({
             ) : (
               <View style={[styles.logoIcon, { backgroundColor: colors.gold }]} />
             )}
-            <Text style={[styles.logoText, { color: colors.gold }]}>\
+            <Text style={[styles.logoText, { color: colors.gold }]}>
               {platformName || t('ageVerification.platformName')}
             </Text>
           </View>

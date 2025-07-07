@@ -100,7 +100,7 @@ export default function UserProfileScreen() {
       }, 500);
     } catch (error) {
       console.error('Error opening chat:', error);
-      Alert.alert('שגיאה', 'אירעה שגיאה בפתיחת הצ\'אט');
+      Alert.alert('שגיאה', "אירעה שגיאה בפתיחת הצ'אט");
     }
   };
 

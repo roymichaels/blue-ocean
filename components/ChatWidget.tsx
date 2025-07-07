@@ -209,7 +209,7 @@ export default function ChatWidget() {
       setInfoModal({
         visible: true,
         title: 'שגיאה',
-        message: 'אירעה שגיאה ביצירת חדר צ\'אט',
+        message: "אירעה שגיאה ביצירת חדר צ'אט",
         type: 'error'
       });
     }
