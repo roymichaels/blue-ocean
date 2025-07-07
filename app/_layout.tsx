@@ -1,21 +1,3 @@
-if (typeof global.__filename === 'undefined') {
-  // Provide an empty string to satisfy modules expecting Node's __filename
-  // Adjust if a specific path is required by matrix-js-sdk
-  (global as any).__filename = '';
-}
-
-import { Buffer } from 'buffer';
-import { Platform } from 'react-native';
-
-if (typeof global.Buffer === 'undefined') {
-  global.Buffer = Buffer;
-}
-if (Platform.OS === 'web') {
-  require('react-native-url-polyfill/auto');
-  if (typeof global.crypto === 'undefined') {
-    global.crypto = require('crypto').webcrypto;
-  }
-}
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
