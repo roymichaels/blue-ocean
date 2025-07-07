@@ -58,7 +58,8 @@ export class MatrixService {
         if (this.isAuthenticated && authData.accessToken) {
           await this.initializeMatrixClient(
             authData.accessToken,
-            authData.userId
+            authData.userId,
+            authData.deviceId
           );
         }
 
@@ -74,7 +75,8 @@ export class MatrixService {
 
   private async initializeMatrixClient(
     accessToken: string,
-    userId: string
+    userId: string,
+    deviceId?: string
   ): Promise<void> {
     try {
       // Create Matrix client
@@ -82,6 +84,7 @@ export class MatrixService {
         baseUrl: `https://${MATRIX_DOMAIN}`,
         accessToken,
         userId,
+        deviceId,
         store: new MemoryStore(),
         timelineSupport: true,
       });
@@ -186,7 +189,8 @@ export class MatrixService {
 
   private async saveAuthState(
     accessToken?: string,
-    userId?: string
+    userId?: string,
+    deviceId?: string
   ): Promise<void> {
     try {
       const authData = {
@@ -194,6 +198,7 @@ export class MatrixService {
         currentUser: this.currentUser,
         accessToken,
         userId,
+        deviceId,
         timestamp: Date.now(),
       };
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
@@ -289,6 +294,7 @@ export class MatrixService {
       let matrixLoginSuccess = false;
       let accessToken = '';
       let userId = '';
+      let deviceId: string | undefined;
 
       try {
         // Create a temporary client for login
@@ -302,13 +308,14 @@ export class MatrixService {
           password: password,
         });
 
-        // Store the access token and user ID
+        // Store the access token, user ID and device ID
         accessToken = response.access_token;
         userId = response.user_id;
+        deviceId = response.device_id;
         matrixLoginSuccess = true;
 
-        // Initialize the Matrix client with the access token
-        await this.initializeMatrixClient(accessToken, userId);
+        // Initialize the Matrix client with the access token and device ID
+        await this.initializeMatrixClient(accessToken, userId, deviceId);
       } catch (matrixError) {
         console.warn('Matrix login failed:', matrixError);
 
@@ -360,7 +367,7 @@ export class MatrixService {
           };
 
           // Save auth state to persistent storage
-          await this.saveAuthState(accessToken, userId);
+          await this.saveAuthState(accessToken, userId, deviceId);
 
           // Notify listeners
           this.notifyListeners();
@@ -398,7 +405,7 @@ export class MatrixService {
             };
 
             // Save auth state to persistent storage
-            await this.saveAuthState(accessToken, userId);
+            await this.saveAuthState(accessToken, userId, deviceId);
 
             // Notify listeners
             this.notifyListeners();
