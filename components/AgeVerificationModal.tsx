@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';
-import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
@@ -70,17 +69,21 @@ export default function AgeVerificationModal() {
       transparent={false}
       onRequestClose={() => {}}
     >
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
             {/* Logo Section */}
             <View style={styles.logoSection}>
-
               <View
-                style={[styles.logoContainer, {
-                  backgroundColor: colors.interactive.secondary,
-                  borderColor: colors.gold
-                }]}
+                style={[
+                  styles.logoContainer,
+                  {
+                    backgroundColor: colors.interactive.secondary,
+                    borderColor: colors.gold,
+                  },
+                ]}
               >
                 {platformLogo ? (
                   <Image
@@ -93,47 +96,66 @@ export default function AgeVerificationModal() {
                 )}
               </View>
 
-              <Text style={[styles.platformName, { color: colors.gold }]}> 
+              <Text style={[styles.platformName, { color: colors.gold }]}>
                 {platformName || t('ageVerification.platformName')}
               </Text>
-              <Text style={[styles.platformSubtitle, { color: colors.text.secondary }]}> 
+              <Text
+                style={[
+                  styles.platformSubtitle,
+                  { color: colors.text.secondary },
+                ]}
+              >
                 {t('ageVerification.platformSubtitle')}
               </Text>
             </View>
 
             {/* Age Verification Section */}
             <View style={styles.verificationSection}>
-              <View style={[styles.iconContainer, { 
-                backgroundColor: colors.interactive.secondary,
-                borderColor: colors.gold 
-              }]}>
+              <View
+                style={[
+                  styles.iconContainer,
+                  {
+                    backgroundColor: colors.interactive.secondary,
+                    borderColor: colors.gold,
+                  },
+                ]}
+              >
                 <Calendar size={48} color={colors.gold} />
               </View>
-              
 
-              <Text style={[styles.title, { color: colors.text.primary }]}>\
-                {t('ageVerification.ageVerification')}
+              <Text style={[styles.title, { color: colors.text.primary }]}>
+                \{t('ageVerification.ageVerification')}
               </Text>
-              <Text style={[styles.subtitle, { color: colors.text.secondary }]}>\
-                {t('ageVerification.verificationRequired')}
+              <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
+                \{t('ageVerification.verificationRequired')}
               </Text>
-              
-              <View style={[styles.warningBox, { 
-                backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                borderColor: colors.status.warning 
-              }]}>
 
-                <Text style={[styles.warningText, { color: colors.status.warning }]}>\
-                  {t('ageVerification.adultContentWarning')}
+              <View
+                style={[
+                  styles.warningBox,
+                  {
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    borderColor: colors.status.warning,
+                  },
+                ]}
+              >
+                <Text
+                  style={[styles.warningText, { color: colors.status.warning }]}
+                >
+                  \{t('ageVerification.adultContentWarning')}
                 </Text>
-                <Text style={[styles.warningSubtext, { color: colors.text.secondary }]}>\
-                  {t('ageVerification.adultContentDescription')}
+                <Text
+                  style={[
+                    styles.warningSubtext,
+                    { color: colors.text.secondary },
+                  ]}
+                >
+                  \{t('ageVerification.adultContentDescription')}
                 </Text>
               </View>
 
-
-              <Text style={[styles.question, { color: colors.text.primary }]}>\
-                {t('ageVerification.ageQuestion')}
+              <Text style={[styles.question, { color: colors.text.primary }]}>
+                \{t('ageVerification.ageQuestion')}
               </Text>
             </View>
 
@@ -143,28 +165,45 @@ export default function AgeVerificationModal() {
                 style={[styles.confirmButton, { backgroundColor: colors.gold }]}
                 onPress={handleConfirm}
               >
-
-                <Text style={[styles.confirmButtonText, { color: colors.text.inverse }]}>\
-                  {t('ageVerification.yes18Plus')}
+                <Text
+                  style={[
+                    styles.confirmButtonText,
+                    { color: colors.text.inverse },
+                  ]}
+                >
+                  \{t('ageVerification.yes18Plus')}
                 </Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
-                style={[styles.denyButton, { borderColor: colors.interactive.disabled }]}
+                style={[
+                  styles.denyButton,
+                  { borderColor: colors.interactive.disabled },
+                ]}
                 onPress={handleDeny}
               >
-
-                <Text style={[styles.denyButtonText, { color: colors.text.primary }]}>\
-                  {t('ageVerification.noUnder18')}
+                <Text
+                  style={[
+                    styles.denyButtonText,
+                    { color: colors.text.primary },
+                  ]}
+                >
+                  \{t('ageVerification.noUnder18')}
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Footer */}
-            <View style={[styles.footer, { borderTopColor: colors.border.secondary }]}>
-
-              <Text style={[styles.footerText, { color: colors.text.tertiary }]}>\
-                {t('ageVerification.termsAgreement')}
+            <View
+              style={[
+                styles.footer,
+                { borderTopColor: colors.border.secondary },
+              ]}
+            >
+              <Text
+                style={[styles.footerText, { color: colors.text.tertiary }]}
+              >
+                \{t('ageVerification.termsAgreement')}
               </Text>
             </View>
           </View>
