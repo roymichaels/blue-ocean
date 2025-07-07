@@ -449,7 +449,7 @@ export default function SubcategoryScreen() {
     >
       <View style={styles.productImageContainer}>
         {item.images && item.images.length > 0 ? (
-          <Image source={{ uri: item.images[0] }} style={styles.productImage} />
+          <Image source={{ uri: item.images[0] }} style={styles.productImage} resizeMode="cover" />
         ) : (
           <View style={styles.noImageContainer}>
             <Text style={styles.noImageText}>אין תמונה</Text>
@@ -1188,7 +1188,6 @@ const styles = StyleSheet.create({
   productImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   noImageContainer: {
     width: '100%',

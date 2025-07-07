@@ -89,11 +89,11 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
             <PanGestureHandler onGestureEvent={panHandler}>
               <Animated.View style={[styles.mediaWrapper, animatedStyle]}>
                 {currentMedia?.type === 'image' ? (
-                  <Image source={{ uri: currentMedia.url }} style={styles.media} />
+                  <Image source={{ uri: currentMedia.url }} style={styles.media} resizeMode="contain" />
                 ) : (
                   <View style={styles.videoPlaceholder}>
                     {/* In a real app, you'd use react-native-video here */}
-                    <Image source={{ uri: currentMedia?.url }} style={styles.media} />
+                    <Image source={{ uri: currentMedia?.url }} style={styles.media} resizeMode="contain" />
                   </View>
                 )}
               </Animated.View>
@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
   media: {
     width: '100%',
     height: '100%',
-    resizeMode: 'contain',
   },
   videoPlaceholder: {
     width: '100%',
