@@ -253,7 +253,7 @@ export default function ProductFormModal({
                 }]}
                 onPress={() => setShowPricingTierSelector(true)}
               >
-                <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.pricingTier && { color: colors.text.tertiary }]}>\
+                <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.pricingTier && { color: colors.text.tertiary }]}>
                   {editingProduct.pricingTier
                     ? pricingTiers.find(t => t.id === editingProduct.pricingTier)?.name || editingProduct.pricingTier
                     : 'בחר מדרג מחירים'}
@@ -288,7 +288,7 @@ export default function ProductFormModal({
                   }]}
                   onPress={() => setShowCategorySelector(true)}
                 >
-                  <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.category && { color: colors.text.tertiary }]}>\
+                  <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.category && { color: colors.text.tertiary }]}>
                     {editingProduct.category
                       ? categories.find(c => c.id === editingProduct.category)?.name || editingProduct.category
                       : 'בחר קטגוריה'}
@@ -313,7 +313,7 @@ export default function ProductFormModal({
                   }}
                   disabled={!editingProduct.category}
                 >
-                  <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.subcategory && { color: colors.text.tertiary }]}>\
+                  <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.subcategory && { color: colors.text.tertiary }]}>
                     {editingProduct.subcategory
                       ? availableSubcategories.find(s => s.id === editingProduct.subcategory)?.name || editingProduct.subcategory
                       : 'בחר תת-קטגוריה'}
