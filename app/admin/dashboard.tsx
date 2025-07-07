@@ -38,7 +38,7 @@ export default function AdminDashboardScreen() {
     totalUsers: 0
   });
   const { showNotification } = useNotifications();
-  const { isAdmin, isDriver } = useAuth();
+  const { isAdmin, isDriver, user } = useAuth();
   const { colors } = useTheme();
 
   // Modal states
@@ -68,7 +68,7 @@ export default function AdminDashboardScreen() {
       const [productsData, chatRoomsData, notificationsData, reviewsData, pendingKycRequests, allUsers] = await Promise.all([
         db.getProducts(),
         db.getChatRooms(),
-        notificationService.getNotifications(),
+        notificationService.getNotifications(user?.id),
         db.getReviews(),
         db.getPendingKycRequests(),
         db.getAllUserProfiles()
