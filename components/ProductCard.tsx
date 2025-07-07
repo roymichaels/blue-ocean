@@ -131,7 +131,7 @@ export default function ProductCard({
     ]} onPress={handlePress}>
       <View style={styles.imageContainer}>
         {product.images && product.images.length > 0 ? (
-          <Image source={{ uri: product.images[0] }} style={styles.image} />
+          <Image source={{ uri: product.images[0] }} style={styles.image} resizeMode="cover" />
         ) : (
           <View style={styles.noImageContainer}>
             <Text style={styles.noImageText}>אין תמונה</Text>
@@ -252,7 +252,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   noImageContainer: {
     width: '100%',

@@ -570,6 +570,7 @@ export default function ProductDetailScreen() {
                     <Image
                       source={{ uri: media.uri }}
                       style={styles.galleryImage}
+                      resizeMode="cover"
                     />
                     {media.type === 'video' && (
                       <View style={styles.videoIndicator}>
@@ -844,7 +845,6 @@ const styles = StyleSheet.create({
   coverImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   noImageContainer: {
     width: '100%',
@@ -880,7 +880,6 @@ const styles = StyleSheet.create({
   galleryImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   videoIndicator: {
     position: 'absolute',
