@@ -1,3 +1,4 @@
+
 if (typeof global.__filename === 'undefined') {
   // Provide an empty string to satisfy modules expecting Node's __filename
   // Adjust if a specific path is required by matrix-js-sdk
@@ -14,6 +15,7 @@ if (typeof global.Buffer === 'undefined') {
 if (Platform.OS === 'web') {
   require('react-native-url-polyfill/auto');
 }
+
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

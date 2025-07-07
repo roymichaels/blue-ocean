@@ -56,9 +56,9 @@ yarn dev
 
 ### Buffer polyfill
 
-React Native 0.79 no longer provides the Node.js `Buffer` global. The project
-defines it in `app/_layout.tsx` so libraries relying on Buffer continue to
-work:
+React Native 0.79 no longer provides the Node.js `Buffer` global. The app
+defines it in a custom `index.ts` entry point so libraries relying on Buffer
+continue to work:
 
 ```ts
 import 'react-native-get-random-values';
