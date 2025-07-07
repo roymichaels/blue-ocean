@@ -61,6 +61,7 @@ defines it in `app/_layout.tsx` so libraries relying on Buffer continue to
 work:
 
 ```ts
+import 'react-native-get-random-values';
 import { Buffer } from 'buffer';
 if (typeof global.Buffer === 'undefined') {
   global.Buffer = Buffer;
@@ -72,9 +73,6 @@ if (typeof global.__filename === 'undefined') {
 }
 if (Platform.OS === 'web') {
   require('react-native-url-polyfill/auto');
-  if (typeof global.crypto === 'undefined') {
-    global.crypto = require('crypto').webcrypto;
-  }
 }
 ```
 

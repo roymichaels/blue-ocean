@@ -4,6 +4,7 @@ if (typeof global.__filename === 'undefined') {
   (global as any).__filename = '';
 }
 
+import 'react-native-get-random-values';
 import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
 
@@ -12,9 +13,6 @@ if (typeof global.Buffer === 'undefined') {
 }
 if (Platform.OS === 'web') {
   require('react-native-url-polyfill/auto');
-  if (typeof global.crypto === 'undefined') {
-    global.crypto = require('crypto').webcrypto;
-  }
 }
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
