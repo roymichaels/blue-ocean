@@ -25,6 +25,21 @@ cp .env.example .env
 # then edit .env and provide your keys
 ```
 
+## Supabase Migrations
+
+Before running the Expo app, apply the SQL files in `supabase/migrations` so
+tables like `settings` and `price_tier_rules` are created.
+
+1. Use the Supabase CLI via `npx` (or install it using the [official instructions](https://github.com/supabase/cli#install-the-cli)) and log in:
+   ```sh
+   npx supabase login
+   ```
+2. From the project root, push the migrations:
+   ```sh
+   npx supabase db push
+   ```
+
+
 ## Running the Project
 
 Start the Expo development server with:
