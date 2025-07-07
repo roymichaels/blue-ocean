@@ -1,3 +1,9 @@
+if (typeof global.__filename === 'undefined') {
+  // Provide an empty string to satisfy modules expecting Node's __filename
+  // Adjust if a specific path is required by matrix-js-sdk
+  (global as any).__filename = '';
+}
+
 import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
 
