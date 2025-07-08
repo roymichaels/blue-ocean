@@ -1,4 +1,3 @@
-
 if (typeof global.__filename === 'undefined') {
   // Provide an empty string to satisfy modules expecting Node's __filename
   // Adjust if a specific path is required by matrix-js-sdk
@@ -6,7 +5,7 @@ if (typeof global.__filename === 'undefined') {
 }
 
 import 'react-native-get-random-values';
-import Buffer from 'buffer';
+import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
 
 if (typeof global.Buffer === 'undefined') {
@@ -41,12 +40,14 @@ function AppContent() {
   // Show loading screen while initializing
   if (loading) {
     return (
-      <View style={{ 
-        flex: 1, 
-        backgroundColor: colors.background, 
-        justifyContent: 'center', 
-        alignItems: 'center' 
-      }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <ActivityIndicator size="large" color={colors.gold} />
       </View>
     );
@@ -66,15 +67,21 @@ function AppContent() {
         <Stack.Screen name="reviews/index" options={{ title: 'Reviews' }} />
         <Stack.Screen name="admin" />
         <Stack.Screen name="auth" />
-        <Stack.Screen name="kyc/index" options={{ title: 'KYC Verification' }} />
+        <Stack.Screen
+          name="kyc/index"
+          options={{ title: 'KYC Verification' }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <ChatWidget />
-      <CartModal 
-        visible={showCartModal} 
-        onClose={() => setShowCartModal(false)} 
+      <CartModal
+        visible={showCartModal}
+        onClose={() => setShowCartModal(false)}
       />
-      <StatusBar style={theme === 'dark' ? "light" : "dark"} backgroundColor={colors.background} />
+      <StatusBar
+        style={theme === 'dark' ? 'light' : 'dark'}
+        backgroundColor={colors.background}
+      />
     </GestureHandlerRootView>
   );
 }
