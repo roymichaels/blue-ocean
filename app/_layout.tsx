@@ -1,22 +1,22 @@
 // app/_layout.tsx
 
-// Polyfill for Node's __filename (some SDKs expect it)
-if (typeof global.__filename === 'undefined') {
+// 1) Polyfills for Node globals and web APIs — must come before any React/Expo imports:
+import 'react-native-get-random-values';
+import { Buffer } from 'buffer';
+import 'react-native-url-polyfill/auto';
+import { Platform } from 'react-native';
+
+if (typeof (global as any).__filename === 'undefined') {
+  // some SDKs (e.g. matrix-js-sdk) reference __filename
   (global as any).__filename = '';
 }
 
-// Ensure crypto.getRandomValues and Buffer are available
-import 'react-native-get-random-values';
-import { Buffer } from 'buffer';
-import { Platform } from 'react-native';
-
-if (typeof global.Buffer === 'undefined') {
-  global.Buffer = Buffer;
-}
-if (Platform.OS === 'web') {
-  require('react-native-url-polyfill/auto');
+if (typeof (global as any).Buffer === 'undefined') {
+  // ensure Buffer is available
+  (global as any).Buffer = Buffer;
 }
 
+// 2) Now your normal imports:
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
