@@ -1,9 +1,11 @@
+// app/_layout.tsx
+
+// Polyfill for Node's __filename (some SDKs expect it)
 if (typeof global.__filename === 'undefined') {
-  // Provide an empty string to satisfy modules expecting Node's __filename
-  // Adjust if a specific path is required by matrix-js-sdk
   (global as any).__filename = '';
 }
 
+// Ensure crypto.getRandomValues and Buffer are available
 import 'react-native-get-random-values';
 import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
@@ -15,11 +17,13 @@ if (Platform.OS === 'web') {
   require('react-native-url-polyfill/auto');
 }
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+
 import AdminNotificationBanner from '../components/AdminNotificationBanner';
 import { NotificationProvider } from '../components/NotificationContext';
 import ChatWidget from '../components/ChatWidget';
@@ -30,14 +34,12 @@ import { CurrencyProvider } from '../contexts/CurrencyContext';
 import { AppInfoProvider } from '../contexts/AppInfoContext';
 import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
-import { View, ActivityIndicator } from 'react-native';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
   const { colors, theme } = useTheme();
   const { isAdmin, loading } = useAuth();
 
-  // Show loading screen while initializing
   if (loading) {
     return (
       <View
@@ -57,6 +59,7 @@ function AppContent() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AgeVerificationModal />
       {isAdmin && <AdminNotificationBanner />}
+
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="product/[id]" />
@@ -73,11 +76,13 @@ function AppContent() {
         />
         <Stack.Screen name="+not-found" />
       </Stack>
+
       <ChatWidget />
       <CartModal
         visible={showCartModal}
         onClose={() => setShowCartModal(false)}
       />
+
       <StatusBar
         style={theme === 'dark' ? 'light' : 'dark'}
         backgroundColor={colors.background}
