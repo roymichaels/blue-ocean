@@ -482,13 +482,21 @@ class DatabaseService {
         throw new Error('Failed to send message');
       }
 
-      // Update the chat room's last message
+      // Update the chat room's last message and increment unread count
+      const { data: room } = await supabase
+        .from('chat_rooms')
+        .select('unread_count')
+        .eq('id', roomId)
+        .single();
+
+      const currentCount = room?.unread_count ?? 0;
+
       await supabase
         .from('chat_rooms')
         .update({
           last_message: message.message || '🎵 Voice message',
           last_message_time: message.timestamp,
-          unread_count: (supabase as any).sql`unread_count + 1`
+          unread_count: currentCount + 1
         })
         .eq('id', roomId);
     } catch (error) {
