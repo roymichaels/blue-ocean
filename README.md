@@ -16,6 +16,12 @@ If dependencies need patching, run `patch-package` after installation:
 yarn postinstall
 ```
 
+Some dependencies rely on Node.js globals like `Buffer` and `URL`. A
+`polyfills.js` file installs the needed shims using the `buffer`,
+`react-native-get-random-values` and `react-native-url-polyfill` packages.
+Running `yarn install` will install these and the polyfill is automatically
+imported from `index.ts`.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in the required values:
