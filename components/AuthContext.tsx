@@ -62,7 +62,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .select('*')
       .eq('matrix_user_id', uid)
       .single();
+
     if (data) {
+      let profile = data;
+
       if (ADMIN_USERNAME && data.app_username === ADMIN_USERNAME && data.role !== 'admin') {
         const { data: updated } = await supabase
           .from('user_profiles')
@@ -70,12 +73,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
           .eq('matrix_user_id', uid)
           .select()
           .single();
-        setUser(updated || data);
-      } else {
-        setUser(data);
+        profile = updated || data;
       }
+
+      // Map DB fields to expected camelCase properties
+      setUser({
+        ...profile,
+        username: profile.app_username,
+        displayName: profile.display_name,
+      });
     } else {
-      setUser({ id: uid, role: 'user' });
+      // Provide minimal guest profile structure
+      setUser({ id: uid, role: 'user', username: '', displayName: '' });
     }
   };
 
