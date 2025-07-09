@@ -4,15 +4,8 @@ const createExpoWebpackConfigAsync = require('@expo/webpack-config');
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
 
-  // disable all Node.js polyfills that are causing trouble
-  config.resolve.fallback = {
-    crypto: false,
-    buffer: false,
-    stream: false,
-    util: false,
-    url: false,
-    path: false,
-  };
+  // rely on Expo's default Node.js polyfills
+  // previously polyfills were disabled here but that caused issues with packages
 
   if (config.mode === 'production') {
     // remove Expo’s broken scope‐hoisting plugin in prod
