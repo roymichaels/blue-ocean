@@ -1,5 +1,5 @@
 import { Notification } from '../types';
-import { supabase } from './supabase';
+import { supabase } from '../lib/supabase';
 
 class NotificationService {
   private static instance: NotificationService;
