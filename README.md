@@ -16,6 +16,10 @@ If dependencies need patching, run `patch-package` after installation:
 yarn postinstall
 ```
 
+Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
+includes a `polyfills.js` file to provide these when running on React Native or
+the web. The polyfill is automatically imported from `index.ts`.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in the required values:
