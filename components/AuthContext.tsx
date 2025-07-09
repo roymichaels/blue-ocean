@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 
+const ADMIN_USERNAME = process.env.EXPO_PUBLIC_ADMIN_USERNAME;
+
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
@@ -61,7 +63,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .eq('matrix_user_id', uid)
       .single();
     if (data) {
-      setUser(data);
+      if (ADMIN_USERNAME && data.app_username === ADMIN_USERNAME && data.role !== 'admin') {
+        const { data: updated } = await supabase
+          .from('user_profiles')
+          .update({ role: 'admin' })
+          .eq('matrix_user_id', uid)
+          .select()
+          .single();
+        setUser(updated || data);
+      } else {
+        setUser(data);
+      }
     } else {
       setUser({ id: uid, role: 'user' });
     }
@@ -76,6 +88,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return false;
     }
     await loadProfile(data.session.user.id);
+    if (ADMIN_USERNAME && username === ADMIN_USERNAME) {
+      await supabase
+        .from('user_profiles')
+        .update({ role: 'admin' })
+        .eq('matrix_user_id', data.session.user.id);
+      await loadProfile(data.session.user.id);
+    }
     setLoading(false);
     return true;
   };
@@ -83,17 +102,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signup = async (username: string, password: string, displayName: string): Promise<boolean> => {
     setLoading(true);
     const email = `${username}@user.local`;
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { username } }
+    });
     if (error || !data.user) {
       setLoading(false);
       return false;
     }
+    const role = ADMIN_USERNAME && username === ADMIN_USERNAME ? 'admin' : 'user';
     await supabase.from('user_profiles').insert({
       matrix_user_id: data.user.id,
       app_username: username,
       email,
       display_name: displayName,
-      role: 'user'
+      role
     });
     await loadProfile(data.user.id);
     setLoading(false);
