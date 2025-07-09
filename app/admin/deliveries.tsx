@@ -18,7 +18,6 @@ import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
-import { MatrixService } from '../../services/matrix';
 import { DeliveryJob, User } from '../../types';
 
 export default function AdminDeliveriesScreen() {
@@ -34,7 +33,7 @@ export default function AdminDeliveriesScreen() {
     { id: string; uri: string; type: 'image' | 'video' }[]
   >([]);
   const [viewerVisible, setViewerVisible] = useState(false);
-  const matrixService = MatrixService.getInstance();
+  // const matrixService = MatrixService.getInstance(); // TODO: re-enable Matrix later
 
   useEffect(() => {
     if (!isAdmin) {
@@ -84,9 +83,7 @@ export default function AdminDeliveriesScreen() {
     try {
       const db = DatabaseService.getInstance();
       await db.updateDeliveryJobStatus(jobId, status);
-      if (status === 'completed') {
-        matrixService.archiveJobRoom(jobId);
-      }
+      // TODO: re-enable Matrix later
       loadData();
     } catch (error) {
       console.error('Error updating job:', error);
@@ -108,7 +105,7 @@ export default function AdminDeliveriesScreen() {
   };
 
   const openJobChat = (job: DeliveryJob) => {
-    matrixService.triggerJobChatOpen(job.id);
+    // TODO: re-enable Matrix later
   };
 
   const formatDate = (date?: string) => {

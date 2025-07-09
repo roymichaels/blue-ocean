@@ -21,6 +21,7 @@ import InfoModal from '../../components/InfoModal';
 
 
 export default function AuthSignupScreen() {
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +37,7 @@ export default function AuthSignupScreen() {
   const { signup } = useAuth();
 
   const handleSignup = async () => {
-    if (!username || !password || !confirmPassword) {
+    if (!email || !username || !password || !confirmPassword) {
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -58,8 +59,7 @@ export default function AuthSignupScreen() {
 
     setLoading(true);
     try {
-      // Pass empty string for email - we're removing email requirement
-      const success = await signup(username, '', displayName || username, password);
+      const success = await signup(email, password, username, displayName || username);
 
       if (success) {
         setInfoModal({
@@ -115,6 +115,24 @@ export default function AuthSignupScreen() {
           </Text>
 
           <View style={styles.form}>
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.text.primary }]}>אימייל</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary
+                }]}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="הכנס אימייל"
+                autoCapitalize="none"
+                autoCorrect={false}
+                textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
+              />
+            </View>
+
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.text.primary }]}>שם משתמש</Text>
               <TextInput

@@ -40,7 +40,6 @@
     "expo-web-browser": "~14.2.0",
     "form-data": "^4.0.0",
     "lucide-react-native": "^0.475.0",
-    "matrix-js-sdk": "^37.10.0",
     "metro": "^0.82.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",

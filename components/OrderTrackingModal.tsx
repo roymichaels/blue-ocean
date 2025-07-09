@@ -15,7 +15,6 @@ import { X, CircleCheck as CheckCircle, Circle, Package, Truck, MapPin, Star, Ph
 import { Order, OrderStatus } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { MatrixService } from '../services/matrix';
 import OrderService from '../services/orders';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -154,14 +153,8 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
   };
 
   const contactSupport = () => {
-    // Open chat with support
-    const matrixService = MatrixService.getInstance();
-    onClose();
-    
-    // Give time for the modal to close
-    setTimeout(() => {
-      matrixService.triggerChatOpen('@support:matrix.org');
-    }, 500);
+    // TODO: re-enable Matrix later
+    Alert.alert('Support', 'Contact support via chat is disabled');
   };
 
   const cancelOrder = async () => {

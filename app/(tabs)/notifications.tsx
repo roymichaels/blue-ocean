@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Package, Tag, MessageCircle, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info } from 'lucide-react-native';
-import { MatrixService } from '../../services/matrix';
 import NotificationService from '../../services/notification';
 import { Notification } from '../../types';
 import { useAuth } from '../../components/AuthContext';

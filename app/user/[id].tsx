@@ -12,7 +12,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, User as UserIcon, Mail, Calendar, Shield, MessageCircle } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
-import { MatrixService } from '../../services/matrix';
 import { User } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -93,11 +92,7 @@ export default function UserProfileScreen() {
       // Close this screen
       router.back();
       
-      // Trigger chat open with this user
-      setTimeout(() => {
-        const matrixService = MatrixService.getInstance();
-        matrixService.triggerChatOpen(user.id);
-      }, 500);
+      // TODO: re-enable Matrix later
     } catch (error) {
       console.error('Error opening chat:', error);
       Alert.alert('שגיאה', "אירעה שגיאה בפתיחת הצ'אט");
