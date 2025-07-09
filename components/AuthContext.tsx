@@ -7,8 +7,8 @@ interface AuthContextType {
   isDriver: boolean;
   user: any | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, username: string, displayName: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<boolean>;
+  signup: (username: string, password: string, displayName: string) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuthState: () => Promise<void>;
 }
@@ -67,8 +67,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     setLoading(true);
+    const email = `${username}@user.local`;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error || !data.session) {
       setLoading(false);
@@ -79,8 +80,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return true;
   };
 
-  const signup = async (email: string, password: string, username: string, displayName: string): Promise<boolean> => {
+  const signup = async (username: string, password: string, displayName: string): Promise<boolean> => {
     setLoading(true);
+    const email = `${username}@user.local`;
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error || !data.user) {
       setLoading(false);
