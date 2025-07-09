@@ -21,8 +21,7 @@
     "expo-env.d.ts",
     "nativewind-env.d.ts",
     "types/wasm.d.ts",
-    "types/lucide-react-native.d.ts",
-    "types/matrix-js-sdk.d.ts"
+    "types/lucide-react-native.d.ts"
   ],
   "extends": "expo/tsconfig.base"
 }

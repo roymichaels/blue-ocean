@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { MatrixService } from '../services/matrix';
 import DatabaseService from '../services/database';
 
 interface UserProfileModalProps {
@@ -32,18 +31,6 @@ export default function UserProfileModal({ visible, userId, onClose }: UserProfi
       const db = DatabaseService.getInstance();
       let user = await db.getUserProfile(userId);
       const exists = !!user;
-
-      if (!user) {
-        const matrixProfile = await MatrixService.getInstance().getProfileInfo(userId);
-        if (matrixProfile) {
-          user = {
-            id: userId,
-            username: userId.replace(/^@/, '').split(':')[0],
-            displayName: matrixProfile.displayname || userId,
-            isAdmin: false,
-          } as any;
-        }
-      }
 
       if (user) {
         setProfile({

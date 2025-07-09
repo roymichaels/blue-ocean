@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
-import { MatrixService } from './matrix';
+import { supabase } from '../lib/supabase';
 import { isSupabaseConfigured } from './supabase';
 
 const CART_STORAGE_KEY = 'cart_items';
@@ -33,7 +33,7 @@ class CartService {
         this.cartItems = JSON.parse(cartData);
       }
 
-      const user = MatrixService.getInstance().getCurrentUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (isSupabaseConfigured() && user?.id) {
         const db = DatabaseService.getInstance();
         try {
@@ -71,7 +71,7 @@ class CartService {
     try {
       await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.cartItems));
 
-      const user = MatrixService.getInstance().getCurrentUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!(isSupabaseConfigured() && user?.id)) {
         await AsyncStorage.setItem(
           WISHLIST_STORAGE_KEY,
@@ -242,7 +242,7 @@ class CartService {
 
     this.wishlistItems.push(wishlistItem);
 
-    const user = MatrixService.getInstance().getCurrentUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (isSupabaseConfigured() && user?.id) {
       const db = DatabaseService.getInstance();
       try {
@@ -259,7 +259,7 @@ class CartService {
   public async removeFromWishlist(productId: string): Promise<void> {
     this.wishlistItems = this.wishlistItems.filter(item => item.productId !== productId);
 
-    const user = MatrixService.getInstance().getCurrentUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (isSupabaseConfigured() && user?.id) {
       const db = DatabaseService.getInstance();
       try {

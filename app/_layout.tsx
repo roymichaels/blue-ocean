@@ -26,7 +26,6 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 import AdminNotificationBanner from '../components/AdminNotificationBanner';
 import { NotificationProvider } from '../components/NotificationContext';
-import ChatWidget from '../components/ChatWidget';
 import { AuthProvider, useAuth } from '../components/AuthContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
@@ -77,7 +76,6 @@ function AppContent() {
         <Stack.Screen name="+not-found" />
       </Stack>
 
-      <ChatWidget />
       <CartModal
         visible={showCartModal}
         onClose={() => setShowCartModal(false)}
