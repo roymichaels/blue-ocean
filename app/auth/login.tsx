@@ -21,7 +21,7 @@ import InfoModal from '../../components/InfoModal';
 
 
 export default function AuthLoginScreen() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [infoModal, setInfoModal] = useState({
@@ -35,7 +35,7 @@ export default function AuthLoginScreen() {
   const { t } = useLanguage();
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!username || !password) {
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -47,7 +47,7 @@ export default function AuthLoginScreen() {
 
     setLoading(true);
     try {
-      const success = await login(email, password);
+      const success = await login(username, password);
       
       if (success) {
         router.replace('/');
@@ -108,22 +108,22 @@ export default function AuthLoginScreen() {
           </View>
 
           <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text.primary }]}>אימייל</Text>
-              <TextInput
-                style={[styles.input, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary
-                }]}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="הכנס אימייל"
-                autoCapitalize="none"
-                autoCorrect={false}
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: colors.text.primary }]}>שם משתמש</Text>
+            <TextInput
+              style={[styles.input, {
+                borderColor: colors.border.primary,
+                backgroundColor: colors.surface.primary,
+                color: colors.text.primary
+              }]}
+              value={username}
+              onChangeText={setUsername}
+              placeholder="הכנס שם משתמש"
+              autoCapitalize="none"
+              autoCorrect={false}
+              textAlign="right"
+              placeholderTextColor={colors.text.tertiary}
+            />
             </View>
 
             <View style={styles.inputGroup}>
