@@ -17,6 +17,7 @@ import { CurrencyProvider } from '../contexts/CurrencyContext';
 import { AppInfoProvider } from '../contexts/AppInfoContext';
 import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
+import ChatWidget from '../components/ChatWidget';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
@@ -57,8 +58,10 @@ function AppContent() {
           name="kyc/index"
           options={{ title: 'KYC Verification' }}
         />
-        <Stack.Screen name="+not-found" />
+      <Stack.Screen name="+not-found" />
       </Stack>
+
+      <ChatWidget />
 
       <CartModal
         visible={showCartModal}
