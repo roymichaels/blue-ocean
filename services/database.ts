@@ -497,6 +497,62 @@ class DatabaseService {
     }
   }
 
+  async getOrCreateChatRoom(userId: string, userName: string): Promise<string> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_rooms')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking chat room:', error);
+      }
+
+      if (data?.id) {
+        return data.id;
+      }
+
+      const id = `room_${Date.now()}`;
+      const { error: insertError } = await supabase.from('chat_rooms').insert([
+        {
+          id,
+          user_id: userId,
+          user_name: userName,
+          last_message: '',
+          last_message_time: Date.now(),
+          unread_count: 0,
+        },
+      ]);
+
+      if (insertError) {
+        console.error('Error creating chat room:', insertError);
+      }
+
+      return id;
+    } catch (err) {
+      console.error('Error in getOrCreateChatRoom:', err);
+      return `room_${Date.now()}`;
+    }
+  }
+
+  async updateMessageReactions(
+    messageId: string,
+    reactions: Record<string, string[]>
+  ): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ reactions })
+        .eq('id', messageId);
+      if (error) {
+        console.error('Error updating reactions:', error);
+      }
+    } catch (err) {
+      console.error('Error in updateMessageReactions:', err);
+    }
+  }
+
   // User Profiles
   async getUserProfile(userId: string): Promise<User | null> {
     try {
