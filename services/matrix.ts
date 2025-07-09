@@ -15,7 +15,7 @@ import {
   Visibility,
 } from 'matrix-js-sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from './supabase';
+import { supabase } from '../lib/supabase';
 import DatabaseService from './database';
 import { ChatMessage, User } from '../types';
 import { Platform } from 'react-native';
