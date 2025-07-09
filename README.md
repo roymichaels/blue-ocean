@@ -54,29 +54,5 @@ yarn dev
 
 `yarn start` works as an alias of `yarn dev`.
 
-### Buffer polyfill
-
-React Native 0.79 no longer provides the Node.js `Buffer` global. The app
-defines it in a custom `index.ts` entry point so libraries relying on Buffer
-continue to work:
-
-```ts
-import 'react-native-get-random-values';
-import Buffer from 'buffer';
-if (typeof global.Buffer === 'undefined') {
-  global.Buffer = Buffer;
-}
-if (typeof global.__filename === 'undefined') {
-  // Provide an empty string to satisfy modules expecting Node's __filename
-  // Adjust if a specific path is required by matrix-js-sdk
-  (global as any).__filename = '';
-}
-if (Platform.OS === 'web') {
-  require('react-native-url-polyfill/auto');
-}
-```
-
-If you create a new entry file, make sure to include this snippet before other
-code so the Buffer and `__filename` globals are available.
 
 ***End of Document***
