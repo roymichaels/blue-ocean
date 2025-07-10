@@ -20,6 +20,8 @@ yarn postinstall
 Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
 includes a `polyfills.js` file to provide these when running on React Native or
 the web. The polyfill is automatically imported from `index.ts`.
+The project also uses `expo-standard-web-crypto` to polyfill the Web Crypto API,
+so ensure it's installed as a dependency.
 
 ## Environment Variables
 
