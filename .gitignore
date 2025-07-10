@@ -1,3 +1,8 @@
+# Global gitignore
+# See dev/.gitignore for project-specific ignores
+
+# Local environment files
+.env
 # dependencies
 node_modules/
 
