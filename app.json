@@ -12,7 +12,7 @@
       "supportsTablet": true
     },
     "web": {
-      "bundler": "metro",
+      "bundler": "webpack",
       "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
