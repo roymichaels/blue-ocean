@@ -193,6 +193,7 @@ export default function ChatWidget() {
       };
 
       setSelectedRoom(defaultRoom);
+      await db.markChatRoomRead(roomId);
       await loadMessages(roomId);
     } catch (error) {
       console.error('Error creating default room:', error);
@@ -237,6 +238,9 @@ export default function ChatWidget() {
 
   const openChat = async (room: ChatRoom) => {
     setSelectedRoom(room);
+    const db = DatabaseService.getInstance();
+    await db.markChatRoomRead(room.id);
+    setChatRooms(prev => prev.map(r => r.id === room.id ? { ...r, unreadCount: 0 } : r));
     await loadMessages(room.id);
   };
 
@@ -314,6 +318,9 @@ export default function ChatWidget() {
       }
 
       setSelectedRoom(room!);
+      const db = DatabaseService.getInstance();
+      await db.markChatRoomRead(roomId);
+      setChatRooms(prev => prev.map(r => r.id === roomId ? { ...r, unreadCount: 0 } : r));
       setSearchQuery('');
       setSearchResults([]);
       await loadMessages(roomId);

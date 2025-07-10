@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -24,14 +24,21 @@ export default function AdminChatList({ chatRooms }: Props) {
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [rooms, setRooms] = useState(chatRooms);
 
-  const filteredRooms = chatRooms.filter(room =>
+  useEffect(() => {
+    setRooms(chatRooms);
+  }, [chatRooms]);
+
+  const filteredRooms = rooms.filter(room =>
     room.userName && room.userName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const openChat = async (room: ChatRoom) => {
     setSelectedRoom(room);
     const db = DatabaseService.getInstance();
+    await db.markChatRoomRead(room.id);
+    setRooms(prev => prev.map(r => r.id === room.id ? { ...r, unreadCount: 0 } : r));
     const roomMessages = await db.getChatMessages(room.id);
     setMessages(roomMessages);
   };
