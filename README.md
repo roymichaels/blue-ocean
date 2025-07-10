@@ -61,5 +61,18 @@ yarn dev
 
 `yarn start` works as an alias of `yarn dev`.
 
+## Image Caching
+
+The `CachedImage` component saves remote images to the filesystem for faster reloads. Install `expo-file-system` if it is not already present:
+```sh
+npx expo install expo-file-system
+## Building for Web
+
+Run the following command to generate the static web build:
+
+```sh
+yarn build:web
+```
+
 
 ***End of Document***

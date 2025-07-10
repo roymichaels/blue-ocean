@@ -3,7 +3,7 @@
     "strict": true,
     "jsx": "react-native",
     "lib": ["esnext", "dom"],
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
