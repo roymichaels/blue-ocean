@@ -1,0 +1,6 @@
+# Global gitignore
+# See dev/.gitignore for project-specific ignores
+
+# Local environment files
+.env
+
