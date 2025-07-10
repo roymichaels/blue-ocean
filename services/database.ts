@@ -505,6 +505,17 @@ class DatabaseService {
     }
   }
 
+  async markChatRoomRead(roomId: string): Promise<void> {
+    try {
+      await supabase
+        .from('chat_rooms')
+        .update({ unread_count: 0 })
+        .eq('id', roomId);
+    } catch (error) {
+      console.error('Error in markChatRoomRead:', error);
+    }
+  }
+
   async getOrCreateChatRoom(userId: string, userName: string): Promise<string> {
     try {
       const { data, error } = await supabase
