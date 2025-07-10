@@ -61,5 +61,13 @@ yarn dev
 
 `yarn start` works as an alias of `yarn dev`.
 
+## Building for Web
+
+Run the following command to generate the static web build:
+
+```sh
+yarn build:web
+```
+
 
 ***End of Document***
