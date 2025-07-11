@@ -6,7 +6,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { useFrameworkReady } from '../hooks/useFrameworkReady';
 
 import AdminNotificationBanner from '../components/AdminNotificationBanner';
 import { NotificationProvider } from '../components/NotificationContext';
@@ -58,7 +58,7 @@ function AppContent() {
           name="kyc/index"
           options={{ title: 'KYC Verification' }}
         />
-      <Stack.Screen name="+not-found" />
+        <Stack.Screen name="+not-found" />
       </Stack>
 
       <ChatWidget />
