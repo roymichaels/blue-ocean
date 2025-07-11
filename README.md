@@ -23,12 +23,12 @@ the web. The polyfill is automatically imported from `index.ts`.
 The project also uses `expo-standard-web-crypto` to polyfill the Web Crypto API,
 so ensure it's installed as a dependency.
 
-When using the Expo Router, your `babel.config.js` must load `'expo-router/babel'`.
-An example plugin array looks like:
+When using the Expo Router with SDK 50 or later, `babel-preset-expo` already
+includes the router plugin. You no longer need to include `'expo-router/babel'`
+in your `plugins` array. A typical setup looks like:
 
 ```js
 plugins: [
-  'expo-router/babel',
   'babel-plugin-transform-import-meta',
   'react-native-reanimated/plugin', // keep last
 ]
