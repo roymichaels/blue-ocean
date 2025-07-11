@@ -1,19 +1,17 @@
-// webpack.config.js
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
+const path = require('path');
 
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
 
-  // rely on Expo's default Node.js polyfills
-  // previously polyfills were disabled here but that caused issues with packages
+  // ✅ Point alias to project root, not src
+  config.resolve.alias['@'] = path.resolve(__dirname);
 
-  if (config.mode === 'production') {
-    // remove Expo’s broken scope‐hoisting plugin in prod
-    config.plugins = config.plugins.filter(
-      (p) => p.constructor.name !== 'WebpackDeepScopeAnalysisPlugin'
-    );
-    config.devtool = 'source-map';
-  }
+  // ✅ Still necessary for expo-router routing
+  process.env.EXPO_ROUTER_APP_ROOT = 'src/app';
+
+  // Optional: manually set entry if needed
+  config.entry = [path.resolve(__dirname, 'src/app/_layout.tsx')];
 
   return config;
 };

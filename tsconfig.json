@@ -1,18 +1,20 @@
 {
   "compilerOptions": {
+    "baseUrl": ".", // ✅ Point to root
+    "paths": {
+      "@/*": ["./*"] // ✅ Now @/hooks points to ./hooks
+    },
+    // other options remain the same
     "strict": true,
     "jsx": "react-native",
-    "lib": ["esnext", "dom"],
+    "module": "esnext",
     "moduleResolution": "bundler",
+    "lib": ["esnext", "dom"],
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "types": ["node"],
-    "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    }
+    "types": ["expo", "react", "react-native"],
+    "skipLibCheck": true
   },
   "include": [
     "**/*.ts",

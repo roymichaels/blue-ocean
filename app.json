@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "The Congress ",
-    "slug": "The Congress",
+    "slug": "thecongress",
+    "name": "The Congress",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
