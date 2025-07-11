@@ -80,10 +80,12 @@ npx expo install expo-file-system
 ```
 ## Building for Web
 
-Run the following command to generate the static web build:
+Run the following command to generate the static web build. The
+`EXPO_ROUTER_APP_ROOT` environment variable must point to your app directory
+(this project uses `app`):
 
 ```sh
-yarn build:web
+EXPO_ROUTER_APP_ROOT=app yarn build:web
 ```
 
 
