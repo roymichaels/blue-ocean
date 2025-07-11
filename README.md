@@ -23,6 +23,17 @@ the web. The polyfill is automatically imported from `index.ts`.
 The project also uses `expo-standard-web-crypto` to polyfill the Web Crypto API,
 so ensure it's installed as a dependency.
 
+When using the Expo Router, your `babel.config.js` must load `'expo-router/babel'`.
+An example plugin array looks like:
+
+```js
+plugins: [
+  'expo-router/babel',
+  'babel-plugin-transform-import-meta',
+  'react-native-reanimated/plugin', // keep last
+]
+```
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in the required values:
@@ -66,6 +77,7 @@ yarn dev
 The `CachedImage` component saves remote images to the filesystem for faster reloads. Install `expo-file-system` if it is not already present:
 ```sh
 npx expo install expo-file-system
+```
 ## Building for Web
 
 Run the following command to generate the static web build:
