@@ -4,6 +4,7 @@ module.exports = function (api) {
     presets: ['babel-preset-expo'],
     plugins: [
       'babel-plugin-transform-import-meta',
+      'expo-router/babel',
       'react-native-reanimated/plugin', // keep last
     ],
   };
