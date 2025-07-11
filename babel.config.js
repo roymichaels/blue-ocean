@@ -1,11 +1,7 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ['babel-preset-expo'],
-    plugins: [
-      'babel-plugin-transform-import-meta',
-      '@babel/plugin-transform-modules-commonjs',
-      'react-native-reanimated/plugin', // keep this **last**
-    ],
+    presets: ['babel-preset-expo'], // sdk 50 already includes expo-router
+    plugins: ['@babel/plugin-transform-modules-commonjs'],
   };
 };
