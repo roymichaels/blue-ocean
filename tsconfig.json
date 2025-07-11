@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "types": ["expo", "react", "react-native"],
     "skipLibCheck": true,
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
