@@ -1,11 +1,11 @@
-// babel.config.js
 module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      'expo-router/babel', // keep this for routing support
-      'react-native-reanimated/plugin', // always last
+      'babel-plugin-transform-import-meta',
+      '@babel/plugin-transform-modules-commonjs',
+      'react-native-reanimated/plugin', // keep this **last**
     ],
   };
 };
