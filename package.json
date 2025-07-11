@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "cross-env EXPO_NO_TELEMETRY=1 expo start",
+    "start": "cross-env EXPO_NO_TELEMETRY=1 expo start --web --host 0.0.0.0",
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
     "build:web": "expo export --platform web"
