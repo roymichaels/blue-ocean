@@ -13,7 +13,18 @@ import {
   Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MessageCircle, Send, X, Minimize2, Search, ChevronLeft, Mic, MicOff, Play, Pause } from 'lucide-react-native';
+import {
+  MessageCircle,
+  Send,
+  X,
+  Minimize2,
+  Search,
+  ChevronLeft,
+  Mic,
+  MicOff,
+  Play,
+  Pause,
+} from 'lucide-react-native';
 import { Audio } from 'expo-av';
 // MatrixService has been removed in favor of Supabase
 import { supabase } from '../lib/supabase';
@@ -46,11 +57,7 @@ async function encryptMessage(msg: string, roomId: string): Promise<string> {
   const key = await getRoomKey(roomId);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const enc = new TextEncoder().encode(msg);
-  const cipher = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    enc
-  );
+  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc);
   const ivStr = Buffer.from(iv).toString('base64');
   const dataStr = Buffer.from(new Uint8Array(cipher)).toString('base64');
   return ivStr + ':' + dataStr;
@@ -63,11 +70,7 @@ async function decryptMessage(msg: string, roomId: string): Promise<string> {
     const key = await getRoomKey(roomId);
     const iv = Uint8Array.from(Buffer.from(ivStr, 'base64'));
     const data = Uint8Array.from(Buffer.from(dataStr, 'base64'));
-    const dec = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      data
-    );
+    const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
     return new TextDecoder().decode(dec);
   } catch {
     return msg;
@@ -85,9 +88,13 @@ export default function ChatWidget() {
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [playingAudio, setPlayingAudio] = useState<{ [key: string]: Audio.Sound }>({});
+  const [playingAudio, setPlayingAudio] = useState<{
+    [key: string]: Audio.Sound;
+  }>({});
   const [showReactions, setShowReactions] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<{ id: string; displayName: string; isAppUser: boolean }[]>([]);
+  const [searchResults, setSearchResults] = useState<
+    { id: string; displayName: string; isAppUser: boolean }[]
+  >([]);
   const { isAdmin, isDriver, isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const { t } = useLanguage();
@@ -99,7 +106,7 @@ export default function ChatWidget() {
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
@@ -117,7 +124,7 @@ export default function ChatWidget() {
   useEffect(() => {
     return () => {
       // Cleanup audio on unmount
-      Object.values(playingAudio).forEach(sound => {
+      Object.values(playingAudio).forEach((sound) => {
         sound.unloadAsync();
       });
       if (recording) {
@@ -125,7 +132,6 @@ export default function ChatWidget() {
       }
     };
   }, []);
-
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -164,14 +170,16 @@ export default function ChatWidget() {
     } catch (error) {
       console.error('Error loading chat rooms:', error);
       // Use default room as fallback
-      setChatRooms([{
-        id: 'default_room',
-        userId: 'guest_user',
-        userName: 'Guest User',
-        lastMessage: 'Welcome to our store!',
-        lastMessageTime: Date.now() - 3600000, // 1 hour ago
-        unreadCount: 0
-      }]);
+      setChatRooms([
+        {
+          id: 'default_room',
+          userId: 'guest_user',
+          userName: 'Guest User',
+          lastMessage: 'Welcome to our store!',
+          lastMessageTime: Date.now() - 3600000, // 1 hour ago
+          unreadCount: 0,
+        },
+      ]);
     }
   };
 
@@ -189,7 +197,7 @@ export default function ChatWidget() {
         userName: user?.displayName || 'Guest User',
         lastMessage: 'Welcome to our store!',
         lastMessageTime: Date.now() - 3600000, // 1 hour ago
-        unreadCount: 0
+        unreadCount: 0,
       };
 
       setSelectedRoom(defaultRoom);
@@ -201,7 +209,7 @@ export default function ChatWidget() {
         visible: true,
         title: 'שגיאה',
         message: "אירעה שגיאה ביצירת חדר צ'אט",
-        type: 'error'
+        type: 'error',
       });
     }
   };
@@ -217,7 +225,7 @@ export default function ChatWidget() {
         }))
       );
       setMessages(decrypted);
-      
+
       // Scroll to bottom after messages load
       setTimeout(() => {
         messagesEndRef.current?.scrollToEnd({ animated: false });
@@ -225,14 +233,16 @@ export default function ChatWidget() {
     } catch (error) {
       console.error('Error loading messages:', error);
       // Use default welcome message as fallback
-      setMessages([{
-        id: 'default_msg',
-        senderId: 'admin',
-        senderName: 'Admin',
-        message: 'Welcome to our store! How can I help you today?',
-        timestamp: Date.now() - 3600000, // 1 hour ago
-        isAdmin: true
-      }]);
+      setMessages([
+        {
+          id: 'default_msg',
+          senderId: 'admin',
+          senderName: 'Admin',
+          message: 'Welcome to our store! How can I help you today?',
+          timestamp: Date.now() - 3600000, // 1 hour ago
+          isAdmin: true,
+        },
+      ]);
     }
   };
 
@@ -240,7 +250,9 @@ export default function ChatWidget() {
     setSelectedRoom(room);
     const db = DatabaseService.getInstance();
     await db.markChatRoomRead(room.id);
-    setChatRooms(prev => prev.map(r => r.id === room.id ? { ...r, unreadCount: 0 } : r));
+    setChatRooms((prev) =>
+      prev.map((r) => (r.id === room.id ? { ...r, unreadCount: 0 } : r))
+    );
     await loadMessages(room.id);
   };
 
@@ -298,9 +310,13 @@ export default function ChatWidget() {
     };
   }, [selectedRoom]);
 
-  const openSearchResult = async (result: { id: string; displayName: string; isAppUser: boolean }) => {
+  const openSearchResult = async (result: {
+    id: string;
+    displayName: string;
+    isAppUser: boolean;
+  }) => {
     try {
-      let room = chatRooms.find(r => r.userId === result.id);
+      let room = chatRooms.find((r) => r.userId === result.id);
       let roomId = room?.id;
 
       if (!roomId) {
@@ -314,13 +330,15 @@ export default function ChatWidget() {
           lastMessageTime: Date.now(),
           unreadCount: 0,
         };
-        setChatRooms(prev => [room!, ...prev]);
+        setChatRooms((prev) => [room!, ...prev]);
       }
 
       setSelectedRoom(room!);
       const db = DatabaseService.getInstance();
       await db.markChatRoomRead(roomId);
-      setChatRooms(prev => prev.map(r => r.id === roomId ? { ...r, unreadCount: 0 } : r));
+      setChatRooms((prev) =>
+        prev.map((r) => (r.id === roomId ? { ...r, unreadCount: 0 } : r))
+      );
       setSearchQuery('');
       setSearchResults([]);
       await loadMessages(roomId);
@@ -345,8 +363,12 @@ export default function ChatWidget() {
 
       const message: ChatMessage = {
         id: Date.now().toString(),
-        senderId: isAdmin || isDriver ? (process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin') : (user?.id || 'user_guest'),
-        senderName: isAdmin || isDriver ? 'מנהל' : (user?.displayName || 'משתמש אורח'),
+        senderId:
+          isAdmin || isDriver
+            ? process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
+            : user?.id || 'user_guest',
+        senderName:
+          isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',
         message: encrypted,
         timestamp: Date.now(),
         isAdmin: isAdmin || isDriver,
@@ -355,7 +377,7 @@ export default function ChatWidget() {
       await db.sendChatMessage(roomId, message);
 
       message.message = newMessage.trim();
-      setMessages(prev => [...prev, message]);
+      setMessages((prev) => [...prev, message]);
       setNewMessage('');
 
       // Scroll to bottom
@@ -374,8 +396,8 @@ export default function ChatWidget() {
             timestamp: Date.now(),
             isAdmin: true,
           };
-          setMessages(prev => [...prev, adminResponse]);
-          
+          setMessages((prev) => [...prev, adminResponse]);
+
           // Scroll to bottom again
           setTimeout(() => {
             messagesEndRef.current?.scrollToEnd({ animated: true });
@@ -388,7 +410,7 @@ export default function ChatWidget() {
         visible: true,
         title: 'שגיאה',
         message: 'שליחת ההודעה נכשלה',
-        type: 'error'
+        type: 'error',
       });
     }
   };
@@ -400,7 +422,7 @@ export default function ChatWidget() {
           visible: true,
           title: 'הודעות קוליות',
           message: 'הקלטת הודעות קוליות אינה נתמכת בגרסת הדפדפן',
-          type: 'info'
+          type: 'info',
         });
         return;
       }
@@ -411,7 +433,7 @@ export default function ChatWidget() {
           visible: true,
           title: 'נדרשת הרשאה',
           message: 'אנא אשר הרשאת מיקרופון כדי להקליט הודעות קוליות',
-          type: 'warning'
+          type: 'warning',
         });
         return;
       }
@@ -431,16 +453,15 @@ export default function ChatWidget() {
 
       // Start timer
       recordingTimer.current = setInterval(() => {
-        setRecordingDuration(prev => prev + 1);
+        setRecordingDuration((prev) => prev + 1);
       }, 1000);
-
     } catch (error) {
       console.error('Failed to start recording:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
         message: 'ההקלטה נכשלה',
-        type: 'error'
+        type: 'error',
       });
     }
   };
@@ -472,8 +493,12 @@ export default function ChatWidget() {
             );
         const voiceMessage: ChatMessage = {
           id: Date.now().toString(),
-          senderId: isAdmin || isDriver ? (process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin') : (user?.id || 'user_guest'),
-          senderName: isAdmin || isDriver ? 'מנהל' : (user?.displayName || 'משתמש אורח'),
+          senderId:
+            isAdmin || isDriver
+              ? process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
+              : user?.id || 'user_guest',
+          senderName:
+            isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',
           message: '',
           timestamp: Date.now(),
           isAdmin: isAdmin || isDriver,
@@ -482,7 +507,7 @@ export default function ChatWidget() {
         };
 
         await db.sendChatMessage(roomId, voiceMessage);
-        setMessages(prev => [...prev, voiceMessage]);
+        setMessages((prev) => [...prev, voiceMessage]);
 
         // Scroll to bottom
         setTimeout(() => {
@@ -504,7 +529,7 @@ export default function ChatWidget() {
           visible: true,
           title: 'הודעות קוליות',
           message: 'השמעת הודעות קוליות אינה נתמכת בגרסת הדפדפן',
-          type: 'info'
+          type: 'info',
         });
         return;
       }
@@ -513,7 +538,7 @@ export default function ChatWidget() {
       if (playingAudio[messageId]) {
         await playingAudio[messageId].stopAsync();
         await playingAudio[messageId].unloadAsync();
-        setPlayingAudio(prev => {
+        setPlayingAudio((prev) => {
           const newState = { ...prev };
           delete newState[messageId];
           return newState;
@@ -522,14 +547,14 @@ export default function ChatWidget() {
       }
 
       const { sound } = await Audio.Sound.createAsync({ uri: audioUri });
-      
-      setPlayingAudio(prev => ({ ...prev, [messageId]: sound }));
-      
+
+      setPlayingAudio((prev) => ({ ...prev, [messageId]: sound }));
+
       await sound.playAsync();
-      
+
       sound.setOnPlaybackStatusUpdate((status) => {
         if (status.isLoaded && status.didJustFinish) {
-          setPlayingAudio(prev => {
+          setPlayingAudio((prev) => {
             const newState = { ...prev };
             delete newState[messageId];
             return newState;
@@ -546,31 +571,33 @@ export default function ChatWidget() {
     try {
       // Update local state
       let updated: Record<string, string[]> | null = null;
-      setMessages(prev => prev.map(msg => {
-        if (msg.id === messageId) {
-          const reactions = { ...(msg.reactions || {}) };
-          if (!reactions[emoji]) {
-            reactions[emoji] = [];
-          }
-          
-          const userId = user?.id || 'guest_user';
-          if (reactions[emoji].includes(userId)) {
-            reactions[emoji] = reactions[emoji].filter(id => id !== userId);
-            if (reactions[emoji].length === 0) {
-              delete reactions[emoji];
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg.id === messageId) {
+            const reactions = { ...(msg.reactions || {}) };
+            if (!reactions[emoji]) {
+              reactions[emoji] = [];
             }
-          } else {
-            reactions[emoji].push(userId);
+
+            const userId = user?.id || 'guest_user';
+            if (reactions[emoji].includes(userId)) {
+              reactions[emoji] = reactions[emoji].filter((id) => id !== userId);
+              if (reactions[emoji].length === 0) {
+                delete reactions[emoji];
+              }
+            } else {
+              reactions[emoji].push(userId);
+            }
+
+            updated = reactions;
+            return { ...msg, reactions };
           }
-          
-          updated = reactions;
-          return { ...msg, reactions };
-        }
-        return msg;
-      }));
+          return msg;
+        })
+      );
 
       setShowReactions(null);
-      
+
       const db = DatabaseService.getInstance();
       const roomId = selectedRoom
         ? selectedRoom.id
@@ -614,12 +641,20 @@ export default function ChatWidget() {
       key={item.id}
       style={[
         styles.messageContainer,
-        item.isAdmin ? [styles.adminMessage, { 
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary 
-        }] : [styles.userMessage, { 
-          backgroundColor: colors.gold 
-        }]
+        item.isAdmin
+          ? [
+              styles.adminMessage,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+              },
+            ]
+          : [
+              styles.userMessage,
+              {
+                backgroundColor: colors.gold,
+              },
+            ],
       ]}
       onLongPress={() => setShowReactions(item.id)}
     >
@@ -628,10 +663,12 @@ export default function ChatWidget() {
           onPress={() => navigateToUserProfile(item.senderId)}
           disabled={!(isAdmin || isDriver)}
         >
-          <Text style={[
-            styles.senderName,
-            (isAdmin || isDriver) && styles.clickableSender
-          ]}>
+          <Text
+            style={[
+              styles.senderName,
+              (isAdmin || isDriver) && styles.clickableSender,
+            ]}
+          >
             {item.senderName}
           </Text>
         </TouchableOpacity>
@@ -640,20 +677,33 @@ export default function ChatWidget() {
       {item.audioUri ? (
         <View style={styles.voiceMessageContainer}>
           <TouchableOpacity
-            style={[styles.playButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
+            style={[
+              styles.playButton,
+              { backgroundColor: 'rgba(255,255,255,0.2)' },
+            ]}
             onPress={() => playAudio(item.id, item.audioUri!)}
           >
             {playingAudio[item.id] ? (
-              <Pause size={16} color={item.isAdmin ? colors.text.primary : colors.text.inverse} />
+              <Pause
+                size={16}
+                color={item.isAdmin ? colors.text.primary : colors.text.inverse}
+              />
             ) : (
-              <Play size={16} color={item.isAdmin ? colors.text.primary : colors.text.inverse} />
+              <Play
+                size={16}
+                color={item.isAdmin ? colors.text.primary : colors.text.inverse}
+              />
             )}
           </TouchableOpacity>
           <View style={styles.voiceWaveform}>
-            <Text style={[
-              styles.voiceDuration,
-              item.isAdmin ? { color: colors.text.primary } : { color: colors.text.inverse }
-            ]}>
+            <Text
+              style={[
+                styles.voiceDuration,
+                item.isAdmin
+                  ? { color: colors.text.primary }
+                  : { color: colors.text.inverse },
+              ]}
+            >
               🎵 {formatDuration(item.audioDuration || 0)}
             </Text>
           </View>
@@ -662,7 +712,9 @@ export default function ChatWidget() {
         <Text
           style={[
             styles.messageText,
-            item.isAdmin ? { color: colors.text.primary } : { color: colors.text.inverse }
+            item.isAdmin
+              ? { color: colors.text.primary }
+              : { color: colors.text.inverse },
           ]}
         >
           {item.message}
@@ -674,27 +726,39 @@ export default function ChatWidget() {
           {Object.entries(item.reactions).map(([emoji, userIds]) => (
             <TouchableOpacity
               key={emoji}
-              style={[styles.reactionBubble, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
+              style={[
+                styles.reactionBubble,
+                { backgroundColor: 'rgba(255,255,255,0.1)' },
+              ]}
               onPress={() => addReaction(item.id, emoji)}
             >
               <Text style={styles.reactionEmoji}>{emoji}</Text>
-              <Text style={[styles.reactionCount, { color: colors.text.secondary }]}>{userIds.length}</Text>
+              <Text
+                style={[styles.reactionCount, { color: colors.text.secondary }]}
+              >
+                {userIds.length}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
       )}
 
       <Text style={styles.messageTime}>
-        {new Date(item.timestamp).toLocaleTimeString('he-IL', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
+        {new Date(item.timestamp).toLocaleTimeString('he-IL', {
+          hour: '2-digit',
+          minute: '2-digit',
         })}
       </Text>
 
       {/* Reaction Picker */}
       {showReactions === item.id && (
-        <View style={[styles.reactionPicker, { backgroundColor: colors.surface.elevated }]}>
-          {EMOJI_REACTIONS.map(emoji => (
+        <View
+          style={[
+            styles.reactionPicker,
+            { backgroundColor: colors.surface.elevated },
+          ]}
+        >
+          {EMOJI_REACTIONS.map((emoji) => (
             <TouchableOpacity
               key={emoji}
               style={styles.reactionOption}
@@ -711,13 +775,16 @@ export default function ChatWidget() {
   const renderChatRoom = (item: ChatRoom) => (
     <TouchableOpacity
       key={item.id}
-      style={[styles.chatRoomItem, { 
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary 
-      }]}
+      style={[
+        styles.chatRoomItem,
+        {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+        },
+      ]}
       onPress={() => openChat(item)}
     >
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.userAvatar, { backgroundColor: colors.gold }]}
         onPress={() => navigateToUserProfile(item.userId)}
       >
@@ -725,51 +792,71 @@ export default function ChatWidget() {
           {item.userName ? item.userName.charAt(0).toUpperCase() : '?'}
         </Text>
       </TouchableOpacity>
-      
+
       <View style={styles.chatRoomInfo}>
         <View style={styles.chatRoomHeader}>
           <TouchableOpacity onPress={() => navigateToUserProfile(item.userId)}>
-            <Text style={[styles.userName, styles.clickableUserName, { color: colors.text.primary }]}>
+            <Text
+              style={[
+                styles.userName,
+                styles.clickableUserName,
+                { color: colors.text.primary },
+              ]}
+            >
               {item.userName}
             </Text>
           </TouchableOpacity>
           <Text style={styles.messageTime}>
-            {new Date(item.lastMessageTime).toLocaleTimeString('he-IL', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
+            {new Date(item.lastMessageTime).toLocaleTimeString('he-IL', {
+              hour: '2-digit',
+              minute: '2-digit',
             })}
           </Text>
         </View>
-        <Text style={[styles.lastMessage, { color: colors.text.secondary }]} numberOfLines={1}>
+        <Text
+          style={[styles.lastMessage, { color: colors.text.secondary }]}
+          numberOfLines={1}
+        >
           {item.lastMessage}
         </Text>
       </View>
-      
+
       {item.unreadCount > 0 && (
-        <View style={[styles.unreadBadge, { backgroundColor: colors.status.error }]}>
-          <Text style={[styles.unreadCount, { color: colors.text.primary }]}>{item.unreadCount}</Text>
+        <View
+          style={[styles.unreadBadge, { backgroundColor: colors.status.error }]}
+        >
+          <Text style={[styles.unreadCount, { color: colors.text.primary }]}>
+            {item.unreadCount}
+          </Text>
         </View>
       )}
     </TouchableOpacity>
   );
 
-  const renderSearchResult = (item: { id: string; displayName: string; isAppUser: boolean }) => (
+  const renderSearchResult = (item: {
+    id: string;
+    displayName: string;
+    isAppUser: boolean;
+  }) => (
     <TouchableOpacity
       key={item.id}
-      style={[styles.chatRoomItem, {
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary
-      }]}
+      style={[
+        styles.chatRoomItem,
+        {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+        },
+      ]}
       onPress={() => openSearchResult(item)}
     >
-      <View style={[styles.userAvatar, { backgroundColor: colors.gold }]}> 
-        <Text style={[styles.userInitial, { color: colors.text.inverse }]}> 
+      <View style={[styles.userAvatar, { backgroundColor: colors.gold }]}>
+        <Text style={[styles.userInitial, { color: colors.text.inverse }]}>
           {item.displayName ? item.displayName.charAt(0).toUpperCase() : '?'}
         </Text>
       </View>
       <View style={styles.chatRoomInfo}>
         <View style={styles.chatRoomHeader}>
-          <Text style={[styles.userName, { color: colors.text.primary }]}> 
+          <Text style={[styles.userName, { color: colors.text.primary }]}>
             {item.displayName}
           </Text>
         </View>
@@ -780,8 +867,10 @@ export default function ChatWidget() {
     </TouchableOpacity>
   );
 
-  const filteredRooms = chatRooms.filter(room =>
-    room.userName && room.userName.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRooms = chatRooms.filter(
+    (room) =>
+      room.userName &&
+      room.userName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Only show chat widget for logged-in users
@@ -806,14 +895,21 @@ export default function ChatWidget() {
         presentationStyle="pageSheet"
         onRequestClose={() => setIsOpen(false)}
       >
-        <SafeAreaView style={[styles.chatContainer, { backgroundColor: colors.background }]}>
+        <SafeAreaView
+          style={[styles.chatContainer, { backgroundColor: colors.background }]}
+        >
           {/* Chat Header */}
-          <View style={[styles.chatHeader, { 
-            borderBottomColor: colors.border.primary,
-            backgroundColor: colors.gold 
-          }]}>
+          <View
+            style={[
+              styles.chatHeader,
+              {
+                borderBottomColor: colors.border.primary,
+                backgroundColor: colors.gold,
+              },
+            ]}
+          >
             {(isAdmin || isDriver) && selectedRoom && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.backButton}
                 onPress={backToRoomList}
               >
@@ -823,12 +919,16 @@ export default function ChatWidget() {
             <View style={styles.headerContent}>
               <Text style={[styles.chatTitle, { color: colors.text.inverse }]}>
                 {isAdmin || isDriver
-                  ? (selectedRoom ? selectedRoom.userName : t('chat.adminChat'))
+                  ? selectedRoom
+                    ? selectedRoom.userName
+                    : t('chat.adminChat')
                   : t('chat.customerSupport')}
               </Text>
               <Text style={styles.chatSubtitle}>
-                {(isAdmin || isDriver)
-                  ? (selectedRoom ? t('chat.customerSupportChat') : t('chat.selectChatToStart'))
+                {isAdmin || isDriver
+                  ? selectedRoom
+                    ? t('chat.customerSupportChat')
+                    : t('chat.selectChatToStart')
                   : t('chat.chatWithTeam')}
               </Text>
             </View>
@@ -861,13 +961,21 @@ export default function ChatWidget() {
                 // Admin Chat List View
                 <>
                   {/* Search */}
-                  <View style={[styles.searchContainer, { 
-                    backgroundColor: colors.surface.primary,
-                    borderColor: colors.border.primary 
-                  }]}>
+                  <View
+                    style={[
+                      styles.searchContainer,
+                      {
+                        backgroundColor: colors.surface.primary,
+                        borderColor: colors.border.primary,
+                      },
+                    ]}
+                  >
                     <Search size={20} color="#999" />
                     <TextInput
-                      style={[styles.searchInput, { color: colors.text.primary }]}
+                      style={[
+                        styles.searchInput,
+                        { color: colors.text.primary },
+                      ]}
                       placeholder={t('chat.searchUsers')}
                       value={searchQuery}
                       onChangeText={setSearchQuery}
@@ -886,8 +994,16 @@ export default function ChatWidget() {
                         searchResults.map(renderSearchResult)
                       ) : (
                         <View style={styles.emptyContainer}>
-                          <MessageCircle size={60} color={colors.interactive.disabled} />
-                          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
+                          <MessageCircle
+                            size={60}
+                            color={colors.interactive.disabled}
+                          />
+                          <Text
+                            style={[
+                              styles.emptyText,
+                              { color: colors.text.secondary },
+                            ]}
+                          >
                             {t('chat.noUsersFound')}
                           </Text>
                         </View>
@@ -902,8 +1018,16 @@ export default function ChatWidget() {
                         filteredRooms.map(renderChatRoom)
                       ) : (
                         <View style={styles.emptyContainer}>
-                          <MessageCircle size={60} color={colors.interactive.disabled} />
-                          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
+                          <MessageCircle
+                            size={60}
+                            color={colors.interactive.disabled}
+                          />
+                          <Text
+                            style={[
+                              styles.emptyText,
+                              { color: colors.text.secondary },
+                            ]}
+                          >
                             {t('chat.noChatRooms')}
                           </Text>
                         </View>
@@ -924,10 +1048,20 @@ export default function ChatWidget() {
                       messages.map(renderMessage)
                     ) : (
                       <View style={styles.emptyMessagesContainer}>
-                        <Text style={[styles.emptyMessagesText, { color: colors.text.secondary }]}>
+                        <Text
+                          style={[
+                            styles.emptyMessagesText,
+                            { color: colors.text.secondary },
+                          ]}
+                        >
                           {t('chat.noMessagesYet')}
                         </Text>
-                        <Text style={[styles.emptyMessagesSubtext, { color: colors.text.tertiary }]}>
+                        <Text
+                          style={[
+                            styles.emptyMessagesSubtext,
+                            { color: colors.text.tertiary },
+                          ]}
+                        >
                           {t('chat.startConversation')}
                         </Text>
                       </View>
@@ -935,12 +1069,22 @@ export default function ChatWidget() {
                   </ScrollView>
 
                   {/* Message Input */}
-                  <View style={[styles.inputContainer, { 
-                    borderTopColor: colors.border.primary,
-                    backgroundColor: colors.background 
-                  }]}>
+                  <View
+                    style={[
+                      styles.inputContainer,
+                      {
+                        borderTopColor: colors.border.primary,
+                        backgroundColor: colors.background,
+                      },
+                    ]}
+                  >
                     {isRecording ? (
-                      <View style={[styles.recordingContainer, { backgroundColor: colors.status.error }]}>
+                      <View
+                        style={[
+                          styles.recordingContainer,
+                          { backgroundColor: colors.status.error },
+                        ]}
+                      >
                         <TouchableOpacity
                           style={styles.stopRecordingButton}
                           onPress={stopRecording}
@@ -948,7 +1092,12 @@ export default function ChatWidget() {
                           <MicOff size={20} color={colors.text.inverse} />
                         </TouchableOpacity>
                         <View style={styles.recordingInfo}>
-                          <Text style={[styles.recordingText, { color: colors.text.inverse }]}>
+                          <Text
+                            style={[
+                              styles.recordingText,
+                              { color: colors.text.inverse },
+                            ]}
+                          >
                             🔴 Recording... {formatDuration(recordingDuration)}
                           </Text>
                         </View>
@@ -956,11 +1105,14 @@ export default function ChatWidget() {
                     ) : (
                       <>
                         <TextInput
-                          style={[styles.messageInput, { 
-                            borderColor: colors.border.primary,
-                            backgroundColor: colors.surface.primary,
-                            color: colors.text.primary 
-                          }]}
+                          style={[
+                            styles.messageInput,
+                            {
+                              borderColor: colors.border.primary,
+                              backgroundColor: colors.surface.primary,
+                              color: colors.text.primary,
+                            },
+                          ]}
                           value={newMessage}
                           onChangeText={setNewMessage}
                           placeholder={t('chat.typeMessage')}
@@ -971,10 +1123,13 @@ export default function ChatWidget() {
                         />
                         {Platform.OS !== 'web' && (
                           <TouchableOpacity
-                            style={[styles.micButton, { 
-                              backgroundColor: colors.surface.primary,
-                              borderColor: colors.border.primary 
-                            }]}
+                            style={[
+                              styles.micButton,
+                              {
+                                backgroundColor: colors.surface.primary,
+                                borderColor: colors.border.primary,
+                              },
+                            ]}
                             onPress={startRecording}
                           >
                             <Mic size={20} color={colors.gold} />
@@ -983,7 +1138,11 @@ export default function ChatWidget() {
                         <TouchableOpacity
                           style={[
                             styles.sendButton,
-                            { backgroundColor: newMessage.trim() ? colors.gold : colors.interactive.disabled }
+                            {
+                              backgroundColor: newMessage.trim()
+                                ? colors.gold
+                                : colors.interactive.disabled,
+                            },
                           ]}
                           onPress={sendMessage}
                           disabled={!newMessage.trim()}
@@ -1024,7 +1183,7 @@ export default function ChatWidget() {
         title={infoModal.title}
         message={infoModal.message}
         type={infoModal.type}
-        onClose={() => setInfoModal({...infoModal, visible: false})}
+        onClose={() => setInfoModal({ ...infoModal, visible: false })}
       />
     </>
   );

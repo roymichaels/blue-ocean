@@ -1,25 +1,14 @@
-// src/polyfills.ts (or wherever you import it)
+// polyfills.ts (must be the first import)
 
 import 'react-native-url-polyfill/auto';
 
 try {
-  if (typeof global.Buffer === 'undefined') {
-    global.Buffer = require('buffer').Buffer;
-  }
+  require('react-native-get-random-values'); // correct: must use require()
+  require('expo-standard-web-crypto'); // correct
 } catch (err) {
-  console.error('Failed to polyfill Buffer:', err);
+  console.warn('❌ Polyfill load failed:', err);
 }
 
-try {
-  require('expo-standard-web-crypto'); // Don't import! Use require.
-  console.log('✅ Web Crypto loaded');
-} catch (err) {
-  console.error('❌ Failed to load expo-standard-web-crypto:', err);
-}
-
-try {
-  require('react-native-get-random-values');
-  console.log('✅ Random values loaded');
-} catch (err) {
-  console.error('❌ Failed to load random values:', err);
+if (typeof global.Buffer === 'undefined') {
+  global.Buffer = require('buffer').Buffer; // critical fix: use require, not import
 }
