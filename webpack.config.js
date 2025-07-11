@@ -1,7 +1,7 @@
 // webpack.config.js
-const createExpoWebpackConfigAsync = require('@expo/webpack-config');
+import createExpoWebpackConfigAsync from '@expo/webpack-config';
 
-module.exports = async function (env, argv) {
+export default async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
 
   // rely on Expo's default Node.js polyfills
@@ -16,4 +16,15 @@ module.exports = async function (env, argv) {
   }
 
   return config;
-};
+}
+
+config.module.rules.unshift({
+  test: /\.js$/,
+  include: /node_modules/,
+  use: {
+    loader: 'babel-loader',
+    options: {
+      plugins: ['@babel/plugin-transform-modules-commonjs'],
+    },
+  },
+});
