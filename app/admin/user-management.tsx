@@ -478,7 +478,7 @@ export default function UserManagementScreen() {
                   <Text style={[styles.dropdownLabel, { color: colors.text.primary }]}>תפקיד:</Text>
                   <TouchableOpacity 
                     style={[styles.dropdown, { 
-                      backgroundColor: colors.surface.primary,
+                      backgroundColor: colors.surface.elevated,
                       borderColor: colors.border.primary 
                     }]}
                     onPress={() => setShowRoleDropdown(!showRoleDropdown)}
@@ -491,7 +491,7 @@ export default function UserManagementScreen() {
                   
                   {showRoleDropdown && (
                     <View style={[styles.dropdownMenu, { 
-                      backgroundColor: colors.surface.primary,
+                      backgroundColor: colors.surface.elevated,
                       borderColor: colors.border.primary 
                     }]}>
                       <TouchableOpacity
@@ -540,7 +540,7 @@ export default function UserManagementScreen() {
                   <Text style={[styles.dropdownLabel, { color: colors.text.primary }]}>דרגת לקוח:</Text>
                   <TouchableOpacity 
                     style={[styles.dropdown, { 
-                      backgroundColor: colors.surface.primary,
+                      backgroundColor: colors.surface.elevated,
                       borderColor: colors.border.primary 
                     }]}
                     onPress={() => setShowTierDropdown(!showTierDropdown)}
@@ -553,7 +553,7 @@ export default function UserManagementScreen() {
                   
                   {showTierDropdown && (
                     <View style={[styles.dropdownMenu, { 
-                      backgroundColor: colors.surface.primary,
+                      backgroundColor: colors.surface.elevated,
                       borderColor: colors.border.primary 
                     }]}>
                       <TouchableOpacity 
