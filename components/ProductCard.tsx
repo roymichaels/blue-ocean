@@ -22,15 +22,17 @@ interface ProductCardProps {
   isAdmin?: boolean;
   onEdit?: (product: Product) => void;
   onDelete?: (productId: string) => void;
+  categoryName?: string;
   style?: any;
 }
 
-export default function ProductCard({ 
-  product, 
-  isAdmin = false, 
-  onEdit, 
+export default function ProductCard({
+  product,
+  isAdmin = false,
+  onEdit,
   onDelete,
-  style 
+  categoryName,
+  style
 }: ProductCardProps) {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [pricingTier, setPricingTier] = useState<PricingTier | null>(null);
@@ -233,13 +235,11 @@ export default function ProductCard({
           )}
         </View>
 
-        {/* Tiered Pricing Info */}
-        {hasTieredPricing && (
+        {/* Category */}
+        {categoryName && (
           <View style={styles.tieredPricingContainer}>
             <Tag size={12} color={colors.status.info} />
-            <Text style={[styles.tieredPricingText, { color: colors.status.info }]}>
-              {`${currencySymbol}${pricingTier?.pricePerUnit?.toFixed(2)} (${pricingTier?.minQuantity}+)`}
-            </Text>
+            <Text style={[styles.tieredPricingText, { color: colors.status.info }]}> {categoryName} </Text>
           </View>
         )}
 

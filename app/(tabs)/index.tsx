@@ -503,6 +503,9 @@ export default function HomeScreen() {
                     product={item}
                     isAdmin={isAdmin}
                     onEdit={editProduct}
+                    categoryName={
+                      categories.find((c) => c.id === item.category)?.name
+                    }
                   />
                 </View>
               ))}
