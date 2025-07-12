@@ -230,7 +230,7 @@
     "english": "English",
     "hebrew": "עברית",
     "version": "גרסה 1.0.0",
-    "copyright": "© 2024 הקונגרס הציוני",
+    "copyright": "© 2024 אנדרגראונד אפס",
     "comingSoon": "בקרוב",
     "featureComingSoon": "תכונה זו תהיה זמינה בקרוב",
     "kycVerification": "אימות KYC"
@@ -280,7 +280,7 @@
   },
   "ageVerification": {
     "ageVerification": "אישור גיל",
-    "platformName": "הקונגרס הציוני",
+    "platformName": "",
     "platformSubtitle": "פלטפורמה דיגיטלית מתקדמת",
     "verificationRequired": "כדי להמשיך, עליך לאשר שאתה בן 18 ומעלה",
     "adultContentWarning": "⚠️ תוכן זה מיועד לבוגרים בלבד",
