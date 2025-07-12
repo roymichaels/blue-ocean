@@ -403,8 +403,29 @@ export default function ProductDetailScreen() {
           </View>
         </View>
 
+        {/* Main Product Image */}
+        <TouchableOpacity
+          style={styles.coverImageContainer}
+          onPress={() => openMediaViewer(0)}
+        >
+          {bannerImageUri ? (
+            <Image
+              source={{ uri: bannerImageUri }}
+              style={styles.coverImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.noImageContainer}>
+              <ImageIcon size={64} color={colors.text.secondary} />
+              <Text style={[styles.noImageText, { color: colors.text.secondary }]}>
+                אין תמונה
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
         {/* ——— Product Media Carousel ——— */}
-        {allMedia.length > 0 && (
+        {allMedia.length > 1 && (
           <View style={styles.galleryContainer}>
             <ScrollView
               horizontal
@@ -867,7 +888,8 @@ const styles = StyleSheet.create({
   },
   coverImageContainer: {
     width: '100%',
-    height: 300,
+    aspectRatio: 1,
+    marginBottom: 16,
   },
   coverImage: {
     width: '100%',
