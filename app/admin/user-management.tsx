@@ -144,6 +144,31 @@ export default function UserManagementScreen() {
     }
   };
 
+  const verifyUserKyc = async () => {
+    if (!selectedUser || !user) return;
+
+    setLoading(true);
+    try {
+      const db = DatabaseService.getInstance();
+      const success = await db.updateUserKycStatus(selectedUser.id, 'verified', user.id);
+
+      if (success) {
+        setUsers(prev => prev.map(u =>
+          u.id === selectedUser.id ? { ...u, kycStatus: 'verified' } : u
+        ));
+        setSelectedUser(prev => prev && { ...prev, kycStatus: 'verified' });
+        showNotification('הצלחה', 'המשתמש אומת בהצלחה', 'success');
+      } else {
+        Alert.alert('שגיאה', 'אירעה שגיאה באימות המשתמש');
+      }
+    } catch (error) {
+      console.error('Error verifying user KYC:', error);
+      Alert.alert('שגיאה', 'אירעה שגיאה באימות המשתמש');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'לא זמין';
     return new Date(dateString).toLocaleDateString('he-IL', {
@@ -426,9 +451,9 @@ export default function UserManagementScreen() {
         onRequestClose={() => setShowEditModal(false)}
       >
         <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.modalContainer, { 
+          <SafeAreaView style={[styles.modalContainer, {
             backgroundColor: colors.surface.elevated,
-            borderColor: colors.border.primary 
+            borderColor: colors.border.primary
           }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text.primary }]}>עריכת משתמש</Text>
@@ -438,7 +463,11 @@ export default function UserManagementScreen() {
             </View>
 
             {selectedUser && (
-              <View style={styles.modalContent}>
+              <ScrollView
+                style={styles.modalContent}
+                contentContainerStyle={{ paddingBottom: 24 }}
+                showsVerticalScrollIndicator={false}
+              >
                 <Text style={[styles.userDetailTitle, { color: colors.text.primary }]}>פרטי משתמש</Text>
                 
                 <View style={[styles.userDetailItem, { borderBottomColor: colors.border.secondary }]}>
@@ -468,13 +497,30 @@ export default function UserManagementScreen() {
                   </Text>
                 </View>
 
+                {selectedUser.kycStatus !== 'verified' && (
+                  <TouchableOpacity
+                    style={[styles.verifyButton, { backgroundColor: colors.status.success }]}
+                    onPress={verifyUserKyc}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <ActivityIndicator size="small" color={colors.text.inverse} />
+                    ) : (
+                      <>
+                        <UserCheck size={20} color={colors.text.inverse} />
+                        <Text style={[styles.verifyButtonText, { color: colors.text.inverse }]}>אמת KYC</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                )}
+
                 <Text style={[styles.userDetailTitle, { color: colors.text.primary, marginTop: 24 }]}>הגדרות תפקיד</Text>
                 
-                <View style={styles.dropdownContainer}>
+                <View style={[styles.dropdownContainer, { zIndex: 2 }]}>
                   <Text style={[styles.dropdownLabel, { color: colors.text.primary }]}>תפקיד:</Text>
                   <TouchableOpacity 
                     style={[styles.dropdown, { 
-                      backgroundColor: colors.surface.primary,
+                      backgroundColor: colors.surface.elevated,
                       borderColor: colors.border.primary 
                     }]}
                     onPress={() => setShowRoleDropdown(!showRoleDropdown)}
@@ -487,7 +533,7 @@ export default function UserManagementScreen() {
                   
                   {showRoleDropdown && (
                     <View style={[styles.dropdownMenu, { 
-                      backgroundColor: colors.surface.primary,
+                      backgroundColor: colors.surface.elevated,
                       borderColor: colors.border.primary 
                     }]}>
                       <TouchableOpacity
@@ -532,11 +578,11 @@ export default function UserManagementScreen() {
 
                 <Text style={[styles.userDetailTitle, { color: colors.text.primary, marginTop: 24 }]}>הגדרות לקוח</Text>
                 
-                <View style={styles.dropdownContainer}>
+                <View style={[styles.dropdownContainer, { zIndex: 1 }]}>
                   <Text style={[styles.dropdownLabel, { color: colors.text.primary }]}>דרגת לקוח:</Text>
                   <TouchableOpacity 
                     style={[styles.dropdown, { 
-                      backgroundColor: colors.surface.primary,
+                      backgroundColor: colors.surface.elevated,
                       borderColor: colors.border.primary 
                     }]}
                     onPress={() => setShowTierDropdown(!showTierDropdown)}
@@ -549,7 +595,7 @@ export default function UserManagementScreen() {
                   
                   {showTierDropdown && (
                     <View style={[styles.dropdownMenu, { 
-                      backgroundColor: colors.surface.primary,
+                      backgroundColor: colors.surface.elevated,
                       borderColor: colors.border.primary 
                     }]}>
                       <TouchableOpacity 
@@ -618,10 +664,10 @@ export default function UserManagementScreen() {
                     </>
                   )}
                 </TouchableOpacity>
-              </View>
-            )}
+                </ScrollView>
+              )}
+          </SafeAreaView>
           </View>
-        </View>
       </Modal>
 
       {/* Filter Modal */}
@@ -1043,6 +1089,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     maxHeight: '80%',
+    overflow: 'visible',
   },
   filterModalContainer: {
     position: 'absolute',
@@ -1094,6 +1141,7 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     marginBottom: 16,
+    zIndex: 1,
   },
   dropdownLabel: {
     fontSize: 14,
@@ -1124,6 +1172,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
     zIndex: 1000,
+    elevation: 5,
   },
   dropdownItem: {
     paddingVertical: 12,
@@ -1142,6 +1191,19 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  verifyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginTop: 16,
+  },
+  verifyButtonText: {
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
