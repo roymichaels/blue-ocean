@@ -23,6 +23,13 @@ the web. The polyfill is automatically imported from `index.ts`.
 The project also uses `expo-standard-web-crypto` to polyfill the Web Crypto API,
 so ensure it's installed as a dependency.
 
+### Session Persistence
+
+User sessions are stored using `@react-native-async-storage/async-storage`. On
+native platforms this uses the native AsyncStorage implementation and falls back
+to `window.localStorage` when running on the web. This ensures Supabase auth
+state persists across reloads on every platform.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in the required values:
