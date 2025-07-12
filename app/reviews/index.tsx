@@ -45,6 +45,16 @@ export default function ReviewsScreen() {
   const { isLoggedIn, isAdmin, user } = useAuth();
   const { colors } = useTheme();
 
+  const goBack = () => {
+    // If there's no history, navigate home
+    // @ts-ignore -- canGoBack not typed in expo-router
+    if (router.canGoBack?.()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
+
   // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,
@@ -473,7 +483,7 @@ export default function ReviewsScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { 
+          <TouchableOpacity onPress={goBack} style={[styles.backButton, { 
             backgroundColor: colors.surface.primary, 
             borderColor: colors.border.primary 
           }]}>
@@ -490,7 +500,7 @@ export default function ReviewsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { 
+        <TouchableOpacity onPress={goBack} style={[styles.backButton, { 
           backgroundColor: colors.surface.primary, 
           borderColor: colors.border.primary 
         }]}>

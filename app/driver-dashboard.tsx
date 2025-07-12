@@ -32,6 +32,16 @@ export default function DriverDashboardScreen() {
   const [jobs, setJobs] = useState<DeliveryJob[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const goBack = () => {
+    // Fallback to home when history is empty
+    // @ts-ignore -- canGoBack not typed in expo-router
+    if (router.canGoBack?.()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
+
   useEffect(() => {
     if (!isDriver && !isAdmin) {
       router.replace('/');
@@ -72,6 +82,13 @@ export default function DriverDashboardScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
+        <TouchableOpacity onPress={goBack}>
+          <ArrowLeft size={24} color={colors.text.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>לוח נהג</Text>
+        <View style={{ width: 24 }} />
+      </View>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {jobs.map((job) => (
           <View
@@ -168,6 +185,15 @@ export default function DriverDashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerTitle: { fontSize: 18, fontWeight: '600' },
   content: { flex: 1, padding: 16 },
   jobCard: {
     borderWidth: 1,
