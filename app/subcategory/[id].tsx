@@ -1032,7 +1032,7 @@ export default function SubcategoryScreen() {
             </View>
             
             <ScrollView style={styles.categorySelectorList}>
-              {pricingTiers.map((tier) => (
+              {(pricingTiers || []).map((tier) => (
                 <TouchableOpacity
                   key={tier.id}
                   style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]}
