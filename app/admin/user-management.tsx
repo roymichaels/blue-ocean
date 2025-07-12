@@ -426,9 +426,9 @@ export default function UserManagementScreen() {
         onRequestClose={() => setShowEditModal(false)}
       >
         <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.modalContainer, { 
+          <SafeAreaView style={[styles.modalContainer, {
             backgroundColor: colors.surface.elevated,
-            borderColor: colors.border.primary 
+            borderColor: colors.border.primary
           }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text.primary }]}>עריכת משתמש</Text>
@@ -438,7 +438,11 @@ export default function UserManagementScreen() {
             </View>
 
             {selectedUser && (
-              <View style={styles.modalContent}>
+              <ScrollView
+                style={styles.modalContent}
+                contentContainerStyle={{ paddingBottom: 24 }}
+                showsVerticalScrollIndicator={false}
+              >
                 <Text style={[styles.userDetailTitle, { color: colors.text.primary }]}>פרטי משתמש</Text>
                 
                 <View style={[styles.userDetailItem, { borderBottomColor: colors.border.secondary }]}>
@@ -470,7 +474,7 @@ export default function UserManagementScreen() {
 
                 <Text style={[styles.userDetailTitle, { color: colors.text.primary, marginTop: 24 }]}>הגדרות תפקיד</Text>
                 
-                <View style={styles.dropdownContainer}>
+                <View style={[styles.dropdownContainer, { zIndex: 2 }]}>
                   <Text style={[styles.dropdownLabel, { color: colors.text.primary }]}>תפקיד:</Text>
                   <TouchableOpacity 
                     style={[styles.dropdown, { 
@@ -532,7 +536,7 @@ export default function UserManagementScreen() {
 
                 <Text style={[styles.userDetailTitle, { color: colors.text.primary, marginTop: 24 }]}>הגדרות לקוח</Text>
                 
-                <View style={styles.dropdownContainer}>
+                <View style={[styles.dropdownContainer, { zIndex: 1 }]}>
                   <Text style={[styles.dropdownLabel, { color: colors.text.primary }]}>דרגת לקוח:</Text>
                   <TouchableOpacity 
                     style={[styles.dropdown, { 
@@ -618,10 +622,10 @@ export default function UserManagementScreen() {
                     </>
                   )}
                 </TouchableOpacity>
-              </View>
-            )}
+                </ScrollView>
+              )}
+          </SafeAreaView>
           </View>
-        </View>
       </Modal>
 
       {/* Filter Modal */}
@@ -1043,6 +1047,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     maxHeight: '80%',
+    overflow: 'visible',
   },
   filterModalContainer: {
     position: 'absolute',
@@ -1094,6 +1099,7 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     marginBottom: 16,
+    zIndex: 1,
   },
   dropdownLabel: {
     fontSize: 14,
@@ -1124,6 +1130,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
     zIndex: 1000,
+    elevation: 5,
   },
   dropdownItem: {
     paddingVertical: 12,
