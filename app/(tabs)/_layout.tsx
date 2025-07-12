@@ -1,5 +1,11 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Grid3x3 as Grid3X3, Bell, User, Package } from 'lucide-react-native';
+import {
+  ShoppingBag as Home,
+  Grid3x3 as Grid3X3,
+  Bell,
+  User,
+  Package,
+} from 'lucide-react-native';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useState, useEffect } from 'react';
@@ -36,14 +42,13 @@ export default function TabLayout() {
             fontSize: 12,
             fontWeight: '500',
           },
-        }}>
+        }}
+      >
         <Tabs.Screen
           name="index"
           options={{
             title: t('navigation.home'),
-            tabBarIcon: ({ size, color }) => (
-              <Home size={size} color={color} />
-            ),
+            tabBarIcon: ({ size, color }) => <Home size={size} color={color} />,
           }}
         />
         <Tabs.Screen
@@ -68,22 +73,18 @@ export default function TabLayout() {
           name="notifications"
           options={{
             title: t('navigation.notifications'),
-            tabBarIcon: ({ size, color }) => (
-              <Bell size={size} color={color} />
-            ),
+            tabBarIcon: ({ size, color }) => <Bell size={size} color={color} />,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: t('navigation.profile'),
-            tabBarIcon: ({ size, color }) => (
-              <User size={size} color={color} />
-            ),
+            tabBarIcon: ({ size, color }) => <User size={size} color={color} />,
           }}
         />
       </Tabs>
-      
+
       {showCartWidget && <FloatingCartWidget />}
     </>
   );
