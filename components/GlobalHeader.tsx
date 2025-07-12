@@ -22,10 +22,10 @@ interface GlobalHeaderProps {
   showSearch?: boolean;
 }
 
-export default function GlobalHeader({ 
-  searchQuery = '', 
-  onSearchChange, 
-  showSearch = true 
+export default function GlobalHeader({
+  searchQuery = '',
+  onSearchChange,
+  showSearch = true,
 }: GlobalHeaderProps) {
   const { t } = useLanguage();
   const { colors } = useTheme();
@@ -35,14 +35,14 @@ export default function GlobalHeader({
 
   useEffect(() => {
     const cartService = CartService.getInstance();
-    
+
     const updateCounts = () => {
       setWishlistItemsCount(cartService.getWishlistItemsCount());
     };
 
     updateCounts();
     cartService.addListener(updateCounts);
-    
+
     return () => cartService.removeListener(updateCounts);
   }, []);
 
@@ -56,43 +56,63 @@ export default function GlobalHeader({
         <View style={styles.headerTop}>
           <View style={styles.logo}>
             {platformLogo ? (
-
-              <Image source={{ uri: platformLogo }} style={styles.logoImage} resizeMode="contain" />
+              <Image
+                source={{ uri: platformLogo }}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
             ) : (
-              <View style={[styles.logoIcon, { backgroundColor: colors.gold }]} />
+              <View
+                style={[styles.logoIcon, { backgroundColor: colors.gold }]}
+              />
             )}
             <Text style={[styles.logoText, { color: colors.gold }]}>
               {platformName || t('ageVerification.platformName')}
             </Text>
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity 
-              style={[styles.iconButton, { backgroundColor: colors.surface.primary }]}
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                { backgroundColor: colors.surface.primary },
+              ]}
               onPress={navigateToReviews}
             >
               <Star size={24} color={colors.text.primary} />
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.iconButton, { backgroundColor: colors.surface.primary }]}
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                { backgroundColor: colors.surface.primary },
+              ]}
               onPress={() => setShowWishlistModal(true)}
             >
               <Heart size={24} color={colors.text.primary} />
               {wishlistItemsCount > 0 && (
                 <View style={[styles.badge, { backgroundColor: colors.gold }]}>
-                  <Text style={[styles.badgeText, { color: colors.text.inverse }]}>{wishlistItemsCount}</Text>
+                  <Text
+                    style={[styles.badgeText, { color: colors.text.inverse }]}
+                  >
+                    {wishlistItemsCount}
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
             <UserAvatar />
           </View>
         </View>
-        
+
         {/* Search Bar */}
         {showSearch && (
-          <View style={[styles.searchContainer, { 
-            backgroundColor: colors.surface.primary,
-            borderColor: colors.border.primary 
-          }]}>
+          <View
+            style={[
+              styles.searchContainer,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+              },
+            ]}
+          >
             <Search size={20} color={colors.text.tertiary} />
             <TextInput
               style={[styles.searchInput, { color: colors.text.primary }]}
@@ -105,10 +125,10 @@ export default function GlobalHeader({
           </View>
         )}
       </View>
-      
-      <WishlistModal 
-        visible={showWishlistModal} 
-        onClose={() => setShowWishlistModal(false)} 
+
+      <WishlistModal
+        visible={showWishlistModal}
+        onClose={() => setShowWishlistModal(false)}
       />
     </>
   );
@@ -131,14 +151,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoIcon: {
-    width: 24,
-    height: 24,
+    width: 50,
+    height: 50,
     borderRadius: 12,
     marginLeft: 8,
   },
   logoImage: {
-    width: 24,
-    height: 24,
+    width: 50,
+    height: 50,
     borderRadius: 12,
     marginLeft: 8,
   },
