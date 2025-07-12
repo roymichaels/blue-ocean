@@ -22,6 +22,7 @@ const { width, height } = Dimensions.get('window');
 interface MediaItem {
   type: 'image' | 'video';
   url: string;
+  thumbnail?: string;
 }
 
 interface Props {

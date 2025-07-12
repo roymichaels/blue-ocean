@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ interface MediaItem {
   uri: string;
   type: 'image' | 'video';
   name?: string;
+  thumbnail?: string;
   file?: File | Blob; // For new uploads
 }
 
@@ -40,7 +41,27 @@ export default function MediaUploader({
 }: MediaUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
+  const [thumbnailMap, setThumbnailMap] = useState<Record<string, string>>({});
   const { colors } = useTheme();
+
+  useEffect(() => {
+    const loadThumbnails = async () => {
+      const svc = MediaService.getInstance();
+      for (const item of media) {
+        if (item.type === 'video' && !thumbnailMap[item.id]) {
+          try {
+            const thumb = await svc.generateVideoThumbnail(item.uri);
+            if (thumb) {
+              setThumbnailMap(prev => ({ ...prev, [item.id]: thumb }));
+            }
+          } catch (err) {
+            console.error('Error loading thumbnail:', err);
+          }
+        }
+      }
+    };
+    loadThumbnails();
+  }, [media]);
 
   const requestPermissions = async () => {
     if (Platform.OS !== 'web') {
@@ -73,6 +94,17 @@ export default function MediaUploader({
           type: asset.type === 'video' ? 'video' : 'image',
           name: asset.fileName || `media_${Date.now()}`,
         };
+
+        if (placeholder.type === 'video') {
+          try {
+            const thumb = await mediaService.generateVideoThumbnail(asset.uri);
+            if (thumb) {
+              setThumbnailMap((m) => ({ ...m, [id]: thumb }));
+            }
+          } catch (err) {
+            console.error('Error generating thumbnail:', err);
+          }
+        }
 
         currentMedia = [...currentMedia, placeholder];
         onMediaChange(currentMedia);
@@ -157,6 +189,10 @@ export default function MediaUploader({
 
   const removeMedia = (id: string) => {
     onMediaChange(media.filter(item => item.id !== id));
+    setThumbnailMap((prev) => {
+      const { [id]: _removed, ...rest } = prev;
+      return rest;
+    });
   };
 
   const renderMediaItem = (item: MediaItem, index: number) => (
@@ -167,7 +203,7 @@ export default function MediaUploader({
       }]}>
         {item.type === 'video' ? (
           <View style={styles.videoContainer}>
-            <Image source={{ uri: item.uri }} style={styles.mediaThumbnail} />
+            <Image source={{ uri: thumbnailMap[item.id] || item.uri }} style={styles.mediaThumbnail} />
             <View style={styles.playOverlay}>
               <Play size={24} color={colors.text.inverse} fill={colors.text.inverse} />
             </View>
