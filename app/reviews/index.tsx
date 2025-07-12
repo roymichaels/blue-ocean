@@ -8,11 +8,10 @@ import {
   Image,
   TextInput,
   Modal,
-  Alert,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft, Trash2 } from 'lucide-react-native';
+import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import DatabaseService from '../../services/database';
 import OrderService from '../../services/orders';
@@ -21,6 +20,7 @@ import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
+import ConfirmationModal from '../../components/ConfirmationModal';
 import AuthTabsModal from '../../components/AuthTabsModal';
 
 
@@ -51,6 +51,12 @@ export default function ReviewsScreen() {
     title: '',
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning'
+  });
+
+  // Confirmation modal for delete
+  const [deleteModal, setDeleteModal] = useState({
+    visible: false,
+    reviewId: ''
   });
 
   useEffect(() => {
@@ -340,22 +346,9 @@ export default function ReviewsScreen() {
           </TouchableOpacity>
           
           {(item.userId === (user?.id || 'guest_user') || isAdmin) && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.deleteButton, { backgroundColor: colors.status.error }]}
-              onPress={() => {
-                Alert.alert(
-                  'מחיקת ביקורת',
-                  'האם אתה בטוח שברצונך למחוק ביקורת זו?',
-                  [
-                    { text: 'ביטול', style: 'cancel' },
-                    { 
-                      text: 'מחק', 
-                      style: 'destructive',
-                      onPress: () => deleteReview(item.id)
-                    }
-                  ]
-                );
-              }}
+              onPress={() => setDeleteModal({ visible: true, reviewId: item.id })}
             >
               <Text style={[styles.deleteButtonText, { color: colors.text.inverse }]}>מחק</Text>
             </TouchableOpacity>
@@ -886,6 +879,21 @@ export default function ReviewsScreen() {
         message={infoModal.message}
         type={infoModal.type}
         onClose={() => setInfoModal({...infoModal, visible: false})}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={deleteModal.visible}
+        title="אישור מחיקה"
+        message="האם אתה בטוח שברצונך למחוק ביקורת זו?"
+        confirmText="מחק"
+        cancelText="ביטול"
+        onConfirm={() => {
+          setDeleteModal({ visible: false, reviewId: '' });
+          deleteReview(deleteModal.reviewId);
+        }}
+        onCancel={() => setDeleteModal({ visible: false, reviewId: '' })}
+        destructive
       />
     </SafeAreaView>
   );
