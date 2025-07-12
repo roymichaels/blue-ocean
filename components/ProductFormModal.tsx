@@ -19,6 +19,7 @@ import DatabaseService from '../services/database';
 import MediaUploader from './MediaUploader';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
+import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
 
 interface MediaItem {
@@ -53,6 +54,7 @@ export default function ProductFormModal({
   const [showSubcategorySelector, setShowSubcategorySelector] = useState(false);
   const [availableSubcategories, setAvailableSubcategories] = useState<Subcategory[]>([]);
   const [showPricingTierSelector, setShowPricingTierSelector] = useState(false);
+  const [showPricingTierForm, setShowPricingTierForm] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [infoModal, setInfoModal] = useState({
@@ -454,7 +456,7 @@ export default function ProductFormModal({
                 style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary, backgroundColor: colors.interactive.secondary }]}
                 onPress={() => {
                   setShowPricingTierSelector(false);
-                  router.push('/admin/pricing-tiers');
+                  setShowPricingTierForm(true);
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>
@@ -466,6 +468,15 @@ export default function ProductFormModal({
           </View>
         </View>
       </Modal>
+
+      <PricingTierFormModal
+        visible={showPricingTierForm}
+        onClose={() => setShowPricingTierForm(false)}
+        onSaved={(tier) => {
+          setShowPricingTierForm(false);
+          loadPricingTiers();
+        }}
+      />
 
       <InfoModal
         visible={infoModal.visible}
