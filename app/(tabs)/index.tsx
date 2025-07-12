@@ -267,10 +267,10 @@ export default function HomeScreen() {
             >
               {item.discount} הנחה
             </Text>
-            <Text style={[styles.heroTitle, { color: colors.text.inverse }]}>
+            <Text style={[styles.heroTitle, { color: colors.gold }]}> 
               {item.title}
             </Text>
-            <Text style={[styles.heroSubtitle, { color: colors.text.inverse }]}>
+            <Text style={[styles.heroSubtitle, { color: colors.gold }]}> 
               {item.subtitle}
             </Text>
           </View>
