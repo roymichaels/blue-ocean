@@ -223,7 +223,7 @@ export default function PricingTiersScreen() {
 
         {pricingTiers.length > 0 ? (
           <View style={styles.tiersGrid}>
-            {pricingTiers.map(renderTierCard)}
+            {(pricingTiers || []).map(renderTierCard)}
           </View>
         ) : (
           <View style={styles.emptyContainer}>

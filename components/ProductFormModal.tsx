@@ -439,7 +439,7 @@ export default function ProductFormModal({
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.categorySelectorList}>
-              {pricingTiers.map(tier => (
+              {(pricingTiers || []).map(tier => (
                 <TouchableOpacity key={tier.id} style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]} onPress={() => selectPricingTier(tier.id)}>
                   <View style={styles.categorySelectorItemContent}>
                     <Text style={[styles.pricingTierDiscount, { color: colors.gold }]}>
