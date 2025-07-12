@@ -144,6 +144,31 @@ export default function UserManagementScreen() {
     }
   };
 
+  const verifyUserKyc = async () => {
+    if (!selectedUser || !user) return;
+
+    setLoading(true);
+    try {
+      const db = DatabaseService.getInstance();
+      const success = await db.updateUserKycStatus(selectedUser.id, 'verified', user.id);
+
+      if (success) {
+        setUsers(prev => prev.map(u =>
+          u.id === selectedUser.id ? { ...u, kycStatus: 'verified' } : u
+        ));
+        setSelectedUser(prev => prev && { ...prev, kycStatus: 'verified' });
+        showNotification('הצלחה', 'המשתמש אומת בהצלחה', 'success');
+      } else {
+        Alert.alert('שגיאה', 'אירעה שגיאה באימות המשתמש');
+      }
+    } catch (error) {
+      console.error('Error verifying user KYC:', error);
+      Alert.alert('שגיאה', 'אירעה שגיאה באימות המשתמש');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'לא זמין';
     return new Date(dateString).toLocaleDateString('he-IL', {
@@ -471,6 +496,23 @@ export default function UserManagementScreen() {
                     {getKycStatusLabel(selectedUser.kycStatus)}
                   </Text>
                 </View>
+
+                {selectedUser.kycStatus !== 'verified' && (
+                  <TouchableOpacity
+                    style={[styles.verifyButton, { backgroundColor: colors.status.success }]}
+                    onPress={verifyUserKyc}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <ActivityIndicator size="small" color={colors.text.inverse} />
+                    ) : (
+                      <>
+                        <UserCheck size={20} color={colors.text.inverse} />
+                        <Text style={[styles.verifyButtonText, { color: colors.text.inverse }]}>אמת KYC</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                )}
 
                 <Text style={[styles.userDetailTitle, { color: colors.text.primary, marginTop: 24 }]}>הגדרות תפקיד</Text>
                 
@@ -1149,6 +1191,19 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  verifyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginTop: 16,
+  },
+  verifyButtonText: {
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
