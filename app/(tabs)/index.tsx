@@ -248,18 +248,6 @@ export default function HomeScreen() {
         <Image source={{ uri: item.image }} style={styles.heroImage} />
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>
-            <Text
-              style={[
-                styles.heroDiscount,
-                {
-                  color: colors.text.inverse,
-                  backgroundColor: colors.gold,
-                },
-              ]}
-            >
-              {item.discount} הנחה
-            </Text>
-            <Text style={[styles.heroTitle, { color: colors.gold }]}>
               {item.title}
             </Text>
             <Text style={[styles.heroSubtitle, { color: colors.gold }]}>
