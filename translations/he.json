@@ -19,7 +19,6 @@
     "new": "חדש",
     "hot": "חם",
     "sale": "מבצע",
-    "discount": "הנחה",
     "free": "חינם",
     "premium": "פרימיום",
     "info": "מידע",
@@ -143,7 +142,6 @@
     "title": "כותרת",
     "subtitle": "כותרת משנה",
     "imageUrl": "קישור תמונה",
-    "discount": "הנחה",
     "category": "קטגוריה",
     "saveBanner": "שמור באנר",
     "deleteBanner": "מחק באנר",
@@ -155,7 +153,6 @@
     "titlePlaceholder": "הכנס כותרת באנר",
     "subtitlePlaceholder": "הכנס כותרת משנה",
     "imagePlaceholder": "הכנס קישור תמונה",
-    "discountPlaceholder": "למשל: 50% או חדש",
     "categoryPlaceholder": "הכנס מזהה קטגוריה"
   },
   "notifications": {

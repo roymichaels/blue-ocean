@@ -19,7 +19,6 @@
     "new": "New",
     "hot": "Hot",
     "sale": "Sale",
-    "discount": "Discount",
     "free": "Free",
     "premium": "Premium",
     "info": "Information",
@@ -143,7 +142,6 @@
     "title": "Title",
     "subtitle": "Subtitle",
     "imageUrl": "Image URL",
-    "discount": "Discount",
     "category": "Category",
     "saveBanner": "Save Banner",
     "deleteBanner": "Delete Banner",
@@ -155,7 +153,6 @@
     "titlePlaceholder": "Enter banner title",
     "subtitlePlaceholder": "Enter subtitle",
     "imagePlaceholder": "Enter image URL",
-    "discountPlaceholder": "e.g., 50% or New",
     "categoryPlaceholder": "Enter category ID"
   },
   "notifications": {
