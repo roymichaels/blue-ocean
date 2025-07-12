@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ADMIN_USERNAME = process.env.EXPO_PUBLIC_ADMIN_USERNAME;
 
@@ -38,10 +39,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      if (session) await loadProfile(session.user.id);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error retrieving session', error);
+        }
+
+        let activeSession = data.session;
+
+        if (!activeSession) {
+          try {
+            const stored = await AsyncStorage.getItem(supabase.auth.storageKey);
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              const { data: recovered, error: recoverError } = await supabase.auth.setSession(parsed);
+              if (recoverError) {
+                console.error('Failed to set session from storage', recoverError);
+              } else {
+                activeSession = recovered.session;
+              }
+            }
+          } catch (err) {
+            console.error('Failed reading session from storage', err);
+          }
+        }
+
+        setSession(activeSession);
+        if (activeSession) await loadProfile(activeSession.user.id);
+      } catch (err) {
+        console.error('Auth initialization failed', err);
+      } finally {
+        setLoading(false);
+      }
     };
     init();
 
