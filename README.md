@@ -39,6 +39,10 @@ cp .env.example .env
 # then edit .env and provide your keys
 ```
 
+The file includes a `EXPO_PUBLIC_CHAT_SECRET` variable used to derive
+encryption keys for chat messages. Set it to any random string but make sure
+the same value is used for all clients so they can decrypt messages.
+
 ## Supabase Migrations
 
 Before running the Expo app, apply the SQL files in `supabase/migrations` so

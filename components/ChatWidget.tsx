@@ -42,13 +42,26 @@ const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 
 const roomKeys: Record<string, CryptoKey> = {};
 
+/**
+ * Derive a deterministic key per room using a shared secret. This
+ * allows messages to be decrypted across sessions instead of relying on a
+ * randomly generated key that would be lost on refresh.
+ */
 async function getRoomKey(roomId: string): Promise<CryptoKey> {
   if (roomKeys[roomId]) return roomKeys[roomId];
-  const key = await crypto.subtle.generateKey(
-    { name: 'AES-GCM', length: 256 },
-    true,
+
+  const secret = process.env.EXPO_PUBLIC_CHAT_SECRET || 'default_chat_secret';
+  const enc = new TextEncoder().encode(roomId + secret);
+  const hash = await crypto.subtle.digest('SHA-256', enc);
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    hash,
+    { name: 'AES-GCM' },
+    false,
     ['encrypt', 'decrypt']
   );
+
   roomKeys[roomId] = key;
   return key;
 }
