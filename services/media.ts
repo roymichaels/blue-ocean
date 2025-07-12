@@ -1,4 +1,5 @@
 import PinataService from './pinata';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 
 class MediaService {
   private static instance: MediaService;
@@ -81,6 +82,21 @@ class MediaService {
     };
     
     return mimeToExt[mimeType] || 'bin';
+  }
+
+  /**
+   * Generate a thumbnail for a video at the given time in ms
+   */
+  async generateVideoThumbnail(uri: string, timeMs = 1000): Promise<string | null> {
+    try {
+      const { uri: thumbnailUri } = await VideoThumbnails.getThumbnailAsync(uri, {
+        time: timeMs,
+      });
+      return thumbnailUri;
+    } catch (error) {
+      console.error('Error generating video thumbnail:', error);
+      return null;
+    }
   }
 }
 

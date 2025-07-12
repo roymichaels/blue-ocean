@@ -32,6 +32,7 @@ interface MediaItem {
   uri: string;
   type: 'image' | 'video';
   name?: string;
+  thumbnail?: string;
 }
 
 interface FullScreenMediaViewerProps {

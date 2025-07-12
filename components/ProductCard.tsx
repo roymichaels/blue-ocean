@@ -15,6 +15,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import CartService from '../services/cart';
 import DatabaseService from '../services/database';
+import MediaService from '../services/media';
 
 interface ProductCardProps {
   product: Product;
@@ -33,6 +34,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [pricingTier, setPricingTier] = useState<PricingTier | null>(null);
+  const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
 
@@ -53,6 +55,21 @@ export default function ProductCard({
     
     return () => cartService.removeListener(handleUpdate);
   }, [product.id, product.pricingTier]);
+
+  useEffect(() => {
+    const loadThumb = async () => {
+      if ((!product.images || product.images.length === 0) && product.videos && product.videos.length > 0) {
+        try {
+          const svc = MediaService.getInstance();
+          const thumb = await svc.generateVideoThumbnail(product.videos[0]);
+          if (thumb) setVideoThumbnail(thumb);
+        } catch (err) {
+          console.error('Error generating video thumbnail:', err);
+        }
+      }
+    };
+    loadThumb();
+  }, [product.images, product.videos]);
 
   const loadPricingTier = async (tierId: string) => {
     try {
@@ -132,6 +149,14 @@ export default function ProductCard({
       <View style={styles.imageContainer}>
         {product.images && product.images.length > 0 ? (
           <Image source={{ uri: product.images[0] }} style={styles.image} resizeMode="cover" />
+        ) : product.videos && product.videos.length > 0 ? (
+          videoThumbnail ? (
+            <Image source={{ uri: videoThumbnail }} style={styles.image} resizeMode="cover" />
+          ) : (
+            <View style={styles.noImageContainer}>
+              <Text style={styles.noImageText}>אין תמונה</Text>
+            </View>
+          )
         ) : (
           <View style={styles.noImageContainer}>
             <Text style={styles.noImageText}>אין תמונה</Text>

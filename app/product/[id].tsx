@@ -37,6 +37,7 @@ import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import MediaService from '../../services/media';
 
 
 
@@ -45,6 +46,7 @@ interface MediaItem {
   uri: string;
   type: 'image' | 'video';
   name?: string;
+  thumbnail?: string;
 }
 
 const { width } = Dimensions.get('window');
@@ -64,6 +66,7 @@ export default function ProductDetailScreen() {
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const [categoryBanner, setCategoryBanner] = useState<HeroBanner | null>(null);
+  const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -107,6 +110,27 @@ export default function ProductDetailScreen() {
     };
 
     fetchBanner();
+  }, [product]);
+
+  useEffect(() => {
+    const loadThumbs = async () => {
+      if (!product?.videos) return;
+      const svc = MediaService.getInstance();
+      for (let i = 0; i < product.videos.length; i++) {
+        const id = `video_${i}`;
+        if (!videoThumbnails[id]) {
+          try {
+            const thumb = await svc.generateVideoThumbnail(product.videos[i]);
+            if (thumb) {
+              setVideoThumbnails((prev) => ({ ...prev, [id]: thumb }));
+            }
+          } catch (err) {
+            console.error('Error generating video thumbnail:', err);
+          }
+        }
+      }
+    };
+    loadThumbs();
   }, [product]);
 
   const loadProduct = async () => {
@@ -309,7 +333,10 @@ export default function ProductDetailScreen() {
   }
 
   const allMedia = getAllMedia();
-  const bannerImageUri = categoryBanner?.image || product.images?.[0];
+  const bannerImageUri =
+    categoryBanner?.image ||
+    product.images?.[0] ||
+    videoThumbnails['video_0'];
   const currentPricingTier = pricingTiers.find(
     (tier) => tier.id === product.pricingTier
   );
@@ -394,7 +421,7 @@ export default function ProductDetailScreen() {
                   onPress={() => openMediaViewer(idx)}
                 >
                   <Image
-                    source={{ uri: media.uri }}
+                    source={{ uri: media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri }}
                     style={styles.galleryImage}
                     resizeMode="cover"
                   />
@@ -568,7 +595,7 @@ export default function ProductDetailScreen() {
                     onPress={() => openMediaViewer(index)}
                   >
                     <Image
-                      source={{ uri: media.uri }}
+                      source={{ uri: media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri }}
                       style={styles.galleryImage}
                       resizeMode="cover"
                     />
