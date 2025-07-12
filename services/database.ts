@@ -953,10 +953,10 @@ class DatabaseService {
       const dbBanner: any = {
         ...banner,
         is_active: banner.isActive,
+        discount: (banner as any).discount ?? '',
       };
 
       delete dbBanner.isActive;
-      delete dbBanner.discount;
       delete dbBanner.discount_en;
       delete dbBanner.discount_he;
 
@@ -987,11 +987,11 @@ class DatabaseService {
         ...banner,
         is_active: banner.isActive,
         updated_at: (banner as any).updatedAt,
+        discount: (banner as any).discount ?? '',
       };
 
       delete dbBanner.isActive;
       delete dbBanner.updatedAt;
-      delete dbBanner.discount;
       delete dbBanner.discount_en;
       delete dbBanner.discount_he;
 
