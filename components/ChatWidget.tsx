@@ -113,7 +113,9 @@ export default function ChatWidget() {
   const { t } = useLanguage();
   const recordingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const messagesEndRef = useRef<ScrollView>(null);
-
+  const [unreadTotal, setUnreadTotal] = useState(0);
+  const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
+  const messageSoundRef = useRef<Audio.Sound | null>(null);
   // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,
@@ -143,6 +145,78 @@ export default function ChatWidget() {
       if (recording) {
         recording.stopAndUnloadAsync();
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const init = async () => {
+      await loadChatRooms();
+      if (!isAdmin && !isDriver) {
+        const db = DatabaseService.getInstance();
+        const id = await db.getOrCreateChatRoom(
+          user?.id || 'guest_user',
+          user?.displayName || 'Guest User'
+        );
+        setDefaultRoomId(id);
+      }
+    };
+
+    init();
+  }, [isLoggedIn, isAdmin, isDriver]);
+
+  useEffect(() => {
+    setUnreadTotal(chatRooms.reduce((sum, r) => sum + r.unreadCount, 0));
+  }, [chatRooms]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if (!isAdmin && !isDriver && !defaultRoomId) return;
+
+    const filter =
+      isAdmin || isDriver
+        ? 'is_admin=eq.false'
+        : `room_id=eq.${defaultRoomId}&is_admin=eq.true`;
+
+    const channel = supabase
+      .channel(`chat_updates:${user?.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter,
+        },
+        (payload) => {
+          if (!isOpen || selectedRoom?.id !== payload.new.room_id) {
+            messageSoundRef.current?.replayAsync();
+          }
+          loadChatRooms();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isLoggedIn, isAdmin, isDriver, defaultRoomId, isOpen, selectedRoom]);
+
+  useEffect(() => {
+    const loadSound = async () => {
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          require('../assets/sounds/message.mp3')
+        );
+        messageSoundRef.current = sound;
+      } catch (err) {
+        console.error('Failed to load message sound', err);
+      }
+    };
+    loadSound();
+    return () => {
+      messageSoundRef.current?.unloadAsync();
     };
   }, []);
 
@@ -178,7 +252,12 @@ export default function ChatWidget() {
   const loadChatRooms = async () => {
     try {
       const db = DatabaseService.getInstance();
-      const roomsData = await db.getChatRooms();
+      let roomsData = await db.getChatRooms();
+      if (!isAdmin && !isDriver) {
+        roomsData = roomsData.filter(
+          (r) => r.userId === (user?.id || 'guest_user')
+        );
+      }
       setChatRooms(roomsData);
     } catch (error) {
       console.error('Error loading chat rooms:', error);
@@ -899,6 +978,20 @@ export default function ChatWidget() {
         onPress={() => setIsOpen(true)}
       >
         <MessageCircle size={24} color={colors.text.inverse} />
+        {unreadTotal > 0 && !isOpen && (
+          <View
+            style={[
+              styles.widgetUnreadBadge,
+              { backgroundColor: colors.status.error },
+            ]}
+          >
+            <Text
+              style={[styles.widgetUnreadText, { color: colors.text.primary }]}
+            >
+              {unreadTotal}
+            </Text>
+          </View>
+        )}
       </TouchableOpacity>
 
       {/* Chat Modal */}
@@ -1504,6 +1597,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
+  widgetUnreadBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  widgetUnreadText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
