@@ -36,8 +36,6 @@ import BannerFormModal from '../../components/BannerFormModal';
 import CartModal from '../../components/CartModal';
 import ProductFormModal from '../../components/ProductFormModal';
 
-
-
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
@@ -134,7 +132,7 @@ export default function HomeScreen() {
           product.description
             .toLowerCase()
             .includes(searchQuery.toLowerCase()) ||
-          product.category.toLowerCase().includes(searchQuery.toLowerCase()),
+          product.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -205,13 +203,7 @@ export default function HomeScreen() {
 
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
-      style={[
-        styles.categoryCard,
-        {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary,
-        },
-      ]}
+      style={[styles.categoryCard]}
       onPress={() => router.push(`/category/${item.id}`)}
     >
       <View
@@ -256,23 +248,9 @@ export default function HomeScreen() {
         <Image source={{ uri: item.image }} style={styles.heroImage} />
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>
-            {item.discount ? (
-              <Text
-                style={[
-                  styles.heroDiscount,
-                  {
-                    color: colors.text.inverse,
-                    backgroundColor: colors.gold,
-                  },
-                ]}
-              >
-                {item.discount} הנחה
-              </Text>
-            ) : null}
-            <Text style={[styles.heroTitle, { color: colors.gold }]}> 
               {item.title}
             </Text>
-            <Text style={[styles.heroSubtitle, { color: colors.gold }]}> 
+            <Text style={[styles.heroSubtitle, { color: colors.gold }]}>
               {item.subtitle}
             </Text>
           </View>
@@ -381,7 +359,7 @@ export default function HomeScreen() {
                 showsHorizontalScrollIndicator={false}
                 onMomentumScrollEnd={(event) => {
                   const newIndex = Math.round(
-                    event.nativeEvent.contentOffset.x / (width - 32),
+                    event.nativeEvent.contentOffset.x / (width - 32)
                   );
                   setCurrentBannerIndex(newIndex);
                 }}

@@ -19,8 +19,6 @@ import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-
-
 export default function CategoriesScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -39,7 +37,7 @@ export default function CategoriesScreen() {
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
 
   useEffect(() => {
@@ -58,7 +56,7 @@ export default function CategoriesScreen() {
         visible: true,
         title: 'שגיאה',
         message: 'טעינת הקטגוריות נכשלה',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setLoading(false);
@@ -77,7 +75,7 @@ export default function CategoriesScreen() {
 
   const editCategory = (category: Category) => {
     setEditingCategory(category);
-    setNewCategory({...category});
+    setNewCategory({ ...category });
     setShowCategoryModal(true);
   };
 
@@ -87,7 +85,7 @@ export default function CategoriesScreen() {
         visible: true,
         title: 'שגיאה',
         message: 'אנא מלא את כל השדות',
-        type: 'error'
+        type: 'error',
       });
       return;
     }
@@ -95,43 +93,44 @@ export default function CategoriesScreen() {
     setLoading(true);
     try {
       const db = DatabaseService.getInstance();
-      
+
       if (editingCategory) {
         // Update existing category
         await db.updateCategory(editingCategory.id, newCategory);
-        
+
         // Refresh categories from database
         await loadCategories();
-        
+
         setInfoModal({
           visible: true,
           title: 'הצלחה',
           message: 'הקטגוריה עודכנה בהצלחה',
-          type: 'success'
+          type: 'success',
         });
       } else {
         // Add new category
         await db.addCategory(newCategory as Omit<Category, 'subcategories'>);
-        
+
         // Refresh categories from database
         await loadCategories();
-        
+
         setInfoModal({
           visible: true,
           title: 'הצלחה',
           message: 'הקטגוריה נוספה בהצלחה',
-          type: 'success'
+          type: 'success',
         });
       }
-      
+
       setShowCategoryModal(false);
     } catch (error) {
       console.error('Error saving category:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
-        message: error instanceof Error ? error.message : 'שמירת הקטגוריה נכשלה',
-        type: 'error'
+        message:
+          error instanceof Error ? error.message : 'שמירת הקטגוריה נכשלה',
+        type: 'error',
       });
     } finally {
       setLoading(false);
@@ -143,24 +142,25 @@ export default function CategoriesScreen() {
     try {
       const db = DatabaseService.getInstance();
       await db.deleteCategory(categoryId);
-      
+
       // Refresh categories from database
       await loadCategories();
-      
+
       setShowCategoryModal(false);
       setInfoModal({
         visible: true,
         title: 'הצלחה',
         message: 'הקטגוריה נמחקה בהצלחה',
-        type: 'success'
+        type: 'success',
       });
     } catch (error) {
       console.error('Error deleting category:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
-        message: error instanceof Error ? error.message : 'מחיקת הקטגוריה נכשלה',
-        type: 'error'
+        message:
+          error instanceof Error ? error.message : 'מחיקת הקטגוריה נכשלה',
+        type: 'error',
       });
     } finally {
       setLoading(false);
@@ -169,23 +169,19 @@ export default function CategoriesScreen() {
 
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
-      style={[styles.categoryCard, { 
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary 
-      }]}
+      style={[styles.categoryCard]}
       onPress={() => router.push(`/category/${item.id}`)}
     >
-      <View style={[styles.categoryIcon, { 
-        backgroundColor: colors.interactive.secondary,
-        borderColor: colors.gold 
-      }]}>
+      <View style={[styles.categoryIcon]}>
         <Text style={styles.categoryEmoji}>{item.icon}</Text>
       </View>
-      <Text style={[styles.categoryName, { color: colors.text.primary }]}>{item.name}</Text>
-      
+      <Text style={[styles.categoryName, { color: colors.text.primary }]}>
+        {item.name}
+      </Text>
+
       {isAdmin && (
         <View style={styles.adminActions}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.adminActionButton}
             onPress={(e) => {
               e.stopPropagation();
@@ -201,47 +197,65 @@ export default function CategoriesScreen() {
 
   if (loading && categories.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <GlobalHeader showSearch={false} />
-        
-        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+
+        <View
+          style={[styles.header, { borderBottomColor: colors.border.primary }]}
+        >
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>קטגוריות</Text>
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+            קטגוריות
+          </Text>
           <View style={styles.headerActions}>
             {isAdmin && (
-              <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={addCategory}>
+              <TouchableOpacity
+                style={[styles.addButton, { backgroundColor: colors.gold }]}
+                onPress={addCategory}
+              >
                 <Plus size={20} color={colors.text.inverse} />
               </TouchableOpacity>
             )}
           </View>
         </View>
-        
+
         <LoadingSpinner />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <GlobalHeader showSearch={false} />
-      
-      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+
+      <View
+        style={[styles.header, { borderBottomColor: colors.border.primary }]}
+      >
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>קטגוריות</Text>
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+          קטגוריות
+        </Text>
         <View style={styles.headerActions}>
           {isAdmin && (
-            <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={addCategory}>
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: colors.gold }]}
+              onPress={addCategory}
+            >
               <Plus size={20} color={colors.text.inverse} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.categoriesContainer}
         showsVerticalScrollIndicator={false}
@@ -262,8 +276,18 @@ export default function CategoriesScreen() {
         transparent={false}
         onRequestClose={() => setShowCategoryModal(false)}
       >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: colors.border.primary }]}>
+        <SafeAreaView
+          style={[
+            styles.modalContainer,
+            { backgroundColor: colors.background },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalHeader,
+              { borderBottomColor: colors.border.primary },
+            ]}
+          >
             <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
               {editingCategory ? 'עריכת קטגוריה' : 'הוספת קטגוריה חדשה'}
             </Text>
@@ -274,15 +298,22 @@ export default function CategoriesScreen() {
 
           <ScrollView style={styles.modalContent}>
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מזהה קטגוריה *</Text>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+                מזהה קטגוריה *
+              </Text>
               <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary
-                }]}
+                style={[
+                  styles.formInput,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.surface.primary,
+                    color: colors.text.primary,
+                  },
+                ]}
                 value={newCategory.id}
-                onChangeText={(text) => setNewCategory({...newCategory, id: text})}
+                onChangeText={(text) =>
+                  setNewCategory({ ...newCategory, id: text })
+                }
                 placeholder="הכנס מזהה קטגוריה (באנגלית)"
                 textAlign="left"
                 editable={!editingCategory} // Don't allow editing ID for existing categories
@@ -290,59 +321,94 @@ export default function CategoriesScreen() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם הקטגוריה *</Text>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+                שם הקטגוריה *
+              </Text>
               <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary
-                }]}
+                style={[
+                  styles.formInput,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.surface.primary,
+                    color: colors.text.primary,
+                  },
+                ]}
                 value={newCategory.name}
-                onChangeText={(text) => setNewCategory({...newCategory, name: text})}
+                onChangeText={(text) =>
+                  setNewCategory({ ...newCategory, name: text })
+                }
                 placeholder="הכנס שם קטגוריה"
                 textAlign="right"
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>אייקון (אמוג'י) *</Text>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+                אייקון (אמוג'י) *
+              </Text>
               <TextInput
-                style={[styles.formInput, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary
-                }]}
+                style={[
+                  styles.formInput,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.surface.primary,
+                    color: colors.text.primary,
+                  },
+                ]}
                 value={newCategory.icon}
-                onChangeText={(text) => setNewCategory({...newCategory, icon: text})}
+                onChangeText={(text) =>
+                  setNewCategory({ ...newCategory, icon: text })
+                }
                 placeholder="הכנס אמוג'י (למשל: 📱)"
                 textAlign="center"
               />
             </View>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.saveButton, { backgroundColor: colors.gold }]}
                 onPress={saveCategory}
                 disabled={loading}
               >
                 {loading ? (
-                  <LoadingSpinner size="small" color={colors.text.inverse} style={styles.buttonSpinner} />
+                  <LoadingSpinner
+                    size="small"
+                    color={colors.text.inverse}
+                    style={styles.buttonSpinner}
+                  />
                 ) : (
                   <>
                     <Save size={20} color={colors.text.inverse} />
-                    <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>שמור קטגוריה</Text>
+                    <Text
+                      style={[
+                        styles.saveButtonText,
+                        { color: colors.text.inverse },
+                      ]}
+                    >
+                      שמור קטגוריה
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>
 
               {editingCategory && (
-                <TouchableOpacity 
-                  style={[styles.deleteButton, { backgroundColor: colors.status.error }]}
+                <TouchableOpacity
+                  style={[
+                    styles.deleteButton,
+                    { backgroundColor: colors.status.error },
+                  ]}
                   onPress={() => deleteCategory(editingCategory.id)}
                   disabled={loading}
                 >
                   <Trash2 size={20} color={colors.text.inverse} />
-                  <Text style={[styles.deleteButtonText, { color: colors.text.inverse }]}>מחק קטגוריה</Text>
+                  <Text
+                    style={[
+                      styles.deleteButtonText,
+                      { color: colors.text.inverse },
+                    ]}
+                  >
+                    מחק קטגוריה
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -356,7 +422,7 @@ export default function CategoriesScreen() {
         title={infoModal.title}
         message={infoModal.message}
         type={infoModal.type}
-        onClose={() => setInfoModal({...infoModal, visible: false})}
+        onClose={() => setInfoModal({ ...infoModal, visible: false })}
       />
     </SafeAreaView>
   );
