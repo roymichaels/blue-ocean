@@ -956,6 +956,9 @@ class DatabaseService {
       };
 
       delete dbBanner.isActive;
+      delete dbBanner.discount;
+      delete dbBanner.discount_en;
+      delete dbBanner.discount_he;
 
       const { data, error } = await supabase
         .from('hero_banners')
@@ -988,6 +991,9 @@ class DatabaseService {
 
       delete dbBanner.isActive;
       delete dbBanner.updatedAt;
+      delete dbBanner.discount;
+      delete dbBanner.discount_en;
+      delete dbBanner.discount_he;
 
       const { error } = await supabase
         .from('hero_banners')

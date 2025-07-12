@@ -83,7 +83,6 @@ export default function BannerFormModal({
       setEditingBanner({
         title: '',
         subtitle: '',
-        discount: '',
         category: '',
         isActive: true,
         order: 1,
@@ -98,12 +97,7 @@ export default function BannerFormModal({
   };
 
   const saveBanner = async () => {
-    if (
-      !editingBanner.title ||
-      !editingBanner.subtitle ||
-      !editingBanner.discount ||
-      !editingBanner.category
-    ) {
+    if (!editingBanner.category) {
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -270,28 +264,6 @@ export default function BannerFormModal({
               />
             </View>
 
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-                הנחה *
-              </Text>
-              <TextInput
-                style={[
-                  styles.formInput,
-                  {
-                    borderColor: colors.border.primary,
-                    backgroundColor: colors.surface.primary,
-                    color: colors.text.primary,
-                  },
-                ]}
-                value={editingBanner.discount}
-                onChangeText={(text) =>
-                  setEditingBanner({ ...editingBanner, discount: text })
-                }
-                placeholder="למשל: 50% או חדש"
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>

@@ -153,7 +153,7 @@ export interface HeroBanner {
   subtitle_en?: string;
   subtitle_he?: string;
   image: string;
-  discount: string;
+  discount?: string;
   discount_en?: string;
   discount_he?: string;
   category: string;
