@@ -9,7 +9,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, Plus, Pencil, DollarSign, Percent, Package, Users } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Plus,
+  Pencil,
+  DollarSign,
+  Percent,
+  Package,
+} from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -19,21 +26,20 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import PricingTierFormModal from '../../components/PricingTierFormModal';
 
-
-
 export default function PricingTiersScreen() {
+  const { isAdmin, isDriver } = useAuth();
+  const { colors } = useTheme();
+  const { currencySymbol } = useCurrency();
+
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTierModal, setShowTierModal] = useState(false);
   const [editingTier, setEditingTier] = useState<PricingTier | null>(null);
-  const { colors } = useTheme();
-  const { currencySymbol } = useCurrency();
-
   const [infoModal, setInfoModal] = useState({
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
 
   useEffect(() => {
@@ -41,7 +47,6 @@ export default function PricingTiersScreen() {
       router.replace('/');
       return;
     }
-    
     loadPricingTiers();
   }, [isAdmin, isDriver]);
 
@@ -57,14 +62,13 @@ export default function PricingTiersScreen() {
         visible: true,
         title: 'שגיאה',
         message: 'טעינת מדרגי המחירים נכשלה',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const addTier = () => {
   const addTier = () => {
     setEditingTier(null);
     setShowTierModal(true);
@@ -75,36 +79,47 @@ export default function PricingTiersScreen() {
     setShowTierModal(true);
   };
 
-
   const renderTierCard = (tier: PricingTier) => (
     <TouchableOpacity
       key={tier.id}
-      style={[styles.tierCard, { 
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary 
-      }]}
+      style={[
+        styles.tierCard,
+        {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+        },
+      ]}
       onPress={() => editTier(tier)}
     >
       <View style={styles.tierHeader}>
-        <View style={[styles.tierIcon, {
-          backgroundColor: colors.interactive.secondary,
-          borderColor: colors.gold
-        }]}>
-          {typeof (tier.rules?.[0]?.pricePerBaseUnit) === 'number' ? (
+        <View
+          style={[
+            styles.tierIcon,
+            {
+              backgroundColor: colors.interactive.secondary,
+              borderColor: colors.gold,
+            },
+          ]}
+        >
+          {typeof tier.rules?.[0]?.pricePerBaseUnit === 'number' ? (
             <DollarSign size={24} color={colors.gold} />
           ) : (
             <Percent size={24} color={colors.gold} />
           )}
         </View>
         <View style={styles.tierInfo}>
-          <Text style={[styles.tierName, { color: colors.text.primary }]}>{tier.name}</Text>
+          <Text style={[styles.tierName, { color: colors.text.primary }]}>
+            {tier.name}
+          </Text>
           <Text style={[styles.tierDiscount, { color: colors.gold }]}>
-            {typeof (tier.rules?.[0]?.pricePerBaseUnit) === 'number'
-              ? `${currencySymbol}${tier.rules![0].pricePerBaseUnit!.toFixed(2)} ליחידה`
+            {typeof tier.rules?.[0]?.pricePerBaseUnit === 'number'
+              ? `${currencySymbol}${tier.rules![0].pricePerBaseUnit!.toFixed(
+                  2
+                )} ליחידה`
               : 'מחיר רגיל'}
           </Text>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.editButton}
           onPress={(e) => {
             e.stopPropagation();
@@ -114,15 +129,24 @@ export default function PricingTiersScreen() {
           <Pencil size={16} color={colors.gold} />
         </TouchableOpacity>
       </View>
-      
-      <View style={[styles.tierDetails, { borderTopColor: colors.border.secondary }]}>
+
+      <View
+        style={[
+          styles.tierDetails,
+          { borderTopColor: colors.border.secondary },
+        ]}
+      >
         <View style={styles.tierDetailItem}>
           <Package size={16} color={colors.text.secondary} />
-          <Text style={[styles.tierDetailText, { color: colors.text.secondary }]}>
+          <Text
+            style={[styles.tierDetailText, { color: colors.text.secondary }]}
+          >
             מינימום {tier.rules?.[0]?.minQty ?? 1} יחידות
           </Text>
         </View>
-        <Text style={[styles.tierDescription, { color: colors.text.secondary }]}>
+        <Text
+          style={[styles.tierDescription, { color: colors.text.secondary }]}
+        >
           {tier.description}
         </Text>
       </View>
@@ -131,48 +155,69 @@ export default function PricingTiersScreen() {
 
   if (loading && pricingTiers.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <View
+          style={[styles.header, { borderBottomColor: colors.border.primary }]}
+        >
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>מדרגי מחירים</Text>
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+            מדרגי מחירים
+          </Text>
           <View style={styles.headerActions}>
-            <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={addTier}>
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: colors.gold }]}
+              onPress={addTier}
+            >
               <Plus size={20} color={colors.text.inverse} />
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <LoadingSpinner />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <View
+        style={[styles.header, { borderBottomColor: colors.border.primary }]}
+      >
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>מדרגי מחירים</Text>
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+          מדרגי מחירים
+        </Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={addTier}>
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: colors.gold }]}
+            onPress={addTier}
+          >
             <Plus size={20} color={colors.text.inverse} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.tiersContainer}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.infoBox}>
-          <Text style={[styles.infoTitle, { color: colors.text.primary }]}>מדרגי מחירים</Text>
+          <Text style={[styles.infoTitle, { color: colors.text.primary }]}>
+            מדרגי מחירים
+          </Text>
           <Text style={[styles.infoText, { color: colors.text.secondary }]}>
-            מדרגי מחירים מאפשרים לך להגדיר מחירים שונים לפי כמות הפריטים שנרכשים. 
-            לדוגמה, אתה יכול להגדיר מחיר מיוחד של 8₪ ליחידה עבור רכישה של 5 פריטים ומעלה.
+            מדרגי מחירים מאפשרים לך להגדיר מחירים שונים לפי כמות הפריטים
+            שנרכשים. לדוגמה, אתה יכול להגדיר מחיר מיוחד של 8₪ ליחידה עבור רכישה
+            של 5 פריטים ומעלה.
           </Text>
         </View>
 
@@ -183,13 +228,22 @@ export default function PricingTiersScreen() {
         ) : (
           <View style={styles.emptyContainer}>
             <DollarSign size={80} color={colors.interactive.disabled} />
-            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין מדרגי מחירים</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+              אין מדרגי מחירים
+            </Text>
             <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
               הוסף מדרגי מחירים כדי להגדיר מחירים שונים לפי כמות
             </Text>
-            <TouchableOpacity style={[styles.emptyButton, { backgroundColor: colors.gold }]} onPress={addTier}>
+            <TouchableOpacity
+              style={[styles.emptyButton, { backgroundColor: colors.gold }]}
+              onPress={addTier}
+            >
               <Plus size={20} color={colors.text.inverse} />
-              <Text style={[styles.emptyButtonText, { color: colors.text.inverse }]}>הוסף מדרג מחירים</Text>
+              <Text
+                style={[styles.emptyButtonText, { color: colors.text.inverse }]}
+              >
+                הוסף מדרג מחירים
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -215,9 +269,7 @@ export default function PricingTiersScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -226,14 +278,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  headerActions: {
-    width: 40,
-    alignItems: 'flex-end',
-  },
+  headerTitle: { fontSize: 18, fontWeight: 'bold' },
+  headerActions: { width: 40, alignItems: 'flex-end' },
   addButton: {
     borderRadius: 20,
     width: 40,
@@ -241,30 +287,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scrollContainer: {
-    flex: 1,
-  },
-  tiersContainer: {
-    padding: 16,
-    minHeight: '100%',
-  },
-  infoBox: {
-    marginBottom: 24,
-  },
+  scrollContainer: { flex: 1 },
+  tiersContainer: { padding: 16, minHeight: '100%' },
+  infoBox: { marginBottom: 24 },
   infoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
     textAlign: 'right',
   },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'right',
-  },
-  tiersGrid: {
-    gap: 16,
-  },
+  infoText: { fontSize: 14, lineHeight: 20, textAlign: 'right' },
+  tiersGrid: { gap: 16 },
   tierCard: {
     borderRadius: 12,
     padding: 16,
@@ -272,26 +305,15 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
       },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
-      }
+      android: { elevation: 2 },
+      web: { boxShadow: '0px 2px 4px rgba(0,0,0,0.1)' },
     }),
   },
-  tierHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
+  tierHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   tierIcon: {
     width: 48,
     height: 48,
@@ -301,42 +323,24 @@ const styles = StyleSheet.create({
     marginRight: 12,
     borderWidth: 1,
   },
-  tierInfo: {
-    flex: 1,
-  },
+  tierInfo: { flex: 1 },
   tierName: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
     textAlign: 'right',
   },
-  tierDiscount: {
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'right',
-  },
-  editButton: {
-    padding: 8,
-  },
-  tierDetails: {
-    borderTopWidth: 1,
-    paddingTop: 12,
-  },
+  tierDiscount: { fontSize: 14, fontWeight: '600', textAlign: 'right' },
+  editButton: { padding: 8 },
+  tierDetails: { borderTopWidth: 1, paddingTop: 12 },
   tierDetailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
     justifyContent: 'flex-end',
   },
-  tierDetailText: {
-    fontSize: 14,
-    marginRight: 8,
-  },
-  tierDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'right',
-  },
+  tierDetailText: { fontSize: 14, marginRight: 8 },
+  tierDescription: { fontSize: 14, lineHeight: 20, textAlign: 'right' },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -349,11 +353,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
   },
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
+  emptyText: { fontSize: 16, textAlign: 'center', marginBottom: 24 },
   emptyButton: {
     borderRadius: 25,
     paddingHorizontal: 24,
@@ -361,9 +361,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  emptyButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
+  emptyButtonText: { fontSize: 16, fontWeight: '600', marginLeft: 8 },
 });
