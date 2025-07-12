@@ -1,6 +1,7 @@
 
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 import DatabaseService from '../services/database';
 
 interface AppInfoContextType {
@@ -36,6 +37,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   const [platformName, setPlatformNameState] = useState('');
   const [platformLogo, setPlatformLogoState] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
+  const reloadTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadInfo();
@@ -71,14 +73,26 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     }
   };
 
+  const scheduleLoadInfo = () => {
+    if (reloadTimeout.current) {
+      clearTimeout(reloadTimeout.current);
+    }
+    reloadTimeout.current = setTimeout(() => {
+      loadInfo();
+    }, 300);
+  };
+
   const setPlatformName = async (name: string) => {
+    setPlatformNameState(name);
+    await AsyncStorage.setItem(NAME_KEY, name);
+    const db = DatabaseService.getInstance();
     try {
-      setPlatformNameState(name);
-      await AsyncStorage.setItem(NAME_KEY, name);
-      const db = DatabaseService.getInstance();
       await db.updateSetting('platform_name', name);
+      scheduleLoadInfo();
     } catch (e) {
+      Alert.alert('שגיאה', 'שמירת שם הפלטפורמה נכשלה');
       console.error('Error setting platform name:', e);
+      throw e;
     }
   };
 
@@ -88,6 +102,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await AsyncStorage.setItem(LOGO_KEY, logo);
       const db = DatabaseService.getInstance();
       await db.updateSetting('platform_logo', logo);
+      scheduleLoadInfo();
     } catch (e) {
       console.error('Error setting platform logo:', e);
     }
@@ -99,6 +114,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await AsyncStorage.setItem(COLOR_KEY, color);
       const db = DatabaseService.getInstance();
       await db.updateSetting('theme_color', color);
+      scheduleLoadInfo();
     } catch (e) {
       console.error('Error setting theme color:', e);
     }
