@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -39,6 +39,7 @@ export default function MediaUploader({
   style
 }: MediaUploaderProps) {
   const [uploading, setUploading] = useState(false);
+  const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const { colors } = useTheme();
 
   const requestPermissions = async () => {
@@ -60,25 +61,41 @@ export default function MediaUploader({
     setUploading(true);
     try {
       const mediaService = MediaService.getInstance();
-      const newMediaItems: MediaItem[] = [];
+      let currentMedia = [...media];
 
       for (const asset of pickerResult.assets) {
+        if (currentMedia.length >= maxFiles) break;
+
+        const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+        const placeholder: MediaItem = {
+          id,
+          uri: asset.uri,
+          type: asset.type === 'video' ? 'video' : 'image',
+          name: asset.fileName || `media_${Date.now()}`,
+        };
+
+        currentMedia = [...currentMedia, placeholder];
+        onMediaChange(currentMedia);
+        setProgressMap((p) => ({ ...p, [id]: 0 }));
+
         const uploadedUri = await mediaService.uploadMedia(
           asset.uri,
-          asset.fileName || `media_${Date.now()}`
+          asset.fileName || `media_${Date.now()}`,
+          (percent) => {
+            setProgressMap((p) => ({ ...p, [id]: percent }));
+          }
         );
 
-        newMediaItems.push({
-          id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-          uri: uploadedUri,
-          type: asset.type === 'video' ? 'video' : 'image',
-          name: asset.fileName || `media_${Date.now()}`
+        currentMedia = currentMedia.map((item) =>
+          item.id === id ? { ...item, uri: uploadedUri } : item
+        );
+        onMediaChange(currentMedia);
+
+        setProgressMap((p) => {
+          const { [id]: _removed, ...rest } = p;
+          return rest;
         });
       }
-
-      // Make sure we don't exceed maxFiles
-      const combinedMedia = [...media, ...newMediaItems].slice(0, maxFiles);
-      onMediaChange(combinedMedia);
     } catch (error) {
       console.error('Error handling upload:', error);
       Alert.alert('Error', 'Failed to upload media. Please try again.');
@@ -144,9 +161,9 @@ export default function MediaUploader({
 
   const renderMediaItem = (item: MediaItem, index: number) => (
     <View key={item.id} style={styles.mediaItem}>
-      <View style={[styles.mediaContainer, { 
+      <View style={[styles.mediaContainer, {
         backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary 
+        borderColor: colors.border.primary
       }]}>
         {item.type === 'video' ? (
           <View style={styles.videoContainer}>
@@ -169,6 +186,17 @@ export default function MediaUploader({
           <X size={16} color={colors.text.inverse} />
         </TouchableOpacity>
         
+        {progressMap[item.id] !== undefined && (
+          <View style={styles.progressWrapper}>
+            <View
+              style={[
+                styles.progressBar,
+                { width: `${progressMap[item.id]}%`, backgroundColor: colors.gold },
+              ]}
+            />
+          </View>
+        )}
+
         {index === 0 && (
           <View style={[styles.primaryBadge, { backgroundColor: colors.gold }]}>
             <Text style={[styles.primaryBadgeText, { color: colors.text.inverse }]}>Primary</Text>
@@ -301,6 +329,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  progressWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  progressBar: {
+    height: '100%',
   },
   primaryBadge: {
     position: 'absolute',

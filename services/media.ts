@@ -14,11 +14,16 @@ class MediaService {
 
   /**
    * Upload media to Pinata IPFS
+   * @param onProgress - Optional progress callback (0-100)
    */
-  async uploadMedia(uri: string, name: string): Promise<string> {
+  async uploadMedia(
+    uri: string,
+    name: string,
+    onProgress?: (percent: number) => void
+  ): Promise<string> {
     try {
       const pinataService = PinataService.getInstance();
-      return await pinataService.uploadFile(uri, name);
+      return await pinataService.uploadFile(uri, name, onProgress);
     } catch (error) {
       console.error('Error uploading media:', error);
       // Return the original URI as fallback

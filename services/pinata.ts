@@ -25,9 +25,14 @@ class PinataService {
    * Upload a file to Pinata IPFS
    * @param uri - The local URI of the file to upload
    * @param name - The name of the file
+   * @param onProgress - Optional progress callback (0-100)
    * @returns The IPFS URL of the uploaded file
    */
-  public async uploadFile(uri: string, name: string): Promise<string> {
+  public async uploadFile(
+    uri: string,
+    name: string,
+    onProgress?: (percent: number) => void
+  ): Promise<string> {
     try {
       // Check if the URI is already an IPFS or HTTP URL
       if (
@@ -99,8 +104,17 @@ class PinataService {
         formData,
         {
           headers,
+          onUploadProgress: (event) => {
+            if (event.total) {
+              const percent = Math.round((event.loaded * 100) / event.total);
+              onProgress?.(percent);
+            }
+          },
         }
       );
+
+      // ensure progress 100 after completion
+      onProgress?.(100);
 
       // Return the IPFS URL
       const ipfsHash = response.data.IpfsHash;
