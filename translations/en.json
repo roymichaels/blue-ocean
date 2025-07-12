@@ -230,7 +230,7 @@
     "english": "English",
     "hebrew": "Hebrew",
     "version": "Version 1.0.0",
-    "copyright": "© 2024 Zionist Congress",
+    "copyright": "© 2024 Underground Apps",
     "comingSoon": "Coming Soon",
     "featureComingSoon": "This feature will be available soon",
     "kycVerification": "KYC Verification"
@@ -280,7 +280,7 @@
   },
   "ageVerification": {
     "ageVerification": "Age Verification",
-    "platformName": "Zionist Congress",
+    "platformName": "",
     "platformSubtitle": "Advanced Digital Platform",
     "verificationRequired": "To continue, you must confirm that you are 18 or older",
     "adultContentWarning": "⚠️ This content is for adults only",
