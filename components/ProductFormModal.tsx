@@ -359,9 +359,20 @@ export default function ProductFormModal({
             </View>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.gold }]} onPress={saveProduct} disabled={loading}>
+              <TouchableOpacity
+                style={[styles.saveButton, { backgroundColor: colors.gold }]}
+                onPress={saveProduct}
+                disabled={loading}
+              >
                 {loading ? (
-                  <ActivityIndicator size="small" color={colors.text.inverse} />
+                  <>
+                    <ActivityIndicator
+                      size="small"
+                      color={colors.text.inverse}
+                      style={styles.buttonSpinner}
+                    />
+                    <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>מפרסם...</Text>
+                  </>
                 ) : (
                   <>
                     <Save size={20} color={colors.text.inverse} />
@@ -523,6 +534,7 @@ const styles = StyleSheet.create({
   modalActions: { gap: 16, marginTop: 20, marginBottom: 40 },
   saveButton: { borderRadius: 12, paddingVertical: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   saveButtonText: { fontSize: 16, fontWeight: '600', marginLeft: 8 },
+  buttonSpinner: { marginRight: 8 },
   deleteButton: { borderRadius: 12, paddingVertical: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   deleteButtonText: { fontSize: 16, fontWeight: '600', marginLeft: 8 },
   helperText: { fontSize: 12, marginTop: 4, textAlign: 'right' },

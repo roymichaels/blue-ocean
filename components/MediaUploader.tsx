@@ -230,6 +230,9 @@ export default function MediaUploader({
                 { width: `${progressMap[item.id]}%`, backgroundColor: colors.gold },
               ]}
             />
+            <Text style={[styles.progressText, { color: colors.text.inverse }]}>
+              {progressMap[item.id]}%
+            </Text>
           </View>
         )}
 
@@ -373,9 +376,16 @@ const styles = StyleSheet.create({
     right: 0,
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   progressBar: {
     height: '100%',
+  },
+  progressText: {
+    position: 'absolute',
+    fontSize: 10,
+    fontWeight: '600',
   },
   primaryBadge: {
     position: 'absolute',
