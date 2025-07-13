@@ -22,7 +22,9 @@ interface ProductCardProps {
   isAdmin?: boolean;
   onEdit?: (product: Product) => void;
   onDelete?: (productId: string) => void;
-  categoryName?: string;
+
+  subcategoryName?: string;
+
   style?: any;
 }
 
@@ -31,7 +33,9 @@ export default function ProductCard({
   isAdmin = false,
   onEdit,
   onDelete,
-  categoryName,
+
+  subcategoryName,
+
   style
 }: ProductCardProps) {
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -235,11 +239,13 @@ export default function ProductCard({
           )}
         </View>
 
-        {/* Category */}
-        {categoryName && (
+
+        {/* Subcategory */}
+        {subcategoryName && (
           <View style={styles.tieredPricingContainer}>
             <Tag size={12} color={colors.status.info} />
-            <Text style={[styles.tieredPricingText, { color: colors.status.info }]}> {categoryName} </Text>
+            <Text style={[styles.tieredPricingText, { color: colors.status.info }]}> {subcategoryName} </Text>
+
           </View>
         )}
 
