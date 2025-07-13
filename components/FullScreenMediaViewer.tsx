@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Dimensions,
   Modal,
   Text,
@@ -176,25 +177,28 @@ export default function FullScreenMediaViewer({
     <Modal
       visible={visible}
       animationType="fade"
-      transparent={false}
+      transparent={true}
       onRequestClose={onClose}
     >
-      <SafeAreaView style={[styles.container, { backgroundColor: '#000000' }]}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
+            <SafeAreaView style={[styles.container, { backgroundColor: '#000000' }]}>
+              <TouchableOpacity style={styles.exitButton} onPress={onClose}>
+                <X size={24} color={colors.text.inverse} />
+              </TouchableOpacity>
         <StatusBar hidden={!controlsVisible} />
         
         {/* Controls Overlay */}
         {controlsVisible && (
           <>
             {/* Top Controls */}
-            <Animated.View 
+            <Animated.View
               style={[
                 styles.topControls,
                 { opacity: controlsVisible ? 1 : 0 }
               ]}
             >
-              <TouchableOpacity style={styles.controlButton} onPress={onClose}>
-                <X size={24} color={colors.text.inverse} />
-              </TouchableOpacity>
               
               <View style={styles.mediaInfo}>
                 <Text style={[styles.mediaTitle, { color: colors.text.inverse }]}>
@@ -299,6 +303,9 @@ export default function FullScreenMediaViewer({
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }
@@ -418,5 +425,24 @@ const styles = StyleSheet.create({
   media: {
     width: '100%',
     height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  exitButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1001,
   },
 });
