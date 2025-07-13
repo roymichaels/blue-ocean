@@ -37,6 +37,8 @@ import CartModal from '../../components/CartModal';
 import ProductFormModal from '../../components/ProductFormModal';
 
 const { width } = Dimensions.get('window');
+const BANNER_WIDTH = width - 32;
+const BANNER_HEIGHT = (BANNER_WIDTH * 9) / 16;
 
 export default function HomeScreen() {
   const params = useLocalSearchParams<{ showCart?: string }>();
@@ -245,7 +247,11 @@ export default function HomeScreen() {
         style={styles.bannerTouchable}
         onPress={() => router.push(`/category/${item.category}`)}
       >
-        <Image source={{ uri: item.image }} style={styles.heroImage} />
+        <Image
+          source={{ uri: item.image }}
+          style={styles.heroImage}
+          resizeMode="cover"
+        />
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>
             {item.discount ? (
@@ -637,7 +643,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bannerContainer: {
-    height: 220,
+    height: BANNER_HEIGHT + 40,
     marginBottom: 24,
   },
   bannerHeader: {
@@ -662,8 +668,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   heroBanner: {
-    width: width - 32,
-    height: 180,
+    width: BANNER_WIDTH,
+    height: BANNER_HEIGHT,
     marginRight: 16,
     borderRadius: 16,
     overflow: 'hidden',
