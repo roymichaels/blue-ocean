@@ -29,7 +29,7 @@ import {
 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import CartService from '../../services/cart';
-import { Product, Category, PricingTier, HeroBanner } from '../../types';
+import { Product, Category, PricingTier } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -65,7 +65,6 @@ export default function ProductDetailScreen() {
   const { isAdmin } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const [categoryBanner, setCategoryBanner] = useState<HeroBanner | null>(null);
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
 
   // Modal states
@@ -96,21 +95,6 @@ export default function ProductDetailScreen() {
     }
   }, [product]);
 
-  useEffect(() => {
-    const fetchBanner = async () => {
-      if (!product) return;
-      try {
-        const db = DatabaseService.getInstance();
-        const banners = await db.getHeroBanners();
-        const matched = banners.find((b) => b.category === product.category);
-        setCategoryBanner(matched || null);
-      } catch (error) {
-        console.error('Error loading hero banner:', error);
-      }
-    };
-
-    fetchBanner();
-  }, [product]);
 
   useEffect(() => {
     const loadThumbs = async () => {
@@ -333,8 +317,7 @@ export default function ProductDetailScreen() {
   }
 
   const allMedia = getAllMedia();
-  const bannerImageUri =
-    categoryBanner?.image ||
+  const mainImageUri =
     product.images?.[0] ||
     videoThumbnails['video_0'];
   const currentPricingTier = pricingTiers.find(
@@ -403,8 +386,29 @@ export default function ProductDetailScreen() {
           </View>
         </View>
 
+        {/* Main Product Image */}
+        <TouchableOpacity
+          style={styles.coverImageContainer}
+          onPress={() => openMediaViewer(0)}
+        >
+          {mainImageUri ? (
+            <Image
+              source={{ uri: mainImageUri }}
+              style={styles.coverImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.noImageContainer}>
+              <ImageIcon size={64} color={colors.text.secondary} />
+              <Text style={[styles.noImageText, { color: colors.text.secondary }]}>
+                אין תמונה
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
         {/* ——— Product Media Carousel ——— */}
-        {allMedia.length > 0 && (
+        {allMedia.length > 1 && (
           <View style={styles.galleryContainer}>
             <ScrollView
               horizontal
@@ -820,54 +824,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  heroBanner: {
-    width: '100%',
-    height: 180,
-    marginBottom: 16,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-  },
-  heroOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(14, 13, 10, 0.4)',
-    justifyContent: 'center',
-  },
-  heroContent: {
-    paddingHorizontal: 20,
-    alignItems: 'flex-end',
-  },
-  heroDiscount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    textAlign: 'right',
-  },
-  heroSubtitle: {
-    fontSize: 16,
-    marginBottom: 16,
-    textAlign: 'right',
-  },
   coverImageContainer: {
     width: '100%',
-    height: 300,
+    maxWidth: 540,
+    alignSelf: 'center',
+    aspectRatio: 1,
+    marginBottom: 16,
   },
   coverImage: {
     width: '100%',
