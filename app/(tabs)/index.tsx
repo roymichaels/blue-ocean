@@ -503,10 +503,12 @@ export default function HomeScreen() {
                     product={item}
                     isAdmin={isAdmin}
                     onEdit={editProduct}
+
                     subcategoryName={
                       categories
                         .flatMap((c) => c.subcategories || [])
                         .find((s) => s.id === item.subcategory)?.name
+
                     }
                   />
                 </View>
