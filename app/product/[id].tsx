@@ -276,10 +276,25 @@ export default function ProductDetailScreen() {
   const getEffectivePrice = (basePrice: number, quantity: number): number => {
     if (!product?.pricingTier) return basePrice;
 
-    const tier = pricingTiers.find((t) => t.id === product.pricingTier);
+    const tier = pricingTiers.find(t => t.id === product.pricingTier);
     if (!tier) return basePrice;
 
-    // If quantity meets minimum requirement and tier has a price per unit
+    // Prefer tier rules if present
+    if (tier.rules && tier.rules.length > 0) {
+      const matched = tier.rules.find(
+        r => quantity >= r.minQty && quantity <= r.maxQty,
+      );
+      if (matched) {
+        if (typeof matched.pricePerBaseUnit === 'number') {
+          return matched.pricePerBaseUnit;
+        }
+        if (typeof matched.discountPct === 'number') {
+          return basePrice * (1 - matched.discountPct / 100);
+        }
+      }
+    }
+
+    // Fallback to legacy single-tier fields
     if (quantity >= tier.minQuantity && typeof tier.pricePerUnit === 'number') {
       return tier.pricePerUnit;
     }
@@ -321,13 +336,10 @@ export default function ProductDetailScreen() {
     product.images?.[0] ||
     videoThumbnails['video_0'];
   const currentPricingTier = pricingTiers.find(
-    (tier) => tier.id === product.pricingTier
+    tier => tier.id === product.pricingTier,
   );
   const effectivePrice = getEffectivePrice(product.price, quantity);
-  const showTieredPricing =
-    currentPricingTier &&
-    typeof currentPricingTier.pricePerUnit === 'number' &&
-    quantity >= currentPricingTier.minQuantity;
+  const showTieredPricing = effectivePrice !== product.price;
 
   return (
     <SafeAreaView
