@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 
 type InfoType = 'success' | 'error' | 'info' | 'warning';
@@ -30,12 +31,14 @@ export default function InfoModal({
   title,
   message,
   type = 'info',
-  buttonText = 'אישור',
+  buttonText,
   onClose,
   autoClose = true,
   autoCloseTime = 3000,
 }: InfoModalProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
+  const buttonLabel = buttonText ?? t('common.confirm');
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -135,8 +138,8 @@ export default function InfoModal({
                 style={[styles.button, { backgroundColor: color }]}
                 onPress={onClose}
               >
-                <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
-                  {buttonText}
+                <Text style={[styles.buttonText, { color: colors.text.inverse }]}> 
+                  {buttonLabel}
                 </Text>
               </TouchableOpacity>
             </Animated.View>

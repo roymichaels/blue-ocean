@@ -55,6 +55,13 @@
     "creatingAccount": "יוצר חשבון...",
     "adminNote": "מנהל נוכחי: roymichaels",
     "adminInfo": "מנהלים יכולים להתחבר עם אותם פרטים",
+    "adminOnly": "רק מנהלים יכולים להתחבר",
+    "usernamePlaceholder": "הכנס שם משתמש",
+    "passwordPlaceholder": "הכנס סיסמה",
+    "fullName": "שם מלא",
+    "fullNamePlaceholder": "הכנס את שמך המלא",
+    "createPasswordPlaceholder": "צור סיסמה",
+    "confirmPasswordPlaceholder": "אשר את הסיסמה",
     "logoutConfirm": "האם אתה בטוח שברצונך להתנתק?"
   },
   "home": {
@@ -225,6 +232,7 @@
     "deliveries": "משלוחים",
     "manageCategories": "ניהול קטגוריות",
     "darkMode": "מצב לילה",
+    "lightMode": "מצב בהיר",
     "pushNotifications": "התראות פוש",
     "language": "שפה",
     "english": "English",

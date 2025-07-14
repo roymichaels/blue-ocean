@@ -38,8 +38,8 @@ export default function AuthLoginScreen() {
     if (!username || !password) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אנא הכנס שם משתמש וסיסמה',
+        title: t('common.error'),
+        message: t('auth.fillAllFields'),
         type: 'error'
       });
       return;
@@ -54,8 +54,8 @@ export default function AuthLoginScreen() {
       } else {
         setInfoModal({
           visible: true,
-          title: 'שגיאה',
-          message: 'פרטי התחברות שגויים או אין לך הרשאות מנהל. רק מנהלים יכולים להתחבר.',
+          title: t('common.error'),
+          message: t('auth.adminOnly'),
           type: 'error'
         });
       }
@@ -63,8 +63,8 @@ export default function AuthLoginScreen() {
       console.error('Login error:', error);
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'ההתחברות נכשלה. אנא נסה שוב.',
+        title: t('common.error'),
+        message: t('auth.loginError'),
         type: 'error'
       });
     } finally {
@@ -82,7 +82,7 @@ export default function AuthLoginScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>התחברות</Text>
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{t('auth.login')}</Text>
           <View style={{ width: 24 }} />
         </View>
 
@@ -95,21 +95,21 @@ export default function AuthLoginScreen() {
             <Lock size={60} color={colors.gold} />
           </View>
           
-          <Text style={[styles.title, { color: colors.text.primary }]}>ברוכים השבים</Text>
-          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-            התחבר לחשבון שלך
+          <Text style={[styles.title, { color: colors.text.primary }]}>{t('auth.welcomeBack')}</Text>
+          <Text style={[styles.subtitle, { color: colors.text.secondary }]}> 
+            {t('auth.loginSubtitle')} 
           </Text>
           
           <View style={styles.adminNote}>
             <Shield size={16} color={colors.gold} />
             <Text style={[styles.adminNoteText, { color: colors.text.secondary }]}>
-              רק מנהלים יכולים להתחבר למערכת
+              {t('auth.adminInfo')}
             </Text>
           </View>
 
           <View style={styles.form}>
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>שם משתמש</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>{t('auth.username')}</Text>
             <TextInput
               style={[styles.input, {
                 borderColor: colors.border.primary,
@@ -118,7 +118,7 @@ export default function AuthLoginScreen() {
               }]}
               value={username}
               onChangeText={setUsername}
-              placeholder="הכנס שם משתמש"
+              placeholder={t('auth.usernamePlaceholder')}
               autoCapitalize="none"
               autoCorrect={false}
               textAlign="right"
@@ -127,7 +127,7 @@ export default function AuthLoginScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text.primary }]}>סיסמה</Text>
+              <Text style={[styles.label, { color: colors.text.primary }]}>{t('auth.password')}</Text>
               <TextInput
                 style={[styles.input, { 
                   borderColor: colors.border.primary,
@@ -136,7 +136,7 @@ export default function AuthLoginScreen() {
                 }]}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="הכנס סיסמה"
+                placeholder={t('auth.passwordPlaceholder')}
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -158,7 +158,7 @@ export default function AuthLoginScreen() {
                 <ActivityIndicator size="small" color={colors.text.inverse} />
               ) : (
                 <Text style={[styles.loginButtonText, { color: colors.text.inverse }]}>
-                  התחבר
+                  {t('auth.login')}
                 </Text>
               )}
             </TouchableOpacity>
@@ -166,12 +166,12 @@ export default function AuthLoginScreen() {
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.text.secondary }]}>
-              אין לך חשבון?{' '}
-              <Text 
-                style={[styles.linkText, { color: colors.gold }]} 
+              {t('auth.noAccount')} {' '}
+              <Text
+                style={[styles.linkText, { color: colors.gold }]}
                 onPress={() => router.push('/auth/signup')}
               >
-                הירשם
+                {t('auth.signup')}
               </Text>
             </Text>
           </View>
