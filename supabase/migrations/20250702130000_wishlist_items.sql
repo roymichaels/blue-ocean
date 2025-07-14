@@ -25,26 +25,35 @@ ALTER TABLE wishlist_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their wishlist"
   ON wishlist_items FOR SELECT TO public
   USING (
-    (SELECT auth.uid()) IS NOT NULL AND
-    user_id = (SELECT auth.uid())::text
+    (
+      (SELECT auth.uid()) IS NOT NULL AND
+      user_id = (SELECT auth.uid())::text
+    )
+    OR is_admin()
   );
 
 CREATE POLICY "Users can add to wishlist"
   ON wishlist_items FOR INSERT TO public
   WITH CHECK (
-    (SELECT auth.uid()) IS NOT NULL AND
-    user_id = (SELECT auth.uid())::text
+    (
+      (SELECT auth.uid()) IS NOT NULL AND
+      user_id = (SELECT auth.uid())::text
+    )
+    OR is_admin()
   );
 
 CREATE POLICY "Users can remove from wishlist"
   ON wishlist_items FOR DELETE TO public
   USING (
-    (SELECT auth.uid()) IS NOT NULL AND
-    user_id = (SELECT auth.uid())::text
+    (
+      (SELECT auth.uid()) IS NOT NULL AND
+      user_id = (SELECT auth.uid())::text
+    )
+    OR is_admin()
   );
 
-CREATE POLICY "Admin manage wishlist"
-  ON wishlist_items FOR ALL TO public
+CREATE POLICY "Admin update wishlist"
+  ON wishlist_items FOR UPDATE TO public
   USING (is_admin());
 
 CREATE INDEX idx_wishlist_items_user_id ON wishlist_items(user_id);

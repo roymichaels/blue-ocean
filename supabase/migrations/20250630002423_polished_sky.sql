@@ -91,63 +91,72 @@ ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_tracking ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for orders
-CREATE POLICY "Users can view their own orders" 
-  ON orders FOR SELECT 
-  USING (user_id = (SELECT auth.uid())::text);
+CREATE POLICY "Users can view their own orders"
+  ON orders FOR SELECT
+  USING (user_id = (SELECT auth.uid())::text OR is_admin());
 
-CREATE POLICY "Users can insert their own orders" 
-  ON orders FOR INSERT 
-  WITH CHECK (user_id = (SELECT auth.uid())::text);
+CREATE POLICY "Users can insert their own orders"
+  ON orders FOR INSERT
+  WITH CHECK (user_id = (SELECT auth.uid())::text OR is_admin());
 
-CREATE POLICY "Users can update their own orders" 
-  ON orders FOR UPDATE 
-  USING (user_id = (SELECT auth.uid())::text);
+CREATE POLICY "Users can update their own orders"
+  ON orders FOR UPDATE
+  USING (user_id = (SELECT auth.uid())::text OR is_admin());
 
 -- Create policies for order_items
-CREATE POLICY "Users can view their own order items" 
-  ON order_items FOR SELECT 
-  USING (order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text));
+CREATE POLICY "Users can view their own order items"
+  ON order_items FOR SELECT
+  USING (
+    order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text)
+    OR is_admin()
+  );
 
-CREATE POLICY "Users can insert their own order items" 
-  ON order_items FOR INSERT 
-  WITH CHECK (order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text));
+CREATE POLICY "Users can insert their own order items"
+  ON order_items FOR INSERT
+  WITH CHECK (
+    order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text)
+    OR is_admin()
+  );
 
 -- Create policies for order_tracking
-CREATE POLICY "Users can view their own order tracking" 
-  ON order_tracking FOR SELECT 
-  USING (order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text));
+CREATE POLICY "Users can view their own order tracking"
+  ON order_tracking FOR SELECT
+  USING (
+    order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text)
+    OR is_admin()
+  );
 
-CREATE POLICY "System can insert order tracking" 
-  ON order_tracking FOR INSERT 
-  WITH CHECK (true);
+CREATE POLICY "System can insert order tracking"
+  ON order_tracking FOR INSERT
+  WITH CHECK (true OR is_admin());
 
-CREATE POLICY "System can update order tracking" 
-  ON order_tracking FOR UPDATE 
-  USING (true);
+CREATE POLICY "System can update order tracking"
+  ON order_tracking FOR UPDATE
+  USING (true OR is_admin());
 
 -- Admin policies (using proper PostgreSQL syntax)
-CREATE POLICY "Admins can manage all orders" 
-  ON orders FOR ALL 
+CREATE POLICY "Admins can delete orders"
+  ON orders FOR DELETE
   USING (
-    CASE 
+    CASE
       WHEN auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin' THEN true
       ELSE false
     END
   );
 
-CREATE POLICY "Admins can manage all order items" 
-  ON order_items FOR ALL 
+CREATE POLICY "Admins can delete order items"
+  ON order_items FOR DELETE
   USING (
-    CASE 
+    CASE
       WHEN auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin' THEN true
       ELSE false
     END
   );
 
-CREATE POLICY "Admins can manage all order tracking" 
-  ON order_tracking FOR ALL 
+CREATE POLICY "Admins can delete order tracking"
+  ON order_tracking FOR DELETE
   USING (
-    CASE 
+    CASE
       WHEN auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin' THEN true
       ELSE false
     END
