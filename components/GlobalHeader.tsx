@@ -54,7 +54,10 @@ export default function GlobalHeader({
     <>
       <View style={[styles.header, { backgroundColor: colors.background }]}>
         <View style={styles.headerTop}>
-          <View style={styles.logo}>
+          <TouchableOpacity
+            style={styles.logo}
+            onPress={() => router.push('/(tabs)')}
+          >
             {platformLogo ? (
               <Image
                 source={{ uri: platformLogo }}
@@ -69,7 +72,7 @@ export default function GlobalHeader({
             <Text style={[styles.logoText, { color: colors.gold }]}>
               {platformName || t('ageVerification.platformName')}
             </Text>
-          </View>
+          </TouchableOpacity>
           <View style={styles.headerIcons}>
             <TouchableOpacity
               style={[
