@@ -54,19 +54,19 @@ CREATE POLICY "Public read access for reviews"
 CREATE POLICY "Users can insert reviews" 
   ON reviews FOR INSERT 
   TO public 
-  WITH CHECK (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  WITH CHECK ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 -- Create policy for users to update their own reviews
 CREATE POLICY "Users can update their own reviews" 
   ON reviews FOR UPDATE 
   TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 -- Create policy for users to delete their own reviews
 CREATE POLICY "Users can delete their own reviews" 
   ON reviews FOR DELETE 
   TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 -- Create policy for admins to manage all reviews
 CREATE POLICY "Admin manage all reviews" 

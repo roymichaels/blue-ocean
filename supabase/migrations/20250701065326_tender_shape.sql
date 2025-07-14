@@ -29,7 +29,7 @@ CREATE POLICY "Users can insert their own profile"
   ON user_profiles
   FOR INSERT
   TO authenticated
-  WITH CHECK (matrix_user_id = (auth.uid())::text);
+  WITH CHECK (matrix_user_id = (SELECT auth.uid())::text);
 
 -- Allow users to read their own profile (both authenticated and by matrix_user_id)
 CREATE POLICY "Users can read their own profile"
@@ -37,7 +37,7 @@ CREATE POLICY "Users can read their own profile"
   FOR SELECT
   TO public
   USING (
-    (auth.uid() IS NOT NULL AND matrix_user_id = (auth.uid())::text) OR
+    ((SELECT auth.uid()) IS NOT NULL AND matrix_user_id = (SELECT auth.uid())::text) OR
     (auth.role() = 'anon')
   );
 
@@ -46,8 +46,8 @@ CREATE POLICY "Users can update their own profile"
   ON user_profiles
   FOR UPDATE
   TO authenticated
-  USING (matrix_user_id = (auth.uid())::text)
-  WITH CHECK (matrix_user_id = (auth.uid())::text);
+  USING (matrix_user_id = (SELECT auth.uid())::text)
+  WITH CHECK (matrix_user_id = (SELECT auth.uid())::text);
 
 -- Ensure admin policies remain intact
 -- (Admin policies should already exist and work correctly)

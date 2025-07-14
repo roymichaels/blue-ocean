@@ -151,17 +151,17 @@ CREATE POLICY "Public read access for reviews"
 CREATE POLICY "Users can insert reviews" 
   ON reviews FOR INSERT 
   TO public 
-  WITH CHECK (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  WITH CHECK ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Users can update their own reviews" 
   ON reviews FOR UPDATE 
   TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Users can delete their own reviews" 
   ON reviews FOR DELETE 
   TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Admin manage all reviews" 
   ON reviews FOR ALL 
@@ -175,7 +175,7 @@ DROP POLICY IF EXISTS "Public access for user_profiles" ON user_profiles;
 CREATE POLICY "Users can read their own profile" 
   ON user_profiles FOR SELECT 
   TO public 
-  USING (auth.uid() IS NOT NULL AND matrix_user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND matrix_user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Admin can read all profiles" 
   ON user_profiles FOR SELECT 
@@ -185,12 +185,12 @@ CREATE POLICY "Admin can read all profiles"
 CREATE POLICY "Users can insert their own profile" 
   ON user_profiles FOR INSERT 
   TO public 
-  WITH CHECK (auth.uid() IS NOT NULL AND matrix_user_id = auth.uid()::text);
+  WITH CHECK ((SELECT auth.uid()) IS NOT NULL AND matrix_user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Users can update their own profile" 
   ON user_profiles FOR UPDATE 
   TO public 
-  USING (auth.uid() IS NOT NULL AND matrix_user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND matrix_user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Admin can update all profiles" 
   ON user_profiles FOR UPDATE 
@@ -209,7 +209,7 @@ DROP POLICY IF EXISTS "Public access for chat_rooms" ON chat_rooms;
 CREATE POLICY "Users can read their own chat rooms" 
   ON chat_rooms FOR SELECT 
   TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Admin can read all chat rooms" 
   ON chat_rooms FOR SELECT 
@@ -219,12 +219,12 @@ CREATE POLICY "Admin can read all chat rooms"
 CREATE POLICY "Users can insert chat rooms" 
   ON chat_rooms FOR INSERT 
   TO public 
-  WITH CHECK (auth.uid() IS NOT NULL);
+  WITH CHECK ((SELECT auth.uid()) IS NOT NULL);
 
 CREATE POLICY "Users can update their own chat rooms" 
   ON chat_rooms FOR UPDATE 
   TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Admin can update all chat rooms" 
   ON chat_rooms FOR UPDATE 
@@ -244,9 +244,9 @@ CREATE POLICY "Users can read messages in their rooms"
   ON chat_messages FOR SELECT 
   TO public 
   USING (
-    auth.uid() IS NOT NULL AND 
+    (SELECT auth.uid()) IS NOT NULL AND 
     room_id IN (
-      SELECT id FROM chat_rooms WHERE user_id = auth.uid()::text
+      SELECT id FROM chat_rooms WHERE user_id = (SELECT auth.uid())::text
     )
   );
 
@@ -259,11 +259,11 @@ CREATE POLICY "Users can insert messages"
   ON chat_messages FOR INSERT 
   TO public 
   WITH CHECK (
-    auth.uid() IS NOT NULL AND 
+    (SELECT auth.uid()) IS NOT NULL AND 
     (
-      sender_id = auth.uid()::text OR
+      sender_id = (SELECT auth.uid())::text OR
       room_id IN (
-        SELECT id FROM chat_rooms WHERE user_id = auth.uid()::text
+        SELECT id FROM chat_rooms WHERE user_id = (SELECT auth.uid())::text
       )
     )
   );
@@ -272,8 +272,8 @@ CREATE POLICY "Users can update their own messages"
   ON chat_messages FOR UPDATE 
   TO public 
   USING (
-    auth.uid() IS NOT NULL AND 
-    sender_id = auth.uid()::text
+    (SELECT auth.uid()) IS NOT NULL AND 
+    sender_id = (SELECT auth.uid())::text
   );
 
 CREATE POLICY "Admin can update all messages" 
@@ -294,7 +294,7 @@ DROP POLICY IF EXISTS "Users can update their own notifications" ON notification
 CREATE POLICY "Users can read their own notifications" 
   ON notifications FOR SELECT 
   TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Admin can read all notifications" 
   ON notifications FOR SELECT 
@@ -304,7 +304,7 @@ CREATE POLICY "Admin can read all notifications"
 CREATE POLICY "Users can update their own notifications" 
   ON notifications FOR UPDATE 
   TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+  USING ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Admin can update all notifications" 
   ON notifications FOR UPDATE 
@@ -314,7 +314,7 @@ CREATE POLICY "Admin can update all notifications"
 CREATE POLICY "Admin can insert notifications" 
   ON notifications FOR INSERT 
   TO public 
-  WITH CHECK (is_admin() OR auth.uid() IS NOT NULL);
+  WITH CHECK (is_admin() OR (SELECT auth.uid()) IS NOT NULL);
 
 CREATE POLICY "Admin can delete notifications" 
   ON notifications FOR DELETE 

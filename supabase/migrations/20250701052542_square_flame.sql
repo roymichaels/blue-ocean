@@ -98,7 +98,7 @@ BEGIN
     auth.jwt() IS NOT NULL AND 
     EXISTS (
       SELECT 1 FROM user_profiles 
-      WHERE matrix_user_id = auth.uid()::text 
+      WHERE matrix_user_id = (SELECT auth.uid())::text 
       AND role = 'admin'
     )
   );

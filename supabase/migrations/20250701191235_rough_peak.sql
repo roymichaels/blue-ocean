@@ -26,8 +26,8 @@ CREATE POLICY "Users can read their own chat rooms"
   ON chat_rooms FOR SELECT 
   TO public 
   USING (
-    auth.uid() IS NOT NULL AND 
-    user_id = auth.uid()::text
+    (SELECT auth.uid()) IS NOT NULL AND 
+    user_id = (SELECT auth.uid())::text
   );
 
 CREATE POLICY "Admin can read all chat rooms" 
@@ -41,15 +41,15 @@ CREATE POLICY "Users can insert chat rooms"
   ON chat_rooms FOR INSERT 
   TO public 
   WITH CHECK (
-    auth.uid() IS NOT NULL
+    (SELECT auth.uid()) IS NOT NULL
   );
 
 CREATE POLICY "Users can update their own chat rooms" 
   ON chat_rooms FOR UPDATE 
   TO public 
   USING (
-    auth.uid() IS NOT NULL AND 
-    user_id = auth.uid()::text
+    (SELECT auth.uid()) IS NOT NULL AND 
+    user_id = (SELECT auth.uid())::text
   );
 
 CREATE POLICY "Admin can update all chat rooms" 
@@ -80,9 +80,9 @@ CREATE POLICY "Users can read messages in their rooms"
   ON chat_messages FOR SELECT 
   TO public 
   USING (
-    auth.uid() IS NOT NULL AND 
+    (SELECT auth.uid()) IS NOT NULL AND 
     room_id IN (
-      SELECT id FROM chat_rooms WHERE user_id = auth.uid()::text
+      SELECT id FROM chat_rooms WHERE user_id = (SELECT auth.uid())::text
     )
   );
 
@@ -97,15 +97,15 @@ CREATE POLICY "Users can insert messages"
   ON chat_messages FOR INSERT 
   TO public 
   WITH CHECK (
-    auth.uid() IS NOT NULL
+    (SELECT auth.uid()) IS NOT NULL
   );
 
 CREATE POLICY "Users can update their own messages" 
   ON chat_messages FOR UPDATE 
   TO public 
   USING (
-    auth.uid() IS NOT NULL AND 
-    sender_id = auth.uid()::text
+    (SELECT auth.uid()) IS NOT NULL AND 
+    sender_id = (SELECT auth.uid())::text
   );
 
 CREATE POLICY "Admin can update all messages" 
