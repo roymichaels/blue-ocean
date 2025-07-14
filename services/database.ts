@@ -1675,6 +1675,65 @@ class DatabaseService {
       return {};
     }
   }
+
+  // Tenant specific settings
+  async getTenantSetting(tenant: string, key: string): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from('tenant_settings')
+        .select(`${key}`)
+        .eq('tenant', tenant)
+        .single();
+
+      if (error) {
+        console.error(`Error fetching tenant setting ${key}:`, error);
+        return null;
+      }
+
+      return data ? (data as any)[key] || null : null;
+    } catch (error) {
+      console.error(`Error in getTenantSetting for ${key}:`, error);
+      return null;
+    }
+  }
+
+  async updateTenantSetting(
+    tenant: string,
+    key: string,
+    value: string
+  ): Promise<void> {
+    try {
+      const { data } = await supabase
+        .from('tenant_settings')
+        .select('tenant')
+        .eq('tenant', tenant)
+        .single();
+
+      if (data) {
+        const { error } = await supabase
+          .from('tenant_settings')
+          .update({ [key]: value })
+          .eq('tenant', tenant);
+
+        if (error) {
+          console.error(`Error updating tenant setting ${key}:`, error);
+          throw new Error(`Failed to update tenant setting ${key}`);
+        }
+      } else {
+        const { error } = await supabase
+          .from('tenant_settings')
+          .insert([{ tenant, [key]: value }]);
+
+        if (error) {
+          console.error(`Error inserting tenant setting ${key}:`, error);
+          throw new Error(`Failed to insert tenant setting ${key}`);
+        }
+      }
+    } catch (error) {
+      console.error(`Error in updateTenantSetting for ${key}:`, error);
+      throw error;
+    }
+  }
 }
 
 export default DatabaseService;

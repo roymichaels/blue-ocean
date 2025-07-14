@@ -43,10 +43,13 @@ The file includes a `EXPO_PUBLIC_CHAT_SECRET` variable used to derive
 encryption keys for chat messages. Set it to any random string but make sure
 the same value is used for all clients so they can decrypt messages.
 
+`EXPO_PUBLIC_TENANT` specifies which tenant's branding to load from the
+`tenant_settings` table. Example values are `thecongress` or `thebull`.
+
 ## Supabase Migrations
 
 Before running the Expo app, apply the SQL files in `supabase/migrations` so
-tables like `settings` and `price_tier_rules` are created.
+tables like `settings`, `tenant_settings` and `price_tier_rules` are created.
 
 1. Install the Supabase CLI if you don't have it:
    ```sh
@@ -77,6 +80,9 @@ yarn dev
 Environment files are provided for each tenant under the project root. Build the
 web PWA for a specific tenant using the scripts below. The output is placed in
 `dist/{tenant}` for easy deployment.
+
+Each build sets `EXPO_PUBLIC_TENANT` so the app loads the matching row from
+`tenant_settings`.
 
 ```sh
 # Build The Congress
