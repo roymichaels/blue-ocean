@@ -25,6 +25,7 @@ export default function AdminChatList({ chatRooms }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [rooms, setRooms] = useState(chatRooms);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     setRooms(chatRooms);
@@ -44,7 +45,8 @@ export default function AdminChatList({ chatRooms }: Props) {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedRoom) return;
+    if (!newMessage.trim() || !selectedRoom || isSending) return;
+    setIsSending(true);
 
     const message: ChatMessage = {
       id: Date.now().toString(),
@@ -59,8 +61,12 @@ export default function AdminChatList({ chatRooms }: Props) {
     setNewMessage('');
 
     // Send to database
-    const db = DatabaseService.getInstance();
-    await db.sendChatMessage(selectedRoom.id, message);
+    try {
+      const db = DatabaseService.getInstance();
+      await db.sendChatMessage(selectedRoom.id, message);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const renderChatRoom = ({ item }: { item: ChatRoom }) => (
@@ -205,10 +211,10 @@ export default function AdminChatList({ chatRooms }: Props) {
                 <TouchableOpacity
                   style={[
                     styles.sendButton,
-                    !newMessage.trim() && styles.sendButtonDisabled
+                    (!newMessage.trim() || isSending) && styles.sendButtonDisabled
                   ]}
                   onPress={sendMessage}
-                  disabled={!newMessage.trim()}
+                  disabled={!newMessage.trim() || isSending}
                 >
                   <Send size={20} color="#FFFFFF" />
                 </TouchableOpacity>
