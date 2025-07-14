@@ -1481,6 +1481,32 @@ class DatabaseService {
     }
   }
 
+  // Orders
+  async getUserOrders(userId: string): Promise<{ id: string; total: number; status: string; createdAt: string }[]> {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, total, status, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching user orders:', error);
+        return [];
+      }
+
+      return (data || []).map((o: any) => ({
+        id: o.id,
+        total: Number(o.total),
+        status: o.status,
+        createdAt: o.created_at
+      }));
+    } catch (error) {
+      console.error('Error in getUserOrders:', error);
+      return [];
+    }
+  }
+
   // Delivery Jobs
   async getDeliveryJobsForDriver(driverId: string): Promise<DeliveryJob[]> {
     try {
