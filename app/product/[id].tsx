@@ -38,6 +38,7 @@ import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import MediaService from '../../services/media';
+import GlobalHeader from '../../components/GlobalHeader';
 
 
 
@@ -315,6 +316,7 @@ export default function ProductDetailScreen() {
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
       >
+        <GlobalHeader showSearch={false} />
         <View
           style={[styles.header, { borderBottomColor: colors.border.primary }]}
         >
@@ -345,6 +347,7 @@ export default function ProductDetailScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      <GlobalHeader showSearch={false} />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
