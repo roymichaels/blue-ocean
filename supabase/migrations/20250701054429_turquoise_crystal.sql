@@ -19,11 +19,11 @@ DECLARE
   current_role text;
 BEGIN
   -- Get the role from the JWT token or user_profiles table
-  SELECT role INTO current_role FROM user_profiles WHERE matrix_user_id = auth.uid()::text;
+  SELECT role INTO current_role FROM user_profiles WHERE matrix_user_id = (SELECT auth.uid())::text;
   
   RETURN (
     current_role = 'admin' OR
-    (SELECT count(*) FROM user_profiles WHERE matrix_user_id = auth.uid()::text AND role = 'admin') > 0
+    (SELECT count(*) FROM user_profiles WHERE matrix_user_id = (SELECT auth.uid())::text AND role = 'admin') > 0
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

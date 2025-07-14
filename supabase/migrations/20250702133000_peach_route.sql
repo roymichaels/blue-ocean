@@ -29,8 +29,8 @@ ALTER TABLE delivery_jobs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Drivers can view their jobs"
   ON delivery_jobs FOR SELECT TO public
   USING (
-    auth.uid() IS NOT NULL AND
-    driver_id = auth.uid()::text
+    (SELECT auth.uid()) IS NOT NULL AND
+    driver_id = (SELECT auth.uid())::text
   );
 
 CREATE POLICY "Admins can manage all jobs"

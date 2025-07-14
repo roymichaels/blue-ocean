@@ -93,29 +93,29 @@ ALTER TABLE order_tracking ENABLE ROW LEVEL SECURITY;
 -- Create policies for orders
 CREATE POLICY "Users can view their own orders" 
   ON orders FOR SELECT 
-  USING (user_id = auth.uid()::text);
+  USING (user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Users can insert their own orders" 
   ON orders FOR INSERT 
-  WITH CHECK (user_id = auth.uid()::text);
+  WITH CHECK (user_id = (SELECT auth.uid())::text);
 
 CREATE POLICY "Users can update their own orders" 
   ON orders FOR UPDATE 
-  USING (user_id = auth.uid()::text);
+  USING (user_id = (SELECT auth.uid())::text);
 
 -- Create policies for order_items
 CREATE POLICY "Users can view their own order items" 
   ON order_items FOR SELECT 
-  USING (order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()::text));
+  USING (order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text));
 
 CREATE POLICY "Users can insert their own order items" 
   ON order_items FOR INSERT 
-  WITH CHECK (order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()::text));
+  WITH CHECK (order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text));
 
 -- Create policies for order_tracking
 CREATE POLICY "Users can view their own order tracking" 
   ON order_tracking FOR SELECT 
-  USING (order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()::text));
+  USING (order_id IN (SELECT id FROM orders WHERE user_id = (SELECT auth.uid())::text));
 
 CREATE POLICY "System can insert order tracking" 
   ON order_tracking FOR INSERT 
