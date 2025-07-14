@@ -36,7 +36,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP POLICY IF EXISTS "Public read access for products" ON products;
 DROP POLICY IF EXISTS "Admin write access for products" ON products;
 
--- Create proper policies for products
 CREATE POLICY "Public read access for products" 
   ON products FOR SELECT 
   TO public 
@@ -61,7 +60,6 @@ CREATE POLICY "Admin delete access for products"
 DROP POLICY IF EXISTS "Public read access for categories" ON categories;
 DROP POLICY IF EXISTS "Admin write access for categories" ON categories;
 
--- Create proper policies for categories
 CREATE POLICY "Public read access for categories" 
   ON categories FOR SELECT 
   TO public 
@@ -86,7 +84,6 @@ CREATE POLICY "Admin delete access for categories"
 DROP POLICY IF EXISTS "Public read access for subcategories" ON subcategories;
 DROP POLICY IF EXISTS "Admin write access for subcategories" ON subcategories;
 
--- Create proper policies for subcategories
 CREATE POLICY "Public read access for subcategories" 
   ON subcategories FOR SELECT 
   TO public 
@@ -111,7 +108,6 @@ CREATE POLICY "Admin delete access for subcategories"
 DROP POLICY IF EXISTS "Public read access for hero_banners" ON hero_banners;
 DROP POLICY IF EXISTS "Admin write access for hero_banners" ON hero_banners;
 
--- Create proper policies for hero_banners
 CREATE POLICY "Public read access for hero_banners"
   ON hero_banners FOR SELECT
   TO public
@@ -134,14 +130,14 @@ CREATE POLICY "Admin delete access for hero_banners"
 
 -- Fix reviews table policies
 DROP POLICY IF EXISTS "Public read access for reviews" ON reviews;
-DROP POLICY IF EXISTS "Users can insert reviews" ON reviews;
-DROP POLICY IF EXISTS "Users can update their own reviews" ON reviews;
+DROP POLICY IF EXISTS "Insert reviews" ON reviews;
+DROP POLICY IF EXISTS "Update reviews" ON reviews;
+DROP POLICY IF EXISTS "Delete reviews" ON reviews;
 
--- Create proper policies for reviews
 CREATE POLICY "Public read access for reviews"
   ON reviews FOR SELECT
   TO public
-  USING (true OR is_admin());
+  USING (true);
 
 CREATE POLICY "Users can insert reviews"
   ON reviews FOR INSERT
@@ -170,7 +166,6 @@ CREATE POLICY "Users can delete their own reviews"
 -- Fix user_profiles table policies
 DROP POLICY IF EXISTS "Public access for user_profiles" ON user_profiles;
 
--- Create proper policies for user_profiles
 CREATE POLICY "Users can read their own profile"
   ON user_profiles FOR SELECT
   TO public
@@ -200,7 +195,6 @@ CREATE POLICY "Admin can delete profiles"
 -- Fix chat_rooms table policies
 DROP POLICY IF EXISTS "Public access for chat_rooms" ON chat_rooms;
 
--- Create proper policies for chat_rooms
 CREATE POLICY "Users can read their own chat rooms"
   ON chat_rooms FOR SELECT
   TO public
@@ -230,7 +224,6 @@ CREATE POLICY "Admin can delete chat rooms"
 -- Fix chat_messages table policies
 DROP POLICY IF EXISTS "Public access for chat_messages" ON chat_messages;
 
--- Create proper policies for chat_messages
 CREATE POLICY "Users can read messages in their rooms"
   ON chat_messages FOR SELECT
   TO public
@@ -277,7 +270,6 @@ CREATE POLICY "Admin can delete messages"
 DROP POLICY IF EXISTS "Users can read their own notifications" ON notifications;
 DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
 
--- Create proper policies for notifications
 CREATE POLICY "Users can read their own notifications"
   ON notifications FOR SELECT
   TO public
@@ -307,7 +299,6 @@ CREATE POLICY "Admin can delete notifications"
 -- Fix pricing_tiers table policies
 DROP POLICY IF EXISTS "Public read access for pricing_tiers" ON pricing_tiers;
 
--- Create proper policies for pricing_tiers
 CREATE POLICY "Public read access for pricing_tiers" 
   ON pricing_tiers FOR SELECT 
   TO public 
