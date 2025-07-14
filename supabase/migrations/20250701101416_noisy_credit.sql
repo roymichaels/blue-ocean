@@ -45,34 +45,39 @@ DROP POLICY IF EXISTS "Users can delete their own reviews" ON reviews;
 DROP POLICY IF EXISTS "Admin manage all reviews" ON reviews;
 
 -- Create policy for public read access
-CREATE POLICY "Public read access for reviews" 
-  ON reviews FOR SELECT 
-  TO public 
-  USING (true);
+CREATE POLICY "Public read access for reviews"
+  ON reviews FOR SELECT
+  TO public
+  USING (true OR is_admin());
 
 -- Create policy for authenticated users to insert reviews
-CREATE POLICY "Users can insert reviews" 
-  ON reviews FOR INSERT 
-  TO public 
-  WITH CHECK (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+CREATE POLICY "Users can insert reviews"
+  ON reviews FOR INSERT
+  TO public
+  WITH CHECK (
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
+    OR is_admin()
+  );
 
 -- Create policy for users to update their own reviews
-CREATE POLICY "Users can update their own reviews" 
-  ON reviews FOR UPDATE 
-  TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+CREATE POLICY "Users can update their own reviews"
+  ON reviews FOR UPDATE
+  TO public
+  USING (
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
+    OR is_admin()
+  );
 
 -- Create policy for users to delete their own reviews
-CREATE POLICY "Users can delete their own reviews" 
-  ON reviews FOR DELETE 
-  TO public 
-  USING (auth.uid() IS NOT NULL AND user_id = auth.uid()::text);
+CREATE POLICY "Users can delete their own reviews"
+  ON reviews FOR DELETE
+  TO public
+  USING (
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
+    OR is_admin()
+  );
 
 -- Create policy for admins to manage all reviews
-CREATE POLICY "Admin manage all reviews" 
-  ON reviews FOR ALL 
-  TO public 
-  USING (is_admin());
 
 -- Create indexes for better performance if they don't exist
 CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON reviews(product_id);

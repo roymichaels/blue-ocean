@@ -36,7 +36,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP POLICY IF EXISTS "Public read access for products" ON products;
 DROP POLICY IF EXISTS "Admin write access for products" ON products;
 
--- Create proper policies for products
 CREATE POLICY "Public read access for products" 
   ON products FOR SELECT 
   TO public 
@@ -61,7 +60,6 @@ CREATE POLICY "Admin delete access for products"
 DROP POLICY IF EXISTS "Public read access for categories" ON categories;
 DROP POLICY IF EXISTS "Admin write access for categories" ON categories;
 
--- Create proper policies for categories
 CREATE POLICY "Public read access for categories" 
   ON categories FOR SELECT 
   TO public 
@@ -86,7 +84,6 @@ CREATE POLICY "Admin delete access for categories"
 DROP POLICY IF EXISTS "Public read access for subcategories" ON subcategories;
 DROP POLICY IF EXISTS "Admin write access for subcategories" ON subcategories;
 
--- Create proper policies for subcategories
 CREATE POLICY "Public read access for subcategories" 
   ON subcategories FOR SELECT 
   TO public 
@@ -111,16 +108,10 @@ CREATE POLICY "Admin delete access for subcategories"
 DROP POLICY IF EXISTS "Public read access for hero_banners" ON hero_banners;
 DROP POLICY IF EXISTS "Admin write access for hero_banners" ON hero_banners;
 
--- Create proper policies for hero_banners
-CREATE POLICY "Public read access for hero_banners" 
-  ON hero_banners FOR SELECT 
-  TO public 
-  USING (is_active = true);
-
-CREATE POLICY "Admin read access for hero_banners" 
-  ON hero_banners FOR SELECT 
-  TO public 
-  USING (is_admin());
+CREATE POLICY "Public read access for hero_banners"
+  ON hero_banners FOR SELECT
+  TO public
+  USING (is_active = true OR is_admin());
 
 CREATE POLICY "Admin insert access for hero_banners" 
   ON hero_banners FOR INSERT 
@@ -139,68 +130,62 @@ CREATE POLICY "Admin delete access for hero_banners"
 
 -- Fix reviews table policies
 DROP POLICY IF EXISTS "Public read access for reviews" ON reviews;
-DROP POLICY IF EXISTS "Users can insert reviews" ON reviews;
-DROP POLICY IF EXISTS "Users can update their own reviews" ON reviews;
+DROP POLICY IF EXISTS "Insert reviews" ON reviews;
+DROP POLICY IF EXISTS "Update reviews" ON reviews;
+DROP POLICY IF EXISTS "Delete reviews" ON reviews;
 
--- Create proper policies for reviews
-CREATE POLICY "Public read access for reviews" 
-  ON reviews FOR SELECT 
-  TO public 
+CREATE POLICY "Public read access for reviews"
+  ON reviews FOR SELECT
+  TO public
   USING (true);
 
-CREATE POLICY "Insert reviews"
+CREATE POLICY "Users can insert reviews"
   ON reviews FOR INSERT
   TO public
   WITH CHECK (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()::text)
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
     OR is_admin()
   );
 
-CREATE POLICY "Update reviews"
+CREATE POLICY "Users can update their own reviews"
   ON reviews FOR UPDATE
   TO public
   USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()::text)
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
     OR is_admin()
   );
 
-CREATE POLICY "Delete reviews"
+CREATE POLICY "Users can delete their own reviews"
   ON reviews FOR DELETE
   TO public
   USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()::text)
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
     OR is_admin()
   );
-
 
 -- Fix user_profiles table policies
 DROP POLICY IF EXISTS "Public access for user_profiles" ON user_profiles;
 
--- Create proper policies for user_profiles
-CREATE POLICY "Users can read their own profile" 
-  ON user_profiles FOR SELECT 
-  TO public 
-  USING (auth.uid() IS NOT NULL AND matrix_user_id = auth.uid()::text);
-
-CREATE POLICY "Admin can read all profiles" 
-  ON user_profiles FOR SELECT 
-  TO public 
-  USING (is_admin());
+CREATE POLICY "Users can read their own profile"
+  ON user_profiles FOR SELECT
+  TO public
+  USING (
+    ((SELECT auth.uid()) IS NOT NULL AND matrix_user_id = (SELECT auth.uid())::text)
+    OR is_admin()
+  );
 
 CREATE POLICY "Users can insert their own profile" 
   ON user_profiles FOR INSERT 
   TO public 
-  WITH CHECK (auth.uid() IS NOT NULL AND matrix_user_id = auth.uid()::text);
+  WITH CHECK ((SELECT auth.uid()) IS NOT NULL AND matrix_user_id = (SELECT auth.uid())::text);
 
-CREATE POLICY "Users can update their own profile" 
-  ON user_profiles FOR UPDATE 
-  TO public 
-  USING (auth.uid() IS NOT NULL AND matrix_user_id = auth.uid()::text);
-
-CREATE POLICY "Admin can update all profiles" 
-  ON user_profiles FOR UPDATE 
-  TO public 
-  USING (is_admin());
+CREATE POLICY "Users can update their own profile"
+  ON user_profiles FOR UPDATE
+  TO public
+  USING (
+    ((SELECT auth.uid()) IS NOT NULL AND matrix_user_id = (SELECT auth.uid())::text)
+    OR is_admin()
+  );
 
 CREATE POLICY "Admin can delete profiles" 
   ON user_profiles FOR DELETE 
@@ -210,25 +195,24 @@ CREATE POLICY "Admin can delete profiles"
 -- Fix chat_rooms table policies
 DROP POLICY IF EXISTS "Public access for chat_rooms" ON chat_rooms;
 
--- Create proper policies for chat_rooms
-CREATE POLICY "Read chat rooms"
+CREATE POLICY "Users can read their own chat rooms"
   ON chat_rooms FOR SELECT
   TO public
   USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()::text)
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
     OR is_admin()
   );
 
 CREATE POLICY "Users can insert chat rooms" 
   ON chat_rooms FOR INSERT 
   TO public 
-  WITH CHECK (auth.uid() IS NOT NULL);
+  WITH CHECK ((SELECT auth.uid()) IS NOT NULL);
 
-CREATE POLICY "Update chat rooms"
+CREATE POLICY "Users can update their own chat rooms"
   ON chat_rooms FOR UPDATE
   TO public
   USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()::text)
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
     OR is_admin()
   );
 
@@ -240,15 +224,14 @@ CREATE POLICY "Admin can delete chat rooms"
 -- Fix chat_messages table policies
 DROP POLICY IF EXISTS "Public access for chat_messages" ON chat_messages;
 
--- Create proper policies for chat_messages
-CREATE POLICY "Read chat messages"
+CREATE POLICY "Users can read messages in their rooms"
   ON chat_messages FOR SELECT
   TO public
   USING (
     (
-      auth.uid() IS NOT NULL AND
+      (SELECT auth.uid()) IS NOT NULL AND
       room_id IN (
-        SELECT id FROM chat_rooms WHERE user_id = auth.uid()::text
+        SELECT id FROM chat_rooms WHERE user_id = (SELECT auth.uid())::text
       )
     )
     OR is_admin()
@@ -258,22 +241,22 @@ CREATE POLICY "Users can insert messages"
   ON chat_messages FOR INSERT 
   TO public 
   WITH CHECK (
-    auth.uid() IS NOT NULL AND 
+    (SELECT auth.uid()) IS NOT NULL AND 
     (
-      sender_id = auth.uid()::text OR
+      sender_id = (SELECT auth.uid())::text OR
       room_id IN (
-        SELECT id FROM chat_rooms WHERE user_id = auth.uid()::text
+        SELECT id FROM chat_rooms WHERE user_id = (SELECT auth.uid())::text
       )
     )
   );
 
-CREATE POLICY "Update chat messages"
+CREATE POLICY "Users can update their own messages"
   ON chat_messages FOR UPDATE
   TO public
   USING (
     (
-      auth.uid() IS NOT NULL AND
-      sender_id = auth.uid()::text
+      (SELECT auth.uid()) IS NOT NULL AND
+      sender_id = (SELECT auth.uid())::text
     )
     OR is_admin()
   );
@@ -287,27 +270,26 @@ CREATE POLICY "Admin can delete messages"
 DROP POLICY IF EXISTS "Users can read their own notifications" ON notifications;
 DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
 
--- Create proper policies for notifications
-CREATE POLICY "Read notifications"
+CREATE POLICY "Users can read their own notifications"
   ON notifications FOR SELECT
   TO public
   USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()::text)
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
     OR is_admin()
   );
 
-CREATE POLICY "Update notifications"
+CREATE POLICY "Users can update their own notifications"
   ON notifications FOR UPDATE
   TO public
   USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()::text)
+    ((SELECT auth.uid()) IS NOT NULL AND user_id = (SELECT auth.uid())::text)
     OR is_admin()
   );
 
 CREATE POLICY "Admin can insert notifications" 
   ON notifications FOR INSERT 
   TO public 
-  WITH CHECK (is_admin() OR auth.uid() IS NOT NULL);
+  WITH CHECK (is_admin() OR (SELECT auth.uid()) IS NOT NULL);
 
 CREATE POLICY "Admin can delete notifications" 
   ON notifications FOR DELETE 
@@ -317,13 +299,22 @@ CREATE POLICY "Admin can delete notifications"
 -- Fix pricing_tiers table policies
 DROP POLICY IF EXISTS "Public read access for pricing_tiers" ON pricing_tiers;
 
--- Create proper policies for pricing_tiers
 CREATE POLICY "Public read access for pricing_tiers" 
   ON pricing_tiers FOR SELECT 
   TO public 
   USING (true);
 
-CREATE POLICY "Admin write access for pricing_tiers" 
-  ON pricing_tiers FOR ALL 
-  TO public 
+CREATE POLICY "Admin insert access for pricing_tiers"
+  ON pricing_tiers FOR INSERT
+  TO public
+  WITH CHECK (is_admin());
+
+CREATE POLICY "Admin update access for pricing_tiers"
+  ON pricing_tiers FOR UPDATE
+  TO public
+  USING (is_admin());
+
+CREATE POLICY "Admin delete access for pricing_tiers"
+  ON pricing_tiers FOR DELETE
+  TO public
   USING (is_admin());

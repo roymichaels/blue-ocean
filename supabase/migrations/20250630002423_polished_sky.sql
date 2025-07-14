@@ -91,92 +91,108 @@ ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_tracking ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for orders
-CREATE POLICY "Read orders"
+CREATE POLICY "Users can view their own orders"
   ON orders FOR SELECT
   USING (
-    user_id = auth.uid()::text OR
-    (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin')
+    user_id = auth.uid()::text
+    OR is_admin()
   );
 
-CREATE POLICY "Insert orders"
+CREATE POLICY "Users can insert their own orders"
   ON orders FOR INSERT
   WITH CHECK (
-    user_id = auth.uid()::text OR
-    (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin')
+    user_id = auth.uid()::text
+    OR is_admin()
   );
 
-CREATE POLICY "Update orders"
+CREATE POLICY "Users can update their own orders"
   ON orders FOR UPDATE
   USING (
-    user_id = auth.uid()::text OR
-    (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin')
+    user_id = auth.uid()::text
+    OR is_admin()
   );
 
 -- Create policies for order_items
-CREATE POLICY "Read order items"
+CREATE POLICY "Users can view their own order items"
   ON order_items FOR SELECT
   USING (
-    order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()::text)
-    OR (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin')
+    order_id IN (
+      SELECT id FROM orders
+      WHERE user_id = auth.uid()::text
+    )
+    OR is_admin()
   );
 
-CREATE POLICY "Insert order items"
+CREATE POLICY "Users can insert their own order items"
   ON order_items FOR INSERT
   WITH CHECK (
-    order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()::text)
-    OR (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin')
+    order_id IN (
+      SELECT id FROM orders
+      WHERE user_id = auth.uid()::text
+    )
+    OR is_admin()
   );
 
 -- Create policies for order_tracking
--- Order tracking policies merged with admin access
-
--- Admin policies (using proper PostgreSQL syntax)
-CREATE POLICY "Delete orders"
-  ON orders FOR DELETE
-  USING (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin');
-
-CREATE POLICY "Update order items"
-  ON order_items FOR UPDATE
-  USING (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin');
-
-CREATE POLICY "Delete order items"
-  ON order_items FOR DELETE
-  USING (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin');
-
-CREATE POLICY "Read order tracking"
+CREATE POLICY "Users can view their own order tracking"
   ON order_tracking FOR SELECT
   USING (
-    order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()::text)
-    OR (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin')
+    order_id IN (
+      SELECT id FROM orders
+      WHERE user_id = auth.uid()::text
+    )
+    OR is_admin()
   );
 
-CREATE POLICY "Insert order tracking"
+CREATE POLICY "System can insert order tracking"
   ON order_tracking FOR INSERT
   WITH CHECK (
-    true OR (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin')
+    true
+    OR is_admin()
   );
 
-CREATE POLICY "Update order tracking"
+CREATE POLICY "System can update order tracking"
   ON order_tracking FOR UPDATE
   USING (
-    true OR (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin')
+    true
+    OR is_admin()
   );
 
-CREATE POLICY "Delete order tracking"
+-- Admin-only delete policies
+CREATE POLICY "Admins can delete orders"
+  ON orders FOR DELETE
+  USING (
+    auth.jwt() IS NOT NULL
+    AND auth.jwt()->>'role' = 'admin'
+  );
+
+CREATE POLICY "Admins can delete order items"
+  ON order_items FOR DELETE
+  USING (
+    auth.jwt() IS NOT NULL
+    AND auth.jwt()->>'role' = 'admin'
+  );
+
+CREATE POLICY "Admins can delete order tracking"
   ON order_tracking FOR DELETE
-  USING (auth.jwt() IS NOT NULL AND auth.jwt()->>'role' = 'admin');
+  USING (
+    auth.jwt() IS NOT NULL
+    AND auth.jwt()->>'role' = 'admin'
+  );
 
--- Add triggers for updated_at
+-- Triggers to keep updated_at fresh
 CREATE TRIGGER update_orders_updated_at
-BEFORE UPDATE ON orders
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
+  BEFORE UPDATE ON orders
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
--- Create indexes for better performance
+-- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
+
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+
 CREATE INDEX IF NOT EXISTS idx_order_tracking_order_id ON order_tracking(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_tracking_status ON order_tracking(status);
