@@ -72,5 +72,22 @@ yarn dev
 
 `yarn start` works as an alias of `yarn dev`.
 
+## Multi-Tenant Builds
+
+Environment files are provided for each tenant under the project root. Build the
+web PWA for a specific tenant using the scripts below. The output is placed in
+`dist/{tenant}` for easy deployment.
+
+```sh
+# Build The Congress
+yarn build:web:thecongress
+
+# Build The Bull
+yarn build:web:thebull
+```
+
+Matching NGINX configs for each tenant are located in `nginx/` and assume the
+exported files are served from `/var/www/{tenant}/dist`.
+
 
 ***End of Document***
