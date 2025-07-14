@@ -17,12 +17,15 @@ interface UserProfileModalProps {
   visible: boolean;
   userId: string;
   onClose: () => void;
+  isAdmin?: boolean;
+  onMessage?: (id: string, name: string) => void;
 }
 
-export default function UserProfileModal({ visible, userId, onClose }: UserProfileModalProps) {
+export default function UserProfileModal({ visible, userId, onClose, isAdmin = false, onMessage }: UserProfileModalProps) {
   const { colors } = useTheme();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<{ username: string; displayName: string; exists: boolean } | null>(null);
+  const [orders, setOrders] = useState<{ id: string; total: number; status: string; createdAt: string }[]>([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -38,8 +41,15 @@ export default function UserProfileModal({ visible, userId, onClose }: UserProfi
           displayName: user.displayName || user.username || userId,
           exists,
         });
+        if (isAdmin) {
+          const userOrders = await db.getUserOrders(user.id);
+          setOrders(userOrders);
+        } else {
+          setOrders([]);
+        }
       } else {
         setProfile(null);
+        setOrders([]);
       }
       setLoading(false);
     };
@@ -69,16 +79,35 @@ export default function UserProfileModal({ visible, userId, onClose }: UserProfi
                 <>
                   <Text style={[styles.username, { color: colors.text.primary }]}>@{profile.username}</Text>
                   <Text style={[styles.displayName, { color: colors.text.secondary }]}>{profile.displayName}</Text>
-                  <View
+                <View
                     style={[
                       styles.tag,
                       { backgroundColor: profile.exists ? colors.status.success : colors.status.error },
                     ]}
                   >
-                    <Text style={[styles.tagText, { color: colors.text.inverse }]}> 
+                    <Text style={[styles.tagText, { color: colors.text.inverse }]}>
                       {profile.exists ? 'Exists in Supabase' : 'Matrix only'}
                     </Text>
                   </View>
+                  {isAdmin && orders.length > 0 && (
+                    <View style={styles.ordersSection}>
+                      <Text style={[styles.ordersTitle, { color: colors.text.primary }]}>Previous Orders</Text>
+                      {orders.slice(0, 5).map((o) => (
+                        <View key={o.id} style={styles.orderItem}>
+                          <Text style={[styles.orderId, { color: colors.text.primary }]}>#{o.id.slice(-6)}</Text>
+                          <Text style={[styles.orderTotal, { color: colors.text.secondary }]}>₪{o.total.toFixed(2)}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                  {isAdmin && onMessage && (
+                    <TouchableOpacity
+                      style={[styles.messageButton, { backgroundColor: colors.gold }]}
+                      onPress={() => onMessage(userId, profile.displayName)}
+                    >
+                      <Text style={[styles.messageButtonText, { color: colors.text.inverse }]}>Message</Text>
+                    </TouchableOpacity>
+                  )}
                 </>
               ) : (
                 <Text style={[styles.displayName, { color: colors.text.primary }]}>User not found</Text>
@@ -146,5 +175,38 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  ordersSection: {
+    width: '100%',
+    marginTop: 16,
+  },
+  ordersTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  orderItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  orderId: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  orderTotal: {
+    fontSize: 14,
+  },
+  messageButton: {
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+  },
+  messageButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
