@@ -125,6 +125,7 @@ export default function ChatWidget() {
   });
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     if (isOpen && isLoggedIn) {
@@ -440,7 +441,8 @@ export default function ChatWidget() {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || isSending) return;
+    setIsSending(true);
 
     const db = DatabaseService.getInstance();
     const roomId = selectedRoom
@@ -504,6 +506,8 @@ export default function ChatWidget() {
         message: 'שליחת ההודעה נכשלה',
         type: 'error',
       });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -1245,13 +1249,14 @@ export default function ChatWidget() {
                           style={[
                             styles.sendButton,
                             {
-                              backgroundColor: newMessage.trim()
-                                ? colors.gold
-                                : colors.interactive.disabled,
+                              backgroundColor:
+                                newMessage.trim() && !isSending
+                                  ? colors.gold
+                                  : colors.interactive.disabled,
                             },
                           ]}
                           onPress={sendMessage}
-                          disabled={!newMessage.trim()}
+                          disabled={!newMessage.trim() || isSending}
                         >
                           <Send size={20} color={colors.text.inverse} />
                         </TouchableOpacity>
