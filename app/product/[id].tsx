@@ -341,7 +341,7 @@ export default function ProductDetailScreen() {
     tier => tier.id === product.pricingTier,
   );
   const effectivePrice = getEffectivePrice(product.price, quantity);
-  const showTieredPricing = effectivePrice !== product.price;
+  const showTieredPricing = !!product.pricingTier;
 
   return (
     <SafeAreaView
@@ -486,9 +486,9 @@ export default function ProductDetailScreen() {
           <View style={styles.priceContainer}>
             <Text style={[styles.currentPrice, { color: colors.gold }]}>
               {currencySymbol}
-              {product.price.toFixed(2)}
+              {effectivePrice.toFixed(2)}
             </Text>
-            {product.originalPrice && (
+            {product.originalPrice && !product.pricingTier && (
               <Text
                 style={[styles.originalPrice, { color: colors.text.tertiary }]}
               >
@@ -496,7 +496,7 @@ export default function ProductDetailScreen() {
                 {product.originalPrice.toFixed(2)}
               </Text>
             )}
-            {product.originalPrice && (
+            {product.originalPrice && !product.pricingTier && (
               <View
                 style={[
                   styles.discountBadge,
@@ -666,9 +666,7 @@ export default function ProductDetailScreen() {
                   { color: colors.text.secondary },
                 ]}
               >
-                {`מחיר ליחידה: ${currencySymbol}${effectivePrice.toFixed(
-                  2
-                )} (במקום ${currencySymbol}${product.price.toFixed(2)})`}
+                {`מחיר ליחידה: ${currencySymbol}${effectivePrice.toFixed(2)}`}
               </Text>
               <Text style={[styles.tieredPricingTotal, { color: colors.gold }]}>
                 {`סה"כ: ${currencySymbol}${getTotalPrice().toFixed(2)}`}

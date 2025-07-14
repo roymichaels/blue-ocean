@@ -120,6 +120,7 @@ class DatabaseService {
     try {
       const dbProduct: any = {
         ...product,
+        price: (product as any).pricingTier ? 0 : product.price,
         pricing_tier: (product as any).pricingTier,
         created_at: (product as any).createdAt,
         updated_at: (product as any).updatedAt,
@@ -160,6 +161,7 @@ class DatabaseService {
     try {
       const dbProduct: any = {
         ...product,
+        price: (product as any).pricingTier ? 0 : product.price,
         pricing_tier: (product as any).pricingTier,
         updated_at: (product as any).updatedAt,
       };
