@@ -15,6 +15,7 @@ import {
 import { X, LogIn, UserPlus, Lock, User } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from './AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { router } from 'expo-router';
 import InfoModal from './InfoModal';
 
@@ -46,6 +47,7 @@ export default function AuthTabsModal({
   
   const { login, signup } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const resetForm = () => {
     setUsername('');
@@ -63,8 +65,8 @@ export default function AuthTabsModal({
     if (!username || !password) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אנא הכנס שם משתמש וסיסמה',
+        title: t('common.error'),
+        message: t('auth.fillAllFields'),
         type: 'error'
       });
       return;
@@ -80,8 +82,8 @@ export default function AuthTabsModal({
       } else {
         setInfoModal({
           visible: true,
-          title: 'שגיאה',
-          message: 'פרטי התחברות שגויים. אנא נסה שוב.',
+          title: t('common.error'),
+          message: t('auth.loginError'),
           type: 'error'
         });
       }
@@ -89,8 +91,8 @@ export default function AuthTabsModal({
       console.error('Login error:', error);
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'ההתחברות נכשלה. אנא נסה שוב.',
+        title: t('common.error'),
+        message: t('auth.loginError'),
         type: 'error'
       });
     } finally {
@@ -102,8 +104,8 @@ export default function AuthTabsModal({
     if (!username || !password || !confirmPassword) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אנא מלא את כל השדות',
+        title: t('common.error'),
+        message: t('auth.fillAllFields'),
         type: 'error'
       });
       return;
@@ -112,8 +114,8 @@ export default function AuthTabsModal({
     if (password !== confirmPassword) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'הסיסמאות אינן תואמות',
+        title: t('common.error'),
+        message: t('auth.passwordMismatch'),
         type: 'error'
       });
       return;
@@ -126,8 +128,8 @@ export default function AuthTabsModal({
       if (success) {
         setInfoModal({
           visible: true,
-          title: 'הצלחה',
-          message: 'החשבון נוצר בהצלחה! כעת תוכל להתחבר.',
+          title: t('common.success'),
+          message: t('auth.signupSuccess'),
           type: 'success'
         });
       }
@@ -135,8 +137,8 @@ export default function AuthTabsModal({
       console.error('Signup error:', error);
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: error instanceof Error ? error.message : 'ההרשמה נכשלה. אנא נסה שוב.',
+        title: t('common.error'),
+        message: error instanceof Error ? error.message : t('auth.signupError'),
         type: 'error'
       });
     } finally {
@@ -156,14 +158,14 @@ export default function AuthTabsModal({
         </View>
       </View>
       
-      <Text style={[styles.title, { color: colors.text.primary }]}>ברוכים השבים</Text>
-      <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-        התחבר לחשבון שלך
+      <Text style={[styles.title, { color: colors.text.primary }]}>{t('auth.welcomeBack')}</Text>
+      <Text style={[styles.subtitle, { color: colors.text.secondary }]}> 
+        {t('auth.loginSubtitle')} 
       </Text>
       
       <View style={styles.form}>
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>שם משתמש</Text>
+          <Text style={[styles.label, { color: colors.text.primary }]}>{t('auth.username')}</Text>
           <TextInput
             style={[styles.input, {
               borderColor: colors.border.primary,
@@ -172,7 +174,7 @@ export default function AuthTabsModal({
             }]}
             value={username}
             onChangeText={setUsername}
-            placeholder="הכנס שם משתמש"
+            placeholder={t('auth.usernamePlaceholder')}
             autoCapitalize="none"
             autoCorrect={false}
             textAlign="right"
@@ -181,7 +183,7 @@ export default function AuthTabsModal({
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>סיסמה</Text>
+          <Text style={[styles.label, { color: colors.text.primary }]}>{t('auth.password')}</Text>
           <TextInput
             style={[styles.input, { 
               borderColor: colors.border.primary,
@@ -190,7 +192,7 @@ export default function AuthTabsModal({
             }]}
             value={password}
             onChangeText={setPassword}
-            placeholder="הכנס סיסמה"
+            placeholder={t('auth.passwordPlaceholder')}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
@@ -212,18 +214,18 @@ export default function AuthTabsModal({
             <ActivityIndicator size="small" color={colors.text.inverse} />
           ) : (
             <Text style={[styles.actionButtonText, { color: colors.text.inverse }]}>
-              התחבר
+              {t('auth.login')}
             </Text>
           )}
         </TouchableOpacity>
       </View>
       
       <View style={styles.switchContainer}>
-        <Text style={[styles.switchText, { color: colors.text.secondary }]}>
-          אין לך חשבון?{' '}
+        <Text style={[styles.switchText, { color: colors.text.secondary }]}> 
+          {t('auth.noAccount')} {' '}
         </Text>
         <TouchableOpacity onPress={() => handleTabChange('signup')}>
-          <Text style={[styles.switchLink, { color: colors.gold }]}>הירשם</Text>
+          <Text style={[styles.switchLink, { color: colors.gold }]}>{t('auth.signup')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -237,15 +239,15 @@ export default function AuthTabsModal({
         </View>
       </View>
       
-      <Text style={[styles.title, { color: colors.text.primary }]}>יצירת חשבון</Text>
-      <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-        הצטרף אלינו והתחל לקנות
+      <Text style={[styles.title, { color: colors.text.primary }]}>{t('auth.createAccount')}</Text>
+      <Text style={[styles.subtitle, { color: colors.text.secondary }]}> 
+        {t('auth.signupSubtitle')} 
       </Text>
       
       <View style={styles.form}>
 
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>שם משתמש</Text>
+          <Text style={[styles.label, { color: colors.text.primary }]}>{t('auth.username')}</Text>
           <TextInput
             style={[styles.input, { 
               borderColor: colors.border.primary,
@@ -254,7 +256,7 @@ export default function AuthTabsModal({
             }]}
             value={username}
             onChangeText={setUsername}
-            placeholder="בחר שם משתמש"
+            placeholder={t('auth.usernamePlaceholder')}
             autoCapitalize="none"
             autoCorrect={false}
             textAlign="right"
@@ -263,7 +265,7 @@ export default function AuthTabsModal({
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>שם מלא</Text>
+          <Text style={[styles.label, { color: colors.text.primary }]}>{t('auth.fullName')}</Text>
           <TextInput
             style={[styles.input, { 
               borderColor: colors.border.primary,
@@ -272,7 +274,7 @@ export default function AuthTabsModal({
             }]}
             value={displayName}
             onChangeText={setDisplayName}
-            placeholder="הכנס את שמך המלא"
+            placeholder={t('auth.fullNamePlaceholder')}
             autoCorrect={false}
             textAlign="right"
             placeholderTextColor={colors.text.tertiary}
@@ -280,7 +282,7 @@ export default function AuthTabsModal({
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>סיסמה</Text>
+          <Text style={[styles.label, { color: colors.text.primary }]}>{t('auth.password')}</Text>
           <TextInput
             style={[styles.input, { 
               borderColor: colors.border.primary,
@@ -289,7 +291,7 @@ export default function AuthTabsModal({
             }]}
             value={password}
             onChangeText={setPassword}
-            placeholder="צור סיסמה"
+            placeholder={t('auth.createPasswordPlaceholder')}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
@@ -299,7 +301,7 @@ export default function AuthTabsModal({
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>אישור סיסמה</Text>
+          <Text style={[styles.label, { color: colors.text.primary }]}>{t('auth.confirmPassword')}</Text>
           <TextInput
             style={[styles.input, { 
               borderColor: colors.border.primary,
@@ -308,7 +310,7 @@ export default function AuthTabsModal({
             }]}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            placeholder="אשר את הסיסמה"
+            placeholder={t('auth.confirmPasswordPlaceholder')}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
@@ -330,18 +332,18 @@ export default function AuthTabsModal({
             <ActivityIndicator size="small" color={colors.text.inverse} />
           ) : (
             <Text style={[styles.actionButtonText, { color: colors.text.inverse }]}>
-              צור חשבון
+              {t('auth.createAccount')}
             </Text>
           )}
         </TouchableOpacity>
       </View>
       
       <View style={styles.switchContainer}>
-        <Text style={[styles.switchText, { color: colors.text.secondary }]}>
-          כבר יש לך חשבון?{' '}
+        <Text style={[styles.switchText, { color: colors.text.secondary }]}> 
+          {t('auth.hasAccount')} {' '}
         </Text>
         <TouchableOpacity onPress={() => handleTabChange('login')}>
-          <Text style={[styles.switchLink, { color: colors.gold }]}>התחבר</Text>
+          <Text style={[styles.switchLink, { color: colors.gold }]}>{t('auth.login')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -377,7 +379,7 @@ export default function AuthTabsModal({
                   { color: colors.text.primary },
                   activeTab === 'login' && { color: colors.text.inverse }
                 ]}>
-                  התחברות
+                  {t('auth.login')}
                 </Text>
               </TouchableOpacity>
               
@@ -393,7 +395,7 @@ export default function AuthTabsModal({
                   { color: colors.text.primary },
                   activeTab === 'signup' && { color: colors.text.inverse }
                 ]}>
-                  הרשמה
+                  {t('auth.signup')}
                 </Text>
               </TouchableOpacity>
             </View>

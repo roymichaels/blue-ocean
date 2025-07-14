@@ -55,6 +55,13 @@
     "creatingAccount": "Creating account...",
     "adminNote": "Current admin: roymichaels",
     "adminInfo": "Admins can login with the same credentials",
+    "adminOnly": "Only admins can login",
+    "usernamePlaceholder": "Enter username",
+    "passwordPlaceholder": "Enter password",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "createPasswordPlaceholder": "Create password",
+    "confirmPasswordPlaceholder": "Confirm your password",
     "logoutConfirm": "Are you sure you want to logout?"
   },
   "home": {
@@ -225,6 +232,7 @@
     "deliveries": "Deliveries",
     "manageCategories": "Manage Categories",
     "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
     "pushNotifications": "Push Notifications",
     "language": "Language",
     "english": "English",

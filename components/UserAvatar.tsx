@@ -204,12 +204,12 @@ export default function UserAvatar() {
                 {theme === 'dark' ? (
                   <>
                     <Sun size={20} color={colors.gold} />
-                    <Text style={[styles.menuText, { color: colors.text.primary }]}>מצב בהיר</Text>
+                    <Text style={[styles.menuText, { color: colors.text.primary }]}>{t('profile.lightMode')}</Text>
                   </>
                 ) : (
                   <>
                     <Moon size={20} color={colors.gold} />
-                    <Text style={[styles.menuText, { color: colors.text.primary }]}>מצב כהה</Text>
+                    <Text style={[styles.menuText, { color: colors.text.primary }]}>{t('profile.darkMode')}</Text>
                   </>
                 )}
               </TouchableOpacity>
