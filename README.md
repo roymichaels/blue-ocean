@@ -84,6 +84,10 @@ web PWA for a specific tenant using the scripts below. The output is placed in
 Each build sets `EXPO_PUBLIC_TENANT` so the app loads the matching row from
 `tenant_settings`.
 
+Before the export step runs, the `update:appjson` script updates `app.json`
+using the current `EXPO_PUBLIC_APP_NAME` and `EXPO_PUBLIC_TENANT` values. This
+ensures each build gets its own application name and slug.
+
 ```sh
 # Build The Congress
 yarn build:web:thecongress
