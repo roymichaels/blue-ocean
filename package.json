@@ -8,7 +8,7 @@
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
     "update:appjson": "node scripts/update-app-json.js",
-    "build:web": "npx env-cmd -f .env expo export --platform web --output-dir dist",
+    "build:web": "env-cmd -f .env npx expo export --platform web --output-dir dist",
     "build:web:thecongress": "env-cmd -f .env.thecongress yarn  && expo export --platform web --output-dir dist/thecongress",
     "build:web:thebull": "env-cmd -f .env.thebull    yarn  && expo export --platform web --output-dir dist/thebull",
     "build:web:all": "yarn build:web:thecongress && yarn build:web:thebull"
