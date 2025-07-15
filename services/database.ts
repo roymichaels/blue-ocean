@@ -1,11 +1,11 @@
 import { supabase } from '../lib/supabase';
-import { 
-  Product, 
-  Category, 
-  Subcategory, 
-  ChatMessage, 
-  ChatRoom, 
-  User, 
+import {
+  Product,
+  Category,
+  Subcategory,
+  ChatMessage,
+  ChatRoom,
+  User,
   Notification,
   Review,
   HeroBanner,
@@ -13,7 +13,7 @@ import {
   MixGroup,
   WishlistItem,
   DeliveryJob,
-  DeliveryJobStatus
+  DeliveryJobStatus,
 } from '../types';
 
 class DatabaseService {
@@ -41,30 +41,54 @@ class DatabaseService {
         return [];
       }
 
-      return (data || []).map(prod => ({
-        id: prod.id,
-        name: prod.name,
-        name_en: prod.name_en,
-        name_he: prod.name_he,
-        price: prod.price,
-        originalPrice: (prod as any).originalPrice ?? undefined,
-        description: prod.description,
-        description_en: prod.description_en,
-        description_he: prod.description_he,
-        category: prod.category,
-        subcategory: prod.subcategory,
-        images: prod.images,
-        videos: prod.videos ?? undefined,
-        colors: prod.colors ?? undefined,
-        rating: prod.rating,
-        reviews: prod.reviews,
-        badges: prod.badges ?? undefined,
-        pricingTier: prod.pricing_tier ?? undefined,
-        mixGroupId: prod.mix_group_id ?? undefined,
-        stock: prod.stock,
-        createdAt: prod.created_at,
-        updatedAt: prod.updated_at,
-      }));
+      return (data || []).map(
+        (prod: {
+          id: any;
+          name: any;
+          name_en: any;
+          name_he: any;
+          price: any;
+          description: any;
+          description_en: any;
+          description_he: any;
+          category: any;
+          subcategory: any;
+          images: any;
+          videos: any;
+          colors: any;
+          rating: any;
+          reviews: any;
+          badges: any;
+          pricing_tier: any;
+          mix_group_id: any;
+          stock: any;
+          created_at: any;
+          updated_at: any;
+        }) => ({
+          id: prod.id,
+          name: prod.name,
+          name_en: prod.name_en,
+          name_he: prod.name_he,
+          price: prod.price,
+          originalPrice: (prod as any).originalPrice ?? undefined,
+          description: prod.description,
+          description_en: prod.description_en,
+          description_he: prod.description_he,
+          category: prod.category,
+          subcategory: prod.subcategory,
+          images: prod.images,
+          videos: prod.videos ?? undefined,
+          colors: prod.colors ?? undefined,
+          rating: prod.rating,
+          reviews: prod.reviews,
+          badges: prod.badges ?? undefined,
+          pricingTier: prod.pricing_tier ?? undefined,
+          mixGroupId: prod.mix_group_id ?? undefined,
+          stock: prod.stock,
+          createdAt: prod.created_at,
+          updatedAt: prod.updated_at,
+        })
+      );
     } catch (error) {
       console.error('Error in getProducts:', error);
       return [];
@@ -193,10 +217,7 @@ class DatabaseService {
 
   async deleteProduct(id: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('products').delete().eq('id', id);
 
       if (error) {
         console.error('Error deleting product:', error);
@@ -223,10 +244,8 @@ class DatabaseService {
       }
 
       // Then get all subcategories
-      const { data: subcategoriesData, error: subcategoriesError } = await supabase
-        .from('subcategories')
-        .select('*')
-        .order('name');
+      const { data: subcategoriesData, error: subcategoriesError } =
+        await supabase.from('subcategories').select('*').order('name');
 
       if (subcategoriesError) {
         console.error('Error fetching subcategories:', subcategoriesError);
@@ -234,29 +253,51 @@ class DatabaseService {
       }
 
       // Map subcategories to their parent categories
-      const categories = categoriesData.map(category => {
-        const subcategories = subcategoriesData.filter(
-          subcategory => subcategory.category_id === category.id
-        ).map(subcategory => ({
-          id: subcategory.id,
-          name: subcategory.name,
-          name_en: subcategory.name_en,
-          name_he: subcategory.name_he,
-          icon: subcategory.icon,
-          categoryId: subcategory.category_id,
-          createdAt: subcategory.created_at
-        }));
+      const categories = categoriesData.map(
+        (category: {
+          id: any;
+          name: any;
+          name_en: any;
+          name_he: any;
+          icon: any;
+          created_at: any;
+        }) => {
+          const subcategories = subcategoriesData
+            .filter(
+              (subcategory: { category_id: any }) =>
+                subcategory.category_id === category.id
+            )
+            .map(
+              (subcategory: {
+                id: any;
+                name: any;
+                name_en: any;
+                name_he: any;
+                icon: any;
+                category_id: any;
+                created_at: any;
+              }) => ({
+                id: subcategory.id,
+                name: subcategory.name,
+                name_en: subcategory.name_en,
+                name_he: subcategory.name_he,
+                icon: subcategory.icon,
+                categoryId: subcategory.category_id,
+                createdAt: subcategory.created_at,
+              })
+            );
 
-        return {
-          id: category.id,
-          name: category.name,
-          name_en: category.name_en,
-          name_he: category.name_he,
-          icon: category.icon,
-          subcategories,
-          createdAt: category.created_at
-        };
-      });
+          return {
+            id: category.id,
+            name: category.name,
+            name_en: category.name_en,
+            name_he: category.name_he,
+            icon: category.icon,
+            subcategories,
+            createdAt: category.created_at,
+          };
+        }
+      );
 
       return categories;
     } catch (error) {
@@ -267,15 +308,15 @@ class DatabaseService {
 
   async addCategory(category: Omit<Category, 'subcategories'>): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('categories')
-        .insert([{
+      const { error } = await supabase.from('categories').insert([
+        {
           id: category.id,
           name: category.name,
           name_en: category.name_en,
           name_he: category.name_he,
-          icon: category.icon
-        }]);
+          icon: category.icon,
+        },
+      ]);
 
       if (error) {
         console.error('Error adding category:', error);
@@ -295,7 +336,7 @@ class DatabaseService {
           name: category.name,
           name_en: category.name_en,
           name_he: category.name_he,
-          icon: category.icon
+          icon: category.icon,
         })
         .eq('id', id);
 
@@ -311,10 +352,7 @@ class DatabaseService {
 
   async deleteCategory(id: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('categories').delete().eq('id', id);
 
       if (error) {
         console.error('Error deleting category:', error);
@@ -329,16 +367,16 @@ class DatabaseService {
   // Subcategories
   async addSubcategory(subcategory: Subcategory): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('subcategories')
-        .insert([{
+      const { error } = await supabase.from('subcategories').insert([
+        {
           id: subcategory.id,
           name: subcategory.name,
           name_en: subcategory.name_en,
           name_he: subcategory.name_he,
           icon: subcategory.icon,
-          category_id: subcategory.categoryId
-        }]);
+          category_id: subcategory.categoryId,
+        },
+      ]);
 
       if (error) {
         console.error('Error adding subcategory:', error);
@@ -350,7 +388,10 @@ class DatabaseService {
     }
   }
 
-  async updateSubcategory(id: string, subcategory: Partial<Subcategory>): Promise<void> {
+  async updateSubcategory(
+    id: string,
+    subcategory: Partial<Subcategory>
+  ): Promise<void> {
     try {
       const { error } = await supabase
         .from('subcategories')
@@ -359,7 +400,7 @@ class DatabaseService {
           name_en: subcategory.name_en,
           name_he: subcategory.name_he,
           icon: subcategory.icon,
-          category_id: subcategory.categoryId
+          category_id: subcategory.categoryId,
         })
         .eq('id', id);
 
@@ -384,7 +425,10 @@ class DatabaseService {
         .eq('subcategory', id);
 
       if (updateError) {
-        console.error('Error reassigning products from subcategory:', updateError);
+        console.error(
+          'Error reassigning products from subcategory:',
+          updateError
+        );
         throw new Error('Failed to reassign products from subcategory');
       }
 
@@ -416,14 +460,23 @@ class DatabaseService {
         return [];
       }
 
-      return (data || []).map(room => ({
-        id: room.id,
-        userId: room.user_id,
-        userName: room.user_name,
-        lastMessage: room.last_message,
-        lastMessageTime: room.last_message_time,
-        unreadCount: room.unread_count || 0
-      }));
+      return (data || []).map(
+        (room: {
+          id: any;
+          user_id: any;
+          user_name: any;
+          last_message: any;
+          last_message_time: any;
+          unread_count: any;
+        }) => ({
+          id: room.id,
+          userId: room.user_id,
+          userName: room.user_name,
+          lastMessage: room.last_message,
+          lastMessageTime: room.last_message_time,
+          unreadCount: room.unread_count || 0,
+        })
+      );
     } catch (error) {
       console.error('Error in getChatRooms:', error);
       return [];
@@ -443,17 +496,29 @@ class DatabaseService {
         return [];
       }
 
-      return (data || []).map(msg => ({
-        id: msg.id,
-        senderId: msg.sender_id,
-        senderName: msg.sender_name,
-        message: msg.message,
-        timestamp: msg.timestamp,
-        isAdmin: msg.is_admin,
-        audioUri: msg.audio_uri,
-        audioDuration: msg.audio_duration,
-        reactions: msg.reactions || {}
-      }));
+      return (data || []).map(
+        (msg: {
+          id: any;
+          sender_id: any;
+          sender_name: any;
+          message: any;
+          timestamp: any;
+          is_admin: any;
+          audio_uri: any;
+          audio_duration: any;
+          reactions: any;
+        }) => ({
+          id: msg.id,
+          senderId: msg.sender_id,
+          senderName: msg.sender_name,
+          message: msg.message,
+          timestamp: msg.timestamp,
+          isAdmin: msg.is_admin,
+          audioUri: msg.audio_uri,
+          audioDuration: msg.audio_duration,
+          reactions: msg.reactions || {},
+        })
+      );
     } catch (error) {
       console.error('Error in getChatMessages:', error);
       return [];
@@ -462,9 +527,8 @@ class DatabaseService {
 
   async sendChatMessage(roomId: string, message: ChatMessage): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('chat_messages')
-        .insert([{
+      const { error } = await supabase.from('chat_messages').insert([
+        {
           id: message.id,
           room_id: roomId,
           sender_id: message.senderId,
@@ -474,8 +538,9 @@ class DatabaseService {
           is_admin: message.isAdmin,
           audio_uri: message.audioUri,
           audio_duration: message.audioDuration,
-          reactions: message.reactions || {}
-        }]);
+          reactions: message.reactions || {},
+        },
+      ]);
 
       if (error) {
         console.error('Error sending chat message:', error);
@@ -496,7 +561,7 @@ class DatabaseService {
         .update({
           last_message: message.message || '🎵 Voice message',
           last_message_time: message.timestamp,
-          unread_count: currentCount + 1
+          unread_count: currentCount + 1,
         })
         .eq('id', roomId);
     } catch (error) {
@@ -603,7 +668,7 @@ class DatabaseService {
         kycRequestNotes: data.kyc_request_notes,
         kycRequestedAt: data.kyc_requested_at,
         kycApprovedBy: data.kyc_approved_by,
-        kycApprovedAt: data.kyc_approved_at
+        kycApprovedAt: data.kyc_approved_at,
       };
     } catch (error) {
       console.error('Error in getUserProfile:', error);
@@ -623,23 +688,39 @@ class DatabaseService {
         return [];
       }
 
-      return (data || []).map(profile => ({
-        id: profile.id,
-        username: profile.app_username,
-        displayName: profile.display_name,
-        email: profile.email,
-        isAdmin: profile.role === 'admin',
-        isDriver: profile.role === 'driver',
-        role: profile.role,
-        createdAt: profile.created_at,
-        updatedAt: profile.updated_at,
-        kycStatus: profile.kyc_status,
-        customerTier: profile.customer_tier,
-        kycRequestNotes: profile.kyc_request_notes,
-        kycRequestedAt: profile.kyc_requested_at,
-        kycApprovedBy: profile.kyc_approved_by,
-        kycApprovedAt: profile.kyc_approved_at
-      }));
+      return (data || []).map(
+        (profile: {
+          id: any;
+          app_username: any;
+          display_name: any;
+          email: any;
+          role: string;
+          created_at: any;
+          updated_at: any;
+          kyc_status: any;
+          customer_tier: any;
+          kyc_request_notes: any;
+          kyc_requested_at: any;
+          kyc_approved_by: any;
+          kyc_approved_at: any;
+        }) => ({
+          id: profile.id,
+          username: profile.app_username,
+          displayName: profile.display_name,
+          email: profile.email,
+          isAdmin: profile.role === 'admin',
+          isDriver: profile.role === 'driver',
+          role: profile.role,
+          createdAt: profile.created_at,
+          updatedAt: profile.updated_at,
+          kycStatus: profile.kyc_status,
+          customerTier: profile.customer_tier,
+          kycRequestNotes: profile.kyc_request_notes,
+          kycRequestedAt: profile.kyc_requested_at,
+          kycApprovedBy: profile.kyc_approved_by,
+          kycApprovedAt: profile.kyc_approved_at,
+        })
+      );
     } catch (error) {
       console.error('Error in getAllUserProfiles:', error);
       return [];
@@ -686,14 +767,14 @@ class DatabaseService {
 
   async searchUserProfiles(
     term: string
-  ): Promise<{ matrix_user_id: string; display_name: string; app_username: string }[]> {
+  ): Promise<
+    { matrix_user_id: string; display_name: string; app_username: string }[]
+  > {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
         .select('matrix_user_id, display_name, app_username')
-        .or(
-          `display_name.ilike.%${term}%,app_username.ilike.%${term}%`
-        )
+        .or(`display_name.ilike.%${term}%,app_username.ilike.%${term}%`)
         .limit(10);
 
       if (error) {
@@ -708,7 +789,10 @@ class DatabaseService {
     }
   }
 
-  async updateUserRole(userId: string, role: 'user' | 'driver' | 'admin'): Promise<void> {
+  async updateUserRole(
+    userId: string,
+    role: 'user' | 'driver' | 'admin'
+  ): Promise<void> {
     try {
       const { error } = await supabase
         .from('user_profiles')
@@ -725,7 +809,10 @@ class DatabaseService {
     }
   }
 
-  async updateUserCustomerTier(userId: string, customerTier: string): Promise<void> {
+  async updateUserCustomerTier(
+    userId: string,
+    customerTier: string
+  ): Promise<void> {
     try {
       const { error } = await supabase
         .from('user_profiles')
@@ -743,16 +830,16 @@ class DatabaseService {
   }
 
   async updateUserKycStatus(
-    userId: string, 
+    userId: string,
     status: 'none' | 'pending' | 'verified' | 'rejected',
     approvedBy?: string,
     requestNotes?: string
   ): Promise<boolean> {
     try {
-      const updateData: any = { 
-        kyc_status: status 
+      const updateData: any = {
+        kyc_status: status,
       };
-      
+
       if (status === 'pending') {
         updateData.kyc_requested_at = new Date().toISOString();
         if (requestNotes) {
@@ -764,7 +851,7 @@ class DatabaseService {
           updateData.kyc_approved_by = approvedBy;
         }
       }
-      
+
       const { error } = await supabase
         .from('user_profiles')
         .update(updateData)
@@ -774,7 +861,7 @@ class DatabaseService {
         console.error('Error updating user KYC status:', error);
         return false;
       }
-      
+
       return true;
     } catch (error) {
       console.error('Error in updateUserKycStatus:', error);
@@ -795,23 +882,39 @@ class DatabaseService {
         return [];
       }
 
-      return (data || []).map(profile => ({
-        id: profile.matrix_user_id,
-        username: profile.app_username,
-        displayName: profile.display_name,
-        email: profile.email,
-        isAdmin: profile.role === 'admin',
-        isDriver: profile.role === 'driver',
-        role: profile.role,
-        createdAt: profile.created_at,
-        updatedAt: profile.updated_at,
-        kycStatus: profile.kyc_status,
-        customerTier: profile.customer_tier,
-        kycRequestNotes: profile.kyc_request_notes,
-        kycRequestedAt: profile.kyc_requested_at,
-        kycApprovedBy: profile.kyc_approved_by,
-        kycApprovedAt: profile.kyc_approved_at
-      }));
+      return (data || []).map(
+        (profile: {
+          matrix_user_id: any;
+          app_username: any;
+          display_name: any;
+          email: any;
+          role: string;
+          created_at: any;
+          updated_at: any;
+          kyc_status: any;
+          customer_tier: any;
+          kyc_request_notes: any;
+          kyc_requested_at: any;
+          kyc_approved_by: any;
+          kyc_approved_at: any;
+        }) => ({
+          id: profile.matrix_user_id,
+          username: profile.app_username,
+          displayName: profile.display_name,
+          email: profile.email,
+          isAdmin: profile.role === 'admin',
+          isDriver: profile.role === 'driver',
+          role: profile.role,
+          createdAt: profile.created_at,
+          updatedAt: profile.updated_at,
+          kycStatus: profile.kyc_status,
+          customerTier: profile.customer_tier,
+          kycRequestNotes: profile.kyc_request_notes,
+          kycRequestedAt: profile.kyc_requested_at,
+          kycApprovedBy: profile.kyc_approved_by,
+          kycApprovedAt: profile.kyc_approved_at,
+        })
+      );
     } catch (error) {
       console.error('Error in getPendingKycRequests:', error);
       return [];
@@ -860,9 +963,7 @@ class DatabaseService {
 
   async addReview(review: Review): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .insert([review]);
+      const { error } = await supabase.from('reviews').insert([review]);
 
       if (error) {
         console.error('Error adding review:', error);
@@ -893,10 +994,7 @@ class DatabaseService {
 
   async deleteReview(id: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('reviews').delete().eq('id', id);
 
       if (error) {
         console.error('Error deleting review:', error);
@@ -1053,33 +1151,60 @@ class DatabaseService {
       }
 
       const effectiveRules =
-        rulesError && rulesError.code === '42P01' ? [] : (rulesData || []);
+        rulesError && rulesError.code === '42P01' ? [] : rulesData || [];
 
-      return (tiersData || []).map(tier => ({
-        id: tier.id,
-        name: tier.name,
-        name_en: tier.name_en,
-        name_he: tier.name_he,
-        pricePerUnit: tier.price_per_unit, // Changed from discount to price_per_unit
-        minQuantity: tier.min_quantity,
-        description: tier.description,
-        description_en: tier.description_en,
-        description_he: tier.description_he,
-        createdAt: tier.created_at,
-        rules: effectiveRules
-          .filter(r => r.tier_id === tier.id)
-          .sort((a, b) => a.min_qty - b.min_qty)
-          .map(r => ({
-            id: r.id,
-            tierId: r.tier_id,
-            minQty: r.min_qty,
-            maxQty: r.max_qty,
-            pricePerBaseUnit: r.price_per_unit,
-            discountPct: r.discount_pct,
-            createdAt: r.created_at,
-            updatedAt: r.updated_at
-          }))
-      }));
+      return (tiersData || []).map(
+        (tier: {
+          id: any;
+          name: any;
+          name_en: any;
+          name_he: any;
+          price_per_unit: any;
+          min_quantity: any;
+          description: any;
+          description_en: any;
+          description_he: any;
+          created_at: any;
+        }) => ({
+          id: tier.id,
+          name: tier.name,
+          name_en: tier.name_en,
+          name_he: tier.name_he,
+          pricePerUnit: tier.price_per_unit, // Changed from discount to price_per_unit
+          minQuantity: tier.min_quantity,
+          description: tier.description,
+          description_en: tier.description_en,
+          description_he: tier.description_he,
+          createdAt: tier.created_at,
+          rules: effectiveRules
+            .filter((r: { tier_id: any }) => r.tier_id === tier.id)
+            .sort(
+              (a: { min_qty: number }, b: { min_qty: number }) =>
+                a.min_qty - b.min_qty
+            )
+            .map(
+              (r: {
+                id: any;
+                tier_id: any;
+                min_qty: any;
+                max_qty: any;
+                price_per_unit: any;
+                discount_pct: any;
+                created_at: any;
+                updated_at: any;
+              }) => ({
+                id: r.id,
+                tierId: r.tier_id,
+                minQty: r.min_qty,
+                maxQty: r.max_qty,
+                pricePerBaseUnit: r.price_per_unit,
+                discountPct: r.discount_pct,
+                createdAt: r.created_at,
+                updatedAt: r.updated_at,
+              })
+            ),
+        })
+      );
     } catch (error) {
       console.error('Error in getPricingTiers:', error);
       return [];
@@ -1116,7 +1241,7 @@ class DatabaseService {
       }
 
       const effectiveRules =
-        rulesError && rulesError.code === '42P01' ? [] : (rulesData || []);
+        rulesError && rulesError.code === '42P01' ? [] : rulesData || [];
 
       return {
         id: data.id,
@@ -1129,16 +1254,27 @@ class DatabaseService {
         description_en: data.description_en,
         description_he: data.description_he,
         createdAt: data.created_at,
-        rules: effectiveRules.map(r => ({
-          id: r.id,
-          tierId: r.tier_id,
-          minQty: r.min_qty,
-          maxQty: r.max_qty,
-          pricePerBaseUnit: r.price_per_unit,
-          discountPct: r.discount_pct,
-          createdAt: r.created_at,
-          updatedAt: r.updated_at
-        }))
+        rules: effectiveRules.map(
+          (r: {
+            id: any;
+            tier_id: any;
+            min_qty: any;
+            max_qty: any;
+            price_per_unit: any;
+            discount_pct: any;
+            created_at: any;
+            updated_at: any;
+          }) => ({
+            id: r.id,
+            tierId: r.tier_id,
+            minQty: r.min_qty,
+            maxQty: r.max_qty,
+            pricePerBaseUnit: r.price_per_unit,
+            discountPct: r.discount_pct,
+            createdAt: r.created_at,
+            updatedAt: r.updated_at,
+          })
+        ),
       };
     } catch (error) {
       console.error('Error in getPricingTier:', error);
@@ -1148,9 +1284,8 @@ class DatabaseService {
 
   async addPricingTier(tier: PricingTier): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('pricing_tiers')
-        .insert([{
+      const { error } = await supabase.from('pricing_tiers').insert([
+        {
           id: tier.id,
           name: tier.name,
           name_en: tier.name_en,
@@ -1159,8 +1294,9 @@ class DatabaseService {
           min_quantity: tier.minQuantity,
           description: tier.description,
           description_en: tier.description_en,
-          description_he: tier.description_he
-        }]);
+          description_he: tier.description_he,
+        },
+      ]);
 
       if (error) {
         console.error('Error adding pricing tier:', error);
@@ -1168,12 +1304,12 @@ class DatabaseService {
       }
 
       if (tier.rules && tier.rules.length > 0) {
-        const rulesToInsert = tier.rules.map(r => ({
+        const rulesToInsert = tier.rules.map((r) => ({
           tier_id: tier.id,
           min_qty: r.minQty,
           max_qty: r.maxQty,
           price_per_unit: r.pricePerBaseUnit,
-          discount_pct: r.discountPct
+          discount_pct: r.discountPct,
         }));
         const { error: ruleError } = await supabase
           .from('price_tier_rules')
@@ -1195,7 +1331,10 @@ class DatabaseService {
     }
   }
 
-  async updatePricingTier(id: string, tier: Partial<PricingTier>): Promise<void> {
+  async updatePricingTier(
+    id: string,
+    tier: Partial<PricingTier>
+  ): Promise<void> {
     try {
       const { error } = await supabase
         .from('pricing_tiers')
@@ -1207,7 +1346,7 @@ class DatabaseService {
           min_quantity: tier.minQuantity,
           description: tier.description,
           description_en: tier.description_en,
-          description_he: tier.description_he
+          description_he: tier.description_he,
         })
         .eq('id', id);
 
@@ -1228,12 +1367,12 @@ class DatabaseService {
         }
 
         if (tier.rules.length > 0) {
-          const rulesToInsert = tier.rules.map(r => ({
+          const rulesToInsert = tier.rules.map((r) => ({
             tier_id: id,
             min_qty: r.minQty,
             max_qty: r.maxQty,
             price_per_unit: r.pricePerBaseUnit,
-            discount_pct: r.discountPct
+            discount_pct: r.discountPct,
           }));
           const { error: ruleError } = await supabase
             .from('price_tier_rules')
@@ -1263,7 +1402,7 @@ class DatabaseService {
         .from('products')
         .update({ pricing_tier: 'standard' })
         .eq('pricing_tier', id);
-      
+
       // Then delete the tier
       const { error } = await supabase
         .from('pricing_tiers')
@@ -1293,12 +1432,19 @@ class DatabaseService {
         return [];
       }
 
-      return (data || []).map(group => ({
-        id: group.id,
-        name: group.name,
-        conversionFactor: group.conversion_factor,
-        createdAt: group.created_at
-      }));
+      return (data || []).map(
+        (group: {
+          id: any;
+          name: any;
+          conversion_factor: any;
+          created_at: any;
+        }) => ({
+          id: group.id,
+          name: group.name,
+          conversionFactor: group.conversion_factor,
+          createdAt: group.created_at,
+        })
+      );
     } catch (error) {
       console.error('Error in getMixGroups:', error);
       return [];
@@ -1324,7 +1470,7 @@ class DatabaseService {
         id: data.id,
         name: data.name,
         conversionFactor: data.conversion_factor,
-        createdAt: data.created_at
+        createdAt: data.created_at,
       };
     } catch (error) {
       console.error('Error in getMixGroup:', error);
@@ -1336,7 +1482,13 @@ class DatabaseService {
     try {
       const { error } = await supabase
         .from('mix_groups')
-        .insert([{ id: group.id, name: group.name, conversion_factor: group.conversionFactor }]);
+        .insert([
+          {
+            id: group.id,
+            name: group.name,
+            conversion_factor: group.conversionFactor,
+          },
+        ]);
 
       if (error) {
         console.error('Error adding mix group:', error);
@@ -1354,7 +1506,7 @@ class DatabaseService {
         .from('mix_groups')
         .update({
           name: group.name,
-          conversion_factor: group.conversionFactor
+          conversion_factor: group.conversionFactor,
         })
         .eq('id', id);
 
@@ -1376,10 +1528,7 @@ class DatabaseService {
         .update({ mix_group_id: null })
         .eq('mix_group_id', id);
 
-      const { error } = await supabase
-        .from('mix_groups')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('mix_groups').delete().eq('id', id);
 
       if (error) {
         console.error('Error deleting mix group:', error);
@@ -1482,7 +1631,11 @@ class DatabaseService {
   }
 
   // Orders
-  async getUserOrders(userId: string): Promise<{ id: string; total: number; status: string; createdAt: string }[]> {
+  async getUserOrders(
+    userId: string
+  ): Promise<
+    { id: string; total: number; status: string; createdAt: string }[]
+  > {
     try {
       const { data, error } = await supabase
         .from('orders')
@@ -1499,7 +1652,7 @@ class DatabaseService {
         id: o.id,
         total: Number(o.total),
         status: o.status,
-        createdAt: o.created_at
+        createdAt: o.created_at,
       }));
     } catch (error) {
       console.error('Error in getUserOrders:', error);
@@ -1521,17 +1674,29 @@ class DatabaseService {
         return [];
       }
 
-      return (data || []).map(job => ({
-        id: job.id,
-        orderId: job.order_id,
-        driverId: job.driver_id,
-        status: job.status,
-        pickupTime: job.pickup_time || undefined,
-        dropoffTime: job.dropoff_time || undefined,
-        proofUri: job.proof_uri || undefined,
-        createdAt: job.created_at,
-        updatedAt: job.updated_at,
-      }));
+      return (data || []).map(
+        (job: {
+          id: any;
+          order_id: any;
+          driver_id: any;
+          status: any;
+          pickup_time: any;
+          dropoff_time: any;
+          proof_uri: any;
+          created_at: any;
+          updated_at: any;
+        }) => ({
+          id: job.id,
+          orderId: job.order_id,
+          driverId: job.driver_id,
+          status: job.status,
+          pickupTime: job.pickup_time || undefined,
+          dropoffTime: job.dropoff_time || undefined,
+          proofUri: job.proof_uri || undefined,
+          createdAt: job.created_at,
+          updatedAt: job.updated_at,
+        })
+      );
     } catch (error) {
       console.error('Error in getDeliveryJobsForDriver:', error);
       return [];
@@ -1550,17 +1715,29 @@ class DatabaseService {
         return [];
       }
 
-      return (data || []).map(job => ({
-        id: job.id,
-        orderId: job.order_id,
-        driverId: job.driver_id,
-        status: job.status,
-        pickupTime: job.pickup_time || undefined,
-        dropoffTime: job.dropoff_time || undefined,
-        proofUri: job.proof_uri || undefined,
-        createdAt: job.created_at,
-        updatedAt: job.updated_at,
-      }));
+      return (data || []).map(
+        (job: {
+          id: any;
+          order_id: any;
+          driver_id: any;
+          status: any;
+          pickup_time: any;
+          dropoff_time: any;
+          proof_uri: any;
+          created_at: any;
+          updated_at: any;
+        }) => ({
+          id: job.id,
+          orderId: job.order_id,
+          driverId: job.driver_id,
+          status: job.status,
+          pickupTime: job.pickup_time || undefined,
+          dropoffTime: job.dropoff_time || undefined,
+          proofUri: job.proof_uri || undefined,
+          createdAt: job.created_at,
+          updatedAt: job.updated_at,
+        })
+      );
     } catch (error) {
       console.error('Error in getAllDeliveryJobs:', error);
       return [];
@@ -1571,7 +1748,9 @@ class DatabaseService {
     try {
       const { error } = await supabase
         .from('delivery_jobs')
-        .insert([{ order_id: orderId, driver_id: driverId, status: 'pending' }]);
+        .insert([
+          { order_id: orderId, driver_id: driverId, status: 'pending' },
+        ]);
 
       if (error) {
         console.error('Error creating delivery job:', error);
@@ -1583,7 +1762,10 @@ class DatabaseService {
     }
   }
 
-  async updateDeliveryJobStatus(jobId: string, status: DeliveryJobStatus): Promise<void> {
+  async updateDeliveryJobStatus(
+    jobId: string,
+    status: DeliveryJobStatus
+  ): Promise<void> {
     try {
       const { error } = await supabase
         .from('delivery_jobs')
@@ -1660,14 +1842,14 @@ class DatabaseService {
         }
       } else {
         // Insert new setting
-        const { error } = await supabase
-          .from('settings')
-          .insert([{ 
-            key, 
-            value, 
+        const { error } = await supabase.from('settings').insert([
+          {
+            key,
+            value,
             type: 'string',
-            description: `Setting for ${key}`
-          }]);
+            description: `Setting for ${key}`,
+          },
+        ]);
 
         if (error) {
           console.error(`Error inserting setting ${key}:`, error);
@@ -1692,10 +1874,16 @@ class DatabaseService {
       }
 
       // Convert array of {key, value} to object
-      return (data || []).reduce((acc, item) => {
-        acc[item.key] = item.value;
-        return acc;
-      }, {} as Record<string, string>);
+      return (data || []).reduce(
+        (
+          acc: { [x: string]: any },
+          item: { key: string | number; value: any }
+        ) => {
+          acc[item.key] = item.value;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
     } catch (error) {
       console.error('Error in getAllSettings:', error);
       return {};
