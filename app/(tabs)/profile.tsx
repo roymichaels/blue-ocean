@@ -19,6 +19,9 @@ import {
   Bell,
   Truck,
   Package,
+  CircleCheck as CheckCircle,
+  TriangleAlert as AlertTriangle,
+  Clock,
 } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -163,6 +166,35 @@ export default function ProfileScreen() {
               </Text>
             </View>
           )}
+
+          {isLoggedIn && (
+            <View
+              style={[
+                styles.kycBadge,
+                {
+                  backgroundColor:
+                    user?.kycStatus === 'verified'
+                      ? colors.status.success
+                      : user?.kycStatus === 'pending'
+                      ? colors.interactive.primary
+                      : colors.status.error,
+                },
+              ]}
+            >
+              {user?.kycStatus === 'verified' && (
+                <CheckCircle size={16} color={colors.text.inverse} />
+              )}
+              {user?.kycStatus === 'pending' && (
+                <Clock size={16} color={colors.text.inverse} />
+              )}
+              {(user?.kycStatus === 'none' || user?.kycStatus === 'rejected') && (
+                <AlertTriangle size={16} color={colors.text.inverse} />
+              )}
+              <Text style={[styles.kycBadgeText, { color: colors.text.inverse }]}> 
+                {t(`kyc.${user?.kycStatus || 'none'}`)}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Quick Stats for logged in users */}
@@ -245,6 +277,25 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
+            {(user?.kycStatus === 'none' || user?.kycStatus === 'rejected') && (
+              <TouchableOpacity
+                style={[
+                  styles.menuItem,
+                  {
+                    backgroundColor: colors.surface.primary,
+                    borderColor: colors.border.primary,
+                  },
+                ]}
+                onPress={() => router.push('/kyc')}
+              >
+                <View style={styles.menuItemContent}>
+                  <Shield size={24} color={colors.gold} />
+                  <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                    {t('profile.kycVerification')}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
@@ -506,6 +557,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   adminBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  kycBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginTop: 8,
+  },
+  kycBadgeText: {
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,

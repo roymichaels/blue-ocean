@@ -20,6 +20,7 @@ import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useNotifications } from './NotificationContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { router } from 'expo-router';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
@@ -47,6 +48,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const { showNotification } = useNotifications();
+  const { t } = useLanguage();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Modal states
@@ -60,6 +62,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     visible: false,
     title: '',
     message: '',
+    confirmText: '',
+    cancelText: '',
     action: () => {}
   });
 
@@ -149,29 +153,28 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     // Check KYC status
     if (user && user.kycStatus !== 'verified') {
       let message = '';
-      let actionText = '';
-      
+
       switch (user.kycStatus) {
         case 'none':
-          message = 'נדרש אימות KYC כדי לבצע הזמנות. האם ברצונך לעבור לתהליך האימות?';
-          actionText = 'עבור לאימות KYC';
+          message = t('kyc.requiredForOrders');
           break;
         case 'pending':
-          message = 'האימות שלך בהמתנה. לא ניתן לבצע הזמנות עד להשלמת האימות.';
+          message = t('kyc.pendingOrdersMessage');
           break;
         case 'rejected':
-          message = 'האימות שלך נדחה. אנא השלם את תהליך האימות כדי לבצע הזמנות.';
-          actionText = 'עבור לאימות KYC';
+          message = t('kyc.rejectedOrdersMessage');
           break;
         default:
-          message = 'נדרש אימות KYC כדי לבצע הזמנות.';
+          message = t('kyc.requiredForOrders');
       }
-      
+
       if (user.kycStatus === 'none' || user.kycStatus === 'rejected') {
         setConfirmModal({
           visible: true,
-          title: 'נדרש אימות KYC',
+          title: t('kyc.verification'),
           message,
+          confirmText: t('kyc.goToKyc'),
+          cancelText: t('common.cancel'),
           action: () => {
             onClose();
             router.push('/kyc');
@@ -180,7 +183,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       } else {
         setInfoModal({
           visible: true,
-          title: 'נדרש אימות KYC',
+          title: t('kyc.verification'),
           message,
           type: 'warning'
         });
@@ -869,13 +872,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         visible={confirmModal.visible}
         title={confirmModal.title}
         message={confirmModal.message}
-        confirmText="אישור"
-        cancelText="ביטול"
+        confirmText={confirmModal.confirmText || t('common.confirm')}
+        cancelText={confirmModal.cancelText || t('common.cancel')}
         onConfirm={() => {
           confirmModal.action();
-          setConfirmModal({...confirmModal, visible: false});
+          setConfirmModal({ ...confirmModal, visible: false });
         }}
-        onCancel={() => setConfirmModal({...confirmModal, visible: false})}
+        onCancel={() => setConfirmModal({ ...confirmModal, visible: false })}
       />
     </>
   );
