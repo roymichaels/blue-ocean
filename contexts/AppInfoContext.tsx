@@ -31,9 +31,10 @@ interface AppInfoProviderProps {
 }
 
 
-const NAME_KEY = 'app_platform_name';
-const LOGO_KEY = 'app_platform_logo';
-const COLOR_KEY = 'app_theme_color';
+// Store branding separately for each tenant to avoid cross-tenant mixing
+const NAME_KEY = `app_platform_name_${TENANT}`;
+const LOGO_KEY = `app_platform_logo_${TENANT}`;
+const COLOR_KEY = `app_theme_color_${TENANT}`;
 
 export function AppInfoProvider({ children }: AppInfoProviderProps) {
   const [platformName, setPlatformNameState] = useState('');
