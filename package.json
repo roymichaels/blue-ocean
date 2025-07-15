@@ -8,8 +8,8 @@
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
     "build:web": "expo export --platform web",
-    "build:web:thecongress": "cross-env ENVFILE=.env.thecongress EXPO_PUBLIC_TENANT=thecongress expo export:web --output-dir dist/thecongress",
-    "build:web:thebull": "cross-env ENVFILE=.env.thebull EXPO_PUBLIC_TENANT=thebull expo export:web --output-dir dist/thebull"
+    "build:web:thecongress": "cross-env ENVFILE=.env.thecongress EXPO_PUBLIC_TENANT=thecongress expo export --platform web --output-dir dist/thecongress",
+    "build:web:thebull": "cross-env ENVFILE=.env.thebull EXPO_PUBLIC_TENANT=thebull expo export:web  --platform web --output-dir dist/thebull"
   },
   "dependencies": {
     "@babel/plugin-transform-template-literals": "^7.27.1",
