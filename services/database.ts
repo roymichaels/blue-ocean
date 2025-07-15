@@ -768,7 +768,7 @@ class DatabaseService {
       const { error } = await supabase
         .from('user_profiles')
         .update(updateData)
-        .eq('matrix_user_id', userId);
+        .eq('id', userId);
 
       if (error) {
         console.error('Error updating user KYC status:', error);
