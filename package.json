@@ -9,8 +9,8 @@
     "lint": "expo lint",
     "update:appjson": "node scripts/update-app-json.js",
     "build:web": "yarn update:appjson && expo export --platform web",
-    "build:web:thecongress": "cross-env ENVFILE=.env.thecongress EXPO_PUBLIC_TENANT=thecongress EXPO_PUBLIC_APP_NAME=TheCongress yarn update:appjson && expo export --platform web --output-dir dist/thecongress",
-    "build:web:thebull": "cross-env ENVFILE=.env.thebull EXPO_PUBLIC_TENANT=thebull EXPO_PUBLIC_APP_NAME=TheBull yarn update:appjson && expo export --platform web --output-dir dist/thebull",
+    "build:web:thecongress": "env-cmd -f .env.thecongress yarn update:appjson && expo export --platform web --output-dir dist/thecongress",
+    "build:web:thebull": "env-cmd -f .env.thebull    yarn update:appjson && expo export --platform web --output-dir dist/thebull",
     "build:web:all": "yarn build:web:thecongress && yarn build:web:thebull"
   },
   "dependencies": {
@@ -77,6 +77,7 @@
     "assert": "^2.1.0",
     "babel-plugin-transform-import-meta": "^2.3.3",
     "crypto-browserify": "^3.12.1",
+    "env-cmd": "^10.1.0",
     "eslint": "^8.55.0",
     "eslint-config-expo": "~9.2.0",
     "eslint-plugin-react-hooks": "^4.6.0",
