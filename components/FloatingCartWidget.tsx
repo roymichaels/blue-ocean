@@ -254,7 +254,7 @@ export default function FloatingCartWidget() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 170,
     left: 16,
     right: 16,
     borderRadius: 16,

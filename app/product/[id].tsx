@@ -39,6 +39,7 @@ import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import MediaService from '../../services/media';
 import GlobalHeader from '../../components/GlobalHeader';
+import FloatingCartWidget from '../../components/FloatingCartWidget';
 
 
 
@@ -742,44 +743,7 @@ export default function ProductDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom Actions */}
-      <View
-        style={[
-          styles.bottomActions,
-          {
-            borderTopColor: colors.border.primary,
-            backgroundColor: colors.background,
-          },
-        ]}
-      >
-        <TouchableOpacity
-          style={[
-            styles.buyNowButton,
-            { borderColor: colors.gold },
-            product.stock === 0 && styles.buttonDisabled,
-          ]}
-          onPress={buyNow}
-          disabled={product.stock === 0}
-        >
-          <Text style={[styles.buyNowText, { color: colors.gold }]}>
-            קנה עכשיו
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.addToCartButton,
-            { backgroundColor: colors.gold },
-            product.stock === 0 && styles.buttonDisabled,
-          ]}
-          onPress={addToCart}
-          disabled={product.stock === 0}
-        >
-          <ShoppingCart size={20} color={colors.text.inverse} />
-          <Text style={[styles.addToCartText, { color: colors.text.inverse }]}>
-            הוסף לעגלה
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <FloatingCartWidget />
 
       {/* Full Screen Media Viewer */}
       <FullScreenMediaViewer
@@ -1033,43 +997,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'right',
-  },
-  bottomActions: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-  },
-  buyNowButton: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderRadius: 25,
-    paddingVertical: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
-  buyNowText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  addToCartButton: {
-    flex: 1,
-    borderRadius: 25,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  addToCartText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
   },
   modalContainer: {
     flex: 1,
