@@ -440,6 +440,13 @@ export default function ChatWidget() {
     }
   };
 
+  const messageUser = async (id: string, name: string) => {
+    setProfileModalVisible(false);
+    setProfileUserId(null);
+    setIsOpen(true);
+    await openSearchResult({ id, displayName: name, isAppUser: true });
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim() || isSending) return;
     setIsSending(true);
@@ -1282,6 +1289,8 @@ export default function ChatWidget() {
       <UserProfileModal
         visible={profileModalVisible}
         userId={profileUserId || ''}
+        isAdmin={isAdmin || isDriver}
+        onMessage={messageUser}
         onClose={() => {
           setProfileModalVisible(false);
           setProfileUserId(null);

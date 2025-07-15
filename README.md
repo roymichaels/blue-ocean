@@ -49,7 +49,6 @@ the same value is used for all clients so they can decrypt messages.
 Logos and other uploaded images are stored on IPFS via Pinata. Set
 `EXPO_PUBLIC_PINATA_JWT` (or API key/secret) in your `.env` file so uploads can
 succeed.
-
 ## Supabase Migrations
 
 Before running the Expo app, apply the SQL files in `supabase/migrations` so
@@ -87,6 +86,10 @@ web PWA for a specific tenant using the scripts below. The output is placed in
 
 Each build sets `EXPO_PUBLIC_TENANT` so the app loads the matching row from
 `tenant_settings`.
+
+Before the export step runs, the `update:appjson` script updates `app.json`
+using the current `EXPO_PUBLIC_APP_NAME` and `EXPO_PUBLIC_TENANT` values. This
+ensures each build gets its own application name and slug.
 
 ```sh
 # Build The Congress

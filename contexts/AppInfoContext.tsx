@@ -7,6 +7,8 @@ import MediaService from '../services/media';
 
 const TENANT = process.env.EXPO_PUBLIC_TENANT || 'default';
 
+const TENANT = process.env.EXPO_PUBLIC_TENANT || 'default';
+
 interface AppInfoContextType {
   platformName: string;
   platformLogo: string;
