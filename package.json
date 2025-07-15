@@ -11,7 +11,8 @@
     "build:web": "yarn update:appjson && expo export --platform web",
     "build:web:thecongress": "sh -c 'env-cmd -f .env.thecongress yarn update:appjson && expo export --platform web --output-dir dist/thecongress'",
     "build:web:thebull": "sh -c 'env-cmd -f .env.thebull yarn update:appjson && expo export --platform web --output-dir dist/thebull'",
-    "build:web:all": "yarn build:web:thecongress && yarn build:web:thebull"
+    "build:web:all": "yarn build:web:thecongress && yarn build:web:thebull",
+    "migrate": "npx supabase db push --file supabase/migrations/00000000000000_initial_schema.sql"
   },
   "dependencies": {
     "@babel/plugin-transform-template-literals": "^7.27.1",
