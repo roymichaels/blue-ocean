@@ -3,6 +3,9 @@ import React, { createContext, useState, useContext, useEffect, ReactNode, useRe
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import DatabaseService from '../services/database';
+import MediaService from '../services/media';
+
+const TENANT = process.env.EXPO_PUBLIC_TENANT || 'default';
 
 const TENANT = process.env.EXPO_PUBLIC_TENANT || 'default';
 
@@ -101,13 +104,20 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
 
   const setPlatformLogo = async (logo: string) => {
     try {
-      setPlatformLogoState(logo);
-      await AsyncStorage.setItem(LOGO_KEY, logo);
+      let finalLogo = logo;
+      if (logo && !logo.startsWith('http')) {
+        const mediaSvc = MediaService.getInstance();
+        finalLogo = await mediaSvc.uploadMedia(logo, 'tenant_logo');
+      }
+
+      setPlatformLogoState(finalLogo);
+      await AsyncStorage.setItem(LOGO_KEY, finalLogo);
       const db = DatabaseService.getInstance();
-      await db.updateTenantSetting(TENANT, 'platform_logo', logo);
+      await db.updateTenantSetting(TENANT, 'platform_logo', finalLogo);
       scheduleLoadInfo();
     } catch (e) {
       console.error('Error setting platform logo:', e);
+      throw e;
     }
   };
 
@@ -120,6 +130,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       scheduleLoadInfo();
     } catch (e) {
       console.error('Error setting theme color:', e);
+      throw e;
     }
   };
 

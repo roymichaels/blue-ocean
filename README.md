@@ -46,6 +46,9 @@ the same value is used for all clients so they can decrypt messages.
 `EXPO_PUBLIC_TENANT` specifies which tenant's branding to load from the
 `tenant_settings` table. Example values are `thecongress` or `thebull`.
 
+Logos and other uploaded images are stored on IPFS via Pinata. Set
+`EXPO_PUBLIC_PINATA_JWT` (or API key/secret) in your `.env` file so uploads can
+succeed.
 ## Supabase Migrations
 
 Before running the Expo app, apply the SQL files in `supabase/migrations` so
