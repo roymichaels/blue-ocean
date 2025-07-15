@@ -154,6 +154,8 @@ class CartService {
           it.unitPrice = rule.pricePerBaseUnit * conversionFactor;
         } else if (rule?.discountPct !== undefined && rule.discountPct !== null) {
           it.unitPrice = it.product.price * (1 - rule.discountPct / 100);
+        } else if (tier?.pricePerUnit !== undefined && tier.pricePerUnit !== null) {
+          it.unitPrice = tier.pricePerUnit * conversionFactor;
         } else {
           it.unitPrice = it.product.price;
         }

@@ -39,6 +39,20 @@ export default function SubcategoryScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
+  const getEffectivePrice = (p: Product): number => {
+    if (!p.pricingTier) return p.price;
+    const tier = pricingTiers.find(t => t.id === p.pricingTier);
+    if (!tier) return p.price;
+    if (tier.rules && tier.rules.length > 0) {
+      const sorted = [...tier.rules].sort((a, b) => a.minQty - b.minQty);
+      const rule = sorted[0];
+      if (typeof rule.pricePerBaseUnit === 'number') return rule.pricePerBaseUnit;
+      if (typeof rule.discountPct === 'number')
+        return p.price * (1 - rule.discountPct / 100);
+    }
+    if (typeof tier.pricePerUnit === 'number') return tier.pricePerUnit;
+    return p.price;
+  };
   const [loading, setLoading] = useState(true);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -253,7 +267,12 @@ export default function SubcategoryScreen() {
       return;
     }
 
-    if (!newProduct.name || !newProduct.description || !newProduct.price || newProduct.price <= 0) {
+    const requiresPrice = !newProduct.pricingTier;
+    if (
+      !newProduct.name ||
+      !newProduct.description ||
+      (requiresPrice && (!newProduct.price || newProduct.price <= 0))
+    ) {
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -312,6 +331,7 @@ export default function SubcategoryScreen() {
       const db = DatabaseService.getInstance();
       const productData = {
         ...newProduct,
+        price: newProduct.pricingTier ? 0 : newProduct.price,
         images: productMedia.filter(m => m.type === 'image').map(m => m.uri),
         videos: productMedia.filter(m => m.type === 'video').map(m => m.uri)
       };
@@ -417,7 +437,7 @@ export default function SubcategoryScreen() {
   };
 
   const selectPricingTier = (tierId: string) => {
-    setNewProduct({...newProduct, pricingTier: tierId});
+    setNewProduct({ ...newProduct, pricingTier: tierId, price: 0 });
     setShowPricingTierSelector(false);
   };
 
@@ -481,9 +501,15 @@ export default function SubcategoryScreen() {
         <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={2}>{item.name}</Text>
         
         <View style={styles.priceContainer}>
-          <Text style={[styles.currentPrice, { color: colors.gold }]}>{currencySymbol}{item.price.toFixed(2)}</Text>
-          {item.originalPrice && (
-            <Text style={[styles.originalPrice, { color: colors.text.tertiary }]}>{currencySymbol}{item.originalPrice.toFixed(2)}</Text>
+          <Text style={[styles.currentPrice, { color: colors.gold }]}>
+            {currencySymbol}
+            {getEffectivePrice(item).toFixed(2)}
+          </Text>
+          {item.originalPrice && !item.pricingTier && (
+            <Text style={[styles.originalPrice, { color: colors.text.tertiary }]}>
+              {currencySymbol}
+              {item.originalPrice.toFixed(2)}
+            </Text>
           )}
         </View>
 

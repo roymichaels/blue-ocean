@@ -133,13 +133,27 @@ export default function ProductFormModal({
   };
 
   const selectPricingTier = (id: string) => {
-    setEditingProduct({ ...editingProduct, pricingTier: id });
+    setEditingProduct({
+      ...editingProduct,
+      pricingTier: id,
+      price: 0,
+    });
     setShowPricingTierSelector(false);
   };
 
   const saveProduct = async () => {
-    if (!editingProduct.name || !editingProduct.description || !editingProduct.price || editingProduct.price <= 0) {
-      setInfoModal({ visible: true, title: 'שגיאה', message: 'אנא מלא את כל השדות הנדרשים', type: 'error' });
+    const requiresPrice = !editingProduct.pricingTier;
+    if (
+      !editingProduct.name ||
+      !editingProduct.description ||
+      (requiresPrice && (!editingProduct.price || editingProduct.price <= 0))
+    ) {
+      setInfoModal({
+        visible: true,
+        title: 'שגיאה',
+        message: 'אנא מלא את כל השדות הנדרשים',
+        type: 'error',
+      });
       return;
     }
     if (productMedia.length === 0) {
@@ -230,21 +244,25 @@ export default function ProductFormModal({
               />
             </View>
 
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר *</Text>
-              <TextInput
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={editingProduct.price?.toString()}
-                onChangeText={text => setEditingProduct({ ...editingProduct, price: parseFloat(text) || 0 })}
-                placeholder="הכנס מחיר"
-                keyboardType="numeric"
-                textAlign="right"
-              />
-            </View>
+            {!editingProduct.pricingTier && (
+              <View style={styles.formGroup}>
+                <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר *</Text>
+                <TextInput
+                  style={[styles.formInput, {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.surface.primary,
+                    color: colors.text.primary,
+                  }]}
+                  value={editingProduct.price?.toString()}
+                  onChangeText={text =>
+                    setEditingProduct({ ...editingProduct, price: parseFloat(text) || 0 })
+                  }
+                  placeholder="הכנס מחיר"
+                  keyboardType="numeric"
+                  textAlign="right"
+                />
+              </View>
+            )}
 
 
             <View style={styles.formGroup}>

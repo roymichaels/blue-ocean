@@ -40,6 +40,16 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [pricingTier, setPricingTier] = useState<PricingTier | null>(null);
+  const getDisplayPrice = (): number => {
+    if (!pricingTier) return product.price;
+    if (pricingTier.rules && pricingTier.rules.length > 0) {
+      const rule = [...pricingTier.rules].sort((a, b) => a.minQty - b.minQty)[0];
+      if (typeof rule.pricePerBaseUnit === 'number') return rule.pricePerBaseUnit;
+      if (typeof rule.discountPct === 'number') return product.price * (1 - rule.discountPct / 100);
+    }
+    if (typeof pricingTier.pricePerUnit === 'number') return pricingTier.pricePerUnit;
+    return product.price;
+  };
   const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
@@ -233,8 +243,11 @@ export default function ProductCard({
 
         {/* Price */}
         <View style={styles.priceContainer}>
-          <Text style={[styles.currentPrice, { color: colors.gold }]}>{currencySymbol}{product.price.toFixed(2)}</Text>
-          {product.originalPrice && (
+          <Text style={[styles.currentPrice, { color: colors.gold }]}>
+            {currencySymbol}
+            {getDisplayPrice().toFixed(2)}
+          </Text>
+          {product.originalPrice && !product.pricingTier && (
             <Text style={[styles.originalPrice, { color: colors.text.tertiary }]}>{currencySymbol}{product.originalPrice.toFixed(2)}</Text>
           )}
         </View>
