@@ -13,6 +13,7 @@ import { useAuth } from '../../components/AuthContext';
 import OrderService from '../../services/orders';
 import { Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
@@ -27,6 +28,7 @@ export default function OrdersScreen() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -63,8 +65,8 @@ export default function OrdersScreen() {
       console.error('Error loading orders:', error);
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'טעינת ההזמנות נכשלה',
+        title: t('common.error'),
+        message: t('orders.loadError'),
         type: 'error'
       });
     }
@@ -77,12 +79,18 @@ export default function OrdersScreen() {
 
   const getOrderStatusText = (status: string) => {
     switch (status) {
-      case 'order_received': return 'הזמנה התקבלה';
-      case 'courier_found': return 'נמצא שליח';
-      case 'courier_picked_up': return 'שליח אסף';
-      case 'courier_on_way': return 'שליח בדרך';
-      case 'delivered': return 'נמסר';
-      default: return status;
+      case 'order_received':
+        return t('orders.status.orderReceived');
+      case 'courier_found':
+        return t('orders.status.courierFound');
+      case 'courier_picked_up':
+        return t('orders.status.courierPickedUp');
+      case 'courier_on_way':
+        return t('orders.status.courierOnWay');
+      case 'delivered':
+        return t('orders.status.delivered');
+      default:
+        return status;
     }
   };
 
@@ -131,7 +139,9 @@ export default function OrdersScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ההזמנות שלי</Text>
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
+          {t('orders.title')}
+        </Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -150,7 +160,9 @@ export default function OrdersScreen() {
                 >
                   <View style={[styles.orderHeader, { borderBottomColor: colors.border.secondary }]}>
                     <View style={styles.orderInfo}>
-                      <Text style={[styles.orderNumber, { color: colors.text.primary }]}>הזמנה #{order.id.slice(-6)}</Text>
+                      <Text style={[styles.orderNumber, { color: colors.text.primary }]}> 
+                        {t('orders.orderNumber', { id: order.id.slice(-6) })}
+                      </Text>
                       <Text style={[styles.orderDate, { color: colors.text.secondary }]}>{formatDate(order.createdAt)}</Text>
                     </View>
                     <View style={styles.orderStatus}>
@@ -165,15 +177,15 @@ export default function OrdersScreen() {
                   </View>
 
                   <View style={styles.orderItems}>
-                    <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>פריטים:</Text>
+                    <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>{t('orders.items')}</Text>
                     {order.items.slice(0, 2).map((item, index) => (
                       <Text key={index} style={[styles.itemText, { color: colors.text.secondary }]}>
                         {item.product.name} x{item.quantity}
                       </Text>
                     ))}
                     {order.items.length > 2 && (
-                      <Text style={[styles.moreItems, { color: colors.gold }]}>
-                        +{order.items.length - 2} פריטים נוספים
+                      <Text style={[styles.moreItems, { color: colors.gold }]}> 
+                        {t('orders.moreItems', { count: order.items.length - 2 })}
                       </Text>
                     )}
                   </View>
@@ -181,7 +193,7 @@ export default function OrdersScreen() {
                   <View style={[styles.orderFooter, { borderTopColor: colors.border.secondary }]}>
                     <Text style={[styles.orderTotal, { color: colors.gold }]}>₪{order.total.toFixed(2)}</Text>
                     <View style={styles.viewDetails}>
-                      <Text style={[styles.viewDetailsText, { color: colors.gold }]}>פרטים</Text>
+                      <Text style={[styles.viewDetailsText, { color: colors.gold }]}> {t('orders.viewDetails')} </Text>
                       <ChevronLeft size={16} color={colors.gold} />
                     </View>
                   </View>
@@ -191,30 +203,34 @@ export default function OrdersScreen() {
           ) : (
             <View style={styles.emptyState}>
               <Package size={80} color={colors.interactive.disabled} />
-              <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין הזמנות עדיין</Text>
-              <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
-                ההזמנות שלך יופיעו כאן לאחר שתבצע רכישה
+              <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+                {t('orders.emptyTitle')}
               </Text>
-              <TouchableOpacity 
+              <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}> 
+                {t('orders.emptyMessage')}
+              </Text>
+              <TouchableOpacity
                 style={[styles.shopButton, { backgroundColor: colors.gold }]}
                 onPress={() => router.push('/(tabs)')}
               >
-                <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחל לקנות</Text>
+                <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}> {t('orders.startShopping')} </Text>
               </TouchableOpacity>
             </View>
           )
         ) : (
           <View style={styles.emptyState}>
             <Package size={80} color={colors.interactive.disabled} />
-            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>נדרשת התחברות</Text>
-            <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
-              עליך להתחבר כדי לראות את ההזמנות שלך
+            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}> 
+              {t('orders.loginTitle')}
             </Text>
-            <TouchableOpacity 
+            <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}> 
+              {t('orders.loginMessage')}
+            </Text>
+            <TouchableOpacity
               style={[styles.shopButton, { backgroundColor: colors.gold }]}
               onPress={handleLogin}
             >
-              <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחבר</Text>
+              <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}> {t('auth.login')} </Text>
             </TouchableOpacity>
           </View>
         )}

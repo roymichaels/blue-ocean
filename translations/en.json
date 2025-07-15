@@ -27,6 +27,7 @@
   "navigation": {
     "home": "Home",
     "categories": "Categories",
+    "orders": "Orders",
     "notifications": "Notifications",
     "reviews": "Reviews",
     "profile": "Profile"
@@ -337,6 +338,24 @@
     "unknownError": "Unknown error"
   },
   "orders": {
+    "title": "My Orders",
+    "loadError": "Failed to load orders",
+    "orderNumber": "Order #{id}",
+    "items": "Items:",
+    "moreItems": "+{count} more items",
+    "viewDetails": "Details",
+    "emptyTitle": "No orders yet",
+    "emptyMessage": "Your orders will appear here after you make a purchase",
+    "startShopping": "Start Shopping",
+    "loginTitle": "Login Required",
+    "loginMessage": "You need to login to view your orders",
+    "status": {
+      "orderReceived": "Order received",
+      "courierFound": "Courier found",
+      "courierPickedUp": "Courier picked up",
+      "courierOnWay": "Courier on the way",
+      "delivered": "Delivered"
+    },
     "copyDetails": "Copy Order Details",
     "detailsCopied": "Order details copied to clipboard"
   }

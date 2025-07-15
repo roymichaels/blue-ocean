@@ -27,6 +27,7 @@
   "navigation": {
     "home": "בית",
     "categories": "קטגוריות",
+    "orders": "הזמנות",
     "notifications": "התראות",
     "reviews": "ביקורות",
     "profile": "פרופיל"
@@ -337,6 +338,24 @@
     "unknownError": "שגיאה לא ידועה"
   },
   "orders": {
+    "title": "ההזמנות שלי",
+    "loadError": "טעינת ההזמנות נכשלה",
+    "orderNumber": "הזמנה #{id}",
+    "items": "פריטים:",
+    "moreItems": "+{count} פריטים נוספים",
+    "viewDetails": "פרטים",
+    "emptyTitle": "אין הזמנות עדיין",
+    "emptyMessage": "ההזמנות שלך יופיעו כאן לאחר שתבצע רכישה",
+    "startShopping": "התחל לקנות",
+    "loginTitle": "נדרשת התחברות",
+    "loginMessage": "עליך להתחבר כדי לראות את ההזמנות שלך",
+    "status": {
+      "orderReceived": "הזמנה התקבלה",
+      "courierFound": "נמצא שליח",
+      "courierPickedUp": "שליח אסף",
+      "courierOnWay": "שליח בדרך",
+      "delivered": "נמסר"
+    },
     "copyDetails": "העתק פרטי הזמנה",
     "detailsCopied": "פרטי ההזמנה הועתקו ללוח"
   }
