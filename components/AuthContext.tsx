@@ -14,6 +14,7 @@ interface AuthContextType {
   signup: (username: string, password: string, displayName: string) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuthState: () => Promise<void>;
+  verifyPin: (pin: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   signup: async () => false,
   logout: async () => {},
   checkAuthState: async () => {},
+  verifyPin: async () => false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -179,6 +181,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setLoading(false);
   };
 
+  const verifyPin = async (pin: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-pin', {
+        body: { pin },
+      });
+      if (error) {
+        console.error('PIN verification failed', error);
+        return false;
+      }
+      return data?.success ?? false;
+    } catch (err) {
+      console.error('PIN verification error', err);
+      return false;
+    }
+  };
+
   const value: AuthContextType = {
     isLoggedIn: !!session,
     isAdmin: user?.role === 'admin',
@@ -189,6 +207,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signup,
     logout,
     checkAuthState,
+    verifyPin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
