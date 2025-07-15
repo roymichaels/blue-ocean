@@ -9,8 +9,8 @@
     "lint": "expo lint",
     "update:appjson": "node scripts/update-app-json.js",
     "build:web": "yarn update:appjson && expo export --platform web",
-    "build:web:thecongress": "env-cmd -f .env.thecongress yarn update:appjson && env-cmd -f .env.thecongress expo export --platform web --output-dir dist/thecongress",
-    "build:web:thebull": "env-cmd -f .env.thebull yarn update:appjson && env-cmd -f .env.thebull expo export --platform web --output-dir dist/thebull",
+    "build:web:thecongress": "sh -c 'env-cmd -f .env.thecongress yarn update:appjson && expo export --platform web --output-dir dist/thecongress'",
+    "build:web:thebull": "sh -c 'env-cmd -f .env.thebull yarn update:appjson && expo export --platform web --output-dir dist/thebull'",
     "build:web:all": "yarn build:web:thecongress && yarn build:web:thebull"
   },
   "dependencies": {
