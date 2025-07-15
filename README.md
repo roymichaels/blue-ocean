@@ -66,6 +66,7 @@ tables like `settings`, `tenant_settings` and `price_tier_rules` are created.
    ```sh
    npx supabase db push
    ```
+If you prefer not to use the CLI, copy the SQL from `scripts/user_pins.sql` into the Supabase SQL editor for each tenant.
 
 
 ## Running the Project
