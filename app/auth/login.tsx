@@ -48,9 +48,9 @@ export default function AuthLoginScreen() {
     setLoading(true);
     try {
       const success = await login(username, password);
-      
+
       if (success) {
-        router.replace('/');
+        router.push('/auth/pin-login');
       } else {
         setInfoModal({
           visible: true,
