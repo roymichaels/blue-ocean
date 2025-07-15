@@ -1,11 +1,15 @@
-
-import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+  useRef,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import DatabaseService from '../services/database';
 import MediaService from '../services/media';
-
-const TENANT = process.env.EXPO_PUBLIC_TENANT || 'default';
 
 const TENANT = process.env.EXPO_PUBLIC_TENANT || 'default';
 
@@ -32,7 +36,6 @@ export const useAppInfo = () => useContext(AppInfoContext);
 interface AppInfoProviderProps {
   children: ReactNode;
 }
-
 
 // Store branding separately for each tenant to avoid cross-tenant mixing
 const NAME_KEY = `app_platform_name_${TENANT}`;
