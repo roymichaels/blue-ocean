@@ -198,6 +198,7 @@ class DatabaseService {
 
       delete dbProduct.pricingTier;
       delete dbProduct.mixGroupId;
+      delete dbProduct.createdAt;
       delete dbProduct.updatedAt;
 
       const { error } = await supabase
