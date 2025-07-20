@@ -236,3 +236,10 @@ export interface ShippingAddress {
   postalCode: string;
   notes?: string;
 }
+
+export interface TenantSettings {
+  tenant_id: string;
+  platform_name?: string | null;
+  platform_logo?: string | null;
+  theme_color?: string | null;
+}
