@@ -1,6 +1,13 @@
 #!/bin/sh
 # Initialize local SQLite database using migration files
 
+set -e
+
+if ! command -v sqlite3 >/dev/null 2>&1; then
+  echo "sqlite3 command not found" >&2
+  exit 1
+fi
+
 DB_PATH="${1:-sqlite/db.sqlite}"
 mkdir -p "$(dirname "$DB_PATH")"
 
