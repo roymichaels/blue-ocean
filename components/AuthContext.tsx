@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
+import { executeSql } from '../lib/sqlite';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ADMIN_USERNAME = process.env.EXPO_PUBLIC_ADMIN_USERNAME;
+const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -40,131 +43,93 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const init = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error retrieving session', error);
+        const token = await AsyncStorage.getItem('auth_token');
+        if (token) {
+          const payload: any = jwt.verify(token, JWT_SECRET);
+          setSession(token);
+          await loadProfile(payload.sub);
         }
-
-        let activeSession = data.session;
-
-        if (!activeSession) {
-          try {
-            const stored = await AsyncStorage.getItem(supabase.auth.storageKey);
-            if (stored) {
-              const parsed = JSON.parse(stored);
-              const { data: recovered, error: recoverError } = await supabase.auth.setSession(parsed);
-              if (recoverError) {
-                console.error('Failed to set session from storage', recoverError);
-              } else {
-                activeSession = recovered.session;
-              }
-            }
-          } catch (err) {
-            console.error('Failed reading session from storage', err);
-          }
-        }
-
-        setSession(activeSession);
-        if (activeSession) await loadProfile(activeSession.user.id);
       } catch (err) {
-        console.error('Auth initialization failed', err);
+        await AsyncStorage.removeItem('auth_token');
       } finally {
         setLoading(false);
       }
     };
     init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) {
-        loadProfile(session.user.id);
-      } else {
-        setUser(null);
-      }
-    });
-    return () => { subscription.unsubscribe(); };
   }, []);
 
   const loadProfile = async (uid: string) => {
-    const { data } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('matrix_user_id', uid)
-      .single();
-
+    const result = await executeSql('SELECT * FROM users WHERE id = ?', [uid]);
+    const data = (result.rows as any)._array?.[0];
     if (data) {
-      let profile = data;
-
-      if (ADMIN_USERNAME && data.app_username === ADMIN_USERNAME && data.role !== 'admin') {
-        const { data: updated } = await supabase
-          .from('user_profiles')
-          .update({ role: 'admin' })
-          .eq('matrix_user_id', uid)
-          .select()
-          .single();
-        profile = updated || data;
-      }
-
-      // Map DB fields to expected camelCase properties
       setUser({
-        ...profile,
-        username: profile.app_username,
-        displayName: profile.display_name,
+        id: data.id,
+        username: data.username,
+        displayName: data.display_name,
+        role: data.role,
       });
     } else {
-      // Provide minimal guest profile structure
       setUser({ id: uid, role: 'user', username: '', displayName: '' });
     }
   };
 
   const login = async (username: string, password: string): Promise<boolean> => {
     setLoading(true);
-    const email = `${username}@user.local`;
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || !data.session) {
+    try {
+      const res = await executeSql('SELECT * FROM users WHERE username = ?', [username]);
+      const row = (res.rows as any)._array?.[0];
+      if (!row) {
+        setLoading(false);
+        return false;
+      }
+      const match = await bcrypt.compare(password, row.password_hash);
+      if (!match) {
+        setLoading(false);
+        return false;
+      }
+      const token = jwt.sign({ sub: row.id }, JWT_SECRET);
+      await AsyncStorage.setItem('auth_token', token);
+      setSession(token);
+      await loadProfile(row.id);
+      setLoading(false);
+      return true;
+    } catch (err) {
+      console.error('Login failed', err);
       setLoading(false);
       return false;
     }
-    await loadProfile(data.session.user.id);
-    if (ADMIN_USERNAME && username === ADMIN_USERNAME) {
-      await supabase
-        .from('user_profiles')
-        .update({ role: 'admin' })
-        .eq('matrix_user_id', data.session.user.id);
-      await loadProfile(data.session.user.id);
-    }
-    setLoading(false);
-    return true;
   };
 
-  const signup = async (username: string, password: string, displayName: string): Promise<boolean> => {
+  const signup = async (
+    username: string,
+    password: string,
+    displayName: string,
+  ): Promise<boolean> => {
     setLoading(true);
-    const email = `${username}@user.local`;
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { username } }
-    });
-    if (error || !data.user) {
+    try {
+      const hash = await bcrypt.hash(password, 10);
+      const id = `user_${Date.now()}`;
+      const role = ADMIN_USERNAME && username === ADMIN_USERNAME ? 'admin' : 'user';
+      await executeSql(
+        'INSERT INTO users (id, username, password_hash, display_name, role) VALUES (?,?,?,?,?)',
+        [id, username, hash, displayName, role],
+      );
+      const token = jwt.sign({ sub: id }, JWT_SECRET);
+      await AsyncStorage.setItem('auth_token', token);
+      setSession(token);
+      await loadProfile(id);
+      setLoading(false);
+      return true;
+    } catch (err) {
+      console.error('Signup failed', err);
       setLoading(false);
       return false;
     }
-    const role = ADMIN_USERNAME && username === ADMIN_USERNAME ? 'admin' : 'user';
-    await supabase.from('user_profiles').insert({
-      matrix_user_id: data.user.id,
-      app_username: username,
-      email,
-      display_name: displayName,
-      role
-    });
-    await loadProfile(data.user.id);
-    setLoading(false);
-    return true;
   };
 
   const logout = async (): Promise<void> => {
     setLoading(true);
-    await supabase.auth.signOut();
+    await AsyncStorage.removeItem('auth_token');
     setSession(null);
     setUser(null);
     setLoading(false);
@@ -172,10 +137,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuthState = async () => {
     setLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    setSession(session);
-    if (session) await loadProfile(session.user.id);
-    else setUser(null);
+    const token = await AsyncStorage.getItem('auth_token');
+    if (token) {
+      try {
+        const payload: any = jwt.verify(token, JWT_SECRET);
+        setSession(token);
+        await loadProfile(payload.sub);
+      } catch {
+        await AsyncStorage.removeItem('auth_token');
+        setSession(null);
+        setUser(null);
+      }
+    } else {
+      setSession(null);
+      setUser(null);
+    }
     setLoading(false);
   };
 

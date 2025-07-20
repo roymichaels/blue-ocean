@@ -27,7 +27,6 @@ import {
 } from 'lucide-react-native';
 import { Audio } from 'expo-av';
 // MatrixService has been removed in favor of Supabase
-import { supabase } from '../lib/supabase';
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
 import { debugLog } from '../utils/logger';
@@ -175,33 +174,8 @@ export default function ChatWidget() {
     if (!isLoggedIn) return;
     if (!isAdmin && !isDriver && !defaultRoomId) return;
 
-    const filter =
-      isAdmin || isDriver
-        ? 'is_admin=eq.false'
-        : `room_id=eq.${defaultRoomId}&is_admin=eq.true`;
-
-    const channel = supabase
-      .channel(`chat_updates:${user?.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter,
-        },
-        (payload) => {
-          if (!isOpen || selectedRoom?.id !== payload.new.room_id) {
-            messageSoundRef.current?.replayAsync();
-          }
-          loadChatRooms();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // realtime messaging removed
+    return () => {};
   }, [isLoggedIn, isAdmin, isDriver, defaultRoomId, isOpen, selectedRoom]);
 
   useEffect(() => {
@@ -351,56 +325,8 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (!selectedRoom) return;
-    const channel = supabase
-      .channel(`chat_messages:${selectedRoom.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `room_id=eq.${selectedRoom.id}`,
-        },
-        async (payload) => {
-          const msg: ChatMessage = {
-            id: payload.new.id,
-            senderId: payload.new.sender_id,
-            senderName: payload.new.sender_name,
-            message: await decryptMessage(payload.new.message, selectedRoom.id),
-            timestamp: payload.new.timestamp,
-            isAdmin: payload.new.is_admin,
-            audioUri: payload.new.audio_uri,
-            audioDuration: payload.new.audio_duration,
-            reactions: payload.new.reactions || {},
-          };
-          setMessages((prev) => {
-            if (prev.find((m) => m.id === msg.id)) return prev;
-            return [...prev, msg];
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `room_id=eq.${selectedRoom.id}`,
-        },
-        (payload) => {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === payload.new.id
-                ? { ...m, reactions: payload.new.reactions || m.reactions }
-                : m
-            )
-          );
-        }
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // realtime messaging removed
+    return () => {};
   }, [selectedRoom]);
 
   const openSearchResult = async (result: {

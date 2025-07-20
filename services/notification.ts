@@ -1,5 +1,5 @@
 import { Notification } from '../types';
-import { supabase } from '../lib/supabase';
+import { executeSql } from '../lib/sqlite';
 
 class NotificationService {
   private static instance: NotificationService;
@@ -19,19 +19,12 @@ class NotificationService {
         console.warn('No user ID provided for getNotifications');
         return [];
       }
-
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('timestamp', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching notifications:', error);
-        return [];
-      }
-
-      return (data || []).map(notification => ({
+      const result = await executeSql(
+        'SELECT * FROM notifications WHERE user_id = ? ORDER BY timestamp DESC',
+        [userId],
+      );
+      const rows = (result.rows as any)._array || [];
+      return rows.map((notification: any) => ({
         id: notification.id,
         title: notification.title,
         message: notification.message,
@@ -47,16 +40,7 @@ class NotificationService {
 
   async markAsRead(id: string): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error marking notification as read:', error);
-        return false;
-      }
-
+      await executeSql('UPDATE notifications SET read = 1 WHERE id = ?', [id]);
       return true;
     } catch (error) {
       console.error('Error in markAsRead:', error);
@@ -66,16 +50,7 @@ class NotificationService {
 
   async markAllAsRead(userId: string): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('user_id', userId);
-
-      if (error) {
-        console.error('Error marking all notifications as read:', error);
-        return false;
-      }
-
+      await executeSql('UPDATE notifications SET read = 1 WHERE user_id = ?', [userId]);
       return true;
     } catch (error) {
       console.error('Error in markAllAsRead:', error);
@@ -85,16 +60,7 @@ class NotificationService {
 
   async deleteNotification(id: string): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting notification:', error);
-        return false;
-      }
-
+      await executeSql('DELETE FROM notifications WHERE id = ?', [id]);
       return true;
     } catch (error) {
       console.error('Error in deleteNotification:', error);
@@ -118,24 +84,28 @@ class NotificationService {
         timestamp: Date.now(),
       };
 
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert([newNotification])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error adding notification:', error);
-        return null;
-      }
+      const id = `ntf_${Date.now()}`;
+      await executeSql(
+        `INSERT INTO notifications (id, user_id, title, message, type, read, timestamp)
+         VALUES (?,?,?,?,?,?,?)`,
+        [
+          id,
+          newNotification.user_id,
+          newNotification.title,
+          newNotification.message,
+          newNotification.type,
+          0,
+          newNotification.timestamp,
+        ],
+      );
 
       return {
-        id: data.id,
-        title: data.title,
-        message: data.message,
-        type: data.type,
-        read: data.read,
-        timestamp: data.timestamp,
+        id,
+        title: newNotification.title,
+        message: newNotification.message,
+        type: newNotification.type,
+        read: false,
+        timestamp: newNotification.timestamp,
       };
     } catch (error) {
       console.error('Error in addNotification:', error);
@@ -151,18 +121,12 @@ class NotificationService {
         return 0;
       }
 
-      const { data, error, count } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('read', false);
-
-      if (error) {
-        console.error('Error getting unread count:', error);
-        return 0;
-      }
-
-      return count || 0;
+      const result = await executeSql(
+        'SELECT COUNT(*) as cnt FROM notifications WHERE user_id = ? AND read = 0',
+        [userId],
+      );
+      const item = (result.rows as any)._array?.[0];
+      return item ? item.cnt : 0;
     } catch (error) {
       console.error('Error in getUnreadCount:', error);
       return 0;
@@ -170,44 +134,14 @@ class NotificationService {
   }
 
   // Subscribe to real-time notifications for a specific user
-  subscribeToUserNotifications(userId: string, callback: (notification: Notification) => void) {
-    if (!userId) {
-      console.warn('No user ID provided for subscribeToUserNotifications');
-      return null;
-    }
-
-    const subscription = supabase
-      .channel(`notifications:${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          const newNotification: Notification = {
-            id: payload.new.id,
-            title: payload.new.title,
-            message: payload.new.message,
-            type: payload.new.type,
-            read: payload.new.read,
-            timestamp: payload.new.timestamp,
-          };
-          callback(newNotification);
-        }
-      )
-      .subscribe();
-
-    return subscription;
+  subscribeToUserNotifications(_userId: string, _callback: (n: Notification) => void) {
+    console.warn('Realtime notifications not implemented with SQLite');
+    return null;
   }
 
   // Unsubscribe from real-time notifications
-  unsubscribeFromNotifications(subscription: any) {
-    if (subscription) {
-      supabase.removeChannel(subscription);
-    }
+  unsubscribeFromNotifications(_subscription: any) {
+    // no-op
   }
 }
 
