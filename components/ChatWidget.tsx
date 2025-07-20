@@ -26,7 +26,7 @@ import {
   Pause,
 } from 'lucide-react-native';
 import { Audio } from 'expo-av';
-// MatrixService has been removed in favor of Supabase
+// MatrixService has been removed
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
 import { debugLog } from '../utils/logger';
