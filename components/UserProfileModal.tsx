@@ -86,7 +86,7 @@ export default function UserProfileModal({ visible, userId, onClose, isAdmin = f
                     ]}
                   >
                     <Text style={[styles.tagText, { color: colors.text.inverse }]}>
-                      {profile.exists ? 'Exists in Supabase' : 'Matrix only'}
+                      {profile.exists ? 'Exists locally' : 'Matrix only'}
                     </Text>
                   </View>
                   {isAdmin && orders.length > 0 && (
