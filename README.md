@@ -67,6 +67,17 @@ tables like `settings`, `tenant_settings` and `price_tier_rules` are created.
    npx supabase db push
    ```
 
+## SQLite Migrations
+
+For development without Supabase you can create a local SQLite database. Run
+
+```sh
+./scripts/init-sqlite-db.sh
+```
+
+This applies the SQL files in `sqlite/migrations` and writes the database to
+`sqlite/db.sqlite` by default.
+
 
 ## Running the Project
 
