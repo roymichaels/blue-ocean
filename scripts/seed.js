@@ -1,50 +1,76 @@
-const { createClient } = require('@supabase/supabase-js');
+const sqlite3 = require('sqlite3').verbose();
 const { faker } = require('@faker-js/faker');
-require('dotenv').config();
+const path = require('path');
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const dbPath = process.env.DB_PATH || path.join(__dirname, '../sqlite/db.sqlite');
+const db = new sqlite3.Database(dbPath);
 
-if (!url || !serviceKey) {
-  console.error('Missing Supabase configuration');
-  process.exit(1);
+function run(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function (err) {
+      if (err) return reject(err);
+      resolve(this);
+    });
+  });
 }
 
-const supabase = createClient(url, serviceKey);
+function all(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    });
+  });
+}
 
 async function seed() {
   const users = Array.from({ length: 5 }).map(() => ({
+    id: `user_${Date.now()}_${faker.number.int()}`,
     matrix_user_id: faker.string.uuid(),
     app_username: faker.internet.userName(),
     email: faker.internet.email(),
     display_name: faker.person.fullName(),
     role: 'user',
   }));
-  await supabase.from('user_profiles').insert(users);
 
-  const { data: catRows } = await supabase.from('categories').select('id');
-  const categoryIds = catRows ? catRows.map((c) => c.id) : [];
+  for (const u of users) {
+    await run(
+      'INSERT INTO user_profiles (id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?)',
+      [u.id, u.matrix_user_id, u.app_username, u.email, u.display_name, u.role],
+    );
+  }
+
+  const catRows = await all('SELECT id FROM categories');
+  const categoryIds = catRows.map((c) => c.id);
 
   const products = Array.from({ length: 10 }).map(() => ({
+    id: `prod_${Date.now()}_${faker.number.int()}`,
     name: faker.commerce.productName(),
     price: Number(faker.commerce.price({ min: 5, max: 100 })),
     description: faker.commerce.productDescription(),
     category: faker.helpers.arrayElement(categoryIds),
-    images: [faker.image.url()],
+    images: JSON.stringify([faker.image.url()]),
     stock: faker.number.int({ min: 0, max: 100 }),
   }));
-  await supabase.from('products').insert(products);
+  for (const p of products) {
+    await run(
+      'INSERT INTO products (id,name,price,description,category,images,stock,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)',
+      [p.id, p.name, p.price, p.description, p.category, p.images, p.stock, Date.now(), Date.now()],
+    );
+  }
 
-  const { data: prodRows } = await supabase.from('products').select('id');
-  const { data: userRows } = await supabase.from('user_profiles').select('id');
-  const productIds = prodRows ? prodRows.map((p) => p.id) : [];
-  const userIds = userRows ? userRows.map((u) => u.id) : [];
+  const prodRows = await all('SELECT id FROM products');
+  const userRows = await all('SELECT id FROM user_profiles');
+  const productIds = prodRows.map((p) => p.id);
+  const userIds = userRows.map((u) => u.id);
 
   const orders = [];
   const orderItems = [];
   for (let i = 0; i < 5; i++) {
     const userId = faker.helpers.arrayElement(userIds);
-    const order = {
+    const orderId = `order_${Date.now()}_${i}`;
+    orders.push({
+      id: orderId,
       user_id: userId,
       total: 0,
       status: 'pending',
@@ -55,21 +81,36 @@ async function seed() {
       shipping_city: faker.location.city(),
       shipping_postal_code: faker.location.zipCode(),
       shipping_notes: faker.lorem.sentence(),
-    };
-    orders.push(order);
+    });
   }
-  const { data: insertedOrders } = await supabase
-    .from('orders')
-    .insert(orders)
-    .select();
 
-  insertedOrders.forEach((order) => {
+  for (const order of orders) {
+    await run(
+      'INSERT INTO orders (id,user_id,total,status,payment_method,shipping_name,shipping_phone,shipping_street,shipping_city,shipping_postal_code,shipping_notes,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [
+        order.id,
+        order.user_id,
+        order.total,
+        order.status,
+        order.payment_method,
+        order.shipping_name,
+        order.shipping_phone,
+        order.shipping_street,
+        order.shipping_city,
+        order.shipping_postal_code,
+        order.shipping_notes,
+        Date.now(),
+        Date.now(),
+      ],
+    );
+
     const itemsCount = faker.number.int({ min: 1, max: 3 });
     for (let j = 0; j < itemsCount; j++) {
       const productId = faker.helpers.arrayElement(productIds);
       const price = Number(faker.commerce.price({ min: 5, max: 100 }));
       const quantity = faker.number.int({ min: 1, max: 5 });
       orderItems.push({
+        id: `oi_${Date.now()}_${j}`,
         order_id: order.id,
         product_id: productId,
         product_name: faker.commerce.productName(),
@@ -79,15 +120,24 @@ async function seed() {
       });
       order.total += price * quantity;
     }
-  });
 
-  await supabase.from('order_items').insert(orderItems);
+    await run('UPDATE orders SET total=? WHERE id=?', [order.total, order.id]);
+  }
 
-  await Promise.all(
-    insertedOrders.map((o) =>
-      supabase.from('orders').update({ total: o.total }).eq('id', o.id),
-    ),
-  );
+  for (const item of orderItems) {
+    await run(
+      'INSERT INTO order_items (id,order_id,product_id,product_name,product_image,quantity,price) VALUES (?,?,?,?,?,?,?)',
+      [
+        item.id,
+        item.order_id,
+        item.product_id,
+        item.product_name,
+        item.product_image,
+        item.quantity,
+        item.price,
+      ],
+    );
+  }
 
   const tenantRows = ['thecongress', 'thebull'].map((t) => ({
     tenant: t,
@@ -95,7 +145,12 @@ async function seed() {
     platform_logo: faker.image.url(),
     theme_color: faker.color.rgb(),
   }));
-  await supabase.from('tenant_settings').upsert(tenantRows);
+  for (const row of tenantRows) {
+    await run(
+      'INSERT OR REPLACE INTO tenant_settings (tenant, platform_name, platform_logo, theme_color) VALUES (?,?,?,?)',
+      [row.tenant, row.platform_name, row.platform_logo, row.theme_color],
+    );
+  }
 
   console.log('Seed data inserted');
 }

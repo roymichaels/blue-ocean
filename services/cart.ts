@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
-import { supabase } from '../lib/supabase';
-import { isSupabaseConfigured } from './supabase';
+import jwt from 'jsonwebtoken';
+import { getToken } from '../utils/tokenStorage';
+import { isTokenValid } from '../utils/jwtSession';
 
 const CART_STORAGE_KEY = 'cart_items';
 const WISHLIST_STORAGE_KEY = 'wishlist_items';
@@ -14,6 +15,15 @@ class CartService {
   private listeners: (() => void)[] = [];
   private tierCache: Record<string, PricingTier> = {};
   private groupCache: Record<string, MixGroup> = {};
+
+  private async getCurrentUserId(): Promise<string | null> {
+    const token = await getToken();
+    if (token && isTokenValid(token)) {
+      const payload: any = jwt.decode(token);
+      return payload?.sub || null;
+    }
+    return null;
+  }
 
   public static getInstance(): CartService {
     if (!CartService.instance) {
@@ -33,24 +43,19 @@ class CartService {
         this.cartItems = JSON.parse(cartData);
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (isSupabaseConfigured() && user?.id) {
+      const uid = await this.getCurrentUserId();
+      if (uid) {
         const db = DatabaseService.getInstance();
         try {
-          this.wishlistItems = await db.getWishlistItems(user.id);
+          this.wishlistItems = await db.getWishlistItems(uid);
         } catch (err) {
-          if (
-            err instanceof Error &&
-            err.message === 'WISHLIST_TABLE_MISSING'
-          ) {
-            const wishlistData = await AsyncStorage.getItem(
-              WISHLIST_STORAGE_KEY
-            );
+          if (err instanceof Error && err.message === 'WISHLIST_TABLE_MISSING') {
+            const wishlistData = await AsyncStorage.getItem(WISHLIST_STORAGE_KEY);
             if (wishlistData) {
               this.wishlistItems = JSON.parse(wishlistData);
             }
           } else {
-            console.error('Error fetching wishlist from Supabase:', err);
+            console.error('Error fetching wishlist from DB:', err);
           }
         }
       } else {
@@ -71,8 +76,8 @@ class CartService {
     try {
       await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.cartItems));
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!(isSupabaseConfigured() && user?.id)) {
+      const uid = await this.getCurrentUserId();
+      if (!uid) {
         await AsyncStorage.setItem(
           WISHLIST_STORAGE_KEY,
           JSON.stringify(this.wishlistItems)
@@ -242,13 +247,13 @@ class CartService {
 
     this.wishlistItems.push(wishlistItem);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (isSupabaseConfigured() && user?.id) {
+    const uid = await this.getCurrentUserId();
+    if (uid) {
       const db = DatabaseService.getInstance();
       try {
-        await db.addWishlistItem(user.id, product.id);
+        await db.addWishlistItem(uid, product.id);
       } catch (err) {
-        console.error('Error saving wishlist item to Supabase:', err);
+        console.error('Error saving wishlist item:', err);
       }
     }
 
@@ -259,13 +264,13 @@ class CartService {
   public async removeFromWishlist(productId: string): Promise<void> {
     this.wishlistItems = this.wishlistItems.filter(item => item.productId !== productId);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (isSupabaseConfigured() && user?.id) {
+    const uid = await this.getCurrentUserId();
+    if (uid) {
       const db = DatabaseService.getInstance();
       try {
-        await db.removeWishlistItem(user.id, productId);
+        await db.removeWishlistItem(uid, productId);
       } catch (err) {
-        console.error('Error removing wishlist item from Supabase:', err);
+        console.error('Error removing wishlist item:', err);
       }
     }
 
