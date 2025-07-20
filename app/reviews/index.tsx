@@ -83,8 +83,8 @@ export default function ReviewsScreen() {
       // Load user orders if logged in
       if (isLoggedIn && user) {
         const orderService = OrderService.getInstance();
-        const orders = orderService.getUserOrders(user.id);
-        
+        const orders = await orderService.getUserOrders(user.id);
+
         // Only get delivered orders
         const deliveredOrders = orders.filter(order => order.status === 'delivered');
         setUserOrders(deliveredOrders);

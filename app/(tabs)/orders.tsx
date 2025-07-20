@@ -54,10 +54,10 @@ export default function OrdersScreen() {
     return () => orderService.removeListener(handleOrderUpdate);
   }, [isLoggedIn, user]);
 
-  const loadOrders = () => {
+  const loadOrders = async () => {
     try {
       const orderService = OrderService.getInstance();
-      const userOrders = orderService.getUserOrders(user?.id || '');
+      const userOrders = await orderService.getUserOrders(user?.id || '');
       setOrders(userOrders);
     } catch (error) {
       console.error('Error loading orders:', error);
