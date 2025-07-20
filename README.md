@@ -78,6 +78,18 @@ For development without Supabase you can create a local SQLite database. Run
 This applies the SQL files in `sqlite/migrations` and writes the database to
 `sqlite/db.sqlite` by default.
 
+## Seeding Sample Data
+
+After applying the migrations you can populate the local database with fake
+users, products, orders and tenant settings. The script requires a Supabase
+service role key so it can bypass row level security.
+
+```sh
+# provide your service role key in the environment
+SUPABASE_SERVICE_ROLE_KEY=your_key yarn seed
+```
+
+
 
 ## Running the Project
 
