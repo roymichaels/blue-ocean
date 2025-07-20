@@ -16,6 +16,8 @@ If dependencies need patching, run `patch-package` after installation:
 yarn postinstall
 ```
 
+All data is stored locally; no external services are required.
+
 
 Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
 includes a `polyfills.js` file to provide these when running on React Native or
@@ -25,10 +27,10 @@ so ensure it's installed as a dependency.
 
 ### Session Persistence
 
-User sessions are stored using `@react-native-async-storage/async-storage`. On
-native platforms this uses the native AsyncStorage implementation and falls back
-to `window.localStorage` when running on the web. This ensures Supabase auth
-state persists across reloads on every platform.
+User sessions are stored using `@react-native-async-storage/async-storage`.
+On native platforms this uses the native AsyncStorage implementation and falls
+back to `window.localStorage` when running on the web. This ensures
+authentication state persists across reloads on every platform.
 
 ## Environment Variables
 
@@ -49,47 +51,40 @@ the same value is used for all clients so they can decrypt messages.
 Logos and other uploaded images are stored on IPFS via Pinata. Set
 `EXPO_PUBLIC_PINATA_JWT` (or API key/secret) in your `.env` file so uploads can
 succeed.
-## Supabase Migrations
-
-Before running the Expo app, apply the SQL files in `supabase/migrations` so
-tables like `settings`, `tenant_settings` and `price_tier_rules` are created.
-
-1. Install the Supabase CLI if you don't have it:
-   ```sh
-   npm install -g supabase
-   ```
-2. Log in to your account:
-   ```sh
-   supabase login
-   ```
-3. From the project root, push the migrations:
-   ```sh
-   npx supabase db push
-   ```
 
 ## SQLite Migrations
 
-For development without Supabase you can create a local SQLite database. Run
+Create a local SQLite database:
 
 ```sh
-./scripts/init-sqlite-db.sh
+./scripts/init-sqlite-db.sh sqlite/blue-ocean.db
 ```
 
 This applies the SQL files in `sqlite/migrations` and writes the database to
-`sqlite/db.sqlite` by default.
+`sqlite/blue-ocean.db`.
 
 ## Seeding Sample Data
 
 After applying the migrations you can populate the local database with fake
-users, products, orders and tenant settings. The script requires a Supabase
-service role key so it can bypass row level security.
+users, products, orders and tenant settings.
 
 ```sh
-# provide your service role key in the environment
-SUPABASE_SERVICE_ROLE_KEY=your_key yarn seed
+DB_PATH=sqlite/blue-ocean.db yarn seed
 ```
 
+## Database Backup and Restore
 
+Create a SQL dump of the database with:
+
+```sh
+./scripts/backup-db.sh sqlite/blue-ocean.db dump.sql
+```
+
+Restore the database from a dump:
+
+```sh
+./scripts/restore-db.sh sqlite/blue-ocean.db dump.sql
+```
 
 ## Running the Project
 
