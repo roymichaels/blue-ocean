@@ -1,5 +1,6 @@
 export interface Product {
   id: string;
+  tenant_id?: string;
   name: string;
   name_en?: string;
   name_he?: string;
@@ -101,6 +102,7 @@ export type CustomerTier = 'new' | 'regular' | 'vip' | 'banned';
 
 export interface User {
   id: string;
+  tenant_id?: string;
   username: string;
   isAdmin: boolean;
   isDriver?: boolean;
@@ -184,6 +186,7 @@ export interface WishlistItem {
 
 export interface Order {
   id: string;
+  tenant_id?: string;
   userId: string;
   items: CartItem[];
   total: number;

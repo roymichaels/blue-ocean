@@ -1,4 +1,5 @@
 import { executeSql } from '../lib/sqlite';
+import { TENANT } from '../constants/tenant';
 import {
   Product,
   Category,
@@ -19,6 +20,7 @@ import {
 
 class DatabaseService {
   private static instance: DatabaseService;
+  private static readonly tenantId = TENANT;
 
   private constructor() {}
 
@@ -31,7 +33,7 @@ class DatabaseService {
 
   // Product methods
   async getProducts(): Promise<Product[]> {
-    const result = await executeSql('SELECT * FROM products ORDER BY created_at DESC');
+    const result = await executeSql('SELECT * FROM products WHERE tenant_id=? ORDER BY created_at DESC', [DatabaseService.tenantId]);
     const rows = (result.rows as any)._array || [];
     return rows.map((r: any) => ({
       id: r.id,
@@ -60,7 +62,7 @@ class DatabaseService {
   }
 
   async getProduct(id: string): Promise<Product | null> {
-    const res = await executeSql('SELECT * FROM products WHERE id = ? LIMIT 1', [id]);
+    const res = await executeSql('SELECT * FROM products WHERE id = ? AND tenant_id=? LIMIT 1', [id, DatabaseService.tenantId]);
     const item = (res.rows as any)._array?.[0];
     if (!item) return null;
     return {
@@ -96,13 +98,14 @@ class DatabaseService {
     const id = `prod_${Date.now()}`;
     await executeSql(
       `INSERT INTO products (
-        id, name, name_en, name_he, price, description, description_en,
+        id, tenant_id, name, name_en, name_he, price, description, description_en,
         description_he, category, subcategory, images, videos, colors,
         rating, reviews, badges, pricing_tier, mix_group_id, stock,
         created_at, updated_at
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         id,
+        DatabaseService.tenantId,
         dbProd.name,
         dbProd.name_en,
         dbProd.name_he,
@@ -138,7 +141,7 @@ class DatabaseService {
         description_en=?, description_he=?, category=?, subcategory=?,
         images=?, videos=?, colors=?, rating=?, reviews=?, badges=?,
         pricing_tier=?, mix_group_id=?, stock=?, updated_at=?
-      WHERE id=?`,
+      WHERE id=? AND tenant_id=?`,
       [
         dbProd.name,
         dbProd.name_en,
@@ -160,12 +163,13 @@ class DatabaseService {
         dbProd.stock ?? 0,
         Date.now(),
         id,
+        DatabaseService.tenantId,
       ],
     );
   }
 
   async deleteProduct(id: string): Promise<void> {
-    await executeSql('DELETE FROM products WHERE id = ?', [id]);
+    await executeSql('DELETE FROM products WHERE id = ? AND tenant_id=?', [id, DatabaseService.tenantId]);
   }
 
   // Categories and subcategories
@@ -312,7 +316,7 @@ class DatabaseService {
 
   // Users
   async getUserProfile(userId: string): Promise<User | null> {
-    const res = await executeSql('SELECT * FROM user_profiles WHERE matrix_user_id=? LIMIT 1', [userId]);
+    const res = await executeSql('SELECT * FROM user_profiles WHERE matrix_user_id=? AND tenant_id=? LIMIT 1', [userId, DatabaseService.tenantId]);
     const row = (res.rows as any)._array?.[0];
     if (!row) return null;
     return {
@@ -335,7 +339,7 @@ class DatabaseService {
   }
 
   async getAllUserProfiles(): Promise<User[]> {
-    const res = await executeSql('SELECT * FROM user_profiles ORDER BY created_at DESC');
+    const res = await executeSql('SELECT * FROM user_profiles WHERE tenant_id=? ORDER BY created_at DESC', [DatabaseService.tenantId]);
     const rows = (res.rows as any)._array || [];
     return rows.map((row: any) => ({
       id: row.id,
@@ -363,18 +367,18 @@ class DatabaseService {
   async searchUserProfiles(term: string): Promise<{ matrix_user_id: string; display_name: string; app_username: string }[]> {
     const like = `%${term}%`;
     const res = await executeSql(
-      `SELECT matrix_user_id, display_name, app_username FROM user_profiles WHERE display_name LIKE ? OR app_username LIKE ? LIMIT 10`,
-      [like, like],
+      `SELECT matrix_user_id, display_name, app_username FROM user_profiles WHERE tenant_id=? AND (display_name LIKE ? OR app_username LIKE ?) LIMIT 10`,
+      [DatabaseService.tenantId, like, like],
     );
     return (res.rows as any)._array || [];
   }
 
   async updateUserRole(userId: string, role: 'user' | 'driver' | 'admin'): Promise<void> {
-    await executeSql('UPDATE user_profiles SET role=? WHERE id=?', [role, userId]);
+    await executeSql('UPDATE user_profiles SET role=? WHERE id=? AND tenant_id=?', [role, userId, DatabaseService.tenantId]);
   }
 
   async updateUserCustomerTier(userId: string, customerTier: string): Promise<void> {
-    await executeSql('UPDATE user_profiles SET customer_tier=? WHERE id=?', [customerTier, userId]);
+    await executeSql('UPDATE user_profiles SET customer_tier=? WHERE id=? AND tenant_id=?', [customerTier, userId, DatabaseService.tenantId]);
   }
 
   async updateUserKycStatus(
@@ -394,13 +398,13 @@ class DatabaseService {
     const fields = Object.keys(updateData)
       .map((k) => `${k}=?`)
       .join(', ');
-    const params = [...Object.values(updateData), userId];
-    await executeSql(`UPDATE user_profiles SET ${fields} WHERE id=?`, params);
+    const params = [...Object.values(updateData), userId, DatabaseService.tenantId];
+    await executeSql(`UPDATE user_profiles SET ${fields} WHERE id=? AND tenant_id=?`, params);
     return true;
   }
 
   async getPendingKycRequests(): Promise<User[]> {
-    const res = await executeSql("SELECT * FROM user_profiles WHERE kyc_status='pending' ORDER BY kyc_requested_at ASC");
+    const res = await executeSql("SELECT * FROM user_profiles WHERE kyc_status='pending' AND tenant_id=? ORDER BY kyc_requested_at ASC", [DatabaseService.tenantId]);
     const rows = (res.rows as any)._array || [];
     return rows.map((row: any) => ({
       id: row.matrix_user_id,
@@ -748,7 +752,7 @@ class DatabaseService {
   }
 
   async getUserOrders(userId: string): Promise<{ id: string; total: number; status: string; createdAt: string }[]> {
-    const res = await executeSql('SELECT id,total,status,created_at FROM orders WHERE user_id=? ORDER BY created_at DESC', [userId]);
+    const res = await executeSql('SELECT id,total,status,created_at FROM orders WHERE user_id=? AND tenant_id=? ORDER BY created_at DESC', [userId, DatabaseService.tenantId]);
     const rows = (res.rows as any)._array || [];
     return rows.map((o: any) => ({ id: o.id, total: Number(o.total), status: o.status, createdAt: o.created_at }));
   }
@@ -832,18 +836,18 @@ class DatabaseService {
   }
 
   async getTenantSetting(tenant: string, key: string): Promise<string | null> {
-    const res = await executeSql(`SELECT ${key} FROM tenant_settings WHERE tenant=? LIMIT 1`, [tenant]);
+    const res = await executeSql(`SELECT ${key} FROM tenant_settings WHERE tenant_id=? LIMIT 1`, [tenant]);
     const row = (res.rows as any)._array?.[0];
     return row ? row[key] || null : null;
   }
 
   async updateTenantSetting(tenant: string, key: string, value: string): Promise<void> {
-    const res = await executeSql('SELECT tenant FROM tenant_settings WHERE tenant=?', [tenant]);
+    const res = await executeSql('SELECT tenant_id FROM tenant_settings WHERE tenant_id=?', [tenant]);
     const exists = (res.rows as any)._array?.length > 0;
     if (exists) {
-      await executeSql(`UPDATE tenant_settings SET ${key}=? WHERE tenant=?`, [value, tenant]);
+      await executeSql(`UPDATE tenant_settings SET ${key}=? WHERE tenant_id=?`, [value, tenant]);
     } else {
-      await executeSql(`INSERT INTO tenant_settings (tenant, ${key}) VALUES (?, ?)`, [tenant, value]);
+      await executeSql(`INSERT INTO tenant_settings (tenant_id, ${key}) VALUES (?, ?)`, [tenant, value]);
     }
   }
 }

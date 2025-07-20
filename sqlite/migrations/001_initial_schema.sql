@@ -47,6 +47,7 @@ CREATE TABLE mix_groups (
 -- Products table
 CREATE TABLE products (
   id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL,
   name TEXT NOT NULL,
   price REAL NOT NULL,
   "originalPrice" REAL,
@@ -99,6 +100,7 @@ CREATE TABLE chat_messages (
 -- User profiles table
 CREATE TABLE user_profiles (
   id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL,
   matrix_user_id TEXT UNIQUE NOT NULL,
   app_username TEXT NOT NULL,
   email TEXT,
@@ -168,6 +170,7 @@ CREATE TABLE hero_banners (
 -- Orders table
 CREATE TABLE orders (
   id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
   total REAL NOT NULL CHECK(total >= 0),
   status TEXT NOT NULL,
@@ -253,7 +256,7 @@ CREATE TABLE settings (
 
 -- Tenant settings table
 CREATE TABLE tenant_settings (
-  tenant TEXT PRIMARY KEY,
+  tenant_id TEXT PRIMARY KEY,
   platform_name TEXT,
   platform_logo TEXT,
   theme_color TEXT,
@@ -299,5 +302,5 @@ END;
 
 CREATE TRIGGER update_tenant_settings_timestamp AFTER UPDATE ON tenant_settings
 BEGIN
-  UPDATE tenant_settings SET updated_at = CURRENT_TIMESTAMP WHERE tenant = NEW.tenant;
+  UPDATE tenant_settings SET updated_at = CURRENT_TIMESTAMP WHERE tenant_id = NEW.tenant_id;
 END;

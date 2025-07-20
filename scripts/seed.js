@@ -24,6 +24,7 @@ function all(sql, params = []) {
 }
 
 async function seed() {
+  const tenants = ['thecongress', 'thebull'];
   const users = Array.from({ length: 5 }).map(() => ({
     id: `user_${Date.now()}_${faker.number.int()}`,
     matrix_user_id: faker.string.uuid(),
@@ -31,12 +32,13 @@ async function seed() {
     email: faker.internet.email(),
     display_name: faker.person.fullName(),
     role: 'user',
+    tenant_id: faker.helpers.arrayElement(tenants),
   }));
 
   for (const u of users) {
     await run(
-      'INSERT INTO user_profiles (id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?)',
-      [u.id, u.matrix_user_id, u.app_username, u.email, u.display_name, u.role],
+      'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
+      [u.id, u.tenant_id, u.matrix_user_id, u.app_username, u.email, u.display_name, u.role],
     );
   }
 
@@ -45,6 +47,7 @@ async function seed() {
 
   const products = Array.from({ length: 10 }).map(() => ({
     id: `prod_${Date.now()}_${faker.number.int()}`,
+    tenant_id: faker.helpers.arrayElement(tenants),
     name: faker.commerce.productName(),
     price: Number(faker.commerce.price({ min: 5, max: 100 })),
     description: faker.commerce.productDescription(),
@@ -54,8 +57,8 @@ async function seed() {
   }));
   for (const p of products) {
     await run(
-      'INSERT INTO products (id,name,price,description,category,images,stock,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)',
-      [p.id, p.name, p.price, p.description, p.category, p.images, p.stock, Date.now(), Date.now()],
+      'INSERT INTO products (id,tenant_id,name,price,description,category,images,stock,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)',
+      [p.id, p.tenant_id, p.name, p.price, p.description, p.category, p.images, p.stock, Date.now(), Date.now()],
     );
   }
 
@@ -71,6 +74,7 @@ async function seed() {
     const orderId = `order_${Date.now()}_${i}`;
     orders.push({
       id: orderId,
+      tenant_id: faker.helpers.arrayElement(tenants),
       user_id: userId,
       total: 0,
       status: 'pending',
@@ -86,9 +90,10 @@ async function seed() {
 
   for (const order of orders) {
     await run(
-      'INSERT INTO orders (id,user_id,total,status,payment_method,shipping_name,shipping_phone,shipping_street,shipping_city,shipping_postal_code,shipping_notes,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      'INSERT INTO orders (id,tenant_id,user_id,total,status,payment_method,shipping_name,shipping_phone,shipping_street,shipping_city,shipping_postal_code,shipping_notes,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [
         order.id,
+        order.tenant_id,
         order.user_id,
         order.total,
         order.status,
@@ -139,16 +144,16 @@ async function seed() {
     );
   }
 
-  const tenantRows = ['thecongress', 'thebull'].map((t) => ({
-    tenant: t,
+  const tenantRows = tenants.map((t) => ({
+    tenant_id: t,
     platform_name: faker.company.name(),
     platform_logo: faker.image.url(),
     theme_color: faker.color.rgb(),
   }));
   for (const row of tenantRows) {
     await run(
-      'INSERT OR REPLACE INTO tenant_settings (tenant, platform_name, platform_logo, theme_color) VALUES (?,?,?,?)',
-      [row.tenant, row.platform_name, row.platform_logo, row.theme_color],
+      'INSERT OR REPLACE INTO tenant_settings (tenant_id, platform_name, platform_logo, theme_color) VALUES (?,?,?,?)',
+      [row.tenant_id, row.platform_name, row.platform_logo, row.theme_color],
     );
   }
 
