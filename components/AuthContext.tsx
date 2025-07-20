@@ -2,7 +2,8 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { executeSql } from '../lib/sqlite';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
+import { isTokenValid, refreshToken } from '../utils/jwtSession';
 
 const ADMIN_USERNAME = process.env.EXPO_PUBLIC_ADMIN_USERNAME;
 const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
@@ -17,6 +18,7 @@ interface AuthContextType {
   signup: (username: string, password: string, displayName: string) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuthState: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -29,6 +31,7 @@ const AuthContext = createContext<AuthContextType>({
   signup: async () => false,
   logout: async () => {},
   checkAuthState: async () => {},
+  refreshSession: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -43,14 +46,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const init = async () => {
       try {
-        const token = await AsyncStorage.getItem('auth_token');
-        if (token) {
-          const payload: any = jwt.verify(token, JWT_SECRET);
+        const token = await getToken();
+        if (token && isTokenValid(token)) {
+          const payload: any = jwt.decode(token);
           setSession(token);
-          await loadProfile(payload.sub);
+          if (payload?.sub) {
+            await loadProfile(payload.sub);
+          }
+        } else {
+          await removeToken();
         }
-      } catch (err) {
-        await AsyncStorage.removeItem('auth_token');
       } finally {
         setLoading(false);
       }
@@ -87,8 +92,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setLoading(false);
         return false;
       }
-      const token = jwt.sign({ sub: row.id }, JWT_SECRET);
-      await AsyncStorage.setItem('auth_token', token);
+      const token = jwt.sign({ sub: row.id }, JWT_SECRET, { expiresIn: '7d' });
+      await saveToken(token);
       setSession(token);
       await loadProfile(row.id);
       setLoading(false);
@@ -114,8 +119,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         'INSERT INTO users (id, username, password_hash, display_name, role) VALUES (?,?,?,?,?)',
         [id, username, hash, displayName, role],
       );
-      const token = jwt.sign({ sub: id }, JWT_SECRET);
-      await AsyncStorage.setItem('auth_token', token);
+      const token = jwt.sign({ sub: id }, JWT_SECRET, { expiresIn: '7d' });
+      await saveToken(token);
       setSession(token);
       await loadProfile(id);
       setLoading(false);
@@ -129,7 +134,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async (): Promise<void> => {
     setLoading(true);
-    await AsyncStorage.removeItem('auth_token');
+    await removeToken();
     setSession(null);
     setUser(null);
     setLoading(false);
@@ -137,22 +142,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuthState = async () => {
     setLoading(true);
-    const token = await AsyncStorage.getItem('auth_token');
-    if (token) {
-      try {
-        const payload: any = jwt.verify(token, JWT_SECRET);
-        setSession(token);
+    const token = await getToken();
+    if (token && isTokenValid(token)) {
+      const payload: any = jwt.decode(token);
+      setSession(token);
+      if (payload?.sub) {
         await loadProfile(payload.sub);
-      } catch {
-        await AsyncStorage.removeItem('auth_token');
-        setSession(null);
-        setUser(null);
       }
     } else {
+      await removeToken();
       setSession(null);
       setUser(null);
     }
     setLoading(false);
+  };
+
+  const refreshSession = async () => {
+    const token = await getToken();
+    if (token && isTokenValid(token)) {
+      const newToken = refreshToken(token);
+      if (newToken) {
+        await saveToken(newToken);
+        setSession(newToken);
+      }
+    }
   };
 
   const value: AuthContextType = {
@@ -165,6 +178,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signup,
     logout,
     checkAuthState,
+    refreshSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
