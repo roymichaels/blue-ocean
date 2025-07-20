@@ -1,3 +1,4 @@
+import { executeSql } from '../lib/sqlite';
 import { supabase } from '../lib/supabase';
 import {
   Product,
@@ -31,64 +32,34 @@ class DatabaseService {
   // Products
   async getProducts(): Promise<Product[]> {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching products:', error);
-        return [];
-      }
-
-      return (data || []).map(
-        (prod: {
-          id: any;
-          name: any;
-          name_en: any;
-          name_he: any;
-          price: any;
-          description: any;
-          description_en: any;
-          description_he: any;
-          category: any;
-          subcategory: any;
-          images: any;
-          videos: any;
-          colors: any;
-          rating: any;
-          reviews: any;
-          badges: any;
-          pricing_tier: any;
-          mix_group_id: any;
-          stock: any;
-          created_at: any;
-          updated_at: any;
-        }) => ({
-          id: prod.id,
-          name: prod.name,
-          name_en: prod.name_en,
-          name_he: prod.name_he,
-          price: prod.price,
-          originalPrice: (prod as any).originalPrice ?? undefined,
-          description: prod.description,
-          description_en: prod.description_en,
-          description_he: prod.description_he,
-          category: prod.category,
-          subcategory: prod.subcategory,
-          images: prod.images,
-          videos: prod.videos ?? undefined,
-          colors: prod.colors ?? undefined,
-          rating: prod.rating,
-          reviews: prod.reviews,
-          badges: prod.badges ?? undefined,
-          pricingTier: prod.pricing_tier ?? undefined,
-          mixGroupId: prod.mix_group_id ?? undefined,
-          stock: prod.stock,
-          createdAt: prod.created_at,
-          updatedAt: prod.updated_at,
-        })
+      const result = await executeSql(
+        'SELECT * FROM products ORDER BY created_at DESC',
       );
+      const rows = (result.rows as any)._array || [];
+      return rows.map((prod: any) => ({
+        id: prod.id,
+        name: prod.name,
+        name_en: prod.name_en,
+        name_he: prod.name_he,
+        price: prod.price,
+        originalPrice: prod.originalPrice ?? undefined,
+        description: prod.description,
+        description_en: prod.description_en,
+        description_he: prod.description_he,
+        category: prod.category,
+        subcategory: prod.subcategory,
+        images: prod.images ? JSON.parse(prod.images) : [],
+        videos: prod.videos ? JSON.parse(prod.videos) : undefined,
+        colors: prod.colors ? JSON.parse(prod.colors) : undefined,
+        rating: prod.rating,
+        reviews: prod.reviews,
+        badges: prod.badges ? JSON.parse(prod.badges) : undefined,
+        pricingTier: prod.pricing_tier ?? undefined,
+        mixGroupId: prod.mix_group_id ?? undefined,
+        stock: prod.stock,
+        createdAt: prod.created_at,
+        updatedAt: prod.updated_at,
+      }));
     } catch (error) {
       console.error('Error in getProducts:', error);
       return [];
@@ -97,42 +68,35 @@ class DatabaseService {
 
   async getProduct(id: string): Promise<Product | null> {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching product:', error);
-        return null;
-      }
-
-      if (!data) return null;
-
+      const result = await executeSql(
+        'SELECT * FROM products WHERE id = ? LIMIT 1',
+        [id],
+      );
+      const item = (result.rows as any)._array?.[0];
+      if (!item) return null;
       return {
-        id: data.id,
-        name: data.name,
-        name_en: data.name_en,
-        name_he: data.name_he,
-        price: data.price,
-        originalPrice: (data as any).originalPrice ?? undefined,
-        description: data.description,
-        description_en: data.description_en,
-        description_he: data.description_he,
-        category: data.category,
-        subcategory: data.subcategory,
-        images: data.images,
-        videos: data.videos ?? undefined,
-        colors: data.colors ?? undefined,
-        rating: data.rating,
-        reviews: data.reviews,
-        badges: data.badges ?? undefined,
-        pricingTier: data.pricing_tier ?? undefined,
-        mixGroupId: data.mix_group_id ?? undefined,
-        stock: data.stock,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
+        id: item.id,
+        name: item.name,
+        name_en: item.name_en,
+        name_he: item.name_he,
+        price: item.price,
+        originalPrice: item.originalPrice ?? undefined,
+        description: item.description,
+        description_en: item.description_en,
+        description_he: item.description_he,
+        category: item.category,
+        subcategory: item.subcategory,
+        images: item.images ? JSON.parse(item.images) : [],
+        videos: item.videos ? JSON.parse(item.videos) : undefined,
+        colors: item.colors ? JSON.parse(item.colors) : undefined,
+        rating: item.rating,
+        reviews: item.reviews,
+        badges: item.badges ? JSON.parse(item.badges) : undefined,
+        pricingTier: item.pricing_tier ?? undefined,
+        mixGroupId: item.mix_group_id ?? undefined,
+        stock: item.stock,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
       };
     } catch (error) {
       console.error('Error in getProduct:', error);
@@ -162,18 +126,40 @@ class DatabaseService {
       delete dbProduct.createdAt;
       delete dbProduct.updatedAt;
 
-      const { data, error } = await supabase
-        .from('products')
-        .insert([dbProduct])
-        .select()
-        .single();
+      const id = `prod_${Date.now()}`;
+      await executeSql(
+        `INSERT INTO products (
+          id, name, name_en, name_he, price, description, description_en,
+          description_he, category, subcategory, images, videos, colors,
+          rating, reviews, badges, pricing_tier, mix_group_id, stock,
+          created_at, updated_at
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [
+          id,
+          dbProduct.name,
+          dbProduct.name_en,
+          dbProduct.name_he,
+          dbProduct.price,
+          dbProduct.description,
+          dbProduct.description_en,
+          dbProduct.description_he,
+          dbProduct.category,
+          dbProduct.subcategory ?? null,
+          JSON.stringify(dbProduct.images || []),
+          JSON.stringify(dbProduct.videos || []),
+          JSON.stringify(dbProduct.colors || []),
+          dbProduct.rating ?? 0,
+          dbProduct.reviews ?? 0,
+          JSON.stringify(dbProduct.badges || []),
+          dbProduct.pricing_tier ?? null,
+          dbProduct.mix_group_id ?? null,
+          dbProduct.stock ?? 0,
+          dbProduct.created_at || Date.now(),
+          dbProduct.updated_at || Date.now(),
+        ],
+      );
 
-      if (error) {
-        console.error('Error adding product:', error);
-        throw new Error(error.message || 'Failed to add product');
-      }
-
-      return data.id;
+      return id;
     } catch (error) {
       console.error('Error in addProduct:', error);
       throw error;
@@ -200,15 +186,51 @@ class DatabaseService {
       delete dbProduct.mixGroupId;
       delete dbProduct.updatedAt;
 
-      const { error } = await supabase
-        .from('products')
-        .update(dbProduct)
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error updating product:', error);
-        throw new Error('Failed to update product');
-      }
+      await executeSql(
+        `UPDATE products SET
+          name = ?,
+          name_en = ?,
+          name_he = ?,
+          price = ?,
+          description = ?,
+          description_en = ?,
+          description_he = ?,
+          category = ?,
+          subcategory = ?,
+          images = ?,
+          videos = ?,
+          colors = ?,
+          rating = ?,
+          reviews = ?,
+          badges = ?,
+          pricing_tier = ?,
+          mix_group_id = ?,
+          stock = ?,
+          updated_at = ?
+        WHERE id = ?`,
+        [
+          dbProduct.name,
+          dbProduct.name_en,
+          dbProduct.name_he,
+          dbProduct.price,
+          dbProduct.description,
+          dbProduct.description_en,
+          dbProduct.description_he,
+          dbProduct.category,
+          dbProduct.subcategory ?? null,
+          JSON.stringify(dbProduct.images || []),
+          JSON.stringify(dbProduct.videos || []),
+          JSON.stringify(dbProduct.colors || []),
+          dbProduct.rating ?? 0,
+          dbProduct.reviews ?? 0,
+          JSON.stringify(dbProduct.badges || []),
+          dbProduct.pricing_tier ?? null,
+          dbProduct.mix_group_id ?? null,
+          dbProduct.stock ?? 0,
+          dbProduct.updated_at || Date.now(),
+          id,
+        ],
+      );
     } catch (error) {
       console.error('Error in updateProduct:', error);
       throw error;
@@ -217,12 +239,7 @@ class DatabaseService {
 
   async deleteProduct(id: string): Promise<void> {
     try {
-      const { error } = await supabase.from('products').delete().eq('id', id);
-
-      if (error) {
-        console.error('Error deleting product:', error);
-        throw new Error('Failed to delete product');
-      }
+      await executeSql('DELETE FROM products WHERE id = ?', [id]);
     } catch (error) {
       console.error('Error in deleteProduct:', error);
       throw error;
