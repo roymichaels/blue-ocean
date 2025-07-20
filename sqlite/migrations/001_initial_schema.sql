@@ -97,6 +97,15 @@ CREATE TABLE chat_messages (
   reactions TEXT DEFAULT '{}'
 );
 
+-- Users table
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  role TEXT NOT NULL CHECK(role IN ('user','driver','admin'))
+);
+
 -- User profiles table
 CREATE TABLE user_profiles (
   id TEXT PRIMARY KEY,
