@@ -125,5 +125,23 @@ yarn build:web:thebull
 Matching NGINX configs for each tenant are located in `nginx/` and assume the
 exported files are served from `/var/www/{tenant}/dist`.
 
+## Database Backup
+
+The project includes helper scripts to encrypt the `blue-ocean.db` SQLite file
+and store it on Pinata. Set your Pinata credentials in `.env` and provide a
+passphrase when running the scripts.
+
+### Backup the database
+
+```sh
+node scripts/backup-db.js mySecretPassphrase
+```
+
+### Restore the latest backup
+
+```sh
+node scripts/restore-db.js mySecretPassphrase
+```
+
 
 ***End of Document***
