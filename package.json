@@ -8,6 +8,7 @@
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
     "update:appjson": "node scripts/update-app-json.js",
+    "seed": "node scripts/seed.js",
     "build:web": "env-cmd -f .env npx expo export --platform web --output-dir dist",
     "build:web:thecongress": "env-cmd -f .env.thecongress yarn  && expo export --platform web --output-dir dist/thecongress",
     "build:web:thebull": "env-cmd -f .env.thebull    yarn  && expo export --platform web --output-dir dist/thebull",
@@ -87,7 +88,8 @@
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "typescript": "^5.8.3",
-    "util": "^0.12.5"
+    "util": "^0.12.5",
+    "@faker-js/faker": "^8.4.0"
   },
   "packageManager": "yarn@1.22.22"
 }
