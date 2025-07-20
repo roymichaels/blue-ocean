@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
-import DatabaseService from '../services/database';
+import TenantSettingsService from '../services/tenantSettings';
 import MediaService from '../services/media';
 
 const TENANT = process.env.EXPO_PUBLIC_TENANT || 'default';
@@ -61,10 +61,10 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       if (storedLogo) setPlatformLogoState(storedLogo);
       if (storedColor) setThemeColorState(storedColor);
 
-      const db = DatabaseService.getInstance();
-      const dbName = await db.getTenantSetting(TENANT, 'platform_name');
-      const dbLogo = await db.getTenantSetting(TENANT, 'platform_logo');
-      const dbColor = await db.getTenantSetting(TENANT, 'theme_color');
+      const tenantSvc = TenantSettingsService.getInstance();
+      const dbName = await tenantSvc.getTenantSetting(TENANT, 'platform_name');
+      const dbLogo = await tenantSvc.getTenantSetting(TENANT, 'platform_logo');
+      const dbColor = await tenantSvc.getTenantSetting(TENANT, 'theme_color');
       if (dbName) {
         setPlatformNameState(dbName);
         await AsyncStorage.setItem(NAME_KEY, dbName);
@@ -94,9 +94,9 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   const setPlatformName = async (name: string) => {
     setPlatformNameState(name);
     await AsyncStorage.setItem(NAME_KEY, name);
-    const db = DatabaseService.getInstance();
+    const tenantSvc = TenantSettingsService.getInstance();
     try {
-      await db.updateTenantSetting(TENANT, 'platform_name', name);
+      await tenantSvc.updateTenantSetting(TENANT, 'platform_name', name);
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת שם הפלטפורמה נכשלה');
@@ -115,8 +115,8 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
 
       setPlatformLogoState(finalLogo);
       await AsyncStorage.setItem(LOGO_KEY, finalLogo);
-      const db = DatabaseService.getInstance();
-      await db.updateTenantSetting(TENANT, 'platform_logo', finalLogo);
+      const tenantSvc = TenantSettingsService.getInstance();
+      await tenantSvc.updateTenantSetting(TENANT, 'platform_logo', finalLogo);
       scheduleLoadInfo();
     } catch (e) {
       console.error('Error setting platform logo:', e);
@@ -128,8 +128,8 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     try {
       setThemeColorState(color);
       await AsyncStorage.setItem(COLOR_KEY, color);
-      const db = DatabaseService.getInstance();
-      await db.updateTenantSetting(TENANT, 'theme_color', color);
+      const tenantSvc = TenantSettingsService.getInstance();
+      await tenantSvc.updateTenantSetting(TENANT, 'theme_color', color);
       scheduleLoadInfo();
     } catch (e) {
       console.error('Error setting theme color:', e);
