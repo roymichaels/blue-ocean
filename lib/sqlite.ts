@@ -1,10 +1,13 @@
-import * as SQLite from 'expo-sqlite';
+import * as SQLite from 'expo-sqlite/next';
+import { Platform } from 'react-native';
 
-let db: SQLite.Database | null = null;
-
-export function getDatabase(): SQLite.Database {
+let db: SQLite.SQLiteDatabase | null = null;
+export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!db) {
-    db = SQLite.openDatabase('app.db');
+    if (Platform.OS === 'web') {
+      await SQLite.loadWebSQLiteAsync();
+    }
+    db = await SQLite.openDatabaseAsync('app.db');
   }
   return db;
 }
@@ -13,7 +16,7 @@ export async function executeSql(
   sql: string,
   params: any[] = [],
 ): Promise<SQLite.SQLResultSet> {
-  const database = getDatabase();
+  const database = await getDatabase();
   return new Promise((resolve, reject) => {
     database.transaction((tx) => {
       tx.executeSql(
