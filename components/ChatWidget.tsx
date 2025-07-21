@@ -115,6 +115,7 @@ export default function ChatWidget() {
   const [unreadTotal, setUnreadTotal] = useState(0);
   const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
   const messageSoundRef = useRef<Audio.Sound | null>(null);
+  const isMounted = useRef(true);
   // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,
@@ -145,6 +146,7 @@ export default function ChatWidget() {
       if (recording) {
         recording.stopAndUnloadAsync();
       }
+      isMounted.current = false;
     };
   }, []);
 
@@ -192,6 +194,7 @@ export default function ChatWidget() {
     loadSound();
     return () => {
       messageSoundRef.current?.unloadAsync();
+      isMounted.current = false;
     };
   }, []);
 
@@ -233,20 +236,24 @@ export default function ChatWidget() {
           (r) => r.userId === (user?.id || 'guest_user')
         );
       }
-      setChatRooms(roomsData);
+      if (isMounted.current) {
+        setChatRooms(roomsData);
+      }
     } catch (error) {
       console.error('Error loading chat rooms:', error);
       // Use default room as fallback
-      setChatRooms([
-        {
-          id: 'default_room',
-          userId: 'guest_user',
-          userName: 'Guest User',
-          lastMessage: 'Welcome to our store!',
-          lastMessageTime: Date.now() - 3600000, // 1 hour ago
-          unreadCount: 0,
-        },
-      ]);
+      if (isMounted.current) {
+        setChatRooms([
+          {
+            id: 'default_room',
+            userId: 'guest_user',
+            userName: 'Guest User',
+            lastMessage: 'Welcome to our store!',
+            lastMessageTime: Date.now() - 3600000, // 1 hour ago
+            unreadCount: 0,
+          },
+        ]);
+      }
     }
   };
 
@@ -267,17 +274,21 @@ export default function ChatWidget() {
         unreadCount: 0,
       };
 
-      setSelectedRoom(defaultRoom);
+      if (isMounted.current) {
+        setSelectedRoom(defaultRoom);
+      }
       await db.markChatRoomRead(roomId);
       await loadMessages(roomId);
     } catch (error) {
       console.error('Error creating default room:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: "אירעה שגיאה ביצירת חדר צ'אט",
-        type: 'error',
-      });
+      if (isMounted.current) {
+        setInfoModal({
+          visible: true,
+          title: 'שגיאה',
+          message: "אירעה שגיאה ביצירת חדר צ'אט",
+          type: 'error',
+        });
+      }
     }
   };
 
@@ -291,35 +302,45 @@ export default function ChatWidget() {
           message: await decryptMessage(m.message, roomId),
         }))
       );
-      setMessages(decrypted);
+      if (isMounted.current) {
+        setMessages(decrypted);
+      }
 
       // Scroll to bottom after messages load
       setTimeout(() => {
-        messagesEndRef.current?.scrollToEnd({ animated: false });
+        if (isMounted.current) {
+          messagesEndRef.current?.scrollToEnd({ animated: false });
+        }
       }, 100);
     } catch (error) {
       console.error('Error loading messages:', error);
       // Use default welcome message as fallback
-      setMessages([
-        {
-          id: 'default_msg',
-          senderId: 'admin',
-          senderName: 'Admin',
-          message: 'Welcome to our store! How can I help you today?',
-          timestamp: Date.now() - 3600000, // 1 hour ago
-          isAdmin: true,
-        },
-      ]);
+      if (isMounted.current) {
+        setMessages([
+          {
+            id: 'default_msg',
+            senderId: 'admin',
+            senderName: 'Admin',
+            message: 'Welcome to our store! How can I help you today?',
+            timestamp: Date.now() - 3600000, // 1 hour ago
+            isAdmin: true,
+          },
+        ]);
+      }
     }
   };
 
   const openChat = async (room: ChatRoom) => {
-    setSelectedRoom(room);
+    if (isMounted.current) {
+      setSelectedRoom(room);
+    }
     const db = DatabaseService.getInstance();
     await db.markChatRoomRead(room.id);
-    setChatRooms((prev) =>
-      prev.map((r) => (r.id === room.id ? { ...r, unreadCount: 0 } : r))
-    );
+    if (isMounted.current) {
+      setChatRooms((prev) =>
+        prev.map((r) => (r.id === room.id ? { ...r, unreadCount: 0 } : r))
+      );
+    }
     await loadMessages(room.id);
   };
 
@@ -349,17 +370,23 @@ export default function ChatWidget() {
           lastMessageTime: Date.now(),
           unreadCount: 0,
         };
-        setChatRooms((prev) => [room!, ...prev]);
+        if (isMounted.current) {
+          setChatRooms((prev) => [room!, ...prev]);
+        }
       }
 
-      setSelectedRoom(room!);
+      if (isMounted.current) {
+        setSelectedRoom(room!);
+      }
       const db = DatabaseService.getInstance();
       await db.markChatRoomRead(roomId);
-      setChatRooms((prev) =>
-        prev.map((r) => (r.id === roomId ? { ...r, unreadCount: 0 } : r))
-      );
-      setSearchQuery('');
-      setSearchResults([]);
+      if (isMounted.current) {
+        setChatRooms((prev) =>
+          prev.map((r) => (r.id === roomId ? { ...r, unreadCount: 0 } : r))
+        );
+        setSearchQuery('');
+        setSearchResults([]);
+      }
       await loadMessages(roomId);
     } catch (error) {
       console.error('Error opening chat with user:', error);
@@ -404,12 +431,16 @@ export default function ChatWidget() {
       await db.sendChatMessage(roomId, message);
 
       message.message = newMessage.trim();
-      setMessages((prev) => [...prev, message]);
-      setNewMessage('');
+      if (isMounted.current) {
+        setMessages((prev) => [...prev, message]);
+        setNewMessage('');
+      }
 
       // Scroll to bottom
       setTimeout(() => {
-        messagesEndRef.current?.scrollToEnd({ animated: true });
+        if (isMounted.current) {
+          messagesEndRef.current?.scrollToEnd({ animated: true });
+        }
       }, 100);
 
       // If not admin, simulate admin response after a delay
@@ -423,47 +454,59 @@ export default function ChatWidget() {
             timestamp: Date.now(),
             isAdmin: true,
           };
-          setMessages((prev) => [...prev, adminResponse]);
+          if (isMounted.current) {
+            setMessages((prev) => [...prev, adminResponse]);
+          }
 
           // Scroll to bottom again
           setTimeout(() => {
-            messagesEndRef.current?.scrollToEnd({ animated: true });
+            if (isMounted.current) {
+              messagesEndRef.current?.scrollToEnd({ animated: true });
+            }
           }, 100);
         }, 2000);
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'שליחת ההודעה נכשלה',
-        type: 'error',
-      });
+      if (isMounted.current) {
+        setInfoModal({
+          visible: true,
+          title: 'שגיאה',
+          message: 'שליחת ההודעה נכשלה',
+          type: 'error',
+        });
+      }
     } finally {
-      setIsSending(false);
+      if (isMounted.current) {
+        setIsSending(false);
+      }
     }
   };
 
   const startRecording = async () => {
     try {
       if (Platform.OS === 'web') {
-        setInfoModal({
-          visible: true,
-          title: 'הודעות קוליות',
-          message: 'הקלטת הודעות קוליות אינה נתמכת בגרסת הדפדפן',
-          type: 'info',
-        });
+        if (isMounted.current) {
+          setInfoModal({
+            visible: true,
+            title: 'הודעות קוליות',
+            message: 'הקלטת הודעות קוליות אינה נתמכת בגרסת הדפדפן',
+            type: 'info',
+          });
+        }
         return;
       }
 
       const permission = await Audio.requestPermissionsAsync();
       if (permission.status !== 'granted') {
-        setInfoModal({
-          visible: true,
-          title: 'נדרשת הרשאה',
-          message: 'אנא אשר הרשאת מיקרופון כדי להקליט הודעות קוליות',
-          type: 'warning',
-        });
+        if (isMounted.current) {
+          setInfoModal({
+            visible: true,
+            title: 'נדרשת הרשאה',
+            message: 'אנא אשר הרשאת מיקרופון כדי להקליט הודעות קוליות',
+            type: 'warning',
+          });
+        }
         return;
       }
 
@@ -476,22 +519,28 @@ export default function ChatWidget() {
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
 
-      setRecording(recording);
-      setIsRecording(true);
-      setRecordingDuration(0);
+      if (isMounted.current) {
+        setRecording(recording);
+        setIsRecording(true);
+        setRecordingDuration(0);
+      }
 
       // Start timer
       recordingTimer.current = setInterval(() => {
-        setRecordingDuration((prev) => prev + 1);
+        if (isMounted.current) {
+          setRecordingDuration((prev) => prev + 1);
+        }
       }, 1000);
     } catch (error) {
       console.error('Failed to start recording:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'ההקלטה נכשלה',
-        type: 'error',
-      });
+      if (isMounted.current) {
+        setInfoModal({
+          visible: true,
+          title: 'שגיאה',
+          message: 'ההקלטה נכשלה',
+          type: 'error',
+        });
+      }
     }
   };
 
@@ -499,7 +548,9 @@ export default function ChatWidget() {
     if (!recording) return;
 
     try {
-      setIsRecording(false);
+      if (isMounted.current) {
+        setIsRecording(false);
+      }
       if (recordingTimer.current) {
         clearInterval(recordingTimer.current);
         recordingTimer.current = null;
@@ -536,16 +587,22 @@ export default function ChatWidget() {
         };
 
         await db.sendChatMessage(roomId, voiceMessage);
-        setMessages((prev) => [...prev, voiceMessage]);
+        if (isMounted.current) {
+          setMessages((prev) => [...prev, voiceMessage]);
+        }
 
         // Scroll to bottom
         setTimeout(() => {
-          messagesEndRef.current?.scrollToEnd({ animated: true });
+          if (isMounted.current) {
+            messagesEndRef.current?.scrollToEnd({ animated: true });
+          }
         }, 100);
       }
 
-      setRecording(null);
-      setRecordingDuration(0);
+      if (isMounted.current) {
+        setRecording(null);
+        setRecordingDuration(0);
+      }
     } catch (error) {
       console.error('Failed to stop recording:', error);
     }
@@ -554,12 +611,14 @@ export default function ChatWidget() {
   const playAudio = async (messageId: string, audioUri: string) => {
     try {
       if (Platform.OS === 'web') {
-        setInfoModal({
-          visible: true,
-          title: 'הודעות קוליות',
-          message: 'השמעת הודעות קוליות אינה נתמכת בגרסת הדפדפן',
-          type: 'info',
-        });
+        if (isMounted.current) {
+          setInfoModal({
+            visible: true,
+            title: 'הודעות קוליות',
+            message: 'השמעת הודעות קוליות אינה נתמכת בגרסת הדפדפן',
+            type: 'info',
+          });
+        }
         return;
       }
 
@@ -567,27 +626,33 @@ export default function ChatWidget() {
       if (playingAudio[messageId]) {
         await playingAudio[messageId].stopAsync();
         await playingAudio[messageId].unloadAsync();
-        setPlayingAudio((prev) => {
-          const newState = { ...prev };
-          delete newState[messageId];
-          return newState;
-        });
-        return;
-      }
-
-      const { sound } = await Audio.Sound.createAsync({ uri: audioUri });
-
-      setPlayingAudio((prev) => ({ ...prev, [messageId]: sound }));
-
-      await sound.playAsync();
-
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
+        if (isMounted.current) {
           setPlayingAudio((prev) => {
             const newState = { ...prev };
             delete newState[messageId];
             return newState;
           });
+        }
+        return;
+      }
+
+      const { sound } = await Audio.Sound.createAsync({ uri: audioUri });
+
+      if (isMounted.current) {
+        setPlayingAudio((prev) => ({ ...prev, [messageId]: sound }));
+      }
+
+      await sound.playAsync();
+
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          if (isMounted.current) {
+            setPlayingAudio((prev) => {
+              const newState = { ...prev };
+              delete newState[messageId];
+              return newState;
+            });
+          }
           sound.unloadAsync();
         }
       });
@@ -600,32 +665,36 @@ export default function ChatWidget() {
     try {
       // Update local state
       let updated: Record<string, string[]> | null = null;
-      setMessages((prev) =>
-        prev.map((msg) => {
-          if (msg.id === messageId) {
-            const reactions = { ...(msg.reactions || {}) };
-            if (!reactions[emoji]) {
-              reactions[emoji] = [];
-            }
-
-            const userId = user?.id || 'guest_user';
-            if (reactions[emoji].includes(userId)) {
-              reactions[emoji] = reactions[emoji].filter((id) => id !== userId);
-              if (reactions[emoji].length === 0) {
-                delete reactions[emoji];
+      if (isMounted.current) {
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.id === messageId) {
+              const reactions = { ...(msg.reactions || {}) };
+              if (!reactions[emoji]) {
+                reactions[emoji] = [];
               }
-            } else {
-              reactions[emoji].push(userId);
+
+              const userId = user?.id || 'guest_user';
+              if (reactions[emoji].includes(userId)) {
+                reactions[emoji] = reactions[emoji].filter((id) => id !== userId);
+                if (reactions[emoji].length === 0) {
+                  delete reactions[emoji];
+                }
+              } else {
+                reactions[emoji].push(userId);
+              }
+
+              updated = reactions;
+              return { ...msg, reactions };
             }
+            return msg;
+          })
+        );
+      }
 
-            updated = reactions;
-            return { ...msg, reactions };
-          }
-          return msg;
-        })
-      );
-
-      setShowReactions(null);
+      if (isMounted.current) {
+        setShowReactions(null);
+      }
 
       const db = DatabaseService.getInstance();
       const roomId = selectedRoom
@@ -639,7 +708,9 @@ export default function ChatWidget() {
       }
     } catch (error) {
       console.error('Error adding reaction:', error);
-      setShowReactions(null);
+      if (isMounted.current) {
+        setShowReactions(null);
+      }
     }
   };
 
@@ -647,16 +718,20 @@ export default function ChatWidget() {
     if (!isAdmin && !isDriver) return;
 
     try {
-      setIsOpen(false);
-      setProfileUserId(userId);
-      setProfileModalVisible(true);
+      if (isMounted.current) {
+        setIsOpen(false);
+        setProfileUserId(userId);
+        setProfileModalVisible(true);
+      }
     } catch (error) {
       console.error('Error opening user profile modal:', error);
     }
   };
 
   const backToRoomList = () => {
-    setSelectedRoom(null);
+    if (isMounted.current) {
+      setSelectedRoom(null);
+    }
   };
 
   const formatDuration = (seconds: number) => {
