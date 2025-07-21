@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { executeSql } from '../lib/sqlite';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import JWT from 'expo-jwt';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
 
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await ensureAdminAccount();
         const token = await getToken();
         if (token && isTokenValid(token)) {
-          const payload: any = jwt.decode(token);
+          const payload: any = JWT.decode(token, JWT_SECRET);
           setSession(token);
           if (payload?.sub) {
             await loadProfile(payload.sub);
@@ -110,7 +110,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setLoading(false);
         return false;
       }
-      const token = jwt.sign({ sub: row.id }, JWT_SECRET, { expiresIn: '7d' });
+      const token = JWT.encode(
+        { sub: row.id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
+        JWT_SECRET,
+      );
       await saveToken(token);
       setSession(token);
       await loadProfile(row.id);
@@ -137,7 +140,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         'INSERT INTO users (id, username, password_hash, display_name, role) VALUES (?,?,?,?,?)',
         [id, username, hash, displayName, role],
       );
-      const token = jwt.sign({ sub: id }, JWT_SECRET, { expiresIn: '7d' });
+      const token = JWT.encode(
+        { sub: id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
+        JWT_SECRET,
+      );
       await saveToken(token);
       setSession(token);
       await loadProfile(id);
@@ -162,7 +168,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setLoading(true);
     const token = await getToken();
     if (token && isTokenValid(token)) {
-      const payload: any = jwt.decode(token);
+      const payload: any = JWT.decode(token, JWT_SECRET);
       setSession(token);
       if (payload?.sub) {
         await loadProfile(payload.sub);

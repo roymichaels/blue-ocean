@@ -27,7 +27,7 @@
     "expo-secure-store": "~12.1.4",
     "expo-sqlite": "^11.1.1",
     "js-cookie": "^3.0.5",
-    "jsonwebtoken": "^9.0.2",
+    "expo-jwt": "^1.8.2",
     "axios": "^1.6.2",
     "buffer": "^6.0.3",
     "cross-env": "^7.0.3",
