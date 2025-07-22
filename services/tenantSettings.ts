@@ -12,14 +12,20 @@ class TenantSettingsService {
 
   private constructor() {
     // Initialize table
-    executeSql(
-      `CREATE TABLE IF NOT EXISTS tenant_settings (
-        tenant_id TEXT PRIMARY KEY NOT NULL,
-        platform_name TEXT,
-        platform_logo TEXT,
-        theme_color TEXT
-      )`
-    ).catch((err) => console.error('Error creating tenant_settings table:', err));
+    (async () => {
+      try {
+        await executeSql(
+          `CREATE TABLE IF NOT EXISTS tenant_settings (
+            tenant_id TEXT PRIMARY KEY NOT NULL,
+            platform_name TEXT,
+            platform_logo TEXT,
+            theme_color TEXT
+          )`
+        );
+      } catch (err) {
+        console.error('Error creating tenant_settings table:', err);
+      }
+    })();
   }
 
   public static getInstance(): TenantSettingsService {
