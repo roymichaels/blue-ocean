@@ -1,30 +1,25 @@
 import * as SQLite from 'expo-sqlite';
 
-let db: SQLite.SQLiteDatabase | null = null;
+let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
-  if (!db) {
-    db = await SQLite.openDatabaseAsync('app.db');
+  if (!dbPromise) {
+    dbPromise = SQLite.openDatabaseAsync('app.db');
   }
-  return db;
+  return dbPromise;
 }
 
 export async function executeSql(
   sql: string,
   params: any[] = [],
-): Promise<SQLite.SQLResultSet> {
+): Promise<{ rows: { _array: any[] } }> {
   const database = await getDatabase();
-  return new Promise((resolve, reject) => {
-    database.transaction((tx) => {
-      tx.executeSql(
-        sql,
-        params,
-        (_tx, result) => resolve(result),
-        (_tx, error) => {
-          reject(error);
-          return false;
-        },
-      );
-    });
-  });
+  const statement = await database.prepareAsync(sql);
+  try {
+    const result = await statement.executeAsync(params);
+    const rows = await result.getAllAsync();
+    return { rows: { _array: rows } };
+  } finally {
+    await statement.finalizeAsync();
+  }
 }
 
