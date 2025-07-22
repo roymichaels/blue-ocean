@@ -1,12 +1,8 @@
-import * as SQLite from 'expo-sqlite/next';
-import { Platform } from 'react-native';
+import * as SQLite from 'expo-sqlite';
 
 let db: SQLite.SQLiteDatabase | null = null;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!db) {
-    if (Platform.OS === 'web') {
-      await SQLite.loadWebSQLiteAsync();
-    }
     db = await SQLite.openDatabaseAsync('app.db');
   }
   return db;
