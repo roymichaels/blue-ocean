@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { executeSql } from '../lib/sqlite';
+import DatabaseService from '../services/database';
 import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
@@ -82,17 +83,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const loadProfile = async (uid: string) => {
-    const result = await executeSql('SELECT * FROM users WHERE id = ?', [uid]);
-    const data = (result.rows as any)._array?.[0];
-    if (data) {
+    const db = DatabaseService.getInstance();
+    const profile = await db.getUserProfile(uid);
+    if (profile) {
+      if (profile.email === 'deandeanazulay@gmail.com') {
+        profile.role = 'admin';
+      }
       setUser({
-        id: data.id,
-        username: data.username,
-        displayName: data.display_name,
-        role: data.role,
+        id: profile.id,
+        username: profile.username,
+        displayName: profile.displayName,
+        email: profile.email,
+        role: profile.role,
       });
     } else {
-      setUser({ id: uid, role: 'user', username: '', displayName: '' });
+      setUser({ id: uid, role: 'user', username: '', displayName: '', email: '' });
     }
   };
 
