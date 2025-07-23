@@ -11,7 +11,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
     dbPromise = (async () => {
       const db = await SQLite.openDatabaseAsync(DB_NAME);
       if (Platform.OS === 'web') {
-        const { electrify } = await import('@electric-sql/react-native');
+        const { electrify } = await import('electric-sql/browser');
         const { schema } = await import('../sqlite/migrations');
         await electrify(db, schema);
       }

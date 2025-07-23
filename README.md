@@ -4,10 +4,13 @@ This Expo project uses React Native with the Expo Router.
 
 ## Setup
 
-Run `yarn install` to populate `node_modules`:
+Run `yarn install` to populate `node_modules`. ElectricSQL is required for web support, so install it as a development dependency:
 
 ```sh
 yarn install
+
+# install the ElectricSQL package
+yarn add -D electric-sql
 ```
 
 If dependencies need patching, run `patch-package` after installation:
@@ -67,7 +70,7 @@ When you run `yarn dev`, a `predev` script automatically executes the migrations
 
 ## ElectricSQL on the Web
 
-`ensureDatabase` from `lib/sqlite.ts` behaves slightly differently when the application runs in the browser. Instead of copying the bundled `blue-ocean.db` file, ElectricSQL provisions an IndexedDB-backed database and applies the schema generated from the SQL files in `sqlite/migrations`. Once the tables are created the library begins syncing with the backend automatically.
+`ensureDatabase` from `lib/sqlite.ts` behaves slightly differently when the application runs in the browser. It relies on ElectricSQL's **browser driver** (`electric-sql/browser`) instead of the React Native package. Rather than copying the bundled `blue-ocean.db` file, the driver provisions an IndexedDB-backed database and applies the schema generated from the SQL files in `sqlite/migrations`. Once the tables are created the library begins syncing with the backend automatically.
 
 If you modify any migration file you need to regenerate the ElectricSQL schema so the web build picks up the changes:
 
