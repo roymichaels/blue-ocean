@@ -91,7 +91,8 @@ export default function UserProfileScreen() {
     try {
       // Close this screen
       router.back();
-      
+
+      // Messaging via Matrix is currently disabled and tracked separately.
       // TODO: re-enable Matrix later
     } catch (error) {
       console.error('Error opening chat:', error);

@@ -153,6 +153,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
   };
 
   const contactSupport = () => {
+    // Matrix chat integration is currently disabled and tracked separately.
     // TODO: re-enable Matrix later
     Alert.alert('Support', 'Contact support via chat is disabled');
   };

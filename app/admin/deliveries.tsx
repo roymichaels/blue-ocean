@@ -33,6 +33,7 @@ export default function AdminDeliveriesScreen() {
     { id: string; uri: string; type: 'image' | 'video' }[]
   >([]);
   const [viewerVisible, setViewerVisible] = useState(false);
+  // Matrix integration is currently disabled and tracked separately.
   // const matrixService = MatrixService.getInstance(); // TODO: re-enable Matrix later
 
   useEffect(() => {
@@ -83,6 +84,7 @@ export default function AdminDeliveriesScreen() {
     try {
       const db = DatabaseService.getInstance();
       await db.updateDeliveryJobStatus(jobId, status);
+      // Matrix notifications via Matrix are disabled and tracked separately.
       // TODO: re-enable Matrix later
       loadData();
     } catch (error) {
@@ -105,6 +107,7 @@ export default function AdminDeliveriesScreen() {
   };
 
   const openJobChat = (job: DeliveryJob) => {
+    // Chat via Matrix is currently disabled and tracked separately.
     // TODO: re-enable Matrix later
   };
 
