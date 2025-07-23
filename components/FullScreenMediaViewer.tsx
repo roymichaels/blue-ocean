@@ -23,7 +23,12 @@ import Animated, {
   runOnJS,
   withTiming,
 } from 'react-native-reanimated';
-import { Video, ResizeMode } from 'expo-av';
+import {
+  VideoView,
+  createVideoPlayer,
+  VideoContentFit,
+  type VideoPlayer,
+} from 'expo-video';
 import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
@@ -54,10 +59,24 @@ export default function FullScreenMediaViewer({
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  const videoRef = useRef<Video>(null);
+  const [player, setPlayer] = useState<VideoPlayer | null>(null);
   const { colors } = useTheme();
 
   const currentMedia = media[currentIndex];
+
+  useEffect(() => {
+    if (currentMedia.type === 'video') {
+      const p = createVideoPlayer({ uri: currentMedia.uri });
+      if (visible) {
+        p.play();
+      }
+      setPlayer(p);
+      return () => {
+        p.remove();
+        setPlayer(null);
+      };
+    }
+  }, [currentMedia, visible]);
 
   useEffect(() => {
     // Update current index when initialIndex changes
@@ -276,15 +295,15 @@ export default function FullScreenMediaViewer({
             onPress={toggleControls}
           >
             {currentMedia.type === 'video' ? (
-              <Video
-                ref={videoRef}
-                style={styles.media}
-                source={{ uri: currentMedia.uri }}
-                useNativeControls
-                resizeMode={ResizeMode.CONTAIN}
-                isLooping
-                shouldPlay={visible}
-              />
+              player && (
+                <VideoView
+                  player={player}
+                  style={styles.media}
+                  nativeControls
+                  contentFit="contain"
+                  allowsFullscreen
+                />
+              )
             ) : (
               <PinchGestureHandler onGestureEvent={pinchHandler}>
                 <Animated.View style={styles.gestureContainer}>
