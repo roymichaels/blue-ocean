@@ -54,7 +54,7 @@
     "expo-video": "~2.2.2",
     "expo-video-thumbnails": "^9.1.0",
     "expo-web-browser": "~14.2.0",
-    "form-data": "^4.0.0",
+    "form-data": "^4.0.4",
     "js-cookie": "^3.0.5",
     "lucide-react-native": "^0.475.0",
     "metro": "^0.82.4",
