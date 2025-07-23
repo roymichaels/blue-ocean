@@ -288,21 +288,9 @@ const styles = StyleSheet.create({
     maxWidth: width - 32,
     borderWidth: 1,
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 8,
-      },
-      web: {
-        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)'
-      }
+      ios: { elevation: 8 },
+      android: { elevation: 8 },
+      web: { boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)' }
     }),
   },
   userInfo: {

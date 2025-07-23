@@ -441,21 +441,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 5,
-      },
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)'
-      }
+      ios: { elevation: 5 },
+      android: { elevation: 5 },
+      web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)' }
     })
   },
   modalHeader: {
@@ -485,21 +473,9 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 1,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.2)'
-      }
+      ios: { elevation: 2 },
+      android: { elevation: 2 },
+      web: { boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.2)' }
     })
   },
   tabText: {

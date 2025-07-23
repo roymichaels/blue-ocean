@@ -165,18 +165,9 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 5,
-      },
-      web: {
-        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
-      },
+      ios: { elevation: 5 },
+      android: { elevation: 5 },
+      web: { boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)' },
     }),
   },
   closeButton: {

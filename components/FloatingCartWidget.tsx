@@ -108,21 +108,9 @@ export default function FloatingCartWidget() {
           backgroundColor: colors.surface.elevated,
           borderColor: colors.border.primary,
           ...Platform.select({
-            ios: {
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-            },
-            android: {
-              elevation: 12,
-            },
-            web: {
-              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)'
-            }
+            ios: { elevation: 12 },
+            android: { elevation: 12 },
+            web: { boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)' }
           }),
         }
       ]}

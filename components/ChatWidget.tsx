@@ -1322,22 +1322,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-      },
-      web: {
-        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.3)',
-      },
+      ios: { elevation: 8 },
+      android: { elevation: 8 },
+      web: { boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.3)' },
     }),
   },
   chatContainer: {
@@ -1465,22 +1452,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     zIndex: 1000,
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-      },
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
-      },
+      ios: { elevation: 5 },
+      android: { elevation: 5 },
+      web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)' },
     }),
   },
   reactionOption: {
