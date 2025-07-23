@@ -71,8 +71,11 @@ After applying the migrations you can populate the local database with fake
 users, products, orders and tenant settings.
 
 ```sh
-DB_PATH=sqlite/blue-ocean.db yarn seed
+yarn seed
 ```
+
+The `seed.js` script defaults to `sqlite/blue-ocean.db`. Set `DB_PATH` to use a
+different location.
 
 ## Database Backup and Restore
 
