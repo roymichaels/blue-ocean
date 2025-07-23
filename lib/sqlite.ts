@@ -1,13 +1,22 @@
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
+import { Platform } from 'react-native';
 
 const DB_NAME = 'app.db';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!dbPromise) {
-    dbPromise = SQLite.openDatabaseAsync('app.db');
+    dbPromise = (async () => {
+      const db = await SQLite.openDatabaseAsync(DB_NAME);
+      if (Platform.OS === 'web') {
+        const { electrify } = await import('@electric-sql/react-native');
+        const { schema } = await import('../sqlite/migrations');
+        await electrify(db, schema);
+      }
+      return db;
+    })();
   }
   return dbPromise;
 }
@@ -41,33 +50,38 @@ async function tableExists(db: SQLite.SQLiteDatabase, name: string) {
 }
 
 export async function ensureDatabase(): Promise<void> {
-  const sqliteDir = FileSystem.documentDirectory + 'SQLite';
-  await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
-  const dbPath = sqliteDir + '/' + DB_NAME;
+  if (Platform.OS !== 'web') {
+    const sqliteDir = FileSystem.documentDirectory + 'SQLite';
+    await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
+    const dbPath = sqliteDir + '/' + DB_NAME;
 
-  let needsSetup = false;
-  const info = await FileSystem.getInfoAsync(dbPath);
-  if (info.exists) {
-    try {
-      const db = await SQLite.openDatabaseAsync(DB_NAME);
-      if (!(await tableExists(db, 'users'))) {
+    let needsSetup = false;
+    const info = await FileSystem.getInfoAsync(dbPath);
+    if (info.exists) {
+      try {
+        const db = await SQLite.openDatabaseAsync(DB_NAME);
+        if (!(await tableExists(db, 'users'))) {
+          needsSetup = true;
+        }
+      } catch {
         needsSetup = true;
       }
-    } catch {
+    } else {
       needsSetup = true;
     }
-  } else {
-    needsSetup = true;
-  }
 
-  if (needsSetup) {
-    try {
-      const asset = Asset.fromModule(require('../sqlite/blue-ocean.db'));
-      await asset.downloadAsync();
-      await FileSystem.copyAsync({ from: asset.localUri!, to: dbPath });
-    } catch (err) {
-      console.error('Failed to copy prepopulated database:', err);
+    if (needsSetup) {
+      try {
+        const asset = Asset.fromModule(require('../sqlite/blue-ocean.db'));
+        await asset.downloadAsync();
+        await FileSystem.copyAsync({ from: asset.localUri!, to: dbPath });
+      } catch (err) {
+        console.error('Failed to copy prepopulated database:', err);
+      }
     }
+  } else {
+    // Opening the database will apply the schema via electrify
+    await getDatabase();
   }
 }
 
