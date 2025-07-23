@@ -18,6 +18,7 @@ import { AppInfoProvider } from '../contexts/AppInfoContext';
 import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
+import { ensureDatabase } from '../lib/sqlite';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
@@ -78,6 +79,20 @@ function AppContent() {
 
 export default function RootLayout() {
   useFrameworkReady();
+
+  const [dbReady, setDbReady] = useState(false);
+
+  useEffect(() => {
+    ensureDatabase().finally(() => setDbReady(true));
+  }, []);
+
+  if (!dbReady) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <AppInfoProvider>
