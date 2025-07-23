@@ -12,7 +12,6 @@ import { router } from 'expo-router';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
-import { useAuth } from './AuthContext';
 import UserAvatar from './UserAvatar';
 import WishlistModal from './WishlistModal';
 import CartService from '../services/cart';
@@ -31,7 +30,6 @@ export default function GlobalHeader({
   const { t } = useLanguage();
   const { colors } = useTheme();
   const { platformName, platformLogo } = useAppInfo();
-  const { isLoggedIn, user } = useAuth();
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [wishlistItemsCount, setWishlistItemsCount] = useState(0);
 
@@ -103,7 +101,7 @@ export default function GlobalHeader({
                 </View>
               )}
             </TouchableOpacity>
-            {isLoggedIn && user && <UserAvatar />}
+            <UserAvatar />
           </View>
         </View>
 

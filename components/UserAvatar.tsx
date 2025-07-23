@@ -281,7 +281,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingTop: 60,
     paddingRight: 16,
-    zIndex: 1000,
   },
   dropdown: {
     borderRadius: 12,
