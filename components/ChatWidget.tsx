@@ -25,7 +25,7 @@ import {
   Play,
   Pause,
 } from 'lucide-react-native';
-import { Audio } from 'expo-av';
+import * as Audio from 'expo-audio';
 // MatrixService has been removed
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
@@ -98,10 +98,10 @@ export default function ChatWidget() {
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [recording, setRecording] = useState<Audio.AudioRecorder | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [playingAudio, setPlayingAudio] = useState<{
-    [key: string]: Audio.Sound;
+    [key: string]: Audio.AudioPlayer;
   }>({});
   const [showReactions, setShowReactions] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<
@@ -114,7 +114,7 @@ export default function ChatWidget() {
   const messagesEndRef = useRef<ScrollView>(null);
   const [unreadTotal, setUnreadTotal] = useState(0);
   const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
-  const messageSoundRef = useRef<Audio.Sound | null>(null);
+  const messageSoundRef = useRef<Audio.AudioPlayer | null>(null);
   const isMounted = useRef(true);
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -141,10 +141,11 @@ export default function ChatWidget() {
     return () => {
       // Cleanup audio on unmount
       Object.values(playingAudio).forEach((sound) => {
-        sound.unloadAsync();
+        sound.remove();
       });
       if (recording) {
-        recording.stopAndUnloadAsync();
+        recording.stop();
+        recording.remove();
       }
       isMounted.current = false;
     };
@@ -183,17 +184,17 @@ export default function ChatWidget() {
   useEffect(() => {
     const loadSound = async () => {
       try {
-        const { sound } = await Audio.Sound.createAsync(
+        const player = Audio.createAudioPlayer(
           require('../assets/sounds/message.mp3')
         );
-        messageSoundRef.current = sound;
+        messageSoundRef.current = player;
       } catch (err) {
         console.error('Failed to load message sound', err);
       }
     };
     loadSound();
     return () => {
-      messageSoundRef.current?.unloadAsync();
+      messageSoundRef.current?.remove();
       isMounted.current = false;
     };
   }, []);
@@ -497,7 +498,7 @@ export default function ChatWidget() {
         return;
       }
 
-      const permission = await Audio.requestPermissionsAsync();
+      const permission = await Audio.requestRecordingPermissionsAsync();
       if (permission.status !== 'granted') {
         if (isMounted.current) {
           setInfoModal({
@@ -515,12 +516,13 @@ export default function ChatWidget() {
         playsInSilentModeIOS: true,
       });
 
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      const newRecording = new Audio.AudioRecorder(
+        Audio.RecordingPresets.HIGH_QUALITY
       );
+      newRecording.record();
 
       if (isMounted.current) {
-        setRecording(recording);
+        setRecording(newRecording);
         setIsRecording(true);
         setRecordingDuration(0);
       }
@@ -556,8 +558,9 @@ export default function ChatWidget() {
         recordingTimer.current = null;
       }
 
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
+      await recording.stop();
+      const uri = recording.uri;
+      recording.remove();
 
       if (uri) {
         const pinata = PinataService.getInstance();
@@ -624,8 +627,8 @@ export default function ChatWidget() {
 
       // Stop any currently playing audio
       if (playingAudio[messageId]) {
-        await playingAudio[messageId].stopAsync();
-        await playingAudio[messageId].unloadAsync();
+        playingAudio[messageId].pause();
+        playingAudio[messageId].remove();
         if (isMounted.current) {
           setPlayingAudio((prev) => {
             const newState = { ...prev };
@@ -636,15 +639,15 @@ export default function ChatWidget() {
         return;
       }
 
-      const { sound } = await Audio.Sound.createAsync({ uri: audioUri });
+      const sound = Audio.createAudioPlayer({ uri: audioUri });
 
       if (isMounted.current) {
         setPlayingAudio((prev) => ({ ...prev, [messageId]: sound }));
       }
 
-      await sound.playAsync();
+      sound.play();
 
-      sound.setOnPlaybackStatusUpdate((status) => {
+      sound.addListener(Audio.PLAYBACK_STATUS_UPDATE, (status: any) => {
         if (status.isLoaded && status.didJustFinish) {
           if (isMounted.current) {
             setPlayingAudio((prev) => {
@@ -653,7 +656,7 @@ export default function ChatWidget() {
               return newState;
             });
           }
-          sound.unloadAsync();
+          sound.remove();
         }
       });
     } catch (error) {
