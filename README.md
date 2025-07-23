@@ -80,6 +80,14 @@ npx electric-sql migrate
 
 The project depends on the `electric-sql` package, and this command will generate the updated schema files under the `electric/` directory which `ensureDatabase` relies on when running on the web.
 
+After migrating, run the generator to produce the TypeScript schema used by the web build:
+
+```sh
+npx electric-sql generate
+```
+
+The resulting `electric/schema.ts` file is re-exported from `sqlite/migrations/index.ts`.
+
 ## Seeding Sample Data
 
 After applying the migrations you can populate the local database with fake
