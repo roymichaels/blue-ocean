@@ -65,6 +65,18 @@ This applies the SQL files in `sqlite/migrations` and writes the database to
 
 When you run `yarn dev`, a `predev` script automatically executes the migrations and creates the database if it does not already exist.
 
+## ElectricSQL on the Web
+
+`ensureDatabase` from `lib/sqlite.ts` behaves slightly differently when the application runs in the browser. Instead of copying the bundled `blue-ocean.db` file, ElectricSQL provisions an IndexedDB-backed database and applies the schema generated from the SQL files in `sqlite/migrations`. Once the tables are created the library begins syncing with the backend automatically.
+
+If you modify any migration file you need to regenerate the ElectricSQL schema so the web build picks up the changes:
+
+```sh
+npx electric migrate
+```
+
+This command produces the updated schema files under the `electric/` directory which `ensureDatabase` relies on when running on the web.
+
 ## Seeding Sample Data
 
 After applying the migrations you can populate the local database with fake
