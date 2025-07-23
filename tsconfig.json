@@ -8,7 +8,7 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "types": ["expo", "react", "react-native"],
+    "types": ["expo", "react", "react-native", "jest"],
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
