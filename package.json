@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "start": "cross-env EXPO_NO_TELEMETRY=1 BROWSER=none expo start --web",
+    "predev": "node scripts/init-db.js",
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
     "update:appjson": "node scripts/update-app-json.js",
