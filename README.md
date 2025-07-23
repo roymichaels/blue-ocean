@@ -75,10 +75,10 @@ When you run `yarn dev`, a `predev` script automatically executes the migrations
 If you modify any migration file you need to regenerate the ElectricSQL schema so the web build picks up the changes:
 
 ```sh
-npx electric migrate
+npx electric-sql migrate
 ```
 
-This command produces the updated schema files under the `electric/` directory which `ensureDatabase` relies on when running on the web.
+The project depends on the `electric-sql` package, and this command will generate the updated schema files under the `electric/` directory which `ensureDatabase` relies on when running on the web.
 
 ## Seeding Sample Data
 
