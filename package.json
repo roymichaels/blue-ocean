@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "cross-env EXPO_NO_TELEMETRY=1 BROWSER=none expo start --web",
-    "predev": "node scripts/init-db.js",
+    "predev": "node scripts/init-db.js && node scripts/init-electric.js",
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
     "update:appjson": "node scripts/update-app-json.js",
@@ -72,7 +72,8 @@
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
     "web-push": "^3.6.7",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "@electric-sql/client": "^1.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.27.7",

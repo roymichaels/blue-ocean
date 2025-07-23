@@ -48,6 +48,9 @@ the same value is used for all clients so they can decrypt messages.
 `EXPO_PUBLIC_TENANT` specifies which tenant's branding to load from the
 `tenant_settings` table. Example values are `thecongress` or `thebull`.
 
+Set `EXPO_PUBLIC_ELECTRIC_URL` to point at your ElectricSQL sync service so
+the app can replicate the `users`, `products` and `orders` tables.
+
 Logos and other uploaded images are stored on IPFS via Pinata. Set
 `EXPO_PUBLIC_PINATA_JWT` (or API key/secret) in your `.env` file so uploads can
 succeed.
@@ -63,7 +66,8 @@ Create a local SQLite database:
 This applies the SQL files in `sqlite/migrations` and writes the database to
 `sqlite/blue-ocean.db`.
 
-When you run `yarn dev`, a `predev` script automatically executes the migrations and creates the database if it does not already exist.
+When you run `yarn dev`, a `predev` script automatically executes the migrations,
+creates the database if needed, and starts ElectricSQL replication.
 
 ## Seeding Sample Data
 
@@ -73,6 +77,12 @@ users, products, orders and tenant settings.
 ```sh
 DB_PATH=sqlite/blue-ocean.db yarn seed
 ```
+
+## ElectricSQL Replication
+
+ElectricSQL keeps local tables in sync with Postgres. The `predev` script
+starts replication for the `users`, `products` and `orders` tables using the
+service URL defined in `EXPO_PUBLIC_ELECTRIC_URL`.
 
 ## Database Backup and Restore
 
