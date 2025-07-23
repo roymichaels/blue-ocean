@@ -290,21 +290,9 @@ export default function ReviewsScreen() {
       backgroundColor: colors.surface.primary, 
       borderColor: colors.border.primary,
       ...Platform.select({
-        ios: {
-          shadowColor: '#000',
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-        web: {
-          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
-        }
+        ios: { elevation: 2 },
+        android: { elevation: 2 },
+        web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
       }),
     }]}>
       <View style={styles.reviewHeader}>
@@ -379,25 +367,13 @@ export default function ReviewsScreen() {
         key={item.id}
         style={[
           styles.orderSelectorItem,
-          { 
-            backgroundColor: colors.surface.primary, 
+          {
+            backgroundColor: colors.surface.primary,
             borderColor: colors.border.primary,
             ...Platform.select({
-              ios: {
-                shadowColor: '#000',
-                shadowOffset: {
-                  width: 0,
-                  height: 2,
-                },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-              },
-              android: {
-                elevation: 2,
-              },
-              web: {
-                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
-              }
+              ios: { elevation: 2 },
+              android: { elevation: 2 },
+              web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
             }),
           },
           alreadyReviewed && styles.orderSelectorItemDisabled
@@ -712,25 +688,13 @@ export default function ReviewsScreen() {
             </ScrollView>
           ) : (
             <ScrollView style={styles.reviewForm}>
-              <View style={[styles.selectedOrder, { 
-                backgroundColor: colors.surface.primary, 
+              <View style={[styles.selectedOrder, {
+                backgroundColor: colors.surface.primary,
                 borderColor: colors.border.primary,
                 ...Platform.select({
-                  ios: {
-                    shadowColor: '#000',
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                  },
-                  android: {
-                    elevation: 2,
-                  },
-                  web: {
-                    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
-                  }
+                  ios: { elevation: 2 },
+                  android: { elevation: 2 },
+                  web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
                 }),
               }]}>
                 <Text style={[styles.selectedOrderTitle, { color: colors.text.primary }]}>

@@ -428,21 +428,9 @@ export default function SubcategoryScreen() {
         backgroundColor: colors.surface.primary, 
         borderColor: colors.border.primary,
         ...Platform.select({
-          ios: {
-            shadowColor: '#000',
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-          },
-          android: {
-            elevation: 2,
-          },
-          web: {
-            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
-          }
+          ios: { elevation: 2 },
+          android: { elevation: 2 },
+          web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
         }),
       }]}
       onPress={() => router.push(`/product/${item.id}`)}
@@ -1161,21 +1149,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
-      }
+      ios: { elevation: 2 },
+      android: { elevation: 2 },
+      web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
     }),
   },
   productImageContainer: {
