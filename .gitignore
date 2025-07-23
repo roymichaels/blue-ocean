@@ -10,3 +10,6 @@ node_modules/
 
 sqlite/*.db
 */SQLite/*.db
+
+# Environment files
+.env*
