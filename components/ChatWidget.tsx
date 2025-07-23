@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Buffer } from 'buffer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -39,7 +38,6 @@ import InfoModal from './InfoModal';
 import UserProfileModal from './UserProfileModal';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-const CHAT_ONBOARDED_KEY = 'chatOnboarded';
 
 const roomKeys: Record<string, CryptoKey> = {};
 
@@ -260,7 +258,7 @@ export default function ChatWidget() {
     }
   };
 
-const loadOrCreateDefaultRoom = async () => {
+  const loadOrCreateDefaultRoom = async () => {
     try {
       const db = DatabaseService.getInstance();
       const roomId = await db.getOrCreateChatRoom(
@@ -282,7 +280,6 @@ const loadOrCreateDefaultRoom = async () => {
       }
       await db.markChatRoomRead(roomId);
       await loadMessages(roomId);
-      await maybeSendOnboardMessage(roomId);
     } catch (error) {
       console.error('Error creating default room:', error);
       if (isMounted.current) {
@@ -334,33 +331,6 @@ const loadOrCreateDefaultRoom = async () => {
     }
   };
 
-  const maybeSendOnboardMessage = async (roomId: string) => {
-    if (isAdmin || isDriver) return;
-    try {
-      const onboarded = await AsyncStorage.getItem(CHAT_ONBOARDED_KEY);
-      if (onboarded) return;
-      const db = DatabaseService.getInstance();
-      const text = "Let's build your system. First, tell me your Game — your mission.";
-      const encrypted = await encryptMessage(text, roomId);
-      const message: ChatMessage = {
-        id: Date.now().toString(),
-        senderId: 'system',
-        senderName: 'System',
-        message: encrypted,
-        timestamp: Date.now(),
-        isAdmin: true,
-      };
-      await db.sendChatMessage(roomId, message);
-      message.message = text;
-      if (isMounted.current) {
-        setMessages((prev) => [...prev, message]);
-      }
-      await AsyncStorage.setItem(CHAT_ONBOARDED_KEY, 'true');
-    } catch (error) {
-      console.error('Failed to send onboard message', error);
-    }
-  };
-
   const openChat = async (room: ChatRoom) => {
     if (isMounted.current) {
       setSelectedRoom(room);
@@ -373,7 +343,6 @@ const loadOrCreateDefaultRoom = async () => {
       );
     }
     await loadMessages(room.id);
-    await maybeSendOnboardMessage(room.id);
   };
 
   useEffect(() => {
@@ -420,7 +389,6 @@ const loadOrCreateDefaultRoom = async () => {
         setSearchResults([]);
       }
       await loadMessages(roomId);
-      await maybeSendOnboardMessage(roomId);
     } catch (error) {
       console.error('Error opening chat with user:', error);
     }
