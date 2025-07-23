@@ -63,6 +63,8 @@ Create a local SQLite database:
 This applies the SQL files in `sqlite/migrations` and writes the database to
 `sqlite/blue-ocean.db`.
 
+When you run `yarn dev`, a `predev` script automatically executes the migrations and creates the database if it does not already exist.
+
 ## Seeding Sample Data
 
 After applying the migrations you can populate the local database with fake
