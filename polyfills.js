@@ -12,3 +12,7 @@ try {
 if (typeof global.Buffer === 'undefined') {
   global.Buffer = require('buffer').Buffer; // critical fix: use require, not import
 }
+
+if (typeof global.process === 'undefined') {
+  global.process = require('process/browser');
+}

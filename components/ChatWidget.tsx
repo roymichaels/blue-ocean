@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Buffer } from 'buffer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
@@ -32,6 +31,8 @@ import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
 import { debugLog } from '../utils/logger';
 import { ChatMessage, ChatRoom, User } from '../types';
+import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
+import { useWakuClient } from '../hooks/useWakuClient';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -41,55 +42,6 @@ import UserProfileModal from './UserProfileModal';
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 const CHAT_ONBOARDED_KEY = 'chatOnboarded';
 
-const roomKeys: Record<string, CryptoKey> = {};
-
-/**
- * Derive a deterministic key per room using a shared secret. This
- * allows messages to be decrypted across sessions instead of relying on a
- * randomly generated key that would be lost on refresh.
- */
-async function getRoomKey(roomId: string): Promise<CryptoKey> {
-  if (roomKeys[roomId]) return roomKeys[roomId];
-
-  const secret = process.env.EXPO_PUBLIC_CHAT_SECRET || 'default_chat_secret';
-  const enc = new TextEncoder().encode(roomId + secret);
-  const hash = await crypto.subtle.digest('SHA-256', enc);
-
-  const key = await crypto.subtle.importKey(
-    'raw',
-    hash,
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt', 'decrypt']
-  );
-
-  roomKeys[roomId] = key;
-  return key;
-}
-
-async function encryptMessage(msg: string, roomId: string): Promise<string> {
-  const key = await getRoomKey(roomId);
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const enc = new TextEncoder().encode(msg);
-  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc);
-  const ivStr = Buffer.from(iv).toString('base64');
-  const dataStr = Buffer.from(new Uint8Array(cipher)).toString('base64');
-  return ivStr + ':' + dataStr;
-}
-
-async function decryptMessage(msg: string, roomId: string): Promise<string> {
-  try {
-    const [ivStr, dataStr] = msg.split(':');
-    if (!ivStr || !dataStr) return msg;
-    const key = await getRoomKey(roomId);
-    const iv = Uint8Array.from(Buffer.from(ivStr, 'base64'));
-    const data = Uint8Array.from(Buffer.from(dataStr, 'base64'));
-    const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
-    return new TextDecoder().decode(dec);
-  } catch {
-    return msg;
-  }
-}
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -128,6 +80,7 @@ export default function ChatWidget() {
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const waku = useWakuClient();
 
   useEffect(() => {
     if (isOpen && isLoggedIn) {
@@ -179,7 +132,6 @@ export default function ChatWidget() {
     if (!isLoggedIn) return;
     if (!isAdmin && !isDriver && !defaultRoomId) return;
 
-    // realtime messaging removed
     return () => {};
   }, [isLoggedIn, isAdmin, isDriver, defaultRoomId, isOpen, selectedRoom]);
 
@@ -339,21 +291,15 @@ const loadOrCreateDefaultRoom = async () => {
     try {
       const onboarded = await AsyncStorage.getItem(CHAT_ONBOARDED_KEY);
       if (onboarded) return;
-      const db = DatabaseService.getInstance();
       const text = "Let's build your system. First, tell me your Game — your mission.";
-      const encrypted = await encryptMessage(text, roomId);
-      const message: ChatMessage = {
-        id: Date.now().toString(),
+      const saved = await waku.send(roomId, {
         senderId: 'system',
         senderName: 'System',
-        message: encrypted,
-        timestamp: Date.now(),
+        message: text,
         isAdmin: true,
-      };
-      await db.sendChatMessage(roomId, message);
-      message.message = text;
+      });
       if (isMounted.current) {
-        setMessages((prev) => [...prev, message]);
+        setMessages((prev) => [...prev, saved]);
       }
       await AsyncStorage.setItem(CHAT_ONBOARDED_KEY, 'true');
     } catch (error) {
@@ -378,7 +324,13 @@ const loadOrCreateDefaultRoom = async () => {
 
   useEffect(() => {
     if (!selectedRoom) return;
-    // realtime messaging removed
+    const handler = (m: ChatMessage) => {
+      if (isMounted.current) {
+        setMessages((prev) => [...prev, m]);
+      }
+    };
+    waku.subscribe(selectedRoom.id, handler);
+    waku.fetchHistory(selectedRoom.id, handler);
     return () => {};
   }, [selectedRoom]);
 
@@ -446,59 +398,29 @@ const loadOrCreateDefaultRoom = async () => {
         );
 
     try {
-      const encrypted = await encryptMessage(newMessage.trim(), roomId);
-
-      const message: ChatMessage = {
-        id: Date.now().toString(),
+      const msg: Omit<ChatMessage, 'id' | 'timestamp'> = {
         senderId:
           isAdmin || isDriver
             ? process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
             : user?.id || 'user_guest',
         senderName:
           isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',
-        message: encrypted,
-        timestamp: Date.now(),
+        message: newMessage.trim(),
         isAdmin: isAdmin || isDriver,
       };
 
-      await db.sendChatMessage(roomId, message);
+      const saved = await waku.send(roomId, msg);
 
-      message.message = newMessage.trim();
       if (isMounted.current) {
-        setMessages((prev) => [...prev, message]);
+        setMessages((prev) => [...prev, saved]);
         setNewMessage('');
       }
 
-      // Scroll to bottom
       setTimeout(() => {
         if (isMounted.current) {
           messagesEndRef.current?.scrollToEnd({ animated: true });
         }
       }, 100);
-
-      // If not admin, simulate admin response after a delay
-      if (!isAdmin && !isDriver) {
-        setTimeout(() => {
-          const adminResponse: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            senderId: process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin',
-            senderName: 'מנהל',
-            message: 'תודה על הפנייה! איך אוכל לעזור לך היום?',
-            timestamp: Date.now(),
-            isAdmin: true,
-          };
-          if (isMounted.current) {
-            setMessages((prev) => [...prev, adminResponse]);
-          }
-
-          // Scroll to bottom again
-          setTimeout(() => {
-            if (isMounted.current) {
-              messagesEndRef.current?.scrollToEnd({ animated: true });
-            }
-          }, 100);
-        }, 2000);
-      }
     } catch (error) {
       console.error('Error sending message:', error);
       if (isMounted.current) {
