@@ -11,9 +11,6 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
     dbPromise = (async () => {
       const db = await SQLite.openDatabaseAsync(DB_NAME);
       if (Platform.OS === 'web') {
-        const { electrify } = await import('electric-sql/browser');
-        const { schema } = await import('../sqlite/migrations');
-        await electrify(db, schema);
       }
       return db;
     })();
@@ -23,7 +20,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
 
 export async function executeSql(
   sql: string,
-  params: any[] = [],
+  params: any[] = []
 ): Promise<{ rows: { _array: any[] } }> {
   const database = await getDatabase();
   const statement = await database.prepareAsync(sql);
@@ -38,7 +35,7 @@ export async function executeSql(
 
 async function tableExists(db: SQLite.SQLiteDatabase, name: string) {
   const stmt = await db.prepareAsync(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+    "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
   );
   try {
     const res = await stmt.executeAsync([name]);
@@ -84,4 +81,3 @@ export async function ensureDatabase(): Promise<void> {
     await getDatabase();
   }
 }
-

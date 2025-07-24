@@ -78,6 +78,7 @@
   "devDependencies": {
     "@babel/core": "^7.27.7",
     "@babel/plugin-transform-modules-commonjs": "^7.27.1",
+    "@electric-sql/cli": "^0.11.4-canary.cb19c58",
     "@electric-sql/pglite": "^0.3.5",
     "@expo/cli": "^0.22.26",
     "@faker-js/faker": "^8.4.0",
