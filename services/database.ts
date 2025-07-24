@@ -21,6 +21,8 @@ import {
 class DatabaseService {
   private static instance: DatabaseService;
   private static readonly tenantId = TENANT;
+  private static readonly adminId =
+    process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin';
 
   private constructor() {}
 
@@ -299,10 +301,31 @@ class DatabaseService {
   }
 
   async getOrCreateChatRoom(userId: string, userName: string): Promise<string> {
-    const res = await executeSql('SELECT id FROM chat_rooms WHERE user_id=? LIMIT 1', [userId]);
-    const existing = (res.rows as any)._array?.[0];
+    const id =
+      'room_' + [userId, DatabaseService.adminId].sort().join('_');
+
+    // Check for existing room with the new deterministic id
+    let res = await executeSql(
+      'SELECT id FROM chat_rooms WHERE id=? LIMIT 1',
+      [id],
+    );
+    let existing = (res.rows as any)._array?.[0];
     if (existing) return existing.id;
-    const id = `room_${Date.now()}`;
+
+    // Fallback: if a room exists with the old ID scheme (looked up by user_id),
+    // migrate it to the new deterministic id
+    res = await executeSql(
+      'SELECT id FROM chat_rooms WHERE user_id=? LIMIT 1',
+      [userId],
+    );
+    existing = (res.rows as any)._array?.[0];
+    if (existing) {
+      await executeSql('UPDATE chat_rooms SET id=? WHERE id=?', [id, existing.id]);
+      await executeSql('UPDATE chat_messages SET room_id=? WHERE room_id=?', [id, existing.id]);
+      return id;
+    }
+
+    // No existing room, create a new one
     await executeSql(
       'INSERT INTO chat_rooms (id,user_id,user_name,last_message,last_message_time,unread_count) VALUES (?,?,?,?,?,0)',
       [id, userId, userName, '', Date.now()],
