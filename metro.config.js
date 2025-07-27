@@ -7,6 +7,7 @@ config.resolver.assetExts.push('wasm', 'sql');
 // Map the Expo HMR client to our local wrapper so Buffer and Web Crypto are polyfilled
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules || {}),
+  '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
   '@expo/metro-runtime/src/HMRClient.ts': path.resolve(__dirname, 'HMRClient.ts'),
   'react-native/Libraries/Utilities/HMRClient': path.resolve(
     __dirname,
