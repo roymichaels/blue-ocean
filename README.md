@@ -4,11 +4,13 @@ This Expo project uses React Native with the Expo Router.
 
 ## Setup
 
-Run `yarn install` to populate `node_modules`. ElectricSQL is required for web support, so install it as a development dependency:
+Run `yarn install` to populate `node_modules`. All data is stored locally; no external services are required.
 
 ```sh
 yarn install
 ```
+
+SQLite migrations are executed by `./scripts/init-sqlite-db.sh` and also run automatically before `yarn dev` via the `predev` script.
 
 All data is stored locally; no external services are required.
 
@@ -70,25 +72,6 @@ This applies the SQL files in `sqlite/migrations` and writes the database to
 
 When you run `yarn dev`, a `predev` script automatically executes the migrations and creates the database if it does not already exist.
 
-## ElectricSQL on the Web
-
-`ensureDatabase` from `lib/sqlite.ts` checks whether any tables already exist. If not, it reads the SQL files in `sqlite/migrations` and creates the schema on the first run. When the app runs in the browser, ElectricSQL's **browser driver** (`electric-sql/browser`) provisions an IndexedDB-backed database and applies the same schema automatically. Once the tables are created the library begins syncing with the backend automatically.
-
-If you modify any migration file you need to regenerate the ElectricSQL schema so the web build picks up the changes:
-
-```sh
-npx electric-sql migrate
-```
-
-The project depends on the `electric-sql` package, and this command will generate the updated schema files under the `electric/` directory which `ensureDatabase` relies on when running on the web.
-
-After migrating, run the generator to produce the TypeScript schema used by the web build:
-
-```sh
-npx electric-sql generate
-```
-
-The resulting `electric/schema.ts` file is re-exported from `sqlite/migrations/index.ts`.
 
 ## Seeding Sample Data
 
