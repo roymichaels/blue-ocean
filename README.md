@@ -40,6 +40,14 @@ On native platforms this uses the native AsyncStorage implementation and falls
 back to `window.localStorage` when running on the web. This ensures
 authentication state persists across reloads on every platform.
 
+### Web Notes
+
+Fast Refresh can cause issues with Expo Router when running in the browser.
+Disable it by setting `fastRefresh: false` in your web configuration.
+The Waku chat integration is also not available on the web; the
+`useWakuClient.web.ts` file provides a stub so the rest of the app can build
+without the Waku SDK.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in the required values:
