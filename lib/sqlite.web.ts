@@ -1,17 +1,12 @@
 import * as SQLite from 'expo-sqlite';
-import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
-import { Platform } from 'react-native';
 
 const DB_NAME = 'app.db';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!dbPromise) {
-    dbPromise = (async () => {
-      const db = await SQLite.openDatabaseAsync(DB_NAME);
-      return db;
-    })();
+    dbPromise = SQLite.openDatabaseAsync(DB_NAME);
   }
   return dbPromise;
 }
@@ -76,15 +71,8 @@ async function applySchema(db: SQLite.SQLiteDatabase) {
     require('../sqlite/migrations/001_initial_schema.sql')
   );
   await asset.downloadAsync();
-  let sql: string;
-  if (Platform.OS === 'web') {
-    const res = await fetch(asset.uri);
-    sql = await res.text();
-  } else {
-    sql = await FileSystem.readAsStringAsync(asset.localUri!, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
-  }
+  const res = await fetch(asset.uri);
+  const sql = await res.text();
   const statements = parseSql(sql);
   for (const stmt of statements) {
     const st = await db.prepareAsync(stmt);
@@ -94,10 +82,6 @@ async function applySchema(db: SQLite.SQLiteDatabase) {
 }
 
 export async function ensureDatabase(): Promise<void> {
-  if (Platform.OS !== 'web') {
-    const sqliteDir = FileSystem.documentDirectory + 'SQLite';
-    await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
-  }
   const db = await getDatabase();
   if (!(await tableExists(db, 'users'))) {
     await applySchema(db);

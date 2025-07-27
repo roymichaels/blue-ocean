@@ -47,6 +47,8 @@ Disable it by setting `fastRefresh: false` in your web configuration.
 The Waku chat integration is also not available on the web; the
 `useWakuClient.web.ts` file provides a stub so the rest of the app can build
 without the Waku SDK.
+The web build also fetches the initial SQLite migration over HTTP so it doesn't
+need `expo-file-system`.
 
 ## Environment Variables
 
