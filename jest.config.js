@@ -8,6 +8,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^electric-sql/migrators$': '<rootDir>/node_modules/electric-sql/dist/migrators',
   },
   transformIgnorePatterns: ['/node_modules/(?!(electric-sql)/)'],
 };
