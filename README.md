@@ -8,9 +8,6 @@ Run `yarn install` to populate `node_modules`. ElectricSQL is required for web s
 
 ```sh
 yarn install
-
-# install the ElectricSQL package
-yarn add -D electric-sql
 ```
 
 If dependencies need patching, run `patch-package` after installation:
