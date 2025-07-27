@@ -8,6 +8,10 @@ config.resolver.assetExts.push('wasm', 'sql');
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules || {}),
   '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
+  'react-native/Libraries/Utilities/HMRClient': path.resolve(
+    __dirname,
+    'EmptyHMRClient.ts'
+  ),
 };
 
 module.exports = config;

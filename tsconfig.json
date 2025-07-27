@@ -13,7 +13,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@expo/metro-runtime/src/HMRClient": ["./HMRClient.ts"]
+      "@expo/metro-runtime/src/HMRClient": ["./HMRClient.ts"],
+      "react-native/Libraries/Utilities/HMRClient": ["./EmptyHMRClient.ts"]
     },
     "customConditions": ["browser"]
   },
