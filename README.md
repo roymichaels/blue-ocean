@@ -19,6 +19,12 @@ the web. The polyfill is automatically imported from `index.ts`.
 The project also uses `expo-standard-web-crypto` to polyfill the Web Crypto API,
 so ensure it's installed as a dependency.
 
+### Hot Reloading
+
+Metro, TypeScript and webpack alias `@expo/metro-runtime/src/HMRClient` to the
+local `HMRClient.ts` wrapper. This module applies the necessary polyfills before
+loading Metro's runtime so hot reloading works reliably on every platform.
+
 ### Session Persistence
 
 User sessions are stored using `@react-native-async-storage/async-storage`.
