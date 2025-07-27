@@ -10,12 +10,6 @@ Run `yarn install` to populate `node_modules`. ElectricSQL is required for web s
 yarn install
 ```
 
-If dependencies need patching, run `patch-package` after installation:
-
-```sh
-yarn postinstall
-```
-
 All data is stored locally; no external services are required.
 
 
