@@ -164,4 +164,9 @@ node scripts/restore-db.js mySecretPassphrase
 ```
 
 
+## License
+
+This project is proprietary and not open source. All rights reserved.
+See [LICENSE](LICENSE) for details.
+
 ***End of Document***
