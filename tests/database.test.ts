@@ -1,6 +1,4 @@
 import Database from 'better-sqlite3';
-import { DatabaseAdapter } from 'electric-sql/node';
-import { SqliteBundleMigrator } from 'electric-sql/migrators';
 import fs from 'fs';
 
 function parseSqlFile(file: string): string[] {
@@ -31,17 +29,15 @@ function parseSqlFile(file: string): string[] {
 }
 
 describe('database initialization', () => {
-  it('creates tables using ElectricSQL migrator', async () => {
+  it('creates tables from migration file', () => {
     const statements = parseSqlFile('sqlite/migrations/001_initial_schema.sql');
     const db = new Database(':memory:');
-    const adapter = new DatabaseAdapter(db);
-    const migrator = new SqliteBundleMigrator(adapter, [
-      { version: '1', statements },
-    ]);
-    await migrator.up();
-    const rows = await adapter.query({
-      sql: "SELECT name FROM sqlite_master WHERE type='table' AND name='users'",
-    });
+    for (const stmt of statements) {
+      db.prepare(stmt).run();
+    }
+    const rows = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+      .all();
     expect(rows.length).toBe(1);
   });
 });
