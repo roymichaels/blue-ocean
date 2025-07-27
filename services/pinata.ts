@@ -2,11 +2,6 @@ import axios from 'axios';
 import { debugLog } from '../utils/logger';
 
 // Pinata API configuration
-const PINATA_API_KEY =
-  process.env.EXPO_PUBLIC_PINATA_API_KEY || 'YOUR_PINATA_API_KEY';
-const PINATA_SECRET_API_KEY =
-  process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY || 'YOUR_PINATA_SECRET_KEY';
-const PINATA_JWT = process.env.EXPO_PUBLIC_PINATA_JWT || 'YOUR_PINATA_JWT';
 const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
 
 class PinataService {
@@ -92,11 +87,14 @@ class PinataService {
 
       // Upload to Pinata
       const headers: any = {};
-      if (PINATA_JWT) {
-        headers.Authorization = `Bearer ${PINATA_JWT}`;
+      const jwt = process.env.EXPO_PUBLIC_PINATA_JWT;
+      const apiKey = process.env.EXPO_PUBLIC_PINATA_API_KEY;
+      const secret = process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
+      if (jwt) {
+        headers.Authorization = `Bearer ${jwt}`;
       } else {
-        headers.pinata_api_key = PINATA_API_KEY;
-        headers.pinata_secret_api_key = PINATA_SECRET_API_KEY;
+        headers.pinata_api_key = apiKey;
+        headers.pinata_secret_api_key = secret;
       }
 
       const response = await axios.post(
@@ -166,7 +164,10 @@ class PinataService {
    * @returns True if Pinata is configured, false otherwise
    */
   public isPinataConfigured(): boolean {
-    return !!(PINATA_JWT || (PINATA_API_KEY && PINATA_SECRET_API_KEY));
+    const jwt = process.env.EXPO_PUBLIC_PINATA_JWT;
+    const apiKey = process.env.EXPO_PUBLIC_PINATA_API_KEY;
+    const secret = process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
+    return !!(jwt || (apiKey && secret));
   }
 }
 
