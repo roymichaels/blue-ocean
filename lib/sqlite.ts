@@ -46,38 +46,54 @@ async function tableExists(db: SQLite.SQLiteDatabase, name: string) {
   }
 }
 
+function parseSql(sql: string): string[] {
+  const lines = sql.split(/\r?\n/);
+  const statements: string[] = [];
+  let current: string[] = [];
+  let inTrigger = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed === '') continue;
+    current.push(line);
+    const upper = trimmed.toUpperCase();
+    if (!inTrigger && upper.startsWith('CREATE TRIGGER')) {
+      inTrigger = true;
+    }
+    if (inTrigger && upper === 'END;') {
+      statements.push(current.join('\n'));
+      current = [];
+      inTrigger = false;
+      continue;
+    }
+    if (!inTrigger && upper.endsWith(';')) {
+      statements.push(current.join('\n'));
+      current = [];
+    }
+  }
+  return statements;
+}
+
+async function applySchema(db: SQLite.SQLiteDatabase) {
+  const asset = Asset.fromModule(
+    require('../sqlite/migrations/001_initial_schema.sql')
+  );
+  await asset.downloadAsync();
+  const sql = await FileSystem.readAsStringAsync(asset.localUri!, {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
+  const statements = parseSql(sql);
+  for (const stmt of statements) {
+    const st = await db.prepareAsync(stmt);
+    await st.executeAsync();
+    await st.finalizeAsync();
+  }
+}
+
 export async function ensureDatabase(): Promise<void> {
-  if (Platform.OS !== 'web') {
-    const sqliteDir = FileSystem.documentDirectory + 'SQLite';
-    await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
-    const dbPath = sqliteDir + '/' + DB_NAME;
-
-    let needsSetup = false;
-    const info = await FileSystem.getInfoAsync(dbPath);
-    if (info.exists) {
-      try {
-        const db = await SQLite.openDatabaseAsync(DB_NAME);
-        if (!(await tableExists(db, 'users'))) {
-          needsSetup = true;
-        }
-      } catch {
-        needsSetup = true;
-      }
-    } else {
-      needsSetup = true;
-    }
-
-    if (needsSetup) {
-      try {
-        const asset = Asset.fromModule(require('../sqlite/blue-ocean.db'));
-        await asset.downloadAsync();
-        await FileSystem.copyAsync({ from: asset.localUri!, to: dbPath });
-      } catch (err) {
-        console.error('Failed to copy prepopulated database:', err);
-      }
-    }
-  } else {
-    // Opening the database will apply the schema via electrify
-    await getDatabase();
+  const sqliteDir = FileSystem.documentDirectory + 'SQLite';
+  await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
+  const db = await getDatabase();
+  if (!(await tableExists(db, 'users'))) {
+    await applySchema(db);
   }
 }
