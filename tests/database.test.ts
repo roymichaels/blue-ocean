@@ -29,11 +29,12 @@ function parseSqlFile(file: string): string[] {
 }
 
 describe('database initialization', () => {
-  it('creates tables from migration file', () => {
+  it('creates tables from migration SQL', () => {
     const statements = parseSqlFile('sqlite/migrations/001_initial_schema.sql');
     const db = new Database(':memory:');
     for (const stmt of statements) {
-      db.prepare(stmt).run();
+      db.exec(stmt);
+
     }
     const rows = db
       .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
