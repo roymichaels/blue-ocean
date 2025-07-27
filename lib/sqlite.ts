@@ -2,6 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
 import { Platform } from 'react-native';
+import { parseSql } from './sqlUtils';
 
 const DB_NAME = 'app.db';
 
@@ -44,32 +45,6 @@ async function tableExists(db: SQLite.SQLiteDatabase, name: string) {
   }
 }
 
-function parseSql(sql: string): string[] {
-  const lines = sql.split(/\r?\n/);
-  const statements: string[] = [];
-  let current: string[] = [];
-  let inTrigger = false;
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed === '') continue;
-    current.push(line);
-    const upper = trimmed.toUpperCase();
-    if (!inTrigger && upper.startsWith('CREATE TRIGGER')) {
-      inTrigger = true;
-    }
-    if (inTrigger && upper === 'END;') {
-      statements.push(current.join('\n'));
-      current = [];
-      inTrigger = false;
-      continue;
-    }
-    if (!inTrigger && upper.endsWith(';')) {
-      statements.push(current.join('\n'));
-      current = [];
-    }
-  }
-  return statements;
-}
 
 async function applySchema(db: SQLite.SQLiteDatabase) {
   const asset = Asset.fromModule(
