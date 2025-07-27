@@ -13,3 +13,4 @@ sqlite/*.db
 
 # Environment files
 .env*
+dump.sql

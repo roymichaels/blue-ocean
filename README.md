@@ -111,6 +111,10 @@ Restore the database from a dump:
 ./scripts/restore-db.sh sqlite/blue-ocean.db dump.sql
 ```
 
+These scripts assume a dump file named `dump.sql`, but the repository no longer
+tracks one. Run `backup-db.sh` to generate the dump before restoring or specify
+your own dump file path.
+
 ## Running the Project
 
 Start the Expo development server with:
