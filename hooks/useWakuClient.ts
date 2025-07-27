@@ -43,12 +43,24 @@ export function useWakuClient(): WakuClient {
     if (!USE_WAKU) return;
     let cancelled = false;
     (async () => {
-      const node = await createLightNode({
-        libp2p: { bootstrap: [BOOTSTRAP] },
-      });
-      await node.start();
-      await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
-      if (!cancelled) nodeRef.current = node;
+      let node: LightNode | undefined;
+      try {
+        node = await createLightNode({
+          libp2p: { bootstrap: [BOOTSTRAP] },
+        });
+        await node.start();
+        await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
+        if (!cancelled) nodeRef.current = node;
+      } catch (err) {
+        console.error('Failed to start Waku node', err);
+        if (node) {
+          try {
+            await node.stop();
+          } catch (_) {
+            // ignore
+          }
+        }
+      }
     })();
     return () => {
       cancelled = true;
