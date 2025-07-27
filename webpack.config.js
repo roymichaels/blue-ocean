@@ -1,4 +1,5 @@
 // webpack.config.js
+const path = require('path');
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
 const webpack = require('webpack');
 
@@ -28,6 +29,12 @@ module.exports = async function (env, argv) {
       Buffer: ['buffer', 'Buffer'],
     })
   );
+
+  // Match Metro alias for the custom HMR client
+  config.resolve.alias = {
+    ...(config.resolve.alias || {}),
+    '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
+  };
 
   return config;
 };

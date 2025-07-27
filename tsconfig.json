@@ -12,7 +12,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@expo/metro-runtime/src/HMRClient": ["./HMRClient.ts"]
     },
     "customConditions": ["browser"]
   },
