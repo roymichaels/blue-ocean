@@ -4,6 +4,6 @@ import { Buffer } from 'buffer';
 (global as any).Buffer = Buffer;
 import 'expo-standard-web-crypto';
 
-// Re-export Metro's HMRClient after applying the polyfills above
-export { default } from 'metro-runtime/src/modules/HMRClient';
+const MetroHMRClient = require('metro-runtime/src/modules/HMRClient');
+export default MetroHMRClient;
 export * from 'metro-runtime/src/modules/HMRClient';
