@@ -10,6 +10,9 @@ Run `yarn install` to populate `node_modules`. All data is stored locally; no ex
 yarn install
 ```
 
+SQLite migrations are executed by `./scripts/init-sqlite-db.sh` and also run automatically before `yarn dev` via the `predev` script.
+
+All data is stored locally; no external services are required.
 
 
 Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
