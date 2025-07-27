@@ -4,7 +4,7 @@ This Expo project uses React Native with the Expo Router.
 
 ## Setup
 
-Run `yarn install` to populate `node_modules`:
+Run `yarn install` to populate `node_modules`. All data is stored locally; no external services are required.
 
 ```sh
 yarn install
