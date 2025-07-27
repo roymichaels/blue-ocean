@@ -20,7 +20,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts",
     "nativewind-env.d.ts",
     "types/wasm.d.ts",
     "types/lucide-react-native.d.ts",
