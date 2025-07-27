@@ -23,10 +23,11 @@ so ensure it's installed as a dependency.
 
 ### Hot Reloading
 
-Metro now resolves `@expo/metro-runtime/src/HMRClient.ts` to the
-local `HMRClient.ts` wrapper. TypeScript and webpack also alias the path
-without the extension for compatibility. This module applies the necessary polyfills before
-loading Metro's runtime so hot reloading works reliably on every platform.
+Metro resolves both `@expo/metro-runtime/src/HMRClient` and
+`@expo/metro-runtime/src/HMRClient.ts` to the local `HMRClient.ts` wrapper.
+TypeScript and webpack use the same aliases so all tools reference the wrapper
+consistently. This module applies the necessary polyfills before loading
+Metro's runtime so hot reloading works reliably on every platform.
 
 Metro also maps `react-native/Libraries/Utilities/HMRClient` to a stub
 `EmptyHMRClient.ts` with no-op methods so bundling succeeds even when the native
