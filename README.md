@@ -25,6 +25,10 @@ Metro, TypeScript and webpack alias `@expo/metro-runtime/src/HMRClient` to the
 local `HMRClient.ts` wrapper. This module applies the necessary polyfills before
 loading Metro's runtime so hot reloading works reliably on every platform.
 
+Metro also maps `react-native/Libraries/Utilities/HMRClient` to a stub
+`EmptyHMRClient.ts` with no-op methods so bundling succeeds even when the native
+implementation isn't available.
+
 ### Session Persistence
 
 User sessions are stored using `@react-native-async-storage/async-storage`.

@@ -34,6 +34,10 @@ module.exports = async function (env, argv) {
   config.resolve.alias = {
     ...(config.resolve.alias || {}),
     '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
+    'react-native/Libraries/Utilities/HMRClient': path.resolve(
+      __dirname,
+      'EmptyHMRClient.ts'
+    ),
   };
 
   return config;
