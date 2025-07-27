@@ -8,7 +8,7 @@ if ! command -v sqlite3 >/dev/null 2>&1; then
   exit 1
 fi
 
-DB_PATH="${1:-sqlite/db.sqlite}"
+DB_PATH="${1:-sqlite/blue-ocean.db}"
 mkdir -p "$(dirname "$DB_PATH")"
 
 for sql in sqlite/migrations/*.sql; do
