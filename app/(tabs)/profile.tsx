@@ -32,6 +32,9 @@ import { useAppInfo } from '../../contexts/AppInfoContext';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import AuthTabsModal from '../../components/AuthTabsModal';
+import OrderService from '../../services/orders';
+import CartService from '../../services/cart';
+import DatabaseService from '../../services/database';
 
 
 
@@ -47,6 +50,8 @@ export default function ProfileScreen() {
   const [showOrderTracking, setShowOrderTracking] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [userOrders, setUserOrders] = useState([]);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -64,6 +69,29 @@ export default function ProfileScreen() {
     // Load saved settings
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isLoggedIn || !user) return;
+      const orderService = OrderService.getInstance();
+      const cartService = CartService.getInstance();
+      const db = DatabaseService.getInstance();
+
+      try {
+        const [ordersCount, reviews, wishlist] = await Promise.all([
+          orderService.getUserOrderCount(user.id),
+          db.getReviews(),
+          Promise.resolve(cartService.getWishlistItemsCount()),
+        ]);
+        setUserOrders(new Array(ordersCount).fill(null));
+        setWishlistCount(wishlist);
+        setReviewCount(reviews.filter((r) => r.userId === user.id).length);
+      } catch (err) {
+        console.error('Error loading profile data', err);
+      }
+    };
+    fetchData();
+  }, [isLoggedIn, user]);
 
   const loadSettings = async () => {
     try {
@@ -219,7 +247,9 @@ export default function ProfileScreen() {
               </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.gold }]}>8</Text>
+              <Text style={[styles.statNumber, { color: colors.gold }]}>
+                {wishlistCount}
+              </Text>
               <Text
                 style={[styles.statLabel, { color: colors.text.secondary }]}
               >
@@ -227,7 +257,9 @@ export default function ProfileScreen() {
               </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.gold }]}>5</Text>
+              <Text style={[styles.statNumber, { color: colors.gold }]}>
+                {reviewCount}
+              </Text>
               <Text
                 style={[styles.statLabel, { color: colors.text.secondary }]}
               >
