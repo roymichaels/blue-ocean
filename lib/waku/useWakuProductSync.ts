@@ -3,13 +3,16 @@ import { executeSql } from '../sqlite';
 
 export const useWakuProductSync = () => {
   useEffect(() => {
+    let node: any;
+    let decoder: any;
+
     const run = async () => {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
-      const node = await createLightNode({ defaultBootstrap: true });
+      node = await createLightNode({ defaultBootstrap: true });
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
 
-      const decoder = node.createDecoder({ contentTopic: '/congress/products/1' });
+      decoder = node.createDecoder({ contentTopic: '/congress/products/1' });
       await node.filter!.subscribe(decoder, async (msg) => {
         if (!msg.payload) return;
         const decoded = new TextDecoder().decode(msg.payload);
@@ -62,5 +65,12 @@ export const useWakuProductSync = () => {
     };
 
     run();
+
+    return () => {
+      if (decoder && node?.filter) {
+        node.filter.unsubscribe(decoder).catch(() => {});
+      }
+      node?.stop();
+    };
   }, []);
 };
