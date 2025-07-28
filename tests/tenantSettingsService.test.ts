@@ -1,5 +1,4 @@
 import TenantSettingsService from '../services/tenantSettings';
-
 describe('TenantSettingsService remote', () => {
   beforeEach(() => {
     (global as any).fetch = jest.fn();

@@ -50,6 +50,7 @@ class TenantSettingsService {
       if (!res.ok) {
         const text = await res.text();
         throw new Error(`HTTP ${res.status}: ${text}`);
+
       }
     } catch (error) {
       console.error(`Error updating tenant setting ${key}:`, error);

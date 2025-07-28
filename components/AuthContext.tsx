@@ -4,8 +4,12 @@ import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
+import { TENANT } from '../constants/tenant';
 
-const ADMIN_USERNAME = process.env.EXPO_PUBLIC_ADMIN_USERNAME;
+const ADMIN_USERNAMES = (process.env.EXPO_PUBLIC_ADMIN_USERNAME || '')
+  .split(',')
+  .map((u) => u.trim())
+  .filter(Boolean);
 const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
 
 export class UsernameTakenError extends Error {
@@ -124,10 +128,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const hash = await bcrypt.hash(password, 10);
       const id = `user_${Date.now()}`;
-      const role = ADMIN_USERNAME && username === ADMIN_USERNAME ? 'admin' : 'user';
+      const isAdminUsername = ADMIN_USERNAMES.includes(username);
+      const role = isAdminUsername ? 'admin' : 'user';
       await executeSql(
         'INSERT INTO users (id, username, password_hash, display_name, role) VALUES (?,?,?,?,?)',
         [id, username, hash, displayName, role],
+      );
+      await executeSql(
+        'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
+        [id, TENANT, id, username, null, displayName, role],
       );
       const token = JWT.encode(
         { sub: id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
