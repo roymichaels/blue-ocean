@@ -7,6 +7,7 @@ import { parseSql } from './sqlUtils';
 const DB_NAME = 'app.db';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
+let ensurePromise: Promise<void> | null = null;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!dbPromise) {
     dbPromise = (async () => {
@@ -68,13 +69,23 @@ async function applySchema(db: SQLite.SQLiteDatabase) {
   }
 }
 
-export async function ensureDatabase(): Promise<void> {
-  if (Platform.OS !== 'web') {
-    const sqliteDir = FileSystem.documentDirectory + 'SQLite';
-    await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
+export function ensureDatabase(): Promise<void> {
+  if (ensurePromise) {
+    return ensurePromise;
   }
-  const db = await getDatabase();
-  if (!(await tableExists(db, 'users'))) {
-    await applySchema(db);
-  }
+  ensurePromise = (async () => {
+    try {
+      if (Platform.OS !== 'web') {
+        const sqliteDir = FileSystem.documentDirectory + 'SQLite';
+        await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
+      }
+      const db = await getDatabase();
+      if (!(await tableExists(db, 'users'))) {
+        await applySchema(db);
+      }
+    } finally {
+      ensurePromise = null;
+    }
+  })();
+  return ensurePromise;
 }
