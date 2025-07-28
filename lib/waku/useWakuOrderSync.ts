@@ -19,6 +19,11 @@ export const useWakuOrderSync = () => {
         const decoded = new TextDecoder().decode(msg.payload);
         try {
           const parsed = JSON.parse(decoded);
+          if (!parsed.sender || parsed.sender.role !== 'admin') {
+            return;
+          }
+          const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
+          if ((exists.rows as any)._array.length === 0) return;
           if (parsed.type === 'order.update' && parsed.order) {
             const o = parsed.order;
             await executeSql(

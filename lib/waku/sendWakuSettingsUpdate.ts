@@ -1,8 +1,11 @@
+import type { WakuSender } from './sendWakuUserUpdate';
+
 export const sendWakuSettingsUpdate = async (
   key: string,
   value: string,
   createdAt: number,
   updatedAt: number,
+  sender: WakuSender = { id: '', publicKey: '', role: '' }
 ) => {
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
 
@@ -24,4 +27,5 @@ export const sendWakuSettingsUpdate = async (
   } finally {
     await node.stop();
   }
+
 };

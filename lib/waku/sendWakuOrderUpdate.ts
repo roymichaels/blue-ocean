@@ -1,4 +1,9 @@
-export const sendWakuOrderUpdate = async (order: any) => {
+import type { WakuSender } from './sendWakuUserUpdate';
+
+export const sendWakuOrderUpdate = async (
+  order: any,
+  sender: WakuSender = { id: '', publicKey: '', role: '' }
+) => {
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
 
   const node = await createLightNode({ defaultBootstrap: true });
@@ -8,6 +13,7 @@ export const sendWakuOrderUpdate = async (order: any) => {
   const payload = JSON.stringify({
     type: 'order.update',
     order,
+    sender,
   });
 
   const encoder = node.createEncoder({ contentTopic: '/congress/orders/1' });
