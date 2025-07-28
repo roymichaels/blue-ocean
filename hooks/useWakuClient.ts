@@ -25,7 +25,7 @@ export interface WakuClient {
   subscribe: (
     roomId: string,
     callback: (msg: ChatMessage) => void,
-  ) => Promise<void>;
+  ) => Promise<() => void>;
   fetchHistory: (
     roomId: string,
     callback: (msg: ChatMessage) => void,
@@ -94,8 +94,8 @@ export function useWakuClient(): WakuClient {
   const subscribe = async (
     roomId: string,
     cb: (msg: ChatMessage) => void,
-  ) => {
-    if (!USE_WAKU || !nodeRef.current) return;
+  ): Promise<() => void> => {
+    if (!USE_WAKU || !nodeRef.current) return () => {};
     const decoder = createDecoder(topic(roomId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
@@ -113,7 +113,18 @@ export function useWakuClient(): WakuClient {
       await db.sendChatMessage(roomId, { ...chat, message: encrypted });
       cb(chat);
     };
-    nodeRef.current.relay.addObserver(handler, [decoder]);
+    const maybeUnsub = (nodeRef.current.relay as any).addObserver(
+      handler,
+      [decoder],
+    ) as (() => void) | void;
+
+    return () => {
+      if (typeof maybeUnsub === 'function') {
+        maybeUnsub();
+      } else {
+        (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
+      }
+    };
   };
 
   const fetchHistory = async (

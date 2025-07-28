@@ -329,9 +329,14 @@ const loadOrCreateDefaultRoom = async () => {
         setMessages((prev) => [...prev, m]);
       }
     };
-    waku.subscribe(selectedRoom.id, handler);
+    let unsubscribe: (() => void) | undefined;
+    waku.subscribe(selectedRoom.id, handler).then((unsub) => {
+      unsubscribe = unsub;
+    });
     waku.fetchHistory(selectedRoom.id, handler);
-    return () => {};
+    return () => {
+      unsubscribe?.();
+    };
   }, [selectedRoom]);
 
   const openSearchResult = async (result: {
