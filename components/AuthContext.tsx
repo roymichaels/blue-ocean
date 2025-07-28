@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { executeSql } from '../lib/sqlite';
 import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
+import * as SecureStore from 'expo-secure-store';
+import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
 import { TENANT } from '../constants/tenant';
@@ -11,6 +13,7 @@ const ADMIN_USERNAMES = (process.env.EXPO_PUBLIC_ADMIN_USERNAME || '')
   .map((u) => u.trim())
   .filter(Boolean);
 const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
+const PRIVATE_KEY_KEY = 'ed25519_private_key';
 
 export class UsernameTakenError extends Error {
   constructor() {
@@ -83,6 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         username: data.username,
         displayName: data.display_name,
         role: data.role,
+        publicKey: data.public_key,
       });
     } else {
       setUser({ id: uid, role: 'user', username: '', displayName: '' });
@@ -130,9 +134,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const id = `user_${Date.now()}`;
       const isAdminUsername = ADMIN_USERNAMES.includes(username);
       const role = isAdminUsername ? 'admin' : 'user';
+      const priv = edUtils.randomPrivateKey();
+      const pub = await getPublicKey(priv);
+      const privateKey = edUtils.bytesToHex(priv);
+      const publicKey = edUtils.bytesToHex(pub);
+      await SecureStore.setItemAsync(PRIVATE_KEY_KEY, privateKey);
       await executeSql(
-        'INSERT INTO users (id, username, password_hash, display_name, role) VALUES (?,?,?,?,?)',
-        [id, username, hash, displayName, role],
+        'INSERT INTO users (id, username, password_hash, display_name, role, public_key) VALUES (?,?,?,?,?,?)',
+        [id, username, hash, displayName, role, publicKey],
       );
       await executeSql(
         'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',

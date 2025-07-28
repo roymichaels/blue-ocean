@@ -110,6 +110,7 @@ export interface User {
   avatar?: string;
   email?: string;
   role?: string;
+  publicKey?: string;
   createdAt?: string;
   updatedAt?: string;
   kycStatus?: KycStatus;
