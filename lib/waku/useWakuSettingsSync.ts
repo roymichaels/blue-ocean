@@ -3,15 +3,28 @@ import { executeSql } from '../sqlite';
 
 export const useWakuSettingsSync = () => {
   useEffect(() => {
+    let node: any;
+    let decoder: any;
+
     const run = async () => {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
-      const node = await createLightNode({ defaultBootstrap: true });
+      node = await createLightNode({ defaultBootstrap: true });
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
 
-      const decoder = node.createDecoder({ contentTopic: '/congress/settings/1' });
+      decoder = node.createDecoder({ contentTopic: '/congress/settings/1' });
       await node.filter!.subscribe(decoder, async (msg) => {
-        if (!msg.payload) return;
+        if (!msg.payload || !msg.timestamp) return;
+        const id = msg.timestamp.getTime().toString();
+
+        const seen = await executeSql(
+          'SELECT 1 FROM waku_seen WHERE id=? AND topic=? LIMIT 1',
+          [id, topic]
+        );
+        if ((seen.rows as any)._array.length > 0) return;
+
+        await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
+
         const decoded = new TextDecoder().decode(msg.payload);
         try {
           const parsed = JSON.parse(decoded);
@@ -24,6 +37,7 @@ export const useWakuSettingsSync = () => {
                  updated_at=excluded.updated_at`,
               [parsed.key, parsed.value, parsed.createdAt, parsed.updatedAt]
             );
+
           }
         } catch (e) {
           console.error('Invalid Waku message:', e);
@@ -32,5 +46,12 @@ export const useWakuSettingsSync = () => {
     };
 
     run();
+
+    return () => {
+      if (decoder && node?.filter) {
+        node.filter.unsubscribe(decoder).catch(() => {});
+      }
+      node?.stop();
+    };
   }, []);
 };

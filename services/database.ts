@@ -1,5 +1,7 @@
 import { executeSql } from '../lib/sqlite';
 import { sendWakuSettingsUpdate } from '../lib/waku/sendWakuSettingsUpdate';
+import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
+import { sendWakuProductUpdate } from '../lib/waku/sendWakuProductUpdate';
 import { TENANT } from '../constants/tenant';
 import {
   Product,
@@ -131,6 +133,14 @@ class DatabaseService {
         Date.now(),
       ],
     );
+    try {
+      const prod = await this.getProduct(id);
+      if (prod) {
+        await sendWakuProductUpdate(prod);
+      }
+    } catch (e) {
+      console.error('Failed to send Waku product update:', e);
+    }
     return id;
   }
 
@@ -169,6 +179,14 @@ class DatabaseService {
         DatabaseService.tenantId,
       ],
     );
+    try {
+      const prod = await this.getProduct(id);
+      if (prod) {
+        await sendWakuProductUpdate(prod);
+      }
+    } catch (e) {
+      console.error('Failed to send Waku product update:', e);
+    }
   }
 
   async deleteProduct(id: string): Promise<void> {
@@ -399,10 +417,26 @@ class DatabaseService {
 
   async updateUserRole(userId: string, role: 'user' | 'driver' | 'admin'): Promise<void> {
     await executeSql('UPDATE user_profiles SET role=? WHERE id=? AND tenant_id=?', [role, userId, DatabaseService.tenantId]);
+    try {
+      const user = await this.getUserProfile(userId);
+      if (user) {
+        await sendWakuUserUpdate(user);
+      }
+    } catch (e) {
+      console.error('Failed to send Waku user update:', e);
+    }
   }
 
   async updateUserCustomerTier(userId: string, customerTier: string): Promise<void> {
     await executeSql('UPDATE user_profiles SET customer_tier=? WHERE id=? AND tenant_id=?', [customerTier, userId, DatabaseService.tenantId]);
+    try {
+      const user = await this.getUserProfile(userId);
+      if (user) {
+        await sendWakuUserUpdate(user);
+      }
+    } catch (e) {
+      console.error('Failed to send Waku user update:', e);
+    }
   }
 
   async updateUserKycStatus(
@@ -424,6 +458,14 @@ class DatabaseService {
       .join(', ');
     const params = [...Object.values(updateData), userId, DatabaseService.tenantId];
     await executeSql(`UPDATE user_profiles SET ${fields} WHERE id=? AND tenant_id=?`, params);
+    try {
+      const user = await this.getUserProfile(userId);
+      if (user) {
+        await sendWakuUserUpdate(user);
+      }
+    } catch (e) {
+      console.error('Failed to send Waku user update:', e);
+    }
     return true;
   }
 

@@ -12,6 +12,15 @@ export const ensureSettingsTable = async () => {
     );
   `);
 
+  await executeSql(`
+    CREATE TABLE IF NOT EXISTS waku_seen (
+      id TEXT NOT NULL,
+      topic TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY(id, topic)
+    );
+  `);
+
   await executeSql(
     `INSERT OR IGNORE INTO settings (key, value, type, description) VALUES
       ('storeName', 'The Congress', 'string', 'Store name'),

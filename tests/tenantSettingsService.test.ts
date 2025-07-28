@@ -1,7 +1,8 @@
+/// <reference types="node" />
 import TenantSettingsService from '../services/tenantSettings';
 describe('TenantSettingsService remote', () => {
   beforeEach(() => {
-    (global as any).fetch = jest.fn();
+    (globalThis as any).fetch = jest.fn();
     (TenantSettingsService as any).instance = undefined;
     process.env.EXPO_PUBLIC_SETTINGS_API_URL = 'https://api.example.com';
   });
