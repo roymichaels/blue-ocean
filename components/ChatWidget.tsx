@@ -100,7 +100,8 @@ export default function ChatWidget() {
       });
       if (recording) {
         recording.stop();
-        recording.remove();
+        // remove is not typed on AudioRecorder
+        (recording as any).remove?.();
       }
       isMounted.current = false;
     };
@@ -471,8 +472,8 @@ const loadOrCreateDefaultRoom = async () => {
       }
 
       await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
 
       const newRecording = new Audio.AudioRecorder(
@@ -519,7 +520,8 @@ const loadOrCreateDefaultRoom = async () => {
 
       await recording.stop();
       const uri = recording.uri;
-      recording.remove();
+      // remove is not typed on AudioRecorder
+      (recording as any).remove?.();
 
       if (uri) {
         const pinata = PinataService.getInstance();
