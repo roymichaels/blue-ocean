@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
-import { verify } from '@noble/ed25519';
-import { sha256 } from '@noble/hashes/sha256';
+import { decryptWakuPayload } from './wakuCrypto';
 
 export const useWakuSettingsSync = () => {
   useEffect(() => {
@@ -30,18 +29,11 @@ export const useWakuSettingsSync = () => {
           await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
 
         const decoded = new TextDecoder().decode(msg.payload);
+        const plaintext = await decryptWakuPayload(decoded);
         try {
-          const parsed = JSON.parse(decoded);
-          if (!parsed.signature || !parsed.sender) return;
-          const { signature, ...unsigned } = parsed;
-          const payloadStr = JSON.stringify(unsigned);
-          const hash = sha256(new TextEncoder().encode(payloadStr));
-          const valid = await verify(
-            edBytes.hexToBytes(signature),
-            hash,
-            edBytes.hexToBytes(parsed.sender.publicKey),
-          );
-          if (!valid || parsed.sender.role !== 'admin') {
+          const parsed = JSON.parse(plaintext);
+          if (!parsed.sender || parsed.sender.role !== 'admin') {
+
             return;
           }
           const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
