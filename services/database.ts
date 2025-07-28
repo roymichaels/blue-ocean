@@ -887,11 +887,21 @@ class DatabaseService {
     if (exists) {
       await executeSql('UPDATE settings SET value=? WHERE key=?', [value, key]);
     } else {
-      await executeSql('INSERT INTO settings (key,value,type,description) VALUES (?,?,\'string\',?)', [key, value, `Setting for ${key}`]);
+      await executeSql(
+        'INSERT INTO settings (key,value,type,description) VALUES (?,?,\'string\',?)',
+        [key, value, `Setting for ${key}`],
+      );
     }
+    const rowRes = await executeSql(
+      'SELECT created_at, updated_at FROM settings WHERE key=?',
+      [key],
+    );
+    const row = (rowRes.rows as any)._array?.[0];
+    const createdAt = row?.created_at ?? Date.now();
+    const updatedAt = row?.updated_at ?? Date.now();
     try {
-      await sendWakuSettingsUpdate(key, value);
-    } catch (e) {
+      await sendWakuSettingsUpdate(key, value, createdAt, updatedAt);
+      } catch (e) {
       console.error('Failed to send Waku settings update:', e);
     }
   }
@@ -920,8 +930,15 @@ class DatabaseService {
     } else {
       await executeSql(`INSERT INTO tenant_settings (tenant_id, ${key}) VALUES (?, ?)`, [tenant, value]);
     }
+    const rowRes = await executeSql(
+      'SELECT created_at, updated_at FROM tenant_settings WHERE tenant_id=?',
+      [tenant],
+    );
+    const row = (rowRes.rows as any)._array?.[0];
+    const createdAt = row?.created_at ?? Date.now();
+    const updatedAt = row?.updated_at ?? Date.now();
     try {
-      await sendWakuSettingsUpdate(key, value);
+      await sendWakuSettingsUpdate(key, value, createdAt, updatedAt);
     } catch (e) {
       console.error('Failed to send Waku settings update:', e);
     }

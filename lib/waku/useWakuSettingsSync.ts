@@ -29,10 +29,15 @@ export const useWakuSettingsSync = () => {
         try {
           const parsed = JSON.parse(decoded);
           if (parsed.type === 'settings.update') {
-            await executeSql('INSERT OR REPLACE INTO settings (key,value) VALUES (?, ?)', [
-              parsed.key,
-              parsed.value,
-            ]);
+            await executeSql(
+              `INSERT INTO settings (key,value,created_at,updated_at)
+               VALUES (?,?,?,?)
+               ON CONFLICT(key) DO UPDATE SET
+                 value=excluded.value,
+                 updated_at=excluded.updated_at`,
+              [parsed.key, parsed.value, parsed.createdAt, parsed.updatedAt]
+            );
+
           }
         } catch (e) {
           console.error('Invalid Waku message:', e);
