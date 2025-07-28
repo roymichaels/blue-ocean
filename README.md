@@ -148,6 +148,16 @@ yarn build:web:thebull
 Matching NGINX configs for each tenant are located in `nginx/` and assume the
 exported files are served from `/var/www/{tenant}/dist`.
 
+## Tests
+
+Run the test suite with:
+
+```sh
+yarn test
+```
+
+Ensure all dependencies are installed using `yarn install` before running the tests.
+
 ## Database Backup
 
 The project includes helper scripts to encrypt the `blue-ocean.db` SQLite file
