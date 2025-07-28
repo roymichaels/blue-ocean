@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
+import { decryptSyncMessage } from '../../utils/wakuCrypto';
 
 export const useWakuProductSync = () => {
   useEffect(() => {
@@ -13,8 +14,9 @@ export const useWakuProductSync = () => {
       await node.filter!.subscribe(decoder, async (msg) => {
         if (!msg.payload) return;
         const decoded = new TextDecoder().decode(msg.payload);
+        const decrypted = await decryptSyncMessage(decoded);
         try {
-          const parsed = JSON.parse(decoded);
+          const parsed = JSON.parse(decrypted);
           if (parsed.type === 'product.update' && parsed.product) {
             const p = parsed.product;
             await executeSql(

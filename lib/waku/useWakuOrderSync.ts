@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
+import { decryptSyncMessage } from '../../utils/wakuCrypto';
 import { TENANT } from '../../constants/tenant';
 
 export const useWakuOrderSync = () => {
@@ -14,8 +15,9 @@ export const useWakuOrderSync = () => {
       await node.filter!.subscribe(decoder, async (msg) => {
         if (!msg.payload) return;
         const decoded = new TextDecoder().decode(msg.payload);
+        const decrypted = await decryptSyncMessage(decoded);
         try {
-          const parsed = JSON.parse(decoded);
+          const parsed = JSON.parse(decrypted);
           if (parsed.type === 'order.update' && parsed.order) {
             const o = parsed.order;
             await executeSql(

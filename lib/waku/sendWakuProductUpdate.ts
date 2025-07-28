@@ -1,3 +1,5 @@
+import { encryptSyncMessage } from '../../utils/wakuCrypto';
+
 export const sendWakuProductUpdate = async (product: any) => {
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
 
@@ -9,7 +11,8 @@ export const sendWakuProductUpdate = async (product: any) => {
     type: 'product.update',
     product,
   });
+  const encrypted = await encryptSyncMessage(payload);
 
   const encoder = node.createEncoder({ contentTopic: '/congress/products/1' });
-  await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(payload) });
+  await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
 };

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
+import { decryptSyncMessage } from '../../utils/wakuCrypto';
 
 export const useWakuSettingsSync = () => {
   useEffect(() => {
@@ -27,8 +28,9 @@ export const useWakuSettingsSync = () => {
           await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
 
         const decoded = new TextDecoder().decode(msg.payload);
+        const decrypted = await decryptSyncMessage(decoded);
         try {
-          const parsed = JSON.parse(decoded);
+          const parsed = JSON.parse(decrypted);
           if (parsed.type === 'settings.update') {
             await executeSql(
               `INSERT INTO settings (key,value,created_at,updated_at)

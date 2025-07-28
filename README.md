@@ -67,6 +67,8 @@ The file includes a `EXPO_PUBLIC_CHAT_SECRET` variable used to derive
 encryption keys for chat messages. Set it to any random string but make sure
 the same value is used for all clients so they can decrypt messages.
 
+`EXPO_PUBLIC_SYNC_SECRET` is similarly used to encrypt Waku sync updates.
+
 `EXPO_PUBLIC_TENANT` specifies which tenant's branding to load from the
 `tenant_settings` table. Example values are `thecongress` or `thebull`.
 
