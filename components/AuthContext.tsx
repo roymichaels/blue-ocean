@@ -6,7 +6,6 @@ import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
 
 const ADMIN_USERNAME = process.env.EXPO_PUBLIC_ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.EXPO_PUBLIC_ADMIN_PASSWORD || 'admin';
 const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
 
 export class UsernameTakenError extends Error {
@@ -51,26 +50,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const ensureAdminAccount = async () => {
-    if (!ADMIN_USERNAME) return;
-    const res = await executeSql(
-      "SELECT COUNT(*) as count FROM users WHERE role='admin'",
-    );
-    const count = (res.rows as any)._array?.[0]?.count || 0;
-    if (count === 0) {
-      const id = `user_${Date.now()}`;
-      const hash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-      await executeSql(
-        'INSERT INTO users (id, username, password_hash, display_name, role) VALUES (?,?,?,?,?)',
-        [id, ADMIN_USERNAME, hash, 'Admin', 'admin'],
-      );
-    }
-  };
-
   useEffect(() => {
     const init = async () => {
       try {
-        await ensureAdminAccount();
         const token = await getToken();
         if (token && isTokenValid(token)) {
           const payload: any = JWT.decode(token, JWT_SECRET);
