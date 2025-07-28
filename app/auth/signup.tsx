@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, UserPlus } from 'lucide-react-native';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth, UsernameTakenError } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import InfoModal from '../../components/InfoModal';
@@ -71,10 +71,16 @@ export default function AuthSignupScreen() {
       }
     } catch (error) {
       console.error('Signup error:', error);
+      const message =
+        error instanceof UsernameTakenError
+          ? t('auth.usernameTaken')
+          : error instanceof Error
+          ? error.message
+          : t('auth.signupError');
       setInfoModal({
         visible: true,
         title: t('common.error'),
-        message: error instanceof Error ? error.message : t('auth.signupError'),
+        message,
         type: 'error'
       });
     } finally {

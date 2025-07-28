@@ -49,6 +49,7 @@
     "loginSuccess": "ההתחברות הצליחה!",
     "signupSuccess": "החשבון נוצר בהצלחה!",
     "signupError": "ההרשמה נכשלה. אנא נסה שוב.",
+    "usernameTaken": "שם המשתמש כבר קיים.",
     "fillAllFields": "אנא מלא את כל השדות",
     "passwordMismatch": "הסיסמאות אינן תואמות",
     "loggingIn": "מתחבר...",

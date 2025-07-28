@@ -49,6 +49,7 @@
     "loginSuccess": "Login successful!",
     "signupSuccess": "Account created successfully!",
     "signupError": "Registration failed. Please try again.",
+    "usernameTaken": "This username is already taken.",
     "fillAllFields": "Please fill in all fields",
     "passwordMismatch": "Passwords do not match",
     "loggingIn": "Logging in...",
