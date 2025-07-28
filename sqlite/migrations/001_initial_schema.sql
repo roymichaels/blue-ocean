@@ -313,3 +313,11 @@ CREATE TRIGGER update_tenant_settings_timestamp AFTER UPDATE ON tenant_settings
 BEGIN
   UPDATE tenant_settings SET updated_at = CURRENT_TIMESTAMP WHERE tenant_id = NEW.tenant_id;
 END;
+
+-- Table for tracking processed Waku messages
+CREATE TABLE waku_seen (
+  id TEXT NOT NULL,
+  topic TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(id, topic)
+);
