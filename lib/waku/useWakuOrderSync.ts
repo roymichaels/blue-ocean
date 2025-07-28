@@ -6,6 +6,8 @@ export const useWakuOrderSync = () => {
   useEffect(() => {
     const run = async () => {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
+      const { sha256 } = await import('@noble/hashes/sha256');
+      const ed = await import('@noble/ed25519');
       const node = await createLightNode({ defaultBootstrap: true });
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
@@ -16,8 +18,17 @@ export const useWakuOrderSync = () => {
         const decoded = new TextDecoder().decode(msg.payload);
         try {
           const parsed = JSON.parse(decoded);
-          if (parsed.type === 'order.update' && parsed.order) {
-            const o = parsed.order;
+          const { sender, signature, ...rest } = parsed;
+          if (!sender?.publicKey || !signature) return;
+          const hash = sha256(new TextEncoder().encode(JSON.stringify(rest)));
+          const ok = await ed.verify(
+            Uint8Array.from(Buffer.from(signature, 'hex')),
+            hash,
+            Uint8Array.from(Buffer.from(sender.publicKey, 'hex')),
+          );
+          if (!ok) return;
+          if (rest.type === 'order.update' && rest.order) {
+            const o = rest.order;
             await executeSql(
               `INSERT OR REPLACE INTO orders (
                 id, tenant_id, user_id, total, status, payment_method,

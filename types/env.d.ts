@@ -11,6 +11,8 @@ declare global {
       EXPO_PUBLIC_PINATA_SECRET_API_KEY?: string;
       EXPO_PUBLIC_CHAT_SECRET?: string;
       EXPO_PUBLIC_USE_WAKU?: string;
+      EXPO_PUBLIC_WAKU_PRIVATE_KEY?: string;
+      EXPO_PUBLIC_WAKU_PUBLIC_KEY?: string;
       VAPID_PUBLIC_KEY?: string;
       VAPID_PRIVATE_KEY?: string;
       EXPO_PUBLIC_TENANT?: string;

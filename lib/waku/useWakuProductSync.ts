@@ -5,6 +5,8 @@ export const useWakuProductSync = () => {
   useEffect(() => {
     const run = async () => {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
+      const { sha256 } = await import('@noble/hashes/sha256');
+      const ed = await import('@noble/ed25519');
       const node = await createLightNode({ defaultBootstrap: true });
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
@@ -15,8 +17,17 @@ export const useWakuProductSync = () => {
         const decoded = new TextDecoder().decode(msg.payload);
         try {
           const parsed = JSON.parse(decoded);
-          if (parsed.type === 'product.update' && parsed.product) {
-            const p = parsed.product;
+          const { sender, signature, ...rest } = parsed;
+          if (!sender?.publicKey || !signature) return;
+          const hash = sha256(new TextEncoder().encode(JSON.stringify(rest)));
+          const ok = await ed.verify(
+            Uint8Array.from(Buffer.from(signature, 'hex')),
+            hash,
+            Uint8Array.from(Buffer.from(sender.publicKey, 'hex')),
+          );
+          if (!ok) return;
+          if (rest.type === 'product.update' && rest.product) {
+            const p = rest.product;
             await executeSql(
               `INSERT OR REPLACE INTO products (
                 id, tenant_id, name, name_en, name_he, price, description, description_en,

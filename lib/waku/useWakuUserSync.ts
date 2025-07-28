@@ -6,6 +6,8 @@ export const useWakuUserSync = () => {
   useEffect(() => {
     const run = async () => {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
+      const { sha256 } = await import('@noble/hashes/sha256');
+      const ed = await import('@noble/ed25519');
       const node = await createLightNode({ defaultBootstrap: true });
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
@@ -16,8 +18,17 @@ export const useWakuUserSync = () => {
         const decoded = new TextDecoder().decode(msg.payload);
         try {
           const parsed = JSON.parse(decoded);
-          if (parsed.type === 'user.update' && parsed.user) {
-            const u = parsed.user;
+          const { sender, signature, ...rest } = parsed;
+          if (!sender?.publicKey || !signature) return;
+          const hash = sha256(new TextEncoder().encode(JSON.stringify(rest)));
+          const ok = await ed.verify(
+            Uint8Array.from(Buffer.from(signature, 'hex')),
+            hash,
+            Uint8Array.from(Buffer.from(sender.publicKey, 'hex')),
+          );
+          if (!ok) return;
+          if (rest.type === 'user.update' && rest.user) {
+            const u = rest.user;
             await executeSql(
               `INSERT OR REPLACE INTO user_profiles (
                 id, tenant_id, matrix_user_id, app_username, email, display_name,
