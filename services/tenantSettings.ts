@@ -5,7 +5,7 @@ export interface TenantSettingsRow {
   theme_color?: string | null;
 }
 
-const API_BASE = process.env.EXPO_PUBLIC_SETTINGS_API_URL || '';
+const getApiBase = () => process.env.EXPO_PUBLIC_SETTINGS_API_URL || '';
 
 class TenantSettingsService {
   private static instance: TenantSettingsService;
@@ -24,7 +24,7 @@ class TenantSettingsService {
     key: 'platform_name' | 'platform_logo' | 'theme_color'
   ): Promise<string | null> {
     try {
-      const res = await fetch(`${API_BASE}/tenant_settings/${tenant}`);
+      const res = await fetch(`${getApiBase()}/tenant_settings/${tenant}`);
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
@@ -42,7 +42,7 @@ class TenantSettingsService {
     value: string
   ): Promise<void> {
     try {
-      const res = await fetch(`${API_BASE}/tenant_settings/${tenant}`, {
+      const res = await fetch(`${getApiBase()}/tenant_settings/${tenant}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [key]: value }),
