@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
 import { decryptWakuPayload } from './wakuCrypto';
 import { TENANT } from '../../constants/tenant';
+import { verify } from '@noble/ed25519';
+import { sha256 } from '@noble/hashes/sha256';
 
 export const useWakuUserSync = () => {
   useEffect(() => {
@@ -10,6 +12,7 @@ export const useWakuUserSync = () => {
 
     const run = async () => {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
+      const { verify, etc: edBytes } = await import('@noble/ed25519');
       node = await createLightNode({ defaultBootstrap: true });
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
@@ -22,6 +25,7 @@ export const useWakuUserSync = () => {
         try {
           const parsed = JSON.parse(plaintext);
           if (!parsed.sender || parsed.sender.role !== 'admin') {
+
             return;
           }
           const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
