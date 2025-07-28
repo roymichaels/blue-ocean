@@ -9,6 +9,13 @@ const ADMIN_USERNAME = process.env.EXPO_PUBLIC_ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.EXPO_PUBLIC_ADMIN_PASSWORD || 'admin';
 const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
 
+export class UsernameTakenError extends Error {
+  constructor() {
+    super('usernameTaken');
+    this.name = 'UsernameTakenError';
+  }
+}
+
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
@@ -149,10 +156,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await loadProfile(id);
       setLoading(false);
       return true;
-    } catch (err) {
-      console.error('Signup failed', err);
+    } catch (err: any) {
       setLoading(false);
-      return false;
+      if (
+        err &&
+        typeof err === 'object' &&
+        'message' in err &&
+        (err as Error).message.includes('UNIQUE constraint failed: users.username')
+      ) {
+        throw new UsernameTakenError();
+      }
+      console.error('Signup failed', err);
+      throw err;
     }
   };
 

@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { X, LogIn, UserPlus, Lock, User } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { useAuth } from './AuthContext';
+import { useAuth, UsernameTakenError } from './AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { router } from 'expo-router';
 import InfoModal from './InfoModal';
@@ -135,10 +135,16 @@ export default function AuthTabsModal({
       }
     } catch (error) {
       console.error('Signup error:', error);
+      const message =
+        error instanceof UsernameTakenError
+          ? t('auth.usernameTaken')
+          : error instanceof Error
+          ? error.message
+          : t('auth.signupError');
       setInfoModal({
         visible: true,
         title: t('common.error'),
-        message: error instanceof Error ? error.message : t('auth.signupError'),
+        message,
         type: 'error'
       });
     } finally {
