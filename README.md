@@ -40,6 +40,10 @@ On native platforms this uses the native AsyncStorage implementation and falls
 back to `window.localStorage` when running on the web. This ensures
 authentication state persists across reloads on every platform.
 
+### Peer-to-Peer Synchronization
+
+Settings, users, products and orders are synchronized between peers over the Waku network. When any of these records change locally, call the appropriate `sendWaku...Update` function to broadcast the update. Add the matching `useWaku...Sync` hook (for example `useWakuSettingsSync`) in your root layout so that your SQLite database receives updates from other peers.
+
 ### Web Notes
 
 Fast Refresh can cause issues with Expo Router when running in the browser.
