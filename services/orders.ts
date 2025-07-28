@@ -2,6 +2,7 @@ import { executeSql } from '../lib/sqlite';
 import { Order, OrderStatus, OrderTrackingStep, CartItem, ShippingAddress } from '../types';
 import DatabaseService from './database';
 import { TENANT } from '../constants/tenant';
+import { sendWakuOrderUpdate } from '../lib/waku/sendWakuOrderUpdate';
 
 class OrderService {
   private static instance: OrderService;
@@ -150,6 +151,14 @@ class OrderService {
     // Simulate order progression
     this.simulateOrderProgress(orderId);
 
+    try {
+      if (order) {
+        await sendWakuOrderUpdate(order);
+      }
+    } catch (e) {
+      console.error('Failed to send Waku order update:', e);
+    }
+
     if (!order) {
       throw new Error('ORDER_NOT_CREATED');
     }
@@ -177,6 +186,14 @@ class OrderService {
   public async updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
     await executeSql('UPDATE orders SET status=? WHERE id=?', [status, orderId]);
     this.notifyListeners();
+    try {
+      const order = await this.getOrder(orderId);
+      if (order) {
+        await sendWakuOrderUpdate(order);
+      }
+    } catch (e) {
+      console.error('Failed to send Waku order update:', e);
+    }
   }
 
   private async mapOrderRow(row: any): Promise<Order> {

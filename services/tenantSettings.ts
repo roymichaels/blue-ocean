@@ -27,6 +27,7 @@ class TenantSettingsService {
   ): Promise<string | null> {
     try {
       const res = await fetch(`${apiBase()}/tenant_settings/${tenant}`);
+
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
@@ -45,6 +46,7 @@ class TenantSettingsService {
   ): Promise<void> {
     try {
       const res = await fetch(`${apiBase()}/tenant_settings/${tenant}`, {
+
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [key]: value }),
