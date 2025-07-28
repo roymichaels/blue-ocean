@@ -62,20 +62,24 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       if (storedColor) setThemeColorState(storedColor);
 
       const tenantSvc = TenantSettingsService.getInstance();
-      const dbName = await tenantSvc.getTenantSetting(TENANT, 'platform_name');
-      const dbLogo = await tenantSvc.getTenantSetting(TENANT, 'platform_logo');
-      const dbColor = await tenantSvc.getTenantSetting(TENANT, 'theme_color');
-      if (dbName) {
-        setPlatformNameState(dbName);
-        await AsyncStorage.setItem(NAME_KEY, dbName);
-      }
-      if (dbLogo) {
-        setPlatformLogoState(dbLogo);
-        await AsyncStorage.setItem(LOGO_KEY, dbLogo);
-      }
-      if (dbColor) {
-        setThemeColorState(dbColor);
-        await AsyncStorage.setItem(COLOR_KEY, dbColor);
+      try {
+        const dbName = await tenantSvc.getTenantSetting(TENANT, 'platform_name');
+        const dbLogo = await tenantSvc.getTenantSetting(TENANT, 'platform_logo');
+        const dbColor = await tenantSvc.getTenantSetting(TENANT, 'theme_color');
+        if (dbName) {
+          setPlatformNameState(dbName);
+          await AsyncStorage.setItem(NAME_KEY, dbName);
+        }
+        if (dbLogo) {
+          setPlatformLogoState(dbLogo);
+          await AsyncStorage.setItem(LOGO_KEY, dbLogo);
+        }
+        if (dbColor) {
+          setThemeColorState(dbColor);
+          await AsyncStorage.setItem(COLOR_KEY, dbColor);
+        }
+      } catch (err) {
+        console.error('Failed fetching branding from server:', err);
       }
     } catch (e) {
       console.error('Error loading app info:', e);
@@ -119,6 +123,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await tenantSvc.updateTenantSetting(TENANT, 'platform_logo', finalLogo);
       scheduleLoadInfo();
     } catch (e) {
+      Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
       console.error('Error setting platform logo:', e);
       throw e;
     }
@@ -132,6 +137,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await tenantSvc.updateTenantSetting(TENANT, 'theme_color', color);
       scheduleLoadInfo();
     } catch (e) {
+      Alert.alert('שגיאה', 'שמירת צבע ערכת הנושא נכשלה');
       console.error('Error setting theme color:', e);
       throw e;
     }

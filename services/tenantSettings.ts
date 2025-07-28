@@ -1,5 +1,3 @@
-import { executeSql } from '../lib/sqlite';
-
 export interface TenantSettingsRow {
   tenant_id: string;
   platform_name?: string | null;
@@ -7,26 +5,12 @@ export interface TenantSettingsRow {
   theme_color?: string | null;
 }
 
+const API_BASE = process.env.EXPO_PUBLIC_SETTINGS_API_URL || '';
+
 class TenantSettingsService {
   private static instance: TenantSettingsService;
 
-  private constructor() {
-    // Initialize table
-    (async () => {
-      try {
-        await executeSql(
-          `CREATE TABLE IF NOT EXISTS tenant_settings (
-            tenant_id TEXT PRIMARY KEY NOT NULL,
-            platform_name TEXT,
-            platform_logo TEXT,
-            theme_color TEXT
-          )`
-        );
-      } catch (err) {
-        console.error('Error creating tenant_settings table:', err);
-      }
-    })();
-  }
+  private constructor() {}
 
   public static getInstance(): TenantSettingsService {
     if (!TenantSettingsService.instance) {
@@ -40,15 +24,15 @@ class TenantSettingsService {
     key: 'platform_name' | 'platform_logo' | 'theme_color'
   ): Promise<string | null> {
     try {
-      const result = await executeSql(
-        `SELECT ${key} FROM tenant_settings WHERE tenant_id = ? LIMIT 1`,
-        [tenant]
-      );
-      const item = (result.rows as any)._array?.[0];
-      return item ? item[key] || null : null;
+      const res = await fetch(`${API_BASE}/tenant_settings/${tenant}`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as Record<string, any>;
+      return data[key] ?? null;
     } catch (error) {
       console.error(`Error fetching tenant setting ${key}:`, error);
-      return null;
+      throw error;
     }
   }
 
@@ -58,27 +42,15 @@ class TenantSettingsService {
     value: string
   ): Promise<void> {
     try {
-      const existing = await executeSql(
-        'SELECT tenant_id FROM tenant_settings WHERE tenant_id = ? LIMIT 1',
-        [tenant]
-      );
-      const existingRows = (existing.rows as any)._array;
-      if (existingRows && existingRows.length > 0) {
-        await executeSql(
-          `UPDATE tenant_settings SET ${key} = ? WHERE tenant_id = ?`,
-          [value, tenant]
-        );
-      } else {
-        const cols = ['platform_name', 'platform_logo', 'theme_color'];
-        const idx = cols.indexOf(key);
-        const values: (string | null)[] = [null, null, null];
-        if (idx >= 0) {
-          values[idx] = value;
-        }
-        await executeSql(
-          'INSERT INTO tenant_settings (tenant_id, platform_name, platform_logo, theme_color) VALUES (?,?,?,?)',
-          [tenant, values[0], values[1], values[2]]
-        );
+      const res = await fetch(`${API_BASE}/tenant_settings/${tenant}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text}`);
+
       }
     } catch (error) {
       console.error(`Error updating tenant setting ${key}:`, error);
