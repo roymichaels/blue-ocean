@@ -1,7 +1,7 @@
 export function useWakuClient() {
   return {
     send: async () => { /* noop */ },
-    subscribe: async () => {},
+    subscribe: async () => () => {},
     fetchHistory: async () => {},
   };
 }
