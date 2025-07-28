@@ -1,8 +1,11 @@
+import type { WakuSender } from './sendWakuUserUpdate';
+
 export const sendWakuSettingsUpdate = async (
   key: string,
   value: string,
   createdAt: number,
   updatedAt: number,
+  sender: WakuSender = { id: '', publicKey: '', role: '' }
 ) => {
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
 
@@ -14,15 +17,12 @@ export const sendWakuSettingsUpdate = async (
     value,
     createdAt,
     updatedAt,
+    sender,
   });
 
-
-    const payload = JSON.stringify({
-      type: 'settings.update',
-      key,
-      value,
-    });
-
+  try {
+    await node.start();
+    await waitForRemotePeer(node, [Protocols.LightPush]);
     const encoder = node.createEncoder({ contentTopic: '/congress/settings/1' });
     await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(payload) });
   } finally {
