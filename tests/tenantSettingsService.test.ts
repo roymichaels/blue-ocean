@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import TenantSettingsService from '../services/tenantSettings';
 describe('TenantSettingsService remote', () => {
   beforeEach(() => {
