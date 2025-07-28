@@ -1,4 +1,5 @@
 import type { WakuSender } from './sendWakuUserUpdate';
+import { sign, utils as edUtils } from '@noble/ed25519';
 import { sha256 } from '@noble/hashes/sha256';
 
 export const sendWakuSettingsUpdate = async (
@@ -6,7 +7,8 @@ export const sendWakuSettingsUpdate = async (
   value: string,
   createdAt: number,
   updatedAt: number,
-  sender: WakuSender = { id: '', publicKey: '', role: '' }
+  sender: WakuSender = { id: '', publicKey: '', role: '' },
+  privateKey = ''
 ) => {
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
   const { sign, etc: edBytes } = await import('@noble/ed25519');

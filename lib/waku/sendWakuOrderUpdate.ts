@@ -1,9 +1,11 @@
 import type { WakuSender } from './sendWakuUserUpdate';
+import { sign, utils as edUtils } from '@noble/ed25519';
 import { sha256 } from '@noble/hashes/sha256';
 
 export const sendWakuOrderUpdate = async (
   order: any,
-  sender: WakuSender = { id: '', publicKey: '', role: '' }
+  sender: WakuSender = { id: '', publicKey: '', role: '' },
+  privateKey = ''
 ) => {
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
   const { sign, etc: edBytes } = await import('@noble/ed25519');
@@ -34,4 +36,5 @@ export const sendWakuOrderUpdate = async (
 
   const encoder = node.createEncoder({ contentTopic: '/congress/orders/1' });
   await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(message) });
+
 };

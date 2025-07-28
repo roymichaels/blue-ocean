@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
 import { sha256 } from '@noble/hashes/sha256';
 import { TENANT } from '../../constants/tenant';
+import { verify } from '@noble/ed25519';
+import { sha256 } from '@noble/hashes/sha256';
 
 export const useWakuUserSync = () => {
   useEffect(() => {

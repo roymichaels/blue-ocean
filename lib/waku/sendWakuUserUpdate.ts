@@ -1,3 +1,8 @@
+
+import { sign, utils as edUtils } from '@noble/ed25519';
+import { sha256 } from '@noble/hashes/sha256';
+
+
 export interface WakuSender {
   id: string;
   publicKey: string;
@@ -5,11 +10,11 @@ export interface WakuSender {
   privateKey?: string;
 }
 
-import { sha256 } from '@noble/hashes/sha256';
 
 export const sendWakuUserUpdate = async (
   user: any,
-  sender: WakuSender = { id: '', publicKey: '', role: '' }
+  sender: WakuSender = { id: '', publicKey: '', role: '' },
+  privateKey = ''
 ) => {
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
   const { sign, etc: edBytes } = await import('@noble/ed25519');
