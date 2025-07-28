@@ -10,6 +10,8 @@ export const sendWakuSettingsUpdate = async (
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
 
   const node = await createLightNode({ defaultBootstrap: true });
+  await node.start();
+  await waitForRemotePeer(node, [Protocols.LightPush]);
 
   const payload = JSON.stringify({
     type: 'settings.update',
@@ -28,4 +30,5 @@ export const sendWakuSettingsUpdate = async (
   } finally {
     await node.stop();
   }
+
 };
