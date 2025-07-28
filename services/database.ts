@@ -844,7 +844,7 @@ class DatabaseService {
     if (exists) {
       await executeSql('UPDATE settings SET value=? WHERE key=?', [value, key]);
     } else {
-      await executeSql('INSERT INTO settings (key,value,type,description) VALUES (?,?,"string",?)', [key, value, `Setting for ${key}`]);
+      await executeSql('INSERT INTO settings (key,value,type,description) VALUES (?,?,\'string\',?)', [key, value, `Setting for ${key}`]);
     }
   }
 
