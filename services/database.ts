@@ -1,4 +1,5 @@
 import { executeSql } from '../lib/sqlite';
+import { sendWakuSettingsUpdate } from '../lib/waku/sendWakuSettingsUpdate';
 import { TENANT } from '../constants/tenant';
 import {
   Product,
@@ -846,6 +847,11 @@ class DatabaseService {
     } else {
       await executeSql('INSERT INTO settings (key,value,type,description) VALUES (?,?,\'string\',?)', [key, value, `Setting for ${key}`]);
     }
+    try {
+      await sendWakuSettingsUpdate(key, value);
+    } catch (e) {
+      console.error('Failed to send Waku settings update:', e);
+    }
   }
 
   async getAllSettings(): Promise<Record<string, string>> {
@@ -871,6 +877,11 @@ class DatabaseService {
       await executeSql(`UPDATE tenant_settings SET ${key}=? WHERE tenant_id=?`, [value, tenant]);
     } else {
       await executeSql(`INSERT INTO tenant_settings (tenant_id, ${key}) VALUES (?, ?)`, [tenant, value]);
+    }
+    try {
+      await sendWakuSettingsUpdate(key, value);
+    } catch (e) {
+      console.error('Failed to send Waku settings update:', e);
     }
   }
 }
