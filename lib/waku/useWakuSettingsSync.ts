@@ -12,18 +12,19 @@ export const useWakuSettingsSync = () => {
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
 
-      decoder = node.createDecoder({ contentTopic: '/congress/settings/1' });
+      const topic = '/congress/settings/1';
+      decoder = node.createDecoder({ contentTopic: topic });
       await node.filter!.subscribe(decoder, async (msg) => {
         if (!msg.payload || !msg.timestamp) return;
         const id = msg.timestamp.getTime().toString();
 
-        const seen = await executeSql(
-          'SELECT 1 FROM waku_seen WHERE id=? AND topic=? LIMIT 1',
-          [id, topic]
-        );
+          const seen = await executeSql(
+            'SELECT 1 FROM waku_seen WHERE id=? AND topic=? LIMIT 1',
+            [id, topic]
+          );
         if ((seen.rows as any)._array.length > 0) return;
 
-        await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
+          await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
 
         const decoded = new TextDecoder().decode(msg.payload);
         try {
