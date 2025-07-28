@@ -62,7 +62,8 @@ class TenantSettingsService {
         'SELECT tenant_id FROM tenant_settings WHERE tenant_id = ? LIMIT 1',
         [tenant]
       );
-      if ((existing.rows as any).length) {
+      const existingRows = (existing.rows as any)._array;
+      if (existingRows && existingRows.length > 0) {
         await executeSql(
           `UPDATE tenant_settings SET ${key} = ? WHERE tenant_id = ?`,
           [value, tenant]
