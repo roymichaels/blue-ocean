@@ -7,20 +7,16 @@ export const sendWakuSettingsUpdate = async (
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
 
   const node = await createLightNode({ defaultBootstrap: true });
-
-  const payload = JSON.stringify({
-    type: 'settings.update',
-    key,
-    value,
-    createdAt,
-    updatedAt,
-  });
-
+  try {
+    await node.start();
+    await waitForRemotePeer(node, [Protocols.LightPush]);
 
     const payload = JSON.stringify({
       type: 'settings.update',
       key,
       value,
+      createdAt,
+      updatedAt,
     });
 
     const encoder = node.createEncoder({ contentTopic: '/congress/settings/1' });
