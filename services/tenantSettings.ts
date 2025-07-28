@@ -71,7 +71,7 @@ class TenantSettingsService {
       } else {
         const cols = ['platform_name', 'platform_logo', 'theme_color'];
         const idx = cols.indexOf(key);
-        const values = [null, null, null];
+        const values: (string | null)[] = [null, null, null];
         if (idx >= 0) {
           values[idx] = value;
         }
