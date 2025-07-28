@@ -26,10 +26,19 @@ export async function executeSql(
   const statement = await database.prepareAsync(sql);
   try {
     const result = await statement.executeAsync(params);
-    const rows = await result.getAllAsync();
+    let rows: any[] = [];
+    try {
+      rows = await result.getAllAsync();
+    } catch {
+      // ignore errors when no rows are returned (e.g., INSERT/UPDATE)
+    }
     return { rows: { _array: rows } };
   } finally {
-    await statement.finalizeAsync();
+    try {
+      await statement.finalizeAsync();
+    } catch (e) {
+      console.error('Failed to finalize statement:', e);
+    }
   }
 }
 
