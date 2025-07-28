@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Animated, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
+  Platform
 } from 'react-native';
 import { X } from 'lucide-react-native';
 
@@ -35,12 +36,12 @@ export default function NotificationPopup({
       Animated.timing(translateY, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(opacity, {
         toValue: 1,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       })
     ]).start();
 
@@ -57,12 +58,12 @@ export default function NotificationPopup({
       Animated.timing(translateY, {
         toValue: -100,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(opacity, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       })
     ]).start(() => {
       onClose();
