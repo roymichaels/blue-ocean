@@ -156,6 +156,22 @@ yarn build:web:thebull
 Matching NGINX configs for each tenant are located in `nginx/` and assume the
 exported files are served from `/var/www/{tenant}/dist`.
 
+## Docker
+
+Use Docker to run the project in a reproducible environment. Build the image
+and start the Expo server with:
+
+```sh
+docker build -t blue-ocean .
+docker run --env-file .env -p 19000-19002:19000-19002 blue-ocean
+```
+
+For hot reloading and easier development you can also use Docker Compose:
+
+```sh
+docker compose up
+```
+
 ## Tests
 
 Run the test suite with:
