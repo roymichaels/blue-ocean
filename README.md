@@ -83,6 +83,14 @@ This applies the SQL files in `sqlite/migrations` and writes the database to
 
 When you run `yarn dev`, a `predev` script automatically executes the migrations and creates the database if it does not already exist.
 
+If you need to start from a clean database, run:
+
+```sh
+yarn reset-db
+```
+
+This deletes `sqlite/blue-ocean.db` and re-applies the migrations.
+
 
 ## Seeding Sample Data
 
