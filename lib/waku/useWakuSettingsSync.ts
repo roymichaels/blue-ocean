@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
+import { verify } from '@noble/ed25519';
+import { sha256 } from '@noble/hashes/sha256';
 
 export const useWakuSettingsSync = () => {
   useEffect(() => {
@@ -29,7 +31,13 @@ export const useWakuSettingsSync = () => {
         const decoded = new TextDecoder().decode(msg.payload);
         try {
           const parsed = JSON.parse(decoded);
-          if (!parsed.sender || parsed.sender.role !== 'admin') {
+          if (!parsed.sender || !parsed.signature) {
+            return;
+          }
+          const { signature, ...rest } = parsed;
+          const hash = sha256(new TextEncoder().encode(JSON.stringify(rest)));
+          const valid = await verify(signature, hash, parsed.sender.publicKey);
+          if (!valid || parsed.sender.role !== 'admin') {
             return;
           }
           const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
