@@ -1,0 +1,12 @@
+node_modules
+.dist
+expo-export
+*.log
+**/*.db
+
+# Ignore local env files
+.env
+.env.*
+
+# macOS
+.DS_Store
