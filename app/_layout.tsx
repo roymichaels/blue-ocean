@@ -19,11 +19,15 @@ import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
 import { ensureDatabase } from '../lib/sqlite';
+import { ensureSettingsTable } from '../lib/sqlite/initSettingsTable';
+import { useWakuSettingsSync } from '../lib/waku/useWakuSettingsSync';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
   const { colors, theme } = useTheme();
   const { isAdmin, loading } = useAuth();
+
+  useWakuSettingsSync();
 
   if (loading) {
     return (
@@ -83,7 +87,11 @@ export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
 
   useEffect(() => {
-    ensureDatabase().finally(() => setDbReady(true));
+    (async () => {
+      await ensureDatabase();
+      await ensureSettingsTable();
+      setDbReady(true);
+    })();
   }, []);
 
   if (!dbReady) {
