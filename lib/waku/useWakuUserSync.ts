@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
+import { decryptWakuPayload } from './wakuCrypto';
 import { TENANT } from '../../constants/tenant';
 
 export const useWakuUserSync = () => {
@@ -17,8 +18,9 @@ export const useWakuUserSync = () => {
       await node.filter!.subscribe(decoder, async (msg) => {
         if (!msg.payload) return;
         const decoded = new TextDecoder().decode(msg.payload);
+        const plaintext = await decryptWakuPayload(decoded);
         try {
-          const parsed = JSON.parse(decoded);
+          const parsed = JSON.parse(plaintext);
           if (!parsed.sender || parsed.sender.role !== 'admin') {
             return;
           }

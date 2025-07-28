@@ -1,3 +1,5 @@
+import { encryptWakuPayload } from './wakuCrypto';
+
 export interface WakuSender {
   id: string;
   publicKey: string;
@@ -20,6 +22,8 @@ export const sendWakuUserUpdate = async (
     sender,
   });
 
+  const encrypted = await encryptWakuPayload(payload);
+
   const encoder = node.createEncoder({ contentTopic: '/congress/users/1' });
-  await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(payload) });
+  await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
 };

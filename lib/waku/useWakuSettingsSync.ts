@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
+import { decryptWakuPayload } from './wakuCrypto';
 
 export const useWakuSettingsSync = () => {
   useEffect(() => {
@@ -27,8 +28,9 @@ export const useWakuSettingsSync = () => {
           await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
 
         const decoded = new TextDecoder().decode(msg.payload);
+        const plaintext = await decryptWakuPayload(decoded);
         try {
-          const parsed = JSON.parse(decoded);
+          const parsed = JSON.parse(plaintext);
           if (!parsed.sender || parsed.sender.role !== 'admin') {
             return;
           }
