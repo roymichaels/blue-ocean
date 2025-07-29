@@ -99,6 +99,11 @@ yarn reset-db
 
 This deletes `sqlite/blue-ocean.db` and re-applies the migrations.
 
+When developing, be sure to call `closeDatabase()` when the app is unloaded or
+replaced during hot reloads. The database module adds a `beforeunload` listener
+on the web and the root layout disposes of the database using HMR cleanup so
+handles don't remain open.
+
 
 ## Seeding Sample Data
 
