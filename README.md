@@ -20,6 +20,8 @@ includes a `polyfills.js` file to provide these when running on React Native or
 the web. The polyfill is automatically imported from `index.ts`.
 The project also uses `expo-standard-web-crypto` to polyfill the Web Crypto API,
 so ensure it's installed as a dependency.
+The polyfill additionally provides a synchronous SHA-512 implementation for
+`@noble/ed25519` so key generation works in every environment.
 
 ### Hot Reloading
 
