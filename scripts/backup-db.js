@@ -49,7 +49,9 @@ if (!global.crypto) {
 
 const { default: BackupService } = require('../services/backup');
 
-const DB_NAME = 'blue-ocean.db';
+const DB_NAME = process.env.EXPO_PUBLIC_TENANT
+  ? `${process.env.EXPO_PUBLIC_TENANT}.db`
+  : 'blue-ocean.db';
 const DB_SOURCE = path.join(__dirname, '..', DB_NAME);
 
 async function main() {
@@ -61,7 +63,7 @@ async function main() {
 
   const sqliteDir = path.join(FileSystem.documentDirectory, 'SQLite');
   await fs.mkdir(sqliteDir, { recursive: true });
-  const target = path.join(sqliteDir, 'app.db');
+  const target = path.join(sqliteDir, DB_NAME);
 
   await fs.copyFile(DB_SOURCE, target);
 

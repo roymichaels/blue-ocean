@@ -75,6 +75,8 @@ your shell:
 * `EXPO_PUBLIC_USE_WAKU` – set to `true` to enable Waku features
 * `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging
 * `EXPO_PUBLIC_MATRIX_SERVER` – Matrix server URL (future use)
+* `EXPO_PUBLIC_TENANT` – identifier for the white‑label tenant; the local
+  SQLite database will be created as `<tenant>.db`
 
 ## SQLite Migrations
 

@@ -2,7 +2,8 @@ import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
 import PinataService from './pinata';
 
-const DB_PATH = FileSystem.documentDirectory + 'SQLite/app.db';
+const DB_NAME = `${process.env.EXPO_PUBLIC_TENANT || 'app'}.db`;
+const DB_PATH = FileSystem.documentDirectory + 'SQLite/' + DB_NAME;
 const TMP_ENC_PATH = FileSystem.cacheDirectory + 'app.db.enc';
 
 async function deriveKey(passphrase: string): Promise<CryptoKey> {
