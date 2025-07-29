@@ -1,5 +1,6 @@
 import type { WakuSender } from './sendWakuUserUpdate';
 import { encryptWakuPayload } from './wakuCrypto';
+import { sha256 } from '@noble/hashes/sha256';
 
 export const sendWakuOrderUpdate = async (
   order: any,
@@ -10,8 +11,9 @@ export const sendWakuOrderUpdate = async (
   const { sign, etc: edBytes } = await import('@noble/ed25519');
 
   const node = await createLightNode({ defaultBootstrap: true });
-  await node.start();
-  await waitForRemotePeer(node, [Protocols.LightPush]);
+  try {
+    await node.start();
+    await waitForRemotePeer(node, [Protocols.LightPush]);
 
   const payloadObj = {
     type: 'order.update',
@@ -35,7 +37,11 @@ export const sendWakuOrderUpdate = async (
 
   const encrypted = await encryptWakuPayload(payload);
 
-  const encoder = node.createEncoder({ contentTopic: '/congress/orders/1' });
-  await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
+    const encoder = node.createEncoder({ contentTopic: '/congress/orders/1' });
+    await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
+
+  } finally {
+    await node.stop();
+  }
 
 };
