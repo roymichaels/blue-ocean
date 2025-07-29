@@ -1,10 +1,11 @@
 import JWT from 'expo-jwt';
-import { requireEnv } from './env';
+import { requireConfig } from './env';
 
-const JWT_SECRET = requireEnv('EXPO_PUBLIC_JWT_SECRET');
+const JWT_SECRET_PROMISE = requireConfig('EXPO_PUBLIC_JWT_SECRET');
 
-export function isTokenValid(token: string): boolean {
+export async function isTokenValid(token: string): Promise<boolean> {
   try {
+    const JWT_SECRET = await JWT_SECRET_PROMISE;
     JWT.decode(token, JWT_SECRET);
     return true;
   } catch {
@@ -12,8 +13,9 @@ export function isTokenValid(token: string): boolean {
   }
 }
 
-export function refreshToken(token: string, expiresIn: string | number = '7d'): string | null {
+export async function refreshToken(token: string, expiresIn: string | number = '7d'): Promise<string | null> {
   try {
+    const JWT_SECRET = await JWT_SECRET_PROMISE;
     const payload = JWT.decode(token, JWT_SECRET) as any;
     const { iat, exp, ...rest } = payload as any;
     const seconds = typeof expiresIn === 'number' ? expiresIn : parseExpires(expiresIn);

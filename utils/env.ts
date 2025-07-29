@@ -1,7 +1,9 @@
-export function requireEnv(name: string): string {
-  const value = process.env[name];
+import { getConfig } from './config';
+
+export async function requireConfig(key: string): Promise<string> {
+  const value = await getConfig(key);
   if (!value) {
-    throw new Error(`Environment variable ${name} is required`);
+    throw new Error(`Config value ${key} is required`);
   }
   return value;
 }

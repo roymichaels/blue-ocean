@@ -12,8 +12,15 @@ import {
 import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
 import DatabaseService from '../services/database';
 import { ChatMessage } from '../types';
+import { requireConfig } from '../utils/env';
 
-const USE_WAKU = process.env.EXPO_PUBLIC_USE_WAKU === 'true';
+async function useWaku(): Promise<boolean> {
+  try {
+    return (await requireConfig('EXPO_PUBLIC_USE_WAKU')) === 'true';
+  } catch {
+    return false;
+  }
+}
 const BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 
@@ -40,9 +47,9 @@ export function useWakuClient(): WakuClient {
   const nodeRef = useRef<LightNode>();
 
   useEffect(() => {
-    if (!USE_WAKU) return;
     let cancelled = false;
     (async () => {
+      if (!(await useWaku())) return;
       let node: LightNode | undefined;
       try {
         node = await createLightNode({
@@ -82,7 +89,7 @@ export function useWakuClient(): WakuClient {
     };
     await db.sendChatMessage(roomId, { ...full, message: encrypted });
 
-    if (USE_WAKU && nodeRef.current) {
+    if ((await useWaku()) && nodeRef.current) {
       const encoder = createEncoder({ contentTopic: topic(roomId) });
       await nodeRef.current.lightPush.push(encoder, {
         payload: utf8ToBytes(encrypted),
@@ -95,7 +102,7 @@ export function useWakuClient(): WakuClient {
     roomId: string,
     cb: (msg: ChatMessage) => void,
   ): Promise<() => void> => {
-    if (!USE_WAKU || !nodeRef.current) return () => {};
+    if (!(await useWaku()) || !nodeRef.current) return () => {};
     const decoder = createDecoder(topic(roomId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
@@ -131,7 +138,7 @@ export function useWakuClient(): WakuClient {
     roomId: string,
     cb: (msg: ChatMessage) => void,
   ) => {
-    if (!USE_WAKU || !nodeRef.current) return;
+    if (!(await useWaku()) || !nodeRef.current) return;
     const decoder = createDecoder(topic(roomId));
     for await (const msgs of nodeRef.current.store.queryGenerator({
       contentTopics: [topic(roomId)],

@@ -1,5 +1,6 @@
 import PinataService from '../services/pinata';
 import axios from 'axios';
+import { saveConfigValue } from '../utils/config';
 
 jest.mock('axios');
 
@@ -8,36 +9,36 @@ describe('PinataService', () => {
     jest.clearAllMocks();
   });
 
-  it('detects missing credentials', () => {
-    process.env.EXPO_PUBLIC_PINATA_JWT = '';
-    process.env.EXPO_PUBLIC_PINATA_API_KEY = '';
-    process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY = '';
+  it('detects missing credentials', async () => {
+    await saveConfigValue('EXPO_PUBLIC_PINATA_JWT', '');
+    await saveConfigValue('EXPO_PUBLIC_PINATA_API_KEY', '');
+    await saveConfigValue('EXPO_PUBLIC_PINATA_SECRET_API_KEY', '');
     const service = PinataService.getInstance();
-    expect(service.isPinataConfigured()).toBe(false);
+    expect(await service.isPinataConfigured()).toBe(false);
   });
 
-  it('detects JWT credentials', () => {
-    process.env.EXPO_PUBLIC_PINATA_JWT = 'token';
-    process.env.EXPO_PUBLIC_PINATA_API_KEY = '';
-    process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY = '';
+  it('detects JWT credentials', async () => {
+    await saveConfigValue('EXPO_PUBLIC_PINATA_JWT', 'token');
+    await saveConfigValue('EXPO_PUBLIC_PINATA_API_KEY', '');
+    await saveConfigValue('EXPO_PUBLIC_PINATA_SECRET_API_KEY', '');
     const service = PinataService.getInstance();
-    expect(service.isPinataConfigured()).toBe(true);
+    expect(await service.isPinataConfigured()).toBe(true);
   });
 
-  it('detects API key credentials', () => {
-    process.env.EXPO_PUBLIC_PINATA_JWT = '';
-    process.env.EXPO_PUBLIC_PINATA_API_KEY = 'key';
-    process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY = 'secret';
+  it('detects API key credentials', async () => {
+    await saveConfigValue('EXPO_PUBLIC_PINATA_JWT', '');
+    await saveConfigValue('EXPO_PUBLIC_PINATA_API_KEY', 'key');
+    await saveConfigValue('EXPO_PUBLIC_PINATA_SECRET_API_KEY', 'secret');
     const service = PinataService.getInstance();
-    expect(service.isPinataConfigured()).toBe(true);
+    expect(await service.isPinataConfigured()).toBe(true);
   });
 
-  it('requires both API key and secret', () => {
-    process.env.EXPO_PUBLIC_PINATA_JWT = '';
-    process.env.EXPO_PUBLIC_PINATA_API_KEY = 'key';
-    process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY = '';
+  it('requires both API key and secret', async () => {
+    await saveConfigValue('EXPO_PUBLIC_PINATA_JWT', '');
+    await saveConfigValue('EXPO_PUBLIC_PINATA_API_KEY', 'key');
+    await saveConfigValue('EXPO_PUBLIC_PINATA_SECRET_API_KEY', '');
     const service = PinataService.getInstance();
-    expect(service.isPinataConfigured()).toBe(false);
+    expect(await service.isPinataConfigured()).toBe(false);
   });
 
   it('skips upload when URI is already a URL', async () => {

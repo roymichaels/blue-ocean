@@ -3,6 +3,7 @@ import { sendWakuSettingsUpdate } from '../lib/waku/sendWakuSettingsUpdate';
 import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
 import { sendWakuProductUpdate } from '../lib/waku/sendWakuProductUpdate';
 import { TENANT } from '../constants/tenant';
+import { requireConfig } from '../utils/env';
 import {
   Product,
   Category,
@@ -24,8 +25,7 @@ import {
 class DatabaseService {
   private static instance: DatabaseService;
   private static readonly tenantId = TENANT;
-  private static readonly adminId =
-    process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin';
+  private static readonly adminIdPromise = requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
 
   private constructor() {}
 
@@ -320,8 +320,8 @@ class DatabaseService {
   }
 
   async getOrCreateChatRoom(userId: string, userName: string): Promise<string> {
-    const id =
-      'room_' + [userId, DatabaseService.adminId].sort().join('_');
+    const adminId = await DatabaseService.adminIdPromise;
+    const id = 'room_' + [userId, adminId || 'admin'].sort().join('_');
 
     // Check for existing room with the new deterministic id
     let res = await executeSql(

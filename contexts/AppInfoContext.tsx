@@ -10,8 +10,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import TenantSettingsService from '../services/tenantSettings';
 import MediaService from '../services/media';
+import { requireConfig } from '../utils/env';
 
-const TENANT = process.env.EXPO_PUBLIC_TENANT || 'default';
+const TENANT_PROMISE = requireConfig('EXPO_PUBLIC_TENANT');
 
 interface AppInfoContextType {
   platformName: string;
@@ -38,21 +39,30 @@ interface AppInfoProviderProps {
 }
 
 // Store branding separately for each tenant to avoid cross-tenant mixing
-const NAME_KEY = `app_platform_name_${TENANT}`;
-const LOGO_KEY = `app_platform_logo_${TENANT}`;
-const COLOR_KEY = `app_theme_color_${TENANT}`;
 
 export function AppInfoProvider({ children }: AppInfoProviderProps) {
+  const [tenant, setTenant] = useState<string>('default');
   const [platformName, setPlatformNameState] = useState('');
   const [platformLogo, setPlatformLogoState] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
   const reloadTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    loadInfo();
+    (async () => {
+      try {
+        const t = await TENANT_PROMISE;
+        setTenant(t || 'default');
+      } catch {
+        setTenant('default');
+      }
+      loadInfo();
+    })();
   }, []);
 
   const loadInfo = async () => {
+    const NAME_KEY = `app_platform_name_${tenant}`;
+    const LOGO_KEY = `app_platform_logo_${tenant}`;
+    const COLOR_KEY = `app_theme_color_${tenant}`;
     try {
       const storedName = await AsyncStorage.getItem(NAME_KEY);
       const storedLogo = await AsyncStorage.getItem(LOGO_KEY);
@@ -63,9 +73,10 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
 
       const tenantSvc = TenantSettingsService.getInstance();
       try {
-        const dbName = await tenantSvc.getTenantSetting(TENANT, 'platform_name');
-        const dbLogo = await tenantSvc.getTenantSetting(TENANT, 'platform_logo');
-        const dbColor = await tenantSvc.getTenantSetting(TENANT, 'theme_color');
+        const t = tenant;
+        const dbName = await tenantSvc.getTenantSetting(t, 'platform_name');
+        const dbLogo = await tenantSvc.getTenantSetting(t, 'platform_logo');
+        const dbColor = await tenantSvc.getTenantSetting(t, 'theme_color');
         if (dbName) {
           setPlatformNameState(dbName);
           await AsyncStorage.setItem(NAME_KEY, dbName);
@@ -96,11 +107,12 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   };
 
   const setPlatformName = async (name: string) => {
+    const NAME_KEY = `app_platform_name_${tenant}`;
     setPlatformNameState(name);
     await AsyncStorage.setItem(NAME_KEY, name);
     const tenantSvc = TenantSettingsService.getInstance();
     try {
-      await tenantSvc.updateTenantSetting(TENANT, 'platform_name', name);
+      await tenantSvc.updateTenantSetting(tenant, 'platform_name', name);
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת שם הפלטפורמה נכשלה');
@@ -117,10 +129,11 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
         finalLogo = await mediaSvc.uploadMedia(logo, 'tenant_logo');
       }
 
+      const LOGO_KEY = `app_platform_logo_${tenant}`;
       setPlatformLogoState(finalLogo);
       await AsyncStorage.setItem(LOGO_KEY, finalLogo);
       const tenantSvc = TenantSettingsService.getInstance();
-      await tenantSvc.updateTenantSetting(TENANT, 'platform_logo', finalLogo);
+      await tenantSvc.updateTenantSetting(tenant, 'platform_logo', finalLogo);
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
@@ -131,10 +144,11 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
 
   const setThemeColor = async (color: string) => {
     try {
+      const COLOR_KEY = `app_theme_color_${tenant}`;
       setThemeColorState(color);
       await AsyncStorage.setItem(COLOR_KEY, color);
       const tenantSvc = TenantSettingsService.getInstance();
-      await tenantSvc.updateTenantSetting(TENANT, 'theme_color', color);
+      await tenantSvc.updateTenantSetting(tenant, 'theme_color', color);
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת צבע ערכת הנושא נכשלה');

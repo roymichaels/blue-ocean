@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, MessageCircle, Send, X } from 'lucide-react-native';
 import { ChatRoom, ChatMessage } from '../types';
 import DatabaseService from '../services/database';
+import { requireConfig } from '../utils/env';
 
 interface Props {
   chatRooms: ChatRoom[];
@@ -48,9 +49,10 @@ export default function AdminChatList({ chatRooms }: Props) {
     if (!newMessage.trim() || !selectedRoom || isSending) return;
     setIsSending(true);
 
+    const admin = await requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
     const message: ChatMessage = {
       id: Date.now().toString(),
-      senderId: process.env.EXPO_PUBLIC_ADMIN_USERNAME || 'admin',
+      senderId: admin || 'admin',
       senderName: 'Admin',
       message: newMessage.trim(),
       timestamp: Date.now(),
