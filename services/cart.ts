@@ -2,8 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
 import JWT from 'expo-jwt';
+import { requireEnv } from '../utils/env';
 
-const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
+const JWT_SECRET = requireEnv('EXPO_PUBLIC_JWT_SECRET');
 import { getToken } from '../utils/tokenStorage';
 import { isTokenValid } from '../utils/jwtSession';
 

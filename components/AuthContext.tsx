@@ -6,13 +6,14 @@ import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
+import { requireEnv } from '../utils/env';
 import { TENANT } from '../constants/tenant';
 
 const ADMIN_USERNAMES = (process.env.EXPO_PUBLIC_ADMIN_USERNAME || '')
   .split(',')
   .map((u) => u.trim())
   .filter(Boolean);
-const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
+const JWT_SECRET = requireEnv('EXPO_PUBLIC_JWT_SECRET');
 const PRIVATE_KEY_KEY = 'ed25519_private_key';
 
 export class UsernameTakenError extends Error {

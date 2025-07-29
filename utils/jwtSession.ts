@@ -1,6 +1,7 @@
 import JWT from 'expo-jwt';
+import { requireEnv } from './env';
 
-const JWT_SECRET = process.env.EXPO_PUBLIC_JWT_SECRET || 'secret_key';
+const JWT_SECRET = requireEnv('EXPO_PUBLIC_JWT_SECRET');
 
 export function isTokenValid(token: string): boolean {
   try {
