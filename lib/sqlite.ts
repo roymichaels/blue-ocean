@@ -3,6 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
 import { Platform } from 'react-native';
 import { parseSql } from './sqlUtils';
+import { ensureConfigTable } from './sqlite/initConfigTable';
 
 const DB_NAME = 'app.db';
 
@@ -92,6 +93,7 @@ export function ensureDatabase(): Promise<void> {
       if (!(await tableExists(db, 'users'))) {
         await applySchema(db);
       }
+      await ensureConfigTable();
     } finally {
       ensurePromise = null;
     }
