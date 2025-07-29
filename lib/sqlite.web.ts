@@ -11,6 +11,13 @@ let closeListenerAdded = false;
 let ensurePromise: Promise<void> | null = null;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!dbPromise) {
+    // ensure any previous connection is closed before opening a new one
+    try {
+      await closeDatabase();
+    } catch (e) {
+      console.warn('Failed to close existing database handle:', e);
+    }
+
     dbPromise = (async () => {
       const db = await SQLite.openDatabaseAsync(DB_NAME);
       if (!closeListenerAdded && typeof window !== 'undefined') {
