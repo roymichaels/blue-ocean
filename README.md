@@ -56,32 +56,27 @@ need `expo-file-system`.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in the required values:
+When you launch the app for the first time an onboarding wizard prompts for the
+secrets it needs (JWT, chat and Waku keys, Pinata credentials and admin login).
+These values are stored in the local SQLite database so an `.env` file is no
+longer required for them.
+
+If you ever need to run the onboarding again, delete `sqlite/blue-ocean.db` or
+run:
 
 ```sh
-cp .env.example .env
-# then edit .env and provide your keys
+yarn reset-db
 ```
 
-The file includes several **required** secrets:
+The following environment variables remain optional and can be provided through
+an `.env` file or your shell:
 
-* `EXPO_PUBLIC_JWT_SECRET` for signing JSON Web Tokens
-* `EXPO_PUBLIC_CHAT_SECRET` to derive chat encryption keys
-* `EXPO_PUBLIC_WAKU_SECRET` to encrypt Waku synchronization messages
-
-These must be defined at runtime; the application will throw an error if any of
-them are missing. Set them to random strings and use the same value across all
-clients so messages can be decrypted.
-
-`EXPO_PUBLIC_TENANT` specifies which tenant's branding to load from the
-`tenant_settings` table. Example values are `thecongress` or `thebull`.
-
-`EXPO_PUBLIC_SETTINGS_API_URL` must point to a server that sets CORS headers.
-Leave it empty to disable fetching tenant settings from a remote API.
-
-Logos and other uploaded images are stored on IPFS via Pinata. Set
-`EXPO_PUBLIC_PINATA_JWT` (or API key/secret) in your `.env` file so uploads can
-succeed.
+* `EXPO_PUBLIC_TENANT` – which tenant's branding to load
+* `EXPO_PUBLIC_SETTINGS_API_URL` – endpoint for remote tenant settings
+* `EXPO_PUBLIC_USE_WAKU` – set to `true` to enable Waku features
+* `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging
+* `EXPO_PUBLIC_MATRIX_SERVER` – Matrix server URL (future use)
+* `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` – keys for push notifications
 
 ## SQLite Migrations
 
