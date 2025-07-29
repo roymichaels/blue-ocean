@@ -17,6 +17,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
     } catch (e) {
       console.warn('Failed to close existing database handle:', e);
     }
+
     dbPromise = (async () => {
       const db = await SQLite.openDatabaseAsync(DB_NAME);
       if (!closeListenerAdded && typeof window !== 'undefined') {
