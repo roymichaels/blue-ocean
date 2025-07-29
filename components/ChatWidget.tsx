@@ -29,6 +29,7 @@ import * as Audio from 'expo-audio';
 // MatrixService has been removed
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
+import MediaService from '../services/media';
 import { debugLog } from '../utils/logger';
 import { ChatMessage, ChatRoom, User } from '../types';
 import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
@@ -72,6 +73,7 @@ export default function ChatWidget() {
   const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
   const messageSoundRef = useRef<Audio.AudioPlayer | null>(null);
   const isMounted = useRef(true);
+  const [pinataConfigured, setPinataConfigured] = useState(true);
   // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,
@@ -471,6 +473,19 @@ const loadOrCreateDefaultRoom = async () => {
   const startRecording = async () => {
     if (!(await ensureChatConfigured())) return;
     try {
+      const configured = await MediaService.getInstance().isPinataConfigured();
+      setPinataConfigured(configured);
+      if (!configured) {
+        if (isMounted.current) {
+          setInfoModal({
+            visible: true,
+            title: 'שירות לא זמין',
+            message: 'העלאת מדיה אינה זמינה',
+            type: 'warning',
+          });
+        }
+        return;
+      }
       if (Platform.OS === 'web') {
         if (isMounted.current) {
           setInfoModal({
@@ -1244,6 +1259,7 @@ const loadOrCreateDefaultRoom = async () => {
                             ]}
                             onPress={startRecording}
                             disabled={!chatConfigOk}
+
                           >
                             <Mic size={20} color={colors.gold} />
                           </TouchableOpacity>

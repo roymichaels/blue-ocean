@@ -10,16 +10,24 @@ import { requireConfig } from '../utils/env';
 import { getTenant } from '../constants/tenant';
 
 async function getAdminUsernames(): Promise<string[]> {
-  const raw = await requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
-  return raw
-    .split(',')
-    .map((u) => u.trim())
-    .filter(Boolean);
+  try {
+    const raw = await requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
+    return raw
+      .split(',')
+      .map((u) => u.trim())
+      .filter(Boolean);
+  } catch (err) {
+    console.warn('Admin username not configured; defaulting to "admin"', err);
+    return ['admin'];
+  }
 }
-let jwtSecretPromise: Promise<string> | null = null;
-async function getJwtSecret(): Promise<string> {
+let jwtSecretPromise: Promise<string | null> | null = null;
+async function getJwtSecret(): Promise<string | null> {
   if (!jwtSecretPromise) {
-    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET');
+    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET').catch((err) => {
+      console.error('JWT secret missing', err);
+      return null;
+    });
   }
   return jwtSecretPromise;
 }
@@ -73,10 +81,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const token = await getToken();
         if (token && (await isTokenValid(token))) {
           const JWT_SECRET = await getJwtSecret();
-          const payload: any = JWT.decode(token, JWT_SECRET);
-          setSession(token);
-          if (payload?.sub) {
-            await loadProfile(payload.sub);
+          if (JWT_SECRET) {
+            const payload: any = JWT.decode(token, JWT_SECRET);
+            setSession(token);
+            if (payload?.sub) {
+              await loadProfile(payload.sub);
+            }
+          } else {
+            await removeToken();
           }
         } else {
           await removeToken();
@@ -119,6 +131,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return false;
       }
       const JWT_SECRET = await getJwtSecret();
+      if (!JWT_SECRET) {
+        console.error('JWT secret missing; cannot login');
+        setLoading(false);
+        return false;
+      }
       const token = JWT.encode(
         { sub: row.id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
         JWT_SECRET,
@@ -161,6 +178,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         [id, tenant, id, username, null, displayName, role],
       );
       const JWT_SECRET = await getJwtSecret();
+      if (!JWT_SECRET) {
+        console.error('JWT secret missing; cannot signup');
+        setLoading(false);
+        return false;
+      }
       const token = JWT.encode(
         { sub: id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
         JWT_SECRET,
@@ -198,10 +220,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const token = await getToken();
     if (token && (await isTokenValid(token))) {
       const JWT_SECRET = await getJwtSecret();
-      const payload: any = JWT.decode(token, JWT_SECRET);
-      setSession(token);
-      if (payload?.sub) {
-        await loadProfile(payload.sub);
+      if (JWT_SECRET) {
+        const payload: any = JWT.decode(token, JWT_SECRET);
+        setSession(token);
+        if (payload?.sub) {
+          await loadProfile(payload.sub);
+        }
+      } else {
+        await removeToken();
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
       }
     } else {
       await removeToken();

@@ -1,31 +1,41 @@
-const roomKeys: Record<string, CryptoKey> = {};
+const roomKeys: Record<string, CryptoKey | null> = {};
 
 /**
  * Derive a deterministic key per room using a shared secret.
  */
 import { requireConfig } from './env';
 
-export async function getRoomKey(roomId: string): Promise<CryptoKey> {
-  if (roomKeys[roomId]) return roomKeys[roomId];
+export async function getRoomKey(roomId: string): Promise<CryptoKey | null> {
+  if (roomKeys.hasOwnProperty(roomId)) return roomKeys[roomId];
 
-  const secret = await requireConfig('EXPO_PUBLIC_CHAT_SECRET');
-  const enc = new TextEncoder().encode(roomId + secret);
-  const hash = await crypto.subtle.digest('SHA-256', enc);
+  try {
+    const secret = await requireConfig('EXPO_PUBLIC_CHAT_SECRET');
+    const enc = new TextEncoder().encode(roomId + secret);
+    const hash = await crypto.subtle.digest('SHA-256', enc);
 
-  const key = await crypto.subtle.importKey(
-    'raw',
-    hash,
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt', 'decrypt'],
-  );
+    const key = await crypto.subtle.importKey(
+      'raw',
+      hash,
+      { name: 'AES-GCM' },
+      false,
+      ['encrypt', 'decrypt'],
+    );
 
-  roomKeys[roomId] = key;
-  return key;
+    roomKeys[roomId] = key;
+    return key;
+  } catch (err) {
+    console.warn(
+      'Chat secret missing, messages will not be encrypted:',
+      err,
+    );
+    roomKeys[roomId] = null;
+    return null;
+  }
 }
 
 export async function encryptMessage(msg: string, roomId: string): Promise<string> {
   const key = await getRoomKey(roomId);
+  if (!key) return msg;
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const enc = new TextEncoder().encode(msg);
   const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc);
@@ -39,6 +49,7 @@ export async function decryptMessage(msg: string, roomId: string): Promise<strin
     const [ivStr, dataStr] = msg.split(':');
     if (!ivStr || !dataStr) return msg;
     const key = await getRoomKey(roomId);
+    if (!key) return msg;
     const iv = Uint8Array.from(Buffer.from(ivStr, 'base64'));
     const data = Uint8Array.from(Buffer.from(dataStr, 'base64'));
     const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
