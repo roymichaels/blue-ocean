@@ -46,6 +46,10 @@ if (!global.crypto) {
 }
 
 const { default: BackupService } = require('../services/backup');
+
+const DB_NAME = process.env.EXPO_PUBLIC_TENANT
+  ? `${process.env.EXPO_PUBLIC_TENANT}.db`
+  : 'blue-ocean.db';
 const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
 
 async function getLatestBackupCid() {
@@ -88,7 +92,7 @@ async function main() {
 
   const service = BackupService.getInstance();
   const restoredPath = await service.restoreDatabase(cid, passphrase);
-  const target = path.join(__dirname, '..', 'blue-ocean.db');
+  const target = path.join(__dirname, '..', DB_NAME);
   await fs.copyFile(restoredPath, target);
   console.log('Database restored to', target);
 }

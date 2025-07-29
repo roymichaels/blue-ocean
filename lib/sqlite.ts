@@ -6,7 +6,7 @@ import { parseSql } from './sqlUtils';
 import { ensureConfigTable } from './sqlite/initConfigTable';
 import { ensureSettingsTable } from './sqlite/initSettingsTable';
 
-const DB_NAME = 'app.db';
+const DB_NAME = `${process.env.EXPO_PUBLIC_TENANT || 'app'}.db`;
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 let ensurePromise: Promise<void> | null = null;
