@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const { faker } = require('@faker-js/faker');
 const path = require('path');
 
-const dbPath = process.env.DB_PATH || path.join(__dirname, '../sqlite/blue-ocean.db');
+const dbPath = path.join(__dirname, '../sqlite/blue-ocean.db');
 const db = new sqlite3.Database(dbPath);
 
 function run(sql, params = []) {

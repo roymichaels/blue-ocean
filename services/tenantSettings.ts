@@ -5,15 +5,10 @@ export interface TenantSettingsRow {
   theme_color?: string | null;
 }
 
-import { requireConfig } from '../utils/env';
+import config from '../utils/appConfig';
 
 async function apiBase() {
-  try {
-    const url = await requireConfig('EXPO_PUBLIC_SETTINGS_API_URL');
-    return url || '';
-  } catch {
-    return '';
-  }
+  return config.EXPO_PUBLIC_SETTINGS_API_URL || '';
 }
 
 class TenantSettingsService {

@@ -1,8 +1,8 @@
-import { requireConfig } from '../../utils/env';
+import config from '../../utils/appConfig';
 
 export async function isWakuConfigured(): Promise<boolean> {
-  const enabled = await requireConfig('EXPO_PUBLIC_USE_WAKU').catch(() => 'false');
-  const secret = await requireConfig('EXPO_PUBLIC_WAKU_SECRET').catch(() => '');
+  const enabled = config.EXPO_PUBLIC_USE_WAKU || 'false';
+  const secret = config.EXPO_PUBLIC_WAKU_SECRET || '';
   return enabled === 'true' && !!secret;
 }
 

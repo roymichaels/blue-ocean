@@ -1,11 +1,7 @@
-import { requireConfig } from './env';
+import config from './appConfig';
 
 let DEBUG_LOGS = false;
-requireConfig('EXPO_PUBLIC_DEBUG_LOGS')
-  .then((v) => {
-    DEBUG_LOGS = v === 'true';
-  })
-  .catch(() => {});
+DEBUG_LOGS = config.EXPO_PUBLIC_DEBUG_LOGS === 'true';
 
 export function debugLog(...args: unknown[]): void {
   if (DEBUG_LOGS) {

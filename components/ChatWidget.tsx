@@ -37,7 +37,7 @@ import { useWakuClient } from '../hooks/useWakuClient';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { requireConfig } from '../utils/env';
+import config from '../utils/appConfig';
 import { isChatConfigured } from '../services/chatConfig';
 import InfoModal from './InfoModal';
 import UserProfileModal from './UserProfileModal';
@@ -433,7 +433,7 @@ const loadOrCreateDefaultRoom = async () => {
       const msg: Omit<ChatMessage, 'id' | 'timestamp'> = {
         senderId:
           isAdmin || isDriver
-            ? (await requireConfig('EXPO_PUBLIC_ADMIN_USERNAME')) || 'admin'
+            ? config.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
             : user?.id || 'user_guest',
         senderName:
           isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',
@@ -583,7 +583,7 @@ const loadOrCreateDefaultRoom = async () => {
           id: Date.now().toString(),
           senderId:
             isAdmin || isDriver
-              ? (await requireConfig('EXPO_PUBLIC_ADMIN_USERNAME')) || 'admin'
+              ? config.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
               : user?.id || 'user_guest',
           senderName:
             isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',

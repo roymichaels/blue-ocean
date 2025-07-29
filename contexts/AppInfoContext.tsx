@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import TenantSettingsService from '../services/tenantSettings';
 import MediaService from '../services/media';
-import { requireConfig } from '../utils/env';
+import config from '../utils/appConfig';
 
 interface AppInfoContextType {
   platformName: string;
@@ -46,15 +46,9 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   const reloadTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const t = await requireConfig('EXPO_PUBLIC_TENANT');
-        setTenant(t || 'default');
-      } catch {
-        setTenant('default');
-      }
-      loadInfo();
-    })();
+    const t = config.EXPO_PUBLIC_TENANT;
+    setTenant(t || 'default');
+    loadInfo();
   }, []);
 
   const loadInfo = async () => {

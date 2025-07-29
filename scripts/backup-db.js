@@ -14,7 +14,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const os = require('os');
 const axios = require('axios');
-const { getConfig } = require('../utils/config');
+const config = require('../utils/appConfig').default;
 
 // Polyfill a minimal subset of expo-file-system for BackupService
 const FileSystem = {
@@ -49,9 +49,7 @@ if (!global.crypto) {
 
 const { default: BackupService } = require('../services/backup');
 
-const DB_NAME = process.env.EXPO_PUBLIC_TENANT
-  ? `${process.env.EXPO_PUBLIC_TENANT}.db`
-  : 'blue-ocean.db';
+const DB_NAME = (config.EXPO_PUBLIC_TENANT || 'app') + '.db';
 const DB_SOURCE = path.join(__dirname, '..', DB_NAME);
 
 async function main() {

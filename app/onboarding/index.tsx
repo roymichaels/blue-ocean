@@ -16,7 +16,7 @@ import bcrypt from 'bcryptjs';
 import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { useTheme } from '../../contexts/ThemeContext';
-import { saveConfigValue } from '../../utils/config';
+import { setConfig } from '../../utils/appConfig';
 import { executeSql } from '../../lib/sqlite';
 import InfoModal from '../../components/InfoModal';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -56,19 +56,17 @@ export default function OnboardingScreen() {
     }
     setLoading(true);
     try {
-      await saveConfigValue('EXPO_PUBLIC_TENANT', tenant);
-      await saveConfigValue('EXPO_PUBLIC_ADMIN_USERNAME', adminUser);
-      await saveConfigValue('APP_NAME', appName);
-      await saveConfigValue('PRIMARY_COLOR', primaryColor);
-      if (logo) await saveConfigValue('APP_LOGO', logo);
-      if (pinataJwt) await saveConfigValue('EXPO_PUBLIC_PINATA_JWT', pinataJwt);
-      if (pinataApiKey)
-        await saveConfigValue('EXPO_PUBLIC_PINATA_API_KEY', pinataApiKey);
-      if (pinataSecret)
-        await saveConfigValue('EXPO_PUBLIC_PINATA_SECRET_API_KEY', pinataSecret);
-      if (moonpayKey) await saveConfigValue('MOONPAY_KEY', moonpayKey);
-      if (chatSecret) await saveConfigValue('EXPO_PUBLIC_CHAT_SECRET', chatSecret);
-      if (wakuSecret) await saveConfigValue('EXPO_PUBLIC_WAKU_SECRET', wakuSecret);
+      setConfig('EXPO_PUBLIC_TENANT', tenant);
+      setConfig('EXPO_PUBLIC_ADMIN_USERNAME', adminUser);
+      setConfig('APP_NAME', appName);
+      setConfig('PRIMARY_COLOR', primaryColor);
+      if (logo) setConfig('APP_LOGO', logo);
+      if (pinataJwt) setConfig('EXPO_PUBLIC_PINATA_JWT', pinataJwt);
+      if (pinataApiKey) setConfig('EXPO_PUBLIC_PINATA_API_KEY', pinataApiKey);
+      if (pinataSecret) setConfig('EXPO_PUBLIC_PINATA_SECRET_API_KEY', pinataSecret);
+      if (moonpayKey) setConfig('MOONPAY_KEY', moonpayKey);
+      if (chatSecret) setConfig('EXPO_PUBLIC_CHAT_SECRET', chatSecret);
+      if (wakuSecret) setConfig('EXPO_PUBLIC_WAKU_SECRET', wakuSecret);
 
       const hash = await bcrypt.hash(adminPass, 10);
       const id = `admin_${Date.now()}`;
@@ -84,7 +82,7 @@ export default function OnboardingScreen() {
         [id, tenant, id, adminUser, null, 'Admin', 'admin'],
       );
 
-      await saveConfigValue('ONBOARD_COMPLETE', 'true');
+      setConfig('ONBOARD_COMPLETE', 'true');
       await refreshOnboardingStatus();
       setInfo({
         visible: true,

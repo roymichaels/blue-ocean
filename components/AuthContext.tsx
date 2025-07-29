@@ -6,28 +6,24 @@ import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
-import { requireConfig } from '../utils/env';
+import config from '../utils/appConfig';
 import { getTenant } from '../constants/tenant';
 
 async function getAdminUsernames(): Promise<string[]> {
-  try {
-    const raw = await requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
-    return raw
-      .split(',')
-      .map((u) => u.trim())
-      .filter(Boolean);
-  } catch (err) {
-    console.warn('Admin username not configured; defaulting to "admin"', err);
+  const raw = config.EXPO_PUBLIC_ADMIN_USERNAME || '';
+  if (!raw) {
+    console.warn('Admin username not configured; defaulting to "admin"');
     return ['admin'];
   }
+  return raw
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean);
 }
 let jwtSecretPromise: Promise<string | null> | null = null;
 async function getJwtSecret(): Promise<string | null> {
   if (!jwtSecretPromise) {
-    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET').catch((err) => {
-      console.error('JWT secret missing', err);
-      return null;
-    });
+    jwtSecretPromise = Promise.resolve(config.EXPO_PUBLIC_JWT_SECRET || null);
   }
   return jwtSecretPromise;
 }
