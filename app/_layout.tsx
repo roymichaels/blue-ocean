@@ -18,7 +18,7 @@ import { AppInfoProvider } from '../contexts/AppInfoContext';
 import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
-import { ensureDatabase } from '../lib/sqlite';
+import { ensureDatabase, executeSql } from '../lib/sqlite';
 import { ensureSettingsTable } from '../lib/sqlite/initSettingsTable';
 import { checkOnboarding } from '../utils/config';
 import OnboardingScreen from './onboarding';
@@ -98,7 +98,7 @@ export default function RootLayout() {
   useEffect(() => {
     (async () => {
       await ensureDatabase();
-      await ensureSettingsTable();
+      await ensureSettingsTable(executeSql);
       const done = await checkOnboarding();
       setOnboarded(done);
       setDbReady(true);
