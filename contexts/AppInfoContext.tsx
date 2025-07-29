@@ -12,8 +12,6 @@ import TenantSettingsService from '../services/tenantSettings';
 import MediaService from '../services/media';
 import { requireConfig } from '../utils/env';
 
-const TENANT_PROMISE = requireConfig('EXPO_PUBLIC_TENANT');
-
 interface AppInfoContextType {
   platformName: string;
   platformLogo: string;
@@ -50,7 +48,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   useEffect(() => {
     (async () => {
       try {
-        const t = await TENANT_PROMISE;
+        const t = await requireConfig('EXPO_PUBLIC_TENANT');
         setTenant(t || 'default');
       } catch {
         setTenant('default');

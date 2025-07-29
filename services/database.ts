@@ -2,7 +2,7 @@ import { executeSql } from '../lib/sqlite';
 import { sendWakuSettingsUpdate } from '../lib/waku/sendWakuSettingsUpdate';
 import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
 import { sendWakuProductUpdate } from '../lib/waku/sendWakuProductUpdate';
-import { getTenant } from '../constants/tenant';
+import { getTenant, TENANT } from '../constants/tenant';
 import { requireConfig } from '../utils/env';
 import {
   Product,
@@ -24,7 +24,18 @@ import {
 
 class DatabaseService {
   private static instance: DatabaseService;
-  private static readonly adminIdPromise = requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
+  private static adminIdPromise: Promise<string> | null = null;
+
+  private static get adminId(): Promise<string> {
+    if (!this.adminIdPromise) {
+      this.adminIdPromise = requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
+    }
+    return this.adminIdPromise;
+  }
+
+  static get tenantId(): string {
+    return TENANT;
+  }
 
   private constructor() {}
 
@@ -324,7 +335,7 @@ class DatabaseService {
   }
 
   async getOrCreateChatRoom(userId: string, userName: string): Promise<string> {
-    const adminId = await DatabaseService.adminIdPromise;
+    const adminId = await DatabaseService.adminId;
     const id = 'room_' + [userId, adminId || 'admin'].sort().join('_');
 
     // Check for existing room with the new deterministic id
