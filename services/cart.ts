@@ -4,10 +4,13 @@ import DatabaseService from './database';
 import JWT from 'expo-jwt';
 import { requireConfig } from '../utils/env';
 
-let jwtSecretPromise: Promise<string> | null = null;
-async function getJwtSecret(): Promise<string> {
+let jwtSecretPromise: Promise<string | null> | null = null;
+async function getJwtSecret(): Promise<string | null> {
   if (!jwtSecretPromise) {
-    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET');
+    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET').catch((err) => {
+      console.error('JWT secret missing', err);
+      return null;
+    });
   }
   return jwtSecretPromise;
 }
@@ -27,10 +30,12 @@ class CartService {
 
   private async getCurrentUserId(): Promise<string | null> {
     const token = await getToken();
-    if (token && isTokenValid(token)) {
+    if (token && (await isTokenValid(token))) {
       const JWT_SECRET = await getJwtSecret();
-      const payload: any = JWT.decode(token, JWT_SECRET);
-      return payload?.sub || null;
+      if (JWT_SECRET) {
+        const payload: any = JWT.decode(token, JWT_SECRET);
+        return payload?.sub || null;
+      }
     }
     return null;
   }
