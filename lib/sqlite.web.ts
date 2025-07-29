@@ -2,6 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import { Asset } from 'expo-asset';
 import { parseSql } from './sqlUtils';
 import { ensureConfigTable } from './sqlite/initConfigTable';
+import { ensureSettingsTable } from './sqlite/initSettingsTable';
 
 const DB_NAME = 'app.db';
 
@@ -77,7 +78,8 @@ export function ensureDatabase(): Promise<void> {
       if (!(await tableExists(db, 'users'))) {
         await applySchema(db);
       }
-      await ensureConfigTable();
+      await ensureConfigTable(executeSql);
+      await ensureSettingsTable(executeSql);
     } finally {
       ensurePromise = null;
     }
