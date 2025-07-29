@@ -14,6 +14,7 @@ export const ensureSettingsTable = async () => {
 
   await executeSql(`
     CREATE TABLE IF NOT EXISTS waku_seen (
+      -- SHA-256 hash of the decrypted message
       id TEXT NOT NULL,
       topic TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
