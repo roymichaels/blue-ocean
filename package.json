@@ -8,13 +8,9 @@
     "predev": "node scripts/init-db.js",
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
-    "update:appjson": "node scripts/update-app-json.js",
     "seed": "node scripts/seed.js",
     "reset-db": "node scripts/reset-db.js",
-    "build:web": "env-cmd -f .env npx expo export --platform web --output-dir dist",
-    "build:web:thecongress": "env-cmd -f .env.thecongress yarn  && expo export --platform web --output-dir dist/thecongress",
-    "build:web:thebull": "env-cmd -f .env.thebull    yarn  && expo export --platform web --output-dir dist/thebull",
-    "build:web:all": "yarn build:web:thecongress && yarn build:web:thebull",
+    "build:web": "expo export --platform web --output-dir dist",
     "test": "jest"
   },
   "dependencies": {
@@ -93,7 +89,6 @@
     "babel-plugin-transform-import-meta": "^2.3.3",
     "better-sqlite3": "^12.2.0",
     "crypto-browserify": "^3.12.1",
-    "env-cmd": "^10.1.0",
     "eslint": "^8.55.0",
     "eslint-config-expo": "~9.2.0",
     "eslint-plugin-react-hooks": "^4.6.0",
