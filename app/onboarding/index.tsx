@@ -43,11 +43,11 @@ export default function OnboardingScreen() {
   });
 
   const handleSubmit = async () => {
-    if (!adminUser || !adminPass) {
+    if (!appName || !adminUser || !adminPass) {
       setInfo({
         visible: true,
         title: 'Error',
-        message: 'Admin credentials are required',
+        message: 'App name, admin username and password are required',
         type: 'error',
       });
       return;
@@ -112,11 +112,11 @@ export default function OnboardingScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.title, { color: colors.text.primary }]}>Initial Setup</Text>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>App Name</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>App Name *</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={appName} onChangeText={setAppName} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Tenant ID</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Tenant ID (optional)</Text>
             <TextInput
               style={[
                 styles.input,
@@ -132,7 +132,7 @@ export default function OnboardingScreen() {
             />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Primary Color</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Primary Color (optional)</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={primaryColor} onChangeText={setPrimaryColor} placeholder="#B99C5A" />
           </View>
           <View style={styles.formGroup}>
@@ -140,35 +140,35 @@ export default function OnboardingScreen() {
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={logo} onChangeText={setLogo} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Pinata JWT</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Pinata JWT (optional)</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={pinataJwt} onChangeText={setPinataJwt} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Pinata API Key</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Pinata API Key (optional)</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={pinataApiKey} onChangeText={setPinataApiKey} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Pinata Secret Key</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Pinata Secret Key (optional)</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={pinataSecret} onChangeText={setPinataSecret} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>MoonPay Key</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>MoonPay Key (optional)</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={moonpayKey} onChangeText={setMoonpayKey} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Chat Secret</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Chat Secret (optional)</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={chatSecret} onChangeText={setChatSecret} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Waku Secret</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Waku Secret (optional)</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={wakuSecret} onChangeText={setWakuSecret} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Admin Username</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Admin Username *</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={adminUser} onChangeText={setAdminUser} autoCapitalize="none" />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Admin Password</Text>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Admin Password *</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={adminPass} onChangeText={setAdminPass} secureTextEntry autoCapitalize="none" />
           </View>
           <TouchableOpacity
