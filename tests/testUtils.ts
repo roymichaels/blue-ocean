@@ -1,15 +1,12 @@
-import { executeSql } from '../lib/sqlite';
+import { store } from '../lib/memoryStore';
 
 export async function insertConfig(values: Record<string, string>): Promise<void> {
   for (const [key, value] of Object.entries(values)) {
-    await executeSql('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)', [
-      key,
-      value,
-    ]);
+    store.config.set(key, value);
   }
 }
 
 export async function resetConfig(values: Record<string, string> = {}): Promise<void> {
-  await executeSql('DELETE FROM config');
+  store.config.clear();
   await insertConfig(values);
 }

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Buffer } from 'buffer';
-import { executeSql } from '../sqlite';
+import { store } from '../memoryStore';
 import { decryptWakuPayload } from './wakuCrypto';
 import { requireConfig } from '../../utils/env';
 
@@ -31,13 +31,9 @@ export const useWakuSettingsSync = () => {
         );
         const id = Buffer.from(new Uint8Array(hashBuffer)).toString('hex');
 
-        const seen = await executeSql(
-          'SELECT 1 FROM waku_seen WHERE id=? AND topic=? LIMIT 1',
-          [id, topic],
-        );
-        if ((seen.rows as any)._array.length > 0) return;
-
-        await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
+        const key = `${topic}:${id}`;
+        if (store.config.has(key)) return;
+        store.config.set(key, 'seen');
         try {
           const parsed = JSON.parse(plaintext);
           if (!parsed.signature || !parsed.sender?.publicKey) {
@@ -65,17 +61,9 @@ export const useWakuSettingsSync = () => {
 
             return;
           }
-          const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
-          if ((exists.rows as any)._array.length === 0) return;
+          if (!store.users.has(parsed.sender.id)) return;
           if (parsed.type === 'settings.update') {
-            await executeSql(
-              `INSERT INTO settings (key,value,created_at,updated_at)
-               VALUES (?,?,?,?)
-               ON CONFLICT(key) DO UPDATE SET
-                 value=excluded.value,
-                 updated_at=excluded.updated_at`,
-              [parsed.key, parsed.value, parsed.createdAt, parsed.updatedAt]
-            );
+            store.config.set(parsed.key, parsed.value);
 
           }
         } catch (e) {

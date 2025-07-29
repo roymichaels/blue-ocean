@@ -18,8 +18,6 @@ import { AppInfoProvider } from '../contexts/AppInfoContext';
 import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
-import { ensureDatabase, executeSql, closeDatabase } from '../lib/sqlite';
-import { ensureSettingsTable } from '../lib/sqlite/initSettingsTable';
 import { loadTenantSettings } from '../constants/tenant';
 import OnboardingScreen from './onboarding';
 import { OnboardingProvider, useOnboarding } from '../contexts/OnboardingContext';
@@ -97,16 +95,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     (async () => {
-      await ensureDatabase();
-      await ensureSettingsTable(executeSql);
       await loadTenantSettings();
       setDbReady(true);
     })();
-    return () => {
-      closeDatabase().catch((e) =>
-        console.warn('Failed to close database on unmount:', e)
-      );
-    };
   }, []);
 
   if (!dbReady) {
