@@ -12,4 +12,5 @@ module.exports = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '\\.(png|jpg|jpeg|gif|svg)$': '<rootDir>/tests/__mocks__/fileMock.js',
   },
+  setupFiles: ['<rootDir>/tests/setupEnv.ts'],
 };
