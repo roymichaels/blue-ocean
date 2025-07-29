@@ -16,7 +16,13 @@ async function getAdminUsernames(): Promise<string[]> {
     .map((u) => u.trim())
     .filter(Boolean);
 }
-const JWT_SECRET_PROMISE = requireConfig('EXPO_PUBLIC_JWT_SECRET');
+let jwtSecretPromise: Promise<string> | null = null;
+async function getJwtSecret(): Promise<string> {
+  if (!jwtSecretPromise) {
+    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET');
+  }
+  return jwtSecretPromise;
+}
 const PRIVATE_KEY_KEY = 'ed25519_private_key';
 
 export class UsernameTakenError extends Error {
@@ -66,7 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const token = await getToken();
         if (token && (await isTokenValid(token))) {
-          const JWT_SECRET = await JWT_SECRET_PROMISE;
+          const JWT_SECRET = await getJwtSecret();
           const payload: any = JWT.decode(token, JWT_SECRET);
           setSession(token);
           if (payload?.sub) {
@@ -112,7 +118,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setLoading(false);
         return false;
       }
-      const JWT_SECRET = await JWT_SECRET_PROMISE;
+      const JWT_SECRET = await getJwtSecret();
       const token = JWT.encode(
         { sub: row.id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
         JWT_SECRET,
@@ -154,7 +160,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
         [id, tenant, id, username, null, displayName, role],
       );
-      const JWT_SECRET = await JWT_SECRET_PROMISE;
+      const JWT_SECRET = await getJwtSecret();
       const token = JWT.encode(
         { sub: id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
         JWT_SECRET,
@@ -191,7 +197,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setLoading(true);
     const token = await getToken();
     if (token && (await isTokenValid(token))) {
-      const JWT_SECRET = await JWT_SECRET_PROMISE;
+      const JWT_SECRET = await getJwtSecret();
       const payload: any = JWT.decode(token, JWT_SECRET);
       setSession(token);
       if (payload?.sub) {

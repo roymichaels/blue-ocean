@@ -20,6 +20,7 @@ import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
 import { ensureDatabase, executeSql } from '../lib/sqlite';
 import { ensureSettingsTable } from '../lib/sqlite/initSettingsTable';
+import { loadTenantSettings } from '../constants/tenant';
 import { checkOnboarding } from '../utils/config';
 import OnboardingScreen from './onboarding';
 import { useWakuSettingsSync } from '../lib/waku/useWakuSettingsSync';
@@ -99,6 +100,7 @@ export default function RootLayout() {
     (async () => {
       await ensureDatabase();
       await ensureSettingsTable(executeSql);
+      await loadTenantSettings();
       const done = await checkOnboarding();
       setOnboarded(done);
       setDbReady(true);

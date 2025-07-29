@@ -1,11 +1,17 @@
 import JWT from 'expo-jwt';
 import { requireConfig } from './env';
 
-const JWT_SECRET_PROMISE = requireConfig('EXPO_PUBLIC_JWT_SECRET');
+let jwtSecretPromise: Promise<string> | null = null;
+async function getJwtSecret(): Promise<string> {
+  if (!jwtSecretPromise) {
+    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET');
+  }
+  return jwtSecretPromise;
+}
 
 export async function isTokenValid(token: string): Promise<boolean> {
   try {
-    const JWT_SECRET = await JWT_SECRET_PROMISE;
+    const JWT_SECRET = await getJwtSecret();
     JWT.decode(token, JWT_SECRET);
     return true;
   } catch {
@@ -15,7 +21,7 @@ export async function isTokenValid(token: string): Promise<boolean> {
 
 export async function refreshToken(token: string, expiresIn: string | number = '7d'): Promise<string | null> {
   try {
-    const JWT_SECRET = await JWT_SECRET_PROMISE;
+    const JWT_SECRET = await getJwtSecret();
     const payload = JWT.decode(token, JWT_SECRET) as any;
     const { iat, exp, ...rest } = payload as any;
     const seconds = typeof expiresIn === 'number' ? expiresIn : parseExpires(expiresIn);
