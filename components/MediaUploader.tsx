@@ -42,9 +42,14 @@ export default function MediaUploader({
   const [uploading, setUploading] = useState(false);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [thumbnailMap, setThumbnailMap] = useState<Record<string, string>>({});
+  const [pinataConfigured, setPinataConfigured] = useState(true);
   const { colors } = useTheme();
 
   useEffect(() => {
+    MediaService.getInstance()
+      .isPinataConfigured()
+      .then(setPinataConfigured);
+
     const loadThumbnails = async () => {
       const svc = MediaService.getInstance();
       for (const item of media) {
@@ -137,6 +142,13 @@ export default function MediaUploader({
   };
 
   const pickMedia = async () => {
+    const configured = await MediaService.getInstance().isPinataConfigured();
+    setPinataConfigured(configured);
+    if (!configured) {
+      Alert.alert('Unavailable', 'Media uploads are not configured.');
+      return;
+    }
+
     const hasPermission = await requestPermissions();
     if (!hasPermission) return;
 
@@ -165,6 +177,13 @@ export default function MediaUploader({
   };
 
   const takePhoto = async () => {
+    const configured = await MediaService.getInstance().isPinataConfigured();
+    setPinataConfigured(configured);
+    if (!configured) {
+      Alert.alert('Unavailable', 'Media uploads are not configured.');
+      return;
+    }
+
     const hasPermission = await requestPermissions();
     if (!hasPermission) return;
 
@@ -264,7 +283,7 @@ export default function MediaUploader({
                 borderColor: colors.gold 
               }]}
               onPress={pickMedia}
-              disabled={uploading}
+              disabled={uploading || !pinataConfigured}
             >
               {uploading ? (
                 <ActivityIndicator size="small" color={colors.gold} />
@@ -285,7 +304,7 @@ export default function MediaUploader({
                   borderColor: colors.gold 
                 }]}
                 onPress={takePhoto}
-                disabled={uploading}
+                disabled={uploading || !pinataConfigured}
               >
                 <Camera size={20} color={colors.gold} />
                 <Text style={[styles.uploadButtonText, { color: colors.gold }]}>Camera</Text>
