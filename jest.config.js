@@ -6,7 +6,7 @@ module.exports = {
     '^.+\\.tsx?$': ['ts-jest', { useESM: true }],
     '^.+\\.js$': 'babel-jest',
   },
-  transformIgnorePatterns: ['/node_modules/(?!@noble/ed25519)'],
+  transformIgnorePatterns: ['/node_modules/(?!(@noble/ed25519|expo-sqlite)/)'],
 
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
