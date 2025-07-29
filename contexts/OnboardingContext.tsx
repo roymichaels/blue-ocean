@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { checkOnboarding } from '../utils/config';
+import config from '../utils/appConfig';
 
 interface OnboardingContextType {
   onboarded: boolean | null;
@@ -21,7 +21,7 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
 
   const refreshOnboardingStatus = async () => {
-    const done = await checkOnboarding();
+    const done = config.ONBOARD_COMPLETE === 'true';
     setOnboarded(done);
   };
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
 import { decryptWakuPayload } from './wakuCrypto';
-import { requireConfig } from '../../utils/env';
+import config from '../../utils/appConfig';
 
 
 export const useWakuProductSync = () => {
@@ -10,7 +10,7 @@ export const useWakuProductSync = () => {
     let decoder: any;
 
     const run = async () => {
-      const enabled = await requireConfig('EXPO_PUBLIC_USE_WAKU').catch(() => 'false');
+      const enabled = config.EXPO_PUBLIC_USE_WAKU || 'false';
       if (enabled !== 'true') return;
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
       const { verify, etc: edBytes } = await import('@noble/ed25519');

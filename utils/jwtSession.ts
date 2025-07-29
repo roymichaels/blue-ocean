@@ -1,13 +1,10 @@
 import JWT from 'expo-jwt';
-import { requireConfig } from './env';
+import config from './appConfig';
 
 let jwtSecretPromise: Promise<string | null> | null = null;
 async function getJwtSecret(): Promise<string | null> {
   if (!jwtSecretPromise) {
-    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET').catch((err) => {
-      console.error('JWT secret missing', err);
-      return null;
-    });
+    jwtSecretPromise = Promise.resolve(config.EXPO_PUBLIC_JWT_SECRET || null);
   }
   return jwtSecretPromise;
 }

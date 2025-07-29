@@ -13,7 +13,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const os = require('os');
 const axios = require('axios');
-const { getConfig } = require('../utils/config');
+const config = require('../utils/appConfig').default;
 
 const FileSystem = {
   documentDirectory: path.join(__dirname, '..') + path.sep,
@@ -47,16 +47,14 @@ if (!global.crypto) {
 
 const { default: BackupService } = require('../services/backup');
 
-const DB_NAME = process.env.EXPO_PUBLIC_TENANT
-  ? `${process.env.EXPO_PUBLIC_TENANT}.db`
-  : 'blue-ocean.db';
+const DB_NAME = (config.EXPO_PUBLIC_TENANT || 'app') + '.db';
 const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
 
 async function getLatestBackupCid() {
   const headers = {};
-  const jwt = await getConfig('EXPO_PUBLIC_PINATA_JWT');
-  const apiKey = await getConfig('EXPO_PUBLIC_PINATA_API_KEY');
-  const secret = await getConfig('EXPO_PUBLIC_PINATA_SECRET_API_KEY');
+  const jwt = config.EXPO_PUBLIC_PINATA_JWT || '';
+  const apiKey = config.EXPO_PUBLIC_PINATA_API_KEY || '';
+  const secret = config.EXPO_PUBLIC_PINATA_SECRET_API_KEY || '';
   if (jwt) {
     headers.Authorization = `Bearer ${jwt}`;
   } else {

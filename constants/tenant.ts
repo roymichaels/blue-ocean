@@ -1,4 +1,4 @@
-import { getConfig } from '../utils/config';
+import config from '../utils/appConfig';
 
 export let TENANT = 'thecongress';
 
@@ -15,23 +15,22 @@ export let AppConfig: TenantSettings = {
 };
 
 export async function loadTenantSettings(): Promise<void> {
-  const tenant = (await getConfig('EXPO_PUBLIC_TENANT'))?.trim() || 'thecongress';
+  const tenant = config.EXPO_PUBLIC_TENANT?.trim() || 'thecongress';
   TENANT = tenant;
 
-  const name = (await getConfig('APP_NAME')) || 'Blue Ocean';
-  const primaryColor = (await getConfig('PRIMARY_COLOR')) || '#B99C5A';
-  const logo = (await getConfig('APP_LOGO')) || require('../assets/images/icon.png');
+  const name = config.APP_NAME || 'Blue Ocean';
+  const primaryColor = config.PRIMARY_COLOR || '#B99C5A';
+  const logo = config.APP_LOGO || require('../assets/images/icon.png');
   AppConfig = { name, primaryColor, logo };
 }
 
 export async function getTenant(): Promise<string> {
-  const v = await getConfig('EXPO_PUBLIC_TENANT');
-  return v?.trim() || 'thecongress';
+  return config.EXPO_PUBLIC_TENANT?.trim() || 'thecongress';
 }
 
 export async function getAppConfig(): Promise<TenantSettings> {
-  const name = (await getConfig('APP_NAME')) || 'Blue Ocean';
-  const primaryColor = (await getConfig('PRIMARY_COLOR')) || '#B99C5A';
-  const logo = (await getConfig('APP_LOGO')) || require('../assets/images/icon.png');
+  const name = config.APP_NAME || 'Blue Ocean';
+  const primaryColor = config.PRIMARY_COLOR || '#B99C5A';
+  const logo = config.APP_LOGO || require('../assets/images/icon.png');
   return { name, primaryColor, logo };
 }

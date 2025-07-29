@@ -4,7 +4,7 @@ import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
 import { sendWakuProductUpdate } from '../lib/waku/sendWakuProductUpdate';
 import { isWakuConfigured } from '../lib/waku/isWakuConfigured';
 import { getTenant, TENANT } from '../constants/tenant';
-import { requireConfig } from '../utils/env';
+import config from '../utils/appConfig';
 import {
   Product,
   Category,
@@ -29,7 +29,9 @@ class DatabaseService {
 
   private static get adminId(): Promise<string> {
     if (!this.adminIdPromise) {
-      this.adminIdPromise = requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
+      this.adminIdPromise = Promise.resolve(
+        config.EXPO_PUBLIC_ADMIN_USERNAME || 'admin',
+      );
     }
     return this.adminIdPromise;
   }

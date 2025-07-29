@@ -2,15 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
 import JWT from 'expo-jwt';
-import { requireConfig } from '../utils/env';
+import config from '../utils/appConfig';
 
 let jwtSecretPromise: Promise<string | null> | null = null;
 async function getJwtSecret(): Promise<string | null> {
   if (!jwtSecretPromise) {
-    jwtSecretPromise = requireConfig('EXPO_PUBLIC_JWT_SECRET').catch((err) => {
-      console.error('JWT secret missing', err);
-      return null;
-    });
+    jwtSecretPromise = Promise.resolve(config.EXPO_PUBLIC_JWT_SECRET || null);
   }
   return jwtSecretPromise;
 }

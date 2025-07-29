@@ -12,14 +12,10 @@ import {
 import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
 import DatabaseService from '../services/database';
 import { ChatMessage } from '../types';
-import { requireConfig } from '../utils/env';
+import config from '../utils/appConfig';
 
 async function useWaku(): Promise<boolean> {
-  try {
-    return (await requireConfig('EXPO_PUBLIC_USE_WAKU')) === 'true';
-  } catch {
-    return false;
-  }
+  return config.EXPO_PUBLIC_USE_WAKU === 'true';
 }
 const BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
