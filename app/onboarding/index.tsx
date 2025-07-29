@@ -19,10 +19,10 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { saveConfigValue } from '../../utils/config';
 import { executeSql } from '../../lib/sqlite';
 import InfoModal from '../../components/InfoModal';
-import { TENANT } from '../../constants/tenant';
 
 export default function OnboardingScreen() {
   const { colors } = useTheme();
+  const [tenant, setTenant] = useState('thecongress');
   const [appName, setAppName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('');
   const [logo, setLogo] = useState('');
@@ -54,6 +54,7 @@ export default function OnboardingScreen() {
     }
     setLoading(true);
     try {
+      await saveConfigValue('EXPO_PUBLIC_TENANT', tenant);
       await saveConfigValue('APP_NAME', appName);
       await saveConfigValue('PRIMARY_COLOR', primaryColor);
       if (logo) await saveConfigValue('APP_LOGO', logo);
@@ -75,7 +76,7 @@ export default function OnboardingScreen() {
       );
       await executeSql(
         'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
-        [id, TENANT, id, adminUser, null, 'Admin', 'admin'],
+        [id, tenant, id, adminUser, null, 'Admin', 'admin'],
       );
 
       await saveConfigValue('ONBOARD_COMPLETE', 'true');
@@ -113,6 +114,22 @@ export default function OnboardingScreen() {
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: colors.text.primary }]}>App Name</Text>
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={appName} onChangeText={setAppName} />
+          </View>
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.text.primary }]}>Tenant ID</Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border.primary,
+                  color: colors.text.primary,
+                  backgroundColor: colors.surface.primary,
+                },
+              ]}
+              value={tenant}
+              onChangeText={setTenant}
+              autoCapitalize="none"
+            />
           </View>
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: colors.text.primary }]}>Primary Color</Text>
