@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
 import { decryptWakuPayload } from './wakuCrypto';
-import { TENANT } from '../../constants/tenant';
+import { getTenant } from '../../constants/tenant';
 
 export const useWakuUserSync = () => {
   useEffect(() => {
@@ -48,6 +48,7 @@ export const useWakuUserSync = () => {
           if ((exists.rows as any)._array.length === 0) return;
           if (parsed.type === 'user.update' && parsed.user) {
             const u = parsed.user;
+            const tenant = await getTenant();
             await executeSql(
               `INSERT OR REPLACE INTO user_profiles (
                 id, tenant_id, matrix_user_id, app_username, email, display_name,
@@ -56,7 +57,7 @@ export const useWakuUserSync = () => {
               ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
               [
                 u.id,
-                u.tenant_id ?? TENANT,
+                u.tenant_id ?? tenant,
                 u.id,
                 u.username,
                 u.email ?? null,
