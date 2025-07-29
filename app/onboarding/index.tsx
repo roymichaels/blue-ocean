@@ -58,12 +58,14 @@ export default function OnboardingScreen() {
       await saveConfigValue('APP_NAME', appName);
       await saveConfigValue('PRIMARY_COLOR', primaryColor);
       if (logo) await saveConfigValue('APP_LOGO', logo);
-      if (pinataJwt) await saveConfigValue('PINATA_JWT', pinataJwt);
-      if (pinataApiKey) await saveConfigValue('PINATA_API_KEY', pinataApiKey);
-      if (pinataSecret) await saveConfigValue('PINATA_SECRET_API_KEY', pinataSecret);
+      if (pinataJwt) await saveConfigValue('EXPO_PUBLIC_PINATA_JWT', pinataJwt);
+      if (pinataApiKey)
+        await saveConfigValue('EXPO_PUBLIC_PINATA_API_KEY', pinataApiKey);
+      if (pinataSecret)
+        await saveConfigValue('EXPO_PUBLIC_PINATA_SECRET_API_KEY', pinataSecret);
       if (moonpayKey) await saveConfigValue('MOONPAY_KEY', moonpayKey);
-      if (chatSecret) await saveConfigValue('CHAT_SECRET', chatSecret);
-      if (wakuSecret) await saveConfigValue('WAKU_SECRET', wakuSecret);
+      if (chatSecret) await saveConfigValue('EXPO_PUBLIC_CHAT_SECRET', chatSecret);
+      if (wakuSecret) await saveConfigValue('EXPO_PUBLIC_WAKU_SECRET', wakuSecret);
 
       const hash = await bcrypt.hash(adminPass, 10);
       const id = `admin_${Date.now()}`;
