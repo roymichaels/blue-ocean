@@ -25,8 +25,12 @@ class TenantSettingsService {
     tenant: string,
     key: 'platform_name' | 'platform_logo' | 'theme_color'
   ): Promise<string | null> {
+    const base = apiBase();
+    if (!base) {
+      return null;
+    }
     try {
-      const res = await fetch(`${apiBase()}/tenant_settings/${tenant}`);
+      const res = await fetch(`${base}/tenant_settings/${tenant}`);
 
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
@@ -44,8 +48,12 @@ class TenantSettingsService {
     key: 'platform_name' | 'platform_logo' | 'theme_color',
     value: string
   ): Promise<void> {
+    const base = apiBase();
+    if (!base) {
+      return;
+    }
     try {
-      const res = await fetch(`${apiBase()}/tenant_settings/${tenant}`, {
+      const res = await fetch(`${base}/tenant_settings/${tenant}`, {
 
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },

@@ -1,4 +1,5 @@
 import { encryptWakuPayload } from './wakuCrypto';
+import { sha256 } from '@noble/hashes/sha256';
 
 
 export interface WakuSender {

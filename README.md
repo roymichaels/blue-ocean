@@ -72,6 +72,9 @@ messages sent over Waku.
 `EXPO_PUBLIC_TENANT` specifies which tenant's branding to load from the
 `tenant_settings` table. Example values are `thecongress` or `thebull`.
 
+`EXPO_PUBLIC_SETTINGS_API_URL` must point to a server that sets CORS headers.
+Leave it empty to disable fetching tenant settings from a remote API.
+
 Logos and other uploaded images are stored on IPFS via Pinata. Set
 `EXPO_PUBLIC_PINATA_JWT` (or API key/secret) in your `.env` file so uploads can
 succeed.
