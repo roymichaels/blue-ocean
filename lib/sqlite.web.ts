@@ -3,10 +3,20 @@ import { Asset } from 'expo-asset';
 import { parseSql } from './sqlUtils';
 import { ensureConfigTable } from './sqlite/initConfigTable';
 import { ensureSettingsTable } from './sqlite/initSettingsTable';
+import { getTenant } from '../constants/tenant';
 
 declare const module: any;
 
-const DB_NAME = `${process.env.EXPO_PUBLIC_TENANT || 'app'}.db`;
+let dbNamePromise: Promise<string> | null = null;
+async function getDbName(): Promise<string> {
+  if (!dbNamePromise) {
+    dbNamePromise = (async () => {
+      const tenant = await getTenant();
+      return `${tenant || 'app'}.db`;
+    })();
+  }
+  return dbNamePromise;
+}
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 let closeListenerAdded = false;
@@ -25,7 +35,8 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
 
   if (!dbPromise) {
     dbPromise = (async () => {
-      const db = await SQLite.openDatabaseAsync(DB_NAME);
+      const name = await getDbName();
+      const db = await SQLite.openDatabaseAsync(name);
       if (!closeListenerAdded && typeof window !== 'undefined') {
         const handler = () => {
           closeDatabase().catch((e) =>
