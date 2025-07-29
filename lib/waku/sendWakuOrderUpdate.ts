@@ -1,5 +1,6 @@
 import type { WakuSender } from './sendWakuUserUpdate';
 import { encryptWakuPayload } from './wakuCrypto';
+import { sha256 } from '@noble/hashes/sha256';
 
 export const sendWakuOrderUpdate = async (
   order: any,
@@ -33,7 +34,7 @@ export const sendWakuOrderUpdate = async (
 
   const message = JSON.stringify({ ...payloadObj, signature });
 
-  const encrypted = await encryptWakuPayload(payload);
+  const encrypted = await encryptWakuPayload(message);
 
   const encoder = node.createEncoder({ contentTopic: '/congress/orders/1' });
   await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
