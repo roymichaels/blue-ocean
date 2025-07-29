@@ -6,6 +6,8 @@ import { parseSql } from './sqlUtils';
 import { ensureConfigTable } from './sqlite/initConfigTable';
 import { ensureSettingsTable } from './sqlite/initSettingsTable';
 
+declare const module: any;
+
 const DB_NAME = `${process.env.EXPO_PUBLIC_TENANT || 'app'}.db`;
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -132,4 +134,12 @@ export async function closeDatabase(): Promise<void> {
   } finally {
     dbPromise = null;
   }
+}
+
+if (module?.hot) {
+  module.hot.dispose(() => {
+    closeDatabase().catch((e) =>
+      console.warn('Failed to close DB during module dispose:', e),
+    );
+  });
 }
