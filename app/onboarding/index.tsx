@@ -19,6 +19,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { saveConfigValue } from '../../utils/config';
 import { executeSql } from '../../lib/sqlite';
 import InfoModal from '../../components/InfoModal';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 
 export default function OnboardingScreen() {
   const { colors } = useTheme();
@@ -41,6 +42,7 @@ export default function OnboardingScreen() {
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
+  const { refreshOnboardingStatus } = useOnboarding();
 
   const handleSubmit = async () => {
     if (!appName || !adminUser || !adminPass) {
@@ -83,6 +85,7 @@ export default function OnboardingScreen() {
       );
 
       await saveConfigValue('ONBOARD_COMPLETE', 'true');
+      await refreshOnboardingStatus();
       setInfo({
         visible: true,
         title: 'Success',

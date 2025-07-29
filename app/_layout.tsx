@@ -21,8 +21,8 @@ import ChatWidget from '../components/ChatWidget';
 import { ensureDatabase, executeSql, closeDatabase } from '../lib/sqlite';
 import { ensureSettingsTable } from '../lib/sqlite/initSettingsTable';
 import { loadTenantSettings } from '../constants/tenant';
-import { checkOnboarding } from '../utils/config';
 import OnboardingScreen from './onboarding';
+import { OnboardingProvider, useOnboarding } from '../contexts/OnboardingContext';
 import { useWakuSettingsSync } from '../lib/waku/useWakuSettingsSync';
 import { useWakuUserSync } from '../lib/waku/useWakuUserSync';
 import { useWakuProductSync } from '../lib/waku/useWakuProductSync';
@@ -94,15 +94,12 @@ export default function RootLayout() {
   useFrameworkReady();
 
   const [dbReady, setDbReady] = useState(false);
-  const [onboarded, setOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
     (async () => {
       await ensureDatabase();
       await ensureSettingsTable(executeSql);
       await loadTenantSettings();
-      const done = await checkOnboarding();
-      setOnboarded(done);
       setDbReady(true);
     })();
     return () => {
@@ -112,7 +109,25 @@ export default function RootLayout() {
     };
   }, []);
 
-  if (!dbReady || onboarded === null) {
+  if (!dbReady) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <OnboardingProvider>
+      <RootLayoutInner />
+    </OnboardingProvider>
+  );
+}
+
+function RootLayoutInner() {
+  const { onboarded } = useOnboarding();
+
+  if (onboarded === null) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
