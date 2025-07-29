@@ -1,7 +1,7 @@
 import { executeSql } from '../lib/sqlite';
 import { Order, OrderStatus, OrderTrackingStep, CartItem, ShippingAddress } from '../types';
 import DatabaseService from './database';
-import { TENANT } from '../constants/tenant';
+import { getTenant } from '../constants/tenant';
 import { sendWakuOrderUpdate } from '../lib/waku/sendWakuOrderUpdate';
 
 class OrderService {
@@ -100,6 +100,7 @@ class OrderService {
     const orderId = `order_${Date.now()}`;
     const timestamp = new Date().toISOString();
 
+    const tenant = await getTenant();
     await executeSql(
       `INSERT INTO orders (
         id, tenant_id, user_id, total, status, payment_method,
@@ -108,7 +109,7 @@ class OrderService {
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         orderId,
-        TENANT,
+        tenant,
         userId,
         total,
         'order_received',
@@ -237,7 +238,8 @@ class OrderService {
   }
 
   public async getOrders(): Promise<Order[]> {
-    const res = await executeSql('SELECT * FROM orders WHERE tenant_id=? ORDER BY created_at DESC', [TENANT]);
+    const tenant = await getTenant();
+    const res = await executeSql('SELECT * FROM orders WHERE tenant_id=? ORDER BY created_at DESC', [tenant]);
     const rows = (res.rows as any)._array || [];
     const orders: Order[] = [];
     for (const row of rows) {
@@ -254,9 +256,10 @@ class OrderService {
   }
 
   public async getUserOrders(userId: string): Promise<Order[]> {
+    const tenant = await getTenant();
     const res = await executeSql(
       'SELECT * FROM orders WHERE user_id=? AND tenant_id=? ORDER BY created_at DESC',
-      [userId, TENANT],
+      [userId, tenant],
     );
     const rows = (res.rows as any)._array || [];
     const orders: Order[] = [];
@@ -278,17 +281,19 @@ class OrderService {
   }
 
   public async getUserOrderCount(userId: string): Promise<number> {
+    const tenant = await getTenant();
     const res = await executeSql(
       'SELECT COUNT(*) as cnt FROM orders WHERE user_id=? AND tenant_id=?',
-      [userId, TENANT],
+      [userId, tenant],
     );
     return (res.rows as any)._array?.[0]?.cnt ?? 0;
   }
 
   public async getUserTotalSpent(userId: string): Promise<number> {
+    const tenant = await getTenant();
     const res = await executeSql(
       "SELECT SUM(total) as sum FROM orders WHERE user_id=? AND tenant_id=? AND status='delivered'",
-      [userId, TENANT],
+      [userId, tenant],
     );
     const val = (res.rows as any)._array?.[0]?.sum;
     return val ? Number(val) : 0;

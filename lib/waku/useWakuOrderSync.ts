@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { executeSql } from '../sqlite';
-import { TENANT } from '../../constants/tenant';
+import { getTenant } from '../../constants/tenant';
 import { decryptWakuPayload } from './wakuCrypto';
 
 export const useWakuOrderSync = () => {
@@ -49,6 +49,7 @@ export const useWakuOrderSync = () => {
           if ((exists.rows as any)._array.length === 0) return;
           if (parsed.type === 'order.update' && parsed.order) {
             const o = parsed.order;
+            const tenant = await getTenant();
             await executeSql(
               `INSERT OR REPLACE INTO orders (
                 id, tenant_id, user_id, total, status, payment_method,
@@ -57,7 +58,7 @@ export const useWakuOrderSync = () => {
               ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
               [
                 o.id,
-                o.tenant_id ?? TENANT,
+                o.tenant_id ?? tenant,
                 o.userId,
                 o.total,
                 o.status,

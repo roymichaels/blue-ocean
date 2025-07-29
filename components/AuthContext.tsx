@@ -7,7 +7,7 @@ import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
 import { requireConfig } from '../utils/env';
-import { TENANT } from '../constants/tenant';
+import { getTenant } from '../constants/tenant';
 
 async function getAdminUsernames(): Promise<string[]> {
   const raw = await requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
@@ -149,9 +149,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         'INSERT INTO users (id, username, password_hash, display_name, role, public_key) VALUES (?,?,?,?,?,?)',
         [id, username, hash, displayName, role, publicKey],
       );
+      const tenant = await getTenant();
       await executeSql(
         'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
-        [id, TENANT, id, username, null, displayName, role],
+        [id, tenant, id, username, null, displayName, role],
       );
       const JWT_SECRET = await JWT_SECRET_PROMISE;
       const token = JWT.encode(
