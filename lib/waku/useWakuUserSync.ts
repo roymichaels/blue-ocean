@@ -17,7 +17,7 @@ export const useWakuUserSync = () => {
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
 
-      decoder = node.createDecoder({ contentTopic: '/congress/users/1' });
+      decoder = node.createDecoder({ contentTopic: '/congress/users/1/proto' });
       await node.filter!.subscribe(decoder, async (msg) => {
         if (!msg.payload) return;
         const decoded = new TextDecoder().decode(msg.payload);

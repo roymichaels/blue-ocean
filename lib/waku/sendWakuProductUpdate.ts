@@ -36,7 +36,7 @@ export const sendWakuProductUpdate = async (
 
   const encrypted = await encryptWakuPayload(payload);
 
-  const encoder = node.createEncoder({ contentTopic: '/congress/products/1' });
+  const encoder = node.createEncoder({ contentTopic: '/congress/products/1/proto' });
   await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
 
 };
