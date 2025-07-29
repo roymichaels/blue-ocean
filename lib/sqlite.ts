@@ -13,11 +13,26 @@ const DB_NAME = `${process.env.EXPO_PUBLIC_TENANT || 'app'}.db`;
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 let ensurePromise: Promise<void> | null = null;
 let closeListenerAdded = false;
+let closingPromise: Promise<void> | null = null;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
+  if (dbPromise) {
+    console.warn(
+      'Attempting to open a second database handle while another is active. Waiting for the previous handle to close.'
+    );
+    if (!closingPromise) {
+      closingPromise = closeDatabase();
+    }
+    await closingPromise;
+  }
+
   if (!dbPromise) {
     dbPromise = (async () => {
       const db = await SQLite.openDatabaseAsync(DB_NAME);
-      if (Platform.OS === 'web' && !closeListenerAdded && typeof window !== 'undefined') {
+      if (
+        Platform.OS === 'web' &&
+        !closeListenerAdded &&
+        typeof window !== 'undefined'
+      ) {
         const handler = () => {
           closeDatabase().catch((e) =>
             console.warn('Failed to close database on unload:', e)
@@ -117,16 +132,20 @@ export function ensureDatabase(): Promise<void> {
 
 export async function closeDatabase(): Promise<void> {
   if (!dbPromise) {
-    return;
+    return closingPromise ?? Promise.resolve();
   }
   const db = await dbPromise;
-  try {
-    await db.closeAsync();
-  } catch (e) {
-    console.warn('Failed to close database:', e);
-  } finally {
-    dbPromise = null;
-  }
+  closingPromise = (async () => {
+    try {
+      await db.closeAsync();
+    } catch (e) {
+      console.warn('Failed to close database:', e);
+    } finally {
+      dbPromise = null;
+      closingPromise = null;
+    }
+  })();
+  return closingPromise;
 }
 
 if (module?.hot) {
