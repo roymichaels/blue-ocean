@@ -7,10 +7,29 @@ import { ensureSettingsTable } from './sqlite/initSettingsTable';
 const DB_NAME = `${process.env.EXPO_PUBLIC_TENANT || 'app'}.db`;
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
+let closeListenerAdded = false;
 let ensurePromise: Promise<void> | null = null;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!dbPromise) {
-    dbPromise = SQLite.openDatabaseAsync(DB_NAME);
+    // ensure any previous connection is closed before opening a new one
+    try {
+      await closeDatabase();
+    } catch (e) {
+      console.warn('Failed to close existing database handle:', e);
+    }
+    dbPromise = (async () => {
+      const db = await SQLite.openDatabaseAsync(DB_NAME);
+      if (!closeListenerAdded && typeof window !== 'undefined') {
+        const handler = () => {
+          closeDatabase().catch((e) =>
+            console.warn('Failed to close database on unload:', e)
+          );
+        };
+        window.addEventListener('beforeunload', handler);
+        closeListenerAdded = true;
+      }
+      return db;
+    })();
   }
   return dbPromise;
 }
@@ -85,4 +104,18 @@ export function ensureDatabase(): Promise<void> {
     }
   })();
   return ensurePromise;
+}
+
+export async function closeDatabase(): Promise<void> {
+  if (!dbPromise) {
+    return;
+  }
+  const db = await dbPromise;
+  try {
+    await db.closeAsync();
+  } catch (e) {
+    console.warn('Failed to close database:', e);
+  } finally {
+    dbPromise = null;
+  }
 }

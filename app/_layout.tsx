@@ -18,7 +18,7 @@ import { AppInfoProvider } from '../contexts/AppInfoContext';
 import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
-import { ensureDatabase, executeSql } from '../lib/sqlite';
+import { ensureDatabase, executeSql, closeDatabase } from '../lib/sqlite';
 import { ensureSettingsTable } from '../lib/sqlite/initSettingsTable';
 import { loadTenantSettings } from '../constants/tenant';
 import { checkOnboarding } from '../utils/config';
@@ -105,6 +105,11 @@ export default function RootLayout() {
       setOnboarded(done);
       setDbReady(true);
     })();
+    return () => {
+      closeDatabase().catch((e) =>
+        console.warn('Failed to close database on unmount:', e)
+      );
+    };
   }, []);
 
   if (!dbReady || onboarded === null) {
