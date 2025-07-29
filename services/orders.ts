@@ -3,6 +3,7 @@ import { Order, OrderStatus, OrderTrackingStep, CartItem, ShippingAddress } from
 import DatabaseService from './database';
 import { getTenant } from '../constants/tenant';
 import { sendWakuOrderUpdate } from '../lib/waku/sendWakuOrderUpdate';
+import { isWakuConfigured } from '../lib/waku/isWakuConfigured';
 
 class OrderService {
   private static instance: OrderService;
@@ -153,7 +154,7 @@ class OrderService {
     this.simulateOrderProgress(orderId);
 
     try {
-      if (order) {
+      if (order && (await isWakuConfigured())) {
         await sendWakuOrderUpdate(order);
       }
     } catch (e) {
@@ -189,7 +190,7 @@ class OrderService {
     this.notifyListeners();
     try {
       const order = await this.getOrder(orderId);
-      if (order) {
+      if (order && (await isWakuConfigured())) {
         await sendWakuOrderUpdate(order);
       }
     } catch (e) {

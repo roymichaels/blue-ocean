@@ -2,6 +2,7 @@ import { executeSql } from '../lib/sqlite';
 import { sendWakuSettingsUpdate } from '../lib/waku/sendWakuSettingsUpdate';
 import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
 import { sendWakuProductUpdate } from '../lib/waku/sendWakuProductUpdate';
+import { isWakuConfigured } from '../lib/waku/isWakuConfigured';
 import { getTenant, TENANT } from '../constants/tenant';
 import { requireConfig } from '../utils/env';
 import {
@@ -147,9 +148,11 @@ class DatabaseService {
       ],
     );
     try {
-      const prod = await this.getProduct(id);
-      if (prod) {
-        await sendWakuProductUpdate(prod);
+      if (await isWakuConfigured()) {
+        const prod = await this.getProduct(id);
+        if (prod) {
+          await sendWakuProductUpdate(prod);
+        }
       }
     } catch (e) {
       console.error('Failed to send Waku product update:', e);
@@ -194,9 +197,11 @@ class DatabaseService {
       ],
     );
     try {
-      const prod = await this.getProduct(id);
-      if (prod) {
-        await sendWakuProductUpdate(prod);
+      if (await isWakuConfigured()) {
+        const prod = await this.getProduct(id);
+        if (prod) {
+          await sendWakuProductUpdate(prod);
+        }
       }
     } catch (e) {
       console.error('Failed to send Waku product update:', e);
@@ -437,9 +442,11 @@ class DatabaseService {
     const tenant = await getTenant();
     await executeSql('UPDATE user_profiles SET role=? WHERE id=? AND tenant_id=?', [role, userId, tenant]);
     try {
-      const user = await this.getUserProfile(userId);
-      if (user) {
-        await sendWakuUserUpdate(user);
+      if (await isWakuConfigured()) {
+        const user = await this.getUserProfile(userId);
+        if (user) {
+          await sendWakuUserUpdate(user);
+        }
       }
     } catch (e) {
       console.error('Failed to send Waku user update:', e);
@@ -450,9 +457,11 @@ class DatabaseService {
     const tenant = await getTenant();
     await executeSql('UPDATE user_profiles SET customer_tier=? WHERE id=? AND tenant_id=?', [customerTier, userId, tenant]);
     try {
-      const user = await this.getUserProfile(userId);
-      if (user) {
-        await sendWakuUserUpdate(user);
+      if (await isWakuConfigured()) {
+        const user = await this.getUserProfile(userId);
+        if (user) {
+          await sendWakuUserUpdate(user);
+        }
       }
     } catch (e) {
       console.error('Failed to send Waku user update:', e);
@@ -480,9 +489,11 @@ class DatabaseService {
     const params = [...Object.values(updateData), userId, tenant];
     await executeSql(`UPDATE user_profiles SET ${fields} WHERE id=? AND tenant_id=?`, params);
     try {
-      const user = await this.getUserProfile(userId);
-      if (user) {
-        await sendWakuUserUpdate(user);
+      if (await isWakuConfigured()) {
+        const user = await this.getUserProfile(userId);
+        if (user) {
+          await sendWakuUserUpdate(user);
+        }
       }
     } catch (e) {
       console.error('Failed to send Waku user update:', e);
@@ -923,8 +934,10 @@ class DatabaseService {
     const createdAt = row?.created_at ?? Date.now();
     const updatedAt = row?.updated_at ?? Date.now();
     try {
-      await sendWakuSettingsUpdate(key, value, createdAt, updatedAt);
-      } catch (e) {
+      if (await isWakuConfigured()) {
+        await sendWakuSettingsUpdate(key, value, createdAt, updatedAt);
+      }
+    } catch (e) {
       console.error('Failed to send Waku settings update:', e);
     }
   }
@@ -961,7 +974,9 @@ class DatabaseService {
     const createdAt = row?.created_at ?? Date.now();
     const updatedAt = row?.updated_at ?? Date.now();
     try {
-      await sendWakuSettingsUpdate(key, value, createdAt, updatedAt);
+      if (await isWakuConfigured()) {
+        await sendWakuSettingsUpdate(key, value, createdAt, updatedAt);
+      }
     } catch (e) {
       console.error('Failed to send Waku settings update:', e);
     }
