@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer';
+import { requireEnv } from '../../utils/env';
 
 const wakuKeyPromise: { key?: CryptoKey } = {};
 
@@ -7,7 +8,7 @@ const wakuKeyPromise: { key?: CryptoKey } = {};
  */
 export async function getWakuKey(): Promise<CryptoKey> {
   if (wakuKeyPromise.key) return wakuKeyPromise.key;
-  const secret = process.env.EXPO_PUBLIC_WAKU_SECRET || 'default_waku_secret';
+  const secret = requireEnv('EXPO_PUBLIC_WAKU_SECRET');
   const enc = new TextEncoder().encode(secret);
   const hash = await crypto.subtle.digest('SHA-256', enc);
   const key = await crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, [
