@@ -11,6 +11,7 @@ export const useWakuSettingsSync = () => {
     const run = async () => {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
       const { verify, etc: edBytes } = await import('@noble/ed25519');
+      const { sha256 } = await import('@noble/hashes/sha256');
       node = await createLightNode({ defaultBootstrap: true });
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
@@ -36,7 +37,28 @@ export const useWakuSettingsSync = () => {
         await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
         try {
           const parsed = JSON.parse(plaintext);
-          if (!parsed.sender || parsed.sender.role !== 'admin') {
+          if (!parsed.signature || !parsed.sender?.publicKey) {
+            return;
+          }
+          const verifyObj = {
+            type: parsed.type,
+            key: parsed.key,
+            value: parsed.value,
+            createdAt: parsed.createdAt,
+            updatedAt: parsed.updatedAt,
+            sender: {
+              id: parsed.sender.id,
+              publicKey: parsed.sender.publicKey,
+              role: parsed.sender.role,
+            },
+          };
+          const hash = sha256(new TextEncoder().encode(JSON.stringify(verifyObj)));
+          const ok = await verify(
+            edBytes.hexToBytes(parsed.signature),
+            hash,
+            edBytes.hexToBytes(parsed.sender.publicKey)
+          );
+          if (!ok || parsed.sender.role !== 'admin') {
 
             return;
           }
