@@ -55,6 +55,7 @@ export default function OnboardingScreen() {
     setLoading(true);
     try {
       await saveConfigValue('EXPO_PUBLIC_TENANT', tenant);
+      await saveConfigValue('EXPO_PUBLIC_ADMIN_USERNAME', adminUser);
       await saveConfigValue('APP_NAME', appName);
       await saveConfigValue('PRIMARY_COLOR', primaryColor);
       if (logo) await saveConfigValue('APP_LOGO', logo);
