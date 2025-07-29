@@ -44,6 +44,8 @@ authentication state persists across reloads on every platform.
 
 Settings, users, products and orders are synchronized between peers over the Waku network. When any of these records change locally, call the appropriate `sendWaku...Update` function to broadcast the update. Add the matching `useWaku...Sync` hook (for example `useWakuSettingsSync`) in your root layout so that your SQLite database receives updates from other peers.
 
+The sync hooks only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep the SQLite database purely local and skip peer synchronization.
+
 ### Web Notes
 
 Fast Refresh can cause issues with Expo Router when running in the browser.
