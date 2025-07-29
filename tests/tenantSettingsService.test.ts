@@ -1,11 +1,13 @@
 /// <reference types="node" />
 import TenantSettingsService from '../services/tenantSettings';
-import { saveConfigValue } from '../utils/config';
+import { insertConfig } from './testUtils';
 describe('TenantSettingsService remote', () => {
   beforeEach(async () => {
     (globalThis as any).fetch = jest.fn();
     (TenantSettingsService as any).instance = undefined;
-    await saveConfigValue('EXPO_PUBLIC_SETTINGS_API_URL', 'https://api.example.com');
+    await insertConfig({
+      EXPO_PUBLIC_SETTINGS_API_URL: 'https://api.example.com',
+    });
   });
 
   it('fetches tenant setting', async () => {
@@ -26,7 +28,7 @@ describe('TenantSettingsService remote', () => {
   });
 
   it('returns null when API url is empty', async () => {
-    await saveConfigValue('EXPO_PUBLIC_SETTINGS_API_URL', '');
+    await insertConfig({ EXPO_PUBLIC_SETTINGS_API_URL: '' });
     const svc = TenantSettingsService.getInstance();
     const val = await svc.getTenantSetting('foo', 'platform_name');
     expect(val).toBeNull();
@@ -34,7 +36,7 @@ describe('TenantSettingsService remote', () => {
   });
 
   it('skips update when API url is empty', async () => {
-    await saveConfigValue('EXPO_PUBLIC_SETTINGS_API_URL', '');
+    await insertConfig({ EXPO_PUBLIC_SETTINGS_API_URL: '' });
     const svc = TenantSettingsService.getInstance();
     await svc.updateTenantSetting('foo', 'platform_name', 'bar');
     expect(fetch).not.toHaveBeenCalled();
