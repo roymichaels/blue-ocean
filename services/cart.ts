@@ -2,9 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
 import JWT from 'expo-jwt';
-import { requireEnv } from '../utils/env';
+import { requireConfig } from '../utils/env';
 
-const JWT_SECRET = requireEnv('EXPO_PUBLIC_JWT_SECRET');
+const JWT_SECRET_PROMISE = requireConfig('EXPO_PUBLIC_JWT_SECRET');
 import { getToken } from '../utils/tokenStorage';
 import { isTokenValid } from '../utils/jwtSession';
 
@@ -22,6 +22,7 @@ class CartService {
   private async getCurrentUserId(): Promise<string | null> {
     const token = await getToken();
     if (token && isTokenValid(token)) {
+      const JWT_SECRET = await JWT_SECRET_PROMISE;
       const payload: any = JWT.decode(token, JWT_SECRET);
       return payload?.sub || null;
     }

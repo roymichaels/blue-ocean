@@ -1,4 +1,11 @@
-export const DEBUG_LOGS = process.env.EXPO_PUBLIC_DEBUG_LOGS === 'true';
+import { requireConfig } from './env';
+
+let DEBUG_LOGS = false;
+requireConfig('EXPO_PUBLIC_DEBUG_LOGS')
+  .then((v) => {
+    DEBUG_LOGS = v === 'true';
+  })
+  .catch(() => {});
 
 export function debugLog(...args: unknown[]): void {
   if (DEBUG_LOGS) {

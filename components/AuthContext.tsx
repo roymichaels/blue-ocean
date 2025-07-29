@@ -6,14 +6,17 @@ import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
-import { requireEnv } from '../utils/env';
+import { requireConfig } from '../utils/env';
 import { TENANT } from '../constants/tenant';
 
-const ADMIN_USERNAMES = (process.env.EXPO_PUBLIC_ADMIN_USERNAME || '')
-  .split(',')
-  .map((u) => u.trim())
-  .filter(Boolean);
-const JWT_SECRET = requireEnv('EXPO_PUBLIC_JWT_SECRET');
+async function getAdminUsernames(): Promise<string[]> {
+  const raw = await requireConfig('EXPO_PUBLIC_ADMIN_USERNAME');
+  return raw
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean);
+}
+const JWT_SECRET_PROMISE = requireConfig('EXPO_PUBLIC_JWT_SECRET');
 const PRIVATE_KEY_KEY = 'ed25519_private_key';
 
 export class UsernameTakenError extends Error {
@@ -62,7 +65,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const init = async () => {
       try {
         const token = await getToken();
-        if (token && isTokenValid(token)) {
+        if (token && (await isTokenValid(token))) {
+          const JWT_SECRET = await JWT_SECRET_PROMISE;
           const payload: any = JWT.decode(token, JWT_SECRET);
           setSession(token);
           if (payload?.sub) {
@@ -108,6 +112,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setLoading(false);
         return false;
       }
+      const JWT_SECRET = await JWT_SECRET_PROMISE;
       const token = JWT.encode(
         { sub: row.id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
         JWT_SECRET,
@@ -133,7 +138,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const hash = await bcrypt.hash(password, 10);
       const id = `user_${Date.now()}`;
-      const isAdminUsername = ADMIN_USERNAMES.includes(username);
+      const isAdminUsername = (await getAdminUsernames()).includes(username);
       const role = isAdminUsername ? 'admin' : 'user';
       const priv = edUtils.randomPrivateKey();
       const pub = await getPublicKey(priv);
@@ -148,6 +153,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
         [id, TENANT, id, username, null, displayName, role],
       );
+      const JWT_SECRET = await JWT_SECRET_PROMISE;
       const token = JWT.encode(
         { sub: id, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 },
         JWT_SECRET,
@@ -183,7 +189,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const checkAuthState = async () => {
     setLoading(true);
     const token = await getToken();
-    if (token && isTokenValid(token)) {
+    if (token && (await isTokenValid(token))) {
+      const JWT_SECRET = await JWT_SECRET_PROMISE;
       const payload: any = JWT.decode(token, JWT_SECRET);
       setSession(token);
       if (payload?.sub) {
@@ -199,8 +206,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshSession = async () => {
     const token = await getToken();
-    if (token && isTokenValid(token)) {
-      const newToken = refreshToken(token);
+    if (token && (await isTokenValid(token))) {
+      const newToken = await refreshToken(token);
       if (newToken) {
         await saveToken(newToken);
         setSession(newToken);

@@ -3,12 +3,12 @@ const roomKeys: Record<string, CryptoKey> = {};
 /**
  * Derive a deterministic key per room using a shared secret.
  */
-import { requireEnv } from './env';
+import { requireConfig } from './env';
 
 export async function getRoomKey(roomId: string): Promise<CryptoKey> {
   if (roomKeys[roomId]) return roomKeys[roomId];
 
-  const secret = requireEnv('EXPO_PUBLIC_CHAT_SECRET');
+  const secret = await requireConfig('EXPO_PUBLIC_CHAT_SECRET');
   const enc = new TextEncoder().encode(roomId + secret);
   const hash = await crypto.subtle.digest('SHA-256', enc);
 

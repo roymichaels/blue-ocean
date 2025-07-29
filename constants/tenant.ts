@@ -1,4 +1,6 @@
-export const TENANT = process.env.EXPO_PUBLIC_TENANT || 'thecongress';
+import { requireConfig } from '../utils/env';
+
+export const TENANT: string = (await requireConfig('EXPO_PUBLIC_TENANT')).trim() || 'thecongress';
 
 export const tenantSettings = {
   thecongress: {

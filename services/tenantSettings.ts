@@ -5,8 +5,15 @@ export interface TenantSettingsRow {
   theme_color?: string | null;
 }
 
-function apiBase() {
-  return process.env.EXPO_PUBLIC_SETTINGS_API_URL || '';
+import { requireConfig } from '../utils/env';
+
+async function apiBase() {
+  try {
+    const url = await requireConfig('EXPO_PUBLIC_SETTINGS_API_URL');
+    return url || '';
+  } catch {
+    return '';
+  }
 }
 
 class TenantSettingsService {
@@ -25,7 +32,7 @@ class TenantSettingsService {
     tenant: string,
     key: 'platform_name' | 'platform_logo' | 'theme_color'
   ): Promise<string | null> {
-    const base = apiBase();
+    const base = await apiBase();
     if (!base) {
       return null;
     }
@@ -48,7 +55,7 @@ class TenantSettingsService {
     key: 'platform_name' | 'platform_logo' | 'theme_color',
     value: string
   ): Promise<void> {
-    const base = apiBase();
+    const base = await apiBase();
     if (!base) {
       return;
     }

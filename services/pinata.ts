@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { debugLog } from '../utils/logger';
+import { requireConfig } from '../utils/env';
 
 // Pinata API configuration
 const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
@@ -87,9 +88,9 @@ class PinataService {
 
       // Upload to Pinata
       const headers: any = {};
-      const jwt = process.env.EXPO_PUBLIC_PINATA_JWT;
-      const apiKey = process.env.EXPO_PUBLIC_PINATA_API_KEY;
-      const secret = process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
+      const jwt = await requireConfig('EXPO_PUBLIC_PINATA_JWT').catch(() => '');
+      const apiKey = await requireConfig('EXPO_PUBLIC_PINATA_API_KEY').catch(() => '');
+      const secret = await requireConfig('EXPO_PUBLIC_PINATA_SECRET_API_KEY').catch(() => '');
       if (jwt) {
         headers.Authorization = `Bearer ${jwt}`;
       } else {
@@ -163,10 +164,10 @@ class PinataService {
    * Check if Pinata credentials are configured
    * @returns True if Pinata is configured, false otherwise
    */
-  public isPinataConfigured(): boolean {
-    const jwt = process.env.EXPO_PUBLIC_PINATA_JWT;
-    const apiKey = process.env.EXPO_PUBLIC_PINATA_API_KEY;
-    const secret = process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
+  public async isPinataConfigured(): Promise<boolean> {
+    const jwt = await requireConfig('EXPO_PUBLIC_PINATA_JWT').catch(() => '');
+    const apiKey = await requireConfig('EXPO_PUBLIC_PINATA_API_KEY').catch(() => '');
+    const secret = await requireConfig('EXPO_PUBLIC_PINATA_SECRET_API_KEY').catch(() => '');
     return !!(jwt || (apiKey && secret));
   }
 }
