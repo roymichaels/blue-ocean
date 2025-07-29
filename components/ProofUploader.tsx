@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,7 +25,14 @@ interface ProofUploaderProps {
 export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUploaderProps) {
   const [uri, setUri] = useState(proofUri);
   const [uploading, setUploading] = useState(false);
+  const [pinataConfigured, setPinataConfigured] = useState(true);
   const { colors } = useTheme();
+
+  useEffect(() => {
+    MediaService.getInstance()
+      .isPinataConfigured()
+      .then(setPinataConfigured);
+  }, []);
 
   const requestMediaPermission = async () => {
     if (Platform.OS !== 'web') {
@@ -38,7 +45,17 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
     return true;
   };
 
+  const ensureConfigured = async () => {
+    const configured = await MediaService.getInstance().isPinataConfigured();
+    setPinataConfigured(configured);
+    if (!configured) {
+      Alert.alert('Unavailable', 'Media uploads are not configured.');
+    }
+    return configured;
+  };
+
     const pickDocument = async () => {
+      if (!(await ensureConfigured())) return;
       if (!(await requestMediaPermission())) return;
       const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: false });
       if (result.canceled || !result.assets?.length) return;
@@ -47,6 +64,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
     };
 
   const pickImage = async () => {
+    if (!(await ensureConfigured())) return;
     if (!(await requestMediaPermission())) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
@@ -58,6 +76,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
   };
 
   const takePhoto = async () => {
+    if (!(await ensureConfigured())) return;
     if (!(await requestMediaPermission())) return;
     const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 });
     if (result.canceled || result.assets.length === 0) return;
@@ -98,7 +117,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
           <TouchableOpacity
             style={[styles.button, { borderColor: colors.gold }]}
             onPress={pickImage}
-            disabled={uploading}
+            disabled={uploading || !pinataConfigured}
           >
             {uploading ? (
               <ActivityIndicator size="small" color={colors.gold} />
@@ -113,7 +132,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
             <TouchableOpacity
               style={[styles.button, { borderColor: colors.gold }]}
               onPress={takePhoto}
-              disabled={uploading}
+              disabled={uploading || !pinataConfigured}
             >
               <Camera size={20} color={colors.gold} />
               <Text style={[styles.buttonText, { color: colors.gold }]}>Camera</Text>
@@ -122,7 +141,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
           <TouchableOpacity
             style={[styles.button, { borderColor: colors.gold }]}
             onPress={pickDocument}
-            disabled={uploading}
+            disabled={uploading || !pinataConfigured}
           >
             <FileIcon size={20} color={colors.gold} />
             <Text style={[styles.buttonText, { color: colors.gold }]}>File</Text>

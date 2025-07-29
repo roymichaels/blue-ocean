@@ -29,6 +29,7 @@ import * as Audio from 'expo-audio';
 // MatrixService has been removed
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
+import MediaService from '../services/media';
 import { debugLog } from '../utils/logger';
 import { ChatMessage, ChatRoom, User } from '../types';
 import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
@@ -71,6 +72,7 @@ export default function ChatWidget() {
   const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
   const messageSoundRef = useRef<Audio.AudioPlayer | null>(null);
   const isMounted = useRef(true);
+  const [pinataConfigured, setPinataConfigured] = useState(true);
   // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,
@@ -92,6 +94,12 @@ export default function ChatWidget() {
       }
     }
   }, [isOpen, isAdmin, isDriver, isLoggedIn]);
+
+  useEffect(() => {
+    MediaService.getInstance()
+      .isPinataConfigured()
+      .then(setPinataConfigured);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -447,6 +455,19 @@ const loadOrCreateDefaultRoom = async () => {
 
   const startRecording = async () => {
     try {
+      const configured = await MediaService.getInstance().isPinataConfigured();
+      setPinataConfigured(configured);
+      if (!configured) {
+        if (isMounted.current) {
+          setInfoModal({
+            visible: true,
+            title: 'שירות לא זמין',
+            message: 'העלאת מדיה אינה זמינה',
+            type: 'warning',
+          });
+        }
+        return;
+      }
       if (Platform.OS === 'web') {
         if (isMounted.current) {
           setInfoModal({
@@ -1214,6 +1235,7 @@ const loadOrCreateDefaultRoom = async () => {
                               },
                             ]}
                             onPress={startRecording}
+                            disabled={!pinataConfigured}
                           >
                             <Mic size={20} color={colors.gold} />
                           </TouchableOpacity>

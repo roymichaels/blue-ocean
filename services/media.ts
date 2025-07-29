@@ -14,6 +14,14 @@ class MediaService {
   }
 
   /**
+   * Check if Pinata credentials are configured
+   */
+  async isPinataConfigured(): Promise<boolean> {
+    const pinataService = PinataService.getInstance();
+    return await pinataService.isPinataConfigured();
+  }
+
+  /**
    * Upload media to Pinata IPFS
    * @param onProgress - Optional progress callback (0-100)
    */
