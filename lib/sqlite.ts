@@ -10,10 +10,20 @@ const DB_NAME = `${process.env.EXPO_PUBLIC_TENANT || 'app'}.db`;
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 let ensurePromise: Promise<void> | null = null;
+let closeListenerAdded = false;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!dbPromise) {
     dbPromise = (async () => {
       const db = await SQLite.openDatabaseAsync(DB_NAME);
+      if (Platform.OS === 'web' && !closeListenerAdded && typeof window !== 'undefined') {
+        const handler = () => {
+          closeDatabase().catch((e) =>
+            console.warn('Failed to close database on unload:', e)
+          );
+        };
+        window.addEventListener('beforeunload', handler);
+        closeListenerAdded = true;
+      }
       return db;
     })();
   }
@@ -101,4 +111,18 @@ export function ensureDatabase(): Promise<void> {
     }
   })();
   return ensurePromise;
+}
+
+export async function closeDatabase(): Promise<void> {
+  if (!dbPromise) {
+    return;
+  }
+  const db = await dbPromise;
+  try {
+    await db.closeAsync();
+  } catch (e) {
+    console.warn('Failed to close database:', e);
+  } finally {
+    dbPromise = null;
+  }
 }
