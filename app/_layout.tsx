@@ -20,6 +20,8 @@ import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
 import { ensureDatabase } from '../lib/sqlite';
 import { ensureSettingsTable } from '../lib/sqlite/initSettingsTable';
+import { checkOnboarding } from '../utils/config';
+import OnboardingScreen from './onboarding';
 import { useWakuSettingsSync } from '../lib/waku/useWakuSettingsSync';
 import { useWakuUserSync } from '../lib/waku/useWakuUserSync';
 import { useWakuProductSync } from '../lib/waku/useWakuProductSync';
@@ -91,21 +93,28 @@ export default function RootLayout() {
   useFrameworkReady();
 
   const [dbReady, setDbReady] = useState(false);
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
     (async () => {
       await ensureDatabase();
       await ensureSettingsTable();
+      const done = await checkOnboarding();
+      setOnboarded(done);
       setDbReady(true);
     })();
   }, []);
 
-  if (!dbReady) {
+  if (!dbReady || onboarded === null) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
       </View>
     );
+  }
+
+  if (!onboarded) {
+    return <OnboardingScreen />;
   }
 
   return (
