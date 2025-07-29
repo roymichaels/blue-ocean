@@ -14,6 +14,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const os = require('os');
 const axios = require('axios');
+const { getConfig } = require('../utils/config');
 
 // Polyfill a minimal subset of expo-file-system for BackupService
 const FileSystem = {

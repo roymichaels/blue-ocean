@@ -13,6 +13,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const os = require('os');
 const axios = require('axios');
+const { getConfig } = require('../utils/config');
 
 const FileSystem = {
   documentDirectory: path.join(__dirname, '..') + path.sep,
@@ -49,11 +50,14 @@ const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
 
 async function getLatestBackupCid() {
   const headers = {};
-  if (process.env.EXPO_PUBLIC_PINATA_JWT) {
-    headers.Authorization = `Bearer ${process.env.EXPO_PUBLIC_PINATA_JWT}`;
+  const jwt = await getConfig('EXPO_PUBLIC_PINATA_JWT');
+  const apiKey = await getConfig('EXPO_PUBLIC_PINATA_API_KEY');
+  const secret = await getConfig('EXPO_PUBLIC_PINATA_SECRET_API_KEY');
+  if (jwt) {
+    headers.Authorization = `Bearer ${jwt}`;
   } else {
-    headers.pinata_api_key = process.env.EXPO_PUBLIC_PINATA_API_KEY;
-    headers.pinata_secret_api_key = process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
+    headers.pinata_api_key = apiKey;
+    headers.pinata_secret_api_key = secret;
   }
   const res = await axios.get('https://api.pinata.cloud/data/pinList', {
     headers,
