@@ -38,6 +38,7 @@ import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { requireConfig } from '../utils/env';
+import { isChatConfigured } from '../services/chatConfig';
 import InfoModal from './InfoModal';
 import UserProfileModal from './UserProfileModal';
 
@@ -83,6 +84,7 @@ export default function ChatWidget() {
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [chatConfigOk, setChatConfigOk] = useState(true);
   const waku = useWakuClient();
 
   useEffect(() => {
@@ -96,10 +98,10 @@ export default function ChatWidget() {
   }, [isOpen, isAdmin, isDriver, isLoggedIn]);
 
   useEffect(() => {
-    MediaService.getInstance()
-      .isPinataConfigured()
-      .then(setPinataConfigured);
-  }, []);
+    if (isOpen) {
+      isChatConfigured().then(setChatConfigOk);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     return () => {
@@ -400,8 +402,23 @@ const loadOrCreateDefaultRoom = async () => {
     await openSearchResult({ id, displayName: name, isAppUser: true });
   };
 
+  const ensureChatConfigured = async (): Promise<boolean> => {
+    const ok = await isChatConfigured();
+    if (!ok && isMounted.current) {
+      setChatConfigOk(false);
+      setInfoModal({
+        visible: true,
+        title: 'Chat unavailable',
+        message: 'missing configuration',
+        type: 'error',
+      });
+    }
+    return ok;
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim() || isSending) return;
+    if (!(await ensureChatConfigured())) return;
     setIsSending(true);
 
     const db = DatabaseService.getInstance();
@@ -454,6 +471,7 @@ const loadOrCreateDefaultRoom = async () => {
   };
 
   const startRecording = async () => {
+    if (!(await ensureChatConfigured())) return;
     try {
       const configured = await MediaService.getInstance().isPinataConfigured();
       setPinataConfigured(configured);
@@ -530,6 +548,10 @@ const loadOrCreateDefaultRoom = async () => {
 
   const stopRecording = async () => {
     if (!recording) return;
+
+    if (!(await ensureChatConfigured())) {
+      return;
+    }
 
     try {
       if (isMounted.current) {
@@ -1232,10 +1254,12 @@ const loadOrCreateDefaultRoom = async () => {
                               {
                                 backgroundColor: colors.surface.primary,
                                 borderColor: colors.border.primary,
+                                opacity: chatConfigOk ? 1 : 0.5,
                               },
                             ]}
                             onPress={startRecording}
-                            disabled={!pinataConfigured}
+                            disabled={!chatConfigOk}
+
                           >
                             <Mic size={20} color={colors.gold} />
                           </TouchableOpacity>
@@ -1245,13 +1269,13 @@ const loadOrCreateDefaultRoom = async () => {
                             styles.sendButton,
                             {
                               backgroundColor:
-                                newMessage.trim() && !isSending
+                                newMessage.trim() && !isSending && chatConfigOk
                                   ? colors.gold
                                   : colors.interactive.disabled,
                             },
                           ]}
                           onPress={sendMessage}
-                          disabled={!newMessage.trim() || isSending}
+                          disabled={!newMessage.trim() || isSending || !chatConfigOk}
                         >
                           <Send size={20} color={colors.text.inverse} />
                         </TouchableOpacity>
