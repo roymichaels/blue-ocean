@@ -58,8 +58,8 @@ need `expo-file-system`.
 
 When you launch the app for the first time an onboarding wizard prompts for the
 secrets it needs (JWT, chat and Waku keys, Pinata credentials and admin login).
-These values are stored in the local SQLite database so an `.env` file is no
-longer required for them.
+These values are stored in the local SQLite database so no `.env` file is
+required.
 
 If you ever need to run the onboarding again, delete `sqlite/blue-ocean.db` or
 run:
@@ -69,14 +69,12 @@ yarn reset-db
 ```
 
 The following environment variables remain optional and can be provided through
-an `.env` file or your shell:
+your shell:
 
-* `EXPO_PUBLIC_TENANT` – which tenant's branding to load
 * `EXPO_PUBLIC_SETTINGS_API_URL` – endpoint for remote tenant settings
 * `EXPO_PUBLIC_USE_WAKU` – set to `true` to enable Waku features
 * `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging
 * `EXPO_PUBLIC_MATRIX_SERVER` – Matrix server URL (future use)
-* `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` – keys for push notifications
 
 ## SQLite Migrations
 
@@ -140,29 +138,13 @@ yarn dev
 
 `yarn start` works as an alias of `yarn dev`.
 
-## Multi-Tenant Builds
+### Building the Web PWA
 
-Environment files are provided for each tenant under the project root. Build the
-web PWA for a specific tenant using the scripts below. The output is placed in
-`dist/{tenant}` for easy deployment.
-
-Each build sets `EXPO_PUBLIC_TENANT` so the app loads the matching row from
-`tenant_settings`.
-
-Before the export step runs, the `update:appjson` script updates `app.json`
-using the current `EXPO_PUBLIC_APP_NAME` and `EXPO_PUBLIC_TENANT` values. This
-ensures each build gets its own application name and slug.
+Export the web build using Expo once onboarding is complete:
 
 ```sh
-# Build The Congress
-yarn build:web:thecongress
-
-# Build The Bull
-yarn build:web:thebull
+yarn build:web
 ```
-
-Matching NGINX configs for each tenant are located in `nginx/` and assume the
-exported files are served from `/var/www/{tenant}/dist`.
 
 ## Docker
 
@@ -171,7 +153,7 @@ and start the Expo server with:
 
 ```sh
 docker build -t blue-ocean .
-docker run --env-file .env -p 19000-19002:19000-19002 blue-ocean
+docker run -p 19000-19002:19000-19002 blue-ocean
 ```
 
 For hot reloading and easier development you can also use Docker Compose:
