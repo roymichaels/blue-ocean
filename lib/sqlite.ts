@@ -12,13 +12,14 @@ let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 let ensurePromise: Promise<void> | null = null;
 let closeListenerAdded = false;
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
-  if (!dbPromise) {
-    // ensure any previous connection is closed before opening a new one
+  if (dbPromise) {
     try {
       await closeDatabase();
     } catch (e) {
       console.warn('Failed to close existing database handle:', e);
     }
+  }
+  if (!dbPromise) {
     dbPromise = (async () => {
       const db = await SQLite.openDatabaseAsync(DB_NAME);
       if (Platform.OS === 'web' && !closeListenerAdded && typeof window !== 'undefined') {
