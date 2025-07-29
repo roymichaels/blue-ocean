@@ -63,14 +63,21 @@ cp .env.example .env
 # then edit .env and provide your keys
 ```
 
-The file includes a `EXPO_PUBLIC_CHAT_SECRET` variable used to derive
-encryption keys for chat messages. Set it to any random string but make sure
-the same value is used for all clients so they can decrypt messages.
-`EXPO_PUBLIC_WAKU_SECRET` is similarly used to encrypt synchronization
-messages sent over Waku.
+The file includes several **required** secrets:
+
+* `EXPO_PUBLIC_JWT_SECRET` for signing JSON Web Tokens
+* `EXPO_PUBLIC_CHAT_SECRET` to derive chat encryption keys
+* `EXPO_PUBLIC_WAKU_SECRET` to encrypt Waku synchronization messages
+
+These must be defined at runtime; the application will throw an error if any of
+them are missing. Set them to random strings and use the same value across all
+clients so messages can be decrypted.
 
 `EXPO_PUBLIC_TENANT` specifies which tenant's branding to load from the
 `tenant_settings` table. Example values are `thecongress` or `thebull`.
+
+`EXPO_PUBLIC_SETTINGS_API_URL` must point to a server that sets CORS headers.
+Leave it empty to disable fetching tenant settings from a remote API.
 
 Logos and other uploaded images are stored on IPFS via Pinata. Set
 `EXPO_PUBLIC_PINATA_JWT` (or API key/secret) in your `.env` file so uploads can

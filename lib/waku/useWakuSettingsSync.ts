@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Buffer } from 'buffer';
 import { executeSql } from '../sqlite';
 import { decryptWakuPayload } from './wakuCrypto';
 
@@ -15,22 +16,25 @@ export const useWakuSettingsSync = () => {
       await node.start();
       await waitForRemotePeer(node, [Protocols.Store, Protocols.LightPush]);
 
-      const topic = '/congress/settings/1';
+      const topic = '/congress/settings/1/proto';
       decoder = node.createDecoder({ contentTopic: topic });
       await node.filter!.subscribe(decoder, async (msg) => {
-        if (!msg.payload || !msg.timestamp) return;
-        const id = msg.timestamp.getTime().toString();
-
-          const seen = await executeSql(
-            'SELECT 1 FROM waku_seen WHERE id=? AND topic=? LIMIT 1',
-            [id, topic]
-          );
-        if ((seen.rows as any)._array.length > 0) return;
-
-          await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
-
+        if (!msg.payload) return;
         const decoded = new TextDecoder().decode(msg.payload);
         const plaintext = await decryptWakuPayload(decoded);
+        const hashBuffer = await crypto.subtle.digest(
+          'SHA-256',
+          new TextEncoder().encode(plaintext),
+        );
+        const id = Buffer.from(new Uint8Array(hashBuffer)).toString('hex');
+
+        const seen = await executeSql(
+          'SELECT 1 FROM waku_seen WHERE id=? AND topic=? LIMIT 1',
+          [id, topic],
+        );
+        if ((seen.rows as any)._array.length > 0) return;
+
+        await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
         try {
           const parsed = JSON.parse(plaintext);
           if (!parsed.signature || !parsed.sender?.publicKey) {

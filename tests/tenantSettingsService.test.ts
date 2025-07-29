@@ -23,4 +23,19 @@ describe('TenantSettingsService remote', () => {
     const svc = TenantSettingsService.getInstance();
     await expect(svc.getTenantSetting('foo', 'platform_name')).rejects.toThrow('network');
   });
+
+  it('returns null when API url is empty', async () => {
+    process.env.EXPO_PUBLIC_SETTINGS_API_URL = '';
+    const svc = TenantSettingsService.getInstance();
+    const val = await svc.getTenantSetting('foo', 'platform_name');
+    expect(val).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('skips update when API url is empty', async () => {
+    process.env.EXPO_PUBLIC_SETTINGS_API_URL = '';
+    const svc = TenantSettingsService.getInstance();
+    await svc.updateTenantSetting('foo', 'platform_name', 'bar');
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });

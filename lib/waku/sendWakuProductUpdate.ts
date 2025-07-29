@@ -12,8 +12,9 @@ export const sendWakuProductUpdate = async (
   const { sign, etc: edBytes } = await import('@noble/ed25519');
 
   const node = await createLightNode({ defaultBootstrap: true });
-  await node.start();
-  await waitForRemotePeer(node, [Protocols.LightPush]);
+  try {
+    await node.start();
+    await waitForRemotePeer(node, [Protocols.LightPush]);
 
   const payloadObj = {
     type: 'product.update',
@@ -37,7 +38,7 @@ export const sendWakuProductUpdate = async (
 
   const encrypted = await encryptWakuPayload(message);
 
-  const encoder = node.createEncoder({ contentTopic: '/congress/products/1' });
+  const encoder = node.createEncoder({ contentTopic: '/congress/products/1/proto' });
   await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
 
 };
