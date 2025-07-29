@@ -316,6 +316,7 @@ END;
 
 -- Table for tracking processed Waku messages
 CREATE TABLE waku_seen (
+  -- SHA-256 hash of the decrypted message
   id TEXT NOT NULL,
   topic TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
