@@ -10,7 +10,7 @@ Run `yarn install` to populate `node_modules`. All data is ephemeral and synchro
 yarn install
 ```
 
-All state is held in memory and hydrated from the Waku message history on boot.
+All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required.
 
 ### Onboarding
 
