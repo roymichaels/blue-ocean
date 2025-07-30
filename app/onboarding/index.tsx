@@ -19,6 +19,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useConfig } from '../../contexts/ConfigContext';
 import InfoModal from '../../components/InfoModal';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { sendWakuUserUpdate } from '../../lib/waku/sendWakuUserUpdate';
 
 export default function OnboardingScreen() {
   const { colors } = useTheme();
@@ -77,6 +78,23 @@ export default function OnboardingScreen() {
       setValue('ADMIN_USERNAME', adminUser);
       setValue('ADMIN_HASH', hash);
       setValue('ADMIN_PUBLIC_KEY', edUtils.bytesToHex(pub));
+
+      const user = {
+        id,
+        username: adminUser,
+        displayName: 'Admin',
+        tenant_id: tenant,
+        role: 'admin',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      await sendWakuUserUpdate(user, {
+        id,
+        publicKey: edUtils.bytesToHex(pub),
+        role: 'admin',
+        privateKey: edUtils.bytesToHex(priv),
+      });
 
       setValue('ONBOARD_COMPLETE', 'true');
       await refreshOnboardingStatus();
