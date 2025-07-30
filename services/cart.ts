@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
+import cartAgent from '../agents/cart-agent';
 import JWT from 'expo-jwt';
 import config from '../utils/appConfig';
 
@@ -186,6 +187,7 @@ class CartService {
 
     if (existingItemIndex >= 0) {
       this.cartItems[existingItemIndex].quantity += quantity;
+      await cartAgent.update(this.cartItems[existingItemIndex]);
     } else {
       const cartItem: CartItem = {
         id: `${product.id}_${Date.now()}`,
@@ -195,6 +197,7 @@ class CartService {
         addedAt: new Date().toISOString()
       };
       this.cartItems.push(cartItem);
+      await cartAgent.add(cartItem);
     }
 
     await this.recalcPricing();
@@ -204,6 +207,7 @@ class CartService {
 
   public async removeFromCart(itemId: string): Promise<void> {
     this.cartItems = this.cartItems.filter(item => item.id !== itemId);
+    await cartAgent.remove(itemId);
     await this.recalcPricing();
     await this.saveToStorage();
     this.notifyListeners();
@@ -216,6 +220,7 @@ class CartService {
         await this.removeFromCart(itemId);
       } else {
         this.cartItems[itemIndex].quantity = quantity;
+        await cartAgent.update(this.cartItems[itemIndex]);
         await this.recalcPricing();
         await this.saveToStorage();
         this.notifyListeners();
@@ -225,6 +230,9 @@ class CartService {
 
   public async clearCart(): Promise<void> {
     this.cartItems = [];
+    for (const item of cartAgent.getAll()) {
+      await cartAgent.remove(item.id);
+    }
     await this.recalcPricing();
     await this.saveToStorage();
     this.notifyListeners();
