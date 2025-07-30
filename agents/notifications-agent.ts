@@ -7,7 +7,7 @@ class NotificationsAgent extends WakuAgent<Notification> {
 
   constructor() {
     super(sendWakuNotificationUpdate, {
-      topic: '/congress/notifications/1/proto',
+      topic: '/congress/notifications/1',
       replayHistory: true,
       extractItem: (msg: any) => msg.notification as Notification,
       onUpdate: (item: Notification) => {
