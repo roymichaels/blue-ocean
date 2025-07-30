@@ -2,6 +2,8 @@ import { Category } from '../types';
 import { sendWakuCategoryUpdate } from '../lib/waku/sendWakuCategoryUpdate';
 import WakuAgent from '../utils/wakuAgent';
 
+// Publishes and replicates category records via Waku
+
 class CategoriesAgent extends WakuAgent<Category> {
   constructor() {
     super(sendWakuCategoryUpdate, {
