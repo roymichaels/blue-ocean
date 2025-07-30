@@ -12,6 +12,23 @@ yarn install
 
 All state is held in memory and hydrated from the Waku message history on boot.
 
+### Onboarding
+
+Start the app once the dependencies are installed. On first launch you will be
+prompted for a few details:
+
+- **App name and admin credentials** – required to set up your local identity
+  and admin user.
+- **Pinata keys** – optional values that enable media uploads to IPFS via
+  Pinata.
+
+After saving the form your admin key pair is created locally and subsequent
+launches skip this screen.
+
+If you provided Pinata credentials the `PinataService` will upload any product
+images or videos to IPFS automatically. Without these keys the app simply keeps
+the local file URIs.
+
 
 Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
 includes a `polyfills.js` file to provide these when running on React Native or
@@ -42,7 +59,14 @@ authentication state persists across reloads on every platform.
 
 ### Peer-to-Peer Synchronization
 
-Settings, users, products and orders are synchronized between peers over the Waku network. When any of these records change locally, call the appropriate `sendWaku...Update` function to broadcast the update. Add the matching `useWaku...Sync` hook (for example `useWakuSettingsSync`) in your root layout so your in-memory state receives updates from other peers. All data is ephemeral and rehydrates from Waku history on every launch.
+Settings, users, products and orders are synchronized between peers over the Waku
+network. Each domain is handled by a small agent that subscribes to a Waku topic
+and keeps a local in-memory cache. On startup every agent replays the topic's
+history so the latest state is restored. When a record changes locally, call the
+appropriate `sendWaku...Update` function to broadcast the update. The matching
+`useWaku...Sync` hook (for example `useWakuSettingsSync`) listens for new
+messages and applies them. All data lives in memory and can be rehydrated from
+history at any time.
 
 The sync hooks only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep data purely local.
 
@@ -64,6 +88,12 @@ yarn dev
 ```
 
 `yarn start` works as an alias of `yarn dev`.
+
+### Running the Agents
+
+The synchronization agents are part of the Expo app. When the development server
+is running and the app is opened, each agent joins its Waku topic and begins
+replicating data in memory. There is no separate service to launch.
 
 ### Building the Web PWA
 

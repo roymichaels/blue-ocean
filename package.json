@@ -5,11 +5,9 @@
   "private": true,
   "scripts": {
     "start": "cross-env EXPO_NO_TELEMETRY=1 BROWSER=none expo start --web",
-    "predev": "node scripts/init-db.js",
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
     "seed": "node scripts/seed.js",
-    "reset-db": "node scripts/reset-db.js",
     "build:web": "expo export --platform web --output-dir dist",
     "test": "jest"
   },
@@ -19,6 +17,7 @@
     "@expo/vector-icons": "^14.1.0",
     "@expo/webpack-config": "^19.0.1",
     "@lucide/lab": "^0.1.2",
+    "@noble/ed25519": "^2.1.1",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
@@ -70,7 +69,6 @@
     "react-native-video": "^6.6.5",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
-    "@noble/ed25519": "^2.1.1",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
@@ -95,9 +93,9 @@
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
-    "util": "^0.12.5",
-    "ts-node": "^10.9.2"
+    "util": "^0.12.5"
   },
   "packageManager": "yarn@1.22.22"
 }
