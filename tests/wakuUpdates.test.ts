@@ -1,6 +1,7 @@
 import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
 import { sendWakuProductUpdate } from '../lib/waku/sendWakuProductUpdate';
 import { sendWakuOrderUpdate } from '../lib/waku/sendWakuOrderUpdate';
+import { sendWakuNotificationUpdate } from '../lib/waku/sendWakuNotificationUpdate';
 
 jest.mock('../lib/waku/wakuCrypto', () => ({
   encryptWakuPayload: jest.fn(async (p: string) => p),
@@ -51,6 +52,13 @@ describe('Waku send updates', () => {
 
   it('order update creates and stops node', async () => {
     await sendWakuOrderUpdate({});
+    const { createLightNode } = await import('@waku/sdk');
+    expect(createLightNode).toHaveBeenCalled();
+    expect(stop).toHaveBeenCalled();
+  });
+
+  it('notification update creates and stops node', async () => {
+    await sendWakuNotificationUpdate({});
     const { createLightNode } = await import('@waku/sdk');
     expect(createLightNode).toHaveBeenCalled();
     expect(stop).toHaveBeenCalled();

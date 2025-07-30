@@ -1,5 +1,5 @@
 import { Notification } from '../types';
-import { executeSql } from '../lib/sqlite';
+import notificationsAgent from '../agents/notifications-agent';
 
 class NotificationService {
   private static instance: NotificationService;
@@ -19,19 +19,10 @@ class NotificationService {
         console.warn('No user ID provided for getNotifications');
         return [];
       }
-      const result = await executeSql(
-        'SELECT * FROM notifications WHERE user_id = ? ORDER BY timestamp DESC',
-        [userId],
-      );
-      const rows = (result.rows as any)._array || [];
-      return rows.map((notification: any) => ({
-        id: notification.id,
-        title: notification.title,
-        message: notification.message,
-        type: notification.type,
-        read: notification.read,
-        timestamp: notification.timestamp,
-      }));
+      return notificationsAgent
+        .getAll()
+        .filter((n) => n.userId === userId)
+        .sort((a, b) => b.timestamp - a.timestamp);
     } catch (error) {
       console.error('Error in getNotifications:', error);
       return [];
@@ -40,7 +31,10 @@ class NotificationService {
 
   async markAsRead(id: string): Promise<boolean> {
     try {
-      await executeSql('UPDATE notifications SET read = 1 WHERE id = ?', [id]);
+      const n = notificationsAgent.get(id);
+      if (!n) return false;
+      n.read = true;
+      await notificationsAgent.update(n);
       return true;
     } catch (error) {
       console.error('Error in markAsRead:', error);
@@ -50,7 +44,13 @@ class NotificationService {
 
   async markAllAsRead(userId: string): Promise<boolean> {
     try {
-      await executeSql('UPDATE notifications SET read = 1 WHERE user_id = ?', [userId]);
+      const list = notificationsAgent
+        .getAll()
+        .filter((n) => n.userId === userId && !n.read);
+      for (const n of list) {
+        n.read = true;
+        await notificationsAgent.update(n);
+      }
       return true;
     } catch (error) {
       console.error('Error in markAllAsRead:', error);
@@ -60,7 +60,7 @@ class NotificationService {
 
   async deleteNotification(id: string): Promise<boolean> {
     try {
-      await executeSql('DELETE FROM notifications WHERE id = ?', [id]);
+      await notificationsAgent.remove(id);
       return true;
     } catch (error) {
       console.error('Error in deleteNotification:', error);
@@ -75,38 +75,17 @@ class NotificationService {
     type: 'order' | 'promo' | 'message' | 'system';
   }): Promise<Notification | null> {
     try {
-      const newNotification = {
-        user_id: notification.userId,
+      const newNotification: Notification = {
+        id: `ntf_${Date.now()}`,
+        userId: notification.userId,
         title: notification.title,
         message: notification.message,
         type: notification.type,
         read: false,
         timestamp: Date.now(),
       };
-
-      const id = `ntf_${Date.now()}`;
-      await executeSql(
-        `INSERT INTO notifications (id, user_id, title, message, type, read, timestamp)
-         VALUES (?,?,?,?,?,?,?)`,
-        [
-          id,
-          newNotification.user_id,
-          newNotification.title,
-          newNotification.message,
-          newNotification.type,
-          0,
-          newNotification.timestamp,
-        ],
-      );
-
-      return {
-        id,
-        title: newNotification.title,
-        message: newNotification.message,
-        type: newNotification.type,
-        read: false,
-        timestamp: newNotification.timestamp,
-      };
+      await notificationsAgent.add(newNotification);
+      return newNotification;
     } catch (error) {
       console.error('Error in addNotification:', error);
       return null;
@@ -116,17 +95,12 @@ class NotificationService {
   async getUnreadCount(userId?: string): Promise<number> {
     try {
       if (!userId) {
-        // Handle the case where userId is undefined
         console.warn('No user ID provided for getUnreadCount');
         return 0;
       }
-
-      const result = await executeSql(
-        'SELECT COUNT(*) as cnt FROM notifications WHERE user_id = ? AND read = 0',
-        [userId],
-      );
-      const item = (result.rows as any)._array?.[0];
-      return item ? item.cnt : 0;
+      return notificationsAgent
+        .getAll()
+        .filter((n) => n.userId === userId && !n.read).length;
     } catch (error) {
       console.error('Error in getUnreadCount:', error);
       return 0;
@@ -134,14 +108,17 @@ class NotificationService {
   }
 
   // Subscribe to real-time notifications for a specific user
-  subscribeToUserNotifications(_userId: string, _callback: (n: Notification) => void) {
-    console.warn('Realtime notifications not implemented with SQLite');
-    return null;
+  subscribeToUserNotifications(userId: string, callback: (n: Notification) => void) {
+    const handler = (n: Notification) => {
+      if (n.userId === userId) callback(n);
+    };
+    notificationsAgent.subscribe(handler);
+    return handler;
   }
 
   // Unsubscribe from real-time notifications
-  unsubscribeFromNotifications(_subscription: any) {
-    // no-op
+  unsubscribeFromNotifications(subscription: any) {
+    notificationsAgent.unsubscribe(subscription);
   }
 }
 

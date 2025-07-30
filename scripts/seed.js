@@ -82,6 +82,18 @@ async function seed() {
   }
   store.orders.push(...orders);
 
+  // Notifications
+  const notifications = Array.from({ length: 5 }).map(() => ({
+    id: `ntf_${Date.now()}_${faker.number.int()}`,
+    userId: faker.helpers.arrayElement(store.users).id,
+    title: faker.lorem.words({ min: 2, max: 5 }),
+    message: faker.lorem.sentence(),
+    type: 'system',
+    read: false,
+    timestamp: Date.now(),
+  }));
+  store.notifications.push(...notifications);
+
   // Tenant settings
   for (const tenant of tenants) {
     store.tenantSettings[tenant] = {
