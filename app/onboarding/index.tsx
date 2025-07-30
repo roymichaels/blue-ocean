@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import bcrypt from 'bcryptjs';
-import * as SecureStore from 'expo-secure-store';
+import { savePrivateKey } from '../../utils/privateKeyStorage';
 import { getPublicKeyAsync, utils as edUtils, etc as edBytes } from '@noble/ed25519';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useConfig } from '../../contexts/ConfigContext';
@@ -73,7 +73,7 @@ export default function OnboardingScreen() {
       const id = `admin_${Date.now()}`;
       const priv = edUtils.randomPrivateKey();
       const pub = await getPublicKeyAsync(priv);
-      await SecureStore.setItemAsync('ed25519_private_key', edBytes.bytesToHex(priv));
+      await savePrivateKey(edBytes.bytesToHex(priv));
       setValue('ADMIN_ID', id);
       setValue('ADMIN_USERNAME', adminUser);
       setValue('ADMIN_HASH', hash);

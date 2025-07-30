@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import usersAgent from '../agents/users-agent';
 import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
-import * as SecureStore from 'expo-secure-store';
+import { savePrivateKey } from '../utils/privateKeyStorage';
 import { getPublicKeyAsync, utils as edUtils, etc as edBytes } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
@@ -26,7 +26,6 @@ async function getJwtSecret(): Promise<string | null> {
   }
   return jwtSecretPromise;
 }
-const PRIVATE_KEY_KEY = 'ed25519_private_key';
 
 export class UsernameTakenError extends Error {
   constructor() {
@@ -154,7 +153,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const pub = await getPublicKeyAsync(priv);
       const privateKey = edBytes.bytesToHex(priv);
       const publicKey = edBytes.bytesToHex(pub);
-      await SecureStore.setItemAsync(PRIVATE_KEY_KEY, privateKey);
+      await savePrivateKey(privateKey);
       const existing = usersAgent.getAll().find((u) => u.username === username);
       if (existing) {
         throw new UsernameTakenError();
