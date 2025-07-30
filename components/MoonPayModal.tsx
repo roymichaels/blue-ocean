@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Modal, View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import LoadingSpinner from './LoadingSpinner';
@@ -20,7 +20,6 @@ export default function MoonPayModal({
   amountUSD,
 }: MoonPayModalProps) {
   const { colors } = useTheme();
-  const webviewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
 
   const url = `https://buy.moonpay.com?currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
@@ -59,7 +58,6 @@ export default function MoonPayModal({
           </View>
         )}
         <WebView
-          ref={webviewRef}
           source={{ uri: url }}
           style={styles.webview}
           onLoadEnd={() => setLoading(false)}
