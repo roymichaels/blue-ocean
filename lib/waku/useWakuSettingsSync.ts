@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
 import { Buffer } from 'buffer';
-import { executeSql } from '../sqlite';
 import { decryptWakuPayload } from './wakuCrypto';
 import config from '../../utils/appConfig';
+import { useConfig } from '../../contexts/ConfigContext';
+
+const seenIds = new Set<string>();
 
 export const useWakuSettingsSync = () => {
+  const { setValue } = useConfig();
   useEffect(() => {
     let node: any;
     let decoder: any;
@@ -31,13 +34,8 @@ export const useWakuSettingsSync = () => {
         );
         const id = Buffer.from(new Uint8Array(hashBuffer)).toString('hex');
 
-        const seen = await executeSql(
-          'SELECT 1 FROM waku_seen WHERE id=? AND topic=? LIMIT 1',
-          [id, topic],
-        );
-        if ((seen.rows as any)._array.length > 0) return;
-
-        await executeSql('INSERT INTO waku_seen (id, topic) VALUES (?, ?)', [id, topic]);
+        if (seenIds.has(id)) return;
+        seenIds.add(id);
         try {
           const parsed = JSON.parse(plaintext);
           if (!parsed.signature || !parsed.sender?.publicKey) {
@@ -65,18 +63,8 @@ export const useWakuSettingsSync = () => {
 
             return;
           }
-          const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
-          if ((exists.rows as any)._array.length === 0) return;
           if (parsed.type === 'settings.update') {
-            await executeSql(
-              `INSERT INTO settings (key,value,created_at,updated_at)
-               VALUES (?,?,?,?)
-               ON CONFLICT(key) DO UPDATE SET
-                 value=excluded.value,
-                 updated_at=excluded.updated_at`,
-              [parsed.key, parsed.value, parsed.createdAt, parsed.updatedAt]
-            );
-
+            setValue(parsed.key, parsed.value);
           }
         } catch (e) {
           console.error('Invalid Waku message:', e);

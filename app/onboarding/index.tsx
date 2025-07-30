@@ -16,13 +16,13 @@ import bcrypt from 'bcryptjs';
 import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { useTheme } from '../../contexts/ThemeContext';
-import { setConfig } from '../../utils/appConfig';
-import { executeSql } from '../../lib/sqlite';
+import { useConfig } from '../../contexts/ConfigContext';
 import InfoModal from '../../components/InfoModal';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 
 export default function OnboardingScreen() {
   const { colors } = useTheme();
+  const { setValue } = useConfig();
   const [tenant, setTenant] = useState('thecongress');
   const [appName, setAppName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('');
@@ -56,33 +56,29 @@ export default function OnboardingScreen() {
     }
     setLoading(true);
     try {
-      setConfig('EXPO_PUBLIC_TENANT', tenant);
-      setConfig('EXPO_PUBLIC_ADMIN_USERNAME', adminUser);
-      setConfig('APP_NAME', appName);
-      setConfig('PRIMARY_COLOR', primaryColor);
-      if (logo) setConfig('APP_LOGO', logo);
-      if (pinataJwt) setConfig('EXPO_PUBLIC_PINATA_JWT', pinataJwt);
-      if (pinataApiKey) setConfig('EXPO_PUBLIC_PINATA_API_KEY', pinataApiKey);
-      if (pinataSecret) setConfig('EXPO_PUBLIC_PINATA_SECRET_API_KEY', pinataSecret);
-      if (moonpayKey) setConfig('MOONPAY_KEY', moonpayKey);
-      if (chatSecret) setConfig('EXPO_PUBLIC_CHAT_SECRET', chatSecret);
-      if (wakuSecret) setConfig('EXPO_PUBLIC_WAKU_SECRET', wakuSecret);
+      setValue('EXPO_PUBLIC_TENANT', tenant);
+      setValue('EXPO_PUBLIC_ADMIN_USERNAME', adminUser);
+      setValue('APP_NAME', appName);
+      setValue('PRIMARY_COLOR', primaryColor);
+      if (logo) setValue('APP_LOGO', logo);
+      if (pinataJwt) setValue('EXPO_PUBLIC_PINATA_JWT', pinataJwt);
+      if (pinataApiKey) setValue('EXPO_PUBLIC_PINATA_API_KEY', pinataApiKey);
+      if (pinataSecret) setValue('EXPO_PUBLIC_PINATA_SECRET_API_KEY', pinataSecret);
+      if (moonpayKey) setValue('MOONPAY_KEY', moonpayKey);
+      if (chatSecret) setValue('EXPO_PUBLIC_CHAT_SECRET', chatSecret);
+      if (wakuSecret) setValue('EXPO_PUBLIC_WAKU_SECRET', wakuSecret);
 
       const hash = await bcrypt.hash(adminPass, 10);
       const id = `admin_${Date.now()}`;
       const priv = edUtils.randomPrivateKey();
       const pub = await getPublicKey(priv);
       await SecureStore.setItemAsync('ed25519_private_key', edUtils.bytesToHex(priv));
-      await executeSql(
-        'INSERT INTO users (id, username, password_hash, display_name, role, public_key) VALUES (?,?,?,?,?,?)',
-        [id, adminUser, hash, 'Admin', 'admin', edUtils.bytesToHex(pub)],
-      );
-      await executeSql(
-        'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
-        [id, tenant, id, adminUser, null, 'Admin', 'admin'],
-      );
+      setValue('ADMIN_ID', id);
+      setValue('ADMIN_USERNAME', adminUser);
+      setValue('ADMIN_HASH', hash);
+      setValue('ADMIN_PUBLIC_KEY', edUtils.bytesToHex(pub));
 
-      setConfig('ONBOARD_COMPLETE', 'true');
+      setValue('ONBOARD_COMPLETE', 'true');
       await refreshOnboardingStatus();
       setInfo({
         visible: true,
