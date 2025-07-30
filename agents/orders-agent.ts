@@ -8,6 +8,9 @@ class OrdersAgent extends WakuAgent<Order> {
       topic: '/congress/orders/1/proto',
       replayHistory: true,
       extractItem: (msg: any) => msg.order as Order,
+      allowedRoles: ['admin', 'user', 'driver'],
+      validateMessage: (msg: any) =>
+        msg.sender.role === 'admin' || msg.order?.userId === msg.sender.id,
     });
   }
 }
