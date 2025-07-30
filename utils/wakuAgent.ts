@@ -26,7 +26,7 @@ export default class WakuAgent<T extends { id: string }> {
   private node: any | null = null;
   private decoder: any | null = null;
   private ready: Promise<void> | null = null;
-  private hashCache: Set<string> = new Set();
+  protected hashCache: Set<string> = new Set();
 
   constructor(
     private sendFn: (item: T) => Promise<void>,
@@ -59,6 +59,10 @@ export default class WakuAgent<T extends { id: string }> {
 
   async remove(id: string): Promise<void> {
     this.store.delete(id);
+  }
+
+  clearHashCache(): void {
+    this.hashCache.clear();
   }
 
   private async init() {
