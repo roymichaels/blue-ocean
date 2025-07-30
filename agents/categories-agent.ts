@@ -9,6 +9,7 @@ class CategoriesAgent extends WakuAgent<Category> {
       replayHistory: true,
       extractItem: (msg: any) =>
         msg.type === 'category.update' ? (msg.category as Category) : undefined,
+      allowedRoles: ['admin'],
     });
   }
 }
