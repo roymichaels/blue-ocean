@@ -37,7 +37,7 @@ export const sendWakuNotificationUpdate = async (
 
     const encrypted = await encryptWakuPayload(message);
 
-    const encoder = node.createEncoder({ contentTopic: '/congress/notifications/1/proto' });
+    const encoder = node.createEncoder({ contentTopic: '/congress/notifications/1' });
     await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
   } finally {
     await node.stop();
