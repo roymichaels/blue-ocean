@@ -21,6 +21,8 @@ prompted for a few details:
   and admin user.
 - **Pinata keys** – optional values that enable media uploads to IPFS via
   Pinata.
+- **MoonPay key** – optional value enabling credit card purchases through the
+  MoonPay widget.
 
 After saving the form your admin key pair is created locally and subsequent
 launches skip this screen.
@@ -28,6 +30,12 @@ launches skip this screen.
 If you provided Pinata credentials the `PinataService` will upload any product
 images or videos to IPFS automatically. Without these keys the app simply keeps
 the local file URIs.
+
+### Credit Card Checkout
+
+Providing a MoonPay key enables the `MoonPayModal` component for credit card
+purchases. Pass the wallet address, coin and USD amount to display the widget in
+a modal and pre-fill the fiat amount.
 
 
 Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
