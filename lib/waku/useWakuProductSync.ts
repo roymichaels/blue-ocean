@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { executeSql } from '../sqlite';
+import { store } from '../memoryStore';
 import { decryptWakuPayload } from './wakuCrypto';
 import config from '../../utils/appConfig';
 
@@ -47,42 +47,30 @@ export const useWakuProductSync = () => {
           if (!ok || parsed.sender.role !== 'admin') {
             return;
           }
-          const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
-          if ((exists.rows as any)._array.length === 0) return;
+          const exists = store.users.some((u) => u.id === parsed.sender.id);
+          if (!exists) return;
           if (parsed.type === 'product.update' && parsed.product) {
             const p = parsed.product;
-            await executeSql(
-              `INSERT OR REPLACE INTO products (
-                id, tenant_id, name, name_en, name_he, price, description, description_en,
-                description_he, category, subcategory, images, videos, colors,
-                rating, reviews, badges, pricing_tier, mix_group_id, stock,
-                created_at, updated_at
-              ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-              [
-                p.id,
-                p.tenant_id,
-                p.name,
-                p.name_en ?? null,
-                p.name_he ?? null,
-                p.price,
-                p.description,
-                p.description_en ?? null,
-                p.description_he ?? null,
-                p.category,
-                p.subcategory ?? null,
-                JSON.stringify(p.images || []),
-                JSON.stringify(p.videos || []),
-                JSON.stringify(p.colors || []),
-                p.rating ?? 0,
-                p.reviews ?? 0,
-                JSON.stringify(p.badges || []),
-                p.pricingTier ?? null,
-                p.mixGroupId ?? null,
-                p.stock ?? 0,
-                p.createdAt ?? Date.now(),
-                p.updatedAt ?? Date.now(),
-              ]
-            );
+            const updated = {
+              ...p,
+              images: p.images || [],
+              videos: p.videos || [],
+              colors: p.colors || [],
+              badges: p.badges || [],
+              rating: p.rating ?? 0,
+              reviews: p.reviews ?? 0,
+              pricingTier: p.pricingTier ?? null,
+              mixGroupId: p.mixGroupId ?? null,
+              stock: p.stock ?? 0,
+              createdAt: p.createdAt ?? Date.now(),
+              updatedAt: p.updatedAt ?? Date.now(),
+            };
+            const idx = store.products.findIndex((prod) => prod.id === p.id);
+            if (idx >= 0) {
+              store.products[idx] = updated as any;
+            } else {
+              store.products.push(updated as any);
+            }
           }
         } catch (e) {
           console.error('Invalid Waku message:', e);
