@@ -2,7 +2,7 @@
 
 import 'react-native-url-polyfill/auto';
 import { sha512 } from '@noble/hashes/sha512';
-import { utils as edUtils } from '@noble/ed25519';
+import { etc as edUtils } from '@noble/ed25519';
 
 try {
   require('react-native-get-random-values'); // correct: must use require()

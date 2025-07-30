@@ -3,7 +3,7 @@ import usersAgent from '../agents/users-agent';
 import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
 import * as SecureStore from 'expo-secure-store';
-import { getPublicKeyAsync, utils as edUtils } from '@noble/ed25519';
+import { getPublicKeyAsync, utils as edUtils, etc as edBytes } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
 import config from '../utils/appConfig';
@@ -152,8 +152,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const role = isAdminUsername ? 'admin' : 'user';
       const priv = edUtils.randomPrivateKey();
       const pub = await getPublicKeyAsync(priv);
-      const privateKey = edUtils.bytesToHex(priv);
-      const publicKey = edUtils.bytesToHex(pub);
+      const privateKey = edBytes.bytesToHex(priv);
+      const publicKey = edBytes.bytesToHex(pub);
       await SecureStore.setItemAsync(PRIVATE_KEY_KEY, privateKey);
       const existing = usersAgent.getAll().find((u) => u.username === username);
       if (existing) {
