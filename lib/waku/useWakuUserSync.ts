@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { executeSql } from '../sqlite';
+import { store } from '../memoryStore';
 import { decryptWakuPayload } from './wakuCrypto';
 import { getTenant } from '../../constants/tenant';
 import config from '../../utils/appConfig';
@@ -47,35 +47,30 @@ export const useWakuUserSync = () => {
           if (!ok || parsed.sender.role !== 'admin') {
             return;
           }
-          const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
-          if ((exists.rows as any)._array.length === 0) return;
+          const exists = store.users.some((u) => u.id === parsed.sender.id);
+          if (!exists) return;
           if (parsed.type === 'user.update' && parsed.user) {
             const u = parsed.user;
             const tenant = await getTenant();
-            await executeSql(
-              `INSERT OR REPLACE INTO user_profiles (
-                id, tenant_id, matrix_user_id, app_username, email, display_name,
-                role, created_at, updated_at, kyc_status, customer_tier,
-                kyc_request_notes, kyc_requested_at, kyc_approved_by, kyc_approved_at
-              ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-              [
-                u.id,
-                u.tenant_id ?? tenant,
-                u.id,
-                u.username,
-                u.email ?? null,
-                u.displayName,
-                u.role ?? (u.isAdmin ? 'admin' : u.isDriver ? 'driver' : 'user'),
-                u.createdAt ?? new Date().toISOString(),
-                u.updatedAt ?? new Date().toISOString(),
-                u.kycStatus ?? 'none',
-                u.customerTier ?? 'new',
-                u.kycRequestNotes ?? null,
-                u.kycRequestedAt ?? null,
-                u.kycApprovedBy ?? null,
-                u.kycApprovedAt ?? null,
-              ]
-            );
+            const updated = {
+              ...u,
+              tenant_id: u.tenant_id ?? tenant,
+              role: u.role ?? (u.isAdmin ? 'admin' : u.isDriver ? 'driver' : 'user'),
+              createdAt: u.createdAt ?? new Date().toISOString(),
+              updatedAt: u.updatedAt ?? new Date().toISOString(),
+              kycStatus: u.kycStatus ?? 'none',
+              customerTier: u.customerTier ?? 'new',
+              kycRequestNotes: u.kycRequestNotes ?? null,
+              kycRequestedAt: u.kycRequestedAt ?? null,
+              kycApprovedBy: u.kycApprovedBy ?? null,
+              kycApprovedAt: u.kycApprovedAt ?? null,
+            };
+            const idx = store.users.findIndex((usr) => usr.id === u.id);
+            if (idx >= 0) {
+              store.users[idx] = updated as any;
+            } else {
+              store.users.push(updated as any);
+            }
           }
         } catch (e) {
           console.error('Invalid Waku message:', e);
