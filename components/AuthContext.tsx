@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { executeSql } from '../lib/sqlite';
+import usersAgent from '../agents/users-agent';
 import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
 import * as SecureStore from 'expo-secure-store';
@@ -7,7 +7,6 @@ import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
 import config from '../utils/appConfig';
-import { getTenant } from '../constants/tenant';
 
 async function getAdminUsernames(): Promise<string[]> {
   const raw = config.EXPO_PUBLIC_ADMIN_USERNAME || '';
@@ -97,31 +96,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const loadProfile = async (uid: string) => {
-    const result = await executeSql('SELECT * FROM users WHERE id = ?', [uid]);
-    const data = (result.rows as any)._array?.[0];
+    const data = usersAgent.get(uid);
     if (data) {
-      setUser({
-        id: data.id,
-        username: data.username,
-        displayName: data.display_name,
-        role: data.role,
-        publicKey: data.public_key,
-      });
+      setUser(data);
     } else {
-      setUser({ id: uid, role: 'user', username: '', displayName: '' });
+      setUser({ id: uid, role: 'user', username: '', displayName: '', isAdmin: false });
     }
   };
 
   const login = async (username: string, password: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const res = await executeSql('SELECT * FROM users WHERE username = ?', [username]);
-      const row = (res.rows as any)._array?.[0];
+      const row = usersAgent.getAll().find((u) => u.username === username);
       if (!row) {
         setLoading(false);
         return false;
       }
-      const match = await bcrypt.compare(password, row.password_hash);
+      const match = await bcrypt.compare(password, row.passwordHash || '');
       if (!match) {
         setLoading(false);
         return false;
@@ -164,15 +155,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const privateKey = edUtils.bytesToHex(priv);
       const publicKey = edUtils.bytesToHex(pub);
       await SecureStore.setItemAsync(PRIVATE_KEY_KEY, privateKey);
-      await executeSql(
-        'INSERT INTO users (id, username, password_hash, display_name, role, public_key) VALUES (?,?,?,?,?,?)',
-        [id, username, hash, displayName, role, publicKey],
-      );
-      const tenant = await getTenant();
-      await executeSql(
-        'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
-        [id, tenant, id, username, null, displayName, role],
-      );
+      const existing = usersAgent.getAll().find((u) => u.username === username);
+      if (existing) {
+        throw new UsernameTakenError();
+      }
+      await usersAgent.add({
+        id,
+        username,
+        displayName,
+        role,
+        publicKey,
+        isAdmin: role === 'admin',
+        isDriver: role === 'driver',
+        passwordHash: hash,
+      });
       const JWT_SECRET = await getJwtSecret();
       if (!JWT_SECRET) {
         console.error('JWT secret missing; cannot signup');

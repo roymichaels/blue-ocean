@@ -107,6 +107,7 @@ export interface User {
   isAdmin: boolean;
   isDriver?: boolean;
   displayName: string;
+  passwordHash?: string;
   avatar?: string;
   email?: string;
   role?: string;
@@ -123,6 +124,7 @@ export interface User {
 
 export interface Notification {
   id: string;
+  userId: string;
   title: string;
   message: string;
   type: 'order' | 'promo' | 'message' | 'system';
