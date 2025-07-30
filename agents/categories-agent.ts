@@ -4,7 +4,12 @@ import WakuAgent from '../utils/wakuAgent';
 
 class CategoriesAgent extends WakuAgent<Category> {
   constructor() {
-    super(sendWakuCategoryUpdate);
+    super(sendWakuCategoryUpdate, {
+      topic: '/congress/categories/1',
+      replayHistory: true,
+      extractItem: (msg: any) =>
+        msg.type === 'category.update' ? (msg.category as Category) : undefined,
+    });
   }
 }
 
