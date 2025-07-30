@@ -97,7 +97,7 @@ Run the test suite with:
 yarn test
 ```
 
-Ensure all dependencies are installed using `yarn install` before running the tests.
+Run `yarn install` before executing `yarn test` so Jest and other dependencies are present.
 
 
 ## License
