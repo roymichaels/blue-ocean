@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
-import SettingsAgent from '../services/settings-agent';
+import SettingsAgent from '../agents/settings-agent';
 import MediaService from '../services/media';
 import config from '../utils/appConfig';
 

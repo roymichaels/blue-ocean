@@ -63,12 +63,11 @@ Settings, users, products and orders are synchronized between peers over the Wak
 network. Each domain is handled by a small agent that subscribes to a Waku topic
 and keeps a local in-memory cache. On startup every agent replays the topic's
 history so the latest state is restored. When a record changes locally, call the
-appropriate `sendWaku...Update` function to broadcast the update. The matching
-`useWaku...Sync` hook (for example `useWakuSettingsSync`) listens for new
-messages and applies them. All data lives in memory and can be rehydrated from
-history at any time.
+appropriate `sendWaku...Update` function to broadcast the update. Each agent
+listens for new messages on its topic and applies them automatically, so data
+can be rehydrated from history at any time.
 
-The sync hooks only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep data purely local.
+Agents only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep data purely local.
 
 ### Web Notes
 

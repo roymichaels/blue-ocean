@@ -22,20 +22,12 @@ import { ConfigProvider } from '../contexts/ConfigContext';
 import { loadTenantSettings } from '../constants/tenant';
 import OnboardingScreen from './onboarding';
 import { OnboardingProvider, useOnboarding } from '../contexts/OnboardingContext';
-import { useWakuSettingsSync } from '../lib/waku/useWakuSettingsSync';
-import { useWakuUserSync } from '../lib/waku/useWakuUserSync';
-import { useWakuProductSync } from '../lib/waku/useWakuProductSync';
-import { useWakuOrderSync } from '../lib/waku/useWakuOrderSync';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
   const { colors, theme } = useTheme();
   const { isAdmin, loading } = useAuth();
 
-  useWakuSettingsSync();
-  useWakuUserSync();
-  useWakuProductSync();
-  useWakuOrderSync();
 
   if (loading) {
     return (
