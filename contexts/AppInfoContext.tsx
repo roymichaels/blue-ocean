@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
-import TenantSettingsService from '../services/tenantSettings';
+import SettingsAgent from '../services/settings-agent';
 import MediaService from '../services/media';
 import config from '../utils/appConfig';
 
@@ -63,7 +63,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       if (storedLogo) setPlatformLogoState(storedLogo);
       if (storedColor) setThemeColorState(storedColor);
 
-      const tenantSvc = TenantSettingsService.getInstance();
+      const tenantSvc = SettingsAgent.getInstance();
       try {
         const t = tenant;
         const dbName = await tenantSvc.getTenantSetting(t, 'platform_name');
@@ -102,7 +102,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     const NAME_KEY = `app_platform_name_${tenant}`;
     setPlatformNameState(name);
     await AsyncStorage.setItem(NAME_KEY, name);
-    const tenantSvc = TenantSettingsService.getInstance();
+    const tenantSvc = SettingsAgent.getInstance();
     try {
       await tenantSvc.updateTenantSetting(tenant, 'platform_name', name);
       scheduleLoadInfo();
@@ -124,7 +124,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       const LOGO_KEY = `app_platform_logo_${tenant}`;
       setPlatformLogoState(finalLogo);
       await AsyncStorage.setItem(LOGO_KEY, finalLogo);
-      const tenantSvc = TenantSettingsService.getInstance();
+      const tenantSvc = SettingsAgent.getInstance();
       await tenantSvc.updateTenantSetting(tenant, 'platform_logo', finalLogo);
       scheduleLoadInfo();
     } catch (e) {
@@ -139,7 +139,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       const COLOR_KEY = `app_theme_color_${tenant}`;
       setThemeColorState(color);
       await AsyncStorage.setItem(COLOR_KEY, color);
-      const tenantSvc = TenantSettingsService.getInstance();
+      const tenantSvc = SettingsAgent.getInstance();
       await tenantSvc.updateTenantSetting(tenant, 'theme_color', color);
       scheduleLoadInfo();
     } catch (e) {
