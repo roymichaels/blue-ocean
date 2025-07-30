@@ -183,24 +183,6 @@ yarn test
 
 Ensure all dependencies are installed using `yarn install` before running the tests.
 
-## Database Backup
-
-The project includes helper scripts to encrypt the `blue-ocean.db` SQLite file
-and store it on Pinata. Pinata credentials are read from the `config` table, so
-only a passphrase is required when running the scripts.
-
-### Backup the database
-
-```sh
-node scripts/backup-db.js mySecretPassphrase
-```
-
-### Restore the latest backup
-
-```sh
-node scripts/restore-db.js mySecretPassphrase
-```
-
 
 ## License
 
