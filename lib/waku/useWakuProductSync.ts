@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { executeSql } from '../sqlite';
+import { store } from '../memoryStore';
 import { decryptWakuPayload } from './wakuCrypto';
 import { requireConfig } from '../../utils/env';
 
@@ -47,42 +47,18 @@ export const useWakuProductSync = () => {
           if (!ok || parsed.sender.role !== 'admin') {
             return;
           }
-          const exists = await executeSql('SELECT 1 FROM users WHERE id=? LIMIT 1', [parsed.sender.id]);
-          if ((exists.rows as any)._array.length === 0) return;
+          if (!store.users.has(parsed.sender.id)) return;
           if (parsed.type === 'product.update' && parsed.product) {
             const p = parsed.product;
-            await executeSql(
-              `INSERT OR REPLACE INTO products (
-                id, tenant_id, name, name_en, name_he, price, description, description_en,
-                description_he, category, subcategory, images, videos, colors,
-                rating, reviews, badges, pricing_tier, mix_group_id, stock,
-                created_at, updated_at
-              ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-              [
-                p.id,
-                p.tenant_id,
-                p.name,
-                p.name_en ?? null,
-                p.name_he ?? null,
-                p.price,
-                p.description,
-                p.description_en ?? null,
-                p.description_he ?? null,
-                p.category,
-                p.subcategory ?? null,
-                JSON.stringify(p.images || []),
-                JSON.stringify(p.videos || []),
-                JSON.stringify(p.colors || []),
-                p.rating ?? 0,
-                p.reviews ?? 0,
-                JSON.stringify(p.badges || []),
-                p.pricingTier ?? null,
-                p.mixGroupId ?? null,
-                p.stock ?? 0,
-                p.createdAt ?? Date.now(),
-                p.updatedAt ?? Date.now(),
-              ]
-            );
+            store.products.set(p.id, {
+              ...p,
+              images: p.images || [],
+              videos: p.videos || [],
+              colors: p.colors || [],
+              badges: p.badges || [],
+              createdAt: p.createdAt ?? Date.now(),
+              updatedAt: p.updatedAt ?? Date.now(),
+            });
           }
         } catch (e) {
           console.error('Invalid Waku message:', e);

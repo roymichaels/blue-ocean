@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { executeSql } from '../lib/sqlite';
+import { store } from '../lib/memoryStore';
 import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
 import * as SecureStore from 'expo-secure-store';
@@ -101,15 +101,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const loadProfile = async (uid: string) => {
-    const result = await executeSql('SELECT * FROM users WHERE id = ?', [uid]);
-    const data = (result.rows as any)._array?.[0];
+    const data = store.users.get(uid);
     if (data) {
       setUser({
         id: data.id,
         username: data.username,
-        displayName: data.display_name,
+        displayName: data.displayName,
         role: data.role,
-        publicKey: data.public_key,
+        publicKey: data.publicKey,
       });
     } else {
       setUser({ id: uid, role: 'user', username: '', displayName: '' });
@@ -119,13 +118,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (username: string, password: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const res = await executeSql('SELECT * FROM users WHERE username = ?', [username]);
-      const row = (res.rows as any)._array?.[0];
+      const row = Array.from(store.users.values()).find(u => u.username === username);
       if (!row) {
         setLoading(false);
         return false;
       }
-      const match = await bcrypt.compare(password, row.password_hash);
+      const match = await bcrypt.compare(password, row.passwordHash);
       if (!match) {
         setLoading(false);
         return false;
@@ -168,15 +166,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const privateKey = edUtils.bytesToHex(priv);
       const publicKey = edUtils.bytesToHex(pub);
       await SecureStore.setItemAsync(PRIVATE_KEY_KEY, privateKey);
-      await executeSql(
-        'INSERT INTO users (id, username, password_hash, display_name, role, public_key) VALUES (?,?,?,?,?,?)',
-        [id, username, hash, displayName, role, publicKey],
-      );
+      store.users.set(id, {
+        id,
+        username,
+        passwordHash: hash,
+        displayName,
+        role,
+        publicKey,
+      });
       const tenant = await getTenant();
-      await executeSql(
-        'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
-        [id, tenant, id, username, null, displayName, role],
-      );
+      store.userProfiles.set(id, {
+        id,
+        tenant_id: tenant,
+        username,
+        displayName,
+        role,
+        publicKey,
+      });
       const JWT_SECRET = await getJwtSecret();
       if (!JWT_SECRET) {
         console.error('JWT secret missing; cannot signup');

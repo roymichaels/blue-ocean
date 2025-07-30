@@ -17,7 +17,7 @@ import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { useTheme } from '../../contexts/ThemeContext';
 import { saveConfigValue } from '../../utils/config';
-import { executeSql } from '../../lib/sqlite';
+import { store } from '../../lib/memoryStore';
 import InfoModal from '../../components/InfoModal';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 
@@ -75,14 +75,22 @@ export default function OnboardingScreen() {
       const priv = edUtils.randomPrivateKey();
       const pub = await getPublicKey(priv);
       await SecureStore.setItemAsync('ed25519_private_key', edUtils.bytesToHex(priv));
-      await executeSql(
-        'INSERT INTO users (id, username, password_hash, display_name, role, public_key) VALUES (?,?,?,?,?,?)',
-        [id, adminUser, hash, 'Admin', 'admin', edUtils.bytesToHex(pub)],
-      );
-      await executeSql(
-        'INSERT INTO user_profiles (id, tenant_id, matrix_user_id, app_username, email, display_name, role) VALUES (?,?,?,?,?,?,?)',
-        [id, tenant, id, adminUser, null, 'Admin', 'admin'],
-      );
+      store.users.set(id, {
+        id,
+        username: adminUser,
+        passwordHash: hash,
+        displayName: 'Admin',
+        role: 'admin',
+        publicKey: edUtils.bytesToHex(pub),
+      });
+      store.userProfiles.set(id, {
+        id,
+        tenant_id: tenant,
+        username: adminUser,
+        displayName: 'Admin',
+        role: 'admin',
+        publicKey: edUtils.bytesToHex(pub),
+      });
 
       await saveConfigValue('ONBOARD_COMPLETE', 'true');
       await refreshOnboardingStatus();

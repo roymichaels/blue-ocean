@@ -14,3 +14,7 @@ sqlite/*.db
 # Environment files
 .env*
 dump.sql
+# Node lock files
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
