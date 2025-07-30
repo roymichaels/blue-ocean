@@ -3,6 +3,7 @@
 This document outlines the autonomous agents in **TheCongress**, a fully decentralized, serverless, encrypted e-commerce protocol.  
 All agents communicate over the Waku network and replicate data locally in memory.  
 There is **no centralized backend**, **no SQLite**, and **no .env config**.
+All SQL migration files have been removed.
 
 ---
 
