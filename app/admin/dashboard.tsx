@@ -435,7 +435,7 @@ export default function AdminDashboardScreen() {
             </View>
             <View style={styles.statusItem}>
               <View style={[styles.statusIndicator, styles.statusOnline]} />
-              <Text style={[styles.statusText, { color: colors.text.primary }]}>בסיס נתונים מחובר</Text>
+              <Text style={[styles.statusText, { color: colors.text.primary }]}>רשת Waku מחוברת</Text>
             </View>
             <View style={styles.statusItem}>
               <View style={[styles.statusIndicator, styles.statusOnline]} />

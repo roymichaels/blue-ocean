@@ -257,7 +257,7 @@
     "recentNotifications": "התראות אחרונות",
     "systemStatus": "סטטוס מערכת",
     "systemActive": "מערכת פעילה",
-    "databaseConnected": "בסיס נתונים מחובר",
+    "wakuConnected": "רשת Waku מחוברת",
     "chatServicesActive": "שירותי צ'אט פעילים",
     "welcomeAdmin": "ברוך הבא מנהל",
     "loginSuccess": "התחברת בהצלחה ללוח הבקרה",

@@ -257,7 +257,7 @@
     "recentNotifications": "Recent Notifications",
     "systemStatus": "System Status",
     "systemActive": "System Active",
-    "databaseConnected": "Database Connected",
+    "wakuConnected": "Waku Connected",
     "chatServicesActive": "Chat Services Active",
     "welcomeAdmin": "Welcome Admin",
     "loginSuccess": "Successfully logged into dashboard",
