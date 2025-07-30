@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import bcrypt from 'bcryptjs';
 import * as SecureStore from 'expo-secure-store';
-import { getPublicKeyAsync, utils as edUtils } from '@noble/ed25519';
+import { getPublicKeyAsync, utils as edUtils, etc as edBytes } from '@noble/ed25519';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useConfig } from '../../contexts/ConfigContext';
 import InfoModal from '../../components/InfoModal';
@@ -73,11 +73,11 @@ export default function OnboardingScreen() {
       const id = `admin_${Date.now()}`;
       const priv = edUtils.randomPrivateKey();
       const pub = await getPublicKeyAsync(priv);
-      await SecureStore.setItemAsync('ed25519_private_key', edUtils.bytesToHex(priv));
+      await SecureStore.setItemAsync('ed25519_private_key', edBytes.bytesToHex(priv));
       setValue('ADMIN_ID', id);
       setValue('ADMIN_USERNAME', adminUser);
       setValue('ADMIN_HASH', hash);
-      setValue('ADMIN_PUBLIC_KEY', edUtils.bytesToHex(pub));
+      setValue('ADMIN_PUBLIC_KEY', edBytes.bytesToHex(pub));
 
       const user = {
         id,
@@ -91,9 +91,9 @@ export default function OnboardingScreen() {
 
       await sendWakuUserUpdate(user, {
         id,
-        publicKey: edUtils.bytesToHex(pub),
+        publicKey: edBytes.bytesToHex(pub),
         role: 'admin',
-        privateKey: edUtils.bytesToHex(priv),
+        privateKey: edBytes.bytesToHex(priv),
       });
 
       setValue('ONBOARD_COMPLETE', 'true');
