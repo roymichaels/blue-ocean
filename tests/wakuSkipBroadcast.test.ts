@@ -25,7 +25,7 @@ describe('Waku disabled behaviour', () => {
   it('skips order update when secret missing', async () => {
     await insertConfig({ EXPO_PUBLIC_USE_WAKU: 'true', EXPO_PUBLIC_WAKU_SECRET: '' });
     const svc = OrderService.getInstance();
-    jest.spyOn(svc, 'getOrder').mockResolvedValue({ id: '1' } as any);
+    jest.spyOn(svc as any, 'getOrder').mockResolvedValue({ id: '1' } as any);
     await svc.updateOrderStatus('1', 'delivered');
     expect(sendWakuOrderUpdate).not.toHaveBeenCalled();
   });

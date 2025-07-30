@@ -13,6 +13,10 @@ class OrderService {
     return OrderService.instance;
   }
 
+  getOrder(id: string) {
+    return ordersAgent.get(id) || null;
+  }
+
   async updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
     const order = ordersAgent.get(orderId);
     if (!order) return;
