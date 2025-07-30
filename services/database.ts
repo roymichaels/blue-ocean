@@ -1,5 +1,6 @@
 import usersAgent from '../agents/users-agent';
-import { User } from '../types';
+import categoriesAgent from '../agents/categories-agent';
+import { User, Category } from '../types';
 
 class DatabaseService {
   private static instance: DatabaseService;
@@ -22,6 +23,24 @@ class DatabaseService {
     if (!user) return;
     user.role = role;
     await usersAgent.update(user);
+  }
+
+  async getCategories(): Promise<Category[]> {
+    return categoriesAgent.getAll();
+  }
+
+  async addCategory(category: Omit<Category, 'subcategories'> & { subcategories?: Category['subcategories'] }): Promise<void> {
+    await categoriesAgent.add({ ...category, subcategories: category.subcategories });
+  }
+
+  async updateCategory(id: string, data: Partial<Category>): Promise<void> {
+    const existing = categoriesAgent.get(id);
+    if (!existing) return;
+    await categoriesAgent.update({ ...existing, ...data });
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await categoriesAgent.remove(id);
   }
 }
 
