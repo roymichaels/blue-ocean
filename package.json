@@ -70,7 +70,6 @@
     "react-native-video": "^6.6.5",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
-    "sqlite3": "^5.1.7",
     "@noble/ed25519": "^2.1.1",
     "web-push": "^3.6.7"
   },
