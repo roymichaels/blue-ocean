@@ -129,6 +129,35 @@ yarn test
 
 Run `yarn install` before executing `yarn test` so Jest and other dependencies are present.
 
+## Apple Pay Integration
+
+The project uses MoonPay for purchasing crypto with a credit card. To accept Apple Pay directly in the app, install the Expo Stripe payments package and configure your merchant identifier.
+
+1. Install the library:
+```sh
+yarn add expo-payments-stripe
+```
+2. Add the plugin to **app.json**:
+```json
+{
+  "expo": {
+    "plugins": [["expo-payments-stripe", { "merchantIdentifier": "merchant.com.example" }]]
+  }
+}
+```
+3. Initialize Stripe when the app launches:
+```ts
+import { initStripe } from "expo-payments-stripe";
+
+initStripe({
+  publishableKey: "<your-stripe-key>",
+  merchantIdentifier: "merchant.com.example",
+});
+```
+4. Use `presentApplePay` from the library when the user checks out.
+
+Refer to the Expo Stripe documentation for full setup details.
+
 
 ## License
 
