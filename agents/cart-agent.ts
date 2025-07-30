@@ -2,6 +2,8 @@ import { CartItem } from '../types';
 import { sendWakuCartUpdate } from '../lib/waku/sendWakuCartUpdate';
 import WakuAgent from '../utils/wakuAgent';
 
+// Publishes and replicates cart items via Waku
+
 class CartAgent extends WakuAgent<CartItem> {
   constructor() {
     super(sendWakuCartUpdate, {
