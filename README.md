@@ -21,6 +21,8 @@ prompted for a few details:
   and admin user.
 - **Pinata keys** – optional values that enable media uploads to IPFS via
   Pinata.
+- **MoonPay key** – optional value enabling credit card purchases through the
+  MoonPay widget.
 
 After saving the form your admin key pair is created locally and subsequent
 launches skip this screen.
@@ -28,6 +30,12 @@ launches skip this screen.
 If you provided Pinata credentials the `PinataService` will upload any product
 images or videos to IPFS automatically. Without these keys the app simply keeps
 the local file URIs.
+
+### Credit Card Checkout
+
+Providing a MoonPay key enables the `MoonPayModal` component for credit card
+purchases. Pass the wallet address, coin and USD amount to display the widget in
+a modal and pre-fill the fiat amount.
 
 
 Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
@@ -63,12 +71,11 @@ Settings, users, products and orders are synchronized between peers over the Wak
 network. Each domain is handled by a small agent that subscribes to a Waku topic
 and keeps a local in-memory cache. On startup every agent replays the topic's
 history so the latest state is restored. When a record changes locally, call the
-appropriate `sendWaku...Update` function to broadcast the update. The matching
-`useWaku...Sync` hook (for example `useWakuSettingsSync`) listens for new
-messages and applies them. All data lives in memory and can be rehydrated from
-history at any time.
+appropriate `sendWaku...Update` function to broadcast the update. Each agent
+listens for new messages on its topic and applies them automatically, so data
+can be rehydrated from history at any time.
 
-The sync hooks only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep data purely local.
+Agents only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep data purely local.
 
 ### Web Notes
 

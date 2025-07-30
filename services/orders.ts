@@ -12,8 +12,8 @@ class OrderService {
     }
     return OrderService.instance;
   }
-
   async getOrder(id: string) {
+
     return ordersAgent.get(id) || null;
   }
 

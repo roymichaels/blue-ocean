@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import SettingsAgent from '../services/settings-agent';
+import SettingsAgent from '../agents/settings-agent';
 import { store } from '../lib/memoryStore';
 
 jest.mock('../lib/waku/sendWakuSettingsUpdate', () => ({

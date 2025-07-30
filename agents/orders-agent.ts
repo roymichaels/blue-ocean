@@ -4,7 +4,11 @@ import WakuAgent from '../utils/wakuAgent';
 
 class OrdersAgent extends WakuAgent<Order> {
   constructor() {
-    super(sendWakuOrderUpdate);
+    super(sendWakuOrderUpdate, {
+      topic: '/congress/orders/1/proto',
+      replayHistory: true,
+      extractItem: (msg: any) => msg.order as Order,
+    });
   }
 }
 
