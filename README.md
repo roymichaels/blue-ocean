@@ -4,15 +4,13 @@ This Expo project uses React Native with the Expo Router.
 
 ## Setup
 
-Run `yarn install` to populate `node_modules`. All data is stored locally; no external services are required.
+Run `yarn install` to populate `node_modules`. All data is ephemeral and synchronized between peers over Waku; no external services are required.
 
 ```sh
 yarn install
 ```
 
-SQLite migrations are executed by `./scripts/init-sqlite-db.sh` and also run automatically before `yarn dev` via the `predev` script.
-
-All data is stored locally; no external services are required.
+All state is held in memory and hydrated from the Waku message history on boot.
 
 
 Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
@@ -44,9 +42,9 @@ authentication state persists across reloads on every platform.
 
 ### Peer-to-Peer Synchronization
 
-Settings, users, products and orders are synchronized between peers over the Waku network. When any of these records change locally, call the appropriate `sendWaku...Update` function to broadcast the update. Add the matching `useWaku...Sync` hook (for example `useWakuSettingsSync`) in your root layout so that your SQLite database receives updates from other peers.
+Settings, users, products and orders are synchronized between peers over the Waku network. When any of these records change locally, call the appropriate `sendWaku...Update` function to broadcast the update. Add the matching `useWaku...Sync` hook (for example `useWakuSettingsSync`) in your root layout so your in-memory state receives updates from other peers. All data is ephemeral and rehydrates from Waku history on every launch.
 
-The sync hooks only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep the SQLite database purely local and skip peer synchronization.
+The sync hooks only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep data purely local.
 
 ### Web Notes
 
@@ -55,89 +53,7 @@ Disable it by setting `fastRefresh: false` in your web configuration.
 The Waku chat integration is also not available on the web; the
 `useWakuClient.web.ts` file provides a stub so the rest of the app can build
 without the Waku SDK.
-The web build also fetches the initial SQLite migration over HTTP so it doesn't
-need `expo-file-system`.
 
-## Environment Variables
-
-When you launch the app for the first time an onboarding wizard prompts for the
-secrets it needs (JWT, chat and Waku keys, Pinata credentials and admin login).
-These values are stored in the local SQLite database so no `.env` file is
-required.
-
-If you ever need to run the onboarding again, delete `sqlite/blue-ocean.db` or
-run:
-
-```sh
-yarn reset-db
-```
-
-The following environment variables remain optional and can be provided through
-your shell:
-
-* `EXPO_PUBLIC_SETTINGS_API_URL` – endpoint for remote tenant settings
-* `EXPO_PUBLIC_USE_WAKU` – set to `true` to enable Waku features
-* `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging
-* `EXPO_PUBLIC_MATRIX_SERVER` – Matrix server URL (future use)
-* `EXPO_PUBLIC_TENANT` – identifier for the white‑label tenant; the local
-  SQLite database will be created as `<tenant>.db`
-
-## SQLite Migrations
-
-Create a local SQLite database:
-
-```sh
-./scripts/init-sqlite-db.sh sqlite/blue-ocean.db
-```
-
-This applies the SQL files in `sqlite/migrations` and writes the database to
-`sqlite/blue-ocean.db`.
-
-When you run `yarn dev`, a `predev` script automatically executes the migrations and creates the database if it does not already exist.
-
-If you need to start from a clean database, run:
-
-```sh
-yarn reset-db
-```
-
-This deletes `sqlite/blue-ocean.db` and re-applies the migrations.
-
-When developing, be sure to call `closeDatabase()` when the app is unloaded or
-replaced during hot reloads. The database module adds a `beforeunload` listener
-on the web and the root layout disposes of the database using HMR cleanup so
-handles don't remain open.
-
-
-## Seeding Sample Data
-
-After applying the migrations you can populate the local database with fake
-users, products, orders and tenant settings.
-
-```sh
-yarn seed
-```
-
-The `seed.js` script defaults to `sqlite/blue-ocean.db`. Set `DB_PATH` to use a
-different location.
-
-## Database Backup and Restore
-
-Create a SQL dump of the database with:
-
-```sh
-./scripts/backup-db.sh sqlite/blue-ocean.db dump.sql
-```
-
-Restore the database from a dump:
-
-```sh
-./scripts/restore-db.sh sqlite/blue-ocean.db dump.sql
-```
-
-These scripts assume a dump file named `dump.sql`, but the repository no longer
-tracks one. Run `backup-db.sh` to generate the dump before restoring or specify
-your own dump file path.
 
 ## Running the Project
 
