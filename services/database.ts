@@ -1,5 +1,6 @@
 import usersAgent from '../agents/users-agent';
 import categoriesAgent from '../agents/categories-agent';
+import SettingsAgent from '../agents/settings-agent';
 import { User, Category } from '../types';
 
 class DatabaseService {
@@ -41,6 +42,15 @@ class DatabaseService {
 
   async deleteCategory(id: string): Promise<void> {
     await categoriesAgent.remove(id);
+  }
+
+  async getSetting(key: string): Promise<string | null> {
+    const item = SettingsAgent.getInstance().get(key);
+    return item ? item.value : null;
+  }
+
+  async updateSetting(key: string, value: string): Promise<void> {
+    await SettingsAgent.getInstance().set(key, value);
   }
 }
 
