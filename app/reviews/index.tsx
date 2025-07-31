@@ -14,7 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import DatabaseService from '../../services/database';
-import OrderService from '../../services/orders';
 import { Product, Review, Order } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -82,8 +81,8 @@ export default function ReviewsScreen() {
       
       // Load user orders if logged in
       if (isLoggedIn && user) {
-        const orderService = OrderService.getInstance();
-        const orders = await orderService.getUserOrders(user.id);
+        // Fetch user's orders directly from the database
+        const orders = await db.getUserOrders(user.id);
 
         // Only get delivered orders
         const deliveredOrders = orders.filter(order => order.status === 'delivered');
