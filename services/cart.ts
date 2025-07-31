@@ -5,12 +5,8 @@ import cartAgent from '../agents/cart-agent';
 import JWT from 'expo-jwt';
 import config from '../utils/appConfig';
 
-let jwtSecretPromise: Promise<string | null> | null = null;
 async function getJwtSecret(): Promise<string | null> {
-  if (!jwtSecretPromise) {
-    jwtSecretPromise = Promise.resolve(config.EXPO_PUBLIC_JWT_SECRET || null);
-  }
-  return jwtSecretPromise;
+  return config.EXPO_PUBLIC_JWT_SECRET || null;
 }
 import { getToken } from '../utils/tokenStorage';
 import { isTokenValid } from '../utils/jwtSession';

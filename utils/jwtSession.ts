@@ -1,12 +1,8 @@
 import JWT from 'expo-jwt';
 import config from './appConfig';
 
-let jwtSecretPromise: Promise<string | null> | null = null;
 async function getJwtSecret(): Promise<string | null> {
-  if (!jwtSecretPromise) {
-    jwtSecretPromise = Promise.resolve(config.EXPO_PUBLIC_JWT_SECRET || null);
-  }
-  return jwtSecretPromise;
+  return config.EXPO_PUBLIC_JWT_SECRET || null;
 }
 
 export async function isTokenValid(token: string): Promise<boolean> {
