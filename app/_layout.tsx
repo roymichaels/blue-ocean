@@ -20,6 +20,7 @@ import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
 import { ConfigProvider } from '../contexts/ConfigContext';
 import { loadTenantSettings } from '../constants/tenant';
+import { initConfig } from '../utils/appConfig';
 import OnboardingScreen from './onboarding';
 import { OnboardingProvider, useOnboarding } from '../contexts/OnboardingContext';
 
@@ -88,6 +89,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     (async () => {
+      await initConfig();
       await loadTenantSettings();
       setReady(true);
     })();
