@@ -12,6 +12,24 @@ yarn install
 
 All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
 
+### Environment Variables
+
+The app reads several secrets from the environment to encrypt peer-to-peer messages and sign tokens:
+
+- `EXPO_PUBLIC_WAKU_SECRET` – AES key used for Waku message encryption.
+- `EXPO_PUBLIC_JWT_SECRET` – secret for signing JWT tokens.
+- `EXPO_PUBLIC_CHAT_SECRET` – secret used by the chat service.
+
+The test suite defines these variables with the following values in `tests/setupEnv.ts`:
+
+```sh
+export EXPO_PUBLIC_WAKU_SECRET=test_waku_secret
+export EXPO_PUBLIC_JWT_SECRET=test_jwt_secret
+export EXPO_PUBLIC_CHAT_SECRET=test_chat_secret
+```
+
+Set them in your shell or enter them in the system settings screen after the app starts. You can modify them later from that screen at any time.
+
 ### Onboarding
 
 Start the app once the dependencies are installed. The first screen prompts you
