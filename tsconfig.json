@@ -15,7 +15,8 @@
       "expo",
       "react",
       "react-native",
-      "jest"
+      "jest",
+      "node"
     ],
     "skipLibCheck": true,
     "baseUrl": ".",
