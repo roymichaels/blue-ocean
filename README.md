@@ -14,18 +14,18 @@ All state is held in memory and hydrated from the Waku message history on boot. 
 
 ### Onboarding
 
-Start the app once the dependencies are installed. On first launch you will be
-prompted for a few details:
+Start the app once the dependencies are installed. The first screen prompts you
+to sign up or log in. After authentication you'll be asked for a few setup
+details:
 
-- **App name and admin credentials** – required to set up your local identity
-  and admin user.
+- **App name** – required to configure your local instance.
 - **Pinata keys** – optional values that enable media uploads to IPFS via
   Pinata.
 - **MoonPay key** – optional value enabling credit card purchases through the
   MoonPay widget.
 - A JWT secret is generated automatically on first launch and stored locally.
 
-After saving the form your admin key pair is created locally and subsequent
+After saving the form the configuration is stored locally and subsequent
 launches skip this screen.
 
 If you provided Pinata credentials the `PinataService` will upload any product

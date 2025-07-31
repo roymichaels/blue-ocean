@@ -3,7 +3,7 @@
 // normal imports:
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
@@ -105,15 +105,23 @@ export default function RootLayout() {
 
   return (
     <ConfigProvider>
-      <OnboardingProvider>
-        <RootLayoutInner />
-      </OnboardingProvider>
+      <AuthProvider>
+        <OnboardingProvider>
+          <RootLayoutInner />
+        </OnboardingProvider>
+      </AuthProvider>
     </ConfigProvider>
   );
 }
 
 function RootLayoutInner() {
   const { onboarded } = useOnboarding();
+  const { isLoggedIn } = useAuth();
+  useEffect(() => {
+    if (onboarded === false && !isLoggedIn) {
+      router.replace('/auth/signup');
+    }
+  }, [onboarded, isLoggedIn]);
 
   if (onboarded === null) {
     return (
@@ -131,13 +139,11 @@ function RootLayoutInner() {
     <AppInfoProvider>
       <ThemeProvider>
         <LanguageProvider>
-          <AuthProvider>
-            <CurrencyProvider>
-              <NotificationProvider>
-                <AppContent />
-              </NotificationProvider>
-            </CurrencyProvider>
-          </AuthProvider>
+          <CurrencyProvider>
+            <NotificationProvider>
+              <AppContent />
+            </NotificationProvider>
+          </CurrencyProvider>
         </LanguageProvider>
       </ThemeProvider>
     </AppInfoProvider>
