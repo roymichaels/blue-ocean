@@ -48,7 +48,6 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   useEffect(() => {
     const t = config.EXPO_PUBLIC_TENANT;
     setTenant(t || 'default');
-    loadInfo();
   }, []);
 
   const loadInfo = async () => {
@@ -88,6 +87,12 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       console.error('Error loading app info:', e);
     }
   };
+
+  useEffect(() => {
+    if (tenant) {
+      loadInfo();
+    }
+  }, [tenant]);
 
   const scheduleLoadInfo = () => {
     if (reloadTimeout.current) {
