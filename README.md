@@ -50,6 +50,28 @@ If you provided Pinata credentials the `PinataService` will upload any product
 images or videos to IPFS automatically. Without these keys the app simply keeps
 the local file URIs.
 
+### Environment Variables
+
+The app also checks `process.env` for known configuration keys when it starts.
+If a variable is defined it **overrides** the value stored locally. This allows
+secrets to be injected at runtime without editing the on-device config. The
+recognized keys include:
+
+- `EXPO_PUBLIC_JWT_SECRET`
+- `EXPO_PUBLIC_CHAT_SECRET`
+- `EXPO_PUBLIC_WAKU_SECRET`
+- `EXPO_PUBLIC_USE_WAKU`
+- `EXPO_PUBLIC_ADMIN_USERNAME`
+- `EXPO_PUBLIC_PINATA_JWT`
+- `EXPO_PUBLIC_PINATA_API_KEY`
+- `EXPO_PUBLIC_PINATA_SECRET_API_KEY`
+- `EXPO_PUBLIC_TENANT`
+- `EXPO_PUBLIC_DEBUG_LOGS`
+- `MOONPAY_KEY`
+- `APP_NAME`
+- `PRIMARY_COLOR`
+- `APP_LOGO`
+
 ### Credit Card Checkout
 
 Providing a MoonPay key enables the `MoonPayModal` component for credit card
