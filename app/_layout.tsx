@@ -3,7 +3,7 @@
 // normal imports:
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
@@ -117,11 +117,12 @@ export default function RootLayout() {
 function RootLayoutInner() {
   const { onboarded } = useOnboarding();
   const { isLoggedIn } = useAuth();
+  const pathname = usePathname();
   useEffect(() => {
-    if (onboarded === false && !isLoggedIn) {
+    if (onboarded === false && !isLoggedIn && pathname !== '/auth/signup') {
       router.replace('/auth/signup');
     }
-  }, [onboarded, isLoggedIn]);
+  }, [onboarded, isLoggedIn, pathname]);
 
   if (onboarded === null) {
     return (
