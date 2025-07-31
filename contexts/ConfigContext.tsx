@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-import appConfig, { setConfig } from '../utils/appConfig';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import appConfig, { setConfig, initConfig, persist } from '../utils/appConfig';
 
 interface ConfigContextValue {
   config: Record<string, string>;
@@ -16,9 +16,16 @@ export const useConfig = () => useContext(ConfigContext);
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [, forceUpdate] = useState({});
 
+  useEffect(() => {
+    (async () => {
+      await initConfig();
+      forceUpdate({});
+    })();
+  }, []);
+
   const setValue = (key: string, value: string) => {
     setConfig(key, value);
-    // Trigger re-render for consumers
+    persist().catch(() => {});
     forceUpdate({});
   };
 

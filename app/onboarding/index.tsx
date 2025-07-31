@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Buffer } from 'buffer';
 import {
   View,
   Text,
@@ -23,7 +24,7 @@ import { sendWakuUserUpdate } from '../../lib/waku/sendWakuUserUpdate';
 
 export default function OnboardingScreen() {
   const { colors } = useTheme();
-  const { setValue } = useConfig();
+  const { config, setValue } = useConfig();
   const [tenant, setTenant] = useState('thecongress');
   const [appName, setAppName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('');
@@ -44,6 +45,15 @@ export default function OnboardingScreen() {
     type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
   const { refreshOnboardingStatus } = useOnboarding();
+
+  useEffect(() => {
+    if (!config.EXPO_PUBLIC_JWT_SECRET) {
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      const secret = Buffer.from(bytes).toString('hex');
+      setValue('EXPO_PUBLIC_JWT_SECRET', secret);
+    }
+  }, []);
 
   const handleSubmit = async () => {
     if (!appName || !adminUser || !adminPass) {

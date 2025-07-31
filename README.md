@@ -23,6 +23,7 @@ prompted for a few details:
   Pinata.
 - **MoonPay key** – optional value enabling credit card purchases through the
   MoonPay widget.
+- A JWT secret is generated automatically on first launch and stored locally.
 
 After saving the form your admin key pair is created locally and subsequent
 launches skip this screen.
