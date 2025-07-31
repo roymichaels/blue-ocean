@@ -13,14 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import bcrypt from 'bcryptjs';
-import { savePrivateKey } from '../../utils/privateKeyStorage';
-import { getPublicKeyAsync, utils as edUtils, etc as edBytes } from '@noble/ed25519';
+import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useConfig } from '../../contexts/ConfigContext';
 import InfoModal from '../../components/InfoModal';
 import { useOnboarding } from '../../contexts/OnboardingContext';
-import { sendWakuUserUpdate } from '../../lib/waku/sendWakuUserUpdate';
 
 export default function OnboardingScreen() {
   const { colors } = useTheme();
@@ -35,8 +32,7 @@ export default function OnboardingScreen() {
   const [moonpayKey, setMoonpayKey] = useState('');
   const [chatSecret, setChatSecret] = useState('');
   const [wakuSecret, setWakuSecret] = useState('');
-  const [adminUser, setAdminUser] = useState('');
-  const [adminPass, setAdminPass] = useState('');
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState({
     visible: false,
@@ -56,11 +52,11 @@ export default function OnboardingScreen() {
   }, []);
 
   const handleSubmit = async () => {
-    if (!appName || !adminUser || !adminPass) {
+    if (!appName) {
       setInfo({
         visible: true,
         title: 'Error',
-        message: 'App name, admin username and password are required',
+        message: 'App name is required',
         type: 'error',
       });
       return;
@@ -68,7 +64,9 @@ export default function OnboardingScreen() {
     setLoading(true);
     try {
       setValue('EXPO_PUBLIC_TENANT', tenant);
-      setValue('EXPO_PUBLIC_ADMIN_USERNAME', adminUser);
+      if (user?.username) {
+        setValue('EXPO_PUBLIC_ADMIN_USERNAME', user.username);
+      }
       setValue('APP_NAME', appName);
       setValue('PRIMARY_COLOR', primaryColor);
       if (logo) setValue('APP_LOGO', logo);
@@ -78,33 +76,6 @@ export default function OnboardingScreen() {
       if (moonpayKey) setValue('MOONPAY_KEY', moonpayKey);
       if (chatSecret) setValue('EXPO_PUBLIC_CHAT_SECRET', chatSecret);
       if (wakuSecret) setValue('EXPO_PUBLIC_WAKU_SECRET', wakuSecret);
-
-      const hash = await bcrypt.hash(adminPass, 10);
-      const id = `admin_${Date.now()}`;
-      const priv = edUtils.randomPrivateKey();
-      const pub = await getPublicKeyAsync(priv);
-      await savePrivateKey(edBytes.bytesToHex(priv));
-      setValue('ADMIN_ID', id);
-      setValue('ADMIN_USERNAME', adminUser);
-      setValue('ADMIN_HASH', hash);
-      setValue('ADMIN_PUBLIC_KEY', edBytes.bytesToHex(pub));
-
-      const user = {
-        id,
-        username: adminUser,
-        displayName: 'Admin',
-        tenant_id: tenant,
-        role: 'admin',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      await sendWakuUserUpdate(user, {
-        id,
-        publicKey: edBytes.bytesToHex(pub),
-        role: 'admin',
-        privateKey: edBytes.bytesToHex(priv),
-      });
 
       setValue('ONBOARD_COMPLETE', 'true');
       await refreshOnboardingStatus();
@@ -192,12 +163,8 @@ export default function OnboardingScreen() {
             <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={wakuSecret} onChangeText={setWakuSecret} />
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Admin Username *</Text>
-            <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={adminUser} onChangeText={setAdminUser} autoCapitalize="none" />
-          </View>
-          <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: colors.text.primary }]}>Admin Password *</Text>
-            <TextInput style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, backgroundColor: colors.surface.primary }]} value={adminPass} onChangeText={setAdminPass} secureTextEntry autoCapitalize="none" />
+            <Text style={[styles.label, { color: colors.text.primary }]}>Admin</Text>
+            <Text style={{ color: colors.text.primary, textAlign: 'right' }}>{user?.username}</Text>
           </View>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: colors.gold }, loading && { backgroundColor: colors.interactive.disabled }]}
