@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Save, Settings as SettingsIcon, DollarSign, Globe, Bell, Image as ImageIcon } from 'lucide-react-native';
+import { useConfig } from '../../contexts/ConfigContext';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -28,6 +29,14 @@ export default function SettingsScreen() {
   const [name, setName] = useState('');
   const [logoMedia, setLogoMedia] = useState<any[]>([]);
   const [themeColor, setThemeColorState] = useState('#B99C5A');
+  const [tenant, setTenant] = useState('');
+  const [adminUsername, setAdminUsername] = useState('');
+  const [pinataJwt, setPinataJwt] = useState('');
+  const [pinataApiKey, setPinataApiKey] = useState('');
+  const [pinataSecret, setPinataSecret] = useState('');
+  const [moonpayKey, setMoonpayKey] = useState('');
+  const [chatSecret, setChatSecret] = useState('');
+  const [wakuSecret, setWakuSecret] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { isAdmin, isDriver } = useAuth();
@@ -35,6 +44,7 @@ export default function SettingsScreen() {
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
   const { t, currentLanguage } = useLanguage();
   const { platformName, platformLogo, themeColor: contextThemeColor, setPlatformName, setPlatformLogo, setThemeColor } = useAppInfo();
+  const { config, setValue } = useConfig();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -77,6 +87,14 @@ export default function SettingsScreen() {
       if (platformLogo) {
         setLogoMedia([{ id: 'logo', uri: platformLogo, type: 'image' }]);
       }
+      setTenant(config.EXPO_PUBLIC_TENANT || '');
+      setAdminUsername(config.EXPO_PUBLIC_ADMIN_USERNAME || '');
+      setPinataJwt(config.EXPO_PUBLIC_PINATA_JWT || '');
+      setPinataApiKey(config.EXPO_PUBLIC_PINATA_API_KEY || '');
+      setPinataSecret(config.EXPO_PUBLIC_PINATA_SECRET_API_KEY || '');
+      setMoonpayKey(config.MOONPAY_KEY || '');
+      setChatSecret(config.EXPO_PUBLIC_CHAT_SECRET || '');
+      setWakuSecret(config.EXPO_PUBLIC_WAKU_SECRET || '');
     } catch (error) {
       console.error('Error loading settings:', error);
       setInfoModal({
@@ -100,7 +118,19 @@ export default function SettingsScreen() {
       await setThemeColor(themeColor);
       const logoUri = logoMedia[0]?.uri || '';
       await setPlatformLogo(logoUri);
-      
+
+      setValue('EXPO_PUBLIC_TENANT', tenant);
+      setValue('EXPO_PUBLIC_ADMIN_USERNAME', adminUsername);
+      setValue('EXPO_PUBLIC_PINATA_JWT', pinataJwt);
+      setValue('EXPO_PUBLIC_PINATA_API_KEY', pinataApiKey);
+      setValue('EXPO_PUBLIC_PINATA_SECRET_API_KEY', pinataSecret);
+      setValue('MOONPAY_KEY', moonpayKey);
+      setValue('EXPO_PUBLIC_CHAT_SECRET', chatSecret);
+      setValue('EXPO_PUBLIC_WAKU_SECRET', wakuSecret);
+      setValue('APP_NAME', name);
+      setValue('PRIMARY_COLOR', themeColor);
+      setValue('APP_LOGO', logoUri);
+
       setInfoModal({
         visible: true,
         title: 'הצלחה',
@@ -233,7 +263,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* Currency Settings */}
-        <View style={[styles.settingCard, { 
+        <View style={[styles.settingCard, {
           backgroundColor: colors.surface.primary,
           borderColor: colors.border.primary,
           ...Platform.select({
@@ -271,6 +301,136 @@ export default function SettingsScreen() {
             <Text style={[styles.helperText, { color: colors.text.tertiary }]}>
               דוגמאות: ₪, $, €, £
             </Text>
+          </View>
+        </View>
+
+        {/* Advanced Settings */}
+        <View style={[styles.settingCard, {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+          ...Platform.select({
+            ios: { elevation: 2 },
+            android: { elevation: 2 },
+            web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
+          }),
+        }]}>
+          <View style={styles.settingHeader}>
+            <ImageIcon size={20} color={colors.gold} />
+            <Text style={[styles.settingTitle, { color: colors.text.primary }]}>API Keys & Secrets</Text>
+          </View>
+
+          <View style={styles.settingContent}>
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>Tenant ID</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.secondary,
+                  color: colors.text.primary
+                }]}
+                value={tenant}
+                onChangeText={setTenant}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>Admin Username</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.secondary,
+                  color: colors.text.primary
+                }]}
+                value={adminUsername}
+                onChangeText={setAdminUsername}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>Pinata JWT</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.secondary,
+                  color: colors.text.primary
+                }]}
+                value={pinataJwt}
+                onChangeText={setPinataJwt}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>Pinata API Key</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.secondary,
+                  color: colors.text.primary
+                }]}
+                value={pinataApiKey}
+                onChangeText={setPinataApiKey}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>Pinata Secret</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.secondary,
+                  color: colors.text.primary
+                }]}
+                value={pinataSecret}
+                onChangeText={setPinataSecret}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>MoonPay Key</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.secondary,
+                  color: colors.text.primary
+                }]}
+                value={moonpayKey}
+                onChangeText={setMoonpayKey}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>Chat Secret</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.secondary,
+                  color: colors.text.primary
+                }]}
+                value={chatSecret}
+                onChangeText={setChatSecret}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>Waku Secret</Text>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.secondary,
+                  color: colors.text.primary
+                }]}
+                value={wakuSecret}
+                onChangeText={setWakuSecret}
+                autoCapitalize="none"
+              />
+            </View>
           </View>
         </View>
 
