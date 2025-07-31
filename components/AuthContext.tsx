@@ -19,12 +19,8 @@ async function getAdminUsernames(): Promise<string[]> {
     .map((u) => u.trim())
     .filter(Boolean);
 }
-let jwtSecretPromise: Promise<string | null> | null = null;
 async function getJwtSecret(): Promise<string | null> {
-  if (!jwtSecretPromise) {
-    jwtSecretPromise = Promise.resolve(config.EXPO_PUBLIC_JWT_SECRET || null);
-  }
-  return jwtSecretPromise;
+  return config.EXPO_PUBLIC_JWT_SECRET || null;
 }
 
 export class UsernameTakenError extends Error {
