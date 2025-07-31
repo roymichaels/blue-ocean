@@ -1,5 +1,6 @@
 import { encryptWakuPayload } from './wakuCrypto';
 import { sha256 } from '@noble/hashes/sha256';
+import { getPrivateKey } from '../../utils/privateKeyStorage';
 
 
 export interface WakuSender {
@@ -18,6 +19,19 @@ export const sendWakuUserUpdate = async (
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
   const { sign, etc: edBytes } = await import('@noble/ed25519');
 
+  // populate missing sender fields from the user record
+  sender = {
+    id: sender.id || user.id,
+    publicKey: sender.publicKey || user.publicKey,
+    role: sender.role || user.role,
+    privateKey: sender.privateKey,
+  } as WakuSender;
+
+  if (!privateKey) {
+    const stored = await getPrivateKey();
+    if (stored) privateKey = stored;
+  }
+
   const node = await createLightNode({ defaultBootstrap: true });
   try {
     await node.start();
@@ -31,10 +45,11 @@ export const sendWakuUserUpdate = async (
   const payload = JSON.stringify(payloadObj);
 
   let signature = '';
-  if (sender.privateKey) {
+  const keyToUse = sender.privateKey || privateKey;
+  if (keyToUse) {
     try {
       const hash = sha256(new TextEncoder().encode(payload));
-      const sig = await sign(hash, edBytes.hexToBytes(sender.privateKey));
+      const sig = await sign(hash, edBytes.hexToBytes(keyToUse));
       signature = edBytes.bytesToHex(sig);
     } catch (e) {
       console.error('Failed to sign Waku message', e);
