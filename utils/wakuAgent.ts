@@ -41,9 +41,18 @@ export default class WakuAgent<T extends { id: string }> {
   }
 
   async whenReady(): Promise<void> {
-    if (this.readyPromise) {
-      await this.readyPromise;
+    if (!this.readyPromise) {
+      if (this.options.topic && (await isWakuConfigured())) {
+        this.readyPromise = this.init();
+        this.ready = this.readyPromise;
+      } else {
+        return;
+      }
+    } else if (!this.node && (await isWakuConfigured())) {
+      this.readyPromise = this.init();
+      this.ready = this.readyPromise;
     }
+    await this.readyPromise;
   }
 
   getAll(): T[] {
