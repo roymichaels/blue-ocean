@@ -71,6 +71,10 @@ export default class WakuAgent<T extends { id: string }> {
     this.hashCache.clear();
   }
 
+  ready(): Promise<void> {
+    return this.readyPromise || Promise.resolve();
+  }
+
   private async init() {
     if (!(await isWakuConfigured())) return;
     try {

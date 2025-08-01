@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  ReactNode,
+} from 'react';
 import usersAgent from '../agents/users-agent';
 import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
@@ -7,6 +14,8 @@ import { getPublicKeyAsync, utils as edUtils, etc as edBytes } from '@noble/ed25
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
 import config from '../utils/appConfig';
+import { useConfig } from '../contexts/ConfigContext';
+import { isWakuConfigured } from '../lib/waku/isWakuConfigured';
 
 async function getAdminUsernames(): Promise<string[]> {
   const raw = config.EXPO_PUBLIC_ADMIN_USERNAME || '';
@@ -64,6 +73,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<any | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const { config: cfg } = useConfig();
+  const wakuReady = useRef(false);
 
   useEffect(() => {
     const init = async () => {
@@ -72,13 +83,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         let token = await getToken();
         if (token && (await isTokenValid(token))) {
           const JWT_SECRET = await getJwtSecret();
-          if (JWT_SECRET) {
-            const payload: any = JWT.decode(token, JWT_SECRET);
-            setSession(token);
-            if (payload?.sub) {
-              await loadProfile(payload.sub);
-            }
-          } else {
+            if (JWT_SECRET) {
+              const payload: any = JWT.decode(token, JWT_SECRET);
+              setSession(token);
+              if (payload?.sub) {
+                await usersAgent.ready();
+                await loadProfile(payload.sub);
+              }
+            } else {
             await removeToken();
           }
         } else {
@@ -262,6 +274,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      const ready = await isWakuConfigured();
+      if (ready && !wakuReady.current) {
+        wakuReady.current = true;
+        if (user) {
+          usersAgent.update(user).catch((e) => {
+            console.error('Failed broadcasting user via Waku', e);
+          });
+        }
+      } else if (!ready) {
+        wakuReady.current = false;
+      }
+    })();
+  }, [cfg.EXPO_PUBLIC_USE_WAKU, cfg.EXPO_PUBLIC_WAKU_SECRET, user]);
 
   const value: AuthContextType = {
     isLoggedIn: !!session,
