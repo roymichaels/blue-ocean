@@ -25,7 +25,7 @@ export default class WakuAgent<T extends { id: string }> {
   protected store: Map<string, T> = new Map();
   private node: any | null = null;
   private decoder: any | null = null;
-  private ready: Promise<void> | null = null;
+  private readyPromise: Promise<void> | null = null;
   protected hashCache: Set<string> = new Set();
 
   constructor(
@@ -33,7 +33,7 @@ export default class WakuAgent<T extends { id: string }> {
     private options: WakuAgentOptions<T> = {}
   ) {
     if (this.options.topic) {
-      this.ready = this.init();
+      this.readyPromise = this.init();
     }
   }
 
@@ -63,6 +63,10 @@ export default class WakuAgent<T extends { id: string }> {
 
   clearHashCache(): void {
     this.hashCache.clear();
+  }
+
+  ready(): Promise<void> {
+    return this.readyPromise || Promise.resolve();
   }
 
   private async init() {
