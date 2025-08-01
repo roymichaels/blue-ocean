@@ -9,7 +9,7 @@ import React, {
 import usersAgent from '../agents/users-agent';
 import bcrypt from 'bcryptjs';
 import JWT from 'expo-jwt';
-import { savePrivateKey } from '../utils/privateKeyStorage';
+import { savePrivateKey, getPrivateKey } from '../utils/privateKeyStorage';
 import { getPublicKeyAsync, utils as edUtils, etc as edBytes } from '@noble/ed25519';
 import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 import { isTokenValid, refreshToken } from '../utils/jwtSession';
@@ -79,7 +79,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const init = async () => {
       try {
-        const token = await getToken();
+        await usersAgent.ready();
+        let token = await getToken();
         if (token && (await isTokenValid(token))) {
           const JWT_SECRET = await getJwtSecret();
             if (JWT_SECRET) {
@@ -94,6 +95,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         } else {
           await removeToken();
+          const priv = await getPrivateKey();
+          if (priv) {
+            const pub = await getPublicKeyAsync(edBytes.hexToBytes(priv));
+            const pubHex = edBytes.bytesToHex(pub);
+            const row = usersAgent
+              .getAll()
+              .find((u) => u.publicKey === pubHex);
+            if (row) {
+              const JWT_SECRET = await getJwtSecret();
+              if (JWT_SECRET) {
+                token = JWT.encode(
+                  {
+                    sub: row.id,
+                    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+                  },
+                  JWT_SECRET,
+                );
+                await saveToken(token);
+                setSession(token);
+                await loadProfile(row.id);
+              }
+            }
+          }
         }
       } finally {
         setLoading(false);

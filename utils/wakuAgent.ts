@@ -37,6 +37,12 @@ export default class WakuAgent<T extends { id: string }> {
     }
   }
 
+  async ready(): Promise<void> {
+    if (this.readyPromise) {
+      await this.readyPromise;
+    }
+  }
+
   getAll(): T[] {
     return Array.from(this.store.values());
   }
