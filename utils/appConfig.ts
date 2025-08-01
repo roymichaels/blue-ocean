@@ -32,6 +32,17 @@ export async function initConfig(): Promise<void> {
       config[key] = value;
     }
   }
+
+  // Enable Waku by default using the test secret when no
+  // configuration was provided. This allows user data to
+  // persist between reloads without manual environment
+  // setup.
+  if (!config.EXPO_PUBLIC_WAKU_SECRET) {
+    config.EXPO_PUBLIC_WAKU_SECRET = 'test_waku_secret';
+  }
+  if (!config.EXPO_PUBLIC_USE_WAKU) {
+    config.EXPO_PUBLIC_USE_WAKU = 'true';
+  }
 }
 
 export async function persist(): Promise<void> {
