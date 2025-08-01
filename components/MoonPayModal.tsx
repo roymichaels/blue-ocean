@@ -53,7 +53,7 @@ export default function MoonPayModal({
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {loading && (
-          <View style={styles.loading} pointerEvents="none">
+          <View style={[styles.loading, { pointerEvents: 'none' }]}>
             <LoadingSpinner />
           </View>
         )}
