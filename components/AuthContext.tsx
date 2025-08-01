@@ -161,7 +161,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         role,
         publicKey,
         isAdmin: role === 'admin',
-        isDriver: role === 'driver',
+        isDriver: (role as string) === 'driver',
         passwordHash: hash,
       });
       const JWT_SECRET = await getJwtSecret();
