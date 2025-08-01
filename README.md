@@ -4,7 +4,7 @@ This Expo project uses React Native with the Expo Router.
 
 ## Setup
 
-Run `yarn install` to populate `node_modules`. All data is ephemeral and synchronized between peers over Waku; no external services are required.
+Run `yarn install` to populate `node_modules`. All data is ephemeral and can be synchronized between peers over Waku when enabled; no external services are required.
 
 ```sh
 yarn install
@@ -30,9 +30,9 @@ export EXPO_PUBLIC_CHAT_SECRET=test_chat_secret
 
 Set them in your shell or enter them in the system settings screen after the app starts. You can modify them later from that screen at any time.
 
-If `EXPO_PUBLIC_USE_WAKU` or `EXPO_PUBLIC_WAKU_SECRET` are omitted, the app
-defaults to `EXPO_PUBLIC_USE_WAKU=true` with a `test_waku_secret` so that user
-profiles persist across refreshes.
+Waku synchronization is disabled until `EXPO_PUBLIC_WAKU_SECRET` is provided.
+Once a secret is set, you can enable peer-to-peer sync by setting
+`EXPO_PUBLIC_USE_WAKU=true`.
 
 ### Onboarding
 
@@ -120,7 +120,7 @@ appropriate `sendWaku...Update` function to broadcast the update. Each agent
 listens for new messages on its topic and applies them automatically, so data
 can be rehydrated from history at any time.
 
-Agents only start when `EXPO_PUBLIC_USE_WAKU=true`. Disable Waku to keep data purely local.
+Agents only start when `EXPO_PUBLIC_USE_WAKU=true` and a secret is provided. Without a secret Waku remains disabled and data stays purely local.
 
 ### Web Notes
 
