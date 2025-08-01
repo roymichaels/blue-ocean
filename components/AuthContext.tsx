@@ -82,13 +82,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const token = await getToken();
         if (token && (await isTokenValid(token))) {
           const JWT_SECRET = await getJwtSecret();
-          if (JWT_SECRET) {
-            const payload: any = JWT.decode(token, JWT_SECRET);
-            setSession(token);
-            if (payload?.sub) {
-              await loadProfile(payload.sub);
-            }
-          } else {
+            if (JWT_SECRET) {
+              const payload: any = JWT.decode(token, JWT_SECRET);
+              setSession(token);
+              if (payload?.sub) {
+                await usersAgent.ready();
+                await loadProfile(payload.sub);
+              }
+            } else {
             await removeToken();
           }
         } else {
