@@ -11,7 +11,10 @@ export const sendWakuProductUpdate = async (
   const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
   const { sign, etc: edBytes } = await import('@noble/ed25519');
 
-  const node = await createLightNode({ defaultBootstrap: true });
+  const node = await createLightNode({
+    defaultBootstrap: true,
+    libp2p: { hideWebSocketInfo: true },
+  });
   try {
     await node.start();
     await waitForRemotePeer(node, [Protocols.LightPush]);

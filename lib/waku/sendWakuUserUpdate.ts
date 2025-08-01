@@ -32,7 +32,10 @@ export const sendWakuUserUpdate = async (
     if (stored) privateKey = stored;
   }
 
-  const node = await createLightNode({ defaultBootstrap: true });
+  const node = await createLightNode({
+    defaultBootstrap: true,
+    libp2p: { hideWebSocketInfo: true },
+  });
   try {
     await node.start();
     await waitForRemotePeer(node, [Protocols.LightPush]);

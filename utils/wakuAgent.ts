@@ -88,7 +88,10 @@ export default class WakuAgent<T extends { id: string }> {
     if (!(await isWakuConfigured())) return;
     try {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
-      this.node = await createLightNode({ defaultBootstrap: true });
+      this.node = await createLightNode({
+        defaultBootstrap: true,
+        libp2p: { hideWebSocketInfo: true },
+      });
       await this.node.start();
       await waitForRemotePeer(this.node, [Protocols.Store, Protocols.LightPush]);
       if (!this.options.topic) return;
