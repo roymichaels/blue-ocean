@@ -26,6 +26,8 @@ export default class WakuAgent<T extends { id: string }> {
   private node: any | null = null;
   private decoder: any | null = null;
   private readyPromise: Promise<void> | null = null;
+  /** Exposed promise for external consumers */
+  public ready: Promise<void> | null = null;
   protected hashCache: Set<string> = new Set();
 
   constructor(
@@ -34,10 +36,11 @@ export default class WakuAgent<T extends { id: string }> {
   ) {
     if (this.options.topic) {
       this.readyPromise = this.init();
+      this.ready = this.readyPromise;
     }
   }
 
-  async ready(): Promise<void> {
+  async whenReady(): Promise<void> {
     if (this.readyPromise) {
       await this.readyPromise;
     }
@@ -71,9 +74,6 @@ export default class WakuAgent<T extends { id: string }> {
     this.hashCache.clear();
   }
 
-  ready(): Promise<void> {
-    return this.readyPromise || Promise.resolve();
-  }
 
   private async init() {
     if (!(await isWakuConfigured())) return;

@@ -79,7 +79,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const init = async () => {
       try {
-        await usersAgent.ready();
+        await usersAgent.whenReady();
         let token = await getToken();
         if (token && (await isTokenValid(token))) {
           const JWT_SECRET = await getJwtSecret();
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               const payload: any = JWT.decode(token, JWT_SECRET);
               setSession(token);
               if (payload?.sub) {
-                await usersAgent.ready();
+                await usersAgent.whenReady();
                 await loadProfile(payload.sub);
               }
             } else {
