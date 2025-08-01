@@ -30,6 +30,10 @@ export EXPO_PUBLIC_CHAT_SECRET=test_chat_secret
 
 Set them in your shell or enter them in the system settings screen after the app starts. You can modify them later from that screen at any time.
 
+If `EXPO_PUBLIC_USE_WAKU` or `EXPO_PUBLIC_WAKU_SECRET` are omitted, the app
+defaults to `EXPO_PUBLIC_USE_WAKU=true` with a `test_waku_secret` so that user
+profiles persist across refreshes.
+
 ### Onboarding
 
 Start the app once the dependencies are installed. The first screen prompts you
