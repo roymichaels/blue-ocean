@@ -33,14 +33,12 @@ export async function initConfig(): Promise<void> {
     }
   }
 
-  // Enable Waku by default using the test secret when no
-  // configuration was provided. This allows user data to
-  // persist between reloads without manual environment
-  // setup.
+  // If no Waku secret was provided disable peer-to-peer sync and warn
   if (!config.EXPO_PUBLIC_WAKU_SECRET) {
-    config.EXPO_PUBLIC_WAKU_SECRET = 'test_waku_secret';
-  }
-  if (!config.EXPO_PUBLIC_USE_WAKU) {
+    config.EXPO_PUBLIC_USE_WAKU = 'false';
+    console.warn('EXPO_PUBLIC_WAKU_SECRET missing; Waku disabled');
+  } else if (!config.EXPO_PUBLIC_USE_WAKU) {
+    // Enable Waku by default when a secret exists
     config.EXPO_PUBLIC_USE_WAKU = 'true';
   }
 }
