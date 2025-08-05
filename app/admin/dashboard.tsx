@@ -14,6 +14,7 @@ import NotificationService from '../../services/notification';
 import { Product, ChatRoom, Notification, Review } from '../../types';
 import { useNotifications } from '../../components/NotificationContext';
 import { useAuth } from '../../components/AuthContext';
+import { useAuthModal } from '../../components/AuthModalContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -38,6 +39,7 @@ export default function AdminDashboardScreen() {
   });
   const { showNotification } = useNotifications();
   const { isAdmin, isDriver, user } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const { colors } = useTheme();
 
   // Modal states
@@ -51,7 +53,8 @@ export default function AdminDashboardScreen() {
   useEffect(() => {
     // Check if user is logged in as admin
     if (!isAdmin && !isDriver) {
-      router.replace('/auth/login');
+      openAuthModal('login');
+      router.replace('/');
       return;
     }
 

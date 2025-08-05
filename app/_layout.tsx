@@ -12,6 +12,7 @@ import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import AdminNotificationBanner from '../components/AdminNotificationBanner';
 import { NotificationProvider } from '../components/NotificationContext';
 import { AuthProvider, useAuth } from '../components/AuthContext';
+import { AuthModalProvider, useAuthModal } from '../components/AuthModalContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { CurrencyProvider } from '../contexts/CurrencyContext';
@@ -60,7 +61,6 @@ function AppContent() {
         <Stack.Screen name="driver-dashboard" />
         <Stack.Screen name="reviews/index" options={{ title: 'Reviews' }} />
         <Stack.Screen name="admin" />
-        <Stack.Screen name="auth" />
         <Stack.Screen
           name="kyc/index"
           options={{ title: 'KYC Verification' }}
@@ -122,7 +122,9 @@ export default function RootLayout() {
       <ConfigProvider>
         <AuthProvider>
           <OnboardingProvider>
-            <RootLayoutInner />
+            <AuthModalProvider>
+              <RootLayoutInner />
+            </AuthModalProvider>
           </OnboardingProvider>
         </AuthProvider>
       </ConfigProvider>
@@ -133,12 +135,16 @@ export default function RootLayout() {
 function RootLayoutInner() {
   const { onboarded } = useOnboarding();
   const { isLoggedIn } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const pathname = usePathname();
   useEffect(() => {
-    if (onboarded === false && !isLoggedIn && pathname !== '/auth/signup') {
-      router.replace('/auth/signup');
+    if (onboarded === false && !isLoggedIn) {
+      openAuthModal('signup');
+      if (pathname !== '/') {
+        router.replace('/');
+      }
     }
-  }, [onboarded, isLoggedIn, pathname]);
+  }, [onboarded, isLoggedIn, pathname, openAuthModal]);
 
   if (onboarded === null) {
     return (

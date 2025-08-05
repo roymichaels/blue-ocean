@@ -16,7 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
-import AuthTabsModal from '../../components/AuthTabsModal';
+import { useAuthModal } from '../../components/AuthModalContext';
 
 
 
@@ -24,7 +24,7 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { openAuthModal } = useAuthModal();
   const { isLoggedIn, isAdmin, user } = useAuth();
   const { colors } = useTheme();
   const { t } = useLanguage();
@@ -224,7 +224,7 @@ export default function NotificationsScreen() {
   );
 
   const handleLogin = () => {
-    setShowAuthModal(true);
+    openAuthModal();
   };
 
   return (
@@ -324,13 +324,6 @@ export default function NotificationsScreen() {
           </Text>
         </View>
       )}
-
-      {/* Auth Modal */}
-      <AuthTabsModal
-        visible={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialTab="login"
-      />
 
       {/* Info Modal */}
       <InfoModal

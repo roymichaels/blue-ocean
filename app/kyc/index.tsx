@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useAuthModal } from '../../components/AuthModalContext';
 import { ArrowLeft, Shield, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, Clock, ExternalLink } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -25,6 +26,7 @@ const TELEGRAM_LINK = 'https://t.me/+fTyw0RbT2Kk5NTI0';
 
 export default function KycScreen() {
   const { isLoggedIn, user } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const [kycStatus, setKycStatus] = useState<KycStatus>('none');
   const [requestNotes, setRequestNotes] = useState('');
   const [loading, setLoading] = useState(true);
@@ -170,7 +172,8 @@ export default function KycScreen() {
   };
 
   const handleLoginRedirect = () => {
-    router.replace('/auth');
+    openAuthModal();
+    router.replace('/');
   };
 
   if (loading) {

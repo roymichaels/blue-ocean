@@ -16,7 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
-import AuthTabsModal from '../../components/AuthTabsModal';
+import { useAuthModal } from '../../components/AuthModalContext';
 
 
 
@@ -24,7 +24,7 @@ export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderTracking, setShowOrderTracking] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { openAuthModal } = useAuthModal();
   const { isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
 
@@ -120,7 +120,7 @@ export default function OrdersScreen() {
   };
 
   const handleLogin = () => {
-    setShowAuthModal(true);
+    openAuthModal();
   };
 
   return (
@@ -225,13 +225,6 @@ export default function OrdersScreen() {
         visible={showOrderTracking}
         onClose={() => setShowOrderTracking(false)}
         order={selectedOrder}
-      />
-
-      {/* Auth Modal */}
-      <AuthTabsModal
-        visible={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialTab="login"
       />
 
       {/* Info Modal */}
