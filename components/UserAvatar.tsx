@@ -14,6 +14,7 @@ import { useAuth } from './AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { router } from 'expo-router';
+import { useAuthModal } from './AuthModalContext';
 import ConfirmationModal from './ConfirmationModal';
 
 const { width } = Dimensions.get('window');
@@ -22,6 +23,7 @@ export default function UserAvatar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
   const { isLoggedIn, isAdmin, user, logout } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const { currentLanguage, setLanguage, t } = useLanguage();
   const { theme, toggleTheme, colors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -40,6 +42,10 @@ export default function UserAvatar() {
   };
 
   const showDropdown = () => {
+    if (!isLoggedIn) {
+      openAuthModal();
+      return;
+    }
     setDropdownVisible(true);
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -60,7 +66,7 @@ export default function UserAvatar() {
 
   const handleLogin = () => {
     hideDropdown();
-    router.push('/auth');
+    openAuthModal();
   };
 
   const handleLogout = () => {

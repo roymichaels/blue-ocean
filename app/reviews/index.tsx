@@ -20,7 +20,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
-import AuthTabsModal from '../../components/AuthTabsModal';
+import { useAuthModal } from '../../components/AuthModalContext';
 
 
 
@@ -29,7 +29,7 @@ export default function ReviewsScreen() {
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [showWriteReview, setShowWriteReview] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { openAuthModal } = useAuthModal();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [newReview, setNewReview] = useState({
     rating: 0,
@@ -451,7 +451,7 @@ export default function ReviewsScreen() {
   });
 
   const handleLogin = () => {
-    setShowAuthModal(true);
+    openAuthModal();
   };
 
   if (loading && reviews.length === 0) {
@@ -837,13 +837,6 @@ export default function ReviewsScreen() {
           </View>
         </View>
       </Modal>
-
-      {/* Auth Modal */}
-      <AuthTabsModal
-        visible={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialTab="login"
-      />
 
       {/* Info Modal */}
       <InfoModal

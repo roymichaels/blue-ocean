@@ -31,7 +31,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
-import AuthTabsModal from '../../components/AuthTabsModal';
+import { useAuthModal } from '../../components/AuthModalContext';
 import OrderService from '../../services/orders';
 import CartService from '../../services/cart';
 import DatabaseService from '../../services/database';
@@ -54,7 +54,7 @@ export default function ProfileScreen() {
   const [reviewCount, setReviewCount] = useState(0);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { openAuthModal } = useAuthModal();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -117,7 +117,7 @@ export default function ProfileScreen() {
   };
 
   const handleLogin = () => {
-    router.push('/auth');
+    openAuthModal();
   };
 
   const handleLogout = () => {
@@ -517,13 +517,6 @@ export default function ProfileScreen() {
           <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}>© 2024 {platformName || t('ageVerification.platformName')}</Text>
         </View>
       </ScrollView>
-
-      {/* Auth Modal */}
-      <AuthTabsModal
-        visible={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialTab="login"
-      />
 
       {/* Info Modal */}
       <InfoModal
