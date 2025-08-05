@@ -117,8 +117,13 @@ export default function RootLayout() {
     );
   }
 
+  const manifestUrl =
+    typeof window !== 'undefined'
+      ? new URL('/tonconnect-manifest.json', window.location.origin).href
+      : '/tonconnect-manifest.json';
+
   return (
-    <TonConnectUIProvider manifestUrl="/tonconnect-manifest.json">
+    <TonConnectUIProvider manifestUrl={manifestUrl}>
       <ConfigProvider>
         <AuthProvider>
           <OnboardingProvider>

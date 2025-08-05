@@ -1,7 +1,7 @@
 {
-  "url": "https://yourapp.com",
-  "name": "Your App Name",
-  "iconUrl": "https://yourapp.com/icon.png",
-  "termsOfUseUrl": "https://yourapp.com/terms",
-  "privacyPolicyUrl": "https://yourapp.com/privacy"
+  "url": "https://blue-ocean.vercel.app",
+  "name": "The Congress",
+  "iconUrl": "https://blue-ocean.vercel.app/assets/images/icon.png",
+  "termsOfUseUrl": "https://blue-ocean.vercel.app/terms",
+  "privacyPolicyUrl": "https://blue-ocean.vercel.app/privacy"
 }
