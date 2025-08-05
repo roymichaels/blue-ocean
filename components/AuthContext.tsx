@@ -1,5 +1,9 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useTonConnectUI, useTonWallet, useTonAddress } from '@tonconnect/ui-react';
+import {
+  useTonConnectUI,
+  useTonAddress,
+  useIsConnectionRestored,
+} from '@tonconnect/ui-react';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -33,12 +37,8 @@ interface AuthProviderProps { children: ReactNode }
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { openModal, tonConnectUI } = useTonConnectUI();
-  const wallet = useTonWallet();
   const address = useTonAddress();
-
-  React.useEffect(() => {
-    tonConnectUI.connectionRestore();
-  }, [tonConnectUI]);
+  const connectionRestored = useIsConnectionRestored();
 
   const login = async () => {
     openModal();
@@ -51,6 +51,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const user = address ? { id: address, address } : null;
+
+  if (!connectionRestored) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider
