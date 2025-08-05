@@ -96,6 +96,19 @@ export default function RootLayout() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const style = document.createElement('style');
+      style.innerHTML = `
+        #ton-connect-ui-container {
+          z-index: 9999 !important;
+          position: fixed !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   if (!ready) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
