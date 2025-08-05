@@ -20,7 +20,7 @@ export default function AuthTabsModal({ visible, onClose }: AuthTabsModalProps) 
           <TouchableOpacity style={styles.close} onPress={onClose}>
             <X size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <WalletConnectButton />
+          <WalletConnectButton onConnect={onClose} />
         </View>
       </View>
     </Modal>
