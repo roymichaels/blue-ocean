@@ -7,6 +7,7 @@ import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
+import { TonConnectUIProvider } from '@tonconnect/ui-react';
 
 import AdminNotificationBanner from '../components/AdminNotificationBanner';
 import { NotificationProvider } from '../components/NotificationContext';
@@ -104,13 +105,15 @@ export default function RootLayout() {
   }
 
   return (
-    <ConfigProvider>
-      <AuthProvider>
-        <OnboardingProvider>
-          <RootLayoutInner />
-        </OnboardingProvider>
-      </AuthProvider>
-    </ConfigProvider>
+    <TonConnectUIProvider manifestUrl="/tonconnect-manifest.json">
+      <ConfigProvider>
+        <AuthProvider>
+          <OnboardingProvider>
+            <RootLayoutInner />
+          </OnboardingProvider>
+        </AuthProvider>
+      </ConfigProvider>
+    </TonConnectUIProvider>
   );
 }
 
