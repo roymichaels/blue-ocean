@@ -56,7 +56,7 @@ describe('Signup broadcasts over Waku', () => {
     (usersAgent as any).hashCache.clear();
     messages.length = 0;
     jest.clearAllMocks();
-    insertConfig({ EXPO_PUBLIC_USE_WAKU: 'true', EXPO_PUBLIC_WAKU_SECRET: 's' });
+    insertConfig({ EXPO_PUBLIC_WAKU_SECRET: 's' });
   });
 
   it('broadcasts and replays user update', async () => {

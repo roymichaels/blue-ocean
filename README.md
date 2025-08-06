@@ -4,7 +4,7 @@ This Expo project uses React Native with the Expo Router.
 
 ## Setup
 
-Run `yarn install` to populate `node_modules`. All data is ephemeral and can be synchronized between peers over Waku when enabled; no external services are required.
+Run `yarn install` to populate `node_modules`. All data is ephemeral and synchronized between peers over Waku; no external services are required.
 
 ```sh
 yarn install
@@ -16,7 +16,7 @@ All state is held in memory and hydrated from the Waku message history on boot. 
 
 The app reads several secrets from the environment to encrypt peer-to-peer messages and sign tokens:
 
-- `EXPO_PUBLIC_WAKU_SECRET` – AES key used for Waku message encryption.
+- `EXPO_PUBLIC_WAKU_SECRET` – AES key used for Waku message encryption. If not provided one is generated on first launch.
 - `EXPO_PUBLIC_JWT_SECRET` – secret for signing JWT tokens.
 - `EXPO_PUBLIC_CHAT_SECRET` – secret used by the chat service.
 
@@ -30,9 +30,7 @@ export EXPO_PUBLIC_CHAT_SECRET=test_chat_secret
 
 Set them in your shell or enter them in the system settings screen after the app starts. You can modify them later from that screen at any time.
 
-Waku synchronization is disabled until `EXPO_PUBLIC_WAKU_SECRET` is provided.
-Once a secret is set, you can enable peer-to-peer sync by setting
-`EXPO_PUBLIC_USE_WAKU=true`.
+A Waku secret is generated automatically on first launch and peer-to-peer sync is always enabled.
 
 ### Onboarding
 
@@ -64,7 +62,6 @@ recognized keys include:
 - `EXPO_PUBLIC_JWT_SECRET`
 - `EXPO_PUBLIC_CHAT_SECRET`
 - `EXPO_PUBLIC_WAKU_SECRET`
-- `EXPO_PUBLIC_USE_WAKU`
 - `EXPO_PUBLIC_ADMIN_USERNAME`
 - `EXPO_PUBLIC_PINATA_JWT`
 - `EXPO_PUBLIC_PINATA_API_KEY`
@@ -120,7 +117,7 @@ appropriate `sendWaku...Update` function to broadcast the update. Each agent
 listens for new messages on its topic and applies them automatically, so data
 can be rehydrated from history at any time.
 
-Agents only start when `EXPO_PUBLIC_USE_WAKU=true` and a secret is provided. Without a secret Waku remains disabled and data stays purely local.
+Agents start automatically once the Waku secret has been generated.
 
 ### Web Notes
 
