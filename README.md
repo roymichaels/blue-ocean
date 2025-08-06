@@ -155,6 +155,14 @@ Export the web build using Expo once onboarding is complete:
 yarn build:web
 ```
 
+The export step copies `public/tonconnect-manifest.json` into the `dist` folder
+so wallets can load it from `/tonconnect-manifest.json` in production. After
+deploying the static build, verify the manifest is accessible:
+
+```sh
+curl https://<your-site>/tonconnect-manifest.json
+```
+
 ## Docker
 
 Use Docker to run the project in a reproducible environment. Build the image
