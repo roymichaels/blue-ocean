@@ -18,6 +18,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useConfig } from '../../contexts/ConfigContext';
 import InfoModal from '../../components/InfoModal';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import commonStyles from '../../constants/styles';
 
 export default function OnboardingScreen() {
   const { colors } = useTheme();
@@ -107,7 +108,7 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={commonStyles.flex1}>
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.title, { color: colors.text.primary }]}>Initial Setup</Text>
           <View style={styles.formGroup}>
@@ -164,7 +165,7 @@ export default function OnboardingScreen() {
           </View>
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: colors.text.primary }]}>Admin</Text>
-            <Text style={{ color: colors.text.primary, textAlign: 'right' }}>{user?.username}</Text>
+            <Text style={[styles.adminText, { color: colors.text.primary }]}>{user?.username}</Text>
           </View>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: colors.gold }, loading && { backgroundColor: colors.interactive.disabled }]}
@@ -199,4 +200,5 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderRadius: 8, padding: 12 },
   button: { padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 24 },
   buttonText: { fontSize: 18, fontWeight: '600' },
+  adminText: { textAlign: 'right' },
 });

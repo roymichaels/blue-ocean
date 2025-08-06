@@ -19,6 +19,7 @@ import { KycStatus } from '../../types';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import commonStyles from '../../constants/styles';
 
 
 
@@ -184,7 +185,7 @@ export default function KycScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אימות KYC</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <LoadingSpinner />
       </SafeAreaView>
@@ -198,7 +199,7 @@ export default function KycScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אימות KYC</Text>
-        <View style={{ width: 24 }} />
+        <View style={commonStyles.spacer24} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

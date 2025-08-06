@@ -18,6 +18,7 @@ import OrderService from '../services/orders';
 import { CartItem, ShippingAddress } from '../types';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import commonStyles from '../constants/styles';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useNotifications } from './NotificationContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -360,7 +361,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const renderShippingForm = () => (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
+      style={commonStyles.flex1}
     >
       <ScrollView 
         ref={scrollViewRef}
@@ -516,7 +517,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const renderPaymentForm = () => (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
+      style={commonStyles.flex1}
     >
       <ScrollView 
         ref={scrollViewRef}
@@ -635,7 +636,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const renderOrderConfirmation = () => (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
+      style={commonStyles.flex1}
     >
       <ScrollView 
         ref={scrollViewRef}

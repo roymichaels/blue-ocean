@@ -2,12 +2,13 @@
 
 // normal imports:
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, Platform } from 'react-native';
+import { View, ActivityIndicator, Platform, StyleSheet } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
+import commonStyles from '../constants/styles';
 
 import AdminNotificationBanner from '../components/AdminNotificationBanner';
 import { NotificationProvider } from '../components/NotificationContext';
@@ -40,12 +41,7 @@ function AppContent() {
   if (loading) {
     return (
       <View
-        style={{
-          flex: 1,
-          backgroundColor: colors.background,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
+        style={[styles.centered, { backgroundColor: colors.background }]}
       >
         <ActivityIndicator size="large" color={colors.gold} />
       </View>
@@ -53,7 +49,7 @@ function AppContent() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={commonStyles.flex1}>
       <AgeVerificationModal />
       {isAdmin && <AdminNotificationBanner />}
 
@@ -116,7 +112,7 @@ export default function RootLayout() {
 
   if (!ready) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -160,7 +156,7 @@ function RootLayoutInner() {
 
   if (onboarded === null) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -184,3 +180,11 @@ function RootLayoutInner() {
     </AppInfoProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

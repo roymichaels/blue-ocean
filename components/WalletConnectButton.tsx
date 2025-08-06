@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import {
   TonConnectButton,
   useTonWallet,
@@ -27,10 +27,17 @@ export default function WalletConnectButton({ onConnect }: WalletConnectButtonPr
   };
 
   return (
-    <View style={{ alignItems: 'center', gap: 12 }}>
+    <View style={styles.container}>
       <TonConnectButton onClick={handleTonConnect} />
       {wallet && <Text>{address}</Text>}
       <Button title="Connect with MetaMask" onPress={handleMetaMaskConnect} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    gap: 12,
+  },
+});

@@ -23,6 +23,7 @@ import { useAuth } from '../components/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
 import { DeliveryJob } from '../types';
+import commonStyles from '../constants/styles';
 
 
 
@@ -87,7 +88,7 @@ export default function DriverDashboardScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>לוח נהג</Text>
-        <View style={{ width: 24 }} />
+        <View style={commonStyles.spacer24} />
       </View>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {jobs.map((job) => (

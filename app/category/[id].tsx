@@ -17,6 +17,7 @@ import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import commonStyles from '../../constants/styles';
 
 
 
@@ -216,7 +217,7 @@ export default function CategoryScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <LoadingSpinner />
       </SafeAreaView>
@@ -231,7 +232,7 @@ export default function CategoryScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>קטגוריה לא נמצאה</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
       </SafeAreaView>
     );

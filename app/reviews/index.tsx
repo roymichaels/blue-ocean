@@ -21,6 +21,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { useAuthModal } from '../../components/AuthModalContext';
+import commonStyles from '../../constants/styles';
 
 
 
@@ -465,7 +466,7 @@ export default function ReviewsScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ביקורות</Text>
-          <View style={{ width: 40 }} />
+          <View style={commonStyles.spacer40} />
         </View>
         <LoadingSpinner />
       </SafeAreaView>

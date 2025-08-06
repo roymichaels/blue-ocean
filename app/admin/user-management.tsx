@@ -18,6 +18,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
 import { User as UserType, CustomerTier } from '../../types';
 import { useNotifications } from '../../components/NotificationContext';
+import commonStyles from '../../constants/styles';
 
 export default function UserManagementScreen() {
   const [users, setUsers] = useState<UserType[]>([]);
@@ -293,7 +294,7 @@ export default function UserManagementScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ניהול משתמשים</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.gold} />
@@ -310,7 +311,7 @@ export default function UserManagementScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ניהול משתמשים</Text>
-        <View style={{ width: 24 }} />
+        <View style={commonStyles.spacer24} />
       </View>
 
       <View style={styles.searchFilterContainer}>

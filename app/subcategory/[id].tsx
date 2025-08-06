@@ -23,6 +23,7 @@ import MediaUploader from '../../components/MediaUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import commonStyles from '../../constants/styles';
 
 
 
@@ -504,7 +505,7 @@ export default function SubcategoryScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <LoadingSpinner />
       </SafeAreaView>
@@ -519,7 +520,7 @@ export default function SubcategoryScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>לא נמצא</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <View style={styles.emptyContainer}>
           <Text style={[styles.emptyText, { color: colors.text.secondary }]}>תת-קטגוריה לא נמצאה</Text>
