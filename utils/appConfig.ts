@@ -7,6 +7,9 @@ import { loadConfig as loadConfigFromStorage, saveConfig as persistConfig } from
 
 const config: Record<string, string> = {};
 
+// Track whether a missing Waku secret has already been reported
+let warnedMissingWakuSecret = false;
+
 const ENV_KEYS = [
   'EXPO_PUBLIC_JWT_SECRET',
   'EXPO_PUBLIC_CHAT_SECRET',
@@ -35,6 +38,7 @@ export async function initConfig(): Promise<void> {
 
   let shouldPersist = false;
   if (!config.EXPO_PUBLIC_WAKU_SECRET) {
+
     const bytes = new Uint8Array(32);
     crypto.getRandomValues(bytes);
     config.EXPO_PUBLIC_WAKU_SECRET = Buffer.from(bytes).toString('hex');

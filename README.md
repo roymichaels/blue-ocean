@@ -163,17 +163,18 @@ curl https://<your-site>/tonconnect-manifest.json
 ## Docker
 
 Use Docker to run the project in a reproducible environment. Build the image
-and start the Expo server with:
+and start the Expo server with a Waku secret provided via the environment:
 
 ```sh
 docker build -t blue-ocean .
-docker run -p 19000-19002:19000-19002 blue-ocean
+docker run -e EXPO_PUBLIC_WAKU_SECRET=$(openssl rand -hex 32) \
+  -p 19000-19002:19000-19002 blue-ocean
 ```
 
 For hot reloading and easier development you can also use Docker Compose:
 
 ```sh
-docker compose up
+EXPO_PUBLIC_WAKU_SECRET=$(openssl rand -hex 32) docker compose up
 ```
 
 ## Tests
