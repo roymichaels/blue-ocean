@@ -6,6 +6,9 @@ import { loadConfig as loadConfigFromStorage, saveConfig as persistConfig } from
 
 const config: Record<string, string> = {};
 
+// Track whether a missing Waku secret has already been reported
+let warnedMissingWakuSecret = false;
+
 const ENV_KEYS = [
   'EXPO_PUBLIC_JWT_SECRET',
   'EXPO_PUBLIC_CHAT_SECRET',
@@ -36,7 +39,10 @@ export async function initConfig(): Promise<void> {
   // If no Waku secret was provided disable peer-to-peer sync and warn
   if (!config.EXPO_PUBLIC_WAKU_SECRET) {
     config.EXPO_PUBLIC_USE_WAKU = 'false';
-    console.warn('EXPO_PUBLIC_WAKU_SECRET missing; Waku disabled');
+    if (!warnedMissingWakuSecret) {
+      console.warn('EXPO_PUBLIC_WAKU_SECRET missing; Waku disabled');
+      warnedMissingWakuSecret = true;
+    }
   } else if (!config.EXPO_PUBLIC_USE_WAKU) {
     // Enable Waku by default when a secret exists
     config.EXPO_PUBLIC_USE_WAKU = 'true';
