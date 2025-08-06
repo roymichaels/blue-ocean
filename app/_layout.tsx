@@ -12,7 +12,10 @@ import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import AdminNotificationBanner from '../components/AdminNotificationBanner';
 import { NotificationProvider } from '../components/NotificationContext';
 import { AuthProvider, useAuth } from '../components/AuthContext';
-import { AuthModalProvider, useAuthModal } from '../components/AuthModalContext';
+import {
+  AuthModalProvider,
+  useAuthModal,
+} from '../components/AuthModalContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { CurrencyProvider } from '../contexts/CurrencyContext';
@@ -24,13 +27,15 @@ import { ConfigProvider } from '../contexts/ConfigContext';
 import { loadTenantSettings } from '../constants/tenant';
 import { initConfig } from '../utils/appConfig';
 import OnboardingScreen from './onboarding';
-import { OnboardingProvider, useOnboarding } from '../contexts/OnboardingContext';
+import {
+  OnboardingProvider,
+  useOnboarding,
+} from '../contexts/OnboardingContext';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
   const { colors, theme } = useTheme();
   const { isAdmin, loading } = useAuth();
-
 
   if (loading) {
     return (
