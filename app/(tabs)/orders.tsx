@@ -17,6 +17,7 @@ import GlobalHeader from '../../components/GlobalHeader';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
+import commonStyles from '../../constants/styles';
 
 
 
@@ -132,7 +133,7 @@ export default function OrdersScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ההזמנות שלי</Text>
-        <View style={{ width: 24 }} />
+        <View style={commonStyles.spacer24} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

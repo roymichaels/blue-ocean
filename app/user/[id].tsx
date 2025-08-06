@@ -15,6 +15,7 @@ import DatabaseService from '../../services/database';
 import { User } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import commonStyles from '../../constants/styles';
 
 
 
@@ -112,7 +113,7 @@ export default function UserProfileScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
       </SafeAreaView>
     );
@@ -126,7 +127,7 @@ export default function UserProfileScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>משתמש לא נמצא</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <View style={styles.errorContainer}>
           <UserIcon size={80} color={colors.interactive.disabled} />
@@ -146,7 +147,7 @@ export default function UserProfileScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>פרופיל משתמש</Text>
-        <View style={{ width: 24 }} />
+        <View style={commonStyles.spacer24} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

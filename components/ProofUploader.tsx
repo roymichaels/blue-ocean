@@ -107,9 +107,9 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
         uri.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
           <Image source={{ uri }} style={styles.preview} />
         ) : (
-          <View style={[styles.filePreview, { borderColor: colors.border.primary }]}> 
+          <View style={[styles.filePreview, { borderColor: colors.border.primary }]}>
             <FileIcon size={24} color={colors.text.primary} />
-            <Text style={{ color: colors.text.primary, marginTop: 4 }}>File</Text>
+            <Text style={[styles.fileLabel, { color: colors.text.primary }]}>File</Text>
           </View>
         )
       ) : (
@@ -186,5 +186,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  fileLabel: {
+    marginTop: 4,
   }
 });

@@ -16,6 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
 import { User as UserType } from '../../types';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import commonStyles from '../../constants/styles';
 
 
 
@@ -109,7 +110,7 @@ export default function KycApprovalsScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אישורי KYC</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <LoadingSpinner />
       </SafeAreaView>
@@ -123,7 +124,7 @@ export default function KycApprovalsScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אישורי KYC</Text>
-        <View style={{ width: 24 }} />
+        <View style={commonStyles.spacer24} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

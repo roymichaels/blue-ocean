@@ -38,6 +38,7 @@ import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import MediaService from '../../services/media';
+import commonStyles from '../../constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '../../components/FloatingCartWidget';
 
@@ -327,7 +328,7 @@ export default function ProductDetailScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
             טוען...
           </Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <LoadingSpinner />
       </SafeAreaView>

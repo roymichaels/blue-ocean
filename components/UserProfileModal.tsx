@@ -74,7 +74,7 @@ export default function UserProfileModal({ visible, userId, onClose, isAdmin = f
                 <X size={20} color={colors.text.secondary} />
               </TouchableOpacity>
               {loading ? (
-                <ActivityIndicator size="large" color={colors.gold} style={{ margin: 20 }} />
+                <ActivityIndicator size="large" color={colors.gold} style={styles.loader} />
               ) : profile ? (
                 <>
                   <Text style={[styles.username, { color: colors.text.primary }]}>@{profile.username}</Text>
@@ -157,6 +157,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
     textAlign: 'center',
+  },
+  loader: {
+    margin: 20,
   },
   tag: {
     paddingVertical: 6,

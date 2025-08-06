@@ -293,9 +293,9 @@ export default function PricingTierFormModal({
                   ],
                 })
               }
-              style={{ marginBottom: 10 }}
+              style={styles.addRuleButton}
             >
-              <Text style={{ color: colors.gold }}>הוסף כלל</Text>
+              <Text style={[styles.addRuleText, { color: colors.gold }]}>הוסף כלל</Text>
             </TouchableOpacity>
 
             <View style={styles.formGroup}>
@@ -375,6 +375,8 @@ const styles = StyleSheet.create({
   formLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
   formInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },
   textArea: { height: 100, textAlignVertical: 'top' },
+  addRuleButton: { marginBottom: 10 },
+  addRuleText: { fontWeight: '600' },
   modalActions: { gap: 16, marginTop: 20, marginBottom: 40 },
   saveButton: { borderRadius: 12, paddingVertical: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   saveButtonText: { fontSize: 16, fontWeight: '600', marginLeft: 8 },

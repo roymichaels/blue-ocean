@@ -20,6 +20,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import MediaUploader from '../../components/MediaUploader';
 import { useAppInfo } from '../../contexts/AppInfoContext';
+import commonStyles from '../../constants/styles';
 
 
 
@@ -158,7 +159,7 @@ export default function SettingsScreen() {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
-          <View style={{ width: 24 }} />
+          <View style={commonStyles.spacer24} />
         </View>
         <LoadingSpinner />
       </SafeAreaView>
@@ -172,7 +173,7 @@ export default function SettingsScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
-        <View style={{ width: 24 }} />
+        <View style={commonStyles.spacer24} />
       </View>
 
       <ScrollView 
@@ -236,24 +237,24 @@ export default function SettingsScreen() {
                   type="color"
                   value={themeColor}
                   onChange={(e) => setThemeColorState(e.target.value)}
-                  style={{ width: 40, height: 40, borderWidth: 0, backgroundColor: 'transparent' }}
+                  style={styles.colorInput}
                 />
               ) : (
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                <View style={styles.colorOptions}>
                   {['#B99C5A', '#FF0000', '#00FF00', '#0000FF', '#FF00FF', '#00FFFF'].map((c) => (
                     <TouchableOpacity
                       key={c}
                       onPress={() => setThemeColorState(c)}
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        backgroundColor: c,
-                        marginRight: 8,
-                        marginBottom: 8,
-                        borderWidth: themeColor === c ? 3 : 1,
-                        borderColor: themeColor === c ? colors.gold : colors.border.primary,
-                      }}
+                      style={[
+                        styles.colorOption,
+                        {
+                          backgroundColor: c,
+                          borderWidth: themeColor === c ? 3 : 1,
+                          borderColor: themeColor === c
+                            ? colors.gold
+                            : colors.border.primary,
+                        },
+                      ]}
                     />
                   ))}
                 </View>
@@ -577,6 +578,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 16,
     textAlign: 'right',
+  },
+  colorInput: {
+    width: 40,
+    height: 40,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+  },
+  colorOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  colorOption: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
   },
   inputContainer: {
     marginBottom: 8,
