@@ -2,7 +2,7 @@
 
 // normal imports:
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Platform } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -123,9 +123,11 @@ export default function RootLayout() {
   }
 
   const manifestUrl =
-    typeof window !== 'undefined'
-      ? new URL('/tonconnect-manifest.json', window.location.origin).href
-      : '/tonconnect-manifest.json';
+    Platform.OS === 'web'
+      ? typeof window !== 'undefined'
+        ? new URL('/tonconnect-manifest.json', window.location.origin).href
+        : '/tonconnect-manifest.json'
+      : 'https://blue-ocean.vercel.app/tonconnect-manifest.json';
 
   return (
     <TonConnectUIProvider manifestUrl={manifestUrl}>
