@@ -12,11 +12,6 @@ import {
 import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
 import DatabaseService from '../services/database';
 import { ChatMessage } from '../types';
-import config from '../utils/appConfig';
-
-async function useWaku(): Promise<boolean> {
-  return config.EXPO_PUBLIC_USE_WAKU === 'true';
-}
 const BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 
@@ -45,7 +40,6 @@ export function useWakuClient(): WakuClient {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (!(await useWaku())) return;
       let node: LightNode | undefined;
       try {
         node = await createLightNode({
@@ -85,7 +79,7 @@ export function useWakuClient(): WakuClient {
     };
     await db.sendChatMessage(roomId, { ...full, message: encrypted });
 
-    if ((await useWaku()) && nodeRef.current) {
+    if (nodeRef.current) {
       const encoder = createEncoder({ contentTopic: topic(roomId) });
       await nodeRef.current.lightPush.push(encoder, {
         payload: utf8ToBytes(encrypted),
@@ -98,7 +92,7 @@ export function useWakuClient(): WakuClient {
     roomId: string,
     cb: (msg: ChatMessage) => void,
   ): Promise<() => void> => {
-    if (!(await useWaku()) || !nodeRef.current) return () => {};
+    if (!nodeRef.current) return () => {};
     const decoder = createDecoder(topic(roomId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
@@ -134,7 +128,7 @@ export function useWakuClient(): WakuClient {
     roomId: string,
     cb: (msg: ChatMessage) => void,
   ) => {
-    if (!(await useWaku()) || !nodeRef.current) return;
+    if (!nodeRef.current) return;
     const decoder = createDecoder(topic(roomId));
     for await (const msgs of nodeRef.current.store.queryGenerator({
       contentTopics: [topic(roomId)],

@@ -1,32 +1,39 @@
 import DatabaseService from '../services/database';
 import OrderService from '../services/orders';
+import ordersAgent from '../agents/orders-agent';
 import { insertConfig } from './testUtils';
+import config, { initConfig } from '../utils/appConfig';
 import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
 import { sendWakuOrderUpdate } from '../lib/waku/sendWakuOrderUpdate';
 
 jest.mock('../lib/waku/sendWakuUserUpdate');
 jest.mock('../lib/waku/sendWakuOrderUpdate');
 
-describe('Waku disabled behaviour', () => {
-  beforeEach(() => {
+describe('Waku auto enable', () => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     (DatabaseService as any).instance = undefined;
     (OrderService as any).instance = undefined;
+    for (const key of Object.keys(config)) {
+      delete (config as any)[key];
+    }
+    // ensure no secret is preset
+    insertConfig({});
+    await initConfig();
   });
 
-  it('skips user update when Waku disabled', async () => {
-    await insertConfig({ EXPO_PUBLIC_USE_WAKU: 'false' });
+  it('generates secret automatically and broadcasts user updates', async () => {
+    expect(config.EXPO_PUBLIC_WAKU_SECRET).toBeDefined();
     const db = DatabaseService.getInstance();
     jest.spyOn(db, 'getUserProfile').mockResolvedValue({ id: '1' } as any);
     await db.updateUserRole('1', 'admin');
-    expect(sendWakuUserUpdate).not.toHaveBeenCalled();
+    expect(sendWakuUserUpdate).toHaveBeenCalled();
   });
 
-  it('skips order update when secret missing', async () => {
-    await insertConfig({ EXPO_PUBLIC_USE_WAKU: 'true', EXPO_PUBLIC_WAKU_SECRET: '' });
+  it('broadcasts order update without manual secret', async () => {
     const svc = OrderService.getInstance();
-    jest.spyOn(svc as any, 'getOrder').mockResolvedValue({ id: '1' } as any);
+    jest.spyOn(ordersAgent as any, 'get').mockReturnValue({ id: '1', status: 'pending' });
     await svc.updateOrderStatus('1', 'delivered');
-    expect(sendWakuOrderUpdate).not.toHaveBeenCalled();
+    expect(sendWakuOrderUpdate).toHaveBeenCalled();
   });
 });
