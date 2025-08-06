@@ -1,5 +1,4 @@
 import { Buffer } from 'buffer';
-import { isWakuConfigured } from '../lib/waku/isWakuConfigured';
 import { decryptWakuPayload } from '../lib/waku/wakuCrypto';
 
 export interface WakuAgentOptions<T> {
@@ -42,13 +41,13 @@ export default class WakuAgent<T extends { id: string }> {
 
   async whenReady(): Promise<void> {
     if (!this.readyPromise) {
-      if (this.options.topic && (await isWakuConfigured())) {
+      if (this.options.topic) {
         this.readyPromise = this.init();
         this.ready = this.readyPromise;
       } else {
         return;
       }
-    } else if (!this.node && (await isWakuConfigured())) {
+    } else if (!this.node) {
       this.readyPromise = this.init();
       this.ready = this.readyPromise;
     }
@@ -85,7 +84,6 @@ export default class WakuAgent<T extends { id: string }> {
 
 
   private async init() {
-    if (!(await isWakuConfigured())) return;
     try {
       const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
       this.node = await createLightNode({
@@ -148,9 +146,7 @@ export default class WakuAgent<T extends { id: string }> {
 
   protected async broadcast(item: T) {
     try {
-      if (await isWakuConfigured()) {
-        await this.sendFn(item);
-      }
+      await this.sendFn(item);
     } catch (e) {
       console.error('Failed to broadcast Waku message', e);
     }

@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { loadConfig as loadConfigFromStorage, saveConfig as persistConfig } from './configStorage';
 
 // Configuration values are stored locally but can be overridden by
@@ -10,7 +11,6 @@ const ENV_KEYS = [
   'EXPO_PUBLIC_JWT_SECRET',
   'EXPO_PUBLIC_CHAT_SECRET',
   'EXPO_PUBLIC_WAKU_SECRET',
-  'EXPO_PUBLIC_USE_WAKU',
   'EXPO_PUBLIC_ADMIN_USERNAME',
   'EXPO_PUBLIC_PINATA_JWT',
   'EXPO_PUBLIC_PINATA_API_KEY',
@@ -33,13 +33,15 @@ export async function initConfig(): Promise<void> {
     }
   }
 
-  // If no Waku secret was provided disable peer-to-peer sync and warn
+  let shouldPersist = false;
   if (!config.EXPO_PUBLIC_WAKU_SECRET) {
-    config.EXPO_PUBLIC_USE_WAKU = 'false';
-    console.warn('EXPO_PUBLIC_WAKU_SECRET missing; Waku disabled');
-  } else if (!config.EXPO_PUBLIC_USE_WAKU) {
-    // Enable Waku by default when a secret exists
-    config.EXPO_PUBLIC_USE_WAKU = 'true';
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    config.EXPO_PUBLIC_WAKU_SECRET = Buffer.from(bytes).toString('hex');
+    shouldPersist = true;
+  }
+  if (shouldPersist) {
+    await persistConfig(config);
   }
 }
 
