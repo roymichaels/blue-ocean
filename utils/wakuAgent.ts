@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer';
 import { decryptWakuPayload } from '../lib/waku/wakuCrypto';
 
 export interface WakuAgentOptions<T> {
@@ -10,8 +9,6 @@ export interface WakuAgentOptions<T> {
   extractItem?: (msg: any) => T | undefined;
   /** Called whenever an item is stored */
   onUpdate?: (item: T) => void;
-  /** Allowed sender roles */
-  allowedRoles?: string[];
   /** Additional validation */
   validateMessage?: (msg: any) => boolean | Promise<boolean>;
 }
@@ -117,26 +114,16 @@ export default class WakuAgent<T extends { id: string }> {
   async processPayload(payload: string): Promise<void> {
     try {
       const parsed = JSON.parse(payload);
-      if (!parsed.sender?.publicKey || !parsed.signature || !parsed.sender?.role) return;
-
-      if (this.options.allowedRoles && !this.options.allowedRoles.includes(parsed.sender.role)) return;
-
-      const { verify, etc: edBytes } = await import('@noble/ed25519');
-      const { sha256 } = await import('@noble/hashes/sha256');
-      const verifyObj = { ...parsed } as any;
-      delete (verifyObj as any).signature;
-      const hash = sha256(new TextEncoder().encode(JSON.stringify(verifyObj)));
-      const hashHex = Buffer.from(hash).toString('hex');
-      if (this.hashCache.has(hashHex)) return;
-      const ok = await verify(edBytes.hexToBytes(parsed.signature), hash, edBytes.hexToBytes(parsed.sender.publicKey));
-      if (!ok) return;
 
       if (this.options.validateMessage && !(await this.options.validateMessage(parsed))) return;
+
+      const hashKey = payload;
+      if (this.hashCache.has(hashKey)) return;
 
       const item = this.options.extractItem ? this.options.extractItem(parsed) : (parsed as T);
       if (item && item.id) {
         this.store.set(item.id, item);
-        this.hashCache.add(hashHex);
+        this.hashCache.add(hashKey);
         this.options.onUpdate?.(item);
       }
     } catch (e) {
