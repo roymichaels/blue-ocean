@@ -69,7 +69,14 @@ describe('Signup broadcasts over Waku', () => {
 
     const AgentClass = (usersAgent as any).constructor;
     const newAgent: any = new AgentClass();
-    await (newAgent.ready || Promise.resolve());
+    if (newAgent.ready) {
+      try {
+        await newAgent.ready;
+      } catch (e) {
+        console.error('Failed to initialize UsersAgent', e);
+        throw e;
+      }
+    }
     const stored = newAgent.get(user.id);
     expect(stored).toEqual(user);
     await newAgent.stop();
