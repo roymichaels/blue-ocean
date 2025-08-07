@@ -118,6 +118,7 @@ export default class WakuAgent<T extends { id: string }> {
 
   async processPayload(payload: string): Promise<void> {
     try {
+      if (this.hashCache.has(payload)) return;
       const parsed = JSON.parse(payload);
 
       if (this.options.validateMessage && !(await this.options.validateMessage(parsed))) return;
@@ -128,6 +129,7 @@ export default class WakuAgent<T extends { id: string }> {
       const item = this.options.extractItem ? this.options.extractItem(parsed) : (parsed as T);
       if (item && item.id) {
         this.store.set(item.id, item);
+
         this.hashCache.add(hashKey);
         this.options.onUpdate?.(item);
       }
