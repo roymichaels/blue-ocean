@@ -6,12 +6,14 @@ const webpack = require('webpack');
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
 
+  // Use source maps in all modes to avoid eval-based tooling which can violate CSP
+  config.devtool = 'source-map';
+
   // Optional: remove buggy plugin in production
   if (config.mode === 'production') {
     config.plugins = config.plugins.filter(
       (p) => p.constructor.name !== 'WebpackDeepScopeAnalysisPlugin'
     );
-    config.devtool = 'source-map';
   }
 
   // Polyfill Node.js core modules used by some dependencies
