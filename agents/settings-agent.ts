@@ -21,7 +21,6 @@ class SettingsAgent extends WakuAgent<SettingItem> {
           msg.type === 'settings.update'
             ? { id: msg.key as string, value: msg.value as string }
             : undefined,
-        allowedRoles: ['admin'],
       }
     );
   }

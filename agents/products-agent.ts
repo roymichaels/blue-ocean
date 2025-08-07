@@ -8,7 +8,6 @@ class ProductsAgent extends WakuAgent<Product> {
       topic: '/congress/products/1/proto',
       replayHistory: true,
       extractItem: (msg: any) => msg.product as Product,
-      allowedRoles: ['admin'],
     });
   }
 }
