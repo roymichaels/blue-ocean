@@ -64,6 +64,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
 
       const tenantSvc = SettingsAgent.getInstance();
       try {
+        await tenantSvc.whenReady();
         const t = tenant;
         const dbName = await tenantSvc.getTenantSetting(t, 'platform_name');
         const dbLogo = await tenantSvc.getTenantSetting(t, 'platform_logo');
@@ -81,6 +82,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
           await AsyncStorage.setItem(COLOR_KEY, dbColor);
         }
       } catch (err) {
+        Alert.alert('שגיאה', 'טעינת הגדרות מהשרת נכשלה');
         console.error('Failed fetching branding from server:', err);
       }
     } catch (e) {
@@ -109,6 +111,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     await AsyncStorage.setItem(NAME_KEY, name);
     const tenantSvc = SettingsAgent.getInstance();
     try {
+      await tenantSvc.whenReady();
       await tenantSvc.updateTenantSetting(tenant, 'platform_name', name);
       scheduleLoadInfo();
     } catch (e) {
@@ -130,6 +133,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       setPlatformLogoState(finalLogo);
       await AsyncStorage.setItem(LOGO_KEY, finalLogo);
       const tenantSvc = SettingsAgent.getInstance();
+      await tenantSvc.whenReady();
       await tenantSvc.updateTenantSetting(tenant, 'platform_logo', finalLogo);
       scheduleLoadInfo();
     } catch (e) {
@@ -145,6 +149,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       setThemeColorState(color);
       await AsyncStorage.setItem(COLOR_KEY, color);
       const tenantSvc = SettingsAgent.getInstance();
+      await tenantSvc.whenReady();
       await tenantSvc.updateTenantSetting(tenant, 'theme_color', color);
       scheduleLoadInfo();
     } catch (e) {

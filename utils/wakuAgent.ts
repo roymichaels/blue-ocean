@@ -111,6 +111,7 @@ export default class WakuAgent<T extends { id: string }> {
       }
     } catch (e) {
       console.error('Failed initializing WakuAgent', e);
+      throw e;
     }
   }
 
