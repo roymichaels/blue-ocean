@@ -2,14 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
 import cartAgent from '../agents/cart-agent';
-import JWT from 'expo-jwt';
-import config from '../utils/appConfig';
-
-async function getJwtSecret(): Promise<string | null> {
-  return config.EXPO_PUBLIC_JWT_SECRET || null;
-}
-import { getToken } from '../utils/tokenStorage';
-import { isTokenValid } from '../utils/jwtSession';
+ 
 
 const CART_STORAGE_KEY = 'cart_items';
 const WISHLIST_STORAGE_KEY = 'wishlist_items';
@@ -23,14 +16,6 @@ class CartService {
   private groupCache: Record<string, MixGroup> = {};
 
   private async getCurrentUserId(): Promise<string | null> {
-    const token = await getToken();
-    if (token && (await isTokenValid(token))) {
-      const JWT_SECRET = await getJwtSecret();
-      if (JWT_SECRET) {
-        const payload: any = JWT.decode(token, JWT_SECRET);
-        return payload?.sub || null;
-      }
-    }
     return null;
   }
 
