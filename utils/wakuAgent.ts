@@ -1,3 +1,9 @@
+import { Buffer } from 'buffer';
+import {
+  createLightNode,
+  waitForRemotePeer,
+  Protocols,
+} from '@waku/sdk';
 import { decryptWakuPayload } from '../lib/waku/wakuCrypto';
 
 export interface WakuAgentOptions<T> {
@@ -82,7 +88,6 @@ export default class WakuAgent<T extends { id: string }> {
 
   private async init() {
     try {
-      const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
       this.node = await createLightNode({
         defaultBootstrap: true,
         libp2p: { hideWebSocketInfo: true },
