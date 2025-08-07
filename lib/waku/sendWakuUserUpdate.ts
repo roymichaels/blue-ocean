@@ -1,6 +1,5 @@
 import { encryptWakuPayload } from './wakuCrypto';
 import { sha256 } from '@noble/hashes/sha256';
-import { getPrivateKey } from '../../utils/privateKeyStorage';
 import { getNode } from './nodeSingleton';
 
 
@@ -26,11 +25,6 @@ export const sendWakuUserUpdate = async (
     role: sender.role || user.role,
     privateKey: sender.privateKey,
   } as WakuSender;
-
-  if (!privateKey) {
-    const stored = await getPrivateKey();
-    if (stored) privateKey = stored;
-  }
 
   const node = await getNode();
 
