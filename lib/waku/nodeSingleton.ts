@@ -1,11 +1,10 @@
-import type { LightNode } from '@waku/sdk';
+import { createLightNode, waitForRemotePeer, Protocols, type LightNode } from '@waku/sdk';
 
 let nodePromise: Promise<LightNode> | null = null;
 
 export async function getNode(): Promise<LightNode> {
   if (!nodePromise) {
     nodePromise = (async () => {
-      const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
       const n = await createLightNode({
         defaultBootstrap: true,
         libp2p: { hideWebSocketInfo: true },
