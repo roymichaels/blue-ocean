@@ -16,10 +16,6 @@ jest.mock('../lib/waku/nodeSingleton', () => ({
   stopNode: jest.fn(),
 }));
 
-jest.mock('@noble/ed25519', () => ({
-  sign: jest.fn(),
-  etc: { hexToBytes: jest.fn(), bytesToHex: jest.fn() },
-}));
 
 describe('Waku send updates', () => {
   const { getNode } = require('../lib/waku/nodeSingleton');

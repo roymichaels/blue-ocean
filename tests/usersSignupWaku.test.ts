@@ -7,11 +7,6 @@ jest.mock('../lib/waku/wakuCrypto', () => ({
   decryptWakuPayload: jest.fn(async (p: string) => p),
 }));
 
-jest.mock('@noble/ed25519', () => ({
-  verify: jest.fn(async () => true),
-  etc: { hexToBytes: jest.fn(() => new Uint8Array()), bytesToHex: jest.fn(() => '') },
-}));
-
 const messages: Uint8Array[] = [];
 function createMockNode() {
   return {
@@ -43,7 +38,7 @@ jest.mock('@waku/sdk', () => ({ createLightNode, waitForRemotePeer, Protocols })
 
 jest.mock('../lib/waku/sendWakuUserUpdate', () => ({
   sendWakuUserUpdate: jest.fn(async (user: any) => {
-    const payloadObj = { type: 'user.update', user, sender: { id: user.id, publicKey: user.publicKey, role: user.role }, signature: 'sig' };
+    const payloadObj = { type: 'user.update', user };
     const encoded = new TextEncoder().encode(JSON.stringify(payloadObj));
     messages.push(encoded);
   }),
