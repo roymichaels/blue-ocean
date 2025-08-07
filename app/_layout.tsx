@@ -53,7 +53,7 @@ function AppContent() {
       <AgeVerificationModal />
       {isAdmin && <AdminNotificationBanner />}
 
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack style={{ flex: 1 }} screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="product/[id]" />
         <Stack.Screen name="category/[id]" />
