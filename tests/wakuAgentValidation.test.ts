@@ -17,8 +17,8 @@ test('rejects messages with invalid signature or role', async () => {
   const pubHex = ed.etc.bytesToHex(pub);
 
   const agent = new WakuAgent<TestItem>(async () => {}, {
-    allowedRoles: ['admin'],
     extractItem: (msg: any) => msg.item as TestItem,
+    validateMessage: (msg: any) => msg.sender.role === 'admin',
   });
 
   const sender = { id: '1', publicKey: pubHex, role: 'admin' };
@@ -53,8 +53,8 @@ test('skips duplicate messages using hash cache', async () => {
   const pubHex = ed.etc.bytesToHex(pub);
 
   const agent = new WakuAgent<TestItem>(async () => {}, {
-    allowedRoles: ['admin'],
     extractItem: (msg: any) => msg.item as TestItem,
+    validateMessage: (msg: any) => msg.sender.role === 'admin',
   });
 
   const sender = { id: '1', publicKey: pubHex, role: 'admin' };

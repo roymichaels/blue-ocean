@@ -10,8 +10,6 @@ export interface WakuAgentOptions<T> {
   extractItem?: (msg: any) => T | undefined;
   /** Called whenever an item is stored */
   onUpdate?: (item: T) => void;
-  /** Allowed sender roles */
-  allowedRoles?: string[];
   /** Additional validation */
   validateMessage?: (msg: any) => boolean | Promise<boolean>;
 }
@@ -118,8 +116,6 @@ export default class WakuAgent<T extends { id: string }> {
     try {
       const parsed = JSON.parse(payload);
       if (!parsed.sender?.publicKey || !parsed.signature || !parsed.sender?.role) return;
-
-      if (this.options.allowedRoles && !this.options.allowedRoles.includes(parsed.sender.role)) return;
 
       const { verify, etc: edBytes } = await import('@noble/ed25519');
       const { sha256 } = await import('@noble/hashes/sha256');
