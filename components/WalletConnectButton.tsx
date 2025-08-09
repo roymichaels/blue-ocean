@@ -14,11 +14,11 @@ interface WalletConnectButtonProps {
 export default function WalletConnectButton({ onConnect }: WalletConnectButtonProps) {
   const wallet = useTonWallet();
   const address = useTonAddress();
-  const tonConnect = useTonConnect();
+  const tonConnectUI = useTonConnect();
 
   const handleTonConnect = () => {
     onConnect?.();
-    tonConnect.openModal();
+    tonConnectUI?.openModal();
   };
 
   const handleMetaMaskConnect = () => {
