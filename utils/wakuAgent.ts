@@ -4,7 +4,10 @@ import {
   waitForRemotePeer,
   Protocols,
 } from '@waku/sdk';
+import TonWeb from 'tonweb';
 import { decryptWakuPayload } from '../lib/waku/wakuCrypto';
+
+const tonweb = new TonWeb();
 
 export interface WakuAgentOptions<T> {
   /** Waku content topic to subscribe to */
@@ -121,6 +124,32 @@ export default class WakuAgent<T extends { id: string }> {
     try {
       if (this.hashCache.has(payload)) return;
       const parsed = JSON.parse(payload);
+
+      const { signature, sender, ...unsigned } = parsed as any;
+      if (!signature || !sender?.publicKey || !sender?.address) return;
+
+      const message = JSON.stringify(unsigned);
+      const msgBytes = Buffer.from(message, 'utf8');
+      const sigBytes = Buffer.from(signature, 'base64');
+      const pubKeyBytes = Buffer.from(sender.publicKey, 'hex');
+
+      const isValid = TonWeb.utils.nacl.sign.detached.verify(
+        msgBytes,
+        sigBytes,
+        pubKeyBytes,
+      );
+      if (!isValid) {
+        console.error('Invalid TON signature');
+        return;
+      }
+
+      const WalletClass = tonweb.wallet.all[tonweb.wallet.defaultVersion];
+      const wallet = new WalletClass(tonweb.provider, { publicKey: pubKeyBytes, wc: 0 });
+      const derived = (await wallet.getAddress()).toString(true, true, true);
+      if (derived !== sender.address) {
+        console.error('Signature address mismatch');
+        return;
+      }
 
       if (this.options.validateMessage && !(await this.options.validateMessage(parsed))) return;
 
