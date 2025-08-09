@@ -65,6 +65,12 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       const tenantSvc = SettingsAgent.getInstance();
       try {
         await tenantSvc.whenReady();
+      } catch (err) {
+        Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
+        console.error('Failed initializing SettingsAgent:', err);
+        return;
+      }
+      try {
         const t = tenant;
         const dbName = await tenantSvc.getTenantSetting(t, 'platform_name');
         const dbLogo = await tenantSvc.getTenantSetting(t, 'platform_logo');
@@ -112,6 +118,12 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     const tenantSvc = SettingsAgent.getInstance();
     try {
       await tenantSvc.whenReady();
+    } catch (e) {
+      Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
+      console.error('Failed initializing SettingsAgent:', e);
+      throw e;
+    }
+    try {
       await tenantSvc.updateTenantSetting(tenant, 'platform_name', name);
       scheduleLoadInfo();
     } catch (e) {
@@ -122,18 +134,29 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   };
 
   const setPlatformLogo = async (logo: string) => {
+    let finalLogo = logo;
     try {
-      let finalLogo = logo;
       if (logo && !logo.startsWith('http')) {
         const mediaSvc = MediaService.getInstance();
         finalLogo = await mediaSvc.uploadMedia(logo, 'tenant_logo');
       }
-
       const LOGO_KEY = `app_platform_logo_${tenant}`;
       setPlatformLogoState(finalLogo);
       await AsyncStorage.setItem(LOGO_KEY, finalLogo);
-      const tenantSvc = SettingsAgent.getInstance();
+    } catch (e) {
+      Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
+      console.error('Error setting platform logo:', e);
+      throw e;
+    }
+    const tenantSvc = SettingsAgent.getInstance();
+    try {
       await tenantSvc.whenReady();
+    } catch (e) {
+      Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
+      console.error('Failed initializing SettingsAgent:', e);
+      throw e;
+    }
+    try {
       await tenantSvc.updateTenantSetting(tenant, 'platform_logo', finalLogo);
       scheduleLoadInfo();
     } catch (e) {
@@ -148,8 +171,20 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       const COLOR_KEY = `app_theme_color_${tenant}`;
       setThemeColorState(color);
       await AsyncStorage.setItem(COLOR_KEY, color);
-      const tenantSvc = SettingsAgent.getInstance();
+    } catch (e) {
+      Alert.alert('שגיאה', 'שמירת צבע ערכת הנושא נכשלה');
+      console.error('Error setting theme color:', e);
+      throw e;
+    }
+    const tenantSvc = SettingsAgent.getInstance();
+    try {
       await tenantSvc.whenReady();
+    } catch (e) {
+      Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
+      console.error('Failed initializing SettingsAgent:', e);
+      throw e;
+    }
+    try {
       await tenantSvc.updateTenantSetting(tenant, 'theme_color', color);
       scheduleLoadInfo();
     } catch (e) {
