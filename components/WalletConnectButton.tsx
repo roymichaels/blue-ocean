@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
+import { TonConnectButton } from '@tonconnect/ui-react';
 import {
-  TonConnectButton,
   useTonWallet,
   useTonAddress,
-  useTonConnectUI,
-} from '@tonconnect/ui-react';
+  useTonConnect,
+} from '../services/tonAuth';
 
 interface WalletConnectButtonProps {
   onConnect?: () => void;
@@ -14,11 +14,11 @@ interface WalletConnectButtonProps {
 export default function WalletConnectButton({ onConnect }: WalletConnectButtonProps) {
   const wallet = useTonWallet();
   const address = useTonAddress();
-  const { openModal } = useTonConnectUI();
+  const tonConnect = useTonConnect();
 
   const handleTonConnect = () => {
     onConnect?.();
-    openModal();
+    tonConnect.openModal();
   };
 
   const handleMetaMaskConnect = () => {
