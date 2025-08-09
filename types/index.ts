@@ -112,6 +112,7 @@ export interface User {
   email?: string;
   role?: string;
   publicKey?: string;
+  address?: string;
   createdAt?: string;
   updatedAt?: string;
   kycStatus?: KycStatus;
