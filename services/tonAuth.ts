@@ -1,59 +1,49 @@
 import { TonConnectUI } from '@tonconnect/ui';
+import {
+  useTonWallet as useTCWallet,
+  useTonAddress as useTCAddress,
+  useTonConnectUI,
+} from '@tonconnect/ui-react';
+import { useEffect } from 'react';
 
-class TonAuthService {
-  private static instance: TonAuthService;
-  private tonConnectUI: TonConnectUI | null = null;
-  private publicKey: string | null = null;
-  private address: string | null = null;
+let tonConnect: TonConnectUI | null = null;
 
-  private constructor() {
-    this.init();
-  }
+export const useTonWallet = useTCWallet;
+export const useTonAddress = useTCAddress;
 
-  private init() {
-    if (typeof window !== 'undefined') {
-      try {
-        const manifestUrl = process.env.NODE_ENV === 'development'
-          ? new URL('/tonconnect-manifest.json', window.location.origin).href
-          : '/tonconnect-manifest.json';
-        this.tonConnectUI = new TonConnectUI({ manifestUrl });
-        this.tonConnectUI.onStatusChange((wallet: any | null) => {
-          this.publicKey = wallet?.account?.publicKey ?? null;
-          this.address = wallet?.account?.address ?? null;
-        });
-      } catch (e) {
-        console.error('Failed to initialize TonConnectUI', e);
-      }
-    }
-  }
+export const useTonConnect = () => {
+  const { tonConnectUI } = useTonConnectUI();
+  useEffect(() => {
+    tonConnect = tonConnectUI;
+  }, [tonConnectUI]);
+  return tonConnectUI;
+};
 
-  public static getInstance(): TonAuthService {
-    if (!TonAuthService.instance) {
-      TonAuthService.instance = new TonAuthService();
-    }
-    return TonAuthService.instance;
-  }
+export const getTonConnect = () => tonConnect;
 
-  public getTonPublicKey(): string | null {
-    return this.publicKey;
-  }
+export const requestSignature = async (
+  payload: any,
+): Promise<string | null> => {
+  if (!tonConnect) return null;
+  const result = await tonConnect.signData(payload);
+  return result.signature;
+};
 
-  public getAddress(): string | null {
-    return this.address;
-  }
+export const openModal = async (): Promise<void> => {
+  if (!tonConnect) return;
+  await tonConnect.openModal();
+};
 
-  public async requestSignature(payload: any): Promise<string | null> {
-    if (!this.tonConnectUI) return null;
-    const result = await this.tonConnectUI.signData(payload);
-    return result.signature;
-  }
+export const getTonPublicKey = (): string | null =>
+  tonConnect?.account?.publicKey ?? null;
 
-  public async openModal(): Promise<void> {
-    if (!this.tonConnectUI) return;
-    await this.tonConnectUI.openModal();
-  }
-}
+export const getAddress = (): string | null =>
+  tonConnect?.account?.address ?? null;
 
-const tonAuth = TonAuthService.getInstance();
-export const getTonPublicKey = () => tonAuth.getTonPublicKey();
-export default tonAuth;
+export default {
+  getTonConnect,
+  requestSignature,
+  openModal,
+  getTonPublicKey,
+  getAddress,
+};
