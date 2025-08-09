@@ -200,6 +200,7 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   trackingSteps: OrderTrackingStep[];
+  paymentTxHash?: string;
 }
 
 export type OrderStatus = 
