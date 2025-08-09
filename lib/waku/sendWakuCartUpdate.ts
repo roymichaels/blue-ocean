@@ -1,9 +1,14 @@
 import { encryptWakuPayload } from './wakuCrypto';
 import { getNode } from './nodeSingleton';
+import tonAuth from '../../services/tonAuth';
 
 export const sendWakuCartUpdate = async (cartItem: any) => {
   const node = await getNode();
-  const payloadObj = { type: 'cart.update', cartItem };
+  const sender = {
+    address: tonAuth.getAddress(),
+    publicKey: tonAuth.getTonPublicKey(),
+  };
+  const payloadObj = { type: 'cart.update', cartItem, sender };
   const message = JSON.stringify(payloadObj);
   const encrypted = await encryptWakuPayload(message);
   const encoder = node.createEncoder({ contentTopic: '/congress/cart/1' });
