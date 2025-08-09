@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer';
 import { loadConfig as loadConfigFromStorage, saveConfig as persistConfig } from './configStorage';
 
 // Configuration values are stored locally but can be overridden by
@@ -6,9 +5,6 @@ import { loadConfig as loadConfigFromStorage, saveConfig as persistConfig } from
 // takes precedence over the persisted config.
 
 const config: Record<string, string> = {};
-
-// Track whether a missing Waku secret has already been reported
-let warnedMissingWakuSecret = false;
 
 const ENV_KEYS = [
   'EXPO_PUBLIC_JWT_SECRET',
@@ -36,16 +32,11 @@ export async function initConfig(): Promise<void> {
     }
   }
 
-  let shouldPersist = false;
   if (!config.EXPO_PUBLIC_WAKU_SECRET) {
-
-    const bytes = new Uint8Array(32);
-    crypto.getRandomValues(bytes);
-    config.EXPO_PUBLIC_WAKU_SECRET = Buffer.from(bytes).toString('hex');
-    shouldPersist = true;
-  }
-  if (shouldPersist) {
-    await persistConfig(config);
+    const message =
+      'Missing EXPO_PUBLIC_WAKU_SECRET. Provide it via configuration or onboarding.';
+    console.error(message);
+    throw new Error(message);
   }
 }
 
