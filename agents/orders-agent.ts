@@ -1,7 +1,7 @@
 import { Order } from '../types';
 import { sendWakuOrderUpdate } from '../lib/waku/sendWakuOrderUpdate';
 import WakuAgent from '../utils/wakuAgent';
-import { payOrder } from '../services/tonContract';
+import { payOrder, ORDER_PAYMENT_ADDRESS } from '../services/tonContract';
 
 class OrdersAgent extends WakuAgent<Order> {
   private subscribers: Set<(o: Order) => void> = new Set();
@@ -17,8 +17,8 @@ class OrdersAgent extends WakuAgent<Order> {
     });
   }
 
-  async add(order: Order): Promise<void> {
-    const txHash = await payOrder(order);
+  async add(order: Order, contractAddress: string = ORDER_PAYMENT_ADDRESS): Promise<void> {
+    const txHash = await payOrder(order, contractAddress);
     const orderWithTx: Order = { ...order, paymentTxHash: txHash };
     await super.add(orderWithTx);
   }
