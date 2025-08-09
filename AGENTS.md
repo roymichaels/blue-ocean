@@ -23,6 +23,7 @@ All SQL migration files have been removed.
 | `/congress/settings/1` | Store name, color, app config       |
 | `/congress/users/1`    | Registered users + roles + keys     |
 | `/congress/products/1` | Product catalog                     |
+| `/congress/stores/1`   | Store registry + metadata           |
 | `/congress/orders/1`   | Orders placed by users              |
 
 All topics are encrypted (optionally) and signed.

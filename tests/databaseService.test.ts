@@ -1,16 +1,23 @@
 import DatabaseService from '../services/database';
 import productsAgent from '../agents/products-agent';
 import categoriesAgent from '../agents/categories-agent';
+import storesAgent from '../agents/stores-agent';
+import tonAuth from '../services/tonAuth';
 
 beforeEach(() => {
   (DatabaseService as any).instance = undefined;
   (productsAgent as any).store.clear();
   (categoriesAgent as any).store.clear();
+  (storesAgent as any).store.clear();
+  (tonAuth as any).getAddress = () => 'owner1';
+  (productsAgent as any).sendFn = async () => {};
+  (productsAgent as any).clearHashCache();
 });
 
 describe('DatabaseService basic operations', () => {
   it('handles product lifecycle', async () => {
     const db = DatabaseService.getInstance();
+    await storesAgent.add({ id: 'store1', name: 'Store', owner: 'owner1' });
     const prodId = await db.addProduct({
       name: 'Test',
       price: 1,
@@ -20,6 +27,7 @@ describe('DatabaseService basic operations', () => {
       rating: 0,
       reviews: 0,
       stock: 1,
+      storeId: 'store1',
     });
     const product = await db.getProduct(prodId);
     expect(product?.name).toBe('Test');
@@ -42,6 +50,7 @@ describe('DatabaseService basic operations', () => {
 
   it('stores wishlist items per user', async () => {
     const db = DatabaseService.getInstance();
+    await storesAgent.add({ id: 'store1', name: 'Store', owner: 'owner1' });
     const id = await db.addProduct({
       name: 'Wish',
       price: 5,
@@ -51,6 +60,7 @@ describe('DatabaseService basic operations', () => {
       rating: 0,
       reviews: 0,
       stock: 1,
+      storeId: 'store1',
     });
     await db.addWishlistItem('u1', id);
     expect((await db.getWishlistItems('u1')).length).toBe(1);
