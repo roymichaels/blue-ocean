@@ -1,28 +1,29 @@
+import { TonConnectUI } from '@tonconnect/ui';
+
 class TonAuthService {
   private static instance: TonAuthService;
-  private tonConnectUI: any = null;
+  private tonConnectUI: TonConnectUI | null = null;
   private publicKey: string | null = null;
   private address: string | null = null;
 
   private constructor() {
-    if (typeof window !== 'undefined') {
-      this.init();
-    }
+    this.init();
   }
 
-  private async init() {
-    try {
-      const { TonConnectUI } = await import('@tonconnect/ui');
-      const manifestUrl = process.env.NODE_ENV === 'development'
-        ? new URL('/tonconnect-manifest.json', window.location.origin).href
-        : '/tonconnect-manifest.json';
-      this.tonConnectUI = new TonConnectUI({ manifestUrl });
-      this.tonConnectUI.onStatusChange((wallet: any | null) => {
-        this.publicKey = wallet?.account?.publicKey ?? null;
-        this.address = wallet?.account?.address ?? null;
-      });
-    } catch (e) {
-      console.error('Failed to initialize TonConnectUI', e);
+  private init() {
+    if (typeof window !== 'undefined') {
+      try {
+        const manifestUrl = process.env.NODE_ENV === 'development'
+          ? new URL('/tonconnect-manifest.json', window.location.origin).href
+          : '/tonconnect-manifest.json';
+        this.tonConnectUI = new TonConnectUI({ manifestUrl });
+        this.tonConnectUI.onStatusChange((wallet: any | null) => {
+          this.publicKey = wallet?.account?.publicKey ?? null;
+          this.address = wallet?.account?.address ?? null;
+        });
+      } catch (e) {
+        console.error('Failed to initialize TonConnectUI', e);
+      }
     }
   }
 
