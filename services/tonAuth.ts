@@ -4,21 +4,51 @@ import {
   useTonAddress as useTCAddress,
   useTonConnectUI,
 } from '@tonconnect/ui-react';
-import { useEffect } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  type ReactNode,
+} from 'react';
 
+// Global reference used by non-hook utilities (e.g. tests or legacy helpers)
 let tonConnect: TonConnectUI | null = null;
+
+// React context to share the TonConnectUI instance across the app
+const TonConnectContext = createContext<TonConnectUI | null>(null);
+
+export const TonConnectProvider = ({ children }: { children: ReactNode }) => {
+  const { tonConnectUI } = useTonConnectUI();
+
+  // Keep the global reference in sync
+  useEffect(() => {
+    tonConnect = tonConnectUI;
+  }, [tonConnectUI]);
+
+  return (
+    <TonConnectContext.Provider value={tonConnectUI}>
+      {children}
+    </TonConnectContext.Provider>
+  );
+};
 
 export const useTonWallet = useTCWallet;
 export const useTonAddress = useTCAddress;
 
+// Hook to access the TonConnectUI instance from context or directly
 export const useTonConnect = () => {
+  const context = useContext(TonConnectContext);
   const { tonConnectUI } = useTonConnectUI();
+  const instance = context ?? tonConnectUI;
+
   useEffect(() => {
-    tonConnect = tonConnectUI;
-  }, [tonConnectUI]);
-  return tonConnectUI;
+    tonConnect = instance;
+  }, [instance]);
+
+  return instance;
 };
 
+// Helper getters used outside React components
 export const getTonConnect = () => tonConnect;
 
 export const requestSignature = async (
