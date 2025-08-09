@@ -13,6 +13,9 @@ config.resolver.extraNodeModules = {
     __dirname,
     'EmptyHMRClient.ts'
   ),
+  '@noble/hashes/crypto.js': require.resolve('@noble/hashes/lib/crypto.js'),
+  '@waku/sdk': require.resolve('@waku/sdk/bundle/index.js'),
+  multiformats: require.resolve('multiformats/dist/index.min.js'),
 };
 
 module.exports = config;
