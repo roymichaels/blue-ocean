@@ -37,6 +37,15 @@ describe('Waku send updates', () => {
     expect(node.lightPush.send).toHaveBeenCalled();
   });
 
+  it('omits sender and signature when disabled', async () => {
+    await sendWakuProductUpdate({}, false);
+    const payload = node.lightPush.send.mock.calls[0][1].payload;
+    const decoded = new TextDecoder().decode(payload);
+    const parsed = JSON.parse(decoded);
+    expect(parsed.sender).toBeUndefined();
+    expect(parsed.signature).toBeUndefined();
+  });
+
   it('order update uses shared node', async () => {
     await sendWakuOrderUpdate({});
     expect(getNode).toHaveBeenCalled();

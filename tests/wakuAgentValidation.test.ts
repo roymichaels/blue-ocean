@@ -5,6 +5,7 @@ interface TestItem { id: string; value: string }
 test('accepts messages without sender or signature', async () => {
   const agent = new WakuAgent<TestItem>(async () => {}, {
     extractItem: (msg: any) => msg.item as TestItem,
+    requireSignature: false,
   });
 
   const item = { id: 'x', value: '1' };
@@ -18,6 +19,7 @@ test('accepts messages without sender or signature', async () => {
 test('skips duplicate messages using hash cache', async () => {
   const agent = new WakuAgent<TestItem>(async () => {}, {
     extractItem: (msg: any) => msg.item as TestItem,
+    requireSignature: false,
   });
 
   const item = { id: 'd', value: 'dup' };
