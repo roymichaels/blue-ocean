@@ -41,6 +41,9 @@ module.exports = async function (env, argv) {
       __dirname,
       'EmptyHMRClient.ts'
     ),
+    '@noble/hashes/crypto.js': require.resolve('@noble/hashes/lib/crypto.js'),
+    '@waku/sdk': require.resolve('@waku/sdk/bundle/index.js'),
+    multiformats: require.resolve('multiformats/dist/index.min.js'),
   };
 
   return config;
