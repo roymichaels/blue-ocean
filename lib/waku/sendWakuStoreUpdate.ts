@@ -8,7 +8,7 @@ export const sendWakuStoreUpdate = async (store: any) => {
     address: tonAuth.getAddress(),
     publicKey: tonAuth.getTonPublicKey(),
   };
-  const payloadObj = { type: 'store.update', store, sender };
+  const payloadObj = { type: 'store.update', store, nftId: store.nftId, sender };
   const message = JSON.stringify(payloadObj);
   const signature = await tonAuth.requestSignature(message);
   const signed = { ...payloadObj, signature };
