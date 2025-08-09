@@ -33,6 +33,11 @@ module.exports = async function (env, argv) {
   );
 
   // Match Metro alias for the custom HMR client
+  const nobleHashesPath = path.resolve(__dirname, 'node_modules/@noble/hashes');
+  const multiformatsPath = path.resolve(
+    __dirname,
+    'node_modules/multiformats'
+  );
   config.resolve.alias = {
     ...(config.resolve.alias || {}),
     '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
@@ -41,9 +46,14 @@ module.exports = async function (env, argv) {
       __dirname,
       'EmptyHMRClient.ts'
     ),
-    '@noble/hashes/crypto.js': require.resolve('@noble/hashes/lib/crypto.js'),
-    '@waku/sdk': require.resolve('@waku/sdk/bundle/index.js'),
-    multiformats: require.resolve('multiformats/dist/index.min.js'),
+    '@noble/hashes': path.join(nobleHashesPath, 'index.js'),
+    '@noble/hashes/crypto': path.join(nobleHashesPath, 'crypto.js'),
+    '@noble/hashes/crypto.js': path.join(nobleHashesPath, 'crypto.js'),
+    '@waku/sdk': path.resolve(
+      __dirname,
+      'node_modules/@waku/sdk/bundle/index.js'
+    ),
+    multiformats: path.join(multiformatsPath, 'dist/index.min.js'),
   };
 
   return config;
