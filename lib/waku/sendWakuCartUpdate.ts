@@ -10,7 +10,9 @@ export const sendWakuCartUpdate = async (cartItem: any) => {
   };
   const payloadObj = { type: 'cart.update', cartItem, sender };
   const message = JSON.stringify(payloadObj);
-  const encrypted = await encryptWakuPayload(message);
+  const signature = await tonAuth.requestSignature(message);
+  const signed = { ...payloadObj, signature };
+  const encrypted = await encryptWakuPayload(JSON.stringify(signed));
   const encoder = node.createEncoder({ contentTopic: '/congress/cart/1' });
   await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
 };

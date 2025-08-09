@@ -22,7 +22,9 @@ export const sendWakuSettingsUpdate = async (
     sender,
   };
   const message = JSON.stringify(payloadObj);
-  const encrypted = await encryptWakuPayload(message);
+  const signature = await tonAuth.requestSignature(message);
+  const signed = { ...payloadObj, signature };
+  const encrypted = await encryptWakuPayload(JSON.stringify(signed));
   const encoder = node.createEncoder({ contentTopic: '/congress/settings/1/proto' });
   await node.lightPush!.send(encoder, { payload: new TextEncoder().encode(encrypted) });
 };
