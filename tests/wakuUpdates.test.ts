@@ -2,6 +2,7 @@ import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
 import { sendWakuProductUpdate } from '../lib/waku/sendWakuProductUpdate';
 import { sendWakuOrderUpdate } from '../lib/waku/sendWakuOrderUpdate';
 import { sendWakuNotificationUpdate } from '../lib/waku/sendWakuNotificationUpdate';
+import { sendWakuStoreUpdate } from '../lib/waku/sendWakuStoreUpdate';
 
 jest.mock('../lib/waku/wakuCrypto', () => ({
   encryptWakuPayload: jest.fn(async (p: string) => p),
@@ -44,6 +45,12 @@ describe('Waku send updates', () => {
 
   it('notification update uses shared node', async () => {
     await sendWakuNotificationUpdate({});
+    expect(getNode).toHaveBeenCalled();
+    expect(node.lightPush.send).toHaveBeenCalled();
+  });
+
+  it('store update uses shared node', async () => {
+    await sendWakuStoreUpdate({});
     expect(getNode).toHaveBeenCalled();
     expect(node.lightPush.send).toHaveBeenCalled();
   });

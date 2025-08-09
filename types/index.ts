@@ -19,9 +19,16 @@ export interface Product {
   badges?: string[];
   pricingTier?: string;
   mixGroupId?: string;
+  storeId: string;
   stock: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  owner: string;
 }
 
 export interface Category {
