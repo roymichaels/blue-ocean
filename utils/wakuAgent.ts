@@ -20,6 +20,8 @@ export interface WakuAgentOptions<T> {
   onUpdate?: (item: T) => void;
   /** Additional validation */
   validateMessage?: (msg: any) => boolean | Promise<boolean>;
+  /** Require TON signatures on incoming messages */
+  requireSignature?: boolean;
 }
 
 /**
@@ -36,7 +38,7 @@ export default class WakuAgent<T extends { id: string }> {
   protected hashCache: Set<string> = new Set();
 
   constructor(
-    private sendFn: (item: T) => Promise<void>,
+    private sendFn: (item: T, requireSignature?: boolean) => Promise<void>,
     private options: WakuAgentOptions<T> = {}
   ) {
     if (this.options.topic) {
@@ -124,31 +126,33 @@ export default class WakuAgent<T extends { id: string }> {
     try {
       if (this.hashCache.has(payload)) return;
       const parsed = JSON.parse(payload);
-
       const { signature, sender, ...unsigned } = parsed as any;
-      if (!signature || !sender?.publicKey || !sender?.address) return;
 
-      const message = JSON.stringify(unsigned);
-      const msgBytes = Buffer.from(message, 'utf8');
-      const sigBytes = Buffer.from(signature, 'base64');
-      const pubKeyBytes = Buffer.from(sender.publicKey, 'hex');
+      if (this.options.requireSignature !== false) {
+        if (!signature || !sender?.publicKey || !sender?.address) return;
 
-      const isValid = TonWeb.utils.nacl.sign.detached.verify(
-        msgBytes,
-        sigBytes,
-        pubKeyBytes,
-      );
-      if (!isValid) {
-        console.error('Invalid TON signature');
-        return;
-      }
+        const message = JSON.stringify(unsigned);
+        const msgBytes = Buffer.from(message, 'utf8');
+        const sigBytes = Buffer.from(signature, 'base64');
+        const pubKeyBytes = Buffer.from(sender.publicKey, 'hex');
 
-      const WalletClass = tonweb.wallet.all[tonweb.wallet.defaultVersion];
-      const wallet = new WalletClass(tonweb.provider, { publicKey: pubKeyBytes, wc: 0 });
-      const derived = (await wallet.getAddress()).toString(true, true, true);
-      if (derived !== sender.address) {
-        console.error('Signature address mismatch');
-        return;
+        const isValid = TonWeb.utils.nacl.sign.detached.verify(
+          msgBytes,
+          sigBytes,
+          pubKeyBytes,
+        );
+        if (!isValid) {
+          console.error('Invalid TON signature');
+          return;
+        }
+
+        const WalletClass = tonweb.wallet.all[tonweb.wallet.defaultVersion];
+        const wallet = new WalletClass(tonweb.provider, { publicKey: pubKeyBytes, wc: 0 });
+        const derived = (await wallet.getAddress()).toString(true, true, true);
+        if (derived !== sender.address) {
+          console.error('Signature address mismatch');
+          return;
+        }
       }
 
       if (this.options.validateMessage && !(await this.options.validateMessage(parsed))) return;
@@ -170,7 +174,7 @@ export default class WakuAgent<T extends { id: string }> {
 
   protected async broadcast(item: T) {
     try {
-      await this.sendFn(item);
+      await this.sendFn(item, this.options.requireSignature !== false);
     } catch (e) {
       console.error('Failed to broadcast Waku message', e);
     }
