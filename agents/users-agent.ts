@@ -12,20 +12,32 @@ class UsersAgent extends WakuAgent<User> {
     });
   }
 
+  private async ensureWallet() {
+    const address = tonAuth.getAddress();
+    const publicKey = tonAuth.getTonPublicKey();
+    if (!address || !publicKey) {
+      await tonAuth.openModal();
+      throw new Error('Please connect your TON wallet to manage users.');
+    }
+    return { address, publicKey };
+  }
+
   async add(user: User): Promise<void> {
+    const { address, publicKey } = await this.ensureWallet();
     const enriched: User = {
       ...user,
-      publicKey: tonAuth.getTonPublicKey() || user.publicKey,
-      address: tonAuth.getAddress(),
+      publicKey,
+      address,
     };
     await super.add(enriched);
   }
 
   async update(user: User): Promise<void> {
+    const { address, publicKey } = await this.ensureWallet();
     const enriched: User = {
       ...user,
-      publicKey: tonAuth.getTonPublicKey() || user.publicKey,
-      address: tonAuth.getAddress(),
+      publicKey,
+      address,
     };
     await super.update(enriched);
   }

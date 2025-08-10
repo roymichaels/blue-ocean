@@ -2,6 +2,7 @@ import WakuAgent from '../utils/wakuAgent';
 import { sendWakuSettingsUpdate } from '../lib/waku/sendWakuSettingsUpdate';
 import { store } from '../lib/memoryStore';
 import type { TenantSettings } from '../types';
+import tonAuth from '../services/tonAuth';
 
 interface SettingItem { id: string; value: string }
 
@@ -25,6 +26,25 @@ class SettingsAgent extends WakuAgent<SettingItem> {
     );
   }
 
+  private async ensureWallet() {
+    const address = tonAuth.getAddress();
+    const publicKey = tonAuth.getTonPublicKey();
+    if (!address || !publicKey) {
+      await tonAuth.openModal();
+      throw new Error('Please connect your TON wallet to manage settings.');
+    }
+  }
+
+  async add(item: SettingItem): Promise<void> {
+    await this.ensureWallet();
+    await super.add(item);
+  }
+
+  async update(item: SettingItem): Promise<void> {
+    await this.ensureWallet();
+    await super.update(item);
+  }
+
   async set(key: string, value: string): Promise<void> {
     if (this.store.has(key)) {
       await this.update({ id: key, value });
@@ -38,6 +58,7 @@ class SettingsAgent extends WakuAgent<SettingItem> {
       await sendWakuSettingsUpdate(item.id, item.value, Date.now(), Date.now());
     } catch (e) {
       console.error('Failed to broadcast settings update', e);
+      throw e;
     }
   }
 

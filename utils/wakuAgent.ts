@@ -177,6 +177,7 @@ export default class WakuAgent<T extends { id: string }> {
       await this.sendFn(item, this.options.requireSignature !== false);
     } catch (e) {
       console.error('Failed to broadcast Waku message', e);
+      throw e;
     }
   }
 

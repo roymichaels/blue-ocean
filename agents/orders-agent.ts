@@ -6,6 +6,7 @@ import {
   releaseFunds,
   refundOrder,
 } from '../services/tonContract';
+import tonAuth from '../services/tonAuth';
 
 class OrdersAgent extends WakuAgent<Order> {
   private subscribers: Set<(o: Order) => void> = new Set();
@@ -21,7 +22,17 @@ class OrdersAgent extends WakuAgent<Order> {
     });
   }
 
+  private async ensureWallet() {
+    const address = tonAuth.getAddress();
+    const publicKey = tonAuth.getTonPublicKey();
+    if (!address || !publicKey) {
+      await tonAuth.openModal();
+      throw new Error('Please connect your TON wallet to manage orders.');
+    }
+  }
+
   async add(order: Order): Promise<void> {
+    await this.ensureWallet();
     const { contractAddress, txHash } = await createOrderPayment(order);
     const orderWithTx: Order = {
       ...order,
@@ -31,7 +42,13 @@ class OrdersAgent extends WakuAgent<Order> {
     await super.add(orderWithTx);
   }
 
+  async update(order: Order): Promise<void> {
+    await this.ensureWallet();
+    await super.update(order);
+  }
+
   async releaseFunds(orderId: string): Promise<string> {
+    await this.ensureWallet();
     const order = this.get(orderId);
     if (!order?.paymentContractAddress) {
       throw new Error('Order payment contract not found');
@@ -40,6 +57,7 @@ class OrdersAgent extends WakuAgent<Order> {
   }
 
   async refundOrder(orderId: string): Promise<string> {
+    await this.ensureWallet();
     const order = this.get(orderId);
     if (!order?.paymentContractAddress) {
       throw new Error('Order payment contract not found');
