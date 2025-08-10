@@ -1,11 +1,7 @@
 import { Buffer } from 'buffer';
-import {
-  createLightNode,
-  waitForRemotePeer,
-  Protocols,
-} from '@waku/sdk';
 import TonWeb from 'tonweb';
 import { decryptWakuPayload } from '../lib/waku/wakuCrypto';
+import { getNode, subscribe, unsubscribe } from '../lib/waku/nodeSingleton';
 
 const tonweb = new TonWeb();
 
@@ -32,6 +28,7 @@ export default class WakuAgent<T extends { id: string }> {
   protected store: Map<string, T> = new Map();
   private node: any | null = null;
   private decoder: any | null = null;
+  private handler: ((msg: any) => Promise<void>) | null = null;
   private readyPromise: Promise<void> | null = null;
   /** Exposed promise for external consumers */
   public ready: Promise<void> | null = null;
@@ -93,25 +90,23 @@ export default class WakuAgent<T extends { id: string }> {
 
   private async init() {
     try {
-      this.node = await createLightNode({
-        defaultBootstrap: true,
-        libp2p: { hideWebSocketInfo: true },
-      });
-      await this.node.start();
-      await waitForRemotePeer(this.node, [Protocols.Store, Protocols.LightPush]);
+      this.node = await getNode();
       if (!this.options.topic) return;
-      this.decoder = this.node.createDecoder({ contentTopic: this.options.topic });
-      const handler = async (msg: any) => {
+      this.handler = async (msg: any) => {
         if (!msg.payload) return;
         const decoded = new TextDecoder().decode(msg.payload);
         const plaintext = await decryptWakuPayload(decoded);
         await this.processPayload(plaintext);
       };
-      await this.node.filter!.subscribe(this.decoder, handler);
+      this.decoder = await subscribe(this.options.topic, this.handler);
 
       if (this.options.replayHistory) {
         try {
-          await this.node.store.queryWithOrderedCallback([this.decoder], handler, { pageSize: 100 });
+          await this.node.store.queryWithOrderedCallback(
+            [this.decoder],
+            this.handler,
+            { pageSize: 100 },
+          );
         } catch (e) {
           console.error('Failed to replay Waku history', e);
         }
@@ -182,14 +177,14 @@ export default class WakuAgent<T extends { id: string }> {
   }
 
   async stop() {
-    if (this.decoder && this.node?.filter) {
+    if (this.options.topic && this.handler) {
       try {
-        await this.node.filter.unsubscribe(this.decoder);
+        await unsubscribe(this.options.topic, this.handler);
       } catch {}
     }
-    await this.node?.stop();
-    this.node = null;
     this.decoder = null;
+    this.handler = null;
+    this.node = null;
   }
 }
 
