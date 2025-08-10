@@ -18,6 +18,10 @@ export interface WakuAgentOptions<T> {
   validateMessage?: (msg: any) => boolean | Promise<boolean>;
   /** Require TON signatures on incoming messages */
   requireSignature?: boolean;
+  /** Maximum number of entries to keep in the hash cache */
+  hashCacheSize?: number;
+  /** Time-to-live for hash cache entries in milliseconds */
+  hashCacheTTL?: number;
 }
 
 /**
@@ -32,12 +36,16 @@ export default class WakuAgent<T extends { id: string }> {
   private readyPromise: Promise<void> | null = null;
   /** Exposed promise for external consumers */
   public ready: Promise<void> | null = null;
-  protected hashCache: Set<string> = new Set();
+  protected hashCache: Map<string, number> = new Map();
+  private hashCacheSize!: number;
+  private hashCacheTTL!: number;
 
   constructor(
     private sendFn: (item: T, requireSignature?: boolean) => Promise<void>,
-    private options: WakuAgentOptions<T> = {}
+    private options: WakuAgentOptions<T> = {},
   ) {
+    this.hashCacheSize = this.options.hashCacheSize ?? 1000;
+    this.hashCacheTTL = this.options.hashCacheTTL ?? 5 * 60 * 1000; // default 5 minutes
     if (this.options.topic) {
       this.readyPromise = this.init();
       this.ready = this.readyPromise;
@@ -87,7 +95,6 @@ export default class WakuAgent<T extends { id: string }> {
     this.hashCache.clear();
   }
 
-
   private async init() {
     try {
       this.node = await getNode();
@@ -119,6 +126,7 @@ export default class WakuAgent<T extends { id: string }> {
 
   async processPayload(payload: string): Promise<void> {
     try {
+      this.pruneHashCache();
       if (this.hashCache.has(payload)) return;
       const parsed = JSON.parse(payload);
       const { signature, sender, ...unsigned } = parsed as any;
@@ -142,7 +150,10 @@ export default class WakuAgent<T extends { id: string }> {
         }
 
         const WalletClass = tonweb.wallet.all[tonweb.wallet.defaultVersion];
-        const wallet = new WalletClass(tonweb.provider, { publicKey: pubKeyBytes, wc: 0 });
+        const wallet = new WalletClass(tonweb.provider, {
+          publicKey: pubKeyBytes,
+          wc: 0,
+        });
         const derived = (await wallet.getAddress()).toString(true, true, true);
         if (derived !== sender.address) {
           console.error('Signature address mismatch');
@@ -150,16 +161,23 @@ export default class WakuAgent<T extends { id: string }> {
         }
       }
 
-      if (this.options.validateMessage && !(await this.options.validateMessage(parsed))) return;
+      if (
+        this.options.validateMessage &&
+        !(await this.options.validateMessage(parsed))
+      )
+        return;
 
       const hashKey = payload;
       if (this.hashCache.has(hashKey)) return;
 
-      const item = this.options.extractItem ? this.options.extractItem(parsed) : (parsed as T);
+      const item = this.options.extractItem
+        ? this.options.extractItem(parsed)
+        : (parsed as T);
       if (item && item.id) {
         this.store.set(item.id, item);
 
-        this.hashCache.add(hashKey);
+        this.hashCache.set(hashKey, Date.now());
+        this.pruneHashCache();
         this.options.onUpdate?.(item);
       }
     } catch (e) {
@@ -186,5 +204,22 @@ export default class WakuAgent<T extends { id: string }> {
     this.handler = null;
     this.node = null;
   }
-}
 
+  private pruneHashCache() {
+    const now = Date.now();
+    // Remove expired entries
+    for (const [key, ts] of this.hashCache) {
+      if (now - ts > this.hashCacheTTL) {
+        this.hashCache.delete(key);
+      } else {
+        break;
+      }
+    }
+    // Enforce max size
+    while (this.hashCache.size > this.hashCacheSize) {
+      const oldestKey = this.hashCache.keys().next().value;
+      if (!oldestKey) break;
+      this.hashCache.delete(oldestKey);
+    }
+  }
+}
