@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
+import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
 import WishlistModal from './WishlistModal';
 import CartService from '../services/cart';
@@ -30,6 +31,7 @@ export default function GlobalHeader({
   const { t } = useLanguage();
   const { colors } = useTheme();
   const { platformName, platformLogo } = useAppInfo();
+  const { progress } = useRoadmap();
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [wishlistItemsCount, setWishlistItemsCount] = useState(0);
 
@@ -101,6 +103,18 @@ export default function GlobalHeader({
                 </View>
               )}
             </TouchableOpacity>
+            <View
+              style={[
+                styles.progressContainer,
+                { backgroundColor: colors.surface.primary },
+              ]}
+            >
+              <Text
+                style={[styles.progressText, { color: colors.text.primary }]}
+              >
+                {Math.round(progress)}%
+              </Text>
+            </View>
             <UserAvatar />
           </View>
         </View>
@@ -195,6 +209,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  progressContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  progressText: {
     fontSize: 12,
     fontWeight: 'bold',
   },
