@@ -1,15 +1,11 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import {
   useTonConnectUI,
   useTonAddress,
   useIsConnectionRestored,
 } from '@tonconnect/ui-react';
-
-interface User {
-  id: string;
-  address: string;
-  username: string;
-}
+import DatabaseService from '../services/database';
+import { User } from '../types';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -45,6 +41,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { openModal, tonConnectUI } = useTonConnectUI();
   const address = useTonAddress();
   const connectionRestored = useIsConnectionRestored();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchUser = async () => {
+      if (!address) {
+        if (mounted) setUser(null);
+        return;
+      }
+      const db = DatabaseService.getInstance();
+      const profile = await db.getUserProfile(address);
+      if (mounted) {
+        setUser(
+          profile || {
+            id: address,
+            username: address,
+            displayName: address,
+            isAdmin: false,
+            address,
+            role: 'user',
+          }
+        );
+      }
+    };
+    fetchUser();
+    return () => {
+      mounted = false;
+    };
+  }, [address]);
 
   const login = async () => {
     openModal();
@@ -56,7 +81,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await tonConnectUI.disconnect();
   };
 
-  const user = address ? { id: address, address, username: address } : null;
+  const role = user?.role;
+  const isAdmin = role === 'admin';
+  const isDriver = role === 'driver';
 
   if (!connectionRestored) {
     return null;
@@ -66,8 +93,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     <AuthContext.Provider
       value={{
         isLoggedIn: !!address,
-        isAdmin: false,
-        isDriver: false,
+        isAdmin,
+        isDriver,
         user,
         loading: false,
         login,
