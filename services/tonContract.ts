@@ -4,11 +4,12 @@ import { Order } from '../types';
 import { getTonConnect } from './tonAuth';
 
 /**
- * Pre-deployed order-payment contract address.
+ * Address of the OrderPayment factory contract.
  * Replace the placeholder with the actual address when shipping.
  */
-export const ORDER_PAYMENT_ADDRESS =
-  process.env.ORDER_PAYMENT_ADDRESS ?? 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+export const ORDER_PAYMENT_FACTORY_ADDRESS =
+  process.env.ORDER_PAYMENT_FACTORY_ADDRESS ??
+  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 
 function makeComment(message: string): TonWeb.boc.Cell {
   const cell = new TonWeb.boc.Cell();
@@ -36,31 +37,31 @@ async function sendTonConnect(messages: {
   );
 }
 
-export async function payOrder(
+export async function createOrderPayment(
   order: Order,
-  contractAddress: string = ORDER_PAYMENT_ADDRESS,
-): Promise<string> {
+): Promise<{ contractAddress: string; txHash: string }> {
   try {
     const payload = makeComment(`Pay:${order.total}`);
     const payloadBoc = TonWeb.utils.bytesToBase64(
       await payload.toBoc({ idx: false }),
     );
-    return await sendTonConnect([
+    const txHash = await sendTonConnect([
       {
-        address: contractAddress,
+        address: ORDER_PAYMENT_FACTORY_ADDRESS,
         amount: TonWeb.utils.toNano(String(order.total)).toString(),
         payload: payloadBoc,
       },
     ]);
+    // Replace with actual derived contract address when available
+    const contractAddress = ORDER_PAYMENT_FACTORY_ADDRESS;
+    return { contractAddress, txHash };
   } catch (e) {
-    console.error('Failed to pay order', e);
+    console.error('Failed to create order payment', e);
     throw e;
   }
 }
 
-export async function releaseFunds(
-  contractAddress: string = ORDER_PAYMENT_ADDRESS,
-): Promise<string> {
+export async function releaseFunds(contractAddress: string): Promise<string> {
   try {
     const payload = makeComment('Release');
     const payloadBoc = TonWeb.utils.bytesToBase64(
@@ -79,9 +80,7 @@ export async function releaseFunds(
   }
 }
 
-export async function refundOrder(
-  contractAddress: string = ORDER_PAYMENT_ADDRESS,
-): Promise<string> {
+export async function refundOrder(contractAddress: string): Promise<string> {
   try {
     const payload = makeComment('Refund');
     const payloadBoc = TonWeb.utils.bytesToBase64(
