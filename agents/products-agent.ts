@@ -20,10 +20,30 @@ class ProductsAgent extends WakuAgent<Product> {
     });
   }
 
+  private async ensureWallet() {
+    const address = tonAuth.getAddress();
+    const publicKey = tonAuth.getTonPublicKey();
+    if (!address || !publicKey) {
+      await tonAuth.openModal();
+      throw new Error('Please connect your TON wallet to manage products.');
+    }
+    return { address };
+  }
+
+  async add(item: Product): Promise<void> {
+    await this.ensureWallet();
+    await super.add(item);
+  }
+
+  async update(item: Product): Promise<void> {
+    await this.ensureWallet();
+    await super.update(item);
+  }
+
   protected async broadcast(item: Product) {
+    const { address } = await this.ensureWallet();
     const store = storesAgent.get(item.storeId);
-    const addr = tonAuth.getAddress();
-    if (!store || store.owner !== addr) {
+    if (!store || store.owner !== address) {
       throw new Error('Only the store owner can broadcast product updates');
     }
     await super.broadcast(item);
