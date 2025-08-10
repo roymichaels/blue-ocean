@@ -5,11 +5,17 @@ import {
   useIsConnectionRestored,
 } from '@tonconnect/ui-react';
 
+interface User {
+  id: string;
+  address: string;
+  username: string;
+}
+
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
   isDriver: boolean;
-  user: any | null;
+  user: User | null;
   loading: boolean;
   login: () => Promise<void>;
   signup: () => Promise<void>;
@@ -50,7 +56,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await tonConnectUI.disconnect();
   };
 
-  const user = address ? { id: address, address } : null;
+  const user = address ? { id: address, address, username: address } : null;
 
   if (!connectionRestored) {
     return null;

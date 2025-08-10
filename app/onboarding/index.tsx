@@ -65,9 +65,7 @@ export default function OnboardingScreen() {
     setLoading(true);
     try {
       setValue('EXPO_PUBLIC_TENANT', tenant);
-      if (user?.username) {
-        setValue('EXPO_PUBLIC_ADMIN_USERNAME', user.username);
-      }
+      setValue('EXPO_PUBLIC_ADMIN_USERNAME', user?.username ?? '');
       setValue('APP_NAME', appName);
       setValue('PRIMARY_COLOR', primaryColor);
       if (logo) setValue('APP_LOGO', logo);
