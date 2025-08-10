@@ -204,6 +204,9 @@ export interface Order {
   status: OrderStatus;
   shippingAddress: ShippingAddress;
   paymentMethod: 'cash_on_delivery';
+  buyerAddress?: string;
+  sellerAddress?: string;
+  paymentContractAddress?: string;
   createdAt: string;
   updatedAt: string;
   trackingSteps: OrderTrackingStep[];
