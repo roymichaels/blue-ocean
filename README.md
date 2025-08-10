@@ -4,13 +4,30 @@ This Expo project uses React Native with the Expo Router.
 
 ## Setup
 
-Run `yarn install` to populate `node_modules`. All data is ephemeral and synchronized between peers over Waku; no external services are required.
+1. **Install dependencies**
 
-```sh
-yarn install
-```
+   ```sh
+   yarn install
+   ```
 
-All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
+2. **Configure secrets**
+
+   Generate a Waku key so peers can decrypt your messages:
+
+   ```sh
+   export EXPO_PUBLIC_WAKU_SECRET=$(openssl rand -hex 32)
+   ```
+
+3. **Start the Expo project**
+
+   - **Web**: `yarn start`
+   - **Mobile**: `yarn dev`
+
+4. **Connect a TON wallet**
+
+   When the app loads, tap the wallet button to open the TonConnect modal. Scan the QR code with a wallet like Tonkeeper or use an injected extension to link your account.
+
+All data is ephemeral and synchronized between peers over Waku; no external services are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
 
 ### Environment Variables
 
@@ -163,6 +180,16 @@ deploying the static build, verify the manifest is accessible:
 ```sh
 curl https://<your-site>/tonconnect-manifest.json
 ```
+
+## Troubleshooting
+
+### Content Security Policy
+
+If the web app fails to load because of CSP errors (for example `Refused to connect to 'ws://localhost:19000'` or complaints about `unsafe-eval`), ensure your `Content-Security-Policy` header permits the Expo development endpoints and WebSocket connections. The webpack configuration uses `devtool: 'source-map'` to avoid `eval`, but strict policies may still require allowing `blob:` URLs and `ws://` origins.
+
+### Bundler Aliases
+
+Module resolution relies on custom aliases defined in `metro.config.js` and `webpack.config.js`. If the bundler cannot find modules like `@expo/metro-runtime/src/HMRClient` or `@noble/hashes`, verify those aliases exist and clear caches with `expo start -c`.
 
 ## Docker
 
