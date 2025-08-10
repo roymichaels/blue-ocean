@@ -15,6 +15,7 @@ const ENV_KEYS = [
   'EXPO_PUBLIC_JWT_SECRET',
   'EXPO_PUBLIC_CHAT_SECRET',
   'EXPO_PUBLIC_WAKU_SECRET',
+  'EXPO_PUBLIC_WAKU_BOOTSTRAP',
   'EXPO_PUBLIC_ADMIN_USERNAME',
   'EXPO_PUBLIC_PINATA_JWT',
   'EXPO_PUBLIC_PINATA_API_KEY',
@@ -74,6 +75,17 @@ export async function persist(): Promise<void> {
 export function setConfig(key: string, value: string): void {
   config[key] = value;
   // persistence handled externally
+}
+
+export function getWakuBootstrapNodes(): string[] {
+  const raw =
+    config.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
+    process.env.EXPO_PUBLIC_WAKU_BOOTSTRAP;
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((addr) => addr.trim())
+    .filter(Boolean);
 }
 
 export default config;

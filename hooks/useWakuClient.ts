@@ -12,7 +12,9 @@ import {
 import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
 import DatabaseService from '../services/database';
 import { ChatMessage } from '../types';
-const BOOTSTRAP =
+import { getWakuBootstrapNodes } from '../utils/appConfig';
+
+const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 
 export interface WakuClient {
@@ -42,8 +44,10 @@ export function useWakuClient(): WakuClient {
     (async () => {
       let node: LightNode | undefined;
       try {
+        const bootstrap = getWakuBootstrapNodes();
+        if (bootstrap.length === 0) bootstrap.push(DEFAULT_BOOTSTRAP);
         node = await createLightNode({
-          libp2p: { bootstrap: [BOOTSTRAP] },
+          libp2p: { bootstrap },
         });
         await node.start();
         await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
