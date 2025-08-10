@@ -85,7 +85,7 @@ export function useWakuClient(): WakuClient {
 
     if (nodeRef.current) {
       const encoder = createEncoder({ contentTopic: topic(roomId) });
-      await nodeRef.current.lightPush.push(encoder, {
+      await nodeRef.current.lightPush.send(encoder, {
         payload: utf8ToBytes(encrypted),
       });
     }
