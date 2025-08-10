@@ -261,3 +261,18 @@ export interface TenantSettings {
   platform_logo?: string | null;
   theme_color?: string | null;
 }
+
+export interface RoadmapTask {
+  id: string;
+  roadmapId: string;
+  title: string;
+  order: number;
+  completed: boolean;
+}
+
+export interface Roadmap {
+  id: string;
+  title: string;
+  tasks: RoadmapTask[];
+  active?: boolean;
+}
