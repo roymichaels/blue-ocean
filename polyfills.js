@@ -6,7 +6,9 @@ import { etc as edUtils } from '@noble/ed25519';
 
 try {
   require('react-native-get-random-values'); // correct: must use require()
-  require('expo-standard-web-crypto'); // correct
+  if (typeof global.crypto === 'undefined' || !global.crypto.subtle) {
+    require('expo-standard-web-crypto'); // provides global.crypto.subtle
+  }
 } catch (err) {
   console.warn('❌ Polyfill load failed:', err);
 }

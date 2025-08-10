@@ -8,7 +8,7 @@ config.resolver.assetExts.push('wasm', 'sql');
 const nobleHashesPath = path.resolve(__dirname, 'node_modules/@noble/hashes');
 const multiformatsPath = path.resolve(__dirname, 'node_modules/multiformats');
 
-// Map the Expo HMR client to our local wrapper so Buffer and Web Crypto are polyfilled
+// Map the Expo HMR client to our local wrapper; polyfills are applied at app entry
 config.resolver.extraNodeModules = {
   ...(config.resolver.extraNodeModules || {}),
   '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),

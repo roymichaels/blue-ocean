@@ -80,21 +80,25 @@ purchases. Pass the wallet address, coin and USD amount to display the widget in
 a modal and pre-fill the fiat amount.
 
 
-Some dependencies rely on Node.js globals like `Buffer` and `URL`. The project
-includes a `polyfills.js` file to provide these when running on React Native or
-the web. The polyfill is automatically imported from `index.ts`.
-The project also uses `expo-standard-web-crypto` to polyfill the Web Crypto API,
-so ensure it's installed as a dependency.
-The polyfill additionally provides a synchronous SHA-512 implementation for
-`@noble/ed25519` so key generation works in every environment.
+Some dependencies rely on Node.js globals like `Buffer`, `process`, and
+`crypto.subtle`. The `polyfills.js` file provides these shims for React Native
+and web environments and **must only be imported once** from the app entry
+point (`index.ts`). Importing polyfills elsewhere can lead to inconsistent
+execution environments.
+
+The polyfill also pulls in `react-native-get-random-values` and
+`expo-standard-web-crypto` so `crypto.getRandomValues` and `crypto.subtle` are
+available globally. It additionally exposes a synchronous SHA-512
+implementation for `@noble/ed25519` so key generation works in every
+environment.
 
 ### Hot Reloading
 
 Metro resolves both `@expo/metro-runtime/src/HMRClient` and
 `@expo/metro-runtime/src/HMRClient.ts` to the local `HMRClient.ts` wrapper.
 TypeScript and webpack use the same aliases so all tools reference the wrapper
-consistently. This module applies the necessary polyfills before loading
-Metro's runtime so hot reloading works reliably on every platform.
+consistently. Polyfills are initialized at the app entry point, so the HMR
+runtime runs within the already-prepared environment.
 
 Metro also maps `react-native/Libraries/Utilities/HMRClient` to a stub
 `EmptyHMRClient.ts` with no-op methods so bundling succeeds even when the native
