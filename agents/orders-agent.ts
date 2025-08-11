@@ -8,6 +8,9 @@ import {
   refundPayment,
 } from '../services/tonContract';
 import productsAgent from './products-agent';
+import { getUser } from '../services/tonUsers';
+import * as nacl from 'tweetnacl';
+import * as ed2curve from 'ed2curve';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -42,7 +45,32 @@ class OrdersAgent {
         paymentTxHash: txHash,
       };
     }
-    await setOrder(enriched);
+    let toStore: any = { ...enriched };
+    if (enriched.shippingAddress && enriched.sellerAddress) {
+      try {
+        const seller = await getUser(enriched.sellerAddress);
+        const sellerPub = seller?.publicKey;
+        if (sellerPub) {
+          const sellerPubX = ed2curve.convertPublicKey(Buffer.from(sellerPub, 'hex'));
+          if (sellerPubX) {
+            const ephem = nacl.box.keyPair();
+            const nonce = nacl.randomBytes(nacl.box.nonceLength);
+            const msg = Buffer.from(JSON.stringify(enriched.shippingAddress));
+            const cipher = nacl.box(msg, nonce, sellerPubX, ephem.secretKey);
+            toStore = {
+              ...toStore,
+              shippingAddressCipher: Buffer.from(cipher).toString('base64'),
+              shippingAddressNonce: Buffer.from(nonce).toString('base64'),
+              shippingAddressEphemeralPublicKey: Buffer.from(ephem.publicKey).toString('base64'),
+            };
+            delete toStore.shippingAddress;
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to encrypt shipping address', err);
+      }
+    }
+    await setOrder(toStore);
     this.subscribers.forEach((cb) => cb(enriched));
     await this.notifyOrderCreated(enriched);
   }

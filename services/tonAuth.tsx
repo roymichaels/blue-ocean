@@ -70,10 +70,15 @@ export const getTonPublicKey = (): string | null =>
 export const getAddress = (): string | null =>
   tonConnect?.account?.address ?? null;
 
+// Attempt to access the private key if the wallet exposes it
+export const getTonPrivateKey = (): string | null =>
+  (tonConnect?.account as any)?.privateKey ?? null;
+
 export default {
   getTonConnect,
   requestSignature,
   openModal,
   getTonPublicKey,
   getAddress,
+  getTonPrivateKey,
 };
