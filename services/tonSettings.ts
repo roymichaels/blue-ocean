@@ -1,6 +1,9 @@
 import { getValue, setValue, listValues } from './tonKvStore';
+import config from '../utils/appConfig';
 
-const ADDRESS = process.env.TON_SETTINGS_ADDRESS ?? 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS =
+  config.TON_SETTINGS_ADDRESS ??
+  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 
 export async function getSetting(key: string): Promise<string | null> {
   return await getValue(ADDRESS, key);

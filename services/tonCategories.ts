@@ -1,7 +1,10 @@
 import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { Category } from '../types';
+import config from '../utils/appConfig';
 
-const ADDRESS = process.env.TON_CATEGORIES_ADDRESS ?? 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS =
+  config.TON_CATEGORIES_ADDRESS ??
+  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 
 export async function getCategory(id: string): Promise<Category | null> {
   const res = await getValue(ADDRESS, id);

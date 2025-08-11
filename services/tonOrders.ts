@@ -1,7 +1,10 @@
 import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { Order } from '../types';
+import config from '../utils/appConfig';
 
-const ADDRESS = process.env.TON_ORDERS_ADDRESS ?? 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS =
+  config.TON_ORDERS_ADDRESS ??
+  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 
 export async function getOrder(id: string): Promise<Order | null> {
   const res = await getValue(ADDRESS, id);
