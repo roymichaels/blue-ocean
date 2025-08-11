@@ -188,6 +188,19 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return;
     }
 
+    const overstock = cartItems.find(
+      (i) => (i.effectiveQty ?? i.quantity) > (i.product.stock ?? Infinity)
+    );
+    if (overstock) {
+      setInfoModal({
+        visible: true,
+        title: 'חוסר במלאי',
+        message: 'כמות מבוקשת עולה על המלאי הזמין',
+        type: 'warning',
+      });
+      return;
+    }
+
     // KYC gate
     if (user && user.kycStatus !== 'verified') {
       let message = '';

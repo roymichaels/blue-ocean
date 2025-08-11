@@ -7,6 +7,7 @@ import {
   releasePayment,
   refundPayment,
 } from '../services/tonContract';
+import productsAgent from './products-agent';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -103,6 +104,14 @@ class OrdersAgent {
       updatedAt: new Date().toISOString(),
     };
     await setOrder(updated);
+    await Promise.all(
+      order.items.map((item) =>
+        productsAgent.decrementStock(
+          item.productId,
+          item.effectiveQty ?? item.quantity
+        )
+      )
+    );
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
     return hash;

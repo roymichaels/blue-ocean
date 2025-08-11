@@ -46,6 +46,14 @@ class ProductsAgent {
   async getAll(): Promise<Product[]> {
     return await listProducts();
   }
+
+  async decrementStock(productId: string, quantity: number): Promise<void> {
+    const prod = await getProduct(productId);
+    if (!prod) return;
+    await this.assertStoreOwner(prod.storeId);
+    const newStock = Math.max((prod.stock || 0) - quantity, 0);
+    await setProduct({ ...prod, stock: newStock });
+  }
 }
 
 export default new ProductsAgent();
