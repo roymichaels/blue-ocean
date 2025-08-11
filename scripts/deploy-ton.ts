@@ -1,3 +1,4 @@
+// Deploy a compiled contract to the TON blockchain using ton-core utilities.
 import {
   TonClient,
   WalletContractV4,

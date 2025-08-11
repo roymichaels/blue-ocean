@@ -1,3 +1,4 @@
+// Compile all Tact contracts in `contracts/ton` into BOC artifacts.
 import { compile } from '@tact-lang/compiler';
 import fs from 'fs';
 import path from 'path';

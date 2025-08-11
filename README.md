@@ -42,12 +42,16 @@ and loaded automatically; no `.env` entries are required for them.
 
 ### TON Smart Contracts
 
-Smart contracts written in Tact live in `contracts/ton`.
+Smart contracts written in Tact live in `contracts/ton`. The helper scripts in
+`scripts/` use `@tact-lang/compiler` for compiling contracts and `ton-core` for
+deployment.
 
 Compile all contracts with:
 
 ```sh
 yarn build:ton
+# or
+yarn ton:build
 ```
 
 Compiled `.boc` files are written to `contracts/ton/build`.
@@ -62,6 +66,8 @@ Then run:
 
 ```sh
 yarn deploy:ton <contract-name>
+# or
+yarn ton:deploy <contract-name>
 ```
 
 Replace `<contract-name>` with the name of the Tact file (without extension).
