@@ -549,70 +549,84 @@ const loadOrCreateDefaultRoom = async () => {
   const stopRecording = async () => {
     if (!recording) return;
 
-    if (!(await ensureChatConfigured())) {
-      return;
-    }
+    const currentRecording = recording;
+    const duration = recordingDuration;
 
     try {
-      if (isMounted.current) {
-        setIsRecording(false);
-      }
+      await currentRecording.stop();
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+    } finally {
       if (recordingTimer.current) {
         clearInterval(recordingTimer.current);
         recordingTimer.current = null;
       }
-
-      await recording.stop();
-      const uri = recording.uri;
-      // remove is not typed on AudioRecorder
-      (recording as any).remove?.();
-
-      if (uri) {
-        const pinata = PinataService.getInstance();
-        const uploadedUrl = await pinata.uploadFile(uri, 'voice');
-        debugLog('Voice message recorded:', uploadedUrl);
-
-        const db = DatabaseService.getInstance();
-        const roomId = selectedRoom
-          ? selectedRoom.id
-          : await db.getOrCreateChatRoom(
-              user?.id || 'guest_user',
-              user?.displayName || 'Guest User'
-            );
-        const voiceMessage: ChatMessage = {
-          id: Date.now().toString(),
-          senderId:
-            isAdmin || isDriver
-              ? config.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
-              : user?.id || 'user_guest',
-          senderName:
-            isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',
-          message: '',
-          timestamp: Date.now(),
-          isAdmin: isAdmin || isDriver,
-          audioUri: uploadedUrl,
-          audioDuration: recordingDuration,
-        };
-
-        await db.sendChatMessage(roomId, voiceMessage);
-        if (isMounted.current) {
-          setMessages((prev) => [...prev, voiceMessage]);
-        }
-
-        // Scroll to bottom
-        setTimeout(() => {
-          if (isMounted.current) {
-            messagesEndRef.current?.scrollToEnd({ animated: true });
-          }
-        }, 100);
-      }
-
       if (isMounted.current) {
+        setIsRecording(false);
         setRecording(null);
         setRecordingDuration(0);
       }
+    }
+
+    try {
+      if (!(await ensureChatConfigured())) {
+        return;
+      }
     } catch (error) {
-      console.error('Failed to stop recording:', error);
+      console.error('Error ensuring chat configured:', error);
+      if (isMounted.current) {
+        setInfoModal({
+          visible: true,
+          title: 'Chat unavailable',
+          message: 'missing configuration',
+          type: 'error',
+        });
+      }
+      return;
+    }
+
+    const uri = currentRecording.uri;
+    // remove is not typed on AudioRecorder
+    (currentRecording as any).remove?.();
+
+    if (uri) {
+      const pinata = PinataService.getInstance();
+      const uploadedUrl = await pinata.uploadFile(uri, 'voice');
+      debugLog('Voice message recorded:', uploadedUrl);
+
+      const db = DatabaseService.getInstance();
+      const roomId = selectedRoom
+        ? selectedRoom.id
+        : await db.getOrCreateChatRoom(
+            user?.id || 'guest_user',
+            user?.displayName || 'Guest User'
+          );
+      const voiceMessage: ChatMessage = {
+        id: Date.now().toString(),
+        senderId:
+          isAdmin || isDriver
+            ? config.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
+            : user?.id || 'user_guest',
+        senderName:
+          isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',
+        message: '',
+        timestamp: Date.now(),
+        isAdmin: isAdmin || isDriver,
+        audioUri: uploadedUrl,
+        audioDuration: duration,
+      };
+
+      await db.sendChatMessage(roomId, voiceMessage);
+      if (isMounted.current) {
+        setMessages((prev) => [...prev, voiceMessage]);
+      }
+
+      // Scroll to bottom
+      setTimeout(() => {
+        if (isMounted.current) {
+          messagesEndRef.current?.scrollToEnd({ animated: true });
+        }
+      }, 100);
     }
   };
 
