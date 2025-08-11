@@ -14,7 +14,10 @@ export default function KycScreen() {
 
   const submit = async () => {
     if (!user || !docUri) return;
-    await usersAgent.requestKyc(user.id, docUri);
+    await usersAgent.handleMessage({
+      type: 'kyc.request',
+      payload: { userId: user.id, documentUri: docUri },
+    });
     router.back();
   };
 

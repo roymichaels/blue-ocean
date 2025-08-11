@@ -3,6 +3,16 @@ import tonAuth from '../services/tonAuth';
 import { getUser, setUser, listUsers, removeUser } from '../services/tonUsers';
 import { getPublicKeyHex } from '../services/localIdentity';
 
+export type UsersAgentMessage =
+  | { type: 'user.add'; payload: User }
+  | { type: 'user.update'; payload: User }
+  | { type: 'user.remove'; payload: { id: string } }
+  | { type: 'kyc.request'; payload: { userId: string; documentUri: string } }
+  | {
+      type: 'kyc.update';
+      payload: { userId: string; status: 'verified' | 'rejected'; adminId?: string };
+    };
+
 class UsersAgent {
   private async ensureWallet() {
     const address = tonAuth.getAddress();
@@ -75,6 +85,30 @@ class UsersAgent {
 
   async getAll(): Promise<User[]> {
     return await listUsers();
+  }
+
+  async handleMessage(msg: UsersAgentMessage): Promise<void> {
+    switch (msg.type) {
+      case 'user.add':
+        await this.add(msg.payload);
+        break;
+      case 'user.update':
+        await this.update(msg.payload);
+        break;
+      case 'user.remove':
+        await this.remove(msg.payload.id);
+        break;
+      case 'kyc.request':
+        await this.requestKyc(msg.payload.userId, msg.payload.documentUri);
+        break;
+      case 'kyc.update':
+        await this.updateKyc(
+          msg.payload.userId,
+          msg.payload.status,
+          msg.payload.adminId,
+        );
+        break;
+    }
   }
 }
 

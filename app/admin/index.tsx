@@ -23,12 +23,18 @@ export default function AdminDashboard() {
   };
 
   const approve = async (id: string) => {
-    await usersAgent.updateKyc(id, 'verified', user?.id);
+    await usersAgent.handleMessage({
+      type: 'kyc.update',
+      payload: { userId: id, status: 'verified', adminId: user?.id },
+    });
     setRequests(req => req.filter(r => r.id !== id));
   };
 
   const reject = async (id: string) => {
-    await usersAgent.updateKyc(id, 'rejected', user?.id);
+    await usersAgent.handleMessage({
+      type: 'kyc.update',
+      payload: { userId: id, status: 'rejected', adminId: user?.id },
+    });
     setRequests(req => req.filter(r => r.id !== id));
   };
 
