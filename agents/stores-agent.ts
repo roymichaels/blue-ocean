@@ -13,8 +13,8 @@ class StoresAgent {
   }
 
   private toRecord(item: Store) {
-    const { id, name, owner, nftId } = item;
-    return { id, name, owner, nftId };
+    const { id, name, owner, nftId, reputation = 0 } = item;
+    return { id, name, owner, nftId, reputation };
   }
 
   async add(item: Store): Promise<void> {
@@ -25,6 +25,14 @@ class StoresAgent {
   async update(item: Store): Promise<void> {
     await this.ensureWallet();
     await setStore(this.toRecord(item));
+  }
+
+  async updateReputationByOwner(owner: string, reputation: number): Promise<void> {
+    const stores = await listStores();
+    const store = stores.find((s) => s.owner === owner);
+    if (store) {
+      await setStore(this.toRecord({ ...store, reputation }));
+    }
   }
 
   async remove(id: string): Promise<void> {

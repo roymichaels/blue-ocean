@@ -2,6 +2,7 @@ import { Order, OrderStatus, Notification } from '../types';
 import tonAuth from '../services/tonAuth';
 import notificationsAgent from './notifications-agent';
 import { setOrder, getOrder, listOrders, removeOrder, listOrdersBySeller } from '../services/tonOrders';
+import storesAgent from './stores-agent';
 import {
   deployOrderPayment,
   releasePayment,
@@ -24,6 +25,26 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 class OrdersAgent {
   private subscribers: Set<(o: Order) => void> = new Set();
+  private sellerMetrics: Record<string, { completed: number; refunds: number }> = {};
+
+  private recordSellerMetric(seller?: string, type?: 'completed' | 'refunded') {
+    if (!seller) return;
+    if (!this.sellerMetrics[seller]) {
+      this.sellerMetrics[seller] = { completed: 0, refunds: 0 };
+    }
+    if (type === 'completed') {
+      this.sellerMetrics[seller].completed += 1;
+    } else if (type === 'refunded') {
+      this.sellerMetrics[seller].refunds += 1;
+    }
+    const { completed, refunds } = this.sellerMetrics[seller];
+    const score = completed + refunds > 0 ? completed / (completed + refunds) : 0;
+    storesAgent.updateReputationByOwner(seller, score);
+  }
+
+  getSellerMetrics(address: string) {
+    return this.sellerMetrics[address] || { completed: 0, refunds: 0 };
+  }
 
   private async ensureWallet() {
     const address = tonAuth.getAddress();
@@ -102,6 +123,11 @@ class OrdersAgent {
     this.subscribers.forEach((cb) => cb(order));
     if (statusChanged) {
       await this.notifyStatusChange(order);
+      if (order.status === 'released') {
+        this.recordSellerMetric(order.sellerAddress, 'completed');
+      } else if (order.status === 'refunded') {
+        this.recordSellerMetric(order.sellerAddress, 'refunded');
+      }
     }
   }
 
@@ -157,6 +183,7 @@ class OrdersAgent {
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
     await this.notifyPaymentReceived(updated);
+    this.recordSellerMetric(order.sellerAddress, 'completed');
     return hash;
   }
 
@@ -182,6 +209,7 @@ class OrdersAgent {
     await setOrder(updated);
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
+    this.recordSellerMetric(order.sellerAddress, 'refunded');
     return hash;
   }
 
