@@ -1,25 +1,19 @@
 import PinataService from '../services/pinata';
-import axios from 'axios';
-
-jest.mock('axios');
 
 describe('PinataService', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('skips upload when URI is already a URL', async () => {
+  it('returns URI unchanged when already CID or URL', async () => {
+    const svc = PinataService.getInstance();
+    const cid = 'ipfs://bafybeigdyrzt5u2r6sxcv5a3dyhv6aipjfiv6t5bygbw4s3z6';
     const url = 'https://example.com/file.png';
-    const service = PinataService.getInstance();
-    const result = await service.uploadFile(url, 'file');
-    expect(result).toBe(url);
-    expect(axios.post).not.toHaveBeenCalled();
+    await expect(svc.uploadFile(cid, 'file')).resolves.toBe(cid);
+    await expect(svc.uploadFile(url, 'file')).resolves.toBe(url);
   });
 
-  it('detects CID strings', () => {
-    const service = PinataService.getInstance();
-    expect(service.isCid('bafybeigdyrzt5u2r6sxcv5a3dyhv6aipjfiv6t5bygbw4s3z6')).toBe(true);
-    expect(service.isCid('ipfs://bafybeigdyrzt5u2r6sxcv5a3dyhv6aipjfiv6t5bygbw4s3z6')).toBe(true);
-    expect(service.isCid('https://example.com')).toBe(false);
+  it('validates CID and URL strings', () => {
+    const svc = PinataService.getInstance();
+    expect(svc.isCidOrUrl('bafybeigdyrzt5u2r6sxcv5a3dyhv6aipjfiv6t5bygbw4s3z6')).toBe(true);
+    expect(svc.isCidOrUrl('ipfs://bafybeigdyrzt5u2r6sxcv5a3dyhv6aipjfiv6t5bygbw4s3z6')).toBe(true);
+    expect(svc.isCidOrUrl('https://example.com')).toBe(true);
+    expect(svc.isCidOrUrl('not-a-cid')).toBe(false);
   });
 });

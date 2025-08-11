@@ -17,7 +17,6 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
-import MediaUploader from '../../components/MediaUploader';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import commonStyles from '../../constants/styles';
 import SettingsAgent from '../../agents/settings-agent';
@@ -28,7 +27,7 @@ export default function SettingsScreen() {
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
 
   const [name, setName] = useState('');
-  const [logoMedia, setLogoMedia] = useState<any[]>([]);
+  const [logoCidInput, setLogoCidInput] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -69,11 +68,7 @@ export default function SettingsScreen() {
 
     setName(appName);
     setThemeColorState(contextThemeColor);
-    if (logoCid) {
-      setLogoMedia([{ id: 'logo', uri: logoCid, type: 'image' }]);
-    } else {
-      setLogoMedia([]);
-    }
+    setLogoCidInput(logoCid || '');
   }, [contextCurrencySymbol, appName, logoCid, contextThemeColor]);
 
   const loadSettings = async () => {
@@ -110,7 +105,7 @@ export default function SettingsScreen() {
 
       await setAppName(name);
       await setThemeColor(themeColor);
-      const logoUri = logoMedia[0]?.uri || '';
+      const logoUri = logoCidInput.trim();
       await setLogoCid(logoUri);
 
       setInfoModal({
@@ -202,12 +197,21 @@ export default function SettingsScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>לוגו</Text>
-              <MediaUploader
-                media={logoMedia}
-                onMediaChange={setLogoMedia}
-                maxFiles={1}
-                allowVideos={false}
+              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>לוגו (CID או URL)</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.surface.primary,
+                    color: colors.text.primary,
+                  },
+                ]}
+                value={logoCidInput}
+                onChangeText={setLogoCidInput}
+                placeholder="ipfs://..."
+                textAlign="right"
+                placeholderTextColor={colors.text.tertiary}
               />
             </View>
 

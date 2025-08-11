@@ -9,7 +9,6 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import SettingsAgent from '../agents/settings-agent';
-import MediaService from '../services/media';
 import { fetchSettings } from '../services/tonSettings';
 
 interface AppInfoContextType {
@@ -142,15 +141,10 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   };
 
   const setLogoCid = async (logo: string) => {
-    let finalLogo = logo;
     try {
-      if (logo && !logo.startsWith('http')) {
-        const mediaSvc = MediaService.getInstance();
-        finalLogo = await mediaSvc.uploadMedia(logo, 'tenant_logo');
-      }
       const LOGO_KEY = `app_logo_${tenantId}`;
-      setLogoCidState(finalLogo);
-      await AsyncStorage.setItem(LOGO_KEY, finalLogo);
+      setLogoCidState(logo);
+      await AsyncStorage.setItem(LOGO_KEY, logo);
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
       console.error('Error setting platform logo:', e);
@@ -165,7 +159,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       throw e;
     }
     try {
-      await tenantSvc.updateSettingValue('brand.logoCid', finalLogo);
+      await tenantSvc.updateSettingValue('brand.logoCid', logo);
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
