@@ -11,7 +11,7 @@
     "web:clean": "node scripts/web-clean.js",
     "web:build": "expo export --platform web --output-dir dist",
     "web:ipfs-sanitize": "node scripts/ipfs-sanitize.js",
-    "web:release": "npm run web:clean && npm run web:build && npm run web:ipfs-sanitize",
+    "web:release": "npm run web:clean && npm run web:build && node scripts/web-clean.js copy && npm run web:ipfs-sanitize",
     "web:preview": "npx serve dist -p 4173 -s",
     "test": "jest",
     "build:ton": "ts-node scripts/build-ton.ts",
