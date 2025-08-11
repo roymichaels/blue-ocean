@@ -42,9 +42,13 @@ export default function ProductCard({
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [pricingTier, setPricingTier] = useState<PricingTier | null>(null);
   const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const address = useTonAddress();
+  const variants = product.variants || [];
+  const selectedVariant = variants[selectedVariantIndex];
+  const stock = selectedVariant ? selectedVariant.stock : product.stock;
 
   if (address && product.storeId !== address) {
     return null;
@@ -122,8 +126,8 @@ export default function ProductCard({
 
   const addToCart = async (e: any) => {
     e.stopPropagation();
-    if (product.stock === 0) return;
-    
+    if (stock === 0) return;
+
     const cartService = CartService.getInstance();
     await cartService.addToCart(product, 1);
     Alert.alert('נוסף לעגלה', `${product.name} נוסף לעגלה`);
@@ -179,14 +183,14 @@ export default function ProductCard({
         </TouchableOpacity>
 
         {/* Quick Add to Cart */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
             styles.cartButton,
             { backgroundColor: colors.gold },
-            product.stock === 0 && { backgroundColor: colors.interactive.disabled }
-          ]} 
+            stock === 0 && { backgroundColor: colors.interactive.disabled }
+          ]}
           onPress={addToCart}
-          disabled={product.stock === 0}
+          disabled={stock === 0}
         >
           <ShoppingCart size={16} color={colors.text.inverse} />
         </TouchableOpacity>
@@ -249,14 +253,34 @@ export default function ProductCard({
           <Text style={[styles.reviews, { color: colors.text.tertiary }]}>({product.reviews})</Text>
         </View>
 
+        {/* Variant Colors */}
+        {variants.length > 0 && (
+          <View style={styles.variantContainer}>
+            {variants.map((v, idx) => (
+              <TouchableOpacity
+                key={idx}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  setSelectedVariantIndex(idx);
+                }}
+                style={[
+                  styles.variantDot,
+                  { backgroundColor: v.color, borderColor: colors.border.primary },
+                  idx === selectedVariantIndex && { borderColor: colors.gold, borderWidth: 2 },
+                ]}
+              />
+            ))}
+          </View>
+        )}
+
         {/* Stock Status */}
         <View style={styles.stockContainer}>
           <View style={[
             styles.stockIndicator,
-            { backgroundColor: product.stock > 0 ? colors.status.success : colors.status.error }
+            { backgroundColor: stock > 0 ? colors.status.success : colors.status.error }
           ]} />
           <Text style={[styles.stockText, { color: colors.text.secondary }]}>
-            {product.stock > 0 ? `במלאי (${product.stock})` : 'אזל מהמלאי'}
+            {stock > 0 ? `במלאי (${stock})` : 'אזל מהמלאי'}
           </Text>
         </View>
       </View>
@@ -393,6 +417,19 @@ const styles = StyleSheet.create({
   reviews: {
     fontSize: 12,
     marginLeft: 4,
+  },
+  variantContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginBottom: 6,
+  },
+  variantDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginLeft: 6,
+    borderWidth: 1,
   },
   stockContainer: {
     flexDirection: 'row',

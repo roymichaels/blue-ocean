@@ -1,3 +1,8 @@
+export interface ProductVariant {
+  color: string;
+  stock: number;
+}
+
 export interface Product {
   id: string;
   tenant_id?: string;
@@ -14,6 +19,7 @@ export interface Product {
   images: string[];
   videos?: string[];
   colors?: string[];
+  variants?: ProductVariant[];
   rating: number;
   reviews: number;
   badges?: string[];
