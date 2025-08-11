@@ -1,11 +1,11 @@
 import * as nacl from 'tweetnacl';
-import * as ed2curve from 'ed2curve';
 import { sha256 } from '@noble/hashes/sha256';
 import { Order } from '../types';
+import { decryptOrderShipping } from '../services/sellerTools';
+import { getSellerPublicKey } from '../services/sellerRegistry';
+import { getPrivateKey } from '../services/localIdentity';
 
 const mockStore: Record<string, any> = {};
-const sellerKey = nacl.sign.keyPair();
-const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
 
 jest.mock('../services/tonOrders', () => ({
   setOrder: jest.fn(async (o: any) => {
@@ -25,9 +25,8 @@ jest.mock('../services/tonContract', () => ({
   refundPayment: jest.fn(),
 }));
 
-jest.mock('../services/tonUsers', () => ({
-  getUser: jest.fn().mockResolvedValue({ publicKey: sellerPubEd }),
-}));
+jest.mock('../services/sellerRegistry');
+jest.mock('../services/localIdentity');
 
 jest.mock('../services/tonAuth', () => ({
   getAddress: jest.fn().mockReturnValue('seller'),
@@ -35,7 +34,12 @@ jest.mock('../services/tonAuth', () => ({
   openModal: jest.fn(),
 }));
 
-import ordersAgent from '../agents/orders-agent';
+const sellerKey = nacl.sign.keyPair();
+const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
+(getSellerPublicKey as jest.Mock).mockResolvedValue(sellerPubEd);
+(getPrivateKey as jest.Mock).mockResolvedValue(sellerKey.secretKey);
+
+const ordersAgent = require('../agents/orders-agent').default;
 
 describe('ordersAgent.add', () => {
   it('encrypts shipping address and persists new fields', async () => {
@@ -87,15 +91,7 @@ describe('ordersAgent.add', () => {
     expect(stored.shipAddrEnc).toBeDefined();
     expect(stored.shippingAddress).toBeUndefined();
 
-    const privX = ed2curve.convertSecretKey(sellerKey.secretKey);
-    const decrypted = nacl.box.open(
-      Buffer.from(stored.shipAddrEnc.cipher, 'base64'),
-      Buffer.from(stored.shipAddrEnc.nonce, 'base64'),
-      Buffer.from(stored.shipAddrEnc.ephem, 'base64'),
-      privX,
-    );
-    expect(decrypted).not.toBeNull();
-    const addr = JSON.parse(Buffer.from(decrypted!).toString());
+    const addr = await decryptOrderShipping(stored);
     expect(addr).toEqual(order.shippingAddress);
 
     const persisted = await ordersAgent.get(order.id);
