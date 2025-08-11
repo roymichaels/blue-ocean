@@ -1,11 +1,22 @@
-import { Order } from '../types';
+import { Order, OrderStatus, Notification } from '../types';
 import tonAuth from '../services/tonAuth';
+import notificationsAgent from './notifications-agent';
 import { setOrder, getOrder, listOrders, removeOrder, listOrdersBySeller } from '../services/tonOrders';
 import {
   deployOrderPayment,
   releasePayment,
   refundPayment,
 } from '../services/tonContract';
+
+export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  order_received: ['courier_found'],
+  courier_found: ['courier_picked_up'],
+  courier_picked_up: ['courier_on_way'],
+  courier_on_way: ['delivered'],
+  delivered: ['released', 'refunded'],
+  released: [],
+  refunded: [],
+};
 
 class OrdersAgent {
   private subscribers: Set<(o: Order) => void> = new Set();
@@ -36,8 +47,23 @@ class OrdersAgent {
 
   async update(order: Order): Promise<void> {
     await this.ensureWallet();
+    const current = await this.get(order.id);
+    if (!current) {
+      throw new Error('Order not found');
+    }
+    let statusChanged = false;
+    if (order.status !== current.status) {
+      const allowed = ALLOWED_STATUS_TRANSITIONS[current.status] || [];
+      if (!allowed.includes(order.status)) {
+        throw new Error(`Invalid status transition from ${current.status} to ${order.status}`);
+      }
+      statusChanged = true;
+    }
     await setOrder(order);
     this.subscribers.forEach((cb) => cb(order));
+    if (statusChanged) {
+      await this.notifyStatusChange(order);
+    }
   }
 
   async remove(id: string): Promise<void> {
@@ -66,6 +92,10 @@ class OrdersAgent {
     if (!order.paymentContractAddress) {
       throw new Error('Order payment contract not found');
     }
+    const allowed = ALLOWED_STATUS_TRANSITIONS[order.status] || [];
+    if (!allowed.includes('released')) {
+      throw new Error(`Invalid status transition from ${order.status} to released`);
+    }
     const hash = await releasePayment(order.paymentContractAddress);
     const updated: Order = {
       ...order,
@@ -74,6 +104,7 @@ class OrdersAgent {
     };
     await setOrder(updated);
     this.subscribers.forEach((cb) => cb(updated));
+    await this.notifyStatusChange(updated);
     return hash;
   }
 
@@ -86,6 +117,10 @@ class OrdersAgent {
     if (!order.paymentContractAddress) {
       throw new Error('Order payment contract not found');
     }
+    const allowed = ALLOWED_STATUS_TRANSITIONS[order.status] || [];
+    if (!allowed.includes('refunded')) {
+      throw new Error(`Invalid status transition from ${order.status} to refunded`);
+    }
     const hash = await refundPayment(order.paymentContractAddress);
     const updated: Order = {
       ...order,
@@ -94,6 +129,7 @@ class OrdersAgent {
     };
     await setOrder(updated);
     this.subscribers.forEach((cb) => cb(updated));
+    await this.notifyStatusChange(updated);
     return hash;
   }
 
@@ -103,6 +139,23 @@ class OrdersAgent {
 
   unsubscribe(cb: (o: Order) => void) {
     this.subscribers.delete(cb);
+  }
+
+  private async notifyStatusChange(order: Order) {
+    const notification: Notification = {
+      id: `ntf_${Date.now()}`,
+      userId: order.userId,
+      title: 'Order status updated',
+      message: `Order ${order.id} status changed to ${order.status}`,
+      type: 'order',
+      read: false,
+      timestamp: Date.now(),
+    };
+    try {
+      await notificationsAgent.add(notification);
+    } catch (err) {
+      console.error('Failed to send notification', err);
+    }
   }
 }
 
