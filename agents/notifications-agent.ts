@@ -1,21 +1,14 @@
 import { Notification } from '../types';
-import { sendWakuNotificationUpdate } from '../lib/waku/sendWakuNotificationUpdate';
-import WakuAgent from '../utils/wakuAgent';
 import tonAuth from '../services/tonAuth';
+import {
+  setNotification,
+  getNotification,
+  listNotifications,
+  removeNotification,
+} from '../services/tonNotifications';
 
-class NotificationsAgent extends WakuAgent<Notification> {
+class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
-
-  constructor() {
-    super(sendWakuNotificationUpdate, {
-      topic: '/congress/notifications/1',
-      replayHistory: true,
-      extractItem: (msg: any) => msg.notification as Notification,
-      onUpdate: (item: Notification) => {
-        this.subscribers.forEach((cb) => cb(item));
-      },
-    });
-  }
 
   private async ensureWallet() {
     const address = tonAuth.getAddress();
@@ -28,12 +21,27 @@ class NotificationsAgent extends WakuAgent<Notification> {
 
   async add(item: Notification): Promise<void> {
     await this.ensureWallet();
-    await super.add(item);
+    await setNotification(item);
+    this.subscribers.forEach((cb) => cb(item));
   }
 
   async update(item: Notification): Promise<void> {
     await this.ensureWallet();
-    await super.update(item);
+    await setNotification(item);
+    this.subscribers.forEach((cb) => cb(item));
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.ensureWallet();
+    await removeNotification(id);
+  }
+
+  async get(id: string): Promise<Notification | null> {
+    return await getNotification(id);
+  }
+
+  async getAll(): Promise<Notification[]> {
+    return await listNotifications();
   }
 
   subscribe(cb: (n: Notification) => void) {

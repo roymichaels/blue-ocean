@@ -1,17 +1,8 @@
 import { User } from '../types';
-import { sendWakuUserUpdate } from '../lib/waku/sendWakuUserUpdate';
-import WakuAgent from '../utils/wakuAgent';
 import tonAuth from '../services/tonAuth';
+import { getUser, setUser, listUsers, removeUser } from '../services/tonUsers';
 
-class UsersAgent extends WakuAgent<User> {
-  constructor() {
-    super(sendWakuUserUpdate, {
-      topic: '/congress/users/1/proto',
-      replayHistory: true,
-      extractItem: (msg: any) => msg.user as User,
-    });
-  }
-
+class UsersAgent {
   private async ensureWallet() {
     const address = tonAuth.getAddress();
     const publicKey = tonAuth.getTonPublicKey();
@@ -24,22 +15,27 @@ class UsersAgent extends WakuAgent<User> {
 
   async add(user: User): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
-    const enriched: User = {
-      ...user,
-      publicKey,
-      address,
-    };
-    await super.add(enriched);
+    const enriched: User = { ...user, publicKey, address };
+    await setUser(enriched);
   }
 
   async update(user: User): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
-    const enriched: User = {
-      ...user,
-      publicKey,
-      address,
-    };
-    await super.update(enriched);
+    const enriched: User = { ...user, publicKey, address };
+    await setUser(enriched);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.ensureWallet();
+    await removeUser(id);
+  }
+
+  async get(id: string): Promise<User | null> {
+    return await getUser(id);
+  }
+
+  async getAll(): Promise<User[]> {
+    return await listUsers();
   }
 }
 

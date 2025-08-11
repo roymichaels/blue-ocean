@@ -1,20 +1,8 @@
 import { CartItem } from '../types';
-import { sendWakuCartUpdate } from '../lib/waku/sendWakuCartUpdate';
-import WakuAgent from '../utils/wakuAgent';
 import tonAuth from '../services/tonAuth';
+import { setCartItem, getCartItem, listCartItems, removeCartItem } from '../services/tonCart';
 
-// Publishes and replicates cart items via Waku
-
-class CartAgent extends WakuAgent<CartItem> {
-  constructor() {
-    super(sendWakuCartUpdate, {
-      topic: '/congress/cart/1',
-      replayHistory: true,
-      extractItem: (msg: any) =>
-        msg.type === 'cart.update' ? (msg.cartItem as CartItem) : undefined,
-    });
-  }
-
+class CartAgent {
   private async ensureWallet() {
     const address = tonAuth.getAddress();
     const publicKey = tonAuth.getTonPublicKey();
@@ -26,12 +14,25 @@ class CartAgent extends WakuAgent<CartItem> {
 
   async add(item: CartItem): Promise<void> {
     await this.ensureWallet();
-    await super.add(item);
+    await setCartItem(item);
   }
 
   async update(item: CartItem): Promise<void> {
     await this.ensureWallet();
-    await super.update(item);
+    await setCartItem(item);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.ensureWallet();
+    await removeCartItem(id);
+  }
+
+  async get(id: string): Promise<CartItem | null> {
+    return await getCartItem(id);
+  }
+
+  async getAll(): Promise<CartItem[]> {
+    return await listCartItems();
   }
 }
 

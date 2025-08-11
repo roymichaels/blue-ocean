@@ -1,25 +1,9 @@
 import { Product } from '../types';
-import { sendWakuProductUpdate } from '../lib/waku/sendWakuProductUpdate';
-import WakuAgent from '../utils/wakuAgent';
-import storesAgent from './stores-agent';
 import tonAuth from '../services/tonAuth';
+import { setProduct, getProduct, listProducts, removeProduct } from '../services/tonProducts';
+import { getStore } from '../services/tonStores';
 
-class ProductsAgent extends WakuAgent<Product> {
-  constructor() {
-    super(sendWakuProductUpdate, {
-      topic: '/congress/products/1/proto',
-      replayHistory: true,
-      extractItem: (msg: any) => msg.product as Product,
-      validateMessage: async (msg: any) => {
-        const storeId = msg.product?.storeId;
-        const senderAddr = msg.sender?.address;
-        if (!storeId || !senderAddr) return false;
-        const store = storesAgent.get(storeId);
-        return store?.owner === senderAddr;
-      },
-    });
-  }
-
+class ProductsAgent {
   private async ensureWallet() {
     const address = tonAuth.getAddress();
     const publicKey = tonAuth.getTonPublicKey();
@@ -30,23 +14,37 @@ class ProductsAgent extends WakuAgent<Product> {
     return { address };
   }
 
+  private async assertStoreOwner(storeId: string) {
+    const { address } = await this.ensureWallet();
+    const store = await getStore(storeId);
+    if (!store || store.owner !== address) {
+      throw new Error('Only the store owner can manage products');
+    }
+  }
+
   async add(item: Product): Promise<void> {
-    await this.ensureWallet();
-    await super.add(item);
+    await this.assertStoreOwner(item.storeId);
+    await setProduct(item);
   }
 
   async update(item: Product): Promise<void> {
-    await this.ensureWallet();
-    await super.update(item);
+    await this.assertStoreOwner(item.storeId);
+    await setProduct(item);
   }
 
-  protected async broadcast(item: Product) {
-    const { address } = await this.ensureWallet();
-    const store = storesAgent.get(item.storeId);
-    if (!store || store.owner !== address) {
-      throw new Error('Only the store owner can broadcast product updates');
-    }
-    await super.broadcast(item);
+  async remove(id: string): Promise<void> {
+    const prod = await getProduct(id);
+    if (!prod) return;
+    await this.assertStoreOwner(prod.storeId);
+    await removeProduct(id);
+  }
+
+  async get(id: string): Promise<Product | null> {
+    return await getProduct(id);
+  }
+
+  async getAll(): Promise<Product[]> {
+    return await listProducts();
   }
 }
 

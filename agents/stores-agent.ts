@@ -1,17 +1,8 @@
 import { Store } from '../types';
-import { sendWakuStoreUpdate } from '../lib/waku/sendWakuStoreUpdate';
-import WakuAgent from '../utils/wakuAgent';
 import tonAuth from '../services/tonAuth';
+import { setStore, getStore, listStores, removeStore } from '../services/tonStores';
 
-class StoresAgent extends WakuAgent<Store> {
-  constructor() {
-    super(sendWakuStoreUpdate, {
-      topic: '/congress/stores/1/proto',
-      replayHistory: true,
-      extractItem: (msg: any) => msg.store as Store,
-    });
-  }
-
+class StoresAgent {
   private async ensureWallet() {
     const address = tonAuth.getAddress();
     const publicKey = tonAuth.getTonPublicKey();
@@ -23,12 +14,25 @@ class StoresAgent extends WakuAgent<Store> {
 
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
-    await super.add(item);
+    await setStore(item);
   }
 
   async update(item: Store): Promise<void> {
     await this.ensureWallet();
-    await super.update(item);
+    await setStore(item);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.ensureWallet();
+    await removeStore(id);
+  }
+
+  async get(id: string): Promise<Store | null> {
+    return await getStore(id);
+  }
+
+  async getAll(): Promise<Store[]> {
+    return await listStores();
   }
 }
 
