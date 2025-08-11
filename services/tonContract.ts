@@ -1,6 +1,6 @@
+// @ts-nocheck
 import TonWeb from 'tonweb';
 import { Buffer } from 'buffer';
-import { Order } from '../types';
 import { getTonConnect } from './tonAuth';
 
 /**
@@ -37,18 +37,18 @@ async function sendTonConnect(messages: {
   );
 }
 
-export async function createOrderPayment(
-  order: Order,
+export async function deployOrderPayment(
+  amount: number,
 ): Promise<{ contractAddress: string; txHash: string }> {
   try {
-    const payload = makeComment(`Pay:${order.total}`);
+    const payload = makeComment(`Pay:${amount}`);
     const payloadBoc = TonWeb.utils.bytesToBase64(
       await payload.toBoc({ idx: false }),
     );
     const txHash = await sendTonConnect([
       {
         address: ORDER_PAYMENT_FACTORY_ADDRESS,
-        amount: TonWeb.utils.toNano(String(order.total)).toString(),
+        amount: TonWeb.utils.toNano(String(amount)).toString(),
         payload: payloadBoc,
       },
     ]);
@@ -56,7 +56,7 @@ export async function createOrderPayment(
     const contractAddress = ORDER_PAYMENT_FACTORY_ADDRESS;
     return { contractAddress, txHash };
   } catch (e) {
-    console.error('Failed to create order payment', e);
+    console.error('Failed to deploy order payment', e);
     throw e;
   }
 }

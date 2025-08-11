@@ -12,7 +12,18 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { X, Minus, Plus, ShoppingCart, Trash2, MapPin, CreditCard, Check, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import {
+  X,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Trash2,
+  MapPin,
+  CreditCard,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react-native';
 import CartService from '../services/cart';
 import { setOrder } from '../services/tonOrders';
 import { getStore } from '../services/tonStores';
@@ -34,14 +45,16 @@ interface CartModalProps {
 
 export default function CartModal({ visible, onClose }: CartModalProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'shipping' | 'payment' | 'confirmation'>('cart');
+  const [checkoutStep, setCheckoutStep] = useState<
+    'cart' | 'shipping' | 'payment' | 'confirmation'
+  >('cart');
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     name: '',
     phone: '',
     street: '',
     city: '',
     postalCode: '',
-    notes: ''
+    notes: '',
   });
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -54,12 +67,12 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const { t } = useLanguage();
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Modal states
+  // Info/confirm modals
   const [infoModal, setInfoModal] = useState({
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
   const [confirmModal, setConfirmModal] = useState({
     visible: false,
@@ -67,13 +80,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     message: '',
     confirmText: '',
     cancelText: '',
-    action: () => {}
+    action: () => {},
   });
 
   useEffect(() => {
     if (visible) {
       loadCartItems();
-      // Reset checkout flow when modal opens
+      // reset flow
       setCheckoutStep('cart');
       setOrderPlaced(false);
       setOrderIds([]);
@@ -82,35 +95,28 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
   useEffect(() => {
     const cartService = CartService.getInstance();
-    const handleCartUpdate = () => {
-      setCartItems(cartService.getCartItems());
-    };
-
+    const handleCartUpdate = () => setCartItems(cartService.getCartItems());
     cartService.addListener(handleCartUpdate);
     return () => cartService.removeListener(handleCartUpdate);
   }, []);
 
   useEffect(() => {
     // Scroll to top when changing steps
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: 0, animated: true });
-    }
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   }, [checkoutStep]);
 
   useEffect(() => {
     const fetchStores = async () => {
-      const ids = Array.from(new Set(cartItems.map(i => i.product.storeId)));
+      const ids = Array.from(new Set(cartItems.map((i) => i.product.storeId)));
       const entries = await Promise.all(
-        ids.map(async id => {
+        ids.map(async (id) => {
           const store = await getStore(id);
-          return store ? [id, store] : null;
+          return store ? ([id, store] as const) : null;
         })
       );
       const map: Record<string, Store> = {};
-      entries.forEach(entry => {
-        if (entry) {
-          map[entry[0]] = entry[1];
-        }
+      entries.forEach((entry) => {
+        if (entry) map[entry[0]] = entry[1];
       });
       setStores(map);
     };
@@ -120,55 +126,41 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const loadCartItems = () => {
     const cartService = CartService.getInstance();
     setCartItems(cartService.getCartItems());
-    
-    // Pre-fill shipping address if user is logged in
+    // Pre-fill shipping name if logged in
     if (isLoggedIn && user) {
-      setShippingAddress(prev => ({
-        ...prev,
-        name: user.displayName || '',
-        email: user.email || '',
-      }));
+      setShippingAddress((prev) => ({ ...prev, name: user.displayName || '' }));
     }
   };
 
   const updateQuantity = async (itemId: string, newQuantity: number) => {
-    const cartService = CartService.getInstance();
-    await cartService.updateCartItemQuantity(itemId, newQuantity);
+    await CartService.getInstance().updateCartItemQuantity(itemId, newQuantity);
   };
 
   const removeItem = async (itemId: string) => {
-    const cartService = CartService.getInstance();
-    await cartService.removeFromCart(itemId);
+    await CartService.getInstance().removeFromCart(itemId);
   };
 
   const groupedItems = useMemo(() => {
     return cartItems.reduce<Record<string, CartItem[]>>((acc, item) => {
       const storeId = item.product.storeId;
-      if (!acc[storeId]) {
-        acc[storeId] = [];
-      }
-      acc[storeId].push(item);
+      (acc[storeId] ||= []).push(item);
       return acc;
     }, {});
   }, [cartItems]);
 
-  const getTotal = () => {
-    return cartItems.reduce((total, item) => {
-      const price = item.unitPrice ?? item.product.price;
-      return total + price * item.quantity;
-    }, 0);
-  };
+  const getTotal = () =>
+    cartItems.reduce(
+      (total, item) =>
+        total + (item.unitPrice ?? item.product.price) * item.quantity,
+      0
+    );
 
-  const getGroupTotal = (items: CartItem[]) => {
-    return items.reduce((total, item) => {
-      const price = item.unitPrice ?? item.product.price;
-      return total + price * item.quantity;
-    }, 0);
-  };
-
-  const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
+  const getGroupTotal = (items: CartItem[]) =>
+    items.reduce(
+      (total, item) =>
+        total + (item.unitPrice ?? item.product.price) * item.quantity,
+      0
+    );
 
   const goToShipping = () => {
     if (!isLoggedIn) {
@@ -176,25 +168,23 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         visible: true,
         title: 'נדרשת התחברות',
         message: 'עליך להתחבר כדי להשלים את ההזמנה',
-        type: 'info'
+        type: 'info',
       });
       return;
     }
-    
-    if (cartItems.length === 0) {
+    if (!cartItems.length) {
       setInfoModal({
         visible: true,
         title: 'עגלה ריקה',
         message: 'אנא הוסף מוצרים לעגלה כדי להמשיך',
-        type: 'warning'
+        type: 'warning',
       });
       return;
     }
 
-    // Check KYC status
+    // KYC gate
     if (user && user.kycStatus !== 'verified') {
       let message = '';
-
       switch (user.kycStatus) {
         case 'none':
           message = t('kyc.requiredForOrders');
@@ -208,7 +198,6 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         default:
           message = t('kyc.requiredForOrders');
       }
-
       if (user.kycStatus === 'none' || user.kycStatus === 'rejected') {
         setConfirmModal({
           visible: true,
@@ -219,32 +208,28 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           action: () => {
             onClose();
             router.push('/kyc');
-          }
+          },
         });
       } else {
         setInfoModal({
           visible: true,
           title: t('kyc.verification'),
           message,
-          type: 'warning'
+          type: 'warning',
         });
       }
       return;
     }
-    
+
     setCheckoutStep('shipping');
   };
 
   const goToPayment = () => {
-    if (!validateShippingAddress()) {
-      return;
-    }
+    if (!validateShippingAddress()) return;
     setCheckoutStep('payment');
   };
 
-  const goToConfirmation = () => {
-    setCheckoutStep('confirmation');
-  };
+  const goToConfirmation = () => setCheckoutStep('confirmation');
 
   const goBack = () => {
     switch (checkoutStep) {
@@ -268,7 +253,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         visible: true,
         title: 'שגיאה',
         message: 'אנא הכנס שם מלא',
-        type: 'error'
+        type: 'error',
       });
       return false;
     }
@@ -277,7 +262,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         visible: true,
         title: 'שגיאה',
         message: 'אנא הכנס מספר טלפון',
-        type: 'error'
+        type: 'error',
       });
       return false;
     }
@@ -286,7 +271,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         visible: true,
         title: 'שגיאה',
         message: 'אנא הכנס כתובת רחוב',
-        type: 'error'
+        type: 'error',
       });
       return false;
     }
@@ -295,7 +280,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         visible: true,
         title: 'שגיאה',
         message: 'אנא הכנס עיר',
-        type: 'error'
+        type: 'error',
       });
       return false;
     }
@@ -309,9 +294,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     try {
       const cartService = CartService.getInstance();
       const createdIds: string[] = [];
+
       for (const [storeId, items] of Object.entries(groupedItems)) {
         const store = stores[storeId] || (await getStore(storeId));
         const timestamp = new Date().toISOString();
+
         const order = {
           id: `order_${Date.now()}_${storeId}`,
           userId: user?.id || 'guest',
@@ -330,12 +317,33 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               timestamp,
               completed: true,
             },
-            { status: 'courier_found', title: 'נמצא שליח מתאים', timestamp: '', completed: false },
-            { status: 'courier_picked_up', title: 'שליח אסף את ההזמנה', timestamp: '', completed: false },
-            { status: 'courier_on_way', title: 'שליח בדרך אלייך', timestamp: '', completed: false },
-            { status: 'delivered', title: 'הזמנה התקבלה (השאר ביקורת)', timestamp: '', completed: false },
+            {
+              status: 'courier_found',
+              title: 'נמצא שליח מתאים',
+              timestamp: '',
+              completed: false,
+            },
+            {
+              status: 'courier_picked_up',
+              title: 'שליח אסף את ההזמנה',
+              timestamp: '',
+              completed: false,
+            },
+            {
+              status: 'courier_on_way',
+              title: 'שליח בדרך אלייך',
+              timestamp: '',
+              completed: false,
+            },
+            {
+              status: 'delivered',
+              title: 'הזמנה התקבלה (השאר ביקורת)',
+              timestamp: '',
+              completed: false,
+            },
           ],
         };
+
         await setOrder(order);
         createdIds.push(order.id);
       }
@@ -350,15 +358,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         'success'
       );
 
-      setTimeout(() => {
-        onClose();
-      }, 5000);
+      setTimeout(() => onClose(), 5000);
     } catch (error) {
       setInfoModal({
         visible: true,
         title: 'שגיאה',
         message: 'אירעה שגיאה ביצירת ההזמנה',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setLoading(false);
@@ -366,55 +372,90 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   };
 
   const renderCartItem = (item: CartItem) => (
-    <View key={item.id} style={[styles.cartItem, { 
-      backgroundColor: colors.surface.primary,
-      borderColor: colors.border.primary 
-    }]}>
-      <Image source={{ uri: item.product.images[0] }} style={styles.productImage} />
-      
+    <View
+      key={item.id}
+      style={[
+        styles.cartItem,
+        { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+      ]}
+    >
+      <Image
+        source={{ uri: item.product.images?.[0] || '' }}
+        style={styles.productImage}
+      />
+
       <View style={styles.productInfo}>
-        <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={2}>
+        <Text
+          style={[styles.productName, { color: colors.text.primary }]}
+          numberOfLines={2}
+        >
           {item.product.name}
         </Text>
-        
-        <Text style={[styles.productPrice, { color: colors.gold }]}>{currencySymbol}{(item.unitPrice ?? item.product.price).toFixed(2)}</Text>
-          {item.tierName && (
-            <Text style={[styles.tierInfo, { color: colors.text.secondary }]}>{'\n'}
+
+        <Text style={[styles.productPrice, { color: colors.gold }]}>
+          {currencySymbol}
+          {(item.unitPrice ?? item.product.price).toFixed(2)}
+        </Text>
+        {item.tierName && (
+          <Text style={[styles.tierInfo, { color: colors.text.secondary }]}>
+            {'\n'}
             {item.tierName} • EQ {item.effectiveQty}
-            </Text>
-          )}
+          </Text>
+        )}
       </View>
 
       <View style={styles.quantityControls}>
         <TouchableOpacity
-          style={[styles.quantityButton, 
+          style={[
+            styles.quantityButton,
             item.quantity === 1 && styles.quantityButtonDisabled,
-            { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary }
+            {
+              backgroundColor: colors.surface.secondary,
+              borderColor: colors.border.primary,
+            },
           ]}
           onPress={() => updateQuantity(item.id, item.quantity - 1)}
           disabled={item.quantity === 1}
         >
-          <Minus size={16} color={item.quantity === 1 ? colors.interactive.disabled : colors.text.primary} />
+          <Minus
+            size={16}
+            color={
+              item.quantity === 1
+                ? colors.interactive.disabled
+                : colors.text.primary
+            }
+          />
         </TouchableOpacity>
-        
-        <Text style={[styles.quantity, { color: colors.text.primary }]}>{item.quantity}</Text>
-        
+
+        <Text style={[styles.quantity, { color: colors.text.primary }]}>
+          {item.quantity}
+        </Text>
+
         <TouchableOpacity
-          style={[styles.quantityButton, 
-            item.quantity >= (item.product.stock || 99) && styles.quantityButtonDisabled,
-            { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary }
+          style={[
+            styles.quantityButton,
+            item.quantity >= (item.product.stock || 99) &&
+              styles.quantityButtonDisabled,
+            {
+              backgroundColor: colors.surface.secondary,
+              borderColor: colors.border.primary,
+            },
           ]}
           onPress={() => updateQuantity(item.id, item.quantity + 1)}
           disabled={item.quantity >= (item.product.stock || 99)}
         >
-          <Plus size={16} color={item.quantity >= (item.product.stock || 99) ? colors.interactive.disabled : colors.text.primary} />
+          <Plus
+            size={16}
+            color={
+              item.quantity >= (item.product.stock || 99)
+                ? colors.interactive.disabled
+                : colors.text.primary
+            }
+          />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => removeItem(item.id)}
-      >
+      <TouchableOpacity style={styles.removeButton} onPress={() => removeItem(item.id)}>
         <Trash2 size={16} color={colors.status.error} />
       </TouchableOpacity>
     </View>
@@ -425,26 +466,33 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={commonStyles.flex1}
     >
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
         style={styles.checkoutForm}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.checkoutHeader}>
           <MapPin size={24} color={colors.gold} />
-          <Text style={[styles.checkoutTitle, { color: colors.text.primary }]}>כתובת משלוח</Text>
+          <Text style={[styles.checkoutTitle, { color: colors.text.primary }]}>
+            כתובת משלוח
+          </Text>
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם מלא *</Text>
+          <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+            שם מלא *
+          </Text>
           <TextInput
-            style={[styles.formInput, { 
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary,
-              color: colors.text.primary
-            }]}
+            style={[
+              styles.formInput,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+                color: colors.text.primary,
+              },
+            ]}
             value={shippingAddress.name}
-            onChangeText={(text) => setShippingAddress({...shippingAddress, name: text})}
+            onChangeText={(text) => setShippingAddress({ ...shippingAddress, name: text })}
             placeholder="הכנס שם מלא"
             textAlign="right"
             placeholderTextColor={colors.text.tertiary}
@@ -452,15 +500,20 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={[styles.formLabel, { color: colors.text.primary }]}>טלפון *</Text>
+          <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+            טלפון *
+          </Text>
           <TextInput
-            style={[styles.formInput, { 
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary,
-              color: colors.text.primary
-            }]}
+            style={[
+              styles.formInput,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+                color: colors.text.primary,
+              },
+            ]}
             value={shippingAddress.phone}
-            onChangeText={(text) => setShippingAddress({...shippingAddress, phone: text})}
+            onChangeText={(text) => setShippingAddress({ ...shippingAddress, phone: text })}
             placeholder="הכנס מספר טלפון"
             keyboardType="phone-pad"
             textAlign="right"
@@ -469,15 +522,20 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={[styles.formLabel, { color: colors.text.primary }]}>רחוב וכתובת *</Text>
+          <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+            רחוב וכתובת *
+          </Text>
           <TextInput
-            style={[styles.formInput, { 
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary,
-              color: colors.text.primary
-            }]}
+            style={[
+              styles.formInput,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+                color: colors.text.primary,
+              },
+            ]}
             value={shippingAddress.street}
-            onChangeText={(text) => setShippingAddress({...shippingAddress, street: text})}
+            onChangeText={(text) => setShippingAddress({ ...shippingAddress, street: text })}
             placeholder="הכנס כתובת מלאה"
             textAlign="right"
             placeholderTextColor={colors.text.tertiary}
@@ -486,15 +544,20 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
         <View style={styles.formRow}>
           <View style={styles.formGroupHalf}>
-            <Text style={[styles.formLabel, { color: colors.text.primary }]}>עיר *</Text>
+            <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+              עיר *
+            </Text>
             <TextInput
-              style={[styles.formInput, { 
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary,
-                color: colors.text.primary
-              }]}
+              style={[
+                styles.formInput,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                  color: colors.text.primary,
+                },
+              ]}
               value={shippingAddress.city}
-              onChangeText={(text) => setShippingAddress({...shippingAddress, city: text})}
+              onChangeText={(text) => setShippingAddress({ ...shippingAddress, city: text })}
               placeholder="עיר"
               textAlign="right"
               placeholderTextColor={colors.text.tertiary}
@@ -502,15 +565,22 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </View>
 
           <View style={styles.formGroupHalf}>
-            <Text style={[styles.formLabel, { color: colors.text.primary }]}>מיקוד</Text>
+            <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+              מיקוד
+            </Text>
             <TextInput
-              style={[styles.formInput, { 
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary,
-                color: colors.text.primary
-              }]}
+              style={[
+                styles.formInput,
+                {
+                  backgroundColor: colors.surface.primary,
+                  borderColor: colors.border.primary,
+                  color: colors.text.primary,
+                },
+              ]}
               value={shippingAddress.postalCode}
-              onChangeText={(text) => setShippingAddress({...shippingAddress, postalCode: text})}
+              onChangeText={(text) =>
+                setShippingAddress({ ...shippingAddress, postalCode: text })
+              }
               placeholder="מיקוד"
               keyboardType="numeric"
               textAlign="right"
@@ -520,15 +590,21 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={[styles.formLabel, { color: colors.text.primary }]}>הערות (אופציונלי)</Text>
+          <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+            הערות (אופציונלי)
+          </Text>
           <TextInput
-            style={[styles.formInput, styles.textArea, { 
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary,
-              color: colors.text.primary
-            }]}
+            style={[
+              styles.formInput,
+              styles.textArea,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+                color: colors.text.primary,
+              },
+            ]}
             value={shippingAddress.notes}
-            onChangeText={(text) => setShippingAddress({...shippingAddress, notes: text})}
+            onChangeText={(text) => setShippingAddress({ ...shippingAddress, notes: text })}
             placeholder="הערות למשלוח"
             multiline
             numberOfLines={3}
@@ -537,39 +613,71 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           />
         </View>
 
-        <View style={[styles.orderSummary, { 
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary 
-        }]}>
-          <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>סיכום הזמנה</Text>
+        <View
+          style={[
+            styles.orderSummary,
+            { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+          ]}
+        >
+          <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
+            סיכום הזמנה
+          </Text>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>סה"כ מוצרים:</Text>
-            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>{cartItems.length}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
+              סה"כ מוצרים:
+            </Text>
+            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
+              {cartItems.length}
+            </Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>סה"כ פריטים:</Text>
-            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>{cartItems.reduce((sum, item) => sum + item.quantity, 0)}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
+              סה"כ פריטים:
+            </Text>
+            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
+              {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+            </Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>עלות משלוח:</Text>
-            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>{currencySymbol}0.00</Text>
+            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
+              עלות משלוח:
+            </Text>
+            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
+              {currencySymbol}0.00
+            </Text>
           </View>
-          <View style={[styles.summaryRow, styles.summaryTotal, { borderTopColor: colors.border.primary }]}>
-            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>סה"כ לתשלום:</Text>
-            <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>{currencySymbol}{getTotal().toFixed(2)}</Text>
+          <View
+            style={[
+              styles.summaryRow,
+              styles.summaryTotal,
+              { borderTopColor: colors.border.primary },
+            ]}
+          >
+            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
+              סה"כ לתשלום:
+            </Text>
+            <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
+              {currencySymbol}
+              {getTotal().toFixed(2)}
+            </Text>
           </View>
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { 
-        borderTopColor: colors.border.primary 
-      }]}>
+      <View style={[styles.footer, { borderTopColor: colors.border.primary }]}>
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <ChevronRight size={20} color={colors.text.primary} />
-          <Text style={[styles.backButtonText, { color: colors.text.primary }]}>חזרה לעגלה</Text>
+          <Text style={[styles.backButtonText, { color: colors.text.primary }]}>
+            חזרה לעגלה
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.nextButton, { backgroundColor: colors.gold }]} onPress={goToPayment}>
-          <Text style={[styles.nextButtonText, { color: colors.text.inverse }]}>המשך לתשלום</Text>
+        <TouchableOpacity
+          style={[styles.nextButton, { backgroundColor: colors.gold }]}
+          onPress={goToPayment}
+        >
+          <Text style={[styles.nextButtonText, { color: colors.text.inverse }]}>
+            המשך לתשלום
+          </Text>
           <ChevronLeft size={20} color={colors.text.inverse} />
         </TouchableOpacity>
       </View>
@@ -581,64 +689,91 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={commonStyles.flex1}
     >
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
         style={styles.checkoutForm}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.checkoutHeader}>
           <CreditCard size={24} color={colors.gold} />
-          <Text style={[styles.checkoutTitle, { color: colors.text.primary }]}>אמצעי תשלום</Text>
+          <Text style={[styles.checkoutTitle, { color: colors.text.primary }]}>
+            אמצעי תשלום
+          </Text>
         </View>
 
         <View style={styles.paymentOptions}>
-          <TouchableOpacity style={[styles.paymentOption, styles.selectedPaymentOption, { 
-            backgroundColor: colors.interactive.secondary,
-            borderColor: colors.gold 
-          }]}>
+          <TouchableOpacity
+            style={[
+              styles.paymentOption,
+              styles.selectedPaymentOption,
+              { backgroundColor: colors.interactive.secondary, borderColor: colors.gold },
+            ]}
+          >
             <View style={[styles.paymentOptionIcon, { backgroundColor: colors.surface.secondary }]}>
               <Text style={styles.paymentOptionEmoji}>💰</Text>
             </View>
             <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>תשלום במזומן בעת המסירה</Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>שלם למשלוח בעת קבלת ההזמנה</Text>
+              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>
+                תשלום במזומן בעת המסירה
+              </Text>
+              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>
+                שלם למשלוח בעת קבלת ההזמנה
+              </Text>
             </View>
             <View style={styles.paymentOptionCheck}>
               <Check size={20} color={colors.gold} />
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.paymentOption, styles.disabledPaymentOption, { 
-            backgroundColor: colors.surface.primary,
-            borderColor: colors.border.primary 
-          }]}>
+          <TouchableOpacity
+            style={[
+              styles.paymentOption,
+              styles.disabledPaymentOption,
+              { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+            ]}
+            disabled
+          >
             <View style={[styles.paymentOptionIcon, { backgroundColor: colors.surface.secondary }]}>
               <Text style={styles.paymentOptionEmoji}>💳</Text>
             </View>
             <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>כרטיס אשראי</Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>יהיה זמין בקרוב</Text>
+              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>
+                כרטיס אשראי
+              </Text>
+              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>
+                יהיה זמין בקרוב
+              </Text>
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.paymentOption, styles.disabledPaymentOption, { 
-            backgroundColor: colors.surface.primary,
-            borderColor: colors.border.primary 
-          }]}>
+          <TouchableOpacity
+            style={[
+              styles.paymentOption,
+              styles.disabledPaymentOption,
+              { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+            ]}
+            disabled
+          >
             <View style={[styles.paymentOptionIcon, { backgroundColor: colors.surface.secondary }]}>
               <Text style={styles.paymentOptionEmoji}>📱</Text>
             </View>
             <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>אפליקציות תשלום</Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>יהיה זמין בקרוב</Text>
+              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>
+                אפליקציות תשלום
+              </Text>
+              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>
+                יהיה זמין בקרוב
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.shippingAddressSummary, { 
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary 
-        }]}>
+        <View
+          style={[
+            styles.shippingAddressSummary,
+            { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+          ]}
+        >
           <View style={styles.summaryHeader}>
             <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>כתובת למשלוח</Text>
             <TouchableOpacity onPress={() => setCheckoutStep('shipping')}>
@@ -646,12 +781,15 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             </TouchableOpacity>
           </View>
           <Text style={[styles.addressText, { color: colors.text.primary }]}>
-            {shippingAddress.name}{'\n'}
-            {shippingAddress.street}{'\n'}
-            {shippingAddress.city} {shippingAddress.postalCode}{'\n'}
+            {shippingAddress.name}
+            {'\n'}
+            {shippingAddress.street}
+            {'\n'}
+            {shippingAddress.city} {shippingAddress.postalCode}
+            {'\n'}
             {shippingAddress.phone}
           </Text>
-          {shippingAddress.notes && (
+          {!!shippingAddress.notes && (
             <Text style={[styles.notesText, { color: colors.text.secondary }]}>
               הערות: {shippingAddress.notes}
             </Text>
@@ -661,56 +799,87 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         {Object.entries(groupedItems).map(([storeId, items]) => (
           <View
             key={storeId}
-            style={[styles.orderSummary, {
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary
-            }]}
+            style={[
+              styles.orderSummary,
+              { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+            ]}
           >
             <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
               {stores[storeId]?.name || 'חנות'}
             </Text>
-            {items.map(item => (
+            {items.map((item) => (
               <View key={item.id} style={styles.summaryItem}>
                 <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>
                   {item.product.name} x{item.quantity}
                 </Text>
                 <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>
-                  {currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
+                  {currencySymbol}
+                  {((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
                 </Text>
               </View>
             ))}
-            <View style={[styles.summaryRow, styles.summaryTotal, { borderTopColor: colors.border.primary }]}>
-              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>סה"כ לחנות:</Text>
+            <View
+              style={[
+                styles.summaryRow,
+                styles.summaryTotal,
+                { borderTopColor: colors.border.primary },
+              ]}
+            >
+              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
+                סה"כ לחנות:
+              </Text>
               <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
-                {currencySymbol}{getGroupTotal(items).toFixed(2)}
+                {currencySymbol}
+                {getGroupTotal(items).toFixed(2)}
               </Text>
             </View>
           </View>
         ))}
-        <View style={[styles.orderSummary, {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary
-        }]}>
+
+        <View
+          style={[
+            styles.orderSummary,
+            { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+          ]}
+        >
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>עלות משלוח:</Text>
-            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>{currencySymbol}0.00</Text>
+            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
+              {currencySymbol}0.00
+            </Text>
           </View>
-          <View style={[styles.summaryRow, styles.summaryTotal, { borderTopColor: colors.border.primary }]}>
-            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>סה"כ לתשלום:</Text>
-            <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>{currencySymbol}{getTotal().toFixed(2)}</Text>
+          <View
+            style={[
+              styles.summaryRow,
+              styles.summaryTotal,
+              { borderTopColor: colors.border.primary },
+            ]}
+          >
+            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
+              סה"כ לתשלום:
+            </Text>
+            <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
+              {currencySymbol}
+              {getTotal().toFixed(2)}
+            </Text>
           </View>
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { 
-        borderTopColor: colors.border.primary 
-      }]}>
+      <View style={[styles.footer, { borderTopColor: colors.border.primary }]}>
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <ChevronRight size={20} color={colors.text.primary} />
-          <Text style={[styles.backButtonText, { color: colors.text.primary }]}>חזרה לכתובת</Text>
+          <Text style={[styles.backButtonText, { color: colors.text.primary }]}>
+            חזרה לכתובת
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.nextButton, { backgroundColor: colors.gold }]} onPress={goToConfirmation}>
-          <Text style={[styles.nextButtonText, { color: colors.text.inverse }]}>המשך לסיכום</Text>
+        <TouchableOpacity
+          style={[styles.nextButton, { backgroundColor: colors.gold }]}
+          onPress={goToConfirmation}
+        >
+          <Text style={[styles.nextButtonText, { color: colors.text.inverse }]}>
+            המשך לסיכום
+          </Text>
           <ChevronLeft size={20} color={colors.text.inverse} />
         </TouchableOpacity>
       </View>
@@ -722,20 +891,26 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={commonStyles.flex1}
     >
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
         style={styles.checkoutForm}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.confirmationHeader}>
-          <Text style={[styles.confirmationTitle, { color: colors.text.primary }]}>אישור הזמנה</Text>
-          <Text style={[styles.confirmationSubtitle, { color: colors.text.secondary }]}>אנא בדוק את פרטי ההזמנה לפני השלמת הרכישה</Text>
+          <Text style={[styles.confirmationTitle, { color: colors.text.primary }]}>
+            אישור הזמנה
+          </Text>
+          <Text style={[styles.confirmationSubtitle, { color: colors.text.secondary }]}>
+            אנא בדוק את פרטי ההזמנה לפני השלמת הרכישה
+          </Text>
         </View>
 
-        <View style={[styles.shippingAddressSummary, { 
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary 
-        }]}>
+        <View
+          style={[
+            styles.shippingAddressSummary,
+            { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+          ]}
+        >
           <View style={styles.summaryHeader}>
             <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>כתובת למשלוח</Text>
             <TouchableOpacity onPress={() => setCheckoutStep('shipping')}>
@@ -743,22 +918,27 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             </TouchableOpacity>
           </View>
           <Text style={[styles.addressText, { color: colors.text.primary }]}>
-            {shippingAddress.name}{'\n'}
-            {shippingAddress.street}{'\n'}
-            {shippingAddress.city} {shippingAddress.postalCode}{'\n'}
+            {shippingAddress.name}
+            {'\n'}
+            {shippingAddress.street}
+            {'\n'}
+            {shippingAddress.city} {shippingAddress.postalCode}
+            {'\n'}
             {shippingAddress.phone}
           </Text>
-          {shippingAddress.notes && (
+          {!!shippingAddress.notes && (
             <Text style={[styles.notesText, { color: colors.text.secondary }]}>
               הערות: {shippingAddress.notes}
             </Text>
           )}
         </View>
 
-        <View style={[styles.paymentMethodSummary, { 
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary 
-        }]}>
+        <View
+          style={[
+            styles.paymentMethodSummary,
+            { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+          ]}
+        >
           <View style={styles.summaryHeader}>
             <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>אמצעי תשלום</Text>
             <TouchableOpacity onPress={() => setCheckoutStep('payment')}>
@@ -767,53 +947,85 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </View>
           <View style={styles.paymentMethodInfo}>
             <Text style={styles.paymentMethodEmoji}>💰</Text>
-            <Text style={[styles.paymentMethodText, { color: colors.text.primary }]}>תשלום במזומן בעת המסירה</Text>
+            <Text style={[styles.paymentMethodText, { color: colors.text.primary }]}>
+              תשלום במזומן בעת המסירה
+            </Text>
           </View>
         </View>
 
         {Object.entries(groupedItems).map(([storeId, items]) => (
           <View
             key={storeId}
-            style={[styles.orderSummary, {
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary
-            }]}
+            style={[
+              styles.orderSummary,
+              { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+            ]}
           >
             <View style={styles.summaryHeader}>
-              <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>פריטים מהחנות {stores[storeId]?.name || ''}</Text>
+              <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
+                פריטים מהחנות {stores[storeId]?.name || ''}
+              </Text>
               <TouchableOpacity onPress={() => setCheckoutStep('cart')}>
                 <Text style={[styles.editLink, { color: colors.gold }]}>ערוך</Text>
               </TouchableOpacity>
             </View>
-            {items.map(item => (
+            {items.map((item) => (
               <View key={item.id} style={styles.summaryItem}>
                 <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>
                   {item.product.name} x{item.quantity}
                 </Text>
                 <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>
-                  {currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
+                  {currencySymbol}
+                  {((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
                 </Text>
               </View>
             ))}
-            <View style={[styles.summaryRow, styles.summaryTotal, { borderTopColor: colors.border.primary }]}>
-              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>סה"כ לחנות:</Text>
+            <View
+              style={[
+                styles.summaryRow,
+                styles.summaryTotal,
+                { borderTopColor: colors.border.primary },
+              ]}
+            >
+              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
+                סה"כ לחנות:
+              </Text>
               <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
-                {currencySymbol}{getGroupTotal(items).toFixed(2)}
+                {currencySymbol}
+                {getGroupTotal(items).toFixed(2)}
               </Text>
             </View>
           </View>
         ))}
-        <View style={[styles.orderSummary, {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary
-        }]}>
+
+        <View
+          style={[
+            styles.orderSummary,
+            { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+          ]}
+        >
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>עלות משלוח:</Text>
-            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>{currencySymbol}0.00</Text>
+            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
+              עלות משלוח:
+            </Text>
+            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
+              {currencySymbol}0.00
+            </Text>
           </View>
-          <View style={[styles.summaryRow, styles.summaryTotal, { borderTopColor: colors.border.primary }]}>
-            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>סה"כ לתשלום:</Text>
-            <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>{currencySymbol}{getTotal().toFixed(2)}</Text>
+          <View
+            style={[
+              styles.summaryRow,
+              styles.summaryTotal,
+              { borderTopColor: colors.border.primary },
+            ]}
+          >
+            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
+              סה"כ לתשלום:
+            </Text>
+            <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
+              {currencySymbol}
+              {getTotal().toFixed(2)}
+            </Text>
           </View>
         </View>
 
@@ -825,22 +1037,28 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { 
-        borderTopColor: colors.border.primary 
-      }]}>
+      <View style={[styles.footer, { borderTopColor: colors.border.primary }]}>
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <ChevronRight size={20} color={colors.text.primary} />
-          <Text style={[styles.backButtonText, { color: colors.text.primary }]}>חזרה לתשלום</Text>
+          <Text style={[styles.backButtonText, { color: colors.text.primary }]}>
+            חזרה לתשלום
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.completeOrderButton, { backgroundColor: colors.gold }, loading && styles.buttonDisabled]}
+        <TouchableOpacity
+          style={[
+            styles.completeOrderButton,
+            { backgroundColor: colors.gold },
+            loading && styles.buttonDisabled,
+          ]}
           onPress={placeOrder}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator size="small" color={colors.text.inverse} />
           ) : (
-            <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}>השלם הזמנה</Text>
+            <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}>
+              השלם הזמנה
+            </Text>
           )}
         </TouchableOpacity>
       </View>
@@ -849,34 +1067,39 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
   const renderOrderSuccess = () => (
     <View style={styles.successContainer}>
-      <View style={[styles.successIconContainer, { backgroundColor: colors.status.success }]}>
+      <View
+        style={[
+          styles.successIconContainer,
+          { backgroundColor: colors.status.success },
+        ]}
+      >
         <Check size={60} color={colors.text.inverse} />
       </View>
-      <Text style={[styles.successTitle, { color: colors.text.primary }]}>ההזמנה הושלמה בהצלחה!</Text>
+      <Text style={[styles.successTitle, { color: colors.text.primary }]}>
+        ההזמנה הושלמה בהצלחה!
+      </Text>
       <Text style={[styles.successOrderId, { color: colors.gold }]}>
         {orderIds.length === 1
           ? `מספר הזמנה: #${orderIds[0].slice(-6)}`
-          : `מספרי הזמנות: ${orderIds
-              .map(id => `#${id.slice(-6)}`)
-              .join(', ')}`}
+          : `מספרי הזמנות: ${orderIds.map((id) => `#${id.slice(-6)}`).join(', ')}`}
       </Text>
       <Text style={[styles.successMessage, { color: colors.text.secondary }]}>
         תודה על הזמנתך! קיבלנו את ההזמנה שלך והיא בטיפול.
         תוכל לעקוב אחר סטטוס ההזמנה בעמוד ההזמנות שלך.
       </Text>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.successButton, { backgroundColor: colors.gold }]}
         onPress={onClose}
       >
-        <Text style={[styles.successButtonText, { color: colors.text.inverse }]}>סגור</Text>
+        <Text style={[styles.successButtonText, { color: colors.text.inverse }]}>
+          סגור
+        </Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderContent = () => {
-    if (orderPlaced) {
-      return renderOrderSuccess();
-    }
+    if (orderPlaced) return renderOrderSuccess();
 
     switch (checkoutStep) {
       case 'shipping':
@@ -894,24 +1117,39 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                   {cartItems.map(renderCartItem)}
                 </ScrollView>
 
-                <View style={[styles.footer, { 
-                  borderTopColor: colors.border.primary 
-                }]}>
+                <View style={[styles.footer, { borderTopColor: colors.border.primary }]}>
                   <View style={styles.totalContainer}>
-                    <Text style={[styles.totalText, { color: colors.text.primary }]}>סה"כ: {currencySymbol}{getTotal().toFixed(2)}</Text>
+                    <Text style={[styles.totalText, { color: colors.text.primary }]}>
+                      סה"כ: {currencySymbol}
+                      {getTotal().toFixed(2)}
+                    </Text>
                   </View>
-                  
-                  <TouchableOpacity style={[styles.checkoutButton, { backgroundColor: colors.gold }]} onPress={goToShipping}>
+
+                  <TouchableOpacity
+                    style={[styles.checkoutButton, { backgroundColor: colors.gold }]}
+                    onPress={goToShipping}
+                  >
                     <ShoppingCart size={20} color={colors.text.inverse} />
-                    <Text style={[styles.checkoutButtonText, { color: colors.text.inverse }]}>המשך לתשלום</Text>
+                    <Text
+                      style={[
+                        styles.checkoutButtonText,
+                        { color: colors.text.inverse },
+                      ]}
+                    >
+                      המשך לתשלום
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </>
             ) : (
               <View style={styles.emptyCart}>
                 <ShoppingCart size={80} color={colors.interactive.disabled} />
-                <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>העגלה ריקה</Text>
-                <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>הוסף מוצרים לעגלה כדי להתחיל</Text>
+                <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+                  העגלה ריקה
+                </Text>
+                <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
+                  הוסף מוצרים לעגלה כדי להתחיל
+                </Text>
               </View>
             )}
           </>
@@ -923,15 +1161,17 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     <>
       <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <View style={[styles.header, { 
-            borderBottomColor: colors.border.primary 
-          }]}>
+          <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
             <Text style={[styles.title, { color: colors.text.primary }]}>
-              {orderPlaced ? 'הזמנה הושלמה' : 
-               checkoutStep === 'cart' ? 'עגלת קניות' :
-               checkoutStep === 'shipping' ? 'פרטי משלוח' :
-               checkoutStep === 'payment' ? 'אמצעי תשלום' :
-               'אישור הזמנה'}
+              {orderPlaced
+                ? 'הזמנה הושלמה'
+                : checkoutStep === 'cart'
+                ? 'עגלת קניות'
+                : checkoutStep === 'shipping'
+                ? 'פרטי משלוח'
+                : checkoutStep === 'payment'
+                ? 'אמצעי תשלום'
+                : 'אישור הזמנה'}
             </Text>
             {!orderPlaced && (
               <TouchableOpacity onPress={onClose}>
@@ -940,27 +1180,104 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             )}
           </View>
 
-          {/* Checkout Progress Indicator */}
-          {checkoutStep !== ('cart' as any) && !orderPlaced && (
+          {/* Progress indicator */}
+          {checkoutStep !== 'cart' && !orderPlaced && (
             <View style={styles.progressContainer}>
               <View style={styles.progressStep}>
-                <View style={[styles.progressDot, styles.progressDotActive, { backgroundColor: colors.gold }]} />
-                <Text style={[styles.progressText, styles.progressTextActive, { color: colors.gold }]}>עגלה</Text>
+                <View
+                  style={[
+                    styles.progressDot,
+                    styles.progressDotActive,
+                    { backgroundColor: colors.gold },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.progressText,
+                    styles.progressTextActive,
+                    { color: colors.gold },
+                  ]}
+                >
+                  עגלה
+                </Text>
               </View>
-              <View style={[styles.progressLine, checkoutStep !== ('cart' as any) ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
+              <View
+                style={[
+                  styles.progressLine,
+                  { backgroundColor: colors.gold },
+                ]}
+              />
               <View style={styles.progressStep}>
-                <View style={[styles.progressDot, checkoutStep !== ('cart' as any) ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
-                <Text style={[styles.progressText, checkoutStep !== ('cart' as any) ? { color: colors.gold } : { color: colors.text.secondary }]}>משלוח</Text>
+                <View
+                  style={[
+                    styles.progressDot,
+                    { backgroundColor: colors.gold },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.progressText,
+                    { color: colors.gold },
+                  ]}
+                >
+                  משלוח
+                </Text>
               </View>
-              <View style={[styles.progressLine, (checkoutStep === 'payment' || checkoutStep === 'confirmation') ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
+              <View
+                style={[
+                  styles.progressLine,
+                  (checkoutStep === 'payment' || checkoutStep === 'confirmation')
+                    ? { backgroundColor: colors.gold }
+                    : { backgroundColor: colors.interactive.disabled },
+                ]}
+              />
               <View style={styles.progressStep}>
-                <View style={[styles.progressDot, (checkoutStep === 'payment' || checkoutStep === 'confirmation') ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
-                <Text style={[styles.progressText, (checkoutStep === 'payment' || checkoutStep === 'confirmation') ? { color: colors.gold } : { color: colors.text.secondary }]}>תשלום</Text>
+                <View
+                  style={[
+                    styles.progressDot,
+                    (checkoutStep === 'payment' || checkoutStep === 'confirmation')
+                      ? { backgroundColor: colors.gold }
+                      : { backgroundColor: colors.interactive.disabled },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.progressText,
+                    (checkoutStep === 'payment' || checkoutStep === 'confirmation')
+                      ? { color: colors.gold }
+                      : { color: colors.text.secondary },
+                  ]}
+                >
+                  תשלום
+                </Text>
               </View>
-              <View style={[styles.progressLine, checkoutStep === 'confirmation' ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
+              <View
+                style={[
+                  styles.progressLine,
+                  checkoutStep === 'confirmation'
+                    ? { backgroundColor: colors.gold }
+                    : { backgroundColor: colors.interactive.disabled },
+                ]}
+              />
               <View style={styles.progressStep}>
-                <View style={[styles.progressDot, checkoutStep === 'confirmation' ? { backgroundColor: colors.gold } : { backgroundColor: colors.interactive.disabled }]} />
-                <Text style={[styles.progressText, checkoutStep === 'confirmation' ? { color: colors.gold } : { color: colors.text.secondary }]}>אישור</Text>
+                <View
+                  style={[
+                    styles.progressDot,
+                    checkoutStep === 'confirmation'
+                      ? { backgroundColor: colors.gold }
+                      : { backgroundColor: colors.interactive.disabled },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.progressText,
+                    checkoutStep === 'confirmation'
+                      ? { color: colors.gold }
+                      : { color: colors.text.secondary },
+                  ]}
+                >
+                  אישור
+                </Text>
               </View>
             </View>
           )}
@@ -975,7 +1292,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         title={infoModal.title}
         message={infoModal.message}
         type={infoModal.type}
-        onClose={() => setInfoModal({...infoModal, visible: false})}
+        onClose={() => setInfoModal({ ...infoModal, visible: false })}
       />
 
       {/* Confirmation Modal */}
@@ -996,9 +1313,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1007,10 +1322,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  title: { fontSize: 18, fontWeight: 'bold' },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1020,32 +1332,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
-  progressStep: {
-    alignItems: 'center',
-  },
-  progressDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  progressDotActive: {
-    backgroundColor: '#D4AF37',
-  },
-  progressText: {
-    fontSize: 12,
-  },
-  progressTextActive: {
-    fontWeight: '600',
-  },
-  progressLine: {
-    height: 2,
-    flex: 1,
-  },
-  cartList: {
-    flex: 1,
-    padding: 16,
-  },
+  progressStep: { alignItems: 'center' },
+  progressDot: { width: 16, height: 16, borderRadius: 8, marginBottom: 4 },
+  progressDotActive: { backgroundColor: '#D4AF37' },
+  progressText: { fontSize: 12 },
+  progressTextActive: { fontWeight: '600' },
+  progressLine: { height: 2, flex: 1 },
+  cartList: { flex: 1, padding: 16 },
   cartItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1054,36 +1347,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
   },
-  productImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  productInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-    textAlign: 'right',
-  },
-  productPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'right',
-  },
-  tierInfo: {
-    fontSize: 12,
-    textAlign: 'right',
-  },
-  quantityControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 12,
-  },
+  productImage: { width: 60, height: 60, borderRadius: 8, marginRight: 12 },
+  productInfo: { flex: 1, marginRight: 12 },
+  productName: { fontSize: 14, fontWeight: '600', marginBottom: 4, textAlign: 'right' },
+  productPrice: { fontSize: 16, fontWeight: 'bold', textAlign: 'right' },
+  tierInfo: { fontSize: 12, textAlign: 'right' },
+  quantityControls: { flexDirection: 'row', alignItems: 'center', marginRight: 12 },
   quantityButton: {
     width: 32,
     height: 32,
@@ -1092,17 +1361,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
   },
-  quantityButtonDisabled: {
-    opacity: 0.5,
-  },
-  quantity: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginHorizontal: 12,
-  },
-  removeButton: {
-    padding: 8,
-  },
+  quantityButtonDisabled: { opacity: 0.5 },
+  quantity: { fontSize: 16, fontWeight: '600', marginHorizontal: 12 },
+  removeButton: { padding: 8 },
   footer: {
     padding: 16,
     borderTopWidth: 1,
@@ -1110,14 +1371,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  totalContainer: {
-    flex: 1,
-  },
-  totalText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'right',
-  },
+  totalContainer: { flex: 1 },
+  totalText: { fontSize: 18, fontWeight: 'bold', textAlign: 'right' },
   checkoutButton: {
     borderRadius: 12,
     paddingVertical: 12,
@@ -1127,58 +1382,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minWidth: 150,
   },
-  checkoutButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  emptyCart: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyMessage: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  checkoutForm: {
-    flex: 1,
-    padding: 16,
-  },
-  checkoutHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-    justifyContent: 'center',
-  },
-  checkoutTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  formGroup: {
-    marginBottom: 16,
-  },
-  formRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  formGroupHalf: {
-    flex: 1,
-  },
-  formLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'right',
-  },
+  checkoutButtonText: { fontSize: 16, fontWeight: '600', marginLeft: 8 },
+  emptyCart: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
+  emptyTitle: { fontSize: 20, fontWeight: 'bold', marginTop: 16, marginBottom: 8 },
+  emptyMessage: { fontSize: 16, textAlign: 'center' },
+  checkoutForm: { flex: 1, padding: 16 },
+  checkoutHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, justifyContent: 'center' },
+  checkoutTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 8 },
+  formGroup: { marginBottom: 16 },
+  formRow: { flexDirection: 'row', gap: 12 },
+  formGroupHalf: { flex: 1 },
+  formLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
   formInput: {
     borderWidth: 1,
     borderRadius: 8,
@@ -1186,103 +1400,26 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  orderSummary: {
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 24,
-    borderWidth: 1,
-  },
-  summaryTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    textAlign: 'right',
-  },
-  summaryItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  summaryItemName: {
-    fontSize: 14,
-    flex: 1,
-    textAlign: 'right',
-  },
-  summaryItemPrice: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  summaryLabel: {
-    fontSize: 14,
-  },
-  summaryValue: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  summaryTotal: {
-    borderTopWidth: 1,
-    paddingTop: 12,
-    marginTop: 8,
-  },
-  summaryTotalLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  summaryTotalValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  backButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  nextButton: {
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 4,
-  },
-  completeOrderButton: {
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    minWidth: 180,
-  },
-  completeOrderText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  paymentOptions: {
-    marginBottom: 24,
-  },
+  textArea: { height: 80, textAlignVertical: 'top' },
+  orderSummary: { borderRadius: 12, padding: 16, marginVertical: 24, borderWidth: 1 },
+  summaryTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12, textAlign: 'right' },
+  summaryItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  summaryItemName: { fontSize: 14, flex: 1, textAlign: 'right' },
+  summaryItemPrice: { fontSize: 14, fontWeight: '600' },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  summaryLabel: { fontSize: 14 },
+  summaryValue: { fontSize: 14, fontWeight: '500' },
+  summaryTotal: { borderTopWidth: 1, paddingTop: 12, marginTop: 8 },
+  summaryTotalLabel: { fontSize: 16, fontWeight: 'bold' },
+  summaryTotalValue: { fontSize: 18, fontWeight: 'bold' },
+  backButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16 },
+  backButtonText: { fontSize: 14, fontWeight: '500', marginLeft: 4 },
+  nextButton: { borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' },
+  nextButtonText: { fontSize: 16, fontWeight: '600', marginRight: 4 },
+  completeOrderButton: { borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24, alignItems: 'center', minWidth: 180 },
+  completeOrderText: { fontSize: 16, fontWeight: '600' },
+  buttonDisabled: { opacity: 0.5 },
+  paymentOptions: { marginBottom: 24 },
   paymentOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1291,12 +1428,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
   },
-  selectedPaymentOption: {
-    borderWidth: 2,
-  },
-  disabledPaymentOption: {
-    opacity: 0.6,
-  },
+  selectedPaymentOption: { borderWidth: 2 },
+  disabledPaymentOption: { opacity: 0.6 },
   paymentOptionIcon: {
     width: 40,
     height: 40,
@@ -1305,131 +1438,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
-  paymentOptionEmoji: {
-    fontSize: 20,
-  },
-  paymentOptionInfo: {
-    flex: 1,
-  },
-  paymentOptionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-    textAlign: 'right',
-  },
-  paymentOptionDescription: {
-    fontSize: 12,
-    textAlign: 'right',
-  },
-  paymentOptionCheck: {
-    marginLeft: 12,
-  },
-  shippingAddressSummary: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  editLink: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  addressText: {
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'right',
-  },
-  notesText: {
-    fontSize: 12,
-    marginTop: 8,
-    fontStyle: 'italic',
-    textAlign: 'right',
-  },
-  paymentMethodSummary: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  paymentMethodInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  paymentMethodEmoji: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-  paymentMethodText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  confirmationHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  confirmationTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  confirmationSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  termsContainer: {
-    marginBottom: 24,
-  },
-  termsText: {
-    fontSize: 12,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  successContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  successIconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  successTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  successOrderId: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  successMessage: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
-  },
-  successButton: {
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    minWidth: 150,
-    alignItems: 'center',
-  },
-  successButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  paymentOptionEmoji: { fontSize: 20 },
+  paymentOptionInfo: { flex: 1 },
+  paymentOptionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4, textAlign: 'right' },
+  paymentOptionDescription: { fontSize: 12, textAlign: 'right' },
+  paymentOptionCheck: { marginLeft: 12 },
+  shippingAddressSummary: { borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1 },
+  summaryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  editLink: { fontSize: 14, fontWeight: '500' },
+  addressText: { fontSize: 14, lineHeight: 20, textAlign: 'right' },
+  notesText: { fontSize: 12, marginTop: 8, fontStyle: 'italic', textAlign: 'right' },
+  paymentMethodSummary: { borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1 },
+  paymentMethodInfo: { flexDirection: 'row', alignItems: 'center' },
+  paymentMethodEmoji: { fontSize: 20, marginRight: 12 },
+  paymentMethodText: { fontSize: 14, fontWeight: '500' },
+  confirmationHeader: { alignItems: 'center', marginBottom: 24 },
+  confirmationTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+  confirmationSubtitle: { fontSize: 14, textAlign: 'center' },
+  termsContainer: { marginBottom: 24 },
+  termsText: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
+  successContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  successIconContainer: { width: 100, height: 100, borderRadius: 50, justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
+  successTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
+  successOrderId: { fontSize: 16, fontWeight: '600', marginBottom: 16 },
+  successMessage: { fontSize: 16, textAlign: 'center', lineHeight: 24, marginBottom: 32 },
+  successButton: { borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24, minWidth: 150, alignItems: 'center' },
+  successButtonText: { fontSize: 16, fontWeight: '600' },
 });

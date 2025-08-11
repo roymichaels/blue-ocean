@@ -2,7 +2,7 @@ import { Order } from '../types';
 import tonAuth from '../services/tonAuth';
 import { setOrder, getOrder, listOrders, removeOrder, listOrdersBySeller } from '../services/tonOrders';
 import {
-  createOrderPayment,
+  deployOrderPayment,
   releaseFunds,
   refundOrder,
 } from '../services/tonContract';
@@ -21,12 +21,15 @@ class OrdersAgent {
 
   async add(order: Order): Promise<void> {
     await this.ensureWallet();
-    const { contractAddress, txHash } = await createOrderPayment(order);
-    const enriched: Order = {
-      ...order,
-      paymentContractAddress: contractAddress,
-      paymentTxHash: txHash,
-    };
+    let enriched = order;
+    if (!order.paymentContractAddress || !order.paymentTxHash) {
+      const { contractAddress, txHash } = await deployOrderPayment(order.total);
+      enriched = {
+        ...order,
+        paymentContractAddress: contractAddress,
+        paymentTxHash: txHash,
+      };
+    }
     await setOrder(enriched);
     this.subscribers.forEach((cb) => cb(enriched));
   }
