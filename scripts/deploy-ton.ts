@@ -9,26 +9,81 @@ import {
 import { mnemonicToPrivateKey } from '@ton/crypto';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
+import readline from 'readline';
 
-dotenv.config();
+const PUBLIC_RPC_ENDPOINTS = [
+  'https://testnet.toncenter.com/api/v2/jsonRPC',
+  'https://toncenter.com/api/v2/jsonRPC',
+  'https://ton.org/api/v2/jsonRPC',
+];
+
+function ask(query: string): Promise<string> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => rl.question(query, (ans) => {
+    rl.close();
+    resolve(ans.trim());
+  }));
+}
 
 async function main() {
-  const [name] = process.argv.slice(2);
+  const args = process.argv.slice(2);
+  const name = args.find((a) => !a.startsWith('--'));
   if (!name) {
-    console.error('Usage: yarn deploy:ton <contract-name>');
+    console.error(
+      'Usage: yarn deploy:ton <contract-name> [--mnemonic <mnemonic>] [--api-key <key>] [--endpoint <url>]'
+    );
     process.exit(1);
   }
 
-  const endpoint = process.env.TON_ENDPOINT || 'https://testnet.toncenter.com/api/v2/jsonRPC';
-  const mnemonic = process.env.TON_MNEMONIC;
-  if (!mnemonic) throw new Error('TON_MNEMONIC not set');
+  let mnemonic: string | undefined;
+  let apiKey: string | undefined;
+  let endpointOverride: string | undefined;
+
+  for (let i = 1; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--mnemonic') {
+      mnemonic = args[++i];
+    } else if (arg === '--api-key') {
+      apiKey = args[++i];
+    } else if (arg === '--endpoint') {
+      endpointOverride = args[++i];
+    }
+  }
+
+  if (!mnemonic) {
+    mnemonic = await ask('Enter wallet mnemonic: ');
+  }
+  if (!mnemonic) throw new Error('Mnemonic is required');
+
+  if (apiKey === undefined) {
+    apiKey = await ask('Enter API key (leave blank if none): ');
+  }
 
   const { secretKey, publicKey } = await mnemonicToPrivateKey(mnemonic.split(' '));
 
-  const client = new TonClient({ endpoint, apiKey: process.env.TON_API_KEY });
-  const wallet = WalletContractV4.create({ publicKey, workchain: 0 });
-  const openedWallet = client.open(wallet);
+  const endpoints = endpointOverride
+    ? [endpointOverride]
+    : [...PUBLIC_RPC_ENDPOINTS];
+  let client: TonClient | undefined;
+  let openedWallet: ReturnType<TonClient['open']> | undefined;
+  for (const endpoint of endpoints) {
+    try {
+      const testClient = new TonClient({ endpoint, apiKey });
+      const wallet = WalletContractV4.create({ publicKey, workchain: 0 });
+      const testOpened = testClient.open(wallet);
+      await testOpened.getSeqno();
+      client = testClient;
+      openedWallet = testOpened;
+      console.log(`Using RPC endpoint: ${endpoint}`);
+      break;
+    } catch (err) {
+      console.warn(`Endpoint ${endpoint} failed: ${(err as Error).message}`);
+    }
+  }
+
+  if (!client || !openedWallet) {
+    throw new Error('All RPC endpoints failed');
+  }
 
   const buildDir = path.resolve(__dirname, '../contracts/ton/build');
   const codeBoc = readFileSync(path.join(buildDir, `${name}.code.boc`));

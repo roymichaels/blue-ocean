@@ -54,25 +54,22 @@ yarn ton:build
 
 Compiled `.boc` files are written to `contracts/ton/build`.
 
-To deploy a contract, configure the following environment variables in `.env`:
-
-- `TON_ENDPOINT` – TON API endpoint (e.g. `https://testnet.toncenter.com/api/v2/jsonRPC`)
-- `TON_API_KEY` – API key for the endpoint if required
-- `TON_MNEMONIC` – wallet seed phrase used to sign deployment transactions
-
-Then run:
+To deploy a contract, pass the wallet mnemonic and (optionally) an RPC API key
+as CLI arguments or via stdin when prompted:
 
 ```sh
-yarn deploy:ton <contract-name>
+yarn deploy:ton <contract-name> --mnemonic "<seed phrase>" --api-key "<key>"
 # or
-yarn ton:deploy <contract-name>
+yarn ton:deploy <contract-name> --mnemonic "<seed phrase>" --api-key "<key>"
 ```
+
+The script rotates through a list of public RPC endpoints and falls back on
+the next one if a request fails. Use `--endpoint <url>` to override the RPC
+endpoint manually.
 
 Replace `<contract-name>` with the name of the Tact file (without extension).
 The script derives the contract address, logs it, and writes it to
-`constants/tonAddresses.json`. The app reads from this file, so no
-environment variables need to be set manually. Start the Expo app normally
-with `yarn dev`.
+`constants/tonAddresses.json`. Start the Expo app normally with `yarn dev`.
 
 ### Credit Card Checkout
 
