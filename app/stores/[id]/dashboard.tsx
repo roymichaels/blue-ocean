@@ -3,31 +3,44 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { listProducts } from '../../../services/tonProducts';
-import { listOrdersBySeller } from '../../../services/tonOrders';
+import { getStore } from '../../../services/tonStores';
+import OrderRevenueMetrics from '../../../components/OrderRevenueMetrics';
+import { useAuth } from '../../../components/AuthContext';
 
 export default function StoreDashboardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
+  const { user } = useAuth();
   const [productCount, setProductCount] = useState(0);
-  const [orderCount, setOrderCount] = useState(0);
 
   useEffect(() => {
-    const loadStats = async () => {
+    const checkOwner = async () => {
       if (!id) return;
+      const store = await getStore(id);
+      if (!store || store.owner !== user?.address) {
+        router.replace(`/stores/${id}`);
+        return false;
+      }
+      return true;
+    };
+
+    const loadStats = async () => {
+      const isOwner = await checkOwner();
+      if (!isOwner) return;
       const products = await listProducts();
       setProductCount(products.filter((p) => p.storeId === id).length);
-      const orders = await listOrdersBySeller(id);
-      setOrderCount(orders.length);
     };
+
     loadStats();
-  }, [id]);
+  }, [id, user?.address]);
+  
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.text.primary }]}>לוח חנות</Text>
       <View style={styles.stats}>
         <Text style={[styles.statText, { color: colors.text.primary }]}>מוצרים: {productCount}</Text>
-        <Text style={[styles.statText, { color: colors.text.primary }]}>הזמנות: {orderCount}</Text>
+        {id && <OrderRevenueMetrics sellerId={id} />}
       </View>
       <View style={styles.nav}>
         <TouchableOpacity
