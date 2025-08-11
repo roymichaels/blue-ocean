@@ -12,6 +12,7 @@ import productsAgent from './products-agent';
 import { getUser } from '../services/tonUsers';
 import * as nacl from 'tweetnacl';
 import * as ed2curve from 'ed2curve';
+import { sha256 } from '@noble/hashes/sha256';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -72,10 +73,18 @@ class OrdersAgent {
       enriched = {
         ...order,
         paymentContractAddress: contractAddress,
+        escrowAddr: contractAddress,
         paymentTxHash: txHash,
       };
+    } else if (!order.escrowAddr && order.paymentContractAddress) {
+      enriched = { ...order, escrowAddr: order.paymentContractAddress };
     }
     let toStore: any = { ...enriched };
+    if (!toStore.itemsHash) {
+      toStore.itemsHash = Buffer.from(
+        sha256(Buffer.from(JSON.stringify(enriched.items)))
+      ).toString('hex');
+    }
     if (enriched.shippingAddress && enriched.sellerAddress) {
       try {
         const seller = await getUser(enriched.sellerAddress);
@@ -89,9 +98,11 @@ class OrdersAgent {
             const cipher = nacl.box(msg, nonce, sellerPubX, ephem.secretKey);
             toStore = {
               ...toStore,
-              shippingAddressCipher: Buffer.from(cipher).toString('base64'),
-              shippingAddressNonce: Buffer.from(nonce).toString('base64'),
-              shippingAddressEphemeralPublicKey: Buffer.from(ephem.publicKey).toString('base64'),
+              shipAddrEnc: {
+                cipher: Buffer.from(cipher).toString('base64'),
+                nonce: Buffer.from(nonce).toString('base64'),
+                ephem: Buffer.from(ephem.publicKey).toString('base64'),
+              },
             };
             delete toStore.shippingAddress;
           }
@@ -158,14 +169,14 @@ class OrdersAgent {
       throw new Error('Order not found');
     }
     await this.ensureAuthorized(order);
-    if (!order.paymentContractAddress) {
-      throw new Error('Order payment contract not found');
+    if (!order.escrowAddr) {
+      throw new Error('Order escrow address not found');
     }
     const allowed = ALLOWED_STATUS_TRANSITIONS[order.status] || [];
     if (!allowed.includes('released')) {
       throw new Error(`Invalid status transition from ${order.status} to released`);
     }
-    const hash = await releasePayment(order.paymentContractAddress);
+    const hash = await releasePayment(order.escrowAddr);
     const updated: Order = {
       ...order,
       status: 'released',
@@ -193,14 +204,14 @@ class OrdersAgent {
       throw new Error('Order not found');
     }
     await this.ensureAuthorized(order);
-    if (!order.paymentContractAddress) {
-      throw new Error('Order payment contract not found');
+    if (!order.escrowAddr) {
+      throw new Error('Order escrow address not found');
     }
     const allowed = ALLOWED_STATUS_TRANSITIONS[order.status] || [];
     if (!allowed.includes('refunded')) {
       throw new Error(`Invalid status transition from ${order.status} to refunded`);
     }
-    const hash = await refundPayment(order.paymentContractAddress);
+    const hash = await refundPayment(order.escrowAddr);
     const updated: Order = {
       ...order,
       status: 'refunded',

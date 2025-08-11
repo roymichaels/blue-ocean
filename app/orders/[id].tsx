@@ -30,15 +30,18 @@ export default function OrderDetailScreen() {
       const svc = OrderService.getInstance();
       const raw: any = await svc.getOrder(id);
       let decrypted = raw as Order | null;
-      if (raw && raw.shippingAddressCipher && isSeller) {
+      if (raw && raw.shipAddrEnc && isSeller) {
         const priv = tonAuth.getTonPrivateKey();
         if (priv) {
           try {
             const privX = ed2curve.convertSecretKey(Buffer.from(priv, 'hex'));
-            const nonce = Buffer.from(raw.shippingAddressNonce, 'base64');
-            const cipher = Buffer.from(raw.shippingAddressCipher, 'base64');
-            const ephemPub = Buffer.from(raw.shippingAddressEphemeralPublicKey, 'base64');
-            const msg = nacl.box.open(cipher, nonce, ephemPub, privX);
+            const { cipher, nonce, ephem } = raw.shipAddrEnc;
+            const msg = nacl.box.open(
+              Buffer.from(cipher, 'base64'),
+              Buffer.from(nonce, 'base64'),
+              Buffer.from(ephem, 'base64'),
+              privX,
+            );
             if (msg) {
               raw.shippingAddress = JSON.parse(Buffer.from(msg).toString());
               decrypted = raw as Order;

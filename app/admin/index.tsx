@@ -26,7 +26,7 @@ export default function AdminDashboard() {
     const pendingOrders = allOrders.filter(
       o =>
         o.paymentMethod === 'ton' &&
-        o.paymentContractAddress &&
+        (o.escrowAddr || o.paymentContractAddress) &&
         o.status !== 'released' &&
         o.status !== 'refunded',
     );
