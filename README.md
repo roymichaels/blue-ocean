@@ -28,8 +28,8 @@ All data is ephemeral and synchronized between peers over Waku; no external serv
 ### Environment Variables
 
 The project reads configuration from a `.env` file using Expo's env support
-for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
-`.env.example` to `.env` and set:
+for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Only a
+minimal set of keys is supported. Copy `.env.example` to `.env` and set:
 
 - `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`)
 - `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers
@@ -74,7 +74,7 @@ The script derives the contract address, logs it, and writes it to
 
 ### Credit Card Checkout
 
-Providing `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` populates `config.moonpayKey`
+Providing `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` populates `config.fiatKey`
 and enables the `MoonPayModal` component for credit card purchases. Without
 this key the MoonPay UI is hidden. Pass the wallet address, coin and USD amount
 to display the widget in a modal and pre-fill the fiat amount.

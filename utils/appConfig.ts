@@ -2,7 +2,6 @@
 // Only a minimal set of keys is supported at runtime.
 
 const ENV_KEYS = [
-
   'EXPO_PUBLIC_DEBUG_LOGS',
   'EXPO_PUBLIC_WAKU_BOOTSTRAP',
   'EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY',
@@ -14,7 +13,7 @@ function loadConfig(): Record<string, string> {
     const value = process.env[key];
     if (value !== undefined) {
       if (key === 'EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY') {
-        cfg.moonpayKey = value;
+        cfg.fiatKey = value;
       } else {
         cfg[key] = value;
       }

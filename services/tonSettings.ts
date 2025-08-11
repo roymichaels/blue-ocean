@@ -10,7 +10,7 @@ export interface TonSettings {
   appName: string;
   theme: { primary: string };
   brand: { logoCid: string };
-  moonpayKey?: string;
+  fiatKey?: string;
   admins: string[];
 }
 
@@ -37,7 +37,7 @@ export async function fetchSettings(): Promise<TonSettings> {
     appName: map['appName'] ?? 'Blue Ocean',
     theme: { primary: map['theme.primary'] ?? '#B99C5A' },
     brand: { logoCid: map['brand.logoCid'] ?? '' },
-    moonpayKey: map['moonpayKey'],
+    fiatKey: map['fiatKey'],
     admins: map['admins'] ? JSON.parse(map['admins']) : [],
   };
 }

@@ -270,7 +270,7 @@ export interface TenantSettings {
   appName?: string | null;
   theme?: { primary?: string | null };
   brand?: { logoCid?: string | null };
-  moonpayKey?: string | null;
+  fiatKey?: string | null;
 }
 
 export interface RoadmapTask {
