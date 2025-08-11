@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import config from '../utils/appConfig';
 import { insertConfig } from './testUtils';
 import { loadTenantSettings } from '../constants/tenant';

@@ -27,11 +27,6 @@ import ChatWidget from '../components/ChatWidget';
 import { ConfigProvider } from '../contexts/ConfigContext';
 import { loadTenantSettings } from '../constants/tenant';
 import { initConfig } from '../utils/appConfig';
-import OnboardingScreen from './onboarding';
-import {
-  OnboardingProvider,
-  useOnboarding,
-} from '../contexts/OnboardingContext';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
@@ -129,11 +124,9 @@ export default function RootLayout() {
     <TonConnectUIProvider manifestUrl={manifestUrl}>
       <ConfigProvider>
         <AuthProvider>
-          <OnboardingProvider>
-            <AuthModalProvider>
-              <RootLayoutInner />
-            </AuthModalProvider>
-          </OnboardingProvider>
+          <AuthModalProvider>
+            <RootLayoutInner />
+          </AuthModalProvider>
         </AuthProvider>
       </ConfigProvider>
     </TonConnectUIProvider>
@@ -141,30 +134,17 @@ export default function RootLayout() {
 }
 
 function RootLayoutInner() {
-  const { onboarded } = useOnboarding();
   const { isLoggedIn } = useAuth();
   const { openAuthModal } = useAuthModal();
   const pathname = usePathname();
   useEffect(() => {
-    if (onboarded === false && !isLoggedIn) {
+    if (!isLoggedIn) {
       openAuthModal('signup');
       if (pathname !== '/') {
         router.replace('/');
       }
     }
-  }, [onboarded, isLoggedIn, pathname, openAuthModal]);
-
-  if (onboarded === null) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (!onboarded) {
-    return <OnboardingScreen />;
-  }
+  }, [isLoggedIn, pathname, openAuthModal]);
 
   return (
     <AppInfoProvider>
