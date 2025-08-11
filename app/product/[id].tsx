@@ -31,7 +31,7 @@ import {
 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import CartService from '../../services/cart';
-import { Product, Category, PricingTier } from '../../types';
+import { Product, Category, PricingTier, Review } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -43,6 +43,7 @@ import MediaService from '../../services/media';
 import { useTonAddress } from '../../services/tonAuth';
 import chatAgent from '../../agents/chat-agent';
 import moderationAgent from '../../agents/moderation-agent';
+import reviewAgent from '../../agents/review-agent';
 import commonStyles from '../../constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '../../components/FloatingCartWidget';
@@ -75,6 +76,7 @@ export default function ProductDetailScreen() {
   const { currencySymbol } = useCurrency();
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
   const address = useTonAddress();
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -84,11 +86,27 @@ export default function ProductDetailScreen() {
     type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
 
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : 0;
+
   useEffect(() => {
     loadProduct();
     loadCategories();
     loadPricingTiers();
+    loadReviews();
   }, [id, address]);
+
+  useEffect(() => {
+    const sub = (rev: Review) => {
+      if (rev.productId === id) {
+        setReviews((prev) => [rev, ...prev]);
+      }
+    };
+    reviewAgent.subscribe(sub);
+    return () => reviewAgent.unsubscribe(sub);
+  }, [id]);
 
   useEffect(() => {
     if (product) {
@@ -168,6 +186,15 @@ export default function ProductDetailScreen() {
       setPricingTiers(tiersData);
     } catch (error) {
       console.error('Error loading pricing tiers:', error);
+    }
+  };
+
+  const loadReviews = async () => {
+    try {
+      const list = await reviewAgent.getByProduct(id);
+      setReviews(list);
+    } catch (err) {
+      console.error('Error loading reviews:', err);
     }
   };
 
@@ -569,12 +596,12 @@ export default function ProductDetailScreen() {
                   key={star}
                   size={16}
                   color={
-                    star <= Math.floor(product.rating)
+                    star <= Math.floor(averageRating)
                       ? colors.gold
                       : colors.interactive.disabled
                   }
                   fill={
-                    star <= Math.floor(product.rating)
+                    star <= Math.floor(averageRating)
                       ? colors.gold
                       : 'transparent'
                   }
@@ -583,7 +610,7 @@ export default function ProductDetailScreen() {
               <Text
                 style={[styles.ratingText, { color: colors.text.secondary }]}
               >
-                {product.rating} ({product.reviews} ביקורות)
+                {averageRating.toFixed(1)} ({reviews.length} ביקורות)
               </Text>
             </View>
           </View>
@@ -814,6 +841,54 @@ export default function ProductDetailScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <View style={styles.reviewsSection}>
+            <Text
+              style={[styles.sectionTitle, { color: colors.text.primary }]}
+            >
+              ביקורות
+            </Text>
+            {reviews.map((rev) => (
+              <View key={rev.id} style={styles.reviewItem}>
+                <View style={styles.reviewHeader}>
+                  <Text
+                    style={[styles.reviewAuthor, { color: colors.text.primary }]}
+                  >
+                    {rev.userName}
+                  </Text>
+                  <View style={styles.reviewStars}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        size={14}
+                        color={
+                          s <= rev.rating
+                            ? colors.gold
+                            : colors.interactive.disabled
+                        }
+                        fill={
+                          s <= rev.rating ? colors.gold : 'transparent'
+                        }
+                      />
+                    ))}
+                  </View>
+                </View>
+                {rev.comment && (
+                  <Text
+                    style={[
+                      styles.reviewComment,
+                      { color: colors.text.secondary },
+                    ]}
+                  >
+                    {rev.comment}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       <FloatingCartWidget />
@@ -1240,6 +1315,28 @@ const styles = StyleSheet.create({
   },
   pricingTierDescription: {
     fontSize: 12,
+    textAlign: 'right',
+  },
+  reviewsSection: {
+    marginTop: 24,
+  },
+  reviewItem: {
+    marginBottom: 16,
+    alignItems: 'flex-end',
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  reviewAuthor: {
+    fontWeight: '600',
+  },
+  reviewStars: {
+    flexDirection: 'row',
+  },
+  reviewComment: {
     textAlign: 'right',
   },
 });

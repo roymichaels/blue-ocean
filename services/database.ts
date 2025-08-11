@@ -5,6 +5,8 @@ import productsAgent from '../agents/products-agent';
 import ordersAgent from '../agents/orders-agent';
 import cartAgent from '../agents/cart-agent';
 import SettingsAgent from '../agents/settings-agent';
+import reviewAgent from '../agents/review-agent';
+import { listAllReviews } from '../services/tonReviews';
 import {
   User,
   Category,
@@ -189,10 +191,15 @@ class DatabaseService {
 
   // Reviews
   async getReviews(): Promise<Review[]> {
+    if (this.reviews.size === 0) {
+      const all = await listAllReviews();
+      all.forEach((r) => this.reviews.set(r.id, r));
+    }
     return Array.from(this.reviews.values());
   }
 
   async addReview(review: Review): Promise<void> {
+    await reviewAgent.add(review);
     this.reviews.set(review.id, review);
   }
 
