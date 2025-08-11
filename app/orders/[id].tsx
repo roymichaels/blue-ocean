@@ -6,8 +6,11 @@ import { useAuth } from '../../components/AuthContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
 import OrderService from '../../services/orders';
-import { Order, OrderStatus } from '../../types';
+import { Order, OrderStatus, ShippingAddress } from '../../types';
 import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
+import tonAuth from '../../services/tonAuth';
+import * as nacl from 'tweetnacl';
+import * as ed2curve from 'ed2curve';
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,8 +28,27 @@ export default function OrderDetailScreen() {
     const load = async () => {
       if (!id) return;
       const svc = OrderService.getInstance();
-      const o = await svc.getOrder(id);
-      setOrder(o);
+      const raw: any = await svc.getOrder(id);
+      let decrypted = raw as Order | null;
+      if (raw && raw.shippingAddressCipher && isSeller) {
+        const priv = tonAuth.getTonPrivateKey();
+        if (priv) {
+          try {
+            const privX = ed2curve.convertSecretKey(Buffer.from(priv, 'hex'));
+            const nonce = Buffer.from(raw.shippingAddressNonce, 'base64');
+            const cipher = Buffer.from(raw.shippingAddressCipher, 'base64');
+            const ephemPub = Buffer.from(raw.shippingAddressEphemeralPublicKey, 'base64');
+            const msg = nacl.box.open(cipher, nonce, ephemPub, privX);
+            if (msg) {
+              raw.shippingAddress = JSON.parse(Buffer.from(msg).toString());
+              decrypted = raw as Order;
+            }
+          } catch (err) {
+            console.warn('Failed to decrypt shipping address', err);
+          }
+        }
+      }
+      setOrder(decrypted);
     };
     load();
   }, [id]);
@@ -76,6 +98,28 @@ export default function OrderDetailScreen() {
       {order && (
         <View style={styles.content}>
           <Text style={[styles.status, { color: colors.text.primary }]}>סטטוס נוכחי: {statusLabel(order.status)}</Text>
+          {isSeller && (order.shippingAddress as ShippingAddress | undefined) && (
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+                {(order.shippingAddress as ShippingAddress).name}
+              </Text>
+              <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+                {(order.shippingAddress as ShippingAddress).street}
+              </Text>
+              <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+                {(order.shippingAddress as ShippingAddress).city}{' '}
+                {(order.shippingAddress as ShippingAddress).postalCode}
+              </Text>
+              <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+                {(order.shippingAddress as ShippingAddress).phone}
+              </Text>
+              {(order.shippingAddress as ShippingAddress).notes && (
+                <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+                  הערות: {(order.shippingAddress as ShippingAddress).notes}
+                </Text>
+              )}
+            </View>
+          )}
           {canUpdate && nextStatuses.length > 0 && (
             <View style={styles.actions}>
               {nextStatuses.map((s) => (
