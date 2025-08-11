@@ -376,25 +376,37 @@ export default function ProductFormModal({
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>וריאציות צבע</Text>
               {variants.map((variant, index) => (
                 <View key={index} style={styles.variantRow}>
+                  <View
+                    style={[
+                      styles.colorPreview,
+                      { backgroundColor: variant.color || 'transparent', borderColor: colors.border.primary },
+                    ]}
+                  />
                   <TextInput
-                    style={[styles.variantColorInput, {
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.surface.primary,
-                      color: colors.text.primary,
-                    }]}
+                    style={[
+                      styles.variantColorInput,
+                      {
+                        borderColor: colors.border.primary,
+                        backgroundColor: colors.surface.primary,
+                        color: colors.text.primary,
+                      },
+                    ]}
                     value={variant.color}
-                    onChangeText={text => updateVariant(index, 'color', text)}
+                    onChangeText={(text) => updateVariant(index, 'color', text)}
                     placeholder="צבע"
                     textAlign="right"
                   />
                   <TextInput
-                    style={[styles.variantStockInput, {
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.surface.primary,
-                      color: colors.text.primary,
-                    }]}
+                    style={[
+                      styles.variantStockInput,
+                      {
+                        borderColor: colors.border.primary,
+                        backgroundColor: colors.surface.primary,
+                        color: colors.text.primary,
+                      },
+                    ]}
                     value={variant.stock?.toString()}
-                    onChangeText={text => updateVariant(index, 'stock', parseInt(text) || 0)}
+                    onChangeText={(text) => updateVariant(index, 'stock', parseInt(text) || 0)}
                     placeholder="מלאי"
                     keyboardType="numeric"
                     textAlign="right"
@@ -643,6 +655,7 @@ const styles = StyleSheet.create({
   pricingTierDiscount: { fontSize: 14, fontWeight: 'bold' },
   pricingTierDescription: { fontSize: 12, textAlign: 'right' },
   variantRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  colorPreview: { width: 24, height: 24, borderRadius: 12, marginRight: 8, borderWidth: 1 },
   variantColorInput: { flex: 1, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },
   variantStockInput: { width: 80, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16, marginLeft: 8 },
   removeVariantButton: { marginLeft: 8 },

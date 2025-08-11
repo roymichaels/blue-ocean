@@ -10,7 +10,12 @@ export async function getProduct(id: string): Promise<Product | null> {
   const res = await getValue(ADDRESS, id);
   if (!res) return null;
   const parsed = JSON.parse(res) as Product;
-  return { ...parsed, pricingTier: parsed.pricingTier, variants: parsed.variants || [] };
+  return {
+    ...parsed,
+    pricingTier: parsed.pricingTier,
+    variants: parsed.variants || [],
+    colors: parsed.colors || [],
+  };
 }
 
 export async function setProduct(product: Product) {
@@ -21,6 +26,7 @@ export async function setProduct(product: Product) {
       ...product,
       pricingTier: product.pricingTier,
       variants: product.variants || [],
+      colors: product.colors || [],
     })
   );
 }
@@ -33,6 +39,11 @@ export async function listProducts(): Promise<Product[]> {
   const items = await listValues(ADDRESS);
   return items.map((i) => {
     const parsed = JSON.parse(i.value) as Product;
-    return { ...parsed, pricingTier: parsed.pricingTier, variants: parsed.variants || [] };
+    return {
+      ...parsed,
+      pricingTier: parsed.pricingTier,
+      variants: parsed.variants || [],
+      colors: parsed.colors || [],
+    };
   });
 }
