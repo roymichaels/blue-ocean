@@ -1,6 +1,8 @@
 import ordersAgent from '../agents/orders-agent';
 import { Order, OrderStatus, CartItem, ShippingAddress, OrderTrackingStep } from '../types';
 import { sha256 } from '@noble/hashes/sha256';
+import { getStore } from './tonStores';
+import tonAuth from './tonAuth';
 
 class OrderService {
   private static instance: OrderService;
@@ -105,6 +107,44 @@ class OrderService {
     return order;
   }
 
+  async createOrdersFromCart(
+    userId: string,
+    cartItems: CartItem[],
+    shippingAddress: ShippingAddress,
+    paymentMethod: 'cash_on_delivery' | 'ton' = 'cash_on_delivery',
+  ): Promise<Order[]> {
+    const grouped: Record<string, CartItem[]> = {};
+    for (const item of cartItems) {
+      const storeId = item.product.storeId;
+      if (!grouped[storeId]) grouped[storeId] = [];
+      grouped[storeId].push(item);
+    }
+
+    const orders: Order[] = [];
+    for (const [storeId, items] of Object.entries(grouped)) {
+      const store = await getStore(storeId);
+      const payment =
+        paymentMethod === 'ton'
+          ? {
+              method: 'ton' as const,
+              buyerAddress: tonAuth.getAddress() || undefined,
+              sellerAddress: store?.owner,
+            }
+          : {
+              method: 'cash_on_delivery' as const,
+              sellerAddress: store?.owner,
+            };
+      const order = await this.createOrder(
+        userId,
+        items,
+        shippingAddress,
+        payment,
+      );
+      orders.push(order);
+    }
+    return orders;
+  }
+
   private simulateOrderProgress(orderId: string) {
     const statusProgression: OrderStatus[] = [
       'courier_found',
@@ -125,7 +165,8 @@ class OrderService {
   }
 
   async getUserOrders(userId: string): Promise<Order[]> {
-    return ordersAgent.getAll().filter(o => o.userId === userId);
+    const all = await ordersAgent.getAll();
+    return all.filter((o) => o.userId === userId);
   }
 
   async getUserOrderCount(userId: string): Promise<number> {
@@ -133,7 +174,7 @@ class OrderService {
   }
 
   async updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
-    const order = ordersAgent.get(orderId);
+    const order = await ordersAgent.get(orderId);
     if (!order) return;
     order.status = status;
     order.trackingSteps = this.getTrackingSteps(status);

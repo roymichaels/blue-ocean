@@ -25,9 +25,9 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import CartService from '../services/cart';
-import { setOrder } from '../services/tonOrders';
 import { getStore } from '../services/tonStores';
 import { CartItem, ShippingAddress, Store } from '../types';
+import OrderService from '../services/orders';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import commonStyles from '../constants/styles';
@@ -333,68 +333,20 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     setLoading(true);
     try {
       const cartService = CartService.getInstance();
-      const createdIds: string[] = [];
+      const orders = await OrderService.getInstance().createOrdersFromCart(
+        user?.id || 'guest',
+        cartItems,
+        shippingAddress,
+        'ton'
+      );
 
-      for (const [storeId, items] of Object.entries(groupedItems)) {
-        const store = stores[storeId] || (await getStore(storeId));
-        const timestamp = new Date().toISOString();
-
-        const order = {
-          id: `order_${Date.now()}_${storeId}`,
-          userId: user?.id || 'guest',
-          items,
-          total: getGroupTotal(items),
-          status: 'order_received' as const,
-          shippingAddress,
-          paymentMethod: 'cash_on_delivery' as const,
-          sellerAddress: store?.owner,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-          trackingSteps: [
-            {
-              status: 'order_received',
-              title: 'הזמנה התקבלה',
-              timestamp,
-              completed: true,
-            },
-            {
-              status: 'courier_found',
-              title: 'נמצא שליח מתאים',
-              timestamp: '',
-              completed: false,
-            },
-            {
-              status: 'courier_picked_up',
-              title: 'שליח אסף את ההזמנה',
-              timestamp: '',
-              completed: false,
-            },
-            {
-              status: 'courier_on_way',
-              title: 'שליח בדרך אלייך',
-              timestamp: '',
-              completed: false,
-            },
-            {
-              status: 'delivered',
-              title: 'הזמנה התקבלה (השאר ביקורת)',
-              timestamp: '',
-              completed: false,
-            },
-          ],
-        };
-
-        await setOrder(order);
-        createdIds.push(order.id);
-      }
-
-      setOrderIds(createdIds);
+      setOrderIds(orders.map((o) => o.id));
       setOrderPlaced(true);
       await cartService.clearCart();
 
       showNotification(
         'הזמנה התקבלה',
-        `נוצרו ${createdIds.length} הזמנות בהצלחה`,
+        `נוצרו ${orders.length} הזמנות בהצלחה`,
         'success'
       );
 
