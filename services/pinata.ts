@@ -1,10 +1,10 @@
-import axios from 'axios';
 import { debugLog } from '../utils/logger';
-import config from '../utils/appConfig';
 
-// Pinata API configuration
-const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
-
+/**
+ * Minimal Pinata helper. Uploads are not supported inside the app.
+ * Use the standalone CLI script instead. This service only exposes a
+ * CID/url check so callers can detect when no upload is required.
+ */
 class PinataService {
   private static instance: PinataService;
 
@@ -17,159 +17,36 @@ class PinataService {
     return PinataService.instance;
   }
 
+  /** Check whether a string is already an IPFS CID or URL. */
+  public isCid(uri: string): boolean {
+    return (
+      uri.startsWith('ipfs://') ||
+      /ipfs\/[A-Za-z0-9]+/.test(uri) ||
+      /^[A-Za-z0-9]{46,}$/i.test(uri)
+    );
+  }
+
   /**
-   * Upload a file to Pinata IPFS
-   * @param uri - The local URI of the file to upload
-   * @param name - The name of the file
-   * @param onProgress - Optional progress callback (0-100)
-   * @returns The IPFS URL of the uploaded file
+   * Stub upload method. If the URI is already a CID or URL it is returned
+   * unchanged. Otherwise the original URI is returned and a warning is logged.
    */
   public async uploadFile(
     uri: string,
-    name: string,
-    onProgress?: (percent: number) => void
+    _name: string,
+    _onProgress?: (percent: number) => void
   ): Promise<string> {
-    try {
-      // Check if the URI is already an IPFS or HTTP URL
-      if (
-        uri.startsWith('http') ||
-        uri.startsWith('https') ||
-        uri.startsWith('ipfs://')
-      ) {
-        debugLog('File is already a URL, skipping upload:', uri);
-        return uri;
-      }
-
-      // For web platform or when using remote images, just return the URI
-      if (
-        uri.startsWith('data:') ||
-        uri.includes('pexels.com') ||
-        uri.includes('gateway.pinata.cloud')
-      ) {
-        debugLog('Using existing image URL:', uri);
-        return uri;
-      }
-
-      debugLog('Uploading file to Pinata:', name);
-
-      // Create form data for the file upload
-      const formData = new FormData();
-
-      // Get the file extension
-      const fileExtension = uri.split('.').pop() || 'jpg';
-
-      // Add the file to the form data
-      if (uri.startsWith('file://')) {
-        const mimeType = this.getMimeTypeFromExtension(fileExtension);
-        formData.append(
-          'file',
-          { uri, name: `${name}.${fileExtension}`, type: mimeType } as any
-        );
-      } else {
-        const blob = await this.uriToBlob(uri);
-        formData.append('file', blob, `${name}.${fileExtension}`);
-      }
-
-      // Add metadata
-      formData.append(
-        'pinataMetadata',
-        JSON.stringify({
-          name: name,
-        })
-      );
-
-      // Add options
-      formData.append(
-        'pinataOptions',
-        JSON.stringify({
-          cidVersion: 1,
-        })
-      );
-
-      // Upload to Pinata
-      const headers: any = {};
-      const jwt = config.EXPO_PUBLIC_PINATA_JWT || '';
-      const apiKey = config.EXPO_PUBLIC_PINATA_API_KEY || '';
-      const secret = config.EXPO_PUBLIC_PINATA_SECRET_API_KEY || '';
-      if (jwt) {
-        headers.Authorization = `Bearer ${jwt}`;
-      } else {
-        headers.pinata_api_key = apiKey;
-        headers.pinata_secret_api_key = secret;
-      }
-
-      const response = await axios.post(
-        'https://api.pinata.cloud/pinning/pinFileToIPFS',
-        formData,
-        {
-          headers,
-          onUploadProgress: (event) => {
-            if (event.total) {
-              const percent = Math.round((event.loaded * 100) / event.total);
-              onProgress?.(percent);
-            }
-          },
-        }
-      );
-
-      // ensure progress 100 after completion
-      onProgress?.(100);
-
-      // Return the IPFS URL
-      const ipfsHash = response.data.IpfsHash;
-      const ipfsUrl = `${PINATA_GATEWAY_URL}${ipfsHash}`;
-      debugLog('File uploaded to Pinata:', ipfsUrl);
-      return ipfsUrl;
-    } catch (error) {
-      console.error('Error uploading to Pinata:', error);
-      // Return the original URI as fallback
+    if (this.isCid(uri) || uri.startsWith('http')) {
       return uri;
     }
+    debugLog('Pinata upload skipped; provide a CID or URL instead:', uri);
+    return uri;
   }
 
-  /**
-   * Convert a URI to a Blob
-   * @param uri - The URI to convert
-   * @returns A Blob object
-   */
-  private async uriToBlob(uri: string): Promise<Blob> {
-    try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      return blob;
-    } catch (error) {
-      console.error('Error converting URI to Blob:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get MIME type from file extension
-   */
-  private getMimeTypeFromExtension(ext: string): string {
-    const map: Record<string, string> = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif',
-      webp: 'image/webp',
-      mp4: 'video/mp4',
-      webm: 'video/webm',
-      ogg: 'video/ogg',
-    };
-    return map[ext.toLowerCase()] || 'application/octet-stream';
-  }
-
-  /**
-   * Check if Pinata credentials are configured
-   * @returns True if Pinata is configured, false otherwise
-   */
+  /** Pinata credentials are not bundled with the app. */
   public async isPinataConfigured(): Promise<boolean> {
-    const jwt = config.EXPO_PUBLIC_PINATA_JWT || '';
-    const apiKey = config.EXPO_PUBLIC_PINATA_API_KEY || '';
-    const secret = config.EXPO_PUBLIC_PINATA_SECRET_API_KEY || '';
-    return !!(jwt || (apiKey && secret));
+    return false;
   }
 }
 
 export default PinataService;
+
