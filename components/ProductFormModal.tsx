@@ -16,6 +16,7 @@ import { Product, Category, Subcategory, PricingTier } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DatabaseService from '../services/database';
+import PinataService from '../services/pinata';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
@@ -155,6 +156,20 @@ export default function ProductFormModal({
     if (images.length === 0 && videos.length === 0) {
       setInfoModal({ visible: true, title: 'שגיאה', message: 'אנא ספק לפחות מדיה אחת', type: 'error' });
       return;
+    }
+
+    const pinata = PinataService.getInstance();
+    const allMedia = [...images, ...videos];
+    for (const uri of allMedia) {
+      if (!pinata.isCidOrUrl(uri)) {
+        setInfoModal({
+          visible: true,
+          title: 'שגיאה',
+          message: 'כל המדיה חייבת להיות CID או קישור תקין',
+          type: 'error',
+        });
+        return;
+      }
     }
 
     setLoading(true);

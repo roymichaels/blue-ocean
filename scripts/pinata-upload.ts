@@ -35,11 +35,16 @@ async function main() {
     console.error('Usage: ts-node scripts/pinata-upload.ts <file> [file...]');
     process.exit(1);
   }
+  const results = await Promise.all(
+    files.map(async (file) => {
+      const resolved = path.resolve(file);
+      const cid = await upload(resolved);
+      return { resolved, cid };
+    })
+  );
 
-  for (const file of files) {
-    const resolved = path.resolve(file);
-    const cid = await upload(resolved);
-    console.log(`${resolved}: ${cid}`);
+  for (const r of results) {
+    console.log(`${r.resolved}: ${r.cid}`);
   }
 }
 
