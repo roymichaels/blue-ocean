@@ -29,4 +29,26 @@ describe('UsersAgent TON integration', () => {
     const all = await usersAgent.getAll();
     expect(all.length).toBe(1);
   });
+
+  it('processes kyc request and update', async () => {
+    const user: any = {
+      id: 'u2',
+      username: 'bob',
+      displayName: 'Bob',
+      role: 'user',
+      address: '',
+      publicKey: '',
+    };
+    await usersAgent.add(user);
+
+    await usersAgent.requestKyc('u2', 'ipfs://doc');
+    const pending = await usersAgent.get('u2');
+    expect(pending?.kycStatus).toBe('pending');
+    expect(pending?.kycDocumentUri).toBe('ipfs://doc');
+
+    await usersAgent.updateKyc('u2', 'verified', 'admin1');
+    const verified = await usersAgent.get('u2');
+    expect(verified?.kycStatus).toBe('verified');
+    expect(verified?.kycApprovedBy).toBe('admin1');
+  });
 });

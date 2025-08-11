@@ -30,6 +30,42 @@ class UsersAgent {
     await removeUser(id);
   }
 
+  // kyc.request
+  async requestKyc(userId: string, documentUri: string): Promise<void> {
+    const { address, publicKey } = await this.ensureWallet();
+    const user = await getUser(userId);
+    if (!user) throw new Error('User not found');
+    const enriched: User = {
+      ...user,
+      publicKey,
+      address,
+      kycStatus: 'pending',
+      kycRequestedAt: new Date().toISOString(),
+      kycDocumentUri: documentUri,
+    };
+    await setUser(enriched);
+  }
+
+  // kyc.update
+  async updateKyc(
+    userId: string,
+    status: 'verified' | 'rejected',
+    adminId?: string,
+  ): Promise<void> {
+    const { address, publicKey } = await this.ensureWallet();
+    const user = await getUser(userId);
+    if (!user) throw new Error('User not found');
+    const enriched: User = {
+      ...user,
+      publicKey,
+      address,
+      kycStatus: status,
+      kycApprovedBy: adminId ?? address,
+      kycApprovedAt: new Date().toISOString(),
+    };
+    await setUser(enriched);
+  }
+
   async get(id: string): Promise<User | null> {
     return await getUser(id);
   }
