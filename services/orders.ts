@@ -1,5 +1,6 @@
 import ordersAgent from '../agents/orders-agent';
 import { Order, OrderStatus, CartItem, ShippingAddress, OrderTrackingStep } from '../types';
+import { sha256 } from '@noble/hashes/sha256';
 
 class OrderService {
   private static instance: OrderService;
@@ -76,6 +77,9 @@ class OrderService {
 
     const orderId = `order_${Date.now()}`;
     const timestamp = new Date().toISOString();
+    const itemsHash = Buffer.from(
+      sha256(Buffer.from(JSON.stringify(items)))
+    ).toString('hex');
     const order: Order = {
       id: orderId,
       userId,
@@ -83,10 +87,12 @@ class OrderService {
       total,
       status: 'order_received',
       shippingAddress,
+       itemsHash,
       paymentMethod: payment?.method ?? 'cash_on_delivery',
       buyerAddress: payment?.buyerAddress,
       sellerAddress: payment?.sellerAddress,
       paymentContractAddress: payment?.contractAddress,
+      escrowAddr: payment?.contractAddress,
       paymentTxHash: payment?.txHash,
       createdAt: timestamp,
       updatedAt: timestamp,

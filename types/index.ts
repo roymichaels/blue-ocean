@@ -223,17 +223,18 @@ export interface Order {
   total: number;
   status: OrderStatus;
   shippingAddress: ShippingAddress;
-  /** Encrypted shipping address data (base64) */
-  shippingAddressCipher?: string;
-  /** Nonce used for shipping address encryption (base64) */
-  shippingAddressNonce?: string;
-  /** Ephemeral public key used for shipping address encryption (base64) */
-  shippingAddressEphemeralPublicKey?: string;
+  shipAddrEnc?: {
+    cipher: string;
+    nonce: string;
+    ephem: string;
+  };
   paymentMethod: 'cash_on_delivery' | 'ton';
   buyerAddress?: string;
   sellerAddress?: string;
   driverAddress?: string;
   paymentContractAddress?: string;
+  escrowAddr?: string;
+  itemsHash: string;
   createdAt: string;
   updatedAt: string;
   trackingSteps: OrderTrackingStep[];
