@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Save, Settings as SettingsIcon, DollarSign, Globe, Bell } from 'lucide-react-native';
-import { useConfig } from '../../contexts/ConfigContext';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -21,6 +20,7 @@ import InfoModal from '../../components/InfoModal';
 import MediaUploader from '../../components/MediaUploader';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import commonStyles from '../../constants/styles';
+import SettingsAgent from '../../agents/settings-agent';
 
 
 
@@ -37,7 +37,7 @@ export default function SettingsScreen() {
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
   const { t, currentLanguage } = useLanguage();
   const { platformName, platformLogo, themeColor: contextThemeColor, setPlatformName, setPlatformLogo, setThemeColor } = useAppInfo();
-  const { config } = useConfig();
+  const [admins, setAdmins] = useState<string[]>([]);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -52,9 +52,16 @@ export default function SettingsScreen() {
       router.replace('/');
       return;
     }
-    
+
     loadSettings();
   }, [isAdmin, isDriver]);
+
+  useEffect(() => {
+    SettingsAgent.getInstance()
+      .getAdmins()
+      .then(setAdmins)
+      .catch(err => console.error('Failed to load admins:', err));
+  }, []);
 
   useEffect(() => {
     // Update local state when context changes
@@ -315,7 +322,7 @@ export default function SettingsScreen() {
                 { color: colors.text.primary, marginTop: 8 },
               ]}
             >
-              Admin Username: {config.EXPO_PUBLIC_ADMIN_USERNAME || 'Not set'}
+              Admin Addresses: {admins.join(', ') || 'Not set'}
             </Text>
           </View>
         </View>

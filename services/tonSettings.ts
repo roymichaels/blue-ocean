@@ -16,3 +16,16 @@ export async function setSetting(key: string, value: string) {
 export async function listSettings(): Promise<{ key: string; value: string }[]> {
   return await listValues(ADDRESS);
 }
+
+export async function getAdmins(): Promise<string[]> {
+  const raw = await getSetting('admins');
+  try {
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function setAdmins(admins: string[]): Promise<void> {
+  await setSetting('admins', JSON.stringify(admins));
+}

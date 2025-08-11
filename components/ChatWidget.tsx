@@ -37,7 +37,6 @@ import { useWakuClient } from '../hooks/useWakuClient';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import config from '../utils/appConfig';
 import { isChatConfigured } from '../services/chatConfig';
 import InfoModal from './InfoModal';
 import UserProfileModal from './UserProfileModal';
@@ -431,10 +430,7 @@ const loadOrCreateDefaultRoom = async () => {
 
     try {
       const msg: Omit<ChatMessage, 'id' | 'timestamp'> = {
-        senderId:
-          isAdmin || isDriver
-            ? config.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
-            : user?.id || 'user_guest',
+        senderId: user?.id || 'user_guest',
         senderName:
           isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',
         message: newMessage.trim(),
@@ -603,10 +599,7 @@ const loadOrCreateDefaultRoom = async () => {
           );
       const voiceMessage: ChatMessage = {
         id: Date.now().toString(),
-        senderId:
-          isAdmin || isDriver
-            ? config.EXPO_PUBLIC_ADMIN_USERNAME || 'admin'
-            : user?.id || 'user_guest',
+        senderId: user?.id || 'user_guest',
         senderName:
           isAdmin || isDriver ? 'מנהל' : user?.displayName || 'משתמש אורח',
         message: '',
