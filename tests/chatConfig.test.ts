@@ -1,4 +1,3 @@
-import { insertConfig } from './testUtils';
 import { isChatConfigured } from '../services/chatConfig';
 import { getAdmins } from '../services/tonSettings';
 
@@ -9,21 +8,13 @@ jest.mock('../services/tonSettings', () => ({
 const mockedGetAdmins = getAdmins as jest.Mock;
 
 describe('chat configuration', () => {
-  it('returns false when config values are missing', async () => {
+  it('returns false when no admins', async () => {
     mockedGetAdmins.mockResolvedValue([]);
-    await insertConfig({
-      TON_SETTINGS_ADDRESS: '',
-      TON_USERS_ADDRESS: '',
-    });
     expect(await isChatConfigured()).toBe(false);
   });
 
-  it('returns true when config values are present', async () => {
+  it('returns true when admins exist', async () => {
     mockedGetAdmins.mockResolvedValue(['addr_admin']);
-    await insertConfig({
-      TON_SETTINGS_ADDRESS: 'addr_settings',
-      TON_USERS_ADDRESS: 'addr_users',
-    });
     expect(await isChatConfigured()).toBe(true);
   });
 });

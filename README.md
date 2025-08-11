@@ -27,18 +27,16 @@ All data is ephemeral and synchronized between peers over Waku; no external serv
 
 ### Environment Variables
 
-The project reads all configuration from a `.env` file using Expo's env
-support for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests.
-Copy `.env.example` to `.env` and set at minimum:
+The project reads configuration from a `.env` file using Expo's env support
+for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
+`.env.example` to `.env` and set:
 
-- `EXPO_PUBLIC_ADMIN_USERNAME`
-- `EXPO_PUBLIC_WAKU_SECRET`
-- `EXPO_PUBLIC_WAKU_BOOTSTRAP`
-- `EXPO_PUBLIC_JWT_SECRET`
-- `EXPO_PUBLIC_CHAT_SECRET`
+- `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`)
+- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers
+- `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` – MoonPay public API key (optional;
+  enables credit card purchases)
+
 These values are read at build time and cannot be changed from the UI.
-Deployed TON contract addresses are stored in `constants/tonAddresses.json`
-and loaded automatically; no `.env` entries are required for them.
 
 ### TON Smart Contracts
 
@@ -56,31 +54,29 @@ yarn ton:build
 
 Compiled `.boc` files are written to `contracts/ton/build`.
 
-To deploy a contract, configure the following environment variables in `.env`:
-
-- `TON_ENDPOINT` – TON API endpoint (e.g. `https://testnet.toncenter.com/api/v2/jsonRPC`)
-- `TON_API_KEY` – API key for the endpoint if required
-- `TON_MNEMONIC` – wallet seed phrase used to sign deployment transactions
-
-Then run:
+To deploy a contract, pass the wallet mnemonic and (optionally) an RPC API key
+as CLI arguments or via stdin when prompted:
 
 ```sh
-yarn deploy:ton <contract-name>
+yarn deploy:ton <contract-name> --mnemonic "<seed phrase>" --api-key "<key>"
 # or
-yarn ton:deploy <contract-name>
+yarn ton:deploy <contract-name> --mnemonic "<seed phrase>" --api-key "<key>"
 ```
+
+The script rotates through a list of public RPC endpoints and falls back on
+the next one if a request fails. Use `--endpoint <url>` to override the RPC
+endpoint manually.
 
 Replace `<contract-name>` with the name of the Tact file (without extension).
 The script derives the contract address, logs it, and writes it to
-`constants/tonAddresses.json`. The app reads from this file, so no
-environment variables need to be set manually. Start the Expo app normally
-with `yarn dev`.
+`constants/tonAddresses.json`. Start the Expo app normally with `yarn dev`.
 
 ### Credit Card Checkout
 
-Providing a MoonPay key enables the `MoonPayModal` component for credit card
-purchases. Pass the wallet address, coin and USD amount to display the widget in
-a modal and pre-fill the fiat amount.
+Providing `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` populates `config.moonpayKey`
+and enables the `MoonPayModal` component for credit card purchases. Without
+this key the MoonPay UI is hidden. Pass the wallet address, coin and USD amount
+to display the widget in a modal and pre-fill the fiat amount.
 
 
 Some dependencies rely on Node.js globals like `Buffer`, `process`, and
@@ -197,19 +193,17 @@ Module resolution relies on custom aliases defined in `metro.config.js` and `web
 
 ## Docker
 
-Use Docker to run the project in a reproducible environment. Build the image
-and start the Expo server with a Waku secret provided via the environment:
+Use Docker to run the project in a reproducible environment:
 
 ```sh
 docker build -t blue-ocean .
-docker run -e EXPO_PUBLIC_WAKU_SECRET=$(openssl rand -hex 32) \
-  -p 19000-19002:19000-19002 blue-ocean
+docker run -p 19000-19002:19000-19002 blue-ocean
 ```
 
 For hot reloading and easier development you can also use Docker Compose:
 
 ```sh
-EXPO_PUBLIC_WAKU_SECRET=$(openssl rand -hex 32) docker compose up
+docker compose up
 ```
 
 ## Tests
@@ -224,7 +218,7 @@ Run `yarn install` before executing `yarn test` so Jest and other dependencies a
 
 ## Apple Pay Integration
 
-The project uses MoonPay for purchasing crypto with a credit card. To accept Apple Pay directly in the app, install the Expo Stripe payments package and configure your merchant identifier.
+The project uses MoonPay for purchasing crypto with a credit card. Set `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` to enable it. To accept Apple Pay directly in the app, install the Expo Stripe payments package and configure your merchant identifier.
 
 1. Install the library:
 ```sh

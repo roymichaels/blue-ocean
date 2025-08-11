@@ -106,6 +106,7 @@ export interface ChatRoom {
   id: string;
   userId: string;
   userName: string;
+  userPublicKey?: string;
   lastMessage: string;
   lastMessageTime: number;
   unreadCount: number;
@@ -126,6 +127,7 @@ export interface User {
   email?: string;
   role?: string;
   publicKey?: string;
+  chatPublicKey?: string;
   address?: string;
   createdAt?: string;
   updatedAt?: string;
