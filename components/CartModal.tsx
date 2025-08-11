@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,9 @@ import {
 } from 'react-native';
 import { X, Minus, Plus, ShoppingCart, Trash2, MapPin, CreditCard, Check, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import CartService from '../services/cart';
-import OrderService from '../services/orders';
-import { CartItem, ShippingAddress } from '../types';
+import { setOrder } from '../services/tonOrders';
+import { getStore } from '../services/tonStores';
+import { CartItem, ShippingAddress, Store } from '../types';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import commonStyles from '../constants/styles';
@@ -44,7 +45,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   });
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderIds, setOrderIds] = useState<string[]>([]);
+  const [stores, setStores] = useState<Record<string, Store>>({});
   const { isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
@@ -74,7 +76,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       // Reset checkout flow when modal opens
       setCheckoutStep('cart');
       setOrderPlaced(false);
-      setOrderId(null);
+      setOrderIds([]);
     }
   }, [visible]);
 
@@ -94,6 +96,26 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       scrollViewRef.current.scrollTo({ y: 0, animated: true });
     }
   }, [checkoutStep]);
+
+  useEffect(() => {
+    const fetchStores = async () => {
+      const ids = Array.from(new Set(cartItems.map(i => i.product.storeId)));
+      const entries = await Promise.all(
+        ids.map(async id => {
+          const store = await getStore(id);
+          return store ? [id, store] : null;
+        })
+      );
+      const map: Record<string, Store> = {};
+      entries.forEach(entry => {
+        if (entry) {
+          map[entry[0]] = entry[1];
+        }
+      });
+      setStores(map);
+    };
+    fetchStores();
+  }, [cartItems]);
 
   const loadCartItems = () => {
     const cartService = CartService.getInstance();
@@ -119,8 +141,26 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     await cartService.removeFromCart(itemId);
   };
 
+  const groupedItems = useMemo(() => {
+    return cartItems.reduce<Record<string, CartItem[]>>((acc, item) => {
+      const storeId = item.product.storeId;
+      if (!acc[storeId]) {
+        acc[storeId] = [];
+      }
+      acc[storeId].push(item);
+      return acc;
+    }, {});
+  }, [cartItems]);
+
   const getTotal = () => {
     return cartItems.reduce((total, item) => {
+      const price = item.unitPrice ?? item.product.price;
+      return total + price * item.quantity;
+    }, 0);
+  };
+
+  const getGroupTotal = (items: CartItem[]) => {
+    return items.reduce((total, item) => {
       const price = item.unitPrice ?? item.product.price;
       return total + price * item.quantity;
     }, 0);
@@ -267,27 +307,49 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
     setLoading(true);
     try {
-      const orderService = OrderService.getInstance();
       const cartService = CartService.getInstance();
-      
-      const order = await orderService.createOrder(
-        user?.id || 'guest',
-        cartItems,
-        shippingAddress
-      );
+      const createdIds: string[] = [];
+      for (const [storeId, items] of Object.entries(groupedItems)) {
+        const store = stores[storeId] || (await getStore(storeId));
+        const timestamp = new Date().toISOString();
+        const order = {
+          id: `order_${Date.now()}_${storeId}`,
+          userId: user?.id || 'guest',
+          items,
+          total: getGroupTotal(items),
+          status: 'order_received' as const,
+          shippingAddress,
+          paymentMethod: 'cash_on_delivery' as const,
+          sellerAddress: store?.owner,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          trackingSteps: [
+            {
+              status: 'order_received',
+              title: 'הזמנה התקבלה',
+              timestamp,
+              completed: true,
+            },
+            { status: 'courier_found', title: 'נמצא שליח מתאים', timestamp: '', completed: false },
+            { status: 'courier_picked_up', title: 'שליח אסף את ההזמנה', timestamp: '', completed: false },
+            { status: 'courier_on_way', title: 'שליח בדרך אלייך', timestamp: '', completed: false },
+            { status: 'delivered', title: 'הזמנה התקבלה (השאר ביקורת)', timestamp: '', completed: false },
+          ],
+        };
+        await setOrder(order);
+        createdIds.push(order.id);
+      }
 
-      setOrderId(order.id);
+      setOrderIds(createdIds);
       setOrderPlaced(true);
       await cartService.clearCart();
-      
-      // Show notification
+
       showNotification(
         'הזמנה התקבלה',
-        `הזמנה מספר ${order.id.slice(-6)} נוצרה בהצלחה`,
+        `נוצרו ${createdIds.length} הזמנות בהצלחה`,
         'success'
       );
-      
-      // Close modal after a delay
+
       setTimeout(() => {
         onClose();
       }, 5000);
@@ -596,17 +658,39 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           )}
         </View>
 
-        <View style={[styles.orderSummary, { 
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary 
-        }]}>
-          <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>סיכום הזמנה</Text>
-          {cartItems.map(item => (
-            <View key={item.id} style={styles.summaryItem}>
-              <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>{item.product.name} x{item.quantity}</Text>
-              <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>{currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}</Text>
+        {Object.entries(groupedItems).map(([storeId, items]) => (
+          <View
+            key={storeId}
+            style={[styles.orderSummary, {
+              backgroundColor: colors.surface.primary,
+              borderColor: colors.border.primary
+            }]}
+          >
+            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
+              {stores[storeId]?.name || 'חנות'}
+            </Text>
+            {items.map(item => (
+              <View key={item.id} style={styles.summaryItem}>
+                <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>
+                  {item.product.name} x{item.quantity}
+                </Text>
+                <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>
+                  {currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
+                </Text>
+              </View>
+            ))}
+            <View style={[styles.summaryRow, styles.summaryTotal, { borderTopColor: colors.border.primary }]}>
+              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>סה"כ לחנות:</Text>
+              <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
+                {currencySymbol}{getGroupTotal(items).toFixed(2)}
+              </Text>
             </View>
-          ))}
+          </View>
+        ))}
+        <View style={[styles.orderSummary, {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary
+        }]}>
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>עלות משלוח:</Text>
             <Text style={[styles.summaryValue, { color: colors.text.primary }]}>{currencySymbol}0.00</Text>
@@ -687,22 +771,42 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </View>
         </View>
 
-        <View style={[styles.orderSummary, { 
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary 
-        }]}>
-          <View style={styles.summaryHeader}>
-            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>פריטים בהזמנה</Text>
-            <TouchableOpacity onPress={() => setCheckoutStep('cart')}>
-              <Text style={[styles.editLink, { color: colors.gold }]}>ערוך</Text>
-            </TouchableOpacity>
-          </View>
-          {cartItems.map(item => (
-            <View key={item.id} style={styles.summaryItem}>
-              <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>{item.product.name} x{item.quantity}</Text>
-              <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>{currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}</Text>
+        {Object.entries(groupedItems).map(([storeId, items]) => (
+          <View
+            key={storeId}
+            style={[styles.orderSummary, {
+              backgroundColor: colors.surface.primary,
+              borderColor: colors.border.primary
+            }]}
+          >
+            <View style={styles.summaryHeader}>
+              <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>פריטים מהחנות {stores[storeId]?.name || ''}</Text>
+              <TouchableOpacity onPress={() => setCheckoutStep('cart')}>
+                <Text style={[styles.editLink, { color: colors.gold }]}>ערוך</Text>
+              </TouchableOpacity>
             </View>
-          ))}
+            {items.map(item => (
+              <View key={item.id} style={styles.summaryItem}>
+                <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>
+                  {item.product.name} x{item.quantity}
+                </Text>
+                <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>
+                  {currencySymbol}{((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
+                </Text>
+              </View>
+            ))}
+            <View style={[styles.summaryRow, styles.summaryTotal, { borderTopColor: colors.border.primary }]}>
+              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>סה"כ לחנות:</Text>
+              <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
+                {currencySymbol}{getGroupTotal(items).toFixed(2)}
+              </Text>
+            </View>
+          </View>
+        ))}
+        <View style={[styles.orderSummary, {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary
+        }]}>
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>עלות משלוח:</Text>
             <Text style={[styles.summaryValue, { color: colors.text.primary }]}>{currencySymbol}0.00</Text>
@@ -749,7 +853,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         <Check size={60} color={colors.text.inverse} />
       </View>
       <Text style={[styles.successTitle, { color: colors.text.primary }]}>ההזמנה הושלמה בהצלחה!</Text>
-      <Text style={[styles.successOrderId, { color: colors.gold }]}>מספר הזמנה: #{orderId?.slice(-6)}</Text>
+      <Text style={[styles.successOrderId, { color: colors.gold }]}>
+        {orderIds.length === 1
+          ? `מספר הזמנה: #${orderIds[0].slice(-6)}`
+          : `מספרי הזמנות: ${orderIds
+              .map(id => `#${id.slice(-6)}`)
+              .join(', ')}`}
+      </Text>
       <Text style={[styles.successMessage, { color: colors.text.secondary }]}>
         תודה על הזמנתך! קיבלנו את ההזמנה שלך והיא בטיפול.
         תוכל לעקוב אחר סטטוס ההזמנה בעמוד ההזמנות שלך.
