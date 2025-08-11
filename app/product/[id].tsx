@@ -27,6 +27,7 @@ import {
   X,
   Image as ImageIcon,
   MessageCircle,
+  Shield,
 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import CartService from '../../services/cart';
@@ -41,6 +42,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import MediaService from '../../services/media';
 import { useTonAddress } from '../../services/tonAuth';
 import chatAgent from '../../agents/chat-agent';
+import moderationAgent from '../../agents/moderation-agent';
 import commonStyles from '../../constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '../../components/FloatingCartWidget';
@@ -280,6 +282,27 @@ export default function ProductDetailScreen() {
     if (!product) return;
     const buyer = address || 'guest_user';
     await chatAgent.openChat(buyer, product.storeId, product.storeId);
+  };
+
+  const handleReport = async () => {
+    if (!product) return;
+    try {
+      await moderationAgent.reportProduct(product.id, 'inappropriate');
+      setInfoModal({
+        visible: true,
+        title: 'דיווח נשלח',
+        message: 'תודה שדיווחת על המוצר',
+        type: 'success',
+      });
+    } catch (err) {
+      console.error('Error reporting product:', err);
+      setInfoModal({
+        visible: true,
+        title: 'שגיאה',
+        message: 'שליחת הדיווח נכשלה',
+        type: 'error',
+      });
+    }
   };
 
   const openEditModal = () => {
@@ -772,6 +795,24 @@ export default function ProductDetailScreen() {
               Message Seller
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.reportButton,
+              {
+                borderColor: colors.status.error,
+                backgroundColor: colors.surface.primary,
+              },
+            ]}
+            onPress={handleReport}
+          >
+            <Shield size={20} color={colors.status.error} />
+            <Text
+              style={[styles.reportButtonText, { color: colors.status.error }]}
+            >
+              Report
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -1018,6 +1059,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   messageSellerText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  reportButton: {
+    marginTop: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+  },
+  reportButtonText: {
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

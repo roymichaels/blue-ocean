@@ -11,13 +11,16 @@ import { router } from 'expo-router';
 import { ArrowLeft, Package, MessageCircle, Users, Bell, Star, TrendingUp, ShoppingCart, Eye, Shield, Clock, DollarSign, Settings } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import NotificationService from '../../services/notification';
-import { Product, ChatRoom, Notification, Review } from '../../types';
+import { Product, ChatRoom, Notification, Review, Report } from '../../types';
 import { useNotifications } from '../../components/NotificationContext';
 import { useAuth } from '../../components/AuthContext';
 import { useAuthModal } from '../../components/AuthModalContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import moderationAgent from '../../agents/moderation-agent';
+import productsAgent from '../../agents/products-agent';
+import storesAgent from '../../agents/stores-agent';
 
 
 
@@ -26,6 +29,7 @@ export default function AdminDashboardScreen() {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -67,19 +71,21 @@ export default function AdminDashboardScreen() {
       const db = DatabaseService.getInstance();
       const notificationService = NotificationService.getInstance();
       
-      const [productsData, chatRoomsData, notificationsData, reviewsData, pendingKycRequests, allUsers] = await Promise.all([
+      const [productsData, chatRoomsData, notificationsData, reviewsData, pendingKycRequests, allUsers, reportsData] = await Promise.all([
         db.getProducts(),
         db.getChatRooms(),
         notificationService.getNotifications(user?.id),
         db.getReviews(),
         db.getPendingKycRequests(),
-        db.getAllUserProfiles()
+        db.getAllUserProfiles(),
+        moderationAgent.getAll()
       ]);
       
       setProducts(productsData);
       setChatRooms(chatRoomsData);
       setNotifications(notificationsData);
       setReviews(reviewsData);
+      setReports(reportsData);
 
       // Calculate stats
       const totalStock = productsData.reduce((sum, product) => sum + product.stock, 0);
@@ -121,6 +127,31 @@ export default function AdminDashboardScreen() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRemoveReport = async (report: Report) => {
+    try {
+      if (report.type === 'product') {
+        await productsAgent.remove(report.targetId);
+      } else {
+        await storesAgent.remove(report.targetId);
+      }
+      await moderationAgent.remove(report.id);
+      setReports((prev) => prev.filter((r) => r.id !== report.id));
+      showNotification('Success', 'Item removed', 'success');
+    } catch (err) {
+      console.error('Failed to remove item:', err);
+      showNotification('Error', 'Removal failed', 'error');
+    }
+  };
+
+  const handleDismissReport = async (id: string) => {
+    try {
+      await moderationAgent.remove(id);
+      setReports((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error('Failed to dismiss report:', err);
     }
   };
 
@@ -365,12 +396,52 @@ export default function AdminDashboardScreen() {
                 {stats.pendingKycRequests > 0 ? ` (${stats.pendingKycRequests})` : ''}
               </Text>
             </TouchableOpacity>
-          </View>
         </View>
+      </View>
 
-        {/* Recent Activity */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>פעילות אחרונה</Text>
+      {/* Reports */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>דיווחים</Text>
+        {reports.map((r) => (
+          <View
+            key={r.id}
+            style={[
+              styles.reportItem,
+              {
+                backgroundColor: colors.surface.primary,
+                borderColor: colors.border.primary,
+              },
+            ]}
+          >
+            <Text style={[styles.reportText, { color: colors.text.primary }]}>
+              {r.type === 'product' ? `Product: ${r.targetId}` : `Store: ${r.targetId}`}
+            </Text>
+            <View style={styles.reportActions}>
+              <TouchableOpacity
+                style={[styles.reportButton, { backgroundColor: colors.status.error }]}
+                onPress={() => handleRemoveReport(r)}
+              >
+                <Text style={[styles.reportButtonText, { color: colors.text.inverse }]}>Remove</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.reportButton, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}
+                onPress={() => handleDismissReport(r.id)}
+              >
+                <Text style={[styles.reportButtonText, { color: colors.text.primary }]}>Dismiss</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+        {reports.length === 0 && (
+          <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
+            אין דיווחים
+          </Text>
+        )}
+      </View>
+
+      {/* Recent Activity */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>פעילות אחרונה</Text>
           
           {/* Recent Products */}
           <View style={[styles.activitySection, { 
@@ -553,6 +624,32 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   highlightedActionText: {
+    fontWeight: '600',
+  },
+  reportItem: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  reportText: {
+    fontSize: 14,
+    marginBottom: 8,
+    textAlign: 'right',
+  },
+  reportActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  reportButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  reportButtonText: {
+    fontSize: 14,
     fontWeight: '600',
   },
   activitySection: {
