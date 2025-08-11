@@ -7,6 +7,11 @@ import {
   removeNotification,
 } from '../services/tonNotifications';
 
+type NotificationEvent =
+  | 'order.created'
+  | 'payment.received'
+  | 'status.updated';
+
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
 
@@ -42,6 +47,12 @@ class NotificationsAgent {
 
   async getAll(): Promise<Notification[]> {
     return await listNotifications();
+  }
+
+  async broadcast(event: NotificationEvent, item: Notification): Promise<void> {
+    await this.ensureWallet();
+    await setNotification(item);
+    this.subscribers.forEach((cb) => cb(item));
   }
 
   subscribe(cb: (n: Notification) => void) {
