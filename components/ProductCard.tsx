@@ -17,6 +17,7 @@ import CartService from '../services/cart';
 import DatabaseService from '../services/database';
 import MediaService from '../services/media';
 import { useTonAddress } from '../services/tonAuth';
+import productsAgent from '../agents/products-agent';
 
 interface ProductCardProps {
   product: Product;
@@ -43,6 +44,7 @@ export default function ProductCard({
   const [pricingTier, setPricingTier] = useState<PricingTier | null>(null);
   const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+  const [summary, setSummary] = useState({ rating: product.rating, reviews: product.reviews });
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const address = useTonAddress();
@@ -71,6 +73,16 @@ export default function ProductCard({
     
     return () => cartService.removeListener(handleUpdate);
   }, [product.id, product.pricingTier]);
+
+  useEffect(() => {
+    let active = true;
+    productsAgent.getSummary(product.id).then((s) => {
+      if (active) setSummary(s);
+    });
+    return () => {
+      active = false;
+    };
+  }, [product.id]);
 
   useEffect(() => {
     const loadThumb = async () => {
@@ -249,8 +261,8 @@ export default function ProductCard({
 
         {/* Rating */}
         <View style={styles.ratingContainer}>
-          <Text style={[styles.rating, { color: colors.text.primary }]}>⭐ {product.rating}</Text>
-          <Text style={[styles.reviews, { color: colors.text.tertiary }]}>({product.reviews})</Text>
+          <Text style={[styles.rating, { color: colors.text.primary }]}>⭐ {summary.rating.toFixed(1)}</Text>
+          <Text style={[styles.reviews, { color: colors.text.tertiary }]}>({summary.reviews})</Text>
         </View>
 
         {/* Variant Colors */}
