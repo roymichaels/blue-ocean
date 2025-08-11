@@ -22,7 +22,7 @@ export default function AgeVerificationModal() {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const { colors } = useTheme();
-  const { platformName, platformLogo } = useAppInfo();
+  const { appName, logoCid } = useAppInfo();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -85,9 +85,9 @@ export default function AgeVerificationModal() {
                   },
                 ]}
               >
-                {platformLogo ? (
+                {logoCid ? (
                   <Image
-                    source={{ uri: platformLogo }}
+                    source={{ uri: logoCid }}
                     style={styles.logoImage}
                     resizeMode="contain"
                   />
@@ -97,7 +97,7 @@ export default function AgeVerificationModal() {
               </View>
 
               <Text style={[styles.platformName, { color: colors.gold }]}>
-                {platformName || t('ageVerification.platformName')}
+                {appName || t('ageVerification.platformName')}
               </Text>
               <Text
                 style={[

@@ -10,23 +10,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import SettingsAgent from '../agents/settings-agent';
 import MediaService from '../services/media';
-import config from '../utils/appConfig';
+import { fetchSettings } from '../services/tonSettings';
 
 interface AppInfoContextType {
-  platformName: string;
-  platformLogo: string;
+  tenantId: string;
+  appName: string;
+  logoCid: string;
   themeColor: string;
-  setPlatformName: (name: string) => Promise<void>;
-  setPlatformLogo: (logo: string) => Promise<void>;
+  moonpayKey?: string;
+  setAppName: (name: string) => Promise<void>;
+  setLogoCid: (logo: string) => Promise<void>;
   setThemeColor: (color: string) => Promise<void>;
 }
 
 const AppInfoContext = createContext<AppInfoContextType>({
-  platformName: '',
-  platformLogo: '',
+  tenantId: 'default',
+  appName: '',
+  logoCid: '',
   themeColor: '#B99C5A',
-  setPlatformName: async () => {},
-  setPlatformLogo: async () => {},
+  setAppName: async () => {},
+  setLogoCid: async () => {},
   setThemeColor: async () => {},
 });
 
@@ -39,53 +42,60 @@ interface AppInfoProviderProps {
 // Store branding separately for each tenant to avoid cross-tenant mixing
 
 export function AppInfoProvider({ children }: AppInfoProviderProps) {
-  const [tenant, setTenant] = useState<string>('default');
-  const [platformName, setPlatformNameState] = useState('');
-  const [platformLogo, setPlatformLogoState] = useState('');
+  const [tenantId, setTenantId] = useState<string>('default');
+  const [appName, setAppNameState] = useState('');
+  const [logoCid, setLogoCidState] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
+  const [moonpayKey, setMoonpayKey] = useState<string | undefined>(undefined);
   const reloadTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const t = config.EXPO_PUBLIC_TENANT;
-    setTenant(t || 'default');
-  }, []);
-
   const loadInfo = async () => {
-    const NAME_KEY = `app_platform_name_${tenant}`;
-    const LOGO_KEY = `app_platform_logo_${tenant}`;
-    const COLOR_KEY = `app_theme_color_${tenant}`;
+    const TENANT_KEY = `app_tenant_id`;
+    const storedTenant = await AsyncStorage.getItem(TENANT_KEY);
+    const currentTenant = storedTenant || tenantId;
+    if (storedTenant) setTenantId(storedTenant);
+    const NAME_KEY = `app_name_${currentTenant}`;
+    const LOGO_KEY = `app_logo_${currentTenant}`;
+    const COLOR_KEY = `app_theme_primary_${currentTenant}`;
+    const MOONPAY_KEY = `app_moonpay_key_${currentTenant}`;
     try {
       const storedName = await AsyncStorage.getItem(NAME_KEY);
       const storedLogo = await AsyncStorage.getItem(LOGO_KEY);
       const storedColor = await AsyncStorage.getItem(COLOR_KEY);
-      if (storedName) setPlatformNameState(storedName);
-      if (storedLogo) setPlatformLogoState(storedLogo);
+      const storedMoon = await AsyncStorage.getItem(MOONPAY_KEY);
+      if (storedName) setAppNameState(storedName);
+      if (storedLogo) setLogoCidState(storedLogo);
       if (storedColor) setThemeColorState(storedColor);
+      if (storedMoon) setMoonpayKey(storedMoon || undefined);
 
-      const tenantSvc = SettingsAgent.getInstance();
       try {
-        await tenantSvc.whenReady();
-      } catch (err) {
-        Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
-        console.error('Failed initializing SettingsAgent:', err);
-        return;
-      }
-      try {
-        const t = tenant;
-        const dbName = await tenantSvc.getTenantSetting(t, 'platform_name');
-        const dbLogo = await tenantSvc.getTenantSetting(t, 'platform_logo');
-        const dbColor = await tenantSvc.getTenantSetting(t, 'theme_color');
-        if (dbName) {
-          setPlatformNameState(dbName);
-          await AsyncStorage.setItem(NAME_KEY, dbName);
+        const remote = await fetchSettings();
+        setTenantId(remote.tenantId);
+        await AsyncStorage.setItem(TENANT_KEY, remote.tenantId);
+        if (remote.appName) {
+          setAppNameState(remote.appName);
+          await AsyncStorage.setItem(`app_name_${remote.tenantId}`, remote.appName);
         }
-        if (dbLogo) {
-          setPlatformLogoState(dbLogo);
-          await AsyncStorage.setItem(LOGO_KEY, dbLogo);
+        if (remote.brand.logoCid) {
+          setLogoCidState(remote.brand.logoCid);
+          await AsyncStorage.setItem(
+            `app_logo_${remote.tenantId}`,
+            remote.brand.logoCid,
+          );
         }
-        if (dbColor) {
-          setThemeColorState(dbColor);
-          await AsyncStorage.setItem(COLOR_KEY, dbColor);
+        if (remote.theme.primary) {
+          setThemeColorState(remote.theme.primary);
+          await AsyncStorage.setItem(
+            `app_theme_primary_${remote.tenantId}`,
+            remote.theme.primary,
+          );
+        }
+        if (remote.moonpayKey) {
+          setMoonpayKey(remote.moonpayKey);
+          await AsyncStorage.setItem(
+            `app_moonpay_key_${remote.tenantId}`,
+            remote.moonpayKey,
+          );
         }
       } catch (err) {
         Alert.alert('שגיאה', 'טעינת הגדרות מהשרת נכשלה');
@@ -97,10 +107,8 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   };
 
   useEffect(() => {
-    if (tenant) {
-      loadInfo();
-    }
-  }, [tenant]);
+    loadInfo();
+  }, []);
 
   const scheduleLoadInfo = () => {
     if (reloadTimeout.current) {
@@ -111,20 +119,20 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     }, 300);
   };
 
-  const setPlatformName = async (name: string) => {
-    const NAME_KEY = `app_platform_name_${tenant}`;
-    setPlatformNameState(name);
+  const setAppName = async (name: string) => {
+    const NAME_KEY = `app_name_${tenantId}`;
+    setAppNameState(name);
     await AsyncStorage.setItem(NAME_KEY, name);
     const tenantSvc = SettingsAgent.getInstance();
     try {
       await tenantSvc.whenReady();
     } catch (e) {
-      Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
+      Alert.alert('שגיאה', 'התחברות לשירות ההגדרת נכשלה');
       console.error('Failed initializing SettingsAgent:', e);
       throw e;
     }
     try {
-      await tenantSvc.updateTenantSetting(tenant, 'platform_name', name);
+      await tenantSvc.updateSettingValue('appName', name);
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת שם הפלטפורמה נכשלה');
@@ -133,15 +141,15 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     }
   };
 
-  const setPlatformLogo = async (logo: string) => {
+  const setLogoCid = async (logo: string) => {
     let finalLogo = logo;
     try {
       if (logo && !logo.startsWith('http')) {
         const mediaSvc = MediaService.getInstance();
         finalLogo = await mediaSvc.uploadMedia(logo, 'tenant_logo');
       }
-      const LOGO_KEY = `app_platform_logo_${tenant}`;
-      setPlatformLogoState(finalLogo);
+      const LOGO_KEY = `app_logo_${tenantId}`;
+      setLogoCidState(finalLogo);
       await AsyncStorage.setItem(LOGO_KEY, finalLogo);
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
@@ -157,7 +165,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       throw e;
     }
     try {
-      await tenantSvc.updateTenantSetting(tenant, 'platform_logo', finalLogo);
+      await tenantSvc.updateSettingValue('brand.logoCid', finalLogo);
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
@@ -168,7 +176,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
 
   const setThemeColor = async (color: string) => {
     try {
-      const COLOR_KEY = `app_theme_color_${tenant}`;
+      const COLOR_KEY = `app_theme_primary_${tenantId}`;
       setThemeColorState(color);
       await AsyncStorage.setItem(COLOR_KEY, color);
     } catch (e) {
@@ -185,7 +193,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       throw e;
     }
     try {
-      await tenantSvc.updateTenantSetting(tenant, 'theme_color', color);
+      await tenantSvc.updateSettingValue('theme.primary', color);
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת צבע ערכת הנושא נכשלה');
@@ -197,11 +205,13 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   return (
     <AppInfoContext.Provider
       value={{
-        platformName,
-        platformLogo,
+        tenantId,
+        appName,
+        logoCid,
         themeColor,
-        setPlatformName,
-        setPlatformLogo,
+        moonpayKey,
+        setAppName,
+        setLogoCid,
         setThemeColor,
       }}
     >

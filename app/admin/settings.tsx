@@ -36,7 +36,7 @@ export default function SettingsScreen() {
   const { colors } = useTheme();
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
   const { t, currentLanguage } = useLanguage();
-  const { platformName, platformLogo, themeColor: contextThemeColor, setPlatformName, setPlatformLogo, setThemeColor } = useAppInfo();
+  const { appName, logoCid, themeColor: contextThemeColor, setAppName, setLogoCid, setThemeColor } = useAppInfo();
   const [admins, setAdmins] = useState<string[]>([]);
 
   // Modal states
@@ -67,14 +67,14 @@ export default function SettingsScreen() {
     // Update local state when context changes
     setCurrencySymbolState(contextCurrencySymbol);
 
-    setName(platformName);
+    setName(appName);
     setThemeColorState(contextThemeColor);
-    if (platformLogo) {
-      setLogoMedia([{ id: 'logo', uri: platformLogo, type: 'image' }]);
+    if (logoCid) {
+      setLogoMedia([{ id: 'logo', uri: logoCid, type: 'image' }]);
     } else {
       setLogoMedia([]);
     }
-  }, [contextCurrencySymbol, platformName, platformLogo, contextThemeColor]);
+  }, [contextCurrencySymbol, appName, logoCid, contextThemeColor]);
 
   const loadSettings = async () => {
     setLoading(true);
@@ -82,10 +82,10 @@ export default function SettingsScreen() {
       // Currency symbol is already loaded from context
       setCurrencySymbolState(contextCurrencySymbol);
 
-      setName(platformName);
+      setName(appName);
       setThemeColorState(contextThemeColor);
-      if (platformLogo) {
-        setLogoMedia([{ id: 'logo', uri: platformLogo, type: 'image' }]);
+      if (logoCid) {
+        setLogoMedia([{ id: 'logo', uri: logoCid, type: 'image' }]);
       } else {
         setLogoMedia([]);
       }
@@ -108,10 +108,10 @@ export default function SettingsScreen() {
       // Update currency symbol in context (which will update database)
       await setCurrencySymbol(currencySymbol);
 
-      await setPlatformName(name);
+      await setAppName(name);
       await setThemeColor(themeColor);
       const logoUri = logoMedia[0]?.uri || '';
-      await setPlatformLogo(logoUri);
+      await setLogoCid(logoUri);
 
       setInfoModal({
         visible: true,

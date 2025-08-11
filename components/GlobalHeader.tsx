@@ -30,7 +30,7 @@ export default function GlobalHeader({
 }: GlobalHeaderProps) {
   const { t } = useLanguage();
   const { colors } = useTheme();
-  const { platformName, platformLogo } = useAppInfo();
+  const { appName, logoCid } = useAppInfo();
   const { progress } = useRoadmap();
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [wishlistItemsCount, setWishlistItemsCount] = useState(0);
@@ -60,9 +60,9 @@ export default function GlobalHeader({
             style={styles.logo}
             onPress={() => router.push('/(tabs)')}
           >
-            {platformLogo ? (
+            {logoCid ? (
               <Image
-                source={{ uri: platformLogo }}
+                source={{ uri: logoCid }}
                 style={styles.logoImage}
                 resizeMode="contain"
               />
@@ -72,7 +72,7 @@ export default function GlobalHeader({
               />
             )}
             <Text style={[styles.logoText, { color: colors.gold }]}>
-              {platformName || t('ageVerification.platformName')}
+              {appName || t('ageVerification.platformName')}
             </Text>
           </TouchableOpacity>
           <View style={styles.headerIcons}>

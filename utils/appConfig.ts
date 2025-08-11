@@ -11,12 +11,8 @@ const ENV_KEYS = [
   'EXPO_PUBLIC_CHAT_SECRET',
   'EXPO_PUBLIC_WAKU_SECRET',
   'EXPO_PUBLIC_WAKU_BOOTSTRAP',
-  'EXPO_PUBLIC_TENANT',
   'EXPO_PUBLIC_DEBUG_LOGS',
   'MOONPAY_KEY',
-  'APP_NAME',
-  'PRIMARY_COLOR',
-  'APP_LOGO',
 ];
 
 function loadConfig(): Record<string, string> {
