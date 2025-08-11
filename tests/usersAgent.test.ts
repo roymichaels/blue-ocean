@@ -6,6 +6,10 @@ jest.mock('../services/tonAuth', () => ({
   openModal: jest.fn(),
 }));
 
+jest.mock('../services/localIdentity', () => ({
+  getPublicKeyHex: () => 'chat_pub',
+}));
+
 jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
 import { __clear } from './tonKvMock';
 

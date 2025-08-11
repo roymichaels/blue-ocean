@@ -1,15 +1,11 @@
 // Configuration values are loaded from environment variables. Contract
 // addresses are persisted in `constants/tonAddresses.json` and merged into
-// the config at runtime. `EXPO_PUBLIC_WAKU_SECRET` is used to encrypt/decrypt
-// messages sent over Waku. **All production peers must use the same secret**
-// or messages will not be readable between them.
+// the config at runtime.
 
 import tonAddresses from '../constants/tonAddresses.json';
 
 const ENV_KEYS = [
   'EXPO_PUBLIC_JWT_SECRET',
-  'EXPO_PUBLIC_CHAT_SECRET',
-  'EXPO_PUBLIC_WAKU_SECRET',
   'EXPO_PUBLIC_WAKU_BOOTSTRAP',
   'EXPO_PUBLIC_TENANT',
   'EXPO_PUBLIC_DEBUG_LOGS',
