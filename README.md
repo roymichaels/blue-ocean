@@ -130,15 +130,13 @@ authentication state persists across reloads on every platform.
 
 ### Peer-to-Peer Synchronization
 
-Settings, users, products and orders are synchronized between peers over the Waku
-network. Each domain is handled by a small agent that subscribes to a Waku topic
-and keeps a local in-memory cache. On startup every agent replays the topic's
-history so the latest state is restored. When a record changes locally, call the
-appropriate `sendWaku...Update` function to broadcast the update. Each agent
-listens for new messages on its topic and applies them automatically, so data
-can be rehydrated from history at any time.
+Settings, users, products and orders are now managed through TON-based
+services rather than Waku. Each domain has a small agent that reads and writes
+state via its corresponding TON service, keeping a local in-memory cache for
+fast access.
 
-Agents start automatically once the Waku secret has been generated.
+Waku is only used for lightweight messaging such as chat and notification
+payloads.
 
 ### Web Notes
 
