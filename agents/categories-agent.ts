@@ -1,20 +1,8 @@
 import { Category } from '../types';
-import { sendWakuCategoryUpdate } from '../lib/waku/sendWakuCategoryUpdate';
-import WakuAgent from '../utils/wakuAgent';
 import tonAuth from '../services/tonAuth';
+import { setCategory, getCategory, listCategories, removeCategory } from '../services/tonCategories';
 
-// Publishes and replicates category records via Waku
-
-class CategoriesAgent extends WakuAgent<Category> {
-  constructor() {
-    super(sendWakuCategoryUpdate, {
-      topic: '/congress/categories/1',
-      replayHistory: true,
-      extractItem: (msg: any) =>
-        msg.type === 'category.update' ? (msg.category as Category) : undefined,
-    });
-  }
-
+class CategoriesAgent {
   private async ensureWallet() {
     const address = tonAuth.getAddress();
     const publicKey = tonAuth.getTonPublicKey();
@@ -26,12 +14,25 @@ class CategoriesAgent extends WakuAgent<Category> {
 
   async add(item: Category): Promise<void> {
     await this.ensureWallet();
-    await super.add(item);
+    await setCategory(item);
   }
 
   async update(item: Category): Promise<void> {
     await this.ensureWallet();
-    await super.update(item);
+    await setCategory(item);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.ensureWallet();
+    await removeCategory(id);
+  }
+
+  async get(id: string): Promise<Category | null> {
+    return await getCategory(id);
+  }
+
+  async getAll(): Promise<Category[]> {
+    return await listCategories();
   }
 }
 
