@@ -1,0 +1,116 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../components/AuthContext';
+import GlobalHeader from '../../components/GlobalHeader';
+import InfoModal from '../../components/InfoModal';
+import OrderService from '../../services/orders';
+import { Order, OrderStatus } from '../../types';
+import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
+
+export default function OrderDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { colors } = useTheme();
+  const { user, isDriver } = useAuth();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [infoModal, setInfoModal] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      if (!id) return;
+      const svc = OrderService.getInstance();
+      const o = await svc.getOrder(id);
+      setOrder(o);
+    };
+    load();
+  }, [id]);
+
+  const address = user?.address;
+  const isSeller = !!address && order?.sellerAddress === address;
+  const canUpdate = !!order && (isSeller || isDriver);
+  const nextStatuses: OrderStatus[] = order ? ALLOWED_STATUS_TRANSITIONS[order.status] || [] : [];
+
+  const statusLabel = (status: OrderStatus) => {
+    switch (status) {
+      case 'order_received':
+        return 'הזמנה התקבלה';
+      case 'courier_found':
+        return 'נמצא שליח';
+      case 'courier_picked_up':
+        return 'שליח אסף';
+      case 'courier_on_way':
+        return 'שליח בדרך';
+      case 'delivered':
+        return 'הזמנה נמסרה';
+      case 'released':
+        return 'תשלום שוחרר';
+      case 'refunded':
+        return 'תשלום הוחזר';
+      default:
+        return status;
+    }
+  };
+
+  const handleUpdate = async (status: OrderStatus) => {
+    if (!order) return;
+    try {
+      const svc = OrderService.getInstance();
+      await svc.updateOrderStatus(order.id, status);
+      const updated = await svc.getOrder(order.id);
+      setOrder(updated);
+      setInfoModal({ visible: true, title: 'עודכן', message: 'סטטוס ההזמנה עודכן', type: 'success' });
+    } catch (e) {
+      setInfoModal({ visible: true, title: 'שגיאה', message: 'עדכון הסטטוס נכשל', type: 'error' });
+    }
+  };
+
+  return (
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <GlobalHeader title={`הזמנה #${id}`} showBackButton />
+      {order && (
+        <View style={styles.content}>
+          <Text style={[styles.status, { color: colors.text.primary }]}>סטטוס נוכחי: {statusLabel(order.status)}</Text>
+          {canUpdate && nextStatuses.length > 0 && (
+            <View style={styles.actions}>
+              {nextStatuses.map((s) => (
+                <TouchableOpacity
+                  key={s}
+                  style={[styles.button, { backgroundColor: colors.interactive.primary }]}
+                  onPress={() => handleUpdate(s)}
+                >
+                  <Text style={[styles.buttonText, { color: colors.text.contrast }]}>{statusLabel(s)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+      {!order && (
+        <Text style={{ color: colors.text.primary, textAlign: 'center' }}>הזמנה לא נמצאה</Text>
+      )}
+      <InfoModal
+        visible={infoModal.visible}
+        title={infoModal.title}
+        message={infoModal.message}
+        type={infoModal.type}
+        onClose={() => setInfoModal({ ...infoModal, visible: false })}
+      />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  content: { padding: 16 },
+  status: { fontSize: 18, fontWeight: '600', textAlign: 'right', marginBottom: 24 },
+  actions: { gap: 12 },
+  button: { paddingVertical: 12, borderRadius: 8 },
+  buttonText: { fontSize: 16, textAlign: 'center', fontWeight: '600' },
+});
+
