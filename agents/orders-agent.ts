@@ -55,8 +55,17 @@ class OrdersAgent {
     }
   }
 
-  async add(order: Order): Promise<void> {
+  private async ensureAuthorized(order: Order) {
     await this.ensureWallet();
+    const address = tonAuth.getAddress();
+    const allowed = [order.buyerAddress, order.sellerAddress, order.driverAddress].filter(Boolean);
+    if (!address || !allowed.includes(address)) {
+      throw new Error('Unauthorized order update');
+    }
+  }
+
+  async add(order: Order): Promise<void> {
+    await this.ensureAuthorized(order);
     let enriched = order;
     if (!order.paymentContractAddress || !order.paymentTxHash) {
       const { contractAddress, txHash } = await deployOrderPayment(order.total);
@@ -97,11 +106,11 @@ class OrdersAgent {
   }
 
   async update(order: Order): Promise<void> {
-    await this.ensureWallet();
     const current = await this.get(order.id);
     if (!current) {
       throw new Error('Order not found');
     }
+    await this.ensureAuthorized(current);
     let statusChanged = false;
     if (order.status !== current.status) {
       const allowed = ALLOWED_STATUS_TRANSITIONS[current.status] || [];
@@ -123,7 +132,11 @@ class OrdersAgent {
   }
 
   async remove(id: string): Promise<void> {
-    await this.ensureWallet();
+    const order = await this.get(id);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    await this.ensureAuthorized(order);
     await removeOrder(id);
   }
 
@@ -140,11 +153,11 @@ class OrdersAgent {
   }
 
   async releasePayment(orderId: string): Promise<string> {
-    await this.ensureWallet();
     const order = await this.get(orderId);
     if (!order) {
       throw new Error('Order not found');
     }
+    await this.ensureAuthorized(order);
     if (!order.paymentContractAddress) {
       throw new Error('Order payment contract not found');
     }
@@ -175,11 +188,11 @@ class OrdersAgent {
   }
 
   async refundPayment(orderId: string): Promise<string> {
-    await this.ensureWallet();
     const order = await this.get(orderId);
     if (!order) {
       throw new Error('Order not found');
     }
+    await this.ensureAuthorized(order);
     if (!order.paymentContractAddress) {
       throw new Error('Order payment contract not found');
     }

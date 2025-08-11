@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getStore } from '../../../services/tonStores';
 import ProductCard from '../../../components/ProductCard';
 import { Store, Product } from '../../../types';
 import productsAgent from '../../../agents/products-agent';
+import moderationAgent from '../../../agents/moderation-agent';
+import { Shield } from 'lucide-react-native';
 
 export default function StoreProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,6 +37,16 @@ export default function StoreProfileScreen() {
     load();
   }, [id]);
 
+  const handleReport = async () => {
+    if (!store) return;
+    try {
+      await moderationAgent.reportStore(store.id, 'inappropriate');
+      Alert.alert('Report sent', 'Thank you for your feedback');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to send report');
+    }
+  };
+
   if (!store) {
     return (
       <View
@@ -59,17 +71,26 @@ export default function StoreProfileScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.profile}>
-        <Text style={[styles.storeName, { color: colors.text.primary }]}>
+        <Text style={[styles.storeName, { color: colors.text.primary }]}> 
           {store.name}
         </Text>
-        <Text style={[styles.storeOwner, { color: colors.text.secondary }]}>
+        <Text style={[styles.storeOwner, { color: colors.text.secondary }]}> 
           {store.owner}
         </Text>
         <View style={styles.ratingRow}>
           <Text style={[styles.rating, { color: colors.text.primary }]}>⭐ {storeRating.avg.toFixed(1)}</Text>
           <Text style={[styles.reviews, { color: colors.text.tertiary }]}>({storeRating.count})</Text>
         </View>
-        <Text style={[styles.reputation, { color: colors.text.primary }]}>Reputation: {Math.round((store.reputation ?? 0) * 100)}%</Text>
+        <TouchableOpacity
+          style={[
+            styles.reportButton,
+            { borderColor: colors.status.error, backgroundColor: colors.surface.primary },
+          ]}
+          onPress={handleReport}
+        >
+          <Shield size={16} color={colors.status.error} />
+          <Text style={[styles.reportButtonText, { color: colors.status.error }]}>Report Store</Text>
+        </TouchableOpacity>
       </View>
       {products.map((p) => (
         <ProductCard key={p.id} product={p} style={{ marginBottom: 12 }} />
@@ -92,6 +113,19 @@ const styles = StyleSheet.create({
   ratingRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   rating: { fontSize: 14, fontWeight: '500' },
   reviews: { fontSize: 14, marginLeft: 4 },
-  reputation: { fontSize: 14, marginTop: 4 },
+  reportButton: {
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  reportButtonText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500',
+  },
 });
 

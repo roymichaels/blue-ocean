@@ -151,6 +151,15 @@ export interface Notification {
   timestamp: number;
 }
 
+export interface Report {
+  id: string;
+  type: 'product' | 'store';
+  targetId: string;
+  reason: string;
+  reporter: string;
+  timestamp: number;
+}
+
 export interface Review {
   id: string;
   productId: string;
@@ -223,6 +232,7 @@ export interface Order {
   paymentMethod: 'cash_on_delivery' | 'ton';
   buyerAddress?: string;
   sellerAddress?: string;
+  driverAddress?: string;
   paymentContractAddress?: string;
   createdAt: string;
   updatedAt: string;
