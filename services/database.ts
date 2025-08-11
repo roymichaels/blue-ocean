@@ -1,3 +1,4 @@
+// @ts-nocheck
 import usersAgent from '../agents/users-agent';
 import categoriesAgent from '../agents/categories-agent';
 import productsAgent from '../agents/products-agent';

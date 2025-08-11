@@ -17,7 +17,7 @@ beforeEach(() => {
 describe('DatabaseService basic operations', () => {
   it('handles product lifecycle', async () => {
     const db = DatabaseService.getInstance();
-    await storesAgent.add({ id: 'store1', name: 'Store', owner: 'owner1' });
+    await storesAgent.add({ id: 'store1', name: 'Store', owner: 'owner1', nftId: 'nft1' });
     const prodId = await db.addProduct({
       name: 'Test',
       price: 1,
@@ -50,7 +50,7 @@ describe('DatabaseService basic operations', () => {
 
   it('stores wishlist items per user', async () => {
     const db = DatabaseService.getInstance();
-    await storesAgent.add({ id: 'store1', name: 'Store', owner: 'owner1' });
+    await storesAgent.add({ id: 'store1', name: 'Store', owner: 'owner1', nftId: 'nft1' });
     const id = await db.addProduct({
       name: 'Wish',
       price: 5,

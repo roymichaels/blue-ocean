@@ -29,6 +29,7 @@ export interface Store {
   id: string;
   name: string;
   owner: string;
+  nftId: string;
 }
 
 export interface Category {

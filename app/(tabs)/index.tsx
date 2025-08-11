@@ -350,6 +350,12 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        <TouchableOpacity
+          style={[styles.becomeSellerButton, { backgroundColor: colors.gold }]}
+          onPress={() => router.push('/stores/create')}
+        >
+          <Text style={[styles.becomeSellerText, { color: colors.text.inverse }]}>Become a Seller</Text>
+        </TouchableOpacity>
         {/* Hero Banner Carousel */}
         <View style={styles.bannerContainer}>
           <View style={styles.bannerHeader}>
@@ -641,6 +647,18 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  becomeSellerButton: {
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginBottom: 24,
+  },
+  becomeSellerText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   bannerContainer: {
     height: BANNER_HEIGHT + 40,

@@ -4,7 +4,7 @@ import {
   useTonAddress as useTCAddress,
   useTonConnectUI,
 } from '@tonconnect/ui-react';
-import {
+import React, {
   createContext,
   useContext,
   useEffect,
@@ -18,17 +18,17 @@ let tonConnect: TonConnectUI | null = null;
 const TonConnectContext = createContext<TonConnectUI | null>(null);
 
 export const TonConnectProvider = ({ children }: { children: ReactNode }) => {
-  const { tonConnectUI } = useTonConnectUI();
+  const [tonConnectUI] = useTonConnectUI();
 
   // Keep the global reference in sync
   useEffect(() => {
     tonConnect = tonConnectUI;
   }, [tonConnectUI]);
 
-  return (
-    <TonConnectContext.Provider value={tonConnectUI}>
-      {children}
-    </TonConnectContext.Provider>
+  return React.createElement(
+    TonConnectContext.Provider,
+    { value: tonConnectUI },
+    children,
   );
 };
 
@@ -38,7 +38,7 @@ export const useTonAddress = useTCAddress;
 // Hook to access the TonConnectUI instance from context or directly
 export const useTonConnect = () => {
   const context = useContext(TonConnectContext);
-  const { tonConnectUI } = useTonConnectUI();
+  const [tonConnectUI] = useTonConnectUI();
   const instance = context ?? tonConnectUI;
 
   useEffect(() => {
