@@ -23,3 +23,10 @@ export async function listOrders(): Promise<Order[]> {
   const items = await listValues(ADDRESS);
   return items.map((i) => JSON.parse(i.value) as Order);
 }
+
+export async function listOrdersBySeller(sellerAddress: string): Promise<Order[]> {
+  const items = await listValues(ADDRESS);
+  return items
+    .map((i) => JSON.parse(i.value) as Order)
+    .filter((o) => o.sellerAddress === sellerAddress);
+}

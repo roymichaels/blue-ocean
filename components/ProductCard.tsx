@@ -16,6 +16,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import CartService from '../services/cart';
 import DatabaseService from '../services/database';
 import MediaService from '../services/media';
+import { useTonAddress } from '../services/tonAuth';
 
 interface ProductCardProps {
   product: Product;
@@ -43,6 +44,11 @@ export default function ProductCard({
   const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+  const address = useTonAddress();
+
+  if (address && product.storeId !== address) {
+    return null;
+  }
 
   useEffect(() => {
     const cartService = CartService.getInstance();
