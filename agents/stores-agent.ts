@@ -12,14 +12,19 @@ class StoresAgent {
     }
   }
 
+  private toRecord(item: Store) {
+    const { id, name, owner, nftId } = item;
+    return { id, name, owner, nftId };
+  }
+
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
-    await setStore({ id: item.id, name: item.name, owner: item.owner, nftId: item.nftId });
+    await setStore(this.toRecord(item));
   }
 
   async update(item: Store): Promise<void> {
     await this.ensureWallet();
-    await setStore({ id: item.id, name: item.name, owner: item.owner, nftId: item.nftId });
+    await setStore(this.toRecord(item));
   }
 
   async remove(id: string): Promise<void> {
