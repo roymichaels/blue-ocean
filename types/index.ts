@@ -36,6 +36,7 @@ export interface Store {
   name: string;
   owner: string;
   nftId: string;
+  reputation?: number;
 }
 
 export interface Category {

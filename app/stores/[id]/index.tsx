@@ -69,6 +69,7 @@ export default function StoreProfileScreen() {
           <Text style={[styles.rating, { color: colors.text.primary }]}>⭐ {storeRating.avg.toFixed(1)}</Text>
           <Text style={[styles.reviews, { color: colors.text.tertiary }]}>({storeRating.count})</Text>
         </View>
+        <Text style={[styles.reputation, { color: colors.text.primary }]}>Reputation: {Math.round((store.reputation ?? 0) * 100)}%</Text>
       </View>
       {products.map((p) => (
         <ProductCard key={p.id} product={p} style={{ marginBottom: 12 }} />
@@ -91,5 +92,6 @@ const styles = StyleSheet.create({
   ratingRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   rating: { fontSize: 14, fontWeight: '500' },
   reviews: { fontSize: 14, marginLeft: 4 },
+  reputation: { fontSize: 14, marginTop: 4 },
 });
 
