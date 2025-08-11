@@ -11,6 +11,9 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import path from 'path';
 import readline from 'readline';
 
+// Reusable readline interface so stdin can be piped or provided interactively.
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
 const PUBLIC_RPC_ENDPOINTS = [
   'https://testnet.toncenter.com/api/v2/jsonRPC',
   'https://toncenter.com/api/v2/jsonRPC',
@@ -18,11 +21,7 @@ const PUBLIC_RPC_ENDPOINTS = [
 ];
 
 function ask(query: string): Promise<string> {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => rl.question(query, (ans) => {
-    rl.close();
-    resolve(ans.trim());
-  }));
+  return new Promise((resolve) => rl.question(query, (ans) => resolve(ans.trim())));
 }
 
 async function main() {
@@ -122,7 +121,10 @@ async function main() {
   console.log(`Saved to ${addressesPath}`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main()
+  .then(() => rl.close())
+  .catch((err) => {
+    console.error(err);
+    rl.close();
+    process.exit(1);
+  });
