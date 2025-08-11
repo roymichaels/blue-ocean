@@ -50,7 +50,7 @@ export default function ProductCard({
   const selectedVariant = variants[selectedVariantIndex];
   const stock = selectedVariant ? selectedVariant.stock : product.stock;
 
-  if (address && product.storeId !== address) {
+  if (isAdmin && address && product.storeId !== address) {
     return null;
   }
 

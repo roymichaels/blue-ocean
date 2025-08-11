@@ -21,6 +21,7 @@ import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
+import { useTonAddress } from '../services/tonAuth';
 
 interface ProductFormModalProps {
   visible: boolean;
@@ -39,6 +40,7 @@ export default function ProductFormModal({
 }: ProductFormModalProps) {
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+  const address = useTonAddress();
   const [editingProduct, setEditingProduct] = useState<Partial<Product>>({});
   const [imageUrls, setImageUrls] = useState('');
   const [videoUrls, setVideoUrls] = useState('');
@@ -66,7 +68,7 @@ export default function ProductFormModal({
       loadCategories();
       loadPricingTiers();
     }
-  }, [visible, product]);
+  }, [visible, product, address]);
 
   useEffect(() => {
     const category = categories.find(c => c.id === editingProduct.category);
@@ -77,7 +79,14 @@ export default function ProductFormModal({
     setEditingProduct(
       product
         ? { ...product }
-        : { name: '', price: 0, description: '', category: '', stock: 0 }
+        : {
+            name: '',
+            price: 0,
+            description: '',
+            category: '',
+            stock: 0,
+            storeId: address || '',
+          }
     );
 
     setImageUrls((product?.images || []).join('\n'));
@@ -178,6 +187,7 @@ export default function ProductFormModal({
       const totalVariantStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
       const data = {
         ...editingProduct,
+        storeId: editingProduct.storeId || address || '',
         images,
         videos,
         colors: variants.map(v => v.color),
