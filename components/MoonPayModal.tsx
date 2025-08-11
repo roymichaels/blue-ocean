@@ -3,6 +3,7 @@ import { Modal, View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import LoadingSpinner from './LoadingSpinner';
 import { useTheme } from '../contexts/ThemeContext';
+import config from '../utils/appConfig';
 
 interface MoonPayModalProps {
   visible: boolean;
@@ -22,7 +23,9 @@ export default function MoonPayModal({
   const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
 
-  const url = `https://buy.moonpay.com?currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
+  if (!config.moonpayKey) return null;
+
+  const url = `https://buy.moonpay.com?apiKey=${config.moonpayKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
 
   // Inject JavaScript to pre-fill the fiat amount once the widget has loaded
   const injectedJavaScript = `
