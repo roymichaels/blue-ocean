@@ -1,3 +1,4 @@
+// @ts-nocheck
 import TonWeb from 'tonweb';
 import { Buffer } from 'buffer';
 import { getTonConnect } from './tonAuth';

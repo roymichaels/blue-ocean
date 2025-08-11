@@ -25,6 +25,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { router } from 'expo-router';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
+import { deployOrderPayment } from '../services/tonContract';
+import tonAuth from '../services/tonAuth';
 
 interface CartModalProps {
   visible: boolean;
@@ -269,24 +271,34 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     try {
       const orderService = OrderService.getInstance();
       const cartService = CartService.getInstance();
-      
+
+      await tonAuth.openModal();
+      const total = getTotal();
+      const { contractAddress, txHash } = await deployOrderPayment(total);
+
       const order = await orderService.createOrder(
         user?.id || 'guest',
         cartItems,
-        shippingAddress
+        shippingAddress,
+        {
+          method: 'ton',
+          contractAddress,
+          txHash,
+          buyerAddress: tonAuth.getAddress() || undefined,
+        },
       );
 
       setOrderId(order.id);
       setOrderPlaced(true);
       await cartService.clearCart();
-      
+
       // Show notification
       showNotification(
         'הזמנה התקבלה',
         `הזמנה מספר ${order.id.slice(-6)} נוצרה בהצלחה`,
-        'success'
+        'success',
       );
-      
+
       // Close modal after a delay
       setTimeout(() => {
         onClose();
@@ -296,7 +308,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         visible: true,
         title: 'שגיאה',
         message: 'אירעה שגיאה ביצירת ההזמנה',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setLoading(false);

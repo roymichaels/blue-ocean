@@ -61,6 +61,13 @@ class OrderService {
     userId: string,
     items: CartItem[],
     shippingAddress: ShippingAddress,
+    payment?: {
+      method?: 'cash_on_delivery' | 'ton';
+      contractAddress?: string;
+      txHash?: string;
+      buyerAddress?: string;
+      sellerAddress?: string;
+    },
   ): Promise<Order> {
     const total = items.reduce((sum, item) => {
       const price = item.unitPrice ?? item.product.price;
@@ -76,7 +83,11 @@ class OrderService {
       total,
       status: 'order_received',
       shippingAddress,
-      paymentMethod: 'cash_on_delivery',
+      paymentMethod: payment?.method ?? 'cash_on_delivery',
+      buyerAddress: payment?.buyerAddress,
+      sellerAddress: payment?.sellerAddress,
+      paymentContractAddress: payment?.contractAddress,
+      paymentTxHash: payment?.txHash,
       createdAt: timestamp,
       updatedAt: timestamp,
       trackingSteps: this.getTrackingSteps('order_received'),
