@@ -1,36 +1,76 @@
-import config from '../utils/appConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchSettings } from '../services/tonSettings';
 
 export let TENANT = 'thecongress';
 
 export interface TenantSettings {
-  name: string;
+  appName: string;
   primaryColor: string;
-  logo: any;
+  logoCid: string;
+  moonpayKey?: string;
 }
 
 export let AppConfig: TenantSettings = {
-  name: 'Blue Ocean',
+  appName: 'Blue Ocean',
   primaryColor: '#B99C5A',
-  logo: require('../assets/images/icon.png'),
+  logoCid: '',
 };
 
 export async function loadTenantSettings(): Promise<void> {
-  const tenant = config.EXPO_PUBLIC_TENANT?.trim() || 'thecongress';
-  TENANT = tenant;
+  const TENANT_KEY = 'app_tenant_id';
+  const NAME_KEY = 'app_name';
+  const COLOR_KEY = 'app_theme_primary';
+  const LOGO_KEY = 'app_logo';
+  const MOONPAY_KEY = 'app_moonpay_key';
 
-  const name = config.APP_NAME || 'Blue Ocean';
-  const primaryColor = config.PRIMARY_COLOR || '#B99C5A';
-  const logo = config.APP_LOGO || require('../assets/images/icon.png');
-  AppConfig = { name, primaryColor, logo };
+  try {
+    const [t, name, color, logo, moon] = await AsyncStorage.multiGet([
+      TENANT_KEY,
+      NAME_KEY,
+      COLOR_KEY,
+      LOGO_KEY,
+      MOONPAY_KEY,
+    ]);
+
+    if (t?.[1]) TENANT = t[1];
+    AppConfig = {
+      appName: name?.[1] || AppConfig.appName,
+      primaryColor: color?.[1] || AppConfig.primaryColor,
+      logoCid: logo?.[1] || AppConfig.logoCid,
+      moonpayKey: moon?.[1] || undefined,
+    };
+
+    const remote = await fetchSettings();
+    TENANT = remote.tenantId;
+    AppConfig = {
+      appName: remote.appName,
+      primaryColor: remote.theme.primary,
+      logoCid: remote.brand.logoCid,
+      moonpayKey: remote.moonpayKey,
+    };
+
+    await AsyncStorage.multiSet([
+      [TENANT_KEY, remote.tenantId],
+      [NAME_KEY, remote.appName],
+      [COLOR_KEY, remote.theme.primary],
+      [LOGO_KEY, remote.brand.logoCid],
+      [MOONPAY_KEY, remote.moonpayKey ?? ''],
+    ]);
+  } catch (e) {
+    console.error('Error loading tenant settings:', e);
+  }
 }
 
 export async function getTenant(): Promise<string> {
-  return config.EXPO_PUBLIC_TENANT?.trim() || 'thecongress';
+  if (!TENANT) {
+    await loadTenantSettings();
+  }
+  return TENANT;
 }
 
 export async function getAppConfig(): Promise<TenantSettings> {
-  const name = config.APP_NAME || 'Blue Ocean';
-  const primaryColor = config.PRIMARY_COLOR || '#B99C5A';
-  const logo = config.APP_LOGO || require('../assets/images/icon.png');
-  return { name, primaryColor, logo };
+  if (!AppConfig) {
+    await loadTenantSettings();
+  }
+  return AppConfig;
 }

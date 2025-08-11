@@ -6,7 +6,12 @@ import {
   setAdmins as storeAdmins,
 } from '../services/tonSettings';
 
-interface SettingItem { id: string; value: string }
+type SettingKey =
+  | 'tenantId'
+  | 'appName'
+  | 'theme.primary'
+  | 'brand.logoCid'
+  | 'moonpayKey';
 
 class SettingsAgent {
   private static instance: SettingsAgent;
@@ -32,19 +37,12 @@ class SettingsAgent {
     return await getSetting(key);
   }
 
-  async getTenantSetting(
-    tenant: string,
-    key: 'platform_name' | 'platform_logo' | 'theme_color',
-  ): Promise<string | null> {
-    return await getSetting(`${tenant}:${key}`);
+  async getSettingValue(key: SettingKey): Promise<string | null> {
+    return await getSetting(key);
   }
 
-  async updateTenantSetting(
-    tenant: string,
-    key: 'platform_name' | 'platform_logo' | 'theme_color',
-    value: string,
-  ): Promise<void> {
-    await this.set(`${tenant}:${key}`, value);
+  async updateSettingValue(key: SettingKey, value: string): Promise<void> {
+    await this.set(key, value);
   }
 
   async getAdmins(): Promise<string[]> {

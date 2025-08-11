@@ -266,10 +266,11 @@ export interface ShippingAddress {
 }
 
 export interface TenantSettings {
-  tenant_id: string;
-  platform_name?: string | null;
-  platform_logo?: string | null;
-  theme_color?: string | null;
+  tenantId: string;
+  appName?: string | null;
+  theme?: { primary?: string | null };
+  brand?: { logoCid?: string | null };
+  moonpayKey?: string | null;
 }
 
 export interface RoadmapTask {

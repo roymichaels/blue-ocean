@@ -45,7 +45,7 @@ export default function ProfileScreen() {
   const { isLoggedIn, isAdmin, isDriver, user, logout } = useAuth();
   const { t, currentLanguage, setLanguage } = useLanguage();
   const { theme, toggleTheme, colors } = useTheme();
-  const { platformName } = useAppInfo();
+  const { appName } = useAppInfo();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showOrderTracking, setShowOrderTracking] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -514,7 +514,7 @@ export default function ProfileScreen() {
         {/* App Info */}
         <View style={styles.appInfo}>
           <Text style={[styles.appVersion, { color: colors.text.tertiary }]}>{t('profile.version')}</Text>
-          <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}>© 2024 {platformName || t('ageVerification.platformName')}</Text>
+          <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}>© 2024 {appName || t('ageVerification.platformName')}</Text>
         </View>
       </ScrollView>
 

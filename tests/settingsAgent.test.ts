@@ -17,14 +17,14 @@ describe('SettingsAgent TON integration', () => {
 
   it('returns null when setting missing', async () => {
     const agent = SettingsAgent.getInstance();
-    const val = await agent.getTenantSetting('foo', 'platform_name');
+    const val = await agent.getSettingValue('appName');
     expect(val).toBeNull();
   });
 
   it('updates and retrieves setting via TON service', async () => {
     const agent = SettingsAgent.getInstance();
-    await agent.updateTenantSetting('foo', 'platform_name', 'Test');
-    const val = await agent.getTenantSetting('foo', 'platform_name');
+    await agent.updateSettingValue('appName', 'Test');
+    const val = await agent.getSettingValue('appName');
     expect(val).toBe('Test');
   });
 });
