@@ -23,9 +23,9 @@ export default function MoonPayModal({
   const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
 
-  if (!config.moonpayKey) return null;
+  if (!config.fiatKey) return null;
 
-  const url = `https://buy.moonpay.com?apiKey=${config.moonpayKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
+  const url = `https://buy.moonpay.com?apiKey=${config.fiatKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
 
   // Inject JavaScript to pre-fill the fiat amount once the widget has loaded
   const injectedJavaScript = `

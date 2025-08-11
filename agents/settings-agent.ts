@@ -11,7 +11,7 @@ type SettingKey =
   | 'appName'
   | 'theme.primary'
   | 'brand.logoCid'
-  | 'moonpayKey';
+  | 'fiatKey';
 
 class SettingsAgent {
   private static instance: SettingsAgent;

@@ -7,7 +7,7 @@ export interface TenantSettings {
   appName: string;
   primaryColor: string;
   logoCid: string;
-  moonpayKey?: string;
+  fiatKey?: string;
 }
 
 export let AppConfig: TenantSettings = {
@@ -21,15 +21,15 @@ export async function loadTenantSettings(): Promise<void> {
   const NAME_KEY = 'app_name';
   const COLOR_KEY = 'app_theme_primary';
   const LOGO_KEY = 'app_logo';
-  const MOONPAY_KEY = 'app_moonpay_key';
+  const FIAT_KEY = 'app_fiat_key';
 
   try {
-    const [t, name, color, logo, moon] = await AsyncStorage.multiGet([
+    const [t, name, color, logo, fiat] = await AsyncStorage.multiGet([
       TENANT_KEY,
       NAME_KEY,
       COLOR_KEY,
       LOGO_KEY,
-      MOONPAY_KEY,
+      FIAT_KEY,
     ]);
 
     if (t?.[1]) TENANT = t[1];
@@ -37,7 +37,7 @@ export async function loadTenantSettings(): Promise<void> {
       appName: name?.[1] || AppConfig.appName,
       primaryColor: color?.[1] || AppConfig.primaryColor,
       logoCid: logo?.[1] || AppConfig.logoCid,
-      moonpayKey: moon?.[1] || undefined,
+      fiatKey: fiat?.[1] || undefined,
     };
 
     const remote = await fetchSettings();
@@ -46,7 +46,7 @@ export async function loadTenantSettings(): Promise<void> {
       appName: remote.appName,
       primaryColor: remote.theme.primary,
       logoCid: remote.brand.logoCid,
-      moonpayKey: remote.moonpayKey,
+      fiatKey: remote.fiatKey,
     };
 
     await AsyncStorage.multiSet([
@@ -54,7 +54,7 @@ export async function loadTenantSettings(): Promise<void> {
       [NAME_KEY, remote.appName],
       [COLOR_KEY, remote.theme.primary],
       [LOGO_KEY, remote.brand.logoCid],
-      [MOONPAY_KEY, remote.moonpayKey ?? ''],
+      [FIAT_KEY, remote.fiatKey ?? ''],
     ]);
   } catch (e) {
     console.error('Error loading tenant settings:', e);

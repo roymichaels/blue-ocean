@@ -16,7 +16,7 @@ interface AppInfoContextType {
   appName: string;
   logoCid: string;
   themeColor: string;
-  moonpayKey?: string;
+  fiatKey?: string;
   setAppName: (name: string) => Promise<void>;
   setLogoCid: (logo: string) => Promise<void>;
   setThemeColor: (color: string) => Promise<void>;
@@ -27,6 +27,7 @@ const AppInfoContext = createContext<AppInfoContextType>({
   appName: '',
   logoCid: '',
   themeColor: '#B99C5A',
+  fiatKey: undefined,
   setAppName: async () => {},
   setLogoCid: async () => {},
   setThemeColor: async () => {},
@@ -45,7 +46,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   const [appName, setAppNameState] = useState('');
   const [logoCid, setLogoCidState] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
-  const [moonpayKey, setMoonpayKey] = useState<string | undefined>(undefined);
+  const [fiatKey, setFiatKey] = useState<string | undefined>(undefined);
   const reloadTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadInfo = async () => {
@@ -56,16 +57,16 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     const NAME_KEY = `app_name_${currentTenant}`;
     const LOGO_KEY = `app_logo_${currentTenant}`;
     const COLOR_KEY = `app_theme_primary_${currentTenant}`;
-    const MOONPAY_KEY = `app_moonpay_key_${currentTenant}`;
+    const FIAT_KEY = `app_fiat_key_${currentTenant}`;
     try {
       const storedName = await AsyncStorage.getItem(NAME_KEY);
       const storedLogo = await AsyncStorage.getItem(LOGO_KEY);
       const storedColor = await AsyncStorage.getItem(COLOR_KEY);
-      const storedMoon = await AsyncStorage.getItem(MOONPAY_KEY);
+      const storedFiat = await AsyncStorage.getItem(FIAT_KEY);
       if (storedName) setAppNameState(storedName);
       if (storedLogo) setLogoCidState(storedLogo);
       if (storedColor) setThemeColorState(storedColor);
-      if (storedMoon) setMoonpayKey(storedMoon || undefined);
+      if (storedFiat) setFiatKey(storedFiat || undefined);
 
       try {
         const remote = await fetchSettings();
@@ -89,11 +90,11 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
             remote.theme.primary,
           );
         }
-        if (remote.moonpayKey) {
-          setMoonpayKey(remote.moonpayKey);
+        if (remote.fiatKey) {
+          setFiatKey(remote.fiatKey);
           await AsyncStorage.setItem(
-            `app_moonpay_key_${remote.tenantId}`,
-            remote.moonpayKey,
+            `app_fiat_key_${remote.tenantId}`,
+            remote.fiatKey,
           );
         }
       } catch (err) {
@@ -203,7 +204,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
         appName,
         logoCid,
         themeColor,
-        moonpayKey,
+        fiatKey,
         setAppName,
         setLogoCid,
         setThemeColor,
