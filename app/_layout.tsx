@@ -26,7 +26,6 @@ import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
 import { ConfigProvider } from '../contexts/ConfigContext';
 import { loadTenantSettings } from '../constants/tenant';
-import { initConfig } from '../utils/appConfig';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
@@ -86,7 +85,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     (async () => {
-      await initConfig();
       await loadTenantSettings();
       setReady(true);
     })();

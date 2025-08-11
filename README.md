@@ -27,10 +27,13 @@ All data is ephemeral and synchronized between peers over Waku; no external serv
 
 ### Environment Variables
 
-The application loads configuration from a `.env` file. At minimum, define:
+The project reads all configuration from a `.env` file using Expo's env
+support for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests.
+Copy `.env.example` to `.env` and set at minimum:
 
 - `EXPO_PUBLIC_ADMIN_USERNAME`
 - `EXPO_PUBLIC_WAKU_SECRET`
+- `EXPO_PUBLIC_WAKU_BOOTSTRAP`
 - `EXPO_PUBLIC_JWT_SECRET`
 - `EXPO_PUBLIC_CHAT_SECRET`
 - `TON_NOTIFICATIONS_ADDRESS`

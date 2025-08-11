@@ -3,8 +3,6 @@
 // Waku. **All production peers must use the same secret** or messages will
 // not be readable between them.
 
-const config: Record<string, string> = {};
-
 const ENV_KEYS = [
   'EXPO_PUBLIC_JWT_SECRET',
   'EXPO_PUBLIC_CHAT_SECRET',
@@ -20,19 +18,35 @@ const ENV_KEYS = [
   'APP_NAME',
   'PRIMARY_COLOR',
   'APP_LOGO',
+  'TON_NOTIFICATIONS_ADDRESS',
+  'TON_STORES_ADDRESS',
+  'TON_ORDERS_ADDRESS',
+  'TON_SETTINGS_ADDRESS',
+  'TON_CART_ADDRESS',
+  'TON_USERS_ADDRESS',
+  'TON_PRODUCTS_ADDRESS',
+  'TON_CATEGORIES_ADDRESS',
 ];
 
-export async function initConfig(): Promise<void> {
+function loadConfig(): Record<string, string> {
+  const cfg: Record<string, string> = {};
   for (const key of ENV_KEYS) {
     const value = process.env[key];
     if (value !== undefined) {
-      config[key] = value;
+      cfg[key] = value;
     }
   }
+  return cfg;
 }
 
-export function setConfig(key: string, value: string): void {
-  config[key] = value;
+const config: Record<string, string> = loadConfig();
+
+export function reloadConfig(): void {
+  const fresh = loadConfig();
+  for (const key of Object.keys(config)) {
+    delete config[key];
+  }
+  Object.assign(config, fresh);
 }
 
 export function getWakuBootstrapNodes(): string[] {
