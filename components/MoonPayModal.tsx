@@ -3,7 +3,7 @@ import { Modal, View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import LoadingSpinner from './LoadingSpinner';
 import { useTheme } from '../contexts/ThemeContext';
-import config from '../utils/appConfig';
+import { useAppInfo } from '../contexts/AppInfoContext';
 
 interface MoonPayModalProps {
   visible: boolean;
@@ -23,11 +23,12 @@ export default function MoonPayModal({
   amountTON,
 }: MoonPayModalProps) {
   const { colors } = useTheme();
+  const { fiatKey } = useAppInfo();
   const [loading, setLoading] = useState(true);
 
-  if (!config.fiatKey) return null;
+  if (!fiatKey) return null;
 
-  const url = `https://buy.moonpay.com?apiKey=${config.fiatKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
+  const url = `https://buy.moonpay.com?apiKey=${fiatKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
 
   let injectedJavaScript: string | undefined;
   if (typeof amountTON === 'number') {
