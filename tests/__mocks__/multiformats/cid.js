@@ -1,1 +1,5 @@
-module.exports = { CID: {} };
+module.exports = {
+  CID: {
+    parse: jest.fn(() => ({})),
+  },
+};

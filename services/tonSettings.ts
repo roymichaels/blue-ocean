@@ -11,6 +11,8 @@ export interface TonSettings {
   theme: { primary: string };
   brand: { logoCid: string };
   fiatKey?: string;
+  feeAddress?: string;
+  feePercent?: number;
   admins: string[];
 }
 
@@ -38,6 +40,8 @@ export async function fetchSettings(): Promise<TonSettings> {
     theme: { primary: map['theme.primary'] ?? '#B99C5A' },
     brand: { logoCid: map['brand.logoCid'] ?? '' },
     fiatKey: map['fiatKey'],
+    feeAddress: map['feeAddress'] ?? '',
+    feePercent: map['feePercent'] ? parseInt(map['feePercent']) : 0,
     admins: map['admins'] ? JSON.parse(map['admins']) : [],
   };
 }

@@ -1,11 +1,13 @@
-import SettingsAgent from '../agents/settings-agent';
-
 jest.mock('../services/tonAuth', () => ({
   getAddress: () => 'addr_admin',
   getTonPublicKey: () => 'pub_admin',
   openModal: jest.fn(),
+  getTonConnect: () => ({
+    sendTransaction: jest.fn().mockResolvedValue({}),
+  }),
 }));
 
+import SettingsAgent from '../agents/settings-agent';
 jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
 import { __clear } from './tonKvMock';
 
@@ -26,5 +28,12 @@ describe('SettingsAgent TON integration', () => {
     await agent.updateSettingValue('appName', 'Test');
     const val = await agent.getSettingValue('appName');
     expect(val).toBe('Test');
+  });
+
+  it('handles fee settings', async () => {
+    const agent = SettingsAgent.getInstance();
+    await agent.updateSettingValue('feePercent', '5');
+    const fee = await agent.getSettingValue('feePercent');
+    expect(fee).toBe('5');
   });
 });
