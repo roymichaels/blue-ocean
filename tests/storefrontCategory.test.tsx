@@ -1,6 +1,10 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import StorefrontScreen from '../app/storefront';
+import CategoryScreen from '../app/storefront/category/[id]';
+
+jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => ({ id: 'vegetables' }),
+}));
 
 jest.mock('../contexts/ThemeContext', () => ({
   useTheme: () => ({
@@ -49,37 +53,13 @@ jest.mock('../components/ProductCard', () => ({
   default: ({ product }: any) => React.createElement('ProductCard', null, product.name),
 }));
 
-describe('StorefrontScreen', () => {
-  it('filters products by search, category and tags', async () => {
+describe('CategoryScreen', () => {
+  it('shows products for selected category', async () => {
     let root: renderer.ReactTestRenderer;
     await act(async () => {
-      root = renderer.create(<StorefrontScreen />);
+      root = renderer.create(<CategoryScreen />);
     });
-
-    const searchInput = root!.root.findByProps({ testID: 'search-input' });
-    await act(async () => {
-      searchInput.props.onChangeText('Apple');
-    });
-    let tree = root!.toJSON();
-    let str = JSON.stringify(tree);
-    expect(str).toContain('Apple');
-    expect(str).not.toContain('Carrot');
-
-    const categoryChip = root!.root.findByProps({ testID: 'category-vegetables' });
-    await act(async () => {
-      categoryChip.props.onPress();
-    });
-    tree = root!.toJSON();
-    str = JSON.stringify(tree);
-    expect(str).toContain('Carrot');
-    expect(str).not.toContain('Apple');
-
-    const tagChip = root!.root.findByProps({ testID: 'tag-root' });
-    await act(async () => {
-      tagChip.props.onPress();
-    });
-    tree = root!.toJSON();
-    str = JSON.stringify(tree);
+    const str = JSON.stringify(root!.toJSON());
     expect(str).toContain('Carrot');
     expect(str).not.toContain('Apple');
   });
