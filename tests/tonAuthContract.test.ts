@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import * as tonAuth from '../services/tonAuth';
 import {
-  createOrderPayment,
+  deployOrderPayment,
   releaseFunds,
   refundOrder,
   ORDER_PAYMENT_FACTORY_ADDRESS,
@@ -36,9 +36,8 @@ describe('Ton contract flows', () => {
     jest.clearAllMocks();
   });
 
-  it('creates order payment via TonConnect', async () => {
-    const order = { total: 5 } as any;
-    const result = await createOrderPayment(order);
+  it('deploys order payment via TonConnect', async () => {
+    const result = await deployOrderPayment(5);
     expect(mockTonConnect.sendTransaction).toHaveBeenCalled();
     const sent = mockTonConnect.sendTransaction.mock.calls[0][0];
     expect(sent.messages[0].address).toBe(ORDER_PAYMENT_FACTORY_ADDRESS);

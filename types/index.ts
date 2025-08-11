@@ -213,7 +213,7 @@ export interface Order {
   total: number;
   status: OrderStatus;
   shippingAddress: ShippingAddress;
-  paymentMethod: 'cash_on_delivery';
+  paymentMethod: 'cash_on_delivery' | 'ton';
   buyerAddress?: string;
   sellerAddress?: string;
   paymentContractAddress?: string;
