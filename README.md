@@ -10,13 +10,9 @@ This Expo project uses React Native with the Expo Router.
    yarn install
    ```
 
-2. **Configure secrets**
+2. **Create a `.env` file**
 
-   Generate a Waku key so peers can decrypt your messages:
-
-   ```sh
-   export EXPO_PUBLIC_WAKU_SECRET=$(openssl rand -hex 32)
-   ```
+   Copy `.env.example` to `.env` and fill in the required keys.
 
 3. **Start the Expo project**
 
@@ -31,64 +27,22 @@ All data is ephemeral and synchronized between peers over Waku; no external serv
 
 ### Environment Variables
 
-The app reads several secrets from the environment to encrypt peer-to-peer messages and sign tokens:
+The application loads configuration from a `.env` file. At minimum, define:
 
-- `EXPO_PUBLIC_WAKU_SECRET` – AES key used for Waku message encryption. If not provided one is generated on first launch.
-- `EXPO_PUBLIC_JWT_SECRET` – secret for signing JWT tokens.
-- `EXPO_PUBLIC_CHAT_SECRET` – secret used by the chat service.
-
-The test suite defines these variables with the following values in `tests/setupEnv.ts`:
-
-```sh
-export EXPO_PUBLIC_WAKU_SECRET=test_waku_secret
-export EXPO_PUBLIC_JWT_SECRET=test_jwt_secret
-export EXPO_PUBLIC_CHAT_SECRET=test_chat_secret
-```
-
-Set them in your shell or enter them in the system settings screen after the app starts. You can modify them later from that screen at any time.
-
-A Waku secret is generated automatically on first launch and peer-to-peer sync is always enabled.
-
-### Onboarding
-
-Start the app once the dependencies are installed. The first screen prompts you
-to sign up or log in. After authentication you'll be asked for a few setup
-details:
-
-- **App name** – required to configure your local instance.
-- **Pinata keys** – optional values that enable media uploads to IPFS via
-  Pinata.
-- **MoonPay key** – optional value enabling credit card purchases through the
-  MoonPay widget.
-- A JWT secret is generated automatically on first launch and stored locally.
-
-After saving the form the configuration is stored locally and subsequent
-launches skip this screen.
-
-If you provided Pinata credentials the `PinataService` will upload any product
-images or videos to IPFS automatically. Without these keys the app simply keeps
-the local file URIs.
-
-### Environment Variables
-
-The app also checks `process.env` for known configuration keys when it starts.
-If a variable is defined it **overrides** the value stored locally. This allows
-secrets to be injected at runtime without editing the on-device config. The
-recognized keys include:
-
+- `EXPO_PUBLIC_ADMIN_USERNAME`
+- `EXPO_PUBLIC_WAKU_SECRET`
 - `EXPO_PUBLIC_JWT_SECRET`
 - `EXPO_PUBLIC_CHAT_SECRET`
-- `EXPO_PUBLIC_WAKU_SECRET`
-- `EXPO_PUBLIC_ADMIN_USERNAME`
-- `EXPO_PUBLIC_PINATA_JWT`
-- `EXPO_PUBLIC_PINATA_API_KEY`
-- `EXPO_PUBLIC_PINATA_SECRET_API_KEY`
-- `EXPO_PUBLIC_TENANT`
-- `EXPO_PUBLIC_DEBUG_LOGS`
-- `MOONPAY_KEY`
-- `APP_NAME`
-- `PRIMARY_COLOR`
-- `APP_LOGO`
+- `TON_NOTIFICATIONS_ADDRESS`
+- `TON_STORES_ADDRESS`
+- `TON_ORDERS_ADDRESS`
+- `TON_SETTINGS_ADDRESS`
+- `TON_CART_ADDRESS`
+- `TON_USERS_ADDRESS`
+- `TON_PRODUCTS_ADDRESS`
+- `TON_CATEGORIES_ADDRESS`
+
+These values are read at build time and cannot be changed from the UI.
 
 ### Credit Card Checkout
 
@@ -165,7 +119,7 @@ replicating data in memory. There is no separate service to launch.
 
 ### Building the Web PWA
 
-Export the web build using Expo once onboarding is complete:
+Export the web build using Expo:
 
 ```sh
 yarn build:web

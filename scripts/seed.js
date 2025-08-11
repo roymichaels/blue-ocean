@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require('dotenv/config');
 
 try {
   require('ts-node/register');

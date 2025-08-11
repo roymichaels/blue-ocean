@@ -30,6 +30,7 @@
     "bcryptjs": "^2.4.3",
     "buffer": "^6.0.3",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
     "expo": "^53.0.16",
     "expo-audio": "~0.4.8",
     "expo-blur": "~14.1.3",

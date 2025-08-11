@@ -12,4 +12,5 @@ dist/
 
 # Environment files
 .env*
+!.env.example
 dump.sql
