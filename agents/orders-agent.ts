@@ -1,6 +1,6 @@
 import { Order } from '../types';
 import tonAuth from '../services/tonAuth';
-import { setOrder, getOrder, listOrders, removeOrder } from '../services/tonOrders';
+import { setOrder, getOrder, listOrders, removeOrder, listOrdersBySeller } from '../services/tonOrders';
 import {
   createOrderPayment,
   releaseFunds,
@@ -48,6 +48,10 @@ class OrdersAgent {
 
   async getAll(): Promise<Order[]> {
     return await listOrders();
+  }
+
+  async getBySeller(address: string): Promise<Order[]> {
+    return await listOrdersBySeller(address);
   }
 
   async releaseFunds(orderId: string): Promise<string> {

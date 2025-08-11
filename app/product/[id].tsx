@@ -38,6 +38,7 @@ import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import MediaService from '../../services/media';
+import { useTonAddress } from '../../services/tonAuth';
 import commonStyles from '../../constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '../../components/FloatingCartWidget';
@@ -69,6 +70,7 @@ export default function ProductDetailScreen() {
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
+  const address = useTonAddress();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -82,7 +84,7 @@ export default function ProductDetailScreen() {
     loadProduct();
     loadCategories();
     loadPricingTiers();
-  }, [id]);
+  }, [id, address]);
 
   useEffect(() => {
     if (product) {
@@ -124,6 +126,15 @@ export default function ProductDetailScreen() {
     try {
       const db = DatabaseService.getInstance();
       const fetched = await db.getProduct(id);
+      if (address && fetched && fetched.storeId !== address) {
+        setInfoModal({
+          visible: true,
+          title: 'שגיאה',
+          message: 'מוצר לא נמצא',
+          type: 'error',
+        });
+        return;
+      }
       setProduct(fetched);
     } catch (error) {
       console.error('Error loading product:', error);
