@@ -12,6 +12,7 @@ const ENV_KEYS = [
   'EXPO_PUBLIC_WAKU_SECRET',
   'EXPO_PUBLIC_WAKU_BOOTSTRAP',
   'EXPO_PUBLIC_ADMIN_USERNAME',
+  'EXPO_PUBLIC_ADMIN_PUBLIC_KEY',
   'EXPO_PUBLIC_PINATA_JWT',
   'EXPO_PUBLIC_PINATA_API_KEY',
   'EXPO_PUBLIC_PINATA_SECRET_API_KEY',
@@ -32,7 +33,8 @@ function loadConfig(): Record<string, string> {
     }
   }
   for (const [name, addr] of Object.entries(tonAddresses)) {
-    cfg[`TON_${name.toUpperCase()}_ADDRESS`] = addr;
+    const key = `TON_${name.toUpperCase()}_ADDRESS`;
+    cfg[key] = process.env[key] ?? addr;
   }
   return cfg;
 }
