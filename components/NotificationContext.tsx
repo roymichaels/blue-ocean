@@ -3,6 +3,7 @@ import NotificationService from '../services/notification';
 import { Notification } from '../types';
 import NotificationPopup from './NotificationPopup';
 import { useAuth } from './AuthContext';
+import { useWakuClient } from '../hooks/useWakuClient';
 
 interface NotificationContextType {
   unreadCount: number;
@@ -31,18 +32,23 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   } | null>(null);
   const { isLoggedIn, user } = useAuth();
   const notificationSubscription = useRef<any>(null);
+  const waku = useWakuClient();
+  const wakuUnsub = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (isLoggedIn && user) {
       refreshNotifications();
       setupRealtimeSubscription();
+      setupWakuSubscription();
     } else {
       setUnreadCount(0);
       cleanupSubscription();
+      cleanupWakuSubscription();
     }
-    
+
     return () => {
       cleanupSubscription();
+      cleanupWakuSubscription();
     };
   }, [isLoggedIn, user]);
 
@@ -79,6 +85,39 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       const notificationService = NotificationService.getInstance();
       notificationService.unsubscribeFromNotifications(notificationSubscription.current);
       notificationSubscription.current = null;
+    }
+  };
+
+  const setupWakuSubscription = async () => {
+    if (!user) return;
+    if (wakuUnsub.current) {
+      wakuUnsub.current();
+      wakuUnsub.current = null;
+    }
+    wakuUnsub.current = await waku.subscribeOrders((message) => {
+      try {
+        const n: Notification = JSON.parse(message);
+        if (n.userId !== user.id) return;
+        setUnreadCount((prev) => prev + 1);
+        showNotification(
+          n.title,
+          n.message,
+          n.type === 'order'
+            ? 'success'
+            : n.type === 'promo' || n.type === 'message'
+              ? 'info'
+              : 'info',
+        );
+      } catch (err) {
+        console.error('Failed to parse notification', err);
+      }
+    });
+  };
+
+  const cleanupWakuSubscription = () => {
+    if (wakuUnsub.current) {
+      wakuUnsub.current();
+      wakuUnsub.current = null;
     }
   };
 

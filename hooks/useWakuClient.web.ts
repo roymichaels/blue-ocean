@@ -32,5 +32,7 @@ export function useWakuClient() {
     ) => {},
     broadcastSystem: async (_msg: string) => {},
     subscribeSystem: async (_cb: (msg: string) => void) => () => {},
+    broadcastOrder: async (_msg: string) => {},
+    subscribeOrders: async (_cb: (msg: string) => void) => () => {},
   };
 }
