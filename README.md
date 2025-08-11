@@ -42,7 +42,8 @@ These values are read at build time and cannot be changed from the UI.
 
 Smart contracts written in Tact live in `contracts/ton`. The helper scripts in
 `scripts/` use `@tact-lang/compiler` for compiling contracts and `ton-core` for
-deployment.
+deployment. No TON-specific environment variables are required; the deploy
+script prompts for credentials or accepts them as CLI arguments.
 
 Compile all contracts with:
 
