@@ -51,6 +51,7 @@ export default function ProductFormModal({
   const [productMedia, setProductMedia] = useState<MediaItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
+  const [variants, setVariants] = useState<{ color: string; stock: number }[]>([]);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [showSubcategorySelector, setShowSubcategorySelector] = useState(false);
   const [availableSubcategories, setAvailableSubcategories] = useState<Subcategory[]>([]);
@@ -94,6 +95,7 @@ export default function ProductFormModal({
       media.push({ id: `video_${index}`, uri, type: 'video', name: `Video ${index + 1}` });
     });
     setProductMedia(media);
+    setVariants(product?.variants || []);
   };
 
   const loadCategories = async () => {
@@ -137,6 +139,20 @@ export default function ProductFormModal({
     setShowPricingTierSelector(false);
   };
 
+  const addVariant = () => {
+    setVariants([...variants, { color: '', stock: 0 }]);
+  };
+
+  const updateVariant = (index: number, field: 'color' | 'stock', value: any) => {
+    const updated = [...variants];
+    updated[index] = { ...updated[index], [field]: value };
+    setVariants(updated);
+  };
+
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
   const saveProduct = async () => {
     if (!editingProduct.name || !editingProduct.description || !editingProduct.price || editingProduct.price <= 0) {
       setInfoModal({ visible: true, title: 'שגיאה', message: 'אנא מלא את כל השדות הנדרשים', type: 'error' });
@@ -150,10 +166,14 @@ export default function ProductFormModal({
     setLoading(true);
     try {
       const db = DatabaseService.getInstance();
+      const totalVariantStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
       const data = {
         ...editingProduct,
         images: productMedia.filter(m => m.type === 'image').map(m => m.uri),
         videos: productMedia.filter(m => m.type === 'video').map(m => m.uri),
+        colors: variants.map(v => v.color),
+        variants,
+        stock: variants.length > 0 ? totalVariantStock : editingProduct.stock,
       };
 
       let saved: Product;
@@ -323,6 +343,47 @@ export default function ProductFormModal({
                   </Text>
                 </TouchableOpacity>
               </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>וריאציות צבע</Text>
+              {variants.map((variant, index) => (
+                <View key={index} style={styles.variantRow}>
+                  <TextInput
+                    style={[styles.variantColorInput, {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.surface.primary,
+                      color: colors.text.primary,
+                    }]}
+                    value={variant.color}
+                    onChangeText={text => updateVariant(index, 'color', text)}
+                    placeholder="צבע"
+                    textAlign="right"
+                  />
+                  <TextInput
+                    style={[styles.variantStockInput, {
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.surface.primary,
+                      color: colors.text.primary,
+                    }]}
+                    value={variant.stock?.toString()}
+                    onChangeText={text => updateVariant(index, 'stock', parseInt(text) || 0)}
+                    placeholder="מלאי"
+                    keyboardType="numeric"
+                    textAlign="right"
+                  />
+                  <TouchableOpacity onPress={() => removeVariant(index)} style={styles.removeVariantButton}>
+                    <Trash2 size={20} color={colors.status.error} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              <TouchableOpacity
+                style={[styles.addVariantButton, { borderColor: colors.border.primary, backgroundColor: colors.interactive.secondary }]}
+                onPress={addVariant}
+              >
+                <Plus size={20} color={colors.gold} />
+                <Text style={[styles.addVariantText, { color: colors.gold }]}>הוסף וריאציה</Text>
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>מלאי *</Text>
@@ -553,4 +614,10 @@ const styles = StyleSheet.create({
   pricingTierInfo: { marginLeft: 12, flex: 1, alignItems: 'flex-end' },
   pricingTierDiscount: { fontSize: 14, fontWeight: 'bold' },
   pricingTierDescription: { fontSize: 12, textAlign: 'right' },
+  variantRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  variantColorInput: { flex: 1, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },
+  variantStockInput: { width: 80, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16, marginLeft: 8 },
+  removeVariantButton: { marginLeft: 8 },
+  addVariantButton: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingVertical: 12, marginTop: 8 },
+  addVariantText: { fontSize: 16, fontWeight: '500', marginLeft: 8 },
 });

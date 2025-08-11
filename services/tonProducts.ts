@@ -8,11 +8,21 @@ const ADDRESS =
 
 export async function getProduct(id: string): Promise<Product | null> {
   const res = await getValue(ADDRESS, id);
-  return res ? (JSON.parse(res) as Product) : null;
+  if (!res) return null;
+  const parsed = JSON.parse(res) as Product;
+  return { ...parsed, pricingTier: parsed.pricingTier, variants: parsed.variants || [] };
 }
 
 export async function setProduct(product: Product) {
-  await setValue(ADDRESS, product.id, JSON.stringify(product));
+  await setValue(
+    ADDRESS,
+    product.id,
+    JSON.stringify({
+      ...product,
+      pricingTier: product.pricingTier,
+      variants: product.variants || [],
+    })
+  );
 }
 
 export async function removeProduct(id: string) {
@@ -21,5 +31,8 @@ export async function removeProduct(id: string) {
 
 export async function listProducts(): Promise<Product[]> {
   const items = await listValues(ADDRESS);
-  return items.map((i) => JSON.parse(i.value) as Product);
+  return items.map((i) => {
+    const parsed = JSON.parse(i.value) as Product;
+    return { ...parsed, pricingTier: parsed.pricingTier, variants: parsed.variants || [] };
+  });
 }
