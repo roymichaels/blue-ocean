@@ -11,6 +11,7 @@ export interface TonSettings {
   theme: { primary: string };
   brand: { logoCid: string };
   moonpayKey?: string;
+  admins: string[];
 }
 
 export async function getSetting(key: string): Promise<string | null> {
@@ -37,6 +38,7 @@ export async function fetchSettings(): Promise<TonSettings> {
     theme: { primary: map['theme.primary'] ?? '#B99C5A' },
     brand: { logoCid: map['brand.logoCid'] ?? '' },
     moonpayKey: map['moonpayKey'],
+    admins: map['admins'] ? JSON.parse(map['admins']) : [],
   };
 }
 
