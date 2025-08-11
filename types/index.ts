@@ -129,6 +129,7 @@ export interface User {
   kycRequestedAt?: string;
   kycApprovedBy?: string;
   kycApprovedAt?: string;
+  kycDocumentUri?: string;
 }
 
 export interface Notification {
