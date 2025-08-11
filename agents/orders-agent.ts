@@ -6,6 +6,7 @@ import {
   releasePayment,
   refundPayment,
 } from '../services/tonContract';
+import productsAgent from './products-agent';
 
 class OrdersAgent {
   private subscribers: Set<(o: Order) => void> = new Set();
@@ -73,6 +74,14 @@ class OrdersAgent {
       updatedAt: new Date().toISOString(),
     };
     await setOrder(updated);
+    await Promise.all(
+      order.items.map((item) =>
+        productsAgent.decrementStock(
+          item.productId,
+          item.effectiveQty ?? item.quantity
+        )
+      )
+    );
     this.subscribers.forEach((cb) => cb(updated));
     return hash;
   }
