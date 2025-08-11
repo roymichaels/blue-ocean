@@ -37,6 +37,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { router } from 'expo-router';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
+import MoonPayModal from './MoonPayModal';
+import tonAuth, { useTonAddress } from '../services/tonAuth';
 
 interface CartModalProps {
   visible: boolean;
@@ -66,6 +68,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const { showNotification } = useNotifications();
   const { t } = useLanguage();
   const scrollViewRef = useRef<ScrollView>(null);
+  const walletAddress = useTonAddress();
 
   // Info/confirm modals
   const [infoModal, setInfoModal] = useState({
@@ -82,6 +85,9 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     cancelText: '',
     action: () => {},
   });
+
+  const [moonPayVisible, setMoonPayVisible] = useState(false);
+  const [moonPayAmount, setMoonPayAmount] = useState(0);
 
   useEffect(() => {
     if (visible) {
@@ -230,6 +236,27 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   };
 
   const goToConfirmation = () => setCheckoutStep('confirmation');
+
+  const handleBuyTon = async () => {
+    if (!walletAddress) {
+      await tonAuth.openModal();
+      return;
+    }
+    try {
+      const res = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd',
+      );
+      const data = await res.json();
+      const tonPrice = data['the-open-network']?.usd;
+      if (tonPrice) {
+        const amount = getTotal() / tonPrice;
+        setMoonPayAmount(Number(amount.toFixed(2)));
+        setMoonPayVisible(true);
+      }
+    } catch (err) {
+      console.error('Error fetching TON price:', err);
+    }
+  };
 
   const goBack = () => {
     switch (checkoutStep) {
@@ -767,6 +794,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             </View>
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          style={[styles.buyTonButton, { backgroundColor: colors.gold }]}
+          onPress={handleBuyTon}
+        >
+          <Text style={[styles.buyTonButtonText, { color: colors.text.inverse }]}>Buy TON</Text>
+        </TouchableOpacity>
 
         <View
           style={[
@@ -1308,6 +1342,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         }}
         onCancel={() => setConfirmModal({ ...confirmModal, visible: false })}
       />
+      <MoonPayModal
+        visible={moonPayVisible}
+        onClose={() => setMoonPayVisible(false)}
+        walletAddress={walletAddress || ''}
+        coin="ton"
+        amountTON={moonPayAmount}
+      />
     </>
   );
 }
@@ -1443,6 +1484,13 @@ const styles = StyleSheet.create({
   paymentOptionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4, textAlign: 'right' },
   paymentOptionDescription: { fontSize: 12, textAlign: 'right' },
   paymentOptionCheck: { marginLeft: 12 },
+  buyTonButton: {
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  buyTonButtonText: { fontSize: 16, fontWeight: '600' },
   shippingAddressSummary: { borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1 },
   summaryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   editLink: { fontSize: 14, fontWeight: '500' },
