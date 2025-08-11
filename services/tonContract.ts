@@ -1,7 +1,9 @@
 // @ts-nocheck
 import TonWeb from 'tonweb';
 import { Buffer } from 'buffer';
+import { createHash } from 'crypto';
 import { getTonConnect } from './tonAuth';
+import { fetchSettings } from './tonSettings';
 
 /**
  * Address of the OrderPayment factory contract.
@@ -33,7 +35,7 @@ async function sendTonConnect(messages: {
   });
 
   return TonWeb.utils.bytesToHex(
-    TonWeb.utils.sha256_sync(Buffer.from(result.boc, 'base64')),
+    createHash('sha256').update(Buffer.from(result.boc, 'base64')).digest(),
   );
 }
 
@@ -41,7 +43,12 @@ export async function deployOrderPayment(
   amount: number,
 ): Promise<{ contractAddress: string; txHash: string }> {
   try {
-    const payload = makeComment(`Pay:${amount}`);
+    const settings = await fetchSettings();
+    const feeAddress = settings.feeAddress ?? '';
+    const feePercent = settings.feePercent ?? 0;
+    const payload = makeComment(
+      `Pay:${amount}:${feeAddress}:${feePercent}`,
+    );
     const payloadBoc = TonWeb.utils.bytesToBase64(
       await payload.toBoc({ idx: false }),
     );

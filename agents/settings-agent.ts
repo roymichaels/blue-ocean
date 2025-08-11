@@ -11,7 +11,9 @@ type SettingKey =
   | 'appName'
   | 'theme.primary'
   | 'brand.logoCid'
-  | 'fiatKey';
+  | 'fiatKey'
+  | 'feeAddress'
+  | 'feePercent';
 
 class SettingsAgent {
   private static instance: SettingsAgent;
