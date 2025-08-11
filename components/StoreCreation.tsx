@@ -12,7 +12,7 @@ const provider = new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/j
 const StoreCreation: React.FC = () => {
   const [name, setName] = useState('');
 
-  const deployStoreNFT = async (_storeName: string, owner: string) => {
+  const deployStoreNFT = async () => {
     const code = TonWeb.boc.Cell.fromBoc(Buffer.from(codeBoc, 'base64'))[0];
     const data = TonWeb.boc.Cell.fromBoc(Buffer.from(dataBoc, 'base64'))[0];
     const contract = new (TonWeb as any).Contract(provider, { code, data });
@@ -50,7 +50,7 @@ const StoreCreation: React.FC = () => {
       return;
     }
     try {
-      const nftId = await deployStoreNFT(name, owner);
+      const nftId = await deployStoreNFT();
       const id = Date.now().toString();
       await storesAgent.add({ id, name, owner, nftId });
       setName('');

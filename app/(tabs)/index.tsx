@@ -460,6 +460,7 @@ export default function HomeScreen() {
         <TouchableOpacity
           style={[styles.becomeSellerButton, { backgroundColor: colors.gold }]}
           onPress={() => router.push('/stores/create')}
+          accessibilityRole="link"
         >
           <Text style={[styles.becomeSellerText, { color: colors.text.inverse }]}>Become a Seller</Text>
         </TouchableOpacity>
