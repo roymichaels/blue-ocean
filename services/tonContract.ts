@@ -67,13 +67,14 @@ export async function releasePayment(contractAddress: string): Promise<string> {
     const payloadBoc = TonWeb.utils.bytesToBase64(
       await payload.toBoc({ idx: false }),
     );
-    return await sendTonConnect([
+    const txHash = await sendTonConnect([
       {
         address: contractAddress,
         amount: '0',
         payload: payloadBoc,
       },
     ]);
+    return txHash;
   } catch (e) {
     console.error('Failed to release payment', e);
     throw e;
@@ -86,13 +87,14 @@ export async function refundPayment(contractAddress: string): Promise<string> {
     const payloadBoc = TonWeb.utils.bytesToBase64(
       await payload.toBoc({ idx: false }),
     );
-    return await sendTonConnect([
+    const txHash = await sendTonConnect([
       {
         address: contractAddress,
         amount: '0',
         payload: payloadBoc,
       },
     ]);
+    return txHash;
   } catch (e) {
     console.error('Failed to refund payment', e);
     throw e;

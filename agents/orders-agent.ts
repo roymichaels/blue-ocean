@@ -60,7 +60,10 @@ class OrdersAgent {
   async releasePayment(orderId: string): Promise<string> {
     await this.ensureWallet();
     const order = await this.get(orderId);
-    if (!order?.paymentContractAddress) {
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    if (!order.paymentContractAddress) {
       throw new Error('Order payment contract not found');
     }
     const hash = await releasePayment(order.paymentContractAddress);
@@ -77,7 +80,10 @@ class OrdersAgent {
   async refundPayment(orderId: string): Promise<string> {
     await this.ensureWallet();
     const order = await this.get(orderId);
-    if (!order?.paymentContractAddress) {
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    if (!order.paymentContractAddress) {
       throw new Error('Order payment contract not found');
     }
     const hash = await refundPayment(order.paymentContractAddress);

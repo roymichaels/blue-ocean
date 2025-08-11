@@ -51,12 +51,12 @@ export default function AdminDashboard() {
 
   const release = async (id: string) => {
     await ordersAgent.releasePayment(id);
-    setOrders(o => o.filter(ord => ord.id !== id));
+    await load();
   };
 
   const refund = async (id: string) => {
     await ordersAgent.refundPayment(id);
-    setOrders(o => o.filter(ord => ord.id !== id));
+    await load();
   };
 
   return (
