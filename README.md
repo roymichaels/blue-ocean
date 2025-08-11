@@ -47,6 +47,32 @@ Copy `.env.example` to `.env` and set at minimum:
 
 These values are read at build time and cannot be changed from the UI.
 
+### TON Smart Contracts
+
+Smart contracts written in Tact live in `contracts/ton`.
+
+Compile all contracts with:
+
+```sh
+yarn build:ton
+```
+
+Compiled `.boc` files are written to `contracts/ton/build`.
+
+To deploy a contract, configure the following environment variables in `.env`:
+
+- `TON_ENDPOINT` – TON API endpoint (e.g. `https://testnet.toncenter.com/api/v2/jsonRPC`)
+- `TON_API_KEY` – API key for the endpoint if required
+- `TON_MNEMONIC` – wallet seed phrase used to sign deployment transactions
+
+Then run:
+
+```sh
+yarn deploy:ton <contract-name>
+```
+
+Replace `<contract-name>` with the name of the Tact file (without extension). After deployment, set the corresponding `TON_*_ADDRESS` values in `.env` so the app can interact with the new contracts. Start the Expo app normally with `yarn dev`.
+
 ### Credit Card Checkout
 
 Providing a MoonPay key enables the `MoonPayModal` component for credit card
