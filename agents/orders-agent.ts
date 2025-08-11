@@ -44,6 +44,7 @@ class OrdersAgent {
     }
     await setOrder(enriched);
     this.subscribers.forEach((cb) => cb(enriched));
+    await this.notifyOrderCreated(enriched);
   }
 
   async update(order: Order): Promise<void> {
@@ -114,6 +115,7 @@ class OrdersAgent {
     );
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
+    await this.notifyPaymentReceived(updated);
     return hash;
   }
 
@@ -161,7 +163,41 @@ class OrdersAgent {
       timestamp: Date.now(),
     };
     try {
-      await notificationsAgent.add(notification);
+      await notificationsAgent.broadcast('status.updated', notification);
+    } catch (err) {
+      console.error('Failed to send notification', err);
+    }
+  }
+
+  private async notifyOrderCreated(order: Order) {
+    const notification: Notification = {
+      id: `ntf_${Date.now()}`,
+      userId: order.userId,
+      title: 'Order created',
+      message: `Order ${order.id} has been created`,
+      type: 'order',
+      read: false,
+      timestamp: Date.now(),
+    };
+    try {
+      await notificationsAgent.broadcast('order.created', notification);
+    } catch (err) {
+      console.error('Failed to send notification', err);
+    }
+  }
+
+  private async notifyPaymentReceived(order: Order) {
+    const notification: Notification = {
+      id: `ntf_${Date.now()}`,
+      userId: order.userId,
+      title: 'Payment received',
+      message: `Payment for order ${order.id} has been released`,
+      type: 'order',
+      read: false,
+      timestamp: Date.now(),
+    };
+    try {
+      await notificationsAgent.broadcast('payment.received', notification);
     } catch (err) {
       console.error('Failed to send notification', err);
     }
