@@ -1,7 +1,10 @@
-// Configuration values are loaded exclusively from environment variables.
-// `EXPO_PUBLIC_WAKU_SECRET` is used to encrypt/decrypt messages sent over
-// Waku. **All production peers must use the same secret** or messages will
-// not be readable between them.
+// Configuration values are loaded from environment variables. Contract
+// addresses are persisted in `constants/tonAddresses.json` and merged into
+// the config at runtime. `EXPO_PUBLIC_WAKU_SECRET` is used to encrypt/decrypt
+// messages sent over Waku. **All production peers must use the same secret**
+// or messages will not be readable between them.
+
+import tonAddresses from '../constants/tonAddresses.json';
 
 const ENV_KEYS = [
   'EXPO_PUBLIC_JWT_SECRET',
@@ -18,14 +21,6 @@ const ENV_KEYS = [
   'APP_NAME',
   'PRIMARY_COLOR',
   'APP_LOGO',
-  'TON_NOTIFICATIONS_ADDRESS',
-  'TON_STORES_ADDRESS',
-  'TON_ORDERS_ADDRESS',
-  'TON_SETTINGS_ADDRESS',
-  'TON_CART_ADDRESS',
-  'TON_USERS_ADDRESS',
-  'TON_PRODUCTS_ADDRESS',
-  'TON_CATEGORIES_ADDRESS',
 ];
 
 function loadConfig(): Record<string, string> {
@@ -35,6 +30,9 @@ function loadConfig(): Record<string, string> {
     if (value !== undefined) {
       cfg[key] = value;
     }
+  }
+  for (const [name, addr] of Object.entries(tonAddresses)) {
+    cfg[`TON_${name.toUpperCase()}_ADDRESS`] = addr;
   }
   return cfg;
 }

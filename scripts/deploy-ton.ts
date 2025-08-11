@@ -1,6 +1,12 @@
-import { TonClient, WalletContractV4, internal } from 'ton-core';
+import {
+  TonClient,
+  WalletContractV4,
+  internal,
+  contractAddress,
+  Cell,
+} from 'ton-core';
 import { mnemonicToPrivateKey } from '@ton/crypto';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 
@@ -24,8 +30,13 @@ async function main() {
   const openedWallet = client.open(wallet);
 
   const buildDir = path.resolve(__dirname, '../contracts/ton/build');
-  const code = readFileSync(path.join(buildDir, `${name}.code.boc`));
-  const data = readFileSync(path.join(buildDir, `${name}.data.boc`));
+  const codeBoc = readFileSync(path.join(buildDir, `${name}.code.boc`));
+  const dataBoc = readFileSync(path.join(buildDir, `${name}.data.boc`));
+  const code = Cell.fromBoc(codeBoc)[0];
+  const data = Cell.fromBoc(dataBoc)[0];
+
+  const address = contractAddress(0, { code, data });
+  console.log(`${name} address: ${address.toString()}`);
 
   const seqno = await openedWallet.getSeqno();
 
@@ -34,14 +45,25 @@ async function main() {
     secretKey,
     messages: [
       internal({
-        to: wallet.address,
+        to: address,
         value: '0.05',
         init: { code, data },
       }),
     ],
   });
 
+  const addressesPath = path.resolve(
+    __dirname,
+    '../constants/tonAddresses.json',
+  );
+  let store: Record<string, string> = {};
+  if (existsSync(addressesPath)) {
+    store = JSON.parse(readFileSync(addressesPath, 'utf8'));
+  }
+  store[name] = address.toString();
+  writeFileSync(addressesPath, JSON.stringify(store, null, 2));
   console.log(`Deployment transaction sent for ${name}`);
+  console.log(`Saved to ${addressesPath}`);
 }
 
 main().catch((err) => {

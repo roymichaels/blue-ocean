@@ -1,7 +1,10 @@
 import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { Notification } from '../types';
+import config from '../utils/appConfig';
 
-const ADDRESS = process.env.TON_NOTIFICATIONS_ADDRESS ?? 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS =
+  config.TON_NOTIFICATIONS_ADDRESS ??
+  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 
 export async function getNotification(id: string): Promise<Notification | null> {
   const res = await getValue(ADDRESS, id);

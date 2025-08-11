@@ -1,7 +1,10 @@
 import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { CartItem } from '../types';
+import config from '../utils/appConfig';
 
-const ADDRESS = process.env.TON_CART_ADDRESS ?? 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS =
+  config.TON_CART_ADDRESS ??
+  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 
 export async function getCartItem(id: string): Promise<CartItem | null> {
   const res = await getValue(ADDRESS, id);

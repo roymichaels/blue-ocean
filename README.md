@@ -36,16 +36,9 @@ Copy `.env.example` to `.env` and set at minimum:
 - `EXPO_PUBLIC_WAKU_BOOTSTRAP`
 - `EXPO_PUBLIC_JWT_SECRET`
 - `EXPO_PUBLIC_CHAT_SECRET`
-- `TON_NOTIFICATIONS_ADDRESS`
-- `TON_STORES_ADDRESS`
-- `TON_ORDERS_ADDRESS`
-- `TON_SETTINGS_ADDRESS`
-- `TON_CART_ADDRESS`
-- `TON_USERS_ADDRESS`
-- `TON_PRODUCTS_ADDRESS`
-- `TON_CATEGORIES_ADDRESS`
-
 These values are read at build time and cannot be changed from the UI.
+Deployed TON contract addresses are stored in `constants/tonAddresses.json`
+and loaded automatically; no `.env` entries are required for them.
 
 ### TON Smart Contracts
 
@@ -71,7 +64,11 @@ Then run:
 yarn deploy:ton <contract-name>
 ```
 
-Replace `<contract-name>` with the name of the Tact file (without extension). After deployment, set the corresponding `TON_*_ADDRESS` values in `.env` so the app can interact with the new contracts. Start the Expo app normally with `yarn dev`.
+Replace `<contract-name>` with the name of the Tact file (without extension).
+The script derives the contract address, logs it, and writes it to
+`constants/tonAddresses.json`. The app reads from this file, so no
+environment variables need to be set manually. Start the Expo app normally
+with `yarn dev`.
 
 ### Credit Card Checkout
 
