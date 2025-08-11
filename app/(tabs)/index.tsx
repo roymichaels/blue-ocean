@@ -25,6 +25,7 @@ import {
 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import { Product, Category, HeroBanner } from '../../types';
+import { listCategories } from '../../services/tonCategories';
 import { useAuth } from '../../components/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -48,6 +49,9 @@ export default function HomeScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [bannerFormVisible, setBannerFormVisible] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
@@ -96,7 +100,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     filterAndSortProducts();
-  }, [products, searchQuery, sortBy]);
+  }, [products, searchQuery, sortBy, selectedCategory, minPrice, maxPrice]);
 
   const loadData = async () => {
     try {
@@ -104,7 +108,7 @@ export default function HomeScreen() {
       const db = DatabaseService.getInstance();
       const [productsData, categoriesData, bannersData] = await Promise.all([
         db.getProducts(),
-        db.getCategories(),
+        listCategories(),
         db.getHeroBanners(),
       ]);
       setProducts(productsData);
@@ -128,14 +132,27 @@ export default function HomeScreen() {
 
     // Filter by search query
     if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.description
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          product.category.toLowerCase().includes(searchQuery.toLowerCase())
+          product.name.toLowerCase().includes(q) ||
+          product.category.toLowerCase().includes(q)
       );
+    }
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter((p) => p.category === selectedCategory);
+    }
+
+    // Filter by price range
+    const min = parseFloat(minPrice);
+    const max = parseFloat(maxPrice);
+    if (!isNaN(min)) {
+      filtered = filtered.filter((p) => p.price >= min);
+    }
+    if (!isNaN(max)) {
+      filtered = filtered.filter((p) => p.price <= max);
     }
 
     // Sort products
@@ -350,6 +367,96 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        <View style={styles.filtersContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoriesScroll}
+          >
+            <TouchableOpacity
+              style={[
+                styles.categoryChip,
+                {
+                  borderColor: colors.border.primary,
+                  backgroundColor:
+                    selectedCategory === null ? colors.gold : 'transparent',
+                },
+              ]}
+              onPress={() => setSelectedCategory(null)}
+            >
+              <Text
+                style={{
+                  color:
+                    selectedCategory === null
+                      ? colors.text.inverse
+                      : colors.text.primary,
+                }}
+              >
+                All
+              </Text>
+            </TouchableOpacity>
+            {categories.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                style={[
+                  styles.categoryChip,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor:
+                      selectedCategory === cat.id
+                        ? colors.gold
+                        : 'transparent',
+                  },
+                ]}
+                onPress={() => setSelectedCategory(cat.id)}
+              >
+                <Text
+                  style={{
+                    color:
+                      selectedCategory === cat.id
+                        ? colors.text.inverse
+                        : colors.text.primary,
+                  }}
+                >
+                  {cat.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <View style={styles.priceRow}>
+            <TextInput
+              style={[
+                styles.priceInput,
+                {
+                  borderColor: colors.border.primary,
+                  color: colors.text.primary,
+                  marginRight: 8,
+                },
+              ]}
+              placeholder="Min"
+              placeholderTextColor={colors.text.tertiary}
+              keyboardType="numeric"
+              value={minPrice}
+              onChangeText={setMinPrice}
+              textAlign="right"
+            />
+            <TextInput
+              style={[
+                styles.priceInput,
+                {
+                  borderColor: colors.border.primary,
+                  color: colors.text.primary,
+                },
+              ]}
+              placeholder="Max"
+              placeholderTextColor={colors.text.tertiary}
+              keyboardType="numeric"
+              value={maxPrice}
+              onChangeText={setMaxPrice}
+              textAlign="right"
+            />
+          </View>
+        </View>
         <TouchableOpacity
           style={[styles.becomeSellerButton, { backgroundColor: colors.gold }]}
           onPress={() => router.push('/stores/create')}
@@ -922,6 +1029,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  filtersContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  categoriesScroll: {
+    marginBottom: 8,
+  },
+  categoryChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginRight: 8,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  priceInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   categorySelector: {
     borderWidth: 1,
