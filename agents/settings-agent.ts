@@ -1,10 +1,16 @@
 import tonAuth from '../services/tonAuth';
-import { getSetting, setSetting } from '../services/tonSettings';
+import {
+  getSetting,
+  setSetting,
+  getAdmins as fetchAdmins,
+  setAdmins as storeAdmins,
+} from '../services/tonSettings';
 
 interface SettingItem { id: string; value: string }
 
 class SettingsAgent {
   private static instance: SettingsAgent;
+  private admins: string[] = [];
 
   private constructor() {}
 
@@ -39,6 +45,19 @@ class SettingsAgent {
     value: string,
   ): Promise<void> {
     await this.set(`${tenant}:${key}`, value);
+  }
+
+  async getAdmins(): Promise<string[]> {
+    if (this.admins.length === 0) {
+      this.admins = await fetchAdmins();
+    }
+    return this.admins;
+  }
+
+  async setAdmins(admins: string[]): Promise<void> {
+    await this.ensureWallet();
+    await storeAdmins(admins);
+    this.admins = admins;
   }
 
   static getInstance(): SettingsAgent {

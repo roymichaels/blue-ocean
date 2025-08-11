@@ -12,20 +12,10 @@ import {
 import { X, Save, Trash2 } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { HeroBanner, Category } from '../types';
-import MediaUploader from './MediaUploader';
 import DatabaseService from '../services/database';
-import PinataService from '../services/pinata';
 import LoadingSpinner from './LoadingSpinner';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
-
-interface MediaItem {
-  id: string;
-  uri: string;
-  type: 'image' | 'video';
-  name?: string;
-  thumbnail?: string;
-}
 
 interface BannerFormModalProps {
   visible: boolean;
@@ -46,7 +36,7 @@ export default function BannerFormModal({
 }: BannerFormModalProps) {
   const { colors } = useTheme();
   const [editingBanner, setEditingBanner] = useState<Partial<HeroBanner>>({});
-  const [bannerMedia, setBannerMedia] = useState<MediaItem[]>([]);
+  const [imageUrl, setImageUrl] = useState('');
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [loading, setLoading] = useState(false);
   const [infoModal, setInfoModal] = useState({
@@ -68,18 +58,7 @@ export default function BannerFormModal({
   const initForm = () => {
     if (banner) {
       setEditingBanner({ ...banner });
-      setBannerMedia(
-        banner.image
-          ? [
-              {
-                id: '1',
-                uri: banner.image,
-                type: 'image',
-                name: 'banner_image',
-              },
-            ]
-          : [],
-      );
+      setImageUrl(banner.image || '');
     } else {
       setEditingBanner({
         title: '',
@@ -88,7 +67,7 @@ export default function BannerFormModal({
         isActive: true,
         order: 1,
       });
-      setBannerMedia([]);
+      setImageUrl('');
     }
   };
 
@@ -108,11 +87,11 @@ export default function BannerFormModal({
       return;
     }
 
-    if (bannerMedia.length === 0) {
+    if (!imageUrl) {
       setInfoModal({
         visible: true,
         title: 'שגיאה',
-        message: 'Please upload a banner image',
+        message: 'Please provide a banner image CID or URL',
         type: 'error',
       });
       return;
@@ -120,13 +99,10 @@ export default function BannerFormModal({
 
     try {
       setLoading(true);
-      const pinata = PinataService.getInstance();
-      const uploadedUrl = await pinata.uploadFile(bannerMedia[0].uri, 'banner');
-
       const db = DatabaseService.getInstance();
       const bannerData = {
         ...editingBanner,
-        image: uploadedUrl,
+        image: imageUrl,
       } as Partial<HeroBanner>;
 
       if (banner) {
@@ -212,12 +188,26 @@ export default function BannerFormModal({
           </View>
 
           <ScrollView style={styles.modalContent}>
-            <MediaUploader
-              media={bannerMedia}
-              onMediaChange={setBannerMedia}
-              maxFiles={1}
-              allowVideos={false}
-            />
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תמונת באנר (CID או URL)</Text>
+              <TextInput
+                multiline
+                style={[
+                  styles.formInput,
+                  {
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.surface.primary,
+                    color: colors.text.primary,
+                    height: 80,
+                    textAlignVertical: 'top'
+                  },
+                ]}
+                value={imageUrl}
+                onChangeText={setImageUrl}
+                placeholder="ipfs://..."
+                textAlign="right"
+              />
+            </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>

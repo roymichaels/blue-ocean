@@ -16,19 +16,10 @@ import { Product, Category, Subcategory, PricingTier } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DatabaseService from '../services/database';
-import MediaUploader from './MediaUploader';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
-
-interface MediaItem {
-  id: string;
-  uri: string;
-  type: 'image' | 'video';
-  name?: string;
-  thumbnail?: string;
-}
 
 interface ProductFormModalProps {
   visible: boolean;
@@ -48,7 +39,8 @@ export default function ProductFormModal({
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const [editingProduct, setEditingProduct] = useState<Partial<Product>>({});
-  const [productMedia, setProductMedia] = useState<MediaItem[]>([]);
+  const [imageUrls, setImageUrls] = useState('');
+  const [videoUrls, setVideoUrls] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [variants, setVariants] = useState<{ color: string; stock: number }[]>([]);
@@ -87,14 +79,8 @@ export default function ProductFormModal({
         : { name: '', price: 0, description: '', category: '', stock: 0 }
     );
 
-    const media: MediaItem[] = [];
-    product?.images?.forEach((uri, index) => {
-      media.push({ id: `image_${index}`, uri, type: 'image', name: `Image ${index + 1}` });
-    });
-    product?.videos?.forEach((uri, index) => {
-      media.push({ id: `video_${index}`, uri, type: 'video', name: `Video ${index + 1}` });
-    });
-    setProductMedia(media);
+    setImageUrls((product?.images || []).join('\n'));
+    setVideoUrls((product?.videos || []).join('\n'));
     setVariants(product?.variants || []);
   };
 
@@ -158,8 +144,16 @@ export default function ProductFormModal({
       setInfoModal({ visible: true, title: 'שגיאה', message: 'אנא מלא את כל השדות הנדרשים', type: 'error' });
       return;
     }
-    if (productMedia.length === 0) {
-      setInfoModal({ visible: true, title: 'שגיאה', message: 'אנא העלה לפחות קובץ מדיה אחד', type: 'error' });
+    const images = imageUrls
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const videos = videoUrls
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (images.length === 0 && videos.length === 0) {
+      setInfoModal({ visible: true, title: 'שגיאה', message: 'אנא ספק לפחות מדיה אחת', type: 'error' });
       return;
     }
 
@@ -169,8 +163,8 @@ export default function ProductFormModal({
       const totalVariantStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
       const data = {
         ...editingProduct,
-        images: productMedia.filter(m => m.type === 'image').map(m => m.uri),
-        videos: productMedia.filter(m => m.type === 'video').map(m => m.uri),
+        images,
+        videos,
         colors: variants.map(v => v.color),
         variants,
         stock: variants.length > 0 ? totalVariantStock : editingProduct.stock,
@@ -233,7 +227,41 @@ export default function ProductFormModal({
           </View>
 
           <ScrollView style={styles.modalContent}>
-            <MediaUploader media={productMedia} onMediaChange={setProductMedia} maxFiles={6} allowVideos={true} />
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תמונות (CID או URL, שורה לכל פריט)</Text>
+              <TextInput
+                multiline
+                style={[styles.formInput, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary,
+                  height: 80,
+                  textAlignVertical: 'top'
+                }]}
+                value={imageUrls}
+                onChangeText={setImageUrls}
+                placeholder="ipfs://..."
+                textAlign="right"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>סרטונים (CID או URL, שורה לכל פריט)</Text>
+              <TextInput
+                multiline
+                style={[styles.formInput, {
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.surface.primary,
+                  color: colors.text.primary,
+                  height: 80,
+                  textAlignVertical: 'top'
+                }]}
+                value={videoUrls}
+                onChangeText={setVideoUrls}
+                placeholder="ipfs://..."
+                textAlign="right"
+              />
+            </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם המוצר *</Text>
