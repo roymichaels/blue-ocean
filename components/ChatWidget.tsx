@@ -41,6 +41,7 @@ import { isChatConfigured } from '../services/chatConfig';
 import InfoModal from './InfoModal';
 import UserProfileModal from './UserProfileModal';
 import SettingsAgent from '../agents/settings-agent';
+import chatAgent from '../agents/chat-agent';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 const CHAT_ONBOARDED_KEY = 'chatOnboarded';
@@ -347,6 +348,14 @@ const loadOrCreateDefaultRoom = async () => {
     await loadMessages(room.id, room.userPublicKey || '');
     await maybeSendOnboardMessage(room.id, room.userPublicKey || '');
   };
+
+  useEffect(() => {
+    const unsubscribe = chatAgent.onOpen(async (room) => {
+      setIsOpen(true);
+      await openChat(room);
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     if (!selectedRoom) return;
