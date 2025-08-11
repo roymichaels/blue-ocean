@@ -8,6 +8,8 @@ module.exports = async function (env, argv) {
 
   // Use source maps in all modes to avoid eval-based tooling which can violate CSP
   config.devtool = 'source-map';
+  // Ensure assets are served relative to index.html for IPFS/URL subpaths
+  config.output.publicPath = './';
 
   // Optional: remove buggy plugin in production
   if (config.mode === 'production') {
