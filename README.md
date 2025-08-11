@@ -27,16 +27,16 @@ All data is ephemeral and synchronized between peers over Waku; no external serv
 
 ### Environment Variables
 
-The project reads all configuration from a `.env` file using Expo's env
-support for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests.
-Copy `.env.example` to `.env` and set at minimum:
+The project reads configuration from a `.env` file using Expo's env support
+for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
+`.env.example` to `.env` and set:
 
-- `EXPO_PUBLIC_ADMIN_USERNAME`
-- `EXPO_PUBLIC_WAKU_BOOTSTRAP`
-- `EXPO_PUBLIC_JWT_SECRET`
+- `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`)
+- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers
+- `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` – MoonPay public API key (optional;
+  enables credit card purchases)
+
 These values are read at build time and cannot be changed from the UI.
-Deployed TON contract addresses are stored in `constants/tonAddresses.json`
-and loaded automatically; no `.env` entries are required for them.
 
 ### TON Smart Contracts
 
@@ -76,9 +76,10 @@ with `yarn dev`.
 
 ### Credit Card Checkout
 
-Providing a MoonPay key enables the `MoonPayModal` component for credit card
-purchases. Pass the wallet address, coin and USD amount to display the widget in
-a modal and pre-fill the fiat amount.
+Providing `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` populates `config.moonpayKey`
+and enables the `MoonPayModal` component for credit card purchases. Without
+this key the MoonPay UI is hidden. Pass the wallet address, coin and USD amount
+to display the widget in a modal and pre-fill the fiat amount.
 
 
 Some dependencies rely on Node.js globals like `Buffer`, `process`, and
@@ -220,7 +221,7 @@ Run `yarn install` before executing `yarn test` so Jest and other dependencies a
 
 ## Apple Pay Integration
 
-The project uses MoonPay for purchasing crypto with a credit card. To accept Apple Pay directly in the app, install the Expo Stripe payments package and configure your merchant identifier.
+The project uses MoonPay for purchasing crypto with a credit card. Set `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` to enable it. To accept Apple Pay directly in the app, install the Expo Stripe payments package and configure your merchant identifier.
 
 1. Install the library:
 ```sh
