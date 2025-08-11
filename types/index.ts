@@ -223,12 +223,14 @@ export interface Order {
   paymentTxHash?: string;
 }
 
-export type OrderStatus = 
+export type OrderStatus =
   | 'order_received'      // הזמנה התקבלה
   | 'courier_found'       // נמצא שליח מתאים
   | 'courier_picked_up'   // שליח אסף את ההזמנה
   | 'courier_on_way'      // שליח בדרך אלייך
-  | 'delivered';          // הזמנה התקבלה
+  | 'delivered'           // הזמנה התקבלה
+  | 'released'            // תשלום שוחרר
+  | 'refunded';           // תשלום הוחזר
 
 export interface OrderTrackingStep {
   status: OrderStatus;

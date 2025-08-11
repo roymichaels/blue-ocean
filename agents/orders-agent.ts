@@ -3,8 +3,8 @@ import tonAuth from '../services/tonAuth';
 import { setOrder, getOrder, listOrders, removeOrder, listOrdersBySeller } from '../services/tonOrders';
 import {
   deployOrderPayment,
-  releaseFunds,
-  refundOrder,
+  releasePayment,
+  refundPayment,
 } from '../services/tonContract';
 
 class OrdersAgent {
@@ -57,22 +57,38 @@ class OrdersAgent {
     return await listOrdersBySeller(address);
   }
 
-  async releaseFunds(orderId: string): Promise<string> {
+  async releasePayment(orderId: string): Promise<string> {
     await this.ensureWallet();
     const order = await this.get(orderId);
     if (!order?.paymentContractAddress) {
       throw new Error('Order payment contract not found');
     }
-    return await releaseFunds(order.paymentContractAddress);
+    const hash = await releasePayment(order.paymentContractAddress);
+    const updated: Order = {
+      ...order,
+      status: 'released',
+      updatedAt: new Date().toISOString(),
+    };
+    await setOrder(updated);
+    this.subscribers.forEach((cb) => cb(updated));
+    return hash;
   }
 
-  async refundOrder(orderId: string): Promise<string> {
+  async refundPayment(orderId: string): Promise<string> {
     await this.ensureWallet();
     const order = await this.get(orderId);
     if (!order?.paymentContractAddress) {
       throw new Error('Order payment contract not found');
     }
-    return await refundOrder(order.paymentContractAddress);
+    const hash = await refundPayment(order.paymentContractAddress);
+    const updated: Order = {
+      ...order,
+      status: 'refunded',
+      updatedAt: new Date().toISOString(),
+    };
+    await setOrder(updated);
+    this.subscribers.forEach((cb) => cb(updated));
+    return hash;
   }
 
   subscribe(cb: (o: Order) => void) {
