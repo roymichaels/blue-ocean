@@ -12,7 +12,7 @@ import React, {
 } from 'react';
 
 // Global reference used by non-hook utilities (e.g. tests or legacy helpers)
-let tonConnect: TonConnectUI | null = null;
+export let tonConnect: TonConnectUI | null = null;
 
 // React context to share the TonConnectUI instance across the app
 const TonConnectContext = createContext<TonConnectUI | null>(null);
