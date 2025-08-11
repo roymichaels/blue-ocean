@@ -165,6 +165,26 @@ deploying the static build, verify the manifest is accessible:
 curl https://<your-site>/tonconnect-manifest.json
 ```
 
+### Web (IPFS-safe) build
+
+- **Build:**
+
+  ```sh
+  npm run web:release
+  ```
+
+- **Local preview:**
+
+  ```sh
+  npm run web:preview
+  ```
+
+  Then open `http://localhost:4173/` and navigate within the app (no deep links).
+
+- **Upload:** Manually pin the `dist/` folder to Pinata.
+
+Deep links require additional rewrite support.
+
 ## Troubleshooting
 
 ### Content Security Policy
