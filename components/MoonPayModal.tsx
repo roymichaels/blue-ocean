@@ -9,8 +9,9 @@ interface MoonPayModalProps {
   visible: boolean;
   onClose: () => void;
   walletAddress: string;
-  coin: 'eth' | 'usdt' | 'usdc';
-  amountUSD: number;
+  coin: 'eth' | 'usdt' | 'usdc' | 'ton';
+  amountUSD?: number;
+  amountTON?: number;
 }
 
 export default function MoonPayModal({
@@ -19,6 +20,7 @@ export default function MoonPayModal({
   walletAddress,
   coin,
   amountUSD,
+  amountTON,
 }: MoonPayModalProps) {
   const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
@@ -27,8 +29,22 @@ export default function MoonPayModal({
 
   const url = `https://buy.moonpay.com?apiKey=${config.fiatKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
 
-  // Inject JavaScript to pre-fill the fiat amount once the widget has loaded
-  const injectedJavaScript = `
+  let injectedJavaScript: string | undefined;
+  if (typeof amountTON === 'number') {
+    injectedJavaScript = `
+    setTimeout(function() {
+      var input = document.querySelector('input[name="quote-amount-input"], input[name="quoteAmount"], input[name="digital-amount-input"]');
+      if (input) {
+        var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        nativeInputValueSetter.call(input, '${amountTON}');
+        var ev = new Event('input', { bubbles: true });
+        input.dispatchEvent(ev);
+      }
+    }, 2500);
+    true;
+  `;
+  } else if (typeof amountUSD === 'number') {
+    injectedJavaScript = `
     setTimeout(function() {
       var input = document.querySelector('input[name="base-amount-input"], input[name="baseAmount"]');
       if (input) {
@@ -40,6 +56,7 @@ export default function MoonPayModal({
     }, 2500);
     true;
   `;
+  }
 
   const handleNavigationChange = (event: any) => {
     if (event.url.includes('success') || event.url.includes('complete')) {
