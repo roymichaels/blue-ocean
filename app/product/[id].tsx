@@ -26,6 +26,7 @@ import {
   Pencil,
   X,
   Image as ImageIcon,
+  MessageCircle,
 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import CartService from '../../services/cart';
@@ -39,6 +40,7 @@ import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import MediaService from '../../services/media';
 import { useTonAddress } from '../../services/tonAuth';
+import chatAgent from '../../agents/chat-agent';
 import commonStyles from '../../constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '../../components/FloatingCartWidget';
@@ -272,6 +274,12 @@ export default function ProductDetailScreen() {
       pathname: '/(tabs)',
       params: { showCart: 'true' },
     });
+  };
+
+  const handleMessageSeller = async () => {
+    if (!product) return;
+    const buyer = address || 'guest_user';
+    await chatAgent.openChat(buyer, product.storeId, product.storeId);
   };
 
   const openEditModal = () => {
@@ -752,6 +760,18 @@ export default function ProductDetailScreen() {
               </View>
             </View>
           )}
+
+          <TouchableOpacity
+            style={[styles.messageSellerButton, { backgroundColor: colors.gold }]}
+            onPress={handleMessageSeller}
+          >
+            <MessageCircle size={20} color={colors.text.inverse} />
+            <Text
+              style={[styles.messageSellerText, { color: colors.text.inverse }]}
+            >
+              Message Seller
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -987,6 +1007,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginHorizontal: 20,
+  },
+  messageSellerButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  messageSellerText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   tieredPricingInfo: {
     borderRadius: 12,

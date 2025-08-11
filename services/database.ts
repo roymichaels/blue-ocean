@@ -250,14 +250,15 @@ class DatabaseService {
     userId: string,
     userName: string,
     userPublicKey?: string,
+    roomId?: string,
   ): Promise<string> {
     for (const room of this.chatRooms.values()) {
-      if (room.userId === userId) {
+      if ((roomId && room.id === roomId) || (!roomId && room.userId === userId)) {
         if (userPublicKey) room.userPublicKey = userPublicKey;
         return room.id;
       }
     }
-    const id = `room_${Date.now()}`;
+    const id = roomId || `room_${Date.now()}`;
     this.chatRooms.set(id, {
       id,
       userId,
