@@ -255,31 +255,38 @@ export default function ProductCard({
 
         {/* Variant Colors */}
         {variants.length > 0 && (
-          <View style={styles.variantContainer}>
-            {variants.map((v, idx) => (
-              <TouchableOpacity
-                key={idx}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  setSelectedVariantIndex(idx);
-                }}
-                style={[
-                  styles.variantDot,
-                  { backgroundColor: v.color, borderColor: colors.border.primary },
-                  idx === selectedVariantIndex && { borderColor: colors.gold, borderWidth: 2 },
-                ]}
-              />
-            ))}
-          </View>
+          <>
+            <View style={styles.variantContainer}>
+              {variants.map((v, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    setSelectedVariantIndex(idx);
+                  }}
+                  style={[
+                    styles.variantDot,
+                    { backgroundColor: v.color, borderColor: colors.border.primary },
+                    idx === selectedVariantIndex && { borderColor: colors.gold, borderWidth: 2 },
+                  ]}
+                />
+              ))}
+            </View>
+            {selectedVariant && (
+              <Text style={[styles.selectedVariantText, { color: colors.text.secondary }]}>צבע: {selectedVariant.color}</Text>
+            )}
+          </>
         )}
 
         {/* Stock Status */}
         <View style={styles.stockContainer}>
-          <View style={[
-            styles.stockIndicator,
-            { backgroundColor: stock > 0 ? colors.status.success : colors.status.error }
-          ]} />
-          <Text style={[styles.stockText, { color: colors.text.secondary }]}>
+          <View
+            style={[
+              styles.stockIndicator,
+              { backgroundColor: stock > 0 ? colors.status.success : colors.status.error },
+            ]}
+          />
+          <Text style={[styles.stockText, { color: colors.text.secondary }]}> 
             {stock > 0 ? `במלאי (${stock})` : 'אזל מהמלאי'}
           </Text>
         </View>
@@ -430,6 +437,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginLeft: 6,
     borderWidth: 1,
+  },
+  selectedVariantText: {
+    fontSize: 12,
+    marginBottom: 4,
+    textAlign: 'right',
   },
   stockContainer: {
     flexDirection: 'row',
