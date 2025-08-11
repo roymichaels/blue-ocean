@@ -222,6 +222,7 @@ export interface Order {
   paymentMethod: 'cash_on_delivery' | 'ton';
   buyerAddress?: string;
   sellerAddress?: string;
+  driverAddress?: string;
   paymentContractAddress?: string;
   createdAt: string;
   updatedAt: string;
