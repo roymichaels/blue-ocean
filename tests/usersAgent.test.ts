@@ -15,10 +15,17 @@ describe('UsersAgent TON integration', () => {
   });
 
   it('adds and retrieves users via TON service', async () => {
-    const user: any = { id: 'u1', name: 'Alice', role: 'user', address: '', publicKey: '' };
+    const user: any = {
+      id: 'u1',
+      username: 'alice',
+      displayName: 'Alice',
+      role: 'user',
+      address: '',
+      publicKey: '',
+    };
     await usersAgent.add(user);
     const fetched = await usersAgent.get('u1');
-    expect(fetched?.name).toBe('Alice');
+    expect(fetched?.displayName).toBe('Alice');
     const all = await usersAgent.getAll();
     expect(all.length).toBe(1);
   });
