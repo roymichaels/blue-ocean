@@ -35,13 +35,16 @@ export interface WakuClient {
   ) => Promise<void>;
   broadcastSystem: (message: string) => Promise<void>;
   subscribeSystem: (cb: (msg: string) => void) => Promise<() => void>;
+  broadcastOrder: (message: string) => Promise<void>;
+  subscribeOrders: (cb: (msg: string) => void) => Promise<() => void>;
 }
 
-function topic(roomId: string) {
-  return `/blue-ocean/1/chat/${roomId}/proto`;
+function chatTopic(roomId: string) {
+  return `/congress/chat/1/${roomId}`;
 }
 
-const SYSTEM_TOPIC = '/blue-ocean/1/notifications/1/proto';
+const SYSTEM_TOPIC = '/congress/notifications/1';
+const ORDER_TOPIC = '/congress/orders/1';
 
 export function useWakuClient(): WakuClient {
   const nodeRef = useRef<LightNode>();
@@ -92,7 +95,7 @@ export function useWakuClient(): WakuClient {
     await db.sendChatMessage(roomId, { ...full, message: encrypted });
 
     if (nodeRef.current) {
-      const encoder = createEncoder({ contentTopic: topic(roomId) });
+      const encoder = createEncoder({ contentTopic: chatTopic(roomId) });
       await nodeRef.current.lightPush.send(encoder, {
         payload: utf8ToBytes(encrypted),
       });
@@ -106,7 +109,7 @@ export function useWakuClient(): WakuClient {
     cb: (msg: ChatMessage) => void,
   ): Promise<() => void> => {
     if (!nodeRef.current) return () => {};
-    const decoder = createDecoder(topic(roomId));
+    const decoder = createDecoder(chatTopic(roomId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       const encrypted = bytesToUtf8(wakuMsg.payload);
@@ -143,9 +146,9 @@ export function useWakuClient(): WakuClient {
     cb: (msg: ChatMessage) => void,
   ) => {
     if (!nodeRef.current) return;
-    const decoder = createDecoder(topic(roomId));
+    const decoder = createDecoder(chatTopic(roomId));
     for await (const msgs of nodeRef.current.store.queryGenerator({
-      contentTopics: [topic(roomId)],
+      contentTopics: [chatTopic(roomId)],
     })) {
       for (const wakuMsg of msgs.messages) {
         if (!wakuMsg.payload) continue;
@@ -172,6 +175,12 @@ export function useWakuClient(): WakuClient {
     await nodeRef.current.lightPush.send(encoder, { payload: utf8ToBytes(message) });
   };
 
+  const broadcastOrder = async (message: string) => {
+    if (!nodeRef.current) return;
+    const encoder = createEncoder({ contentTopic: ORDER_TOPIC });
+    await nodeRef.current.lightPush.send(encoder, { payload: utf8ToBytes(message) });
+  };
+
   const subscribeSystem = async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
     const decoder = createDecoder(SYSTEM_TOPIC);
@@ -192,5 +201,33 @@ export function useWakuClient(): WakuClient {
     };
   };
 
-  return { send, subscribe, fetchHistory, broadcastSystem, subscribeSystem };
+  const subscribeOrders = async (cb: (msg: string) => void) => {
+    if (!nodeRef.current) return () => {};
+    const decoder = createDecoder(ORDER_TOPIC);
+    const handler = (wakuMsg: any) => {
+      if (!wakuMsg.payload) return;
+      cb(bytesToUtf8(wakuMsg.payload));
+    };
+    const maybeUnsub = (nodeRef.current.relay as any).addObserver(
+      handler,
+      [decoder],
+    ) as (() => void) | void;
+    return () => {
+      if (typeof maybeUnsub === 'function') {
+        maybeUnsub();
+      } else {
+        (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
+      }
+    };
+  };
+
+  return {
+    send,
+    subscribe,
+    fetchHistory,
+    broadcastSystem,
+    subscribeSystem,
+    broadcastOrder,
+    subscribeOrders,
+  };
 }
