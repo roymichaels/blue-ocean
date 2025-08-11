@@ -32,7 +32,7 @@ import PinataService from '../services/pinata';
 import MediaService from '../services/media';
 import { debugLog } from '../utils/logger';
 import { ChatMessage, ChatRoom, User } from '../types';
-import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
+import { decryptMessage } from '../utils/chatCrypto';
 import { useWakuClient } from '../hooks/useWakuClient';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -126,7 +126,8 @@ export default function ChatWidget() {
         const db = DatabaseService.getInstance();
         const id = await db.getOrCreateChatRoom(
           user?.id || 'guest_user',
-          user?.displayName || 'Guest User'
+          user?.displayName || 'Guest User',
+          config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY
         );
         setDefaultRoomId(id);
       }
@@ -228,7 +229,8 @@ const loadOrCreateDefaultRoom = async () => {
       const db = DatabaseService.getInstance();
       const roomId = await db.getOrCreateChatRoom(
         user?.id || 'guest_user',
-        user?.displayName || 'Guest User'
+        user?.displayName || 'Guest User',
+        config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY
       );
 
       const defaultRoom = {
@@ -244,8 +246,14 @@ const loadOrCreateDefaultRoom = async () => {
         setSelectedRoom(defaultRoom);
       }
       await db.markChatRoomRead(roomId);
-      await loadMessages(roomId);
-      await maybeSendOnboardMessage(roomId);
+      await loadMessages(
+        roomId,
+        config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY || '',
+      );
+      await maybeSendOnboardMessage(
+        roomId,
+        config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY || '',
+      );
     } catch (error) {
       console.error('Error creating default room:', error);
       if (isMounted.current) {
@@ -259,14 +267,14 @@ const loadOrCreateDefaultRoom = async () => {
     }
   };
 
-  const loadMessages = async (roomId: string) => {
+  const loadMessages = async (roomId: string, peerKey: string) => {
     try {
       const db = DatabaseService.getInstance();
       const messagesData = await db.getChatMessages(roomId);
       const decrypted = await Promise.all(
         messagesData.map(async (m) => ({
           ...m,
-          message: await decryptMessage(m.message, roomId),
+          message: await decryptMessage(m.message, roomId, peerKey),
         }))
       );
       if (isMounted.current) {
@@ -297,13 +305,16 @@ const loadOrCreateDefaultRoom = async () => {
     }
   };
 
-  const maybeSendOnboardMessage = async (roomId: string) => {
+  const maybeSendOnboardMessage = async (
+    roomId: string,
+    peerKey: string,
+  ) => {
     if (isAdmin || isDriver) return;
     try {
       const onboarded = await AsyncStorage.getItem(CHAT_ONBOARDED_KEY);
       if (onboarded) return;
       const text = "Let's build your system. First, tell me your Game — your mission.";
-      const saved = await waku.send(roomId, {
+      const saved = await waku.send(roomId, peerKey, {
         senderId: 'system',
         senderName: 'System',
         message: text,
@@ -329,8 +340,8 @@ const loadOrCreateDefaultRoom = async () => {
         prev.map((r) => (r.id === room.id ? { ...r, unreadCount: 0 } : r))
       );
     }
-    await loadMessages(room.id);
-    await maybeSendOnboardMessage(room.id);
+    await loadMessages(room.id, room.userPublicKey || '');
+    await maybeSendOnboardMessage(room.id, room.userPublicKey || '');
   };
 
   useEffect(() => {
@@ -341,10 +352,20 @@ const loadOrCreateDefaultRoom = async () => {
       }
     };
     let unsubscribe: (() => void) | undefined;
-    waku.subscribe(selectedRoom.id, handler).then((unsub) => {
+    waku
+      .subscribe(
+        selectedRoom.id,
+        selectedRoom.userPublicKey || config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY || '',
+        handler,
+      )
+      .then((unsub) => {
       unsubscribe = unsub;
     });
-    waku.fetchHistory(selectedRoom.id, handler);
+    waku.fetchHistory(
+      selectedRoom.id,
+      selectedRoom.userPublicKey || config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY || '',
+      handler,
+    );
     return () => {
       unsubscribe?.();
     };
@@ -361,7 +382,11 @@ const loadOrCreateDefaultRoom = async () => {
 
       if (!roomId) {
         const db = DatabaseService.getInstance();
-        roomId = await db.getOrCreateChatRoom(result.id, result.displayName);
+        roomId = await db.getOrCreateChatRoom(
+          result.id,
+          result.displayName,
+          (result as any).chatPublicKey
+        );
         room = {
           id: roomId,
           userId: result.id,
@@ -387,8 +412,8 @@ const loadOrCreateDefaultRoom = async () => {
         setSearchQuery('');
         setSearchResults([]);
       }
-      await loadMessages(roomId);
-      await maybeSendOnboardMessage(roomId);
+      await loadMessages(roomId, room?.userPublicKey || '');
+      await maybeSendOnboardMessage(roomId, room?.userPublicKey || '');
     } catch (error) {
       console.error('Error opening chat with user:', error);
     }
@@ -425,7 +450,8 @@ const loadOrCreateDefaultRoom = async () => {
       ? selectedRoom.id
       : await db.getOrCreateChatRoom(
           user?.id || 'guest_user',
-          user?.displayName || 'Guest User'
+          user?.displayName || 'Guest User',
+          config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY
         );
 
     try {
@@ -437,7 +463,9 @@ const loadOrCreateDefaultRoom = async () => {
         isAdmin: isAdmin || isDriver,
       };
 
-      const saved = await waku.send(roomId, msg);
+      const peerKey = selectedRoom?.userPublicKey ||
+        config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY || '';
+      const saved = await waku.send(roomId, peerKey, msg);
 
       if (isMounted.current) {
         setMessages((prev) => [...prev, saved]);
@@ -595,7 +623,8 @@ const loadOrCreateDefaultRoom = async () => {
         ? selectedRoom.id
         : await db.getOrCreateChatRoom(
             user?.id || 'guest_user',
-            user?.displayName || 'Guest User'
+            user?.displayName || 'Guest User',
+            config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY
           );
       const voiceMessage: ChatMessage = {
         id: Date.now().toString(),
@@ -716,7 +745,8 @@ const loadOrCreateDefaultRoom = async () => {
         ? selectedRoom.id
         : await db.getOrCreateChatRoom(
             user?.id || 'guest_user',
-            user?.displayName || 'Guest User'
+            user?.displayName || 'Guest User',
+            config.EXPO_PUBLIC_ADMIN_PUBLIC_KEY
           );
       if (updated) {
         await db.updateMessageReactions(messageId, updated);

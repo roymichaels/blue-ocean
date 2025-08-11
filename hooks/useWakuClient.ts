@@ -20,21 +20,28 @@ const DEFAULT_BOOTSTRAP =
 export interface WakuClient {
   send: (
     roomId: string,
+    peerPublicKey: string,
     message: Omit<ChatMessage, 'id' | 'timestamp'>,
   ) => Promise<ChatMessage>;
   subscribe: (
     roomId: string,
+    peerPublicKey: string,
     callback: (msg: ChatMessage) => void,
   ) => Promise<() => void>;
   fetchHistory: (
     roomId: string,
+    peerPublicKey: string,
     callback: (msg: ChatMessage) => void,
   ) => Promise<void>;
+  broadcastSystem: (message: string) => Promise<void>;
+  subscribeSystem: (cb: (msg: string) => void) => Promise<() => void>;
 }
 
 function topic(roomId: string) {
   return `/blue-ocean/1/chat/${roomId}/proto`;
 }
+
+const SYSTEM_TOPIC = '/blue-ocean/1/notifications/1/proto';
 
 export function useWakuClient(): WakuClient {
   const nodeRef = useRef<LightNode>();
@@ -71,10 +78,11 @@ export function useWakuClient(): WakuClient {
 
   const send = async (
     roomId: string,
+    peerPublicKey: string,
     msg: Omit<ChatMessage, 'id' | 'timestamp'>,
   ): Promise<ChatMessage> => {
     const db = DatabaseService.getInstance();
-    const encrypted = await encryptMessage(msg.message, roomId);
+    const encrypted = await encryptMessage(msg.message, roomId, peerPublicKey);
     const full: ChatMessage = {
       id: Date.now().toString(),
       timestamp: Date.now(),
@@ -94,6 +102,7 @@ export function useWakuClient(): WakuClient {
 
   const subscribe = async (
     roomId: string,
+    peerPublicKey: string,
     cb: (msg: ChatMessage) => void,
   ): Promise<() => void> => {
     if (!nodeRef.current) return () => {};
@@ -101,7 +110,7 @@ export function useWakuClient(): WakuClient {
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       const encrypted = bytesToUtf8(wakuMsg.payload);
-      const text = await decryptMessage(encrypted, roomId);
+      const text = await decryptMessage(encrypted, roomId, peerPublicKey);
       const chat: ChatMessage = {
         id: Date.now().toString(),
         senderId: wakuMsg.meta?.sender || 'peer',
@@ -130,6 +139,7 @@ export function useWakuClient(): WakuClient {
 
   const fetchHistory = async (
     roomId: string,
+    peerPublicKey: string,
     cb: (msg: ChatMessage) => void,
   ) => {
     if (!nodeRef.current) return;
@@ -140,7 +150,7 @@ export function useWakuClient(): WakuClient {
       for (const wakuMsg of msgs.messages) {
         if (!wakuMsg.payload) continue;
         const encrypted = bytesToUtf8(wakuMsg.payload);
-        const text = await decryptMessage(encrypted, roomId);
+        const text = await decryptMessage(encrypted, roomId, peerPublicKey);
         const chat: ChatMessage = {
           id: Date.now().toString(),
           senderId: wakuMsg.meta?.sender || 'peer',
@@ -156,5 +166,31 @@ export function useWakuClient(): WakuClient {
     }
   };
 
-  return { send, subscribe, fetchHistory };
+  const broadcastSystem = async (message: string) => {
+    if (!nodeRef.current) return;
+    const encoder = createEncoder({ contentTopic: SYSTEM_TOPIC });
+    await nodeRef.current.lightPush.send(encoder, { payload: utf8ToBytes(message) });
+  };
+
+  const subscribeSystem = async (cb: (msg: string) => void) => {
+    if (!nodeRef.current) return () => {};
+    const decoder = createDecoder(SYSTEM_TOPIC);
+    const handler = (wakuMsg: any) => {
+      if (!wakuMsg.payload) return;
+      cb(bytesToUtf8(wakuMsg.payload));
+    };
+    const maybeUnsub = (nodeRef.current.relay as any).addObserver(
+      handler,
+      [decoder],
+    ) as (() => void) | void;
+    return () => {
+      if (typeof maybeUnsub === 'function') {
+        maybeUnsub();
+      } else {
+        (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
+      }
+    };
+  };
+
+  return { send, subscribe, fetchHistory, broadcastSystem, subscribeSystem };
 }

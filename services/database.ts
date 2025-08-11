@@ -246,15 +246,23 @@ class DatabaseService {
     return Array.from(this.chatRooms.values());
   }
 
-  async getOrCreateChatRoom(userId: string, userName: string): Promise<string> {
+  async getOrCreateChatRoom(
+    userId: string,
+    userName: string,
+    userPublicKey?: string,
+  ): Promise<string> {
     for (const room of this.chatRooms.values()) {
-      if (room.userId === userId) return room.id;
+      if (room.userId === userId) {
+        if (userPublicKey) room.userPublicKey = userPublicKey;
+        return room.id;
+      }
     }
     const id = `room_${Date.now()}`;
     this.chatRooms.set(id, {
       id,
       userId,
       userName,
+      userPublicKey,
       lastMessage: '',
       lastMessageTime: Date.now(),
       unreadCount: 0,
