@@ -2,8 +2,8 @@ import { createHash } from 'crypto';
 import * as tonAuth from '../services/tonAuth';
 import {
   deployOrderPayment,
-  releaseFunds,
-  refundOrder,
+  releasePayment,
+  refundPayment,
   ORDER_PAYMENT_FACTORY_ADDRESS,
 } from '../services/tonContract';
 
@@ -45,8 +45,8 @@ describe('Ton contract flows', () => {
     expect(result.txHash).toBe(expectedHash);
   });
 
-  it('releases funds through TonConnect', async () => {
-    const res = await releaseFunds('contract1');
+  it('releases payment through TonConnect', async () => {
+    const res = await releasePayment('contract1');
     expect(mockTonConnect.sendTransaction).toHaveBeenCalledWith(
       expect.objectContaining({
         messages: [
@@ -57,8 +57,8 @@ describe('Ton contract flows', () => {
     expect(res).toBe(expectedHash);
   });
 
-  it('refunds order through TonConnect', async () => {
-    const res = await refundOrder('contract1');
+  it('refunds payment through TonConnect', async () => {
+    const res = await refundPayment('contract1');
     expect(mockTonConnect.sendTransaction).toHaveBeenCalledWith(
       expect.objectContaining({
         messages: [

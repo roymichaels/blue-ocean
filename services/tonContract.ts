@@ -61,7 +61,7 @@ export async function deployOrderPayment(
   }
 }
 
-export async function releaseFunds(contractAddress: string): Promise<string> {
+export async function releasePayment(contractAddress: string): Promise<string> {
   try {
     const payload = makeComment('Release');
     const payloadBoc = TonWeb.utils.bytesToBase64(
@@ -75,12 +75,12 @@ export async function releaseFunds(contractAddress: string): Promise<string> {
       },
     ]);
   } catch (e) {
-    console.error('Failed to release funds', e);
+    console.error('Failed to release payment', e);
     throw e;
   }
 }
 
-export async function refundOrder(contractAddress: string): Promise<string> {
+export async function refundPayment(contractAddress: string): Promise<string> {
   try {
     const payload = makeComment('Refund');
     const payloadBoc = TonWeb.utils.bytesToBase64(
@@ -94,7 +94,7 @@ export async function refundOrder(contractAddress: string): Promise<string> {
       },
     ]);
   } catch (e) {
-    console.error('Failed to refund order', e);
+    console.error('Failed to refund payment', e);
     throw e;
   }
 }

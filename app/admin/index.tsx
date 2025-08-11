@@ -2,15 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DatabaseService from '../../services/database';
-import { User } from '../../types';
+import { User, Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../components/AuthContext';
 import usersAgent from '../../agents/users-agent';
+import ordersAgent from '../../agents/orders-agent';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const { colors } = useTheme();
   const [requests, setRequests] = useState<User[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     load();
@@ -20,6 +22,15 @@ export default function AdminDashboard() {
     const db = DatabaseService.getInstance();
     const pending = await db.getPendingKycRequests();
     setRequests(pending);
+    const allOrders = await ordersAgent.getAll();
+    const pendingOrders = allOrders.filter(
+      o =>
+        o.paymentMethod === 'ton' &&
+        o.paymentContractAddress &&
+        o.status !== 'released' &&
+        o.status !== 'refunded',
+    );
+    setOrders(pendingOrders);
   };
 
   const approve = async (id: string) => {
@@ -36,6 +47,16 @@ export default function AdminDashboard() {
       payload: { userId: id, status: 'rejected', adminId: user?.id },
     });
     setRequests(req => req.filter(r => r.id !== id));
+  };
+
+  const release = async (id: string) => {
+    await ordersAgent.releasePayment(id);
+    setOrders(o => o.filter(ord => ord.id !== id));
+  };
+
+  const refund = async (id: string) => {
+    await ordersAgent.refundPayment(id);
+    setOrders(o => o.filter(ord => ord.id !== id));
   };
 
   return (
@@ -63,6 +84,31 @@ export default function AdminDashboard() {
         ))}
         {requests.length === 0 && (
           <Text style={[styles.empty, { color: colors.text.secondary }]}>No pending requests.</Text>
+        )}
+
+        <Text style={[styles.title, { color: colors.text.primary }]}>Pending Paid Orders</Text>
+        {orders.map(o => (
+          <View key={o.id} style={[styles.card, { borderColor: colors.border.primary }]}>
+            <Text style={[styles.name, { color: colors.text.primary }]}>Order #{o.id}</Text>
+            <Text style={[styles.name, { color: colors.text.secondary }]}>Total: {o.total}</Text>
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: colors.status.success }]}
+                onPress={() => release(o.id)}
+              >
+                <Text style={{ color: colors.text.inverse }}>Release</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: colors.status.error }]}
+                onPress={() => refund(o.id)}
+              >
+                <Text style={{ color: colors.text.inverse }}>Refund</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+        {orders.length === 0 && (
+          <Text style={[styles.empty, { color: colors.text.secondary }]}>No pending orders.</Text>
         )}
       </ScrollView>
     </SafeAreaView>
