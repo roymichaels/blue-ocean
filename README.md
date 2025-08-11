@@ -32,10 +32,8 @@ support for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests.
 Copy `.env.example` to `.env` and set at minimum:
 
 - `EXPO_PUBLIC_ADMIN_USERNAME`
-- `EXPO_PUBLIC_WAKU_SECRET`
 - `EXPO_PUBLIC_WAKU_BOOTSTRAP`
 - `EXPO_PUBLIC_JWT_SECRET`
-- `EXPO_PUBLIC_CHAT_SECRET`
 These values are read at build time and cannot be changed from the UI.
 Deployed TON contract addresses are stored in `constants/tonAddresses.json`
 and loaded automatically; no `.env` entries are required for them.
@@ -197,19 +195,17 @@ Module resolution relies on custom aliases defined in `metro.config.js` and `web
 
 ## Docker
 
-Use Docker to run the project in a reproducible environment. Build the image
-and start the Expo server with a Waku secret provided via the environment:
+Use Docker to run the project in a reproducible environment:
 
 ```sh
 docker build -t blue-ocean .
-docker run -e EXPO_PUBLIC_WAKU_SECRET=$(openssl rand -hex 32) \
-  -p 19000-19002:19000-19002 blue-ocean
+docker run -p 19000-19002:19000-19002 blue-ocean
 ```
 
 For hot reloading and easier development you can also use Docker Compose:
 
 ```sh
-EXPO_PUBLIC_WAKU_SECRET=$(openssl rand -hex 32) docker compose up
+docker compose up
 ```
 
 ## Tests

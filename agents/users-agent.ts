@@ -1,6 +1,7 @@
 import { User } from '../types';
 import tonAuth from '../services/tonAuth';
 import { getUser, setUser, listUsers, removeUser } from '../services/tonUsers';
+import { getPublicKeyHex } from '../services/localIdentity';
 
 class UsersAgent {
   private async ensureWallet() {
@@ -15,13 +16,15 @@ class UsersAgent {
 
   async add(user: User): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
-    const enriched: User = { ...user, publicKey, address };
+    const chatPublicKey = await getPublicKeyHex();
+    const enriched: User = { ...user, publicKey, address, chatPublicKey };
     await setUser(enriched);
   }
 
   async update(user: User): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
-    const enriched: User = { ...user, publicKey, address };
+    const chatPublicKey = await getPublicKeyHex();
+    const enriched: User = { ...user, publicKey, address, chatPublicKey };
     await setUser(enriched);
   }
 
