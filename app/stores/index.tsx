@@ -1,15 +1,14 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import StoreCreation from '../../components/StoreCreation';
+import { View, StyleSheet, Text } from 'react-native';
 
 export default function StoresScreen() {
   return (
     <View style={styles.container}>
-      <StoreCreation />
+      <Text>Stores</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, padding: 16, alignItems: 'center', justifyContent: 'center' },
 });

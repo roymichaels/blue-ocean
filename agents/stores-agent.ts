@@ -14,12 +14,12 @@ class StoresAgent {
 
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
-    await setStore(item);
+    await setStore({ id: item.id, name: item.name, owner: item.owner, nftId: item.nftId });
   }
 
   async update(item: Store): Promise<void> {
     await this.ensureWallet();
-    await setStore(item);
+    await setStore({ id: item.id, name: item.name, owner: item.owner, nftId: item.nftId });
   }
 
   async remove(id: string): Promise<void> {

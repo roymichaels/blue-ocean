@@ -1,4 +1,4 @@
-import TonWeb from 'tonweb';
+import { createHash } from 'crypto';
 import * as tonAuth from '../services/tonAuth';
 import {
   createOrderPayment,
@@ -24,9 +24,9 @@ describe('tonAuth.requestSignature', () => {
 describe('Ton contract flows', () => {
   const bocBytes = Buffer.from([1, 2, 3]);
   const boc = bocBytes.toString('base64');
-  const expectedHash = TonWeb.utils.bytesToHex(
-    TonWeb.utils.sha256_sync(Buffer.from(boc, 'base64')),
-  );
+  const expectedHash = createHash('sha256')
+    .update(Buffer.from(boc, 'base64'))
+    .digest('hex');
   const mockTonConnect = {
     sendTransaction: jest.fn().mockResolvedValue({ boc }),
   } as any;
