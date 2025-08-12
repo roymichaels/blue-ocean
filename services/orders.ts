@@ -1,5 +1,5 @@
 import ordersAgent from '../agents/orders-agent';
-import notificationsAgent from '../agents/notifications-agent';
+import eventBus from './eventBus';
 import {
   Order,
   OrderStatus,
@@ -12,8 +12,10 @@ import { getStore } from './tonStores';
 import tonAuth from './tonAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
 
+const ORDER_TOPIC = '/congress/orders/1';
+
 export async function emitOrderEvents(order: Order, storeId: string) {
-  const payload = {
+  const baseEvent = {
     id: order.id,
     orderId: order.id,
     storeId,
@@ -27,9 +29,16 @@ export async function emitOrderEvents(order: Order, storeId: string) {
     },
   };
   try {
-    await notificationsAgent.broadcast('order.created', payload as any);
+    await eventBus.publish(ORDER_TOPIC, {
+      type: 'order.created',
+      ...baseEvent,
+    });
     if (order.paymentMethod === 'ton') {
-      await notificationsAgent.broadcast('escrow.deployed', payload as any);
+      await eventBus.publish(ORDER_TOPIC, {
+        type: 'escrow.deployed',
+        ...baseEvent,
+      });
+
     }
   } catch (err) {
     console.error('Failed to emit order events', err);

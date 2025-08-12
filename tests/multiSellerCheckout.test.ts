@@ -12,7 +12,7 @@ jest.mock('../services/tonOrders', () => ({
   listOrdersBySeller: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('../agents/notifications-agent', () => ({ broadcast: jest.fn() }));
+jest.mock('../services/eventBus', () => ({ publish: jest.fn() }));
 
 jest.mock('../services/tonContract', () => ({
   deployOrderPayment: jest
@@ -108,9 +108,9 @@ describe('multi-seller checkout flow', () => {
       true,
     );
 
-    const notificationsAgent = require('../agents/notifications-agent');
-    expect(notificationsAgent.broadcast).toHaveBeenCalledTimes(4);
-    const events = notificationsAgent.broadcast.mock.calls.map((c: any) => c[0]);
+    const eventBus = require('../services/eventBus');
+    expect(eventBus.publish).toHaveBeenCalledTimes(4);
+    const events = eventBus.publish.mock.calls.map((c: any) => c[1].type);
     expect(events).toEqual([
       'order.created',
       'escrow.deployed',
@@ -118,7 +118,7 @@ describe('multi-seller checkout flow', () => {
       'escrow.deployed',
     ]);
 
-    const firstPayload = notificationsAgent.broadcast.mock.calls[0][1];
+    const firstPayload = eventBus.publish.mock.calls[0][1];
     expect(firstPayload.orderId).toBe(orders[0].id);
     expect(firstPayload.storeId).toBe('s1');
     expect(firstPayload.buyerAddress).toBe('buyer_address');
