@@ -1,6 +1,10 @@
+// Details stored for each order on-chain
 struct OrderData {
+  // Address of the deployed escrow/payment contract
   address escrowAddr;
+  // Hash of all items in the order
   slice itemsHash;
+  // Encrypted shipping address blob
   cell shipAddrEnc;
 }
 

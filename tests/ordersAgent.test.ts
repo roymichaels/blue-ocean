@@ -97,6 +97,8 @@ describe('ordersAgent.add', () => {
 
     const persisted = await ordersAgent.get(order.id);
     expect(persisted?.escrowAddr).toBe('escrow1');
+    expect(persisted?.itemsHash).toBe(itemsHash);
+    expect(persisted?.shipAddrEnc).toBeDefined();
   });
 });
 
