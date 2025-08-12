@@ -33,6 +33,8 @@ jest.mock('../services/tonStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
 }));
 
+jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
+
 jest.mock('../services/tonAuth', () => ({
   getAddress: jest.fn().mockReturnValue('buyer_address'),
   getTonPublicKey: jest.fn().mockReturnValue('buyer_pub'),

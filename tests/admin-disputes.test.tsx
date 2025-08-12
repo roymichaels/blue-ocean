@@ -12,6 +12,8 @@ jest.mock('../services/tonContract', () => ({
   adminResolve: jest.fn().mockResolvedValue('tx'),
 }));
 
+jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
+
 describe('OrderService.resolveDispute', () => {
   const svc = OrderService.getInstance();
 
