@@ -1,5 +1,5 @@
 import * as nacl from 'tweetnacl';
-import { deriveSharedKey, aesEncrypt, aesDecrypt } from '../utils/encryption';
+import { deriveSharedKey, aesEncrypt, aesDecrypt, deriveChatSalt } from '../utils/encryption';
 
 describe('ECDH + AES utilities', () => {
   it('allow buyer and seller to exchange encrypted messages', async () => {
@@ -8,8 +8,11 @@ describe('ECDH + AES utilities', () => {
     const buyer = nacl.sign.keyPair.fromSeed(buyerSeed);
     const seller = nacl.sign.keyPair.fromSeed(sellerSeed);
 
-    const buyerKey = await deriveSharedKey(buyerSeed, Buffer.from(seller.publicKey).toString('hex'), 'room1');
-    const sellerKey = await deriveSharedKey(sellerSeed, Buffer.from(buyer.publicKey).toString('hex'), 'room1');
+    const buyerPubHex = Buffer.from(buyer.publicKey).toString('hex');
+    const sellerPubHex = Buffer.from(seller.publicKey).toString('hex');
+    const salt = deriveChatSalt(buyerPubHex, sellerPubHex);
+    const buyerKey = await deriveSharedKey(buyerSeed, sellerPubHex, 'room1', salt);
+    const sellerKey = await deriveSharedKey(sellerSeed, buyerPubHex, 'room1', salt);
 
     const message = 'hello seller';
     const cipher = await aesEncrypt(message, buyerKey);

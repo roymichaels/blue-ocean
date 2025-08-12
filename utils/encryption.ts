@@ -13,12 +13,13 @@ export async function deriveSharedKey(
   myPrivateEd25519: Uint8Array,
   peerPublicEd25519Hex: string,
   info: string,
+  salt: Uint8Array,
 ): Promise<CryptoKey> {
   const myX = ed2curve.convertSecretKey(myPrivateEd25519);
   const peerX = ed2curve.convertPublicKey(Buffer.from(peerPublicEd25519Hex, 'hex'));
   if (!myX || !peerX) throw new Error('key conversion failed');
   const shared = nacl.scalarMult(myX, peerX);
-  const derived = hkdf(sha256, shared, undefined, info, 32);
+  const derived = hkdf(sha256, shared, salt, info, 32);
   return crypto.subtle.importKey(
     'raw',
     derived,
@@ -26,6 +27,17 @@ export async function deriveSharedKey(
     false,
     ['encrypt', 'decrypt'],
   );
+}
+
+/**
+ * Derive a deterministic salt from two public ed25519 keys.
+ * The keys are sorted to ensure consistent salt regardless of caller order.
+ */
+export function deriveChatSalt(aHex: string, bHex: string): Uint8Array {
+  const a = Buffer.from(aHex, 'hex');
+  const b = Buffer.from(bHex, 'hex');
+  const [first, second] = [a, b].sort(Buffer.compare);
+  return sha256(Buffer.concat([first, second]));
 }
 
 /**
