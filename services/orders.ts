@@ -38,6 +38,7 @@ export async function emitOrderEvents(order: Order, storeId: string) {
         type: 'escrow.deployed',
         ...baseEvent,
       });
+
     }
   } catch (err) {
     console.error('Failed to emit order events', err);
