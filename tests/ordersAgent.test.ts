@@ -20,6 +20,12 @@ jest.mock('../services/tonOrders', () => ({
 jest.mock('../agents/notifications-agent', () => ({ broadcast: jest.fn() }));
 jest.mock('../agents/stores-agent', () => ({ updateReputationByOwner: jest.fn() }));
 
+const getAdminsMock = jest.fn().mockResolvedValue(['admin']);
+jest.mock('../agents/settings-agent', () => ({
+  __esModule: true,
+  default: { getInstance: () => ({ getAdmins: getAdminsMock }) },
+}));
+
 jest.mock('../services/tonContract', () => ({
   deployOrderPayment: jest.fn().mockResolvedValue({ contractAddress: 'escrow1', txHash: 'tx1' }),
   releasePayment: jest.fn(),
@@ -42,9 +48,11 @@ const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
 
 const ordersAgent = require('../agents/orders-agent').default;
 const notificationsAgent = require('../agents/notifications-agent');
+const tonAuth = require('../services/tonAuth');
 
 describe('ordersAgent.add', () => {
   it('encrypts shipping address and persists new fields', async () => {
+    tonAuth.getAddress.mockReturnValue('seller');
     const items = [{
       id: 'i1',
       productId: 'p1',
@@ -105,6 +113,7 @@ describe('ordersAgent.add', () => {
 
 describe('ordersAgent notification IDs', () => {
   it('generates unique IDs under rapid calls', async () => {
+    tonAuth.getAddress.mockReturnValue('seller');
     notificationsAgent.broadcast.mockClear();
     const order = { id: 'o1', userId: 'u1' } as any;
     const notify = (ordersAgent as any).notifyOrderCreated.bind(ordersAgent);
@@ -119,6 +128,31 @@ describe('ordersAgent notification IDs', () => {
     expect(new Set(ids).size).toBe(ids.length);
     const timestamps = notificationsAgent.broadcast.mock.calls.map((c: any) => c[1].timestamp);
     expect(timestamps.every((ts: number) => ts === 123)).toBe(true);
+  });
+});
+
+describe('ordersAgent admin authorization', () => {
+  it('allows admin to update orders', async () => {
+    tonAuth.getAddress.mockReturnValue('admin');
+    const order: Order = {
+      id: 'order-admin',
+      userId: 'u1',
+      items: [],
+      total: 0,
+      status: 'order_received',
+      itemsHash: '',
+      paymentMethod: 'ton',
+      buyerAddress: 'buyer',
+      sellerAddress: 'seller',
+      createdAt: '',
+      updatedAt: '',
+      trackingSteps: [],
+    } as any;
+    mockStore[order.id] = order;
+    await expect(
+      ordersAgent.update({ ...order, status: 'courier_found' })
+    ).resolves.not.toThrow();
+    expect(mockStore[order.id].status).toBe('courier_found');
   });
 });
 

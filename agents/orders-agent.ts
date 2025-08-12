@@ -4,6 +4,7 @@ import tonAuth from '../services/tonAuth';
 import notificationsAgent from './notifications-agent';
 import { setOrder, getOrder, listOrders, removeOrder, listOrdersBySeller } from '../services/tonOrders';
 import storesAgent from './stores-agent';
+import SettingsAgent from './settings-agent';
 import {
   deployOrderPayment,
   releasePayment,
@@ -60,9 +61,17 @@ class OrdersAgent {
   private async ensureAuthorized(order: Order) {
     await this.ensureWallet();
     const address = tonAuth.getAddress();
-    const allowed = [order.buyerAddress, order.sellerAddress, order.driverAddress].filter(Boolean);
+    let allowed = [
+      order.buyerAddress,
+      order.sellerAddress,
+      order.driverAddress,
+    ].filter(Boolean) as string[];
     if (!address || !allowed.includes(address)) {
-      throw new Error('Unauthorized order update');
+      const admins = await SettingsAgent.getInstance().getAdmins();
+      allowed = allowed.concat(admins);
+      if (!address || !allowed.includes(address)) {
+        throw new Error('Unauthorized order update');
+      }
     }
   }
 
