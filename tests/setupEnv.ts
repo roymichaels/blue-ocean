@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import { insertConfig } from './testUtils';
 jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
-import { loadTenantSettings } from '../constants/tenant';
+jest.mock('../services/tonSettings');
+const { loadTenantSettings } = require('../constants/tenant');
 
 var __DEV__ = false;
 

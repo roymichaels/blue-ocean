@@ -4,6 +4,7 @@ import {
   setSetting,
   getAdmins as fetchAdmins,
   setAdmins as storeAdmins,
+  subscribeToSettingsWrites,
 } from '../services/tonSettings';
 
 type SettingKey =
@@ -18,8 +19,17 @@ type SettingKey =
 class SettingsAgent {
   private static instance: SettingsAgent;
   private admins: string[] = [];
+  private adminsFetchedAt = 0;
+  private static ADMIN_CACHE_TTL = 60_000; // 1 minute
 
-  private constructor() {}
+  private constructor() {
+    void subscribeToSettingsWrites((evt) => {
+      if (evt.key === 'admins') {
+        this.admins = [];
+        this.adminsFetchedAt = 0;
+      }
+    });
+  }
 
   private async ensureWallet() {
     const address = tonAuth.getAddress();
@@ -49,8 +59,13 @@ class SettingsAgent {
   }
 
   async getAdmins(): Promise<string[]> {
-    if (this.admins.length === 0) {
+    const now = Date.now();
+    if (
+      this.admins.length === 0 ||
+      now - this.adminsFetchedAt > SettingsAgent.ADMIN_CACHE_TTL
+    ) {
       this.admins = await fetchAdmins();
+      this.adminsFetchedAt = now;
     }
     return this.admins;
   }
@@ -60,6 +75,7 @@ class SettingsAgent {
     const actor = tonAuth.getAddress()!;
     await storeAdmins(admins, actor);
     this.admins = admins;
+    this.adminsFetchedAt = Date.now();
   }
 
   static getInstance(): SettingsAgent {
