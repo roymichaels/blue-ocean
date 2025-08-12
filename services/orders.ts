@@ -3,6 +3,7 @@ import { Order, OrderStatus, CartItem, ShippingAddress, OrderTrackingStep } from
 import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from './tonStores';
 import tonAuth from './tonAuth';
+import { adminResolve } from './tonContract';
 
 class OrderService {
   private static instance: OrderService;
@@ -181,6 +182,13 @@ class OrderService {
     order.updatedAt = new Date().toISOString();
     await ordersAgent.update(order);
     this.notifyListeners();
+  }
+
+  async resolveDispute(orderId: string, toSeller: boolean): Promise<void> {
+    const order = await ordersAgent.get(orderId);
+    if (!order || !order.escrowAddr) return;
+    await adminResolve(order.escrowAddr, toSeller);
+    await this.updateOrderStatus(orderId, toSeller ? 'released' : 'refunded');
   }
 }
 

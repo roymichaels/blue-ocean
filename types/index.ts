@@ -234,6 +234,7 @@ export interface Order {
   driverAddress?: string;
   paymentContractAddress?: string;
   escrowAddr?: string;
+  disputeEvidenceUri?: string;
   itemsHash: string;
   createdAt: string;
   updatedAt: string;
@@ -247,6 +248,7 @@ export type OrderStatus =
   | 'courier_picked_up'   // שליח אסף את ההזמנה
   | 'courier_on_way'      // שליח בדרך אלייך
   | 'delivered'           // הזמנה התקבלה
+  | 'disputed'            // מחלוקת פתוחה
   | 'released'            // תשלום שוחרר
   | 'refunded';           // תשלום הוחזר
 

@@ -18,7 +18,8 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   courier_found: ['courier_picked_up'],
   courier_picked_up: ['courier_on_way'],
   courier_on_way: ['delivered'],
-  delivered: ['released', 'refunded'],
+  delivered: ['released', 'refunded', 'disputed'],
+  disputed: ['released', 'refunded'],
   released: [],
   refunded: [],
 };
@@ -126,6 +127,9 @@ class OrdersAgent {
         this.recordSellerMetric(order.sellerAddress, 'completed');
       } else if (order.status === 'refunded') {
         this.recordSellerMetric(order.sellerAddress, 'refunded');
+      }
+      if (order.status === 'disputed' || current.status === 'disputed') {
+        await this.notifyDisputeUpdate(order);
       }
     }
   }
@@ -266,6 +270,23 @@ class OrdersAgent {
     };
     try {
       await notificationsAgent.broadcast('payment.received', notification);
+    } catch (err) {
+      console.error('Failed to send notification', err);
+    }
+  }
+
+  private async notifyDisputeUpdate(order: Order) {
+    const notification: Notification = {
+      id: `ntf_${Date.now()}`,
+      userId: order.userId,
+      title: 'Order dispute updated',
+      message: `Order ${order.id} dispute status: ${order.status}`,
+      type: 'order',
+      read: false,
+      timestamp: Date.now(),
+    };
+    try {
+      await notificationsAgent.broadcast('dispute.updated', notification);
     } catch (err) {
       console.error('Failed to send notification', err);
     }
