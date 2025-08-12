@@ -119,7 +119,9 @@ state via its corresponding TON service, keeping a local in-memory cache for
 fast access.
 
 Waku is only used for lightweight messaging such as chat and notification
-payloads.
+payloads. Room keys used to encrypt chats are cached in an LRU map to keep
+memory usage bounded, and encryption/decryption helpers now throw if a key
+cannot be derived instead of returning plaintext.
 
 ### Web Notes
 
