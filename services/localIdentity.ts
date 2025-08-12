@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils } from '@noble/ed25519';
 
-const KEY_NAME = 'ephemeral-ed25519-private-key';
+const KEY_NAME = 'ephemeral-ed25519';
 let memoryKey: string | null = null;
 
 async function getPrivateKeyHex(): Promise<string> {

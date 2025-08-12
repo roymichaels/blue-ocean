@@ -17,6 +17,9 @@ interface AppInfoContextType {
   logoCid: string;
   themeColor: string;
   fiatKey?: string;
+  feeAddress?: string;
+  feePercent?: number;
+  admins: string[];
   setAppName: (name: string) => Promise<void>;
   setLogoCid: (logo: string) => Promise<void>;
   setThemeColor: (color: string) => Promise<void>;
@@ -28,6 +31,9 @@ const AppInfoContext = createContext<AppInfoContextType>({
   logoCid: '',
   themeColor: '#B99C5A',
   fiatKey: undefined,
+  feeAddress: undefined,
+  feePercent: 0,
+  admins: [],
   setAppName: async () => {},
   setLogoCid: async () => {},
   setThemeColor: async () => {},
@@ -47,6 +53,9 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   const [logoCid, setLogoCidState] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
   const [fiatKey, setFiatKey] = useState<string | undefined>(undefined);
+  const [feeAddress, setFeeAddress] = useState<string>('');
+  const [feePercent, setFeePercent] = useState<number>(0);
+  const [admins, setAdmins] = useState<string[]>([]);
   const reloadTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadInfo = async () => {
@@ -97,6 +106,10 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
             remote.fiatKey,
           );
         }
+        if (remote.feeAddress) setFeeAddress(remote.feeAddress);
+        if (remote.feePercent !== undefined)
+          setFeePercent(remote.feePercent);
+        if (remote.admins) setAdmins(remote.admins);
       } catch (err) {
         Alert.alert('שגיאה', 'טעינת הגדרות מהשרת נכשלה');
         console.error('Failed fetching branding from server:', err);
@@ -205,6 +218,9 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
         logoCid,
         themeColor,
         fiatKey,
+        feeAddress,
+        feePercent,
+        admins,
         setAppName,
         setLogoCid,
         setThemeColor,
