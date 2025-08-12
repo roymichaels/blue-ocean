@@ -3,7 +3,6 @@ import usersAgent from '../agents/users-agent';
 jest.mock('../services/tonAuth', () => ({
   getAddress: () => 'addr_admin',
   getTonPublicKey: () => 'pub_admin',
-  getTonPrivateKey: () => 'priv_admin',
   openModal: jest.fn(),
 }));
 

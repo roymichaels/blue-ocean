@@ -70,15 +70,31 @@ export const getTonPublicKey = (): string | null =>
 export const getAddress = (): string | null =>
   tonConnect?.account?.address ?? null;
 
-// Attempt to access the private key if the wallet exposes it
-export const getTonPrivateKey = (): string | null =>
-  (tonConnect?.account as any)?.privateKey ?? null;
+/**
+ * Direct access to a wallet's private key is extremely dangerous and should
+ * never occur in production builds.  Instead, wallets expose signing APIs
+ * that keep the key material inside the wallet.  For development and testing
+ * scenarios only, the private key can be accessed by explicitly opting in via
+ * the `ENABLE_UNSAFE_TON_PRIVATE_KEY` environment variable.  When the flag is
+ * unset this function will always return `null`.
+ */
+export const getTonPrivateKey = (): string | null => {
+  if (process.env.ENABLE_UNSAFE_TON_PRIVATE_KEY !== 'true') {
+    return null;
+  }
+  return (tonConnect?.account as any)?.privateKey ?? null;
+};
 
-export default {
+const api = {
   getTonConnect,
   requestSignature,
   openModal,
   getTonPublicKey,
   getAddress,
-  getTonPrivateKey,
-};
+} as const;
+
+if (process.env.ENABLE_UNSAFE_TON_PRIVATE_KEY === 'true') {
+  (api as any).getTonPrivateKey = getTonPrivateKey;
+}
+
+export default api;
