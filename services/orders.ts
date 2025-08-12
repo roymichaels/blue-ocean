@@ -29,7 +29,7 @@ export async function emitOrderEvents(order: Order, storeId: string) {
   try {
     await notificationsAgent.broadcast('order.created', payload as any);
     if (order.paymentMethod === 'ton') {
-      await notificationsAgent.broadcast('escrow.deployed' as any, payload as any);
+      await notificationsAgent.broadcast('escrow.deployed', payload as any);
     }
   } catch (err) {
     console.error('Failed to emit order events', err);
