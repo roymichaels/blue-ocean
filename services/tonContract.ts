@@ -1,5 +1,5 @@
-// @ts-nocheck
 import TonWeb from 'tonweb';
+import type { Cell } from 'tonweb/dist/types/boc/cell';
 import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
 import { getTonConnect } from './tonAuth';
@@ -13,10 +13,10 @@ export const ORDER_PAYMENT_FACTORY_ADDRESS =
   process.env.ORDER_PAYMENT_FACTORY_ADDRESS ??
   'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 
-function makeComment(message: string): TonWeb.boc.Cell {
+function makeComment(message: string): Cell {
   const cell = new TonWeb.boc.Cell();
-  (cell.bits as any).writeUint(0, 32);
-  (cell.bits as any).writeBytes(TonWeb.utils.stringToBytes(message));
+  cell.bits.writeUint(0, 32);
+  cell.bits.writeBytes(TonWeb.utils.stringToBytes(message));
   return cell;
 }
 
@@ -50,7 +50,7 @@ export async function deployOrderPayment(
       `Pay:${amount}:${feeAddress}:${feePercent}`,
     );
     const payloadBoc = TonWeb.utils.bytesToBase64(
-      await payload.toBoc({ idx: false }),
+      await payload.toBoc(false),
     );
     const txHash = await sendTonConnect([
       {
@@ -72,7 +72,7 @@ export async function releasePayment(contractAddress: string): Promise<string> {
   try {
     const payload = makeComment('Release');
     const payloadBoc = TonWeb.utils.bytesToBase64(
-      await payload.toBoc({ idx: false }),
+      await payload.toBoc(false),
     );
     const txHash = await sendTonConnect([
       {
@@ -92,7 +92,7 @@ export async function refundPayment(contractAddress: string): Promise<string> {
   try {
     const payload = makeComment('Refund');
     const payloadBoc = TonWeb.utils.bytesToBase64(
-      await payload.toBoc({ idx: false }),
+      await payload.toBoc(false),
     );
     const txHash = await sendTonConnect([
       {
@@ -115,7 +115,7 @@ export async function adminResolve(
   try {
     const payload = makeComment(`AdminResolve:${toSeller ? 1 : 0}`);
     const payloadBoc = TonWeb.utils.bytesToBase64(
-      await payload.toBoc({ idx: false }),
+      await payload.toBoc(false),
     );
     const txHash = await sendTonConnect([
       {

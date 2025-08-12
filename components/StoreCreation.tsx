@@ -6,8 +6,9 @@ import storesAgent from '../agents/stores-agent';
 import tonAuth from '../services/tonAuth';
 import codeBoc from '../contracts/store-nft-code.boc';
 import dataBoc from '../contracts/store-nft-data.boc';
+import { getTonWeb } from '../services/tonProvider';
 
-const provider = new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC');
+const tonweb = getTonWeb();
 
 const StoreCreation: React.FC = () => {
   const [name, setName] = useState('');
@@ -15,9 +16,11 @@ const StoreCreation: React.FC = () => {
   const deployStoreNFT = async () => {
     const code = TonWeb.boc.Cell.fromBoc(Buffer.from(codeBoc, 'base64'))[0];
     const data = TonWeb.boc.Cell.fromBoc(Buffer.from(dataBoc, 'base64'))[0];
-    const contract = new (TonWeb as any).Contract(provider, { code, data });
+    const contract = new TonWeb.Contract(tonweb.provider, { code, data });
     const init = await contract.createStateInit();
-    const stateInitBoc = TonWeb.utils.bytesToBase64(await init.stateInit.toBoc({ idx: false }));
+    const stateInitBoc = TonWeb.utils.bytesToBase64(
+      await init.stateInit.toBoc(false),
+    );
     const address = (await contract.getAddress()).toString(true, true, true);
     try {
       await (tonAuth as any).tonConnectUI?.sendTransaction({
