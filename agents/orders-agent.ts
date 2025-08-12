@@ -28,7 +28,7 @@ class OrdersAgent {
   private subscribers: Set<(o: Order) => void> = new Set();
   private sellerMetrics: Record<string, { completed: number; refunds: number }> = {};
 
-  private recordSellerMetric(seller?: string, type?: 'completed' | 'refunded') {
+  private async recordSellerMetric(seller?: string, type?: 'completed' | 'refunded') {
     if (!seller) return;
     if (!this.sellerMetrics[seller]) {
       this.sellerMetrics[seller] = { completed: 0, refunds: 0 };
@@ -40,7 +40,7 @@ class OrdersAgent {
     }
     const { completed, refunds } = this.sellerMetrics[seller];
     const score = completed + refunds > 0 ? completed / (completed + refunds) : 0;
-    storesAgent.updateReputationByOwner(seller, score);
+    await storesAgent.updateReputationByOwner(seller, score);
   }
 
   getSellerMetrics(address: string) {
@@ -124,9 +124,9 @@ class OrdersAgent {
     if (statusChanged) {
       await this.notifyStatusChange(order);
       if (order.status === 'released') {
-        this.recordSellerMetric(order.sellerAddress, 'completed');
+        await this.recordSellerMetric(order.sellerAddress, 'completed');
       } else if (order.status === 'refunded') {
-        this.recordSellerMetric(order.sellerAddress, 'refunded');
+        await this.recordSellerMetric(order.sellerAddress, 'refunded');
       }
       if (order.status === 'disputed' || current.status === 'disputed') {
         await this.notifyDisputeUpdate(order);
@@ -186,7 +186,7 @@ class OrdersAgent {
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
     await this.notifyPaymentReceived(updated);
-    this.recordSellerMetric(order.sellerAddress, 'completed');
+    await this.recordSellerMetric(order.sellerAddress, 'completed');
     return hash;
   }
 
@@ -212,7 +212,7 @@ class OrdersAgent {
     await setOrder(updated);
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
-    this.recordSellerMetric(order.sellerAddress, 'refunded');
+    await this.recordSellerMetric(order.sellerAddress, 'refunded');
     return hash;
   }
 

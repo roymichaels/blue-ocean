@@ -39,7 +39,8 @@ export default function AdminDashboardScreen() {
     averageRating: 0,
     totalStock: 0,
     pendingKycRequests: 0,
-    totalUsers: 0
+    totalUsers: 0,
+    storeReputation: 0
   });
   const { showNotification } = useNotifications();
   const { isAdmin, isDriver, user } = useAuth();
@@ -71,14 +72,15 @@ export default function AdminDashboardScreen() {
       const db = DatabaseService.getInstance();
       const notificationService = NotificationService.getInstance();
       
-      const [productsData, chatRoomsData, notificationsData, reviewsData, pendingKycRequests, allUsers, reportsData] = await Promise.all([
+      const [productsData, chatRoomsData, notificationsData, reviewsData, pendingKycRequests, allUsers, reportsData, storesData] = await Promise.all([
         db.getProducts(),
         db.getChatRooms(),
         notificationService.getNotifications(user?.id),
         db.getReviews(),
         db.getPendingKycRequests(),
         db.getAllUserProfiles(),
-        moderationAgent.getAll()
+        moderationAgent.getAll(),
+        storesAgent.getAll()
       ]);
       
       setProducts(productsData);
@@ -95,6 +97,10 @@ export default function AdminDashboardScreen() {
       const unreadNotifications = notificationsData.filter(n => !n.read).length;
       const activeChats = chatRoomsData.filter(room => room.unreadCount > 0).length;
 
+      const storeReputation = storesData.length > 0
+        ? storesData.reduce((sum, s) => sum + storesAgent.getReputationScore(s.id), 0) / storesData.length
+        : 0;
+
       setStats({
         totalProducts: productsData.length,
         totalReviews: reviewsData.length,
@@ -103,7 +109,8 @@ export default function AdminDashboardScreen() {
         averageRating,
         totalStock,
         pendingKycRequests: pendingKycRequests.length,
-        totalUsers: allUsers.length
+        totalUsers: allUsers.length,
+        storeReputation
       });
       
       // Show a welcome notification
@@ -258,40 +265,50 @@ export default function AdminDashboardScreen() {
           </View>
 
           <View style={styles.statsRow}>
-            <View style={[styles.statCard, { 
+          <View style={[styles.statCard, {
+            backgroundColor: colors.surface.primary,
+            borderColor: colors.border.primary
+          }]}> 
+            <Users size={32} color={colors.gold} />
+            <Text style={[styles.statNumber, { color: colors.text.primary }]}>{stats.totalUsers}</Text>
+            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>משתמשים</Text>
+          </View>
+          <View style={[
+            styles.statCard,
+            stats.pendingKycRequests > 0 ? [styles.highlightedStatCard, {
+              backgroundColor: colors.interactive.secondary,
+              borderColor: colors.status.warning
+            }] : {
               backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary 
-            }]}>
-              <Users size={32} color={colors.gold} />
-              <Text style={[styles.statNumber, { color: colors.text.primary }]}>{stats.totalUsers}</Text>
-              <Text style={[styles.statLabel, { color: colors.text.secondary }]}>משתמשים</Text>
-            </View>
-            <View style={[
-              styles.statCard, 
-              stats.pendingKycRequests > 0 ? [styles.highlightedStatCard, { 
-                backgroundColor: colors.interactive.secondary,
-                borderColor: colors.status.warning 
-              }] : { 
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary 
-              }
+              borderColor: colors.border.primary
+            }
+          ]}>
+            <Clock size={32} color={stats.pendingKycRequests > 0 ? colors.status.warning : colors.gold} />
+            <Text style={[
+              styles.statNumber,
+              stats.pendingKycRequests > 0 ? [styles.highlightedStatNumber, { color: colors.status.warning }] : { color: colors.text.primary }
             ]}>
-              <Clock size={32} color={stats.pendingKycRequests > 0 ? colors.status.warning : colors.gold} />
-              <Text style={[
-                styles.statNumber,
-                stats.pendingKycRequests > 0 ? [styles.highlightedStatNumber, { color: colors.status.warning }] : { color: colors.text.primary }
-              ]}>
-                {stats.pendingKycRequests}
-              </Text>
-              <Text style={[
-                styles.statLabel,
-                stats.pendingKycRequests > 0 ? [styles.highlightedStatLabel, { color: colors.status.warning }] : { color: colors.text.secondary }
-              ]}>
-                בקשות KYC ממתינות
-              </Text>
-            </View>
+              {stats.pendingKycRequests}
+            </Text>
+            <Text style={[
+              styles.statLabel,
+              stats.pendingKycRequests > 0 ? [styles.highlightedStatLabel, { color: colors.status.warning }] : { color: colors.text.secondary }
+            ]}>
+              בקשות KYC ממתינות
+            </Text>
           </View>
         </View>
+        <View style={styles.statsRow}>
+          <View style={[styles.statCard, {
+            backgroundColor: colors.surface.primary,
+            borderColor: colors.border.primary
+          }]}> 
+            <TrendingUp size={32} color={colors.gold} />
+            <Text style={[styles.statNumber, { color: colors.text.primary }]}>{stats.storeReputation.toFixed(1)}</Text>
+            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>מוניטין חנויות</Text>
+          </View>
+        </View>
+      </View>
 
         {/* Quick Actions */}
         <View style={styles.section}>
