@@ -1,5 +1,8 @@
 import { Notification } from '../types';
-import notificationsAgent from '../agents/notifications-agent';
+import notificationsAgent, {
+  notificationTemplates,
+  NotificationEvent,
+} from '../agents/notifications-agent';
 
 class NotificationService {
   private static instance: NotificationService;
@@ -123,3 +126,5 @@ class NotificationService {
 }
 
 export default NotificationService;
+
+export { notificationTemplates, NotificationEvent };
