@@ -6,6 +6,7 @@ import {
   Protocols,
   utf8ToBytes,
 } from '@waku/sdk';
+import { randomUUID } from 'crypto';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { OrderStatus } from '../types';
 
@@ -15,10 +16,14 @@ export type OrderEventType =
   | 'order.deleted';
 
 export interface OrderEvent {
+  id: string;
+  tenant: string;
   type: OrderEventType;
-  orderId: string;
-  prevStatus?: OrderStatus | null;
-  newStatus?: OrderStatus | 'deleted';
+  payload: {
+    orderId: string;
+    prevStatus?: OrderStatus | null;
+    newStatus?: OrderStatus | 'deleted';
+  };
   actor: string;
   timestamp: number;
 }
@@ -42,13 +47,16 @@ async function ensureNode(): Promise<LightNode | null> {
   }
 }
 
-export async function logOrderEvent(event: OrderEvent): Promise<void> {
+export async function logOrderEvent(
+  event: Omit<OrderEvent, 'id'>,
+): Promise<void> {
   const n = await ensureNode();
   if (!n) return;
   try {
+    const eventWithId: OrderEvent = { id: randomUUID(), ...event };
     const encoder = createEncoder({ contentTopic: ORDER_TOPIC });
     await n.lightPush.send(encoder, {
-      payload: utf8ToBytes(JSON.stringify(event)),
+      payload: utf8ToBytes(JSON.stringify(eventWithId)),
     });
   } catch (err) {
     console.error('Failed to log order event', err);

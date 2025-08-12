@@ -115,10 +115,13 @@ class OrdersAgent {
     }
     await setOrder(toStore);
     await logOrderEvent({
+      tenant: enriched.items?.[0]?.product?.storeId || '',
       type: 'order.created',
-      orderId: enriched.id,
-      prevStatus: null,
-      newStatus: enriched.status,
+      payload: {
+        orderId: enriched.id,
+        prevStatus: null,
+        newStatus: enriched.status,
+      },
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
@@ -142,10 +145,13 @@ class OrdersAgent {
     }
     await setOrder(order);
     await logOrderEvent({
+      tenant: order.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
-      orderId: order.id,
-      prevStatus: current.status,
-      newStatus: order.status,
+      payload: {
+        orderId: order.id,
+        prevStatus: current.status,
+        newStatus: order.status,
+      },
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
@@ -171,10 +177,13 @@ class OrdersAgent {
     await this.ensureAuthorized(order);
     await removeOrder(id);
     await logOrderEvent({
+      tenant: order.items?.[0]?.product?.storeId || '',
       type: 'order.deleted',
-      orderId: id,
-      prevStatus: order.status,
-      newStatus: 'deleted',
+      payload: {
+        orderId: id,
+        prevStatus: order.status,
+        newStatus: 'deleted',
+      },
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
@@ -213,10 +222,13 @@ class OrdersAgent {
     };
     await setOrder(updated);
     await logOrderEvent({
+      tenant: updated.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
-      orderId: updated.id,
-      prevStatus: order.status,
-      newStatus: updated.status,
+      payload: {
+        orderId: updated.id,
+        prevStatus: order.status,
+        newStatus: updated.status,
+      },
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
@@ -256,10 +268,13 @@ class OrdersAgent {
     };
     await setOrder(updated);
     await logOrderEvent({
+      tenant: updated.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
-      orderId: updated.id,
-      prevStatus: order.status,
-      newStatus: updated.status,
+      payload: {
+        orderId: updated.id,
+        prevStatus: order.status,
+        newStatus: updated.status,
+      },
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
