@@ -105,6 +105,24 @@ describe('multi-seller checkout flow', () => {
     expect(orders.every((o) => o.paymentTxHash && o.paymentContractAddress)).toBe(
       true,
     );
+
+    const notificationsAgent = require('../agents/notifications-agent');
+    expect(notificationsAgent.broadcast).toHaveBeenCalledTimes(4);
+    const events = notificationsAgent.broadcast.mock.calls.map((c: any) => c[0]);
+    expect(events).toEqual([
+      'order.created',
+      'escrow.deployed',
+      'order.created',
+      'escrow.deployed',
+    ]);
+
+    const firstPayload = notificationsAgent.broadcast.mock.calls[0][1];
+    expect(firstPayload.orderId).toBe(orders[0].id);
+    expect(firstPayload.storeId).toBe('s1');
+    expect(firstPayload.buyerAddress).toBe('buyer_address');
+    expect(firstPayload.sellerAddress).toBe('seller_s1');
+    expect(firstPayload.payment.method).toBe('ton');
+    expect(firstPayload.payment.contractAddress).toBe('escrow_5');
   });
 });
 

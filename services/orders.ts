@@ -1,4 +1,5 @@
 import ordersAgent from '../agents/orders-agent';
+import notificationsAgent from '../agents/notifications-agent';
 import {
   Order,
   OrderStatus,
@@ -10,6 +11,30 @@ import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from './tonStores';
 import tonAuth from './tonAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
+
+export async function emitOrderEvents(order: Order, storeId: string) {
+  const payload = {
+    id: order.id,
+    orderId: order.id,
+    storeId,
+    buyerAddress: order.buyerAddress,
+    sellerAddress: order.sellerAddress,
+    payment: {
+      method: order.paymentMethod,
+      contractAddress: order.paymentContractAddress,
+      txHash: order.paymentTxHash,
+      total: order.total,
+    },
+  };
+  try {
+    await notificationsAgent.broadcast('order.created', payload as any);
+    if (order.paymentMethod === 'ton') {
+      await notificationsAgent.broadcast('escrow.deployed' as any, payload as any);
+    }
+  } catch (err) {
+    console.error('Failed to emit order events', err);
+  }
+}
 
 class OrderService {
   private static instance: OrderService;
@@ -156,6 +181,7 @@ class OrderService {
         shippingAddress,
         payment,
       );
+      await emitOrderEvents(order, storeId);
       orders.push(order);
     }
     return orders;

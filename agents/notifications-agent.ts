@@ -20,7 +20,8 @@ type NotificationEvent =
   | 'order.created'
   | 'payment.received'
   | 'status.updated'
-  | 'dispute.updated';
+  | 'dispute.updated'
+  | 'escrow.deployed';
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
