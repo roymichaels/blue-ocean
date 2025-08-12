@@ -15,6 +15,8 @@ import { getWakuBootstrapNodes } from '../utils/appConfig';
 const ADDRESS =
   config.TON_SETTINGS_ADDRESS ??
   'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const DEFAULT_BOOTSTRAP =
+  '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 
 export interface TonSettings {
   tenantId: string;
