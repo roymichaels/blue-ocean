@@ -34,6 +34,17 @@ export async function fetchSettings(): Promise<TonSettings> {
   for (const { key, value } of entries) {
     map[key] = value;
   }
+  let feePercent = 0;
+  if (map['feePercent'] !== undefined) {
+    const parsed = Number(map['feePercent']);
+    if (Number.isNaN(parsed)) {
+      console.warn(
+        `Invalid feePercent value "${map['feePercent']}"; defaulting to 0`,
+      );
+    } else {
+      feePercent = parsed;
+    }
+  }
   return {
     tenantId: map['tenantId'] ?? 'thecongress',
     appName: map['appName'] ?? 'Blue Ocean',
@@ -41,7 +52,7 @@ export async function fetchSettings(): Promise<TonSettings> {
     brand: { logoCid: map['brand.logoCid'] ?? '' },
     fiatKey: map['fiatKey'],
     feeAddress: map['feeAddress'] ?? '',
-    feePercent: map['feePercent'] ? parseInt(map['feePercent']) : 0,
+    feePercent,
     admins: map['admins'] ? JSON.parse(map['admins']) : [],
   };
 }
