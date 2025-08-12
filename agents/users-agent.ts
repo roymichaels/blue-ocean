@@ -2,6 +2,7 @@ import { User } from '../types';
 import tonAuth from '../services/tonAuth';
 import { getUser, setUser, listUsers, removeUser } from '../services/tonUsers';
 import { getPublicKeyHex } from '../services/localIdentity';
+import SettingsAgent from './settings-agent';
 
 export type UsersAgentMessage =
   | { type: 'user.add'; payload: User }
@@ -26,6 +27,10 @@ class UsersAgent {
 
   async add(user: User): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
+    const admins = await SettingsAgent.getInstance().getAdmins();
+    if (address !== user.address && !admins.includes(address)) {
+      throw new Error('Only the user or an admin can add this user');
+    }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = { ...user, publicKey, address, chatPublicKey };
     await setUser(enriched);
@@ -33,6 +38,10 @@ class UsersAgent {
 
   async update(user: User): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
+    const admins = await SettingsAgent.getInstance().getAdmins();
+    if (address !== user.address && !admins.includes(address)) {
+      throw new Error('Only the user or an admin can update this user');
+    }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = { ...user, publicKey, address, chatPublicKey };
     await setUser(enriched);
@@ -48,6 +57,10 @@ class UsersAgent {
     const { address, publicKey } = await this.ensureWallet();
     const user = await getUser(userId);
     if (!user) throw new Error('User not found');
+    const admins = await SettingsAgent.getInstance().getAdmins();
+    if (address !== user.address && !admins.includes(address)) {
+      throw new Error('Only the user or an admin can request KYC');
+    }
     const enriched: User = {
       ...user,
       publicKey,
@@ -66,6 +79,10 @@ class UsersAgent {
     adminId?: string,
   ): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
+    const admins = await SettingsAgent.getInstance().getAdmins();
+    if (!admins.includes(address)) {
+      throw new Error('Only admins can update KYC');
+    }
     const user = await getUser(userId);
     if (!user) throw new Error('User not found');
     const enriched: User = {
