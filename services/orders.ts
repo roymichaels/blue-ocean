@@ -1,9 +1,15 @@
 import ordersAgent from '../agents/orders-agent';
-import { Order, OrderStatus, CartItem, ShippingAddress, OrderTrackingStep } from '../types';
+import {
+  Order,
+  OrderStatus,
+  CartItem,
+  ShippingAddress,
+  OrderTrackingStep,
+} from '../types';
 import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from './tonStores';
 import tonAuth from './tonAuth';
-import { adminResolve } from './tonContract';
+import { adminResolve, deployOrderPayment } from './tonContract';
 
 class OrderService {
   private static instance: OrderService;
@@ -78,6 +84,15 @@ class OrderService {
       return sum + price * item.quantity;
     }, 0);
 
+    let pay = payment;
+    if (pay?.method === 'ton' && (!pay.contractAddress || !pay.txHash)) {
+      if (!tonAuth.getAddress() || !tonAuth.getTonPublicKey()) {
+        await tonAuth.openModal();
+      }
+      const { contractAddress, txHash } = await deployOrderPayment(total);
+      pay = { ...pay, contractAddress, txHash };
+    }
+
     const orderId = `order_${Date.now()}`;
     const timestamp = new Date().toISOString();
     const itemsHash = Buffer.from(
@@ -91,12 +106,12 @@ class OrderService {
       status: 'order_received',
       shippingAddress,
        itemsHash,
-      paymentMethod: payment?.method ?? 'cash_on_delivery',
-      buyerAddress: payment?.buyerAddress,
-      sellerAddress: payment?.sellerAddress,
-      paymentContractAddress: payment?.contractAddress,
-      escrowAddr: payment?.contractAddress,
-      paymentTxHash: payment?.txHash,
+      paymentMethod: pay?.method ?? 'cash_on_delivery',
+      buyerAddress: pay?.buyerAddress,
+      sellerAddress: pay?.sellerAddress,
+      paymentContractAddress: pay?.contractAddress,
+      escrowAddr: pay?.contractAddress,
+      paymentTxHash: pay?.txHash,
       createdAt: timestamp,
       updatedAt: timestamp,
       trackingSteps: this.getTrackingSteps('order_received'),

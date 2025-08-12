@@ -1,7 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import ordersAgent from '../agents/orders-agent';
-import { Order } from '../types';
+import { Order, OrderStatus } from '../types';
+
+const LABELS: Record<OrderStatus | 'unknown', string> = {
+  order_received: 'Escrow funded',
+  courier_found: 'Escrow funded',
+  courier_picked_up: 'Escrow funded',
+  courier_on_way: 'Escrow funded',
+  delivered: 'Escrow funded',
+  disputed: 'Disputed',
+  released: 'Released to seller',
+  refunded: 'Refunded to buyer',
+  unknown: 'Loading...',
+};
 
 interface Props {
   orderId: string;
@@ -11,39 +23,39 @@ export default function EscrowStatusTracker({ orderId }: Props) {
   const [order, setOrder] = useState<Order | null>(null);
 
   useEffect(() => {
-    let active = true;
-    const load = async () => {
+    let mounted = true;
+    const fetchOrder = async () => {
       const o = await ordersAgent.get(orderId);
-      if (active) setOrder(o);
+      if (mounted) setOrder(o);
     };
-    load();
-    const cb = (o: Order) => {
-      if (o.id === orderId) setOrder(o);
+    fetchOrder();
+    const sub = (updated: Order) => {
+      if (updated.id === orderId) setOrder(updated);
     };
-    ordersAgent.subscribe(cb);
+    ordersAgent.subscribe(sub);
     return () => {
-      active = false;
-      ordersAgent.unsubscribe(cb);
+      mounted = false;
+      ordersAgent.unsubscribe(sub);
     };
   }, [orderId]);
 
-  if (!order) return null;
-
-  let message = 'Awaiting payment';
-  if (order.paymentTxHash && order.status === 'order_received') {
-    message = 'Escrow funded';
-  }
-  if (order.status === 'delivered') {
-    message = 'Awaiting release';
-  } else if (order.status === 'released') {
-    message = 'Payment released';
-  } else if (order.status === 'refunded') {
-    message = 'Payment refunded';
-  }
+  const status: OrderStatus | 'unknown' = order?.status || 'unknown';
+  const label = LABELS[status];
 
   return (
-    <View>
-      <Text>{message}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Escrow Status</Text>
+      <Text style={styles.status}>{label}</Text>
+      {order?.escrowAddr && (
+        <Text style={styles.address}>Contract: {order.escrowAddr}</Text>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { padding: 16 },
+  title: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  status: { fontSize: 14 },
+  address: { fontSize: 12, marginTop: 4 },
+});
