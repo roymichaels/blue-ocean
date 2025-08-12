@@ -1,5 +1,5 @@
-import { getPrivateKey } from '../services/localIdentity';
-import { deriveSharedKey, aesEncrypt, aesDecrypt } from './encryption';
+import { getEd25519KeyPair } from '../services/localIdentity';
+import { deriveSharedKey, aesEncrypt, aesDecrypt, deriveChatSalt } from './encryption';
 
 // roomKeys stores derived AES keys per chat room. To keep memory usage bounded
 // we maintain a simple LRU cache with a fixed size.
@@ -32,8 +32,10 @@ export async function getRoomKey(
     return cached;
   }
   try {
-    const myPrivEd = await getPrivateKey();
-    const key = await deriveSharedKey(myPrivEd, peerPublicKey, roomId);
+    const { privateKey: myPrivEd, publicKey: myPub } = await getEd25519KeyPair();
+    const myPubHex = Buffer.from(myPub).toString('hex');
+    const salt = deriveChatSalt(myPubHex, peerPublicKey);
+    const key = await deriveSharedKey(myPrivEd, peerPublicKey, roomId, salt);
     roomKeys.set(roomId, key);
     if (roomKeys.size > MAX_ROOM_KEYS) {
       const oldest = roomKeys.keys().next().value;
