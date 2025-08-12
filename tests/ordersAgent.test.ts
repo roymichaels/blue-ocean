@@ -41,6 +41,7 @@ const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
 (getPrivateKey as jest.Mock).mockResolvedValue(sellerKey.secretKey);
 
 const ordersAgent = require('../agents/orders-agent').default;
+const notificationsAgent = require('../agents/notifications-agent');
 
 describe('ordersAgent.add', () => {
   it('encrypts shipping address and persists new fields', async () => {
@@ -99,6 +100,25 @@ describe('ordersAgent.add', () => {
     expect(persisted?.escrowAddr).toBe('escrow1');
     expect(persisted?.itemsHash).toBe(itemsHash);
     expect(persisted?.shipAddrEnc).toBeDefined();
+  });
+});
+
+describe('ordersAgent notification IDs', () => {
+  it('generates unique IDs under rapid calls', async () => {
+    notificationsAgent.broadcast.mockClear();
+    const order = { id: 'o1', userId: 'u1' } as any;
+    const notify = (ordersAgent as any).notifyOrderCreated.bind(ordersAgent);
+    const originalNow = Date.now;
+    Date.now = () => 123;
+    try {
+      await Promise.all(Array.from({ length: 5 }).map(() => notify(order)));
+    } finally {
+      Date.now = originalNow;
+    }
+    const ids = notificationsAgent.broadcast.mock.calls.map((c: any) => c[1].id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const timestamps = notificationsAgent.broadcast.mock.calls.map((c: any) => c[1].timestamp);
+    expect(timestamps.every((ts: number) => ts === 123)).toBe(true);
   });
 });
 
