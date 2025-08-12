@@ -9,8 +9,7 @@ import OrderService from '../../services/orders';
 import { Order, OrderStatus, ShippingAddress } from '../../types';
 import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
 import tonAuth from '../../services/tonAuth';
-import * as nacl from 'tweetnacl';
-import * as ed2curve from 'ed2curve';
+import { decryptOrderShipping } from '../../services/sellerTools';
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,24 +30,17 @@ export default function OrderDetailScreen() {
       const raw: any = await svc.getOrder(id);
       let decrypted = raw as Order | null;
       if (raw && raw.shipAddrEnc && isSeller) {
-        const priv = tonAuth.getTonPrivateKey();
-        if (priv) {
-          try {
-            const privX = ed2curve.convertSecretKey(Buffer.from(priv, 'hex'));
-            const { cipher, nonce, ephem } = raw.shipAddrEnc;
-            const msg = nacl.box.open(
-              Buffer.from(cipher, 'base64'),
-              Buffer.from(nonce, 'base64'),
-              Buffer.from(ephem, 'base64'),
-              privX,
-            );
-            if (msg) {
-              raw.shippingAddress = JSON.parse(Buffer.from(msg).toString());
+        try {
+          const sig = await tonAuth.requestSignature(Buffer.from(raw.id));
+          if (sig) {
+            const addr = await decryptOrderShipping(raw);
+            if (addr) {
+              raw.shippingAddress = addr;
               decrypted = raw as Order;
             }
-          } catch (err) {
-            console.warn('Failed to decrypt shipping address', err);
           }
+        } catch (err) {
+          console.warn('Failed to decrypt shipping address', err);
         }
       }
       setOrder(decrypted);
