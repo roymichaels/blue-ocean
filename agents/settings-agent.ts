@@ -13,7 +13,7 @@ type SettingKey =
   | 'brand.logoCid'
   | 'fiatKey'
   | 'feeAddress'
-  | 'feePercent';
+  | 'feeBps';
 
 class SettingsAgent {
   private static instance: SettingsAgent;
@@ -32,7 +32,8 @@ class SettingsAgent {
 
   async set(key: string, value: string): Promise<void> {
     await this.ensureWallet();
-    await setSetting(key, value);
+    const actor = tonAuth.getAddress()!;
+    await setSetting(key, value, actor);
   }
 
   async get(key: string): Promise<string | null> {
@@ -56,7 +57,8 @@ class SettingsAgent {
 
   async setAdmins(admins: string[]): Promise<void> {
     await this.ensureWallet();
-    await storeAdmins(admins);
+    const actor = tonAuth.getAddress()!;
+    await storeAdmins(admins, actor);
     this.admins = admins;
   }
 

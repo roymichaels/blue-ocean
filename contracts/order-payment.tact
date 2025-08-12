@@ -14,16 +14,16 @@ contract OrderPayment {
     amount: Int;
     paid: Bool;
     feeAddress: Address;
-    feePercent: Int;
+    feeBps: Int;
 
-    init(owner: Address, seller: Address, buyer: Address, amount: Int, feeAddress: Address, feePercent: Int) {
+    init(owner: Address, seller: Address, buyer: Address, amount: Int, feeAddress: Address, feeBps: Int) {
         self.owner = owner;
         self.seller = seller;
         self.buyer = buyer;
         self.amount = amount;
         self.paid = false;
         self.feeAddress = feeAddress;
-        self.feePercent = feePercent;
+        self.feeBps = feeBps;
     }
 
     receive(msg: Pay) {
@@ -37,7 +37,7 @@ contract OrderPayment {
     receive(msg: Release) {
         require(sender() == self.owner, 104);
         require(self.paid, 105);
-        let fee = (self.amount * self.feePercent) / 100;
+        let fee = (self.amount * self.feeBps) / 10000;
         send(self.feeAddress, fee);
         send(self.seller, self.amount - fee);
     }
