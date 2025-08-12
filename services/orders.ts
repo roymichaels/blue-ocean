@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import ordersAgent from '../agents/orders-agent';
 import eventBus from './eventBus';
 import {
@@ -127,7 +128,7 @@ class OrderService {
       pay = { ...pay, contractAddress, txHash };
     }
 
-    const orderId = `order_${Date.now()}`;
+    const orderId = randomUUID();
     const timestamp = new Date().toISOString();
     const itemsHash = Buffer.from(
       sha256(Buffer.from(JSON.stringify(items)))
