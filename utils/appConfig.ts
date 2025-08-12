@@ -4,7 +4,6 @@
 const ENV_KEYS = [
   'EXPO_PUBLIC_DEBUG_LOGS',
   'EXPO_PUBLIC_WAKU_BOOTSTRAP',
-  'EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY',
 ];
 
 function loadConfig(): Record<string, string> {
@@ -12,11 +11,7 @@ function loadConfig(): Record<string, string> {
   for (const key of ENV_KEYS) {
     const value = process.env[key];
     if (value !== undefined) {
-      if (key === 'EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY') {
-        cfg.fiatKey = value;
-      } else {
-        cfg[key] = value;
-      }
+      cfg[key] = value;
     }
   }
   return cfg;
