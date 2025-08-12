@@ -1,4 +1,5 @@
 import OrderService from '../services/orders';
+import { deployOrderPayment } from '../services/tonContract';
 import { CartItem, ShippingAddress } from '../types';
 
 const mockStore: Record<string, any> = {};
@@ -95,9 +96,15 @@ describe('multi-seller checkout flow', () => {
 
     const orders = await svc.createOrdersFromCart('user1', items, shipping, 'ton');
     expect(orders).toHaveLength(2);
+    expect(deployOrderPayment).toHaveBeenCalledTimes(2);
     const totals = orders.map((o) => o.total).sort();
     expect(totals).toEqual([5, 6]);
     expect(orders.every((o) => o.paymentMethod === 'ton')).toBe(true);
+    const escrows = orders.map((o) => o.escrowAddr).sort();
+    expect(escrows).toEqual(['escrow_5', 'escrow_6']);
+    expect(orders.every((o) => o.paymentTxHash && o.paymentContractAddress)).toBe(
+      true,
+    );
   });
 });
 
