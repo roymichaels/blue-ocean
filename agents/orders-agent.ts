@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Order, OrderStatus, Notification } from '../types';
 import tonAuth from '../services/tonAuth';
 import notificationsAgent from './notifications-agent';
@@ -228,7 +229,7 @@ class OrdersAgent {
 
   private async notifyStatusChange(order: Order) {
     const notification: Notification = {
-      id: `ntf_${Date.now()}`,
+      id: randomUUID(),
       userId: order.userId,
       title: 'Order status updated',
       message: `Order ${order.id} status changed to ${order.status}`,
@@ -245,7 +246,7 @@ class OrdersAgent {
 
   private async notifyOrderCreated(order: Order) {
     const notification: Notification = {
-      id: `ntf_${Date.now()}`,
+      id: randomUUID(),
       userId: order.userId,
       title: 'Order created',
       message: `Order ${order.id} has been created`,
@@ -262,7 +263,7 @@ class OrdersAgent {
 
   private async notifyPaymentReceived(order: Order) {
     const notification: Notification = {
-      id: `ntf_${Date.now()}`,
+      id: randomUUID(),
       userId: order.userId,
       title: 'Payment received',
       message: `Payment for order ${order.id} has been released`,
@@ -279,7 +280,7 @@ class OrdersAgent {
 
   private async notifyDisputeUpdate(order: Order) {
     const notification: Notification = {
-      id: `ntf_${Date.now()}`,
+      id: randomUUID(),
       userId: order.userId,
       title: 'Order dispute updated',
       message: `Order ${order.id} dispute status: ${order.status}`,
