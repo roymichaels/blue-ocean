@@ -12,21 +12,17 @@ export default function StoreDashboardScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
   const [productCount, setProductCount] = useState(0);
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    const checkOwner = async () => {
+    const loadStats = async () => {
       if (!id) return;
       const store = await getStore(id);
       if (!store || store.owner !== user?.address) {
         router.replace(`/stores/${id}`);
-        return false;
+        return;
       }
-      return true;
-    };
-
-    const loadStats = async () => {
-      const isOwner = await checkOwner();
-      if (!isOwner) return;
+      setAuthorized(true);
       const products = await listProducts();
       setProductCount(products.filter((p) => p.storeId === id).length);
     };
@@ -34,6 +30,10 @@ export default function StoreDashboardScreen() {
     loadStats();
   }, [id, user?.address]);
   
+
+  if (!authorized) {
+    return null;
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
