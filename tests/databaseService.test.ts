@@ -8,8 +8,8 @@ beforeEach(() => {
   (DatabaseService as any).instance = undefined;
   (productsAgent as any).store.clear();
   (categoriesAgent as any).store.clear();
-  (storesAgent as any).store.clear();
   (tonAuth as any).getAddress = () => 'owner1';
+  (tonAuth as any).getTonPublicKey = () => 'pub';
   (productsAgent as any).sendFn = async () => {};
   (productsAgent as any).clearHashCache();
 });

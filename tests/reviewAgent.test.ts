@@ -24,6 +24,14 @@ jest.mock('../agents/orders-agent', () => ({
   get: jest.fn(async (id: string) => orders[id] || null),
 }));
 
+jest.mock('../agents/products-agent', () => ({
+  get: jest.fn(async () => ({ id: 'p1', storeId: 's1' })),
+}));
+
+jest.mock('../agents/stores-agent', () => ({
+  recordReview: jest.fn(async () => {}),
+}));
+
 jest.mock('../services/tonAuth', () => ({
   getAddress: jest.fn().mockReturnValue('user1'),
   getTonPublicKey: jest.fn().mockReturnValue('pub'),

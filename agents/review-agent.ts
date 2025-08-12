@@ -2,6 +2,8 @@ import { Review } from '../types';
 import tonAuth from '../services/tonAuth';
 import { addReview, getReviews } from '../services/tonReviews';
 import ordersAgent from './orders-agent';
+import productsAgent from './products-agent';
+import storesAgent from './stores-agent';
 
 const TOPIC = '/congress/reviews/1';
 
@@ -41,6 +43,10 @@ class ReviewAgent {
 
     await addReview(review);
     this.subscribers.forEach((cb) => cb(review));
+    const product = await productsAgent.get(review.productId);
+    if (product) {
+      await storesAgent.recordReview(product.storeId, review.rating);
+    }
   }
 
   async getByProduct(productId: string): Promise<Review[]> {

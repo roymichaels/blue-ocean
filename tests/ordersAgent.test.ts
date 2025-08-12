@@ -18,6 +18,7 @@ jest.mock('../services/tonOrders', () => ({
 }));
 
 jest.mock('../agents/notifications-agent', () => ({ broadcast: jest.fn() }));
+jest.mock('../agents/stores-agent', () => ({ updateReputationByOwner: jest.fn() }));
 
 jest.mock('../services/tonContract', () => ({
   deployOrderPayment: jest.fn().mockResolvedValue({ contractAddress: 'escrow1', txHash: 'tx1' }),
