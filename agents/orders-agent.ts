@@ -80,11 +80,13 @@ class OrdersAgent {
       enriched = { ...order, escrowAddr: order.paymentContractAddress };
     }
     let toStore: any = { ...enriched };
+    // ensure integrity of items by hashing their serialized form
     if (!toStore.itemsHash) {
       toStore.itemsHash = Buffer.from(
         sha256(Buffer.from(JSON.stringify(enriched.items)))
       ).toString('hex');
     }
+    // encrypt shipping address for seller-only visibility
     if (enriched.shippingAddress && enriched.sellerAddress) {
       try {
         const sellerPub = await getSellerPublicKey(enriched.sellerAddress);
