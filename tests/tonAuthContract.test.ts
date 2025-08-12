@@ -4,7 +4,7 @@ import * as tonAuth from '../services/tonAuth';
 jest.mock('../services/tonSettings', () => ({
   fetchSettings: jest.fn().mockResolvedValue({
     feeAddress: 'feeAddr',
-    feePercent: 5,
+    feeBps: 500,
   }),
 }));
 

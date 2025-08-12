@@ -18,7 +18,7 @@ interface AppInfoContextType {
   themeColor: string;
   fiatKey?: string;
   feeAddress?: string;
-  feePercent?: number;
+  feeBps?: number;
   admins: string[];
   setAppName: (name: string) => Promise<void>;
   setLogoCid: (logo: string) => Promise<void>;
@@ -32,7 +32,7 @@ const AppInfoContext = createContext<AppInfoContextType>({
   themeColor: '#B99C5A',
   fiatKey: undefined,
   feeAddress: undefined,
-  feePercent: 0,
+  feeBps: 0,
   admins: [],
   setAppName: async () => {},
   setLogoCid: async () => {},
@@ -54,7 +54,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
   const [themeColor, setThemeColorState] = useState('#B99C5A');
   const [fiatKey, setFiatKey] = useState<string | undefined>(undefined);
   const [feeAddress, setFeeAddress] = useState<string>('');
-  const [feePercent, setFeePercent] = useState<number>(0);
+  const [feeBps, setFeeBps] = useState<number>(0);
   const [admins, setAdmins] = useState<string[]>([]);
   const reloadTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -107,8 +107,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
           );
         }
         if (remote.feeAddress) setFeeAddress(remote.feeAddress);
-        if (remote.feePercent !== undefined)
-          setFeePercent(remote.feePercent);
+        if (remote.feeBps !== undefined) setFeeBps(remote.feeBps);
         if (remote.admins) setAdmins(remote.admins);
       } catch (err) {
         Alert.alert('שגיאה', 'טעינת הגדרות מהשרת נכשלה');
@@ -219,7 +218,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
         themeColor,
         fiatKey,
         feeAddress,
-        feePercent,
+        feeBps,
         admins,
         setAppName,
         setLogoCid,

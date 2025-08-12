@@ -32,8 +32,8 @@ describe('SettingsAgent TON integration', () => {
 
   it('handles fee settings', async () => {
     const agent = SettingsAgent.getInstance();
-    await agent.updateSettingValue('feePercent', '5');
-    const fee = await agent.getSettingValue('feePercent');
-    expect(fee).toBe('5');
+    await agent.updateSettingValue('feeBps', '500');
+    const fee = await agent.getSettingValue('feeBps');
+    expect(fee).toBe('500');
   });
 });

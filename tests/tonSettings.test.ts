@@ -4,18 +4,18 @@ jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
 
 const { setValue, __clear } = require('./tonKvMock');
 
-describe('fetchSettings feePercent parsing', () => {
+describe('fetchSettings feeBps parsing', () => {
   beforeEach(() => {
     __clear();
   });
 
-  it('defaults feePercent to 0 for non-numeric values', async () => {
-    await setValue('', 'feePercent', 'not-a-number');
-    await expect(fetchSettings()).resolves.toMatchObject({ feePercent: 0 });
+  it('defaults feeBps to 0 for non-numeric values', async () => {
+    await setValue('', 'feeBps', 'not-a-number');
+    await expect(fetchSettings()).resolves.toMatchObject({ feeBps: 0 });
   });
 
-  it('handles float feePercent values', async () => {
-    await setValue('', 'feePercent', '1.5');
-    await expect(fetchSettings()).resolves.toMatchObject({ feePercent: 1.5 });
+  it('handles numeric feeBps values', async () => {
+    await setValue('', 'feeBps', '150');
+    await expect(fetchSettings()).resolves.toMatchObject({ feeBps: 150 });
   });
 });

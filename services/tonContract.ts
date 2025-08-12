@@ -45,10 +45,8 @@ export async function deployOrderPayment(
   try {
     const settings = await fetchSettings();
     const feeAddress = settings.feeAddress ?? '';
-    const feePercent = settings.feePercent ?? 0;
-    const payload = makeComment(
-      `Pay:${amount}:${feeAddress}:${feePercent}`,
-    );
+    const feeBps = settings.feeBps ?? 0;
+    const payload = makeComment(`Pay:${amount}:${feeAddress}:${feeBps}`);
     const payloadBoc = TonWeb.utils.bytesToBase64(
       await payload.toBoc(false),
     );
