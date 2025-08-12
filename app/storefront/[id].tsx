@@ -1,15 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import storesAgent from '../../agents/stores-agent';
+import productsAgent from '../../agents/products-agent';
+import reviewAgent from '../../agents/review-agent';
+import ProductCard from '../../components/ProductCard';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Store } from '../../types';
+import { Store, Product } from '../../types';
+
+interface ReviewMap {
+  [productId: string]: { rating: number; count: number };
+}
 
 export default function StorefrontStoreScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
   const [store, setStore] = useState<Store | null>(null);
   const [score, setScore] = useState(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<ReviewMap>({});
 
   useEffect(() => {
     let callback: ((sid: string, s: number) => void) | undefined;
@@ -18,6 +27,22 @@ export default function StorefrontStoreScreen() {
       const s = await storesAgent.get(id);
       setStore(s);
       setScore(storesAgent.getReputationScore(id));
+      const all = await productsAgent.getAll();
+      const filtered = all.filter((p) => p.storeId === id);
+      setProducts(filtered);
+      const entries = await Promise.all(
+        filtered.map(async (p) => {
+          const revs = await reviewAgent.getByProduct(p.id);
+          const count = revs.length;
+          const rating = count > 0 ? revs.reduce((a, r) => a + r.rating, 0) / count : 0;
+          return [p.id, { rating, count }] as [string, { rating: number; count: number }];
+        })
+      );
+      const map: ReviewMap = {};
+      entries.forEach(([pid, data]) => {
+        map[pid] = data;
+      });
+      setReviews(map);
       callback = (sid: string, sc: number) => {
         if (sid === id) setScore(sc);
       };
@@ -40,15 +65,35 @@ export default function StorefrontStoreScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+    >
       <Text style={[styles.name, { color: colors.text.primary }]}>{store.name}</Text>
-      <Text style={{ color: colors.text.secondary }}>Reputation: {score.toFixed(1)}</Text>
-    </View>
+      <Text style={{ color: colors.text.secondary, marginBottom: 16 }}>
+        Reputation: {score.toFixed(1)}
+      </Text>
+      {products.map((p) => (
+        <View key={p.id} style={styles.product}>
+          <ProductCard product={p} style={{ marginBottom: 4 }} />
+          <Text style={{ color: colors.text.secondary, textAlign: 'right' }}>
+            ⭐ {reviews[p.id]?.rating.toFixed(1) || '0'} ({reviews[p.id]?.count || 0})
+          </Text>
+        </View>
+      ))}
+      {products.length === 0 && (
+        <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
+          אין מוצרים זמינים
+        </Text>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  name: { fontSize: 24, fontWeight: 'bold', marginBottom: 8 },
+  container: { flex: 1 },
+  content: { padding: 16 },
+  name: { fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
+  product: { marginBottom: 12 },
 });
 

@@ -1,0 +1,78 @@
+import React from 'react';
+import renderer, { act } from 'react-test-renderer';
+import StorefrontStoreScreen from '../app/storefront/[id]';
+
+jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => ({ id: 's1' }),
+}));
+
+jest.mock('../contexts/ThemeContext', () => ({
+  useTheme: () => ({
+    colors: {
+      background: '#fff',
+      text: { primary: '#000', secondary: '#666', inverse: '#fff' },
+      border: { primary: '#000' },
+    },
+  }),
+}));
+
+jest.mock('../agents/stores-agent', () => ({
+  get: jest.fn(async () => ({ id: 's1', name: 'Test Store' })),
+  getReputationScore: jest.fn(() => 4.5),
+  subscribe: jest.fn(),
+  unsubscribe: jest.fn(),
+}));
+
+jest.mock('../agents/products-agent', () => ({
+  getAll: jest.fn(async () => [
+    {
+      id: 'p1',
+      name: 'Apple',
+      storeId: 's1',
+      price: 1,
+      stock: 1,
+      description: '',
+      images: [],
+      category: 'fruits',
+    } as any,
+    {
+      id: 'p2',
+      name: 'Carrot',
+      storeId: 's1',
+      price: 1,
+      stock: 1,
+      description: '',
+      images: [],
+      category: 'vegetables',
+    } as any,
+  ]),
+}));
+
+jest.mock('../agents/review-agent', () => ({
+  getByProduct: jest.fn(async (id: string) => {
+    if (id === 'p1') return [{ rating: 4 }, { rating: 5 }] as any;
+    if (id === 'p2') return [{ rating: 3 }] as any;
+    return [];
+  }),
+}));
+
+jest.mock('../components/ProductCard', () => ({
+  __esModule: true,
+  default: ({ product }: any) => React.createElement('ProductCard', null, product.name),
+}));
+
+describe('StorefrontStoreScreen', () => {
+  it('shows store catalog with reviews', async () => {
+    let root: renderer.ReactTestRenderer;
+    await act(async () => {
+      root = renderer.create(<StorefrontStoreScreen />);
+    });
+    await act(async () => {});
+    const str = JSON.stringify(root!.toJSON());
+    expect(str).toContain('Test Store');
+    expect(str).toContain('Apple');
+    expect(str).toContain('Carrot');
+    expect(str).toContain('⭐ 4.5 (2)');
+    expect(str).toContain('⭐ 3.0 (1)');
+  });
+});
