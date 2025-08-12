@@ -108,3 +108,26 @@ export async function refundPayment(contractAddress: string): Promise<string> {
   }
 }
 
+export async function adminResolve(
+  contractAddress: string,
+  toSeller: boolean,
+): Promise<string> {
+  try {
+    const payload = makeComment(`AdminResolve:${toSeller ? 1 : 0}`);
+    const payloadBoc = TonWeb.utils.bytesToBase64(
+      await payload.toBoc({ idx: false }),
+    );
+    const txHash = await sendTonConnect([
+      {
+        address: contractAddress,
+        amount: '0',
+        payload: payloadBoc,
+      },
+    ]);
+    return txHash;
+  } catch (e) {
+    console.error('Failed to resolve dispute', e);
+    throw e;
+  }
+}
+

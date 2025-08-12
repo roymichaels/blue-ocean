@@ -19,7 +19,8 @@ import { getWakuBootstrapNodes } from '../utils/appConfig';
 type NotificationEvent =
   | 'order.created'
   | 'payment.received'
-  | 'status.updated';
+  | 'status.updated'
+  | 'dispute.updated';
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
