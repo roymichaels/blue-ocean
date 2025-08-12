@@ -1,4 +1,5 @@
 import "@tact-lang/core";
+import "./Settings.tact";
 
 message Release {}
 message Refund {}
@@ -14,8 +15,9 @@ contract Escrow {
     disputeWindow: Int;
     createdAt: Int;
     status: Int; // 0 pending, 1 released, 2 refunded
+    settings: Address;
 
-    init(buyer: Address, seller: Address, amount: Int, disputeWindow: Int) {
+    init(buyer: Address, seller: Address, amount: Int, disputeWindow: Int, settings: Address) {
         self.buyer = buyer;
         self.seller = seller;
         self.amount = amount;
@@ -23,6 +25,7 @@ contract Escrow {
         self.admin = sender();
         self.createdAt = now();
         self.status = 0;
+        self.settings = settings;
     }
 
     private isExpired(): Bool {
@@ -36,7 +39,13 @@ contract Escrow {
         } else {
             require(sender() == self.buyer || sender() == self.seller, 102);
         }
-        send(self.seller, self.amount);
+        let feeBps = Settings(self.settings).feeBps();
+        let feeRecipient = Settings(self.settings).admin();
+        let fee = (self.amount * feeBps) / 10000;
+        if (fee > 0) {
+            send(feeRecipient, fee);
+        }
+        send(self.seller, self.amount - fee);
         self.status = 1;
     }
 
@@ -55,7 +64,13 @@ contract Escrow {
         require(self.status == 0, 106);
         require(sender() == self.admin, 107);
         if (msg.toSeller) {
-            send(self.seller, self.amount);
+            let feeBps = Settings(self.settings).feeBps();
+            let feeRecipient = Settings(self.settings).admin();
+            let fee = (self.amount * feeBps) / 10000;
+            if (fee > 0) {
+                send(feeRecipient, fee);
+            }
+            send(self.seller, self.amount - fee);
             self.status = 1;
         } else {
             send(self.buyer, balance());
