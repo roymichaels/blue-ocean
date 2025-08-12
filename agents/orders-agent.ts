@@ -14,6 +14,7 @@ import productsAgent from './products-agent';
 import { getSellerPublicKey } from '../services/sellerRegistry';
 import { encryptShippingInfo } from '../utils/shippingCrypto';
 import { sha256 } from '@noble/hashes/sha256';
+import { logOrderEvent } from '../services/eventLog';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -113,6 +114,14 @@ class OrdersAgent {
       }
     }
     await setOrder(toStore);
+    await logOrderEvent({
+      type: 'order.created',
+      orderId: enriched.id,
+      prevStatus: null,
+      newStatus: enriched.status,
+      actor: tonAuth.getAddress() || '',
+      timestamp: Date.now(),
+    });
     this.subscribers.forEach((cb) => cb(enriched));
     await this.notifyOrderCreated(enriched);
   }
@@ -132,6 +141,14 @@ class OrdersAgent {
       statusChanged = true;
     }
     await setOrder(order);
+    await logOrderEvent({
+      type: 'order.updated',
+      orderId: order.id,
+      prevStatus: current.status,
+      newStatus: order.status,
+      actor: tonAuth.getAddress() || '',
+      timestamp: Date.now(),
+    });
     this.subscribers.forEach((cb) => cb(order));
     if (statusChanged) {
       await this.notifyStatusChange(order);
@@ -153,6 +170,14 @@ class OrdersAgent {
     }
     await this.ensureAuthorized(order);
     await removeOrder(id);
+    await logOrderEvent({
+      type: 'order.deleted',
+      orderId: id,
+      prevStatus: order.status,
+      newStatus: 'deleted',
+      actor: tonAuth.getAddress() || '',
+      timestamp: Date.now(),
+    });
   }
 
   async get(id: string): Promise<Order | null> {
@@ -187,6 +212,14 @@ class OrdersAgent {
       updatedAt: new Date().toISOString(),
     };
     await setOrder(updated);
+    await logOrderEvent({
+      type: 'order.updated',
+      orderId: updated.id,
+      prevStatus: order.status,
+      newStatus: updated.status,
+      actor: tonAuth.getAddress() || '',
+      timestamp: Date.now(),
+    });
     await Promise.all(
       order.items.map((item) =>
         productsAgent.decrementStock(
@@ -222,6 +255,14 @@ class OrdersAgent {
       updatedAt: new Date().toISOString(),
     };
     await setOrder(updated);
+    await logOrderEvent({
+      type: 'order.updated',
+      orderId: updated.id,
+      prevStatus: order.status,
+      newStatus: updated.status,
+      actor: tonAuth.getAddress() || '',
+      timestamp: Date.now(),
+    });
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
     await this.recordSellerMetric(order.sellerAddress, 'refunded');

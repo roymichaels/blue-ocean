@@ -34,6 +34,7 @@ jest.mock('../services/tonContract', () => ({
 
 jest.mock('../services/sellerRegistry');
 jest.mock('../services/localIdentity');
+jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
 
 jest.mock('../services/tonAuth', () => ({
   getAddress: jest.fn().mockReturnValue('seller'),
