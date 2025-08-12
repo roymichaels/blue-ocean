@@ -6,7 +6,9 @@ import {
   createLightNode,
   waitForRemotePeer,
   createEncoder,
+  createDecoder,
   utf8ToBytes,
+  bytesToUtf8,
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 
@@ -44,7 +46,7 @@ async function ensureNode(): Promise<LightNode | null> {
   try {
     const bootstrap = getWakuBootstrapNodes();
     if (bootstrap.length === 0) return null;
-    node = await createLightNode({ libp2p: { bootstrap } });
+    node = await createLightNode({ libp2p: { bootstrap } as any });
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
     return node;
@@ -66,6 +68,35 @@ async function emit(event: SettingsWriteEvent) {
   } catch (err) {
     console.error('Failed to broadcast settings.write', err);
   }
+}
+
+export async function subscribeToSettingsWrites(
+  cb: (event: SettingsWriteEvent) => void,
+): Promise<() => void> {
+  const n = await ensureNode();
+  if (!n) return () => {};
+  const decoder = createDecoder('/congress/settings/1');
+  const handler = (wakuMsg: any) => {
+    if (!wakuMsg.payload) return;
+    try {
+      const evt = JSON.parse(bytesToUtf8(wakuMsg.payload));
+      if (evt && evt.type === 'settings.write') {
+        cb(evt as SettingsWriteEvent);
+      }
+    } catch {
+      /* ignore malformed events */
+    }
+  };
+  const maybeUnsub = (n.relay as any).addObserver(handler, [decoder]) as
+    | (() => void)
+    | void;
+  return () => {
+    if (typeof maybeUnsub === 'function') {
+      maybeUnsub();
+    } else {
+      (n.relay as any)?.deleteObserver?.(handler);
+    }
+  };
 }
 
 export async function setSetting(
