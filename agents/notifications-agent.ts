@@ -51,6 +51,10 @@ export const notificationTemplates: Record<NotificationEvent, NotificationTempla
     contentTopic: ORDER_TOPIC,
     payload: { type: 'dispute.updated', notification: item },
   }),
+  'escrow.deployed': (item) => ({
+    contentTopic: ORDER_TOPIC,
+    payload: { type: 'escrow.deployed', notification: item },
+  }),
 };
 
 class NotificationsAgent {
