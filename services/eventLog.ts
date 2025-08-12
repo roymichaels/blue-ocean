@@ -29,13 +29,20 @@ export interface OrderEvent {
 }
 
 const ORDER_TOPIC = '/congress/orders/1';
+const DEFAULT_BOOTSTRAP =
+  '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 let node: LightNode | null = null;
 
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
     const bootstrap = getWakuBootstrapNodes();
-    if (bootstrap.length === 0) return null;
+    if (bootstrap.length === 0) {
+      console.warn(
+        'No Waku bootstrap nodes configured; using default bootstrap. Please configure your own nodes.',
+      );
+      bootstrap.push(DEFAULT_BOOTSTRAP);
+    }
     node = await createLightNode({ libp2p: { bootstrap } });
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
