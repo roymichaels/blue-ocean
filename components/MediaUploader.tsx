@@ -6,11 +6,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Image,
   Alert,
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { Camera, Upload, X, Play, Video } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../contexts/ThemeContext';
@@ -223,7 +223,7 @@ export default function MediaUploader({
       }]}>
         {item.type === 'video' ? (
           <View style={styles.videoContainer}>
-            <Image source={{ uri: thumbnailMap[item.id] || item.uri }} style={styles.mediaThumbnail} />
+            <SmartImage uri={thumbnailMap[item.id] || item.uri} style={styles.mediaThumbnail} contentFit="cover" cachePolicy="disk" />
             <View style={styles.playOverlay}>
               <Play size={24} color={colors.text.inverse} fill={colors.text.inverse} />
             </View>
@@ -232,7 +232,7 @@ export default function MediaUploader({
             </View>
           </View>
         ) : (
-          <Image source={{ uri: item.uri }} style={styles.mediaThumbnail} />
+          <SmartImage uri={item.uri} style={styles.mediaThumbnail} contentFit="cover" cachePolicy="disk" />
         )}
         
         <TouchableOpacity

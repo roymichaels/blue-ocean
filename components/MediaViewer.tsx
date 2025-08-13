@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
-  Image,
   TouchableOpacity,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
@@ -94,11 +94,11 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
             <PanGestureHandler onGestureEvent={panHandler}>
               <Animated.View style={[styles.mediaWrapper, animatedStyle]}>
                 {currentMedia?.type === 'image' ? (
-                  <Image source={{ uri: currentMedia.url }} style={styles.media} resizeMode="contain" />
+                  <SmartImage uri={currentMedia.url} style={styles.media} contentFit="contain" cachePolicy="disk" />
                 ) : (
                   <View style={styles.videoPlaceholder}>
                     {/* In a real app, you'd use react-native-video here */}
-                    <Image source={{ uri: currentMedia?.url }} style={styles.media} resizeMode="contain" />
+                    <SmartImage uri={currentMedia?.url || ''} style={styles.media} contentFit="contain" cachePolicy="disk" />
                   </View>
                 )}
               </Animated.View>

@@ -5,8 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  Image,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -61,11 +61,7 @@ export default function GlobalHeader({
             onPress={() => router.push('/(tabs)')}
           >
             {logoCid ? (
-              <Image
-                source={{ uri: logoCid }}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
+              <SmartImage uri={logoCid} style={styles.logoImage} contentFit="contain" cachePolicy="disk" />
             ) : (
               <View
                 style={[styles.logoIcon, { backgroundColor: colors.gold }]}
