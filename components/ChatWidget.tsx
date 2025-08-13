@@ -129,10 +129,10 @@ export default function ChatWidget() {
         try {
           const db = DatabaseService.getInstance();
           const results = await db.searchUserProfiles(searchQuery.trim());
-          const mapped = results.map((r: User) => ({
+          const mapped = results.map((r) => ({
             id: r.id,
             displayName: r.displayName || r.username || r.id,
-            isAppUser: true,
+            chatPublicKey: r.chatPublicKey,
           }));
           setSearchResults(mapped);
         } catch (error) {
@@ -343,7 +343,7 @@ const loadOrCreateDefaultRoom = async () => {
   const openSearchResult = async (result: {
     id: string;
     displayName: string;
-    isAppUser: boolean;
+    chatPublicKey?: string;
   }) => {
     try {
       let room = chatRooms.find((r) => r.userId === result.id);
@@ -354,7 +354,7 @@ const loadOrCreateDefaultRoom = async () => {
         roomId = await db.getOrCreateChatRoom(
           result.id,
           result.displayName,
-          (result as any).chatPublicKey
+          result.chatPublicKey
         );
         room = {
           id: roomId,
@@ -392,7 +392,7 @@ const loadOrCreateDefaultRoom = async () => {
     setProfileModalVisible(false);
     setProfileUserId(null);
     setIsOpen(true);
-    await openSearchResult({ id, displayName: name, isAppUser: true });
+    await openSearchResult({ id, displayName: name });
   };
 
   const ensureChatConfigured = async (): Promise<boolean> => {

@@ -258,12 +258,20 @@ class DatabaseService {
     return usersAgent.getAll();
   }
 
-  async searchUserProfiles(query: string): Promise<User[]> {
+  async searchUserProfiles(
+    query: string,
+  ): Promise<Pick<User, 'id' | 'username' | 'displayName' | 'chatPublicKey'>[]> {
     return usersAgent
       .getAll()
       .filter((u) =>
         u.displayName?.toLowerCase().includes(query.toLowerCase()),
-      );
+      )
+      .map((u) => ({
+        id: u.id,
+        username: u.username,
+        displayName: u.displayName,
+        chatPublicKey: u.chatPublicKey,
+      }));
   }
 
   async updateUserCustomerTier(
