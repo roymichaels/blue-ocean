@@ -1,9 +1,9 @@
 import { Review } from '../types';
-import tonAuth from '../services/tonAuth';
 import { addReview, getReviews } from '../services/tonReviews';
 import ordersAgent from './orders-agent';
 import productsAgent from './products-agent';
 import storesAgent from './stores-agent';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 const TOPIC = '/congress/reviews/1';
 
@@ -11,12 +11,7 @@ class ReviewAgent {
   private subscribers: Set<(r: Review) => void> = new Set();
 
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to manage reviews.');
-    }
+    await ensureTonWallet('Please connect your TON wallet to manage reviews.');
   }
 
   async add(review: Review): Promise<void> {

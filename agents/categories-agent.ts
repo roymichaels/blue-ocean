@@ -1,15 +1,10 @@
 import { Category } from '../types';
-import tonAuth from '../services/tonAuth';
 import { setCategory, getCategory, listCategories, removeCategory } from '../services/tonCategories';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 class CategoriesAgent {
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to manage categories.');
-    }
+    await ensureTonWallet('Please connect your TON wallet to manage categories.');
   }
 
   async add(item: Category): Promise<void> {

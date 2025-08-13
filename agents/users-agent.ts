@@ -1,8 +1,8 @@
 import { User } from '../types';
-import tonAuth from '../services/tonAuth';
 import { getUser, setUser, listUsers, removeUser } from '../services/tonUsers';
 import { getPublicKeyHex } from '../services/localIdentity';
 import SettingsAgent from './settings-agent';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 export type UsersAgentMessage =
   | { type: 'user.add'; payload: User }
@@ -16,13 +16,7 @@ export type UsersAgentMessage =
 
 class UsersAgent {
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to manage users.');
-    }
-    return { address, publicKey };
+    return ensureTonWallet('Please connect your TON wallet to manage users.');
   }
 
   async add(user: User): Promise<void> {

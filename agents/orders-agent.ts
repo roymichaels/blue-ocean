@@ -15,6 +15,7 @@ import { getSellerPublicKey } from '../services/sellerRegistry';
 import { encryptShippingInfo } from '../utils/shippingCrypto';
 import { sha256 } from '@noble/hashes/sha256';
 import { logOrderEvent } from '../services/eventLog';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -51,12 +52,7 @@ class OrdersAgent {
   }
 
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to manage orders.');
-    }
+    await ensureTonWallet('Please connect your TON wallet to manage orders.');
   }
 
   private async ensureAuthorized(order: Order) {

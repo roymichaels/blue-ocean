@@ -1,5 +1,4 @@
 import { Notification } from '../types';
-import tonAuth from '../services/tonAuth';
 import {
   setNotification,
   getNotification,
@@ -15,6 +14,7 @@ import {
   utf8ToBytes,
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
@@ -62,12 +62,7 @@ class NotificationsAgent {
   private node: LightNode | null = null;
 
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to send notifications.');
-    }
+    await ensureTonWallet('Please connect your TON wallet to send notifications.');
   }
 
   async add(item: Notification): Promise<void> {
