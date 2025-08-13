@@ -126,6 +126,7 @@ class OrdersAgent {
           delete toStore.shippingAddress;
         }
       } catch (err) {
+        errorLog('Failed to encrypt shipping address', err);
         warnLog('Failed to encrypt shipping address', err);
       }
     }

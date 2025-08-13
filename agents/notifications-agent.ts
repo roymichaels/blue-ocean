@@ -1,4 +1,5 @@
 import { Notification } from '../types';
+import { NotificationEvent } from '../types/waku';
 import {
   setNotification,
   getNotification,
@@ -20,13 +21,6 @@ import { errorLog } from '../utils/logger';
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 const ORDER_TOPIC = '/congress/orders/1';
-
-export type NotificationEvent =
-  | 'order.created'
-  | 'payment.received'
-  | 'status.updated'
-  | 'dispute.updated'
-  | 'escrow.deployed';
 
 type NotificationTemplate = (
   item: Notification,
