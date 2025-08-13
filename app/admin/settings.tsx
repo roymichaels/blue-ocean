@@ -20,6 +20,7 @@ import InfoModal from '../../components/InfoModal';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import commonStyles from '../../constants/styles';
 import SettingsAgent from '../../agents/settings-agent';
+import Card from '../../components/Card';
 
 
 
@@ -163,15 +164,10 @@ export default function SettingsScreen() {
         </View>
 
         {/* Branding Settings */}
-        <View style={[styles.settingCard, {
+        <Card style={[styles.settingCard, {
           backgroundColor: colors.surface.primary,
           borderColor: colors.border.primary,
-          ...Platform.select({
-            ios: { elevation: 2 },
-            android: { elevation: 2 },
-            web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-          }),
-        }]}>
+        }]}> 
           <View style={styles.settingHeader}>
             <SettingsIcon size={20} color={colors.gold} />
             <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות מיתוג</Text>
@@ -246,18 +242,13 @@ export default function SettingsScreen() {
               )}
             </View>
           </View>
-        </View>
+        </Card>
 
         {/* Currency Settings */}
-        <View style={[styles.settingCard, {
+        <Card style={[styles.settingCard, {
           backgroundColor: colors.surface.primary,
           borderColor: colors.border.primary,
-          ...Platform.select({
-            ios: { elevation: 2 },
-            android: { elevation: 2 },
-            web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-          }),
-        }]}>
+        }]}> 
           <View style={styles.settingHeader}>
             <DollarSign size={20} color={colors.gold} />
             <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות מטבע</Text>
@@ -288,20 +279,15 @@ export default function SettingsScreen() {
               דוגמאות: ₪, $, €, £
             </Text>
           </View>
-        </View>
+        </Card>
 
         {/* Advanced Settings */}
-        <View
+        <Card
           style={[
             styles.settingCard,
             {
               backgroundColor: colors.surface.primary,
               borderColor: colors.border.primary,
-              ...Platform.select({
-                ios: { elevation: 2 },
-                android: { elevation: 2 },
-                web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' },
-              }),
             },
           ]}
         >
@@ -329,18 +315,13 @@ export default function SettingsScreen() {
               Admin Addresses: {admins.join(', ') || 'Not set'}
             </Text>
           </View>
-        </View>
+        </Card>
 
         {/* Language Settings - Info Only */}
-        <View style={[styles.settingCard, { 
+        <Card style={[styles.settingCard, {
           backgroundColor: colors.surface.primary,
           borderColor: colors.border.primary,
-          ...Platform.select({
-            ios: { elevation: 2 },
-            android: { elevation: 2 },
-            web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-          }),
-        }]}>
+        }]}> 
           <View style={styles.settingHeader}>
             <Globe size={20} color={colors.gold} />
             <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות שפה</Text>
@@ -357,19 +338,14 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
-        </View>
+        </Card>
 
         {/* Notification Settings - Coming Soon */}
-        <View style={[styles.settingCard, { 
+        <Card style={[styles.settingCard, {
           backgroundColor: colors.surface.primary,
           borderColor: colors.border.primary,
           opacity: 0.7,
-          ...Platform.select({
-            ios: { elevation: 2 },
-            android: { elevation: 2 },
-            web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-          }),
-        }]}>
+        }]}> 
           <View style={styles.settingHeader}>
             <Bell size={20} color={colors.gold} />
             <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות התראות</Text>
@@ -384,7 +360,7 @@ export default function SettingsScreen() {
               <Text style={[styles.comingSoonText, { color: colors.text.inverse }]}>בקרוב</Text>
             </View>
           </View>
-        </View>
+        </Card>
 
         <TouchableOpacity 
           style={[styles.saveButton, { backgroundColor: colors.gold }]}

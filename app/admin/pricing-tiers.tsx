@@ -25,6 +25,7 @@ import { PricingTier } from '../../types';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import PricingTierFormModal from '../../components/PricingTierFormModal';
+import Card from '../../components/Card';
 
 export default function PricingTiersScreen() {
   const { isAdmin, isDriver } = useAuth();
@@ -80,7 +81,8 @@ export default function PricingTiersScreen() {
   };
 
   const renderTierCard = (tier: PricingTier) => (
-    <TouchableOpacity
+    <Card
+      Component={TouchableOpacity}
       key={tier.id}
       style={[
         styles.tierCard,
@@ -150,7 +152,7 @@ export default function PricingTiersScreen() {
           {tier.description}
         </Text>
       </View>
-    </TouchableOpacity>
+    </Card>
   );
 
   if (loading && pricingTiers.length === 0) {
@@ -302,11 +304,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    ...Platform.select({
-      ios: { elevation: 2 },
-      android: { elevation: 2 },
-      web: { boxShadow: '0px 2px 4px rgba(0,0,0,0.1)' },
-    }),
   },
   tierHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   tierIcon: {

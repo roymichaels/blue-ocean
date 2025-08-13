@@ -24,6 +24,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import commonStyles from '../../constants/styles';
+import Card from '../../components/Card';
 
 
 
@@ -423,16 +424,12 @@ export default function SubcategoryScreen() {
   };
 
   const renderProduct = (item: Product) => (
-    <TouchableOpacity
+    <Card
+      Component={TouchableOpacity}
       key={item.id}
-      style={[styles.productCard, { 
-        backgroundColor: colors.surface.primary, 
+      style={[styles.productCard, {
+        backgroundColor: colors.surface.primary,
         borderColor: colors.border.primary,
-        ...Platform.select({
-          ios: { elevation: 2 },
-          android: { elevation: 2 },
-          web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-        }),
       }]}
       onPress={() => router.push(`/product/${item.id}`)}
     >
@@ -494,7 +491,7 @@ export default function SubcategoryScreen() {
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </Card>
   );
 
   if (loading && !subcategory) {
@@ -1149,11 +1146,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    ...Platform.select({
-      ios: { elevation: 2 },
-      android: { elevation: 2 },
-      web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-    }),
   },
   productImageContainer: {
     position: 'relative',

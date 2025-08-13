@@ -22,6 +22,7 @@ import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { useAuthModal } from '../../components/AuthModalContext';
 import commonStyles from '../../constants/styles';
+import Card from '../../components/Card';
 
 
 
@@ -286,15 +287,10 @@ export default function ReviewsScreen() {
   };
 
   const renderReview = (item: Review) => (
-    <View key={item.id} style={[styles.reviewCard, { 
-      backgroundColor: colors.surface.primary, 
+    <Card key={item.id} style={[styles.reviewCard, {
+      backgroundColor: colors.surface.primary,
       borderColor: colors.border.primary,
-      ...Platform.select({
-        ios: { elevation: 2 },
-        android: { elevation: 2 },
-        web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-      }),
-    }]}>
+    }]}> 
       <View style={styles.reviewHeader}>
         <TouchableOpacity 
           style={styles.productInfo}
@@ -353,7 +349,7 @@ export default function ReviewsScreen() {
           )}
         </View>
       </View>
-    </View>
+    </Card>
   );
 
   const renderOrderSelector = (item: Order) => {
@@ -363,18 +359,14 @@ export default function ReviewsScreen() {
     );
 
     return (
-      <TouchableOpacity
+      <Card
+        Component={TouchableOpacity}
         key={item.id}
         style={[
           styles.orderSelectorItem,
           {
             backgroundColor: colors.surface.primary,
             borderColor: colors.border.primary,
-            ...Platform.select({
-              ios: { elevation: 2 },
-              android: { elevation: 2 },
-              web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-            }),
           },
           alreadyReviewed && styles.orderSelectorItemDisabled
         ]}
@@ -424,7 +416,7 @@ export default function ReviewsScreen() {
             <Text style={[styles.alreadyReviewedText, { color: colors.text.inverse }]}>נסקר</Text>
           </View>
         )}
-      </TouchableOpacity>
+      </Card>
     );
   };
 
@@ -688,15 +680,10 @@ export default function ReviewsScreen() {
             </ScrollView>
           ) : (
             <ScrollView style={styles.reviewForm}>
-              <View style={[styles.selectedOrder, {
+              <Card style={[styles.selectedOrder, {
                 backgroundColor: colors.surface.primary,
                 borderColor: colors.border.primary,
-                ...Platform.select({
-                  ios: { elevation: 2 },
-                  android: { elevation: 2 },
-                  web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-                }),
-              }]}>
+              }]}> 
                 <Text style={[styles.selectedOrderTitle, { color: colors.text.primary }]}>
                   הזמנה #{selectedOrder.id.slice(-6)}
                 </Text>
@@ -722,7 +709,7 @@ export default function ReviewsScreen() {
                     </View>
                   ))}
                 </View>
-              </View>
+              </Card>
 
               <View style={styles.ratingSection}>
                 <Text style={[styles.formLabel, { color: colors.text.primary }]}>דירוג *</Text>
