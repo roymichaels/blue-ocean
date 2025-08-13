@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     marginBottom: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   inputContainer: {
     marginBottom: 8,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   input: {
     borderWidth: 1,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   },
   helper: {
     fontSize: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
 });
 

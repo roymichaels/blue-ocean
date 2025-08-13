@@ -623,7 +623,7 @@ export default function SubcategoryScreen() {
                 value={newProduct.name}
                 onChangeText={(text) => setNewProduct({...newProduct, name: text})}
                 placeholder="הכנס שם מוצר"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -639,7 +639,7 @@ export default function SubcategoryScreen() {
                 onChangeText={(text) => setNewProduct({...newProduct, price: parseFloat(text) || 0})}
                 placeholder="הכנס מחיר"
                 keyboardType="numeric"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -655,7 +655,7 @@ export default function SubcategoryScreen() {
                 onChangeText={(text) => setNewProduct({...newProduct, originalPrice: parseFloat(text) || undefined})}
                 placeholder="הכנס מחיר מקורי"
                 keyboardType="numeric"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -696,7 +696,7 @@ export default function SubcategoryScreen() {
                 placeholder="הכנס תיאור מוצר"
                 multiline
                 numberOfLines={4}
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -767,7 +767,7 @@ export default function SubcategoryScreen() {
                 onChangeText={(text) => setNewProduct({...newProduct, stock: parseInt(text) || 0})}
                 placeholder="הכנס כמות במלאי"
                 keyboardType="numeric"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -785,7 +785,7 @@ export default function SubcategoryScreen() {
                   setNewProduct({...newProduct, badges});
                 }}
                 placeholder="הכנס תגיות מופרדות בפסיקים (למשל: חדש, מבצע, מומלץ)"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -847,7 +847,7 @@ export default function SubcategoryScreen() {
                 value={editSubcategoryData.name}
                 onChangeText={(text) => setEditSubcategoryData({ ...editSubcategoryData, name: text })}
                 placeholder="הכנס שם תת-קטגוריה"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -1178,7 +1178,7 @@ const styles = StyleSheet.create({
   favoriteButton: {
     position: 'absolute',
     top: 8,
-    left: 8,
+    start: 8,
     width: 28,
     height: 28,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -1189,7 +1189,7 @@ const styles = StyleSheet.create({
   adminActions: {
     position: 'absolute',
     top: 8,
-    right: 8,
+    end: 8,
     flexDirection: 'row',
   },
   adminActionButton: {
@@ -1209,7 +1209,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 8,
     lineHeight: 18,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   priceContainer: {
     flexDirection: 'row',
@@ -1307,7 +1307,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   formInput: {
     borderWidth: 1,
@@ -1352,7 +1352,7 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: 12,
     marginTop: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   categorySelector: {
     borderWidth: 1,
@@ -1362,7 +1362,7 @@ const styles = StyleSheet.create({
   },
   categorySelectorText: {
     fontSize: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   categorySelectorOverlay: {
     flex: 1,
@@ -1433,6 +1433,6 @@ const styles = StyleSheet.create({
   },
   pricingTierDescription: {
     fontSize: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
 });

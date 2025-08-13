@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 14,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   loader: {
     padding: 8,

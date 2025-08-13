@@ -17,7 +17,7 @@ const MessageInput: React.FC<Props> = ({ value, onChange, onSend, colors }) => {
         onChangeText={onChange}
         placeholder="Type a message"
         placeholderTextColor={colors.text.tertiary}
-        textAlign="right"
+        textAlign="end"
       />
       <TouchableOpacity onPress={onSend} style={[styles.button, { backgroundColor: colors.gold }]}> 
         <Text style={[styles.buttonText, { color: colors.text.inverse }]}>Send</Text>

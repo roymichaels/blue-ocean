@@ -211,8 +211,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   jobTitle: { fontSize: 16, marginRight: 8 },
-  jobStatus: { fontSize: 14, marginBottom: 4, textAlign: 'right' },
-  jobInfo: { fontSize: 14, marginBottom: 4, textAlign: 'right' },
+  jobStatus: { fontSize: 14, marginBottom: 4, textAlign: 'end' },
+  jobInfo: { fontSize: 14, marginBottom: 4, textAlign: 'end' },
   actionsRow: {
     flexDirection: 'row-reverse',
     justifyContent: 'flex-start',

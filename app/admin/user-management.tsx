@@ -327,7 +327,7 @@ export default function UserManagementScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor={colors.text.tertiary}
-            textAlign="right"
+            textAlign="end"
           />
         </View>
         
@@ -937,7 +937,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   activeFiltersList: {
     flexDirection: 'row',
@@ -1014,11 +1014,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 2,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   userUsername: {
     fontSize: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   userBadges: {
     flexDirection: 'row',
@@ -1053,7 +1053,7 @@ const styles = StyleSheet.create({
   },
   userDetailText: {
     fontSize: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   loadingContainer: {
     flex: 1,
@@ -1096,8 +1096,8 @@ const styles = StyleSheet.create({
   filterModalContainer: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     borderWidth: 1,
@@ -1125,7 +1125,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   userDetailItem: {
     flexDirection: 'row',
@@ -1139,7 +1139,7 @@ const styles = StyleSheet.create({
   userDetailValue: {
     fontSize: 14,
     fontWeight: '500',
-    textAlign: 'right',
+    textAlign: 'end',
   },
   dropdownContainer: {
     marginBottom: 16,
@@ -1149,7 +1149,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   dropdown: {
     flexDirection: 'row',
@@ -1167,8 +1167,8 @@ const styles = StyleSheet.create({
   dropdownMenu: {
     position: 'absolute',
     top: '100%',
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     borderWidth: 1,
     borderTopWidth: 0,
     borderBottomLeftRadius: 12,
@@ -1182,7 +1182,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   saveButton: {
     flexDirection: 'row',
@@ -1217,7 +1217,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   filterOption: {
     flexDirection: 'row',
@@ -1229,7 +1229,7 @@ const styles = StyleSheet.create({
   },
   filterOptionText: {
     fontSize: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   filterSelectedDot: {
     width: 12,

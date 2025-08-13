@@ -132,7 +132,7 @@ export default function GlobalHeader({
               placeholder={t('home.searchPlaceholder')}
               value={searchQuery}
               onChangeText={onSearchChange}
-              textAlign="right"
+              textAlign="end"
               placeholderTextColor={colors.text.tertiary}
             />
           </View>
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   badge: {
     position: 'absolute',
     top: -4,
-    left: -4,
+    start: -4,
     borderRadius: 10,
     minWidth: 20,
     height: 20,

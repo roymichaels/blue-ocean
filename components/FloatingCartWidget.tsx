@@ -8,6 +8,7 @@ import {
   ScrollView,
   Dimensions,
   Platform,
+  I18nManager,
 } from 'react-native';
 import SmartImage from './SmartImage';
 import { ShoppingCart, X, Plus, Minus } from 'lucide-react-native';
@@ -26,6 +27,7 @@ export default function FloatingCartWidget() {
   const [animatedOpacity] = useState(new Animated.Value(0));
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+  const isRTL = I18nManager.isRTL;
 
   useEffect(() => {
     const cartService = CartService.getInstance();
@@ -119,19 +121,23 @@ export default function FloatingCartWidget() {
       <TouchableOpacity style={styles.header} onPress={toggleExpanded}>
         <View style={styles.headerLeft}>
           <View style={[styles.cartIcon, { backgroundColor: colors.gold }]}>
-            <ShoppingCart size={20} color={colors.text.inverse} />
+            <ShoppingCart
+              size={20}
+              color={colors.text.inverse}
+              style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
+            />
             <View style={[styles.itemCount, { backgroundColor: colors.status.error }]}>
               <Text style={[styles.itemCountText, { color: colors.text.primary }]}>{getTotalItems()}</Text>
             </View>
           </View>
           <View style={styles.headerText}>
-            <Text style={[styles.headerTitle, { color: colors.text.primary }]}>עגלת קניות</Text>
-            <Text style={[styles.headerSubtitle, { color: colors.gold }]}>{currencySymbol}{getTotal().toFixed(2)}</Text>
+            <Text style={[styles.headerTitle, { color: colors.text.primary }]} numberOfLines={1}>עגלת קניות</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.gold }]} numberOfLines={1}>{currencySymbol}{getTotal().toFixed(2)}</Text>
           </View>
         </View>
-        
+
         <View style={styles.headerRight}>
-          <View style={styles.productPreview}>
+          <View style={[styles.productPreview, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {cartItems.slice(0, 3).map((item, index) => (
               <SmartImage
                 key={item.id}
@@ -139,7 +145,7 @@ export default function FloatingCartWidget() {
                 style={[
                   styles.previewImage,
                   {
-                    marginLeft: index > 0 ? -8 : 0,
+                    marginStart: index > 0 ? -8 : 0,
                     zIndex: 3 - index,
                     borderColor: colors.background,
                   }
@@ -149,11 +155,16 @@ export default function FloatingCartWidget() {
               />
             ))}
             {cartItems.length > 3 && (
-              <View style={[styles.moreItems, { 
-                marginLeft: -8,
-                borderColor: colors.background,
-                backgroundColor: colors.interactive.disabled
-              }]}>
+              <View
+                style={[
+                  styles.moreItems,
+                  {
+                    marginStart: -8,
+                    borderColor: colors.background,
+                    backgroundColor: colors.interactive.disabled,
+                  }
+                ]}
+              >
                 <Text style={[styles.moreItemsText, { color: colors.text.inverse }]}>+{cartItems.length - 3}</Text>
               </View>
             )}
@@ -247,8 +258,8 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 170,
-    left: 16,
-    right: 16,
+    start: 16,
+    end: 16,
     borderRadius: 16,
     zIndex: 999,
     borderWidth: 1,
@@ -273,12 +284,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginEnd: 12,
   },
   itemCount: {
     position: 'absolute',
     top: -4,
-    right: -4,
+    end: -4,
     borderRadius: 8,
     minWidth: 16,
     height: 16,
@@ -296,15 +307,15 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    textAlign: 'right',
+    textAlign: 'end',
   },
   headerSubtitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    textAlign: 'right',
+    textAlign: 'end',
   },
   headerRight: {
-    marginLeft: 12,
+    marginStart: 12,
   },
   productPreview: {
     flexDirection: 'row',
@@ -346,31 +357,31 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    marginRight: 12,
+    marginEnd: 12,
   },
   itemInfo: {
     flex: 1,
-    marginRight: 8,
+    marginEnd: 8,
   },
   itemName: {
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 2,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   itemPrice: {
     fontSize: 12,
     fontWeight: '600',
-    textAlign: 'right',
+    textAlign: 'end',
   },
   tierInfo: {
     fontSize: 10,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 8,
+    marginEnd: 8,
   },
   quantityButton: {
     width: 24,

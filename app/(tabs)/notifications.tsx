@@ -436,17 +436,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   notificationMessage: {
     fontSize: 14,
     marginBottom: 8,
     lineHeight: 20,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   notificationTime: {
     fontSize: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   readIndicator: {
     justifyContent: 'center',

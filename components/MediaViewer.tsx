@@ -81,7 +81,7 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
       <TouchableOpacity
         style={[
           styles.closeButton,
-          { top: insets.top + 16, right: insets.right + 16 },
+          { top: insets.top + 16, end: insets.end + 16 },
         ]}
         onPress={onClose}
       >
@@ -170,8 +170,8 @@ const styles = StyleSheet.create({
   indicators: {
     position: 'absolute',
     bottom: 100,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     flexDirection: 'row',
     justifyContent: 'center',
   },

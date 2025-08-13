@@ -52,11 +52,11 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   label: {
     fontSize: 14,
-    textAlign: 'right',
+    textAlign: 'end',
   },
 });
 

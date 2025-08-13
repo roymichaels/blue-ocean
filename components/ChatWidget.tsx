@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: 16,
-    right: 16,
+    end: 16,
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -819,7 +819,7 @@ const styles = StyleSheet.create({
   unreadBadge: {
     position: 'absolute',
     top: 4,
-    right: 4,
+    end: 4,
     borderRadius: 8,
     paddingHorizontal: 4,
     paddingVertical: 2,

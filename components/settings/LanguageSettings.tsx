@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     marginBottom: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   infoBox: {
     borderRadius: 8,

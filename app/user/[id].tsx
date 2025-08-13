@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   detailItem: {
     flexDirection: 'row',
@@ -354,12 +354,12 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: 14,
     marginBottom: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   detailValue: {
     fontSize: 16,
     fontWeight: '500',
-    textAlign: 'right',
+    textAlign: 'end',
   },
   actionsContainer: {
     marginBottom: 24,

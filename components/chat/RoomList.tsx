@@ -48,13 +48,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   name: {
-    textAlign: 'right',
+    textAlign: 'end',
     fontSize: 16,
   },
   badge: {
     position: 'absolute',
     top: 8,
-    left: 8,
+    start: 8,
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 2,

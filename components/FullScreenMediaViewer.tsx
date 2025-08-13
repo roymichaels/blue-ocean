@@ -209,7 +209,7 @@ export default function FullScreenMediaViewer({
               <TouchableOpacity
                 style={[
                   styles.exitButton,
-                  { top: insets.top + 16, right: insets.right + 16 },
+                  { top: insets.top + 16, end: insets.end + 16 },
                 ]}
                 onPress={onClose}
               >
@@ -346,8 +346,8 @@ const styles = StyleSheet.create({
   topControls: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -396,16 +396,16 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -30 }],
   },
   navButtonLeft: {
-    left: 16,
+    start: 16,
   },
   navButtonRight: {
-    right: 16,
+    end: 16,
   },
   bottomControls: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     paddingVertical: 16,
     paddingHorizontal: 16,
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
   exitButton: {
     position: 'absolute',
     top: 16,
-    right: 16,
+    end: 16,
     width: 44,
     height: 44,
     borderRadius: 22,

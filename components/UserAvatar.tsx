@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   adminIndicator: {
     position: 'absolute',
     top: -2,
-    right: -2,
+    end: -2,
     width: 12,
     height: 12,
     borderRadius: 6,
@@ -324,11 +324,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 2,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   userRole: {
     fontSize: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   divider: {
     height: 1,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 12,
     fontWeight: '500',
-    textAlign: 'right',
+    textAlign: 'end',
     flex: 1,
   },
 });
