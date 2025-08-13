@@ -6,9 +6,9 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  Image,
   Alert,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { X, Heart, ShoppingCart, Trash2 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import CartService from '../services/cart';
@@ -72,7 +72,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
       }]}
       onPress={() => viewProduct(item.productId)}
     >
-      <Image source={{ uri: item.product.images[0] }} style={styles.productImage} />
+      <SmartImage uri={item.product.images[0]} style={styles.productImage} contentFit="cover" cachePolicy="disk" />
       
       <View style={styles.productInfo}>
         <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={2}>

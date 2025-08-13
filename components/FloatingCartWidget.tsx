@@ -5,11 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Image,
   ScrollView,
   Dimensions,
   Platform,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { ShoppingCart, X, Plus, Minus } from 'lucide-react-native';
 import CartService from '../services/cart';
 import { CartItem } from '../types';
@@ -133,17 +133,19 @@ export default function FloatingCartWidget() {
         <View style={styles.headerRight}>
           <View style={styles.productPreview}>
             {cartItems.slice(0, 3).map((item, index) => (
-              <Image
+              <SmartImage
                 key={item.id}
-                source={{ uri: item.product.images[0] }}
+                uri={item.product.images[0]}
                 style={[
                   styles.previewImage,
-                  { 
+                  {
                     marginLeft: index > 0 ? -8 : 0,
                     zIndex: 3 - index,
                     borderColor: colors.background,
                   }
                 ]}
+                contentFit="cover"
+                cachePolicy="disk"
               />
             ))}
             {cartItems.length > 3 && (
@@ -170,9 +172,11 @@ export default function FloatingCartWidget() {
               <View key={item.id} style={[styles.cartItem, { 
                 borderBottomColor: colors.border.secondary 
               }]}>
-                <Image 
-                  source={{ uri: item.product.images[0] }} 
-                  style={styles.itemImage} 
+                <SmartImage
+                  uri={item.product.images[0]}
+                  style={styles.itemImage}
+                  contentFit="cover"
+                  cachePolicy="disk"
                 />
                 
                 <View style={styles.itemInfo}>

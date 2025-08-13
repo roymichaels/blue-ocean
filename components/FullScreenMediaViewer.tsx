@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
-  Image,
   TouchableOpacity,
   TouchableWithoutFeedback,
   Dimensions,
@@ -12,6 +11,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, ChevronLeft, ChevronRight, Share2, Download } from 'lucide-react-native';
 import { PanGestureHandler, PinchGestureHandler, State } from 'react-native-gesture-handler';
@@ -309,10 +309,11 @@ export default function FullScreenMediaViewer({
                 <Animated.View style={styles.gestureContainer}>
                   <PanGestureHandler onGestureEvent={panHandler}>
                     <Animated.View style={[styles.imageWrapper, animatedStyle]}>
-                      <Image 
-                        source={{ uri: currentMedia.uri }} 
+                      <SmartImage
+                        uri={currentMedia.uri}
                         style={styles.media}
-                        resizeMode="contain"
+                        contentFit="contain"
+                        cachePolicy="disk"
                       />
                     </Animated.View>
                   </PanGestureHandler>
