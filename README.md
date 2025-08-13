@@ -38,6 +38,18 @@ minimal set of keys is supported. Copy `.env.example` to `.env` and set:
 
 These values are read at build time and cannot be changed from the UI.
 
+### Wallet Allowlist & Waku Bootstrap
+
+Admin privileges are controlled by a list of wallet addresses stored in the
+on-chain settings contract. Use the **Admin → Settings** screen or
+`SettingsAgent.setAdmins()` to add or remove addresses. Only wallets in this
+allowlist can manage users, products or other system settings.
+
+The app connects to the peer-to-peer network through Waku bootstrap nodes
+provided in `EXPO_PUBLIC_WAKU_BOOTSTRAP`. Supply a comma‑separated list of Waku
+multiaddrs in the `.env` file so agents can discover peers. Leaving the value
+empty runs the app in offline mode with no Waku connectivity.
+
 ### TON Smart Contracts
 
 Smart contracts written in Tact live in `contracts/ton`. The helper scripts in
@@ -104,6 +116,14 @@ Metro also maps `react-native/Libraries/Utilities/HMRClient` to a stub
 `EmptyHMRClient.ts` with no-op methods so bundling succeeds even when the native
 implementation isn't available.
 
+### Debugging & Logs
+
+Call `debugLog()` for development-only messages. When
+`EXPO_PUBLIC_DEBUG_LOGS=true` is set in `.env`, these messages are printed using
+`console.debug`; otherwise they are suppressed. `errorLog()` always outputs
+errors regardless of the flag. The value is evaluated at build time, so rebuild
+after changing it.
+
 ### Session Persistence
 
 User sessions are stored using `@react-native-async-storage/async-storage`.
@@ -164,7 +184,10 @@ deploying the static build, verify the manifest is accessible:
 curl https://<your-site>/tonconnect-manifest.json
 ```
 
-### Web (IPFS-safe) build
+### Web/IPFS Deployment
+
+Use the IPFS-friendly Vite build to create static assets with relative paths so
+the app works from any gateway.
 
 - **Build:**
 
@@ -180,7 +203,8 @@ curl https://<your-site>/tonconnect-manifest.json
 
   Then open `http://localhost:4173/` and navigate within the app (no deep links).
 
-- **Upload:** Manually pin the `dist/` folder to Pinata.
+- **Upload:** Manually pin the `dist/` directory to your pinning service (e.g.,
+  Pinata) to publish it to IPFS.
 
 Deep links require additional rewrite support.
 
