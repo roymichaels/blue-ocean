@@ -2,6 +2,15 @@
 
 This Expo project uses React Native with the Expo Router.
 
+## Quickstart
+
+```sh
+yarn install
+yarn dev        # mobile
+yarn start      # web
+yarn test
+```
+
 ## Setup
 
 1. **Install dependencies**
@@ -192,27 +201,32 @@ deploying the static build, verify the manifest is accessible:
 curl https://<your-site>/tonconnect-manifest.json
 ```
 
-### Web/IPFS Deployment
+### IPFS Deployment Guide
 
 Use the IPFS-friendly Vite build to create static assets with relative paths so
 the app works from any gateway.
 
-- **Build:**
+1. **Build**
 
-  ```sh
-  npm run web:release
-  ```
+   ```sh
+   npm run web:release
+   ```
 
-- **Local preview:**
+2. **Preview locally**
 
-  ```sh
-  npm run web:preview
-  ```
+   ```sh
+   npm run web:preview
+   ```
 
-  Then open `http://localhost:4173/` and navigate within the app (no deep links).
+   Then open `http://localhost:4173/` and navigate within the app (no deep links).
 
-- **Upload:** Manually pin the `dist/` directory to your pinning service (e.g.,
-  Pinata) to publish it to IPFS.
+3. **Upload to IPFS**
+
+   ```sh
+   ipfs add -r dist
+   ```
+
+   Pin the returned CID using your pinning service (e.g., Pinata) to publish it.
 
 #### Pin `dist/` Checklist
 
@@ -228,6 +242,13 @@ the app works from any gateway.
 3. Navigate to a route like `/#/product/1` to confirm hash routing
 
 Deep links require additional rewrite support.
+
+## Debugging Tips
+
+- Set `EXPO_PUBLIC_DEBUG_LOGS=true` to emit verbose agent logs.
+- Run `expo start -c` to clear caches when Metro behaves oddly.
+- Use React Native Debugger or Chrome DevTools for network inspection.
+- Prefix commands with `DEBUG=waku:*` to trace Waku network traffic.
 
 ## Troubleshooting
 
@@ -263,6 +284,12 @@ yarn test
 ```
 
 Run `yarn install` before executing `yarn test` so Jest and other dependencies are present.
+
+## Runbooks & Checklists
+
+- [Incident Runbook](docs/incident-runbook.md)
+- [QA Checklist](docs/checklists/qa.md)
+- [Rollout Checklist](docs/checklists/rollout.md)
 
 ## Apple Pay Integration
 
