@@ -1,8 +1,16 @@
 import * as nacl from 'tweetnacl';
 import { encryptShippingInfo, decryptShippingInfo } from '../utils/shippingCrypto';
+import { getEd25519KeyPair } from '../services/localIdentity';
+
+jest.mock('../services/localIdentity');
 
 const seller = nacl.sign.keyPair();
 const sellerPub = Buffer.from(seller.publicKey).toString('hex');
+const buyer = nacl.sign.keyPair();
+(getEd25519KeyPair as jest.Mock).mockResolvedValue({
+  privateKey: buyer.secretKey,
+  publicKey: buyer.publicKey,
+});
 
 describe('shippingCrypto', () => {
   it('performs ECDH round trip for shipping info', async () => {

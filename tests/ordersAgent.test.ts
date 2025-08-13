@@ -3,7 +3,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import { Order } from '../types';
 import { decryptOrderShipping } from '../services/sellerTools';
 import { getSellerPublicKey } from '../services/sellerRegistry';
-import { getPrivateKey } from '../services/localIdentity';
+import { getEd25519KeyPair } from '../services/localIdentity';
 
 const mockStore: Record<string, any> = {};
 
@@ -46,7 +46,10 @@ jest.mock('../services/tonAuth', () => ({
 const sellerKey = nacl.sign.keyPair();
 const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
 (getSellerPublicKey as jest.Mock).mockResolvedValue(sellerPubEd);
-(getPrivateKey as jest.Mock).mockResolvedValue(sellerKey.secretKey);
+(getEd25519KeyPair as jest.Mock).mockResolvedValue({
+  privateKey: sellerKey.secretKey,
+  publicKey: sellerKey.publicKey,
+});
 
 const ordersAgent = require('../agents/orders-agent').default;
 const notificationsAgent = require('../agents/notifications-agent');

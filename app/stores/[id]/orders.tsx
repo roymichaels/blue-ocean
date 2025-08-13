@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { debugLog } from '@/utils/logger';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { listOrdersBySeller } from '../../../services/tonOrders';
@@ -13,11 +14,11 @@ export default function StoreOrdersScreen() {
   const address = useTonAddress();
 
   const handlePress = (order: Order) => {
-    console.log('Pressed order', order.id);
+    debugLog('Pressed order', order.id);
   };
 
   const handleLongPress = (order: Order) => {
-    console.log('Long pressed order', order.id);
+    debugLog('Long pressed order', order.id);
   };
 
   useEffect(() => {

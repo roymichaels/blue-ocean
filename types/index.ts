@@ -225,8 +225,7 @@ export interface Order {
   shippingAddress: ShippingAddress;
   shipAddrEnc?: {
     cipher: string;
-    nonce: string;
-    ephem: string;
+    from: string;
   };
   paymentMethod: 'cash_on_delivery' | 'ton';
   buyerAddress?: string;

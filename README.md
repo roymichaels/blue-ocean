@@ -23,6 +23,10 @@ This Expo project uses React Native with the Expo Router.
 
    When the app loads, tap the wallet button to open the TonConnect modal. Scan the QR code with a wallet like Tonkeeper or use an injected extension to link your account.
 
+### TON Address Format
+
+Wallet addresses must use the standard TON formatting recognized by `@ton/core`. If an invalid address is provided, the app will display an "Invalid TON address" error and refuse to store it.
+
 All data is ephemeral and synchronized between peers over Waku; no external services are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
 
 ### Development
