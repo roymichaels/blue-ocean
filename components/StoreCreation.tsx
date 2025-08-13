@@ -7,6 +7,8 @@ import tonAuth from '../services/tonAuth';
 import codeBoc from '../contracts/store-nft-code.boc';
 import dataBoc from '../contracts/store-nft-data.boc';
 import { getTonWeb } from '../services/tonProvider';
+import validateTonAddress from '../utils/validateTonAddress';
+import { errorLog } from '../utils/logger';
 
 const tonweb = getTonWeb();
 
@@ -52,12 +54,18 @@ const StoreCreation: React.FC = () => {
       await tonAuth.openModal();
       return;
     }
+    if (!validateTonAddress(owner)) {
+      errorLog('Invalid TON address');
+      Alert.alert('Invalid address', 'Please connect a valid TON wallet.');
+      return;
+    }
     try {
       const nftId = await deployStoreNFT();
       const id = Date.now().toString();
       await storesAgent.add({ id, name, owner, nftId });
       setName('');
-    } catch {
+    } catch (err) {
+      errorLog('Store mint failed', err);
       // Deployment failed or was rejected
     }
   };

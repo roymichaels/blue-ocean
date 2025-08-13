@@ -1,44 +1,42 @@
-import * as nacl from 'tweetnacl';
-import * as ed2curve from 'ed2curve';
 import { ShippingAddress } from '../types';
-import { getPrivateKey } from '../services/localIdentity';
+import { getEd25519KeyPair } from '../services/localIdentity';
+import { deriveSharedKey, aesEncrypt, aesDecrypt, deriveChatSalt } from './encryption';
+import { getPublicKey } from '@noble/ed25519';
 
 export interface EncryptedShipping {
   cipher: string;
-  nonce: string;
-  ephem: string;
+  from: string;
 }
 
 export async function encryptShippingInfo(
   info: ShippingAddress,
   sellerPublicKey: string,
 ): Promise<EncryptedShipping> {
-  const sellerPubX = ed2curve.convertPublicKey(Buffer.from(sellerPublicKey, 'hex'));
-  if (!sellerPubX) throw new Error('invalid seller key');
-  const ephem = nacl.box.keyPair();
-  const nonce = nacl.randomBytes(nacl.box.nonceLength);
-  const msg = Buffer.from(JSON.stringify(info));
-  const cipher = nacl.box(msg, nonce, sellerPubX, ephem.secretKey);
-  return {
-    cipher: Buffer.from(cipher).toString('base64'),
-    nonce: Buffer.from(nonce).toString('base64'),
-    ephem: Buffer.from(ephem.publicKey).toString('base64'),
-  };
+  const { privateKey, publicKey } = await getEd25519KeyPair();
+  const from = Buffer.from(publicKey).toString('hex');
+  const salt = deriveChatSalt(from, sellerPublicKey);
+  const key = await deriveSharedKey(privateKey, sellerPublicKey, 'shipping', salt);
+  const cipher = await aesEncrypt(JSON.stringify(info), key);
+  return { cipher, from };
 }
 
 export async function decryptShippingInfo(
   enc: EncryptedShipping,
   privKey?: Uint8Array,
 ): Promise<ShippingAddress | null> {
-  const secret = privKey ?? (await getPrivateKey());
-  const privX = ed2curve.convertSecretKey(secret);
-  if (!privX) return null;
-  const decrypted = nacl.box.open(
-    Buffer.from(enc.cipher, 'base64'),
-    Buffer.from(enc.nonce, 'base64'),
-    Buffer.from(enc.ephem, 'base64'),
-    privX,
-  );
-  if (!decrypted) return null;
-  return JSON.parse(Buffer.from(decrypted).toString());
+  let myPriv: Uint8Array;
+  let myPubHex: string;
+  if (privKey) {
+    myPriv = privKey;
+    const pub = await getPublicKey(privKey);
+    myPubHex = Buffer.from(pub).toString('hex');
+  } else {
+    const kp = await getEd25519KeyPair();
+    myPriv = kp.privateKey;
+    myPubHex = Buffer.from(kp.publicKey).toString('hex');
+  }
+  const salt = deriveChatSalt(enc.from, myPubHex);
+  const key = await deriveSharedKey(myPriv, enc.from, 'shipping', salt);
+  const dec = await aesDecrypt(enc.cipher, key);
+  return JSON.parse(dec);
 }
