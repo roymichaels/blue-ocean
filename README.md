@@ -248,6 +248,10 @@ initStripe({
 
 Refer to the Expo Stripe documentation for full setup details.
 
+## Legacy
+
+The previous `supabase/` directory and its SQL schema have been removed.
+All data is handled in-memory and synchronized over Waku.
 
 ## License
 
