@@ -1,73 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  MessageCircle,
-  Send,
-  X,
-  Minimize2,
-  Search,
-  ChevronLeft,
-  Mic,
-  MicOff,
-  Play,
-  Pause,
-} from 'lucide-react-native';
-import * as Audio from 'expo-audio';
-// MatrixService has been removed
-import DatabaseService from '../services/database';
-import PinataService from '../services/pinata';
-import MediaService from '../services/media';
-import { debugLog } from '../utils/logger';
-import { ChatMessage, ChatRoom, User } from '../types';
-import { decryptMessage } from '../utils/chatCrypto';
-import { useWakuClient } from '../hooks/useWakuClient';
-import { useAuth } from './AuthContext';
+import { MessageCircle, X } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import { isChatConfigured } from '../services/chatConfig';
-import InfoModal from './InfoModal';
-import UserProfileModal from './UserProfileModal';
-import SettingsAgent from '../agents/settings-agent';
-import chatAgent from '../agents/chat-agent';
-
-const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-const CHAT_ONBOARDED_KEY = 'chatOnboarded';
-const CHAT_ROOM_ITEM_HEIGHT = 72;
-const MESSAGE_ITEM_HEIGHT = 80;
-
+import { useAuth } from './AuthContext';
+import useChatRooms from '../hooks/useChatRooms';
+import useChatMessages from '../hooks/useChatMessages';
+import RoomList from './chat/RoomList';
+import MessageList from './chat/MessageList';
+import MessageInput from './chat/MessageInput';
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
-  const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState<Audio.AudioRecorder | null>(null);
-  const [recordingDuration, setRecordingDuration] = useState(0);
-  const [playingAudio, setPlayingAudio] = useState<{
-    [key: string]: Audio.AudioPlayer;
-  }>({});
-  const [showReactions, setShowReactions] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<
-    { id: string; displayName: string; isAppUser: boolean }[]
-  >([]);
-  const { isAdmin, isDriver, isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const { t } = useLanguage();
   const recordingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -786,957 +730,118 @@ const loadOrCreateDefaultRoom = async () => {
   const navigateToUserProfile = async (userId: string) => {
     if (!isAdmin && !isDriver) return;
 
-    try {
-      if (isMounted.current) {
-        setIsOpen(false);
-        setProfileUserId(userId);
-        setProfileModalVisible(true);
-      }
-    } catch (error) {
-      console.error('Error opening user profile modal:', error);
+  const { chatRooms, selectedRoom, setSelectedRoom, loadChatRooms, unreadTotal } =
+    useChatRooms(isOpen);
+  const { messages, newMessage, setNewMessage, sendMessage } = useChatMessages(
+    selectedRoom,
+    user,
+    isAdmin,
+  );
+
+  const toggleOpen = () => {
+    const next = !isOpen;
+    setIsOpen(next);
+    if (next) {
+      loadChatRooms();
     }
   };
 
-  const backToRoomList = () => {
-    if (isMounted.current) {
-      setSelectedRoom(null);
-    }
-  };
-
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const renderMessage = (item: ChatMessage) => (
-    <Pressable
-      key={item.id}
-      style={[
-        styles.messageContainer,
-        item.isAdmin
-          ? [
-              styles.adminMessage,
-              {
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary,
-              },
-            ]
-          : [
-              styles.userMessage,
-              {
-                backgroundColor: colors.gold,
-              },
-            ],
-      ]}
-      onLongPress={() => setShowReactions(item.id)}
-    >
-      <View style={styles.messageHeader}>
-        <TouchableOpacity
-          onPress={() => navigateToUserProfile(item.senderId)}
-          disabled={!(isAdmin || isDriver)}
-        >
-          <Text
-            style={[
-              styles.senderName,
-              (isAdmin || isDriver) && styles.clickableSender,
-            ]}
-          >
-            {item.senderName}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {item.audioUri ? (
-        <View style={styles.voiceMessageContainer}>
-          <TouchableOpacity
-            style={[
-              styles.playButton,
-              { backgroundColor: 'rgba(255,255,255,0.2)' },
-            ]}
-            onPress={() => playAudio(item.id, item.audioUri!)}
-          >
-            {playingAudio[item.id] ? (
-              <Pause
-                size={16}
-                color={item.isAdmin ? colors.text.primary : colors.text.inverse}
-              />
-            ) : (
-              <Play
-                size={16}
-                color={item.isAdmin ? colors.text.primary : colors.text.inverse}
-              />
-            )}
-          </TouchableOpacity>
-          <View style={styles.voiceWaveform}>
-            <Text
-              style={[
-                styles.voiceDuration,
-                item.isAdmin
-                  ? { color: colors.text.primary }
-                  : { color: colors.text.inverse },
-              ]}
-            >
-              🎵 {formatDuration(item.audioDuration || 0)}
-            </Text>
-          </View>
-        </View>
-      ) : (
-        <Text
-          style={[
-            styles.messageText,
-            item.isAdmin
-              ? { color: colors.text.primary }
-              : { color: colors.text.inverse },
-          ]}
-        >
-          {item.message}
-        </Text>
-      )}
-
-      {item.reactions && Object.keys(item.reactions).length > 0 && (
-        <View style={styles.reactionsContainer}>
-          {Object.entries(item.reactions).map(([emoji, userIds]) => (
-            <TouchableOpacity
-              key={emoji}
-              style={[
-                styles.reactionBubble,
-                { backgroundColor: 'rgba(255,255,255,0.1)' },
-              ]}
-              onPress={() => addReaction(item.id, emoji)}
-            >
-              <Text style={styles.reactionEmoji}>{emoji}</Text>
-              <Text
-                style={[styles.reactionCount, { color: colors.text.secondary }]}
-              >
-                {userIds.length}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
-      <Text style={styles.messageTime}>
-        {new Date(item.timestamp).toLocaleTimeString('he-IL', {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </Text>
-
-      {/* Reaction Picker */}
-      {showReactions === item.id && (
-        <View
-          style={[
-            styles.reactionPicker,
-            { backgroundColor: colors.surface.elevated },
-          ]}
-        >
-          {EMOJI_REACTIONS.map((emoji) => (
-            <TouchableOpacity
-              key={emoji}
-              style={styles.reactionOption}
-              onPress={() => addReaction(item.id, emoji)}
-            >
-              <Text style={styles.reactionOptionEmoji}>{emoji}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </Pressable>
-  );
-
-  const renderChatRoom = (item: ChatRoom) => (
-    <TouchableOpacity
-      key={item.id}
-      style={[
-        styles.chatRoomItem,
-        {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary,
-        },
-      ]}
-      onPress={() => openChat(item)}
-    >
-      <TouchableOpacity
-        style={[styles.userAvatar, { backgroundColor: colors.gold }]}
-        onPress={() => navigateToUserProfile(item.userId)}
-      >
-        <Text style={[styles.userInitial, { color: colors.text.inverse }]}>
-          {item.userName ? item.userName.charAt(0).toUpperCase() : '?'}
-        </Text>
-      </TouchableOpacity>
-
-      <View style={styles.chatRoomInfo}>
-        <View style={styles.chatRoomHeader}>
-          <TouchableOpacity onPress={() => navigateToUserProfile(item.userId)}>
-            <Text
-              style={[
-                styles.userName,
-                styles.clickableUserName,
-                { color: colors.text.primary },
-              ]}
-            >
-              {item.userName}
-            </Text>
-          </TouchableOpacity>
-          <Text style={styles.messageTime}>
-            {new Date(item.lastMessageTime).toLocaleTimeString('he-IL', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </Text>
-        </View>
-        <Text
-          style={[styles.lastMessage, { color: colors.text.secondary }]}
-          numberOfLines={1}
-        >
-          {item.lastMessage}
-        </Text>
-      </View>
-
-      {item.unreadCount > 0 && (
-        <View
-          style={[styles.unreadBadge, { backgroundColor: colors.status.error }]}
-        >
-          <Text style={[styles.unreadCount, { color: colors.text.primary }]}>
-            {item.unreadCount}
-          </Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-
-  const renderSearchResult = (item: {
-    id: string;
-    displayName: string;
-    isAppUser: boolean;
-  }) => (
-    <TouchableOpacity
-      key={item.id}
-      style={[
-        styles.chatRoomItem,
-        {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary,
-        },
-      ]}
-      onPress={() => openSearchResult(item)}
-    >
-      <View style={[styles.userAvatar, { backgroundColor: colors.gold }]}>
-        <Text style={[styles.userInitial, { color: colors.text.inverse }]}>
-          {item.displayName ? item.displayName.charAt(0).toUpperCase() : '?'}
-        </Text>
-      </View>
-      <View style={styles.chatRoomInfo}>
-        <View style={styles.chatRoomHeader}>
-          <Text style={[styles.userName, { color: colors.text.primary }]}>
-            {item.displayName}
-          </Text>
-        </View>
-        <Text style={[styles.userTypeLabel, { color: colors.text.secondary }]}>
-          {item.isAppUser ? t('chat.appUser') : t('chat.matrixOnly')}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const filteredRooms = chatRooms.filter(
-    (room) =>
-      room.userName &&
-      room.userName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Only show chat widget for logged-in users
-  if (!isLoggedIn) {
-    return null;
-  }
+  if (!isLoggedIn) return null;
 
   return (
     <>
-      {/* Chat Widget Button - Fixed to right side for RTL */}
       <TouchableOpacity
-        style={[styles.chatButton, { backgroundColor: colors.gold }]}
-        onPress={() => setIsOpen(true)}
+        style={[styles.fab, { backgroundColor: colors.gold }]}
+        onPress={toggleOpen}
       >
-        <MessageCircle size={24} color={colors.text.inverse} />
-        {unreadTotal > 0 && !isOpen && (
-          <View
-            style={[
-              styles.widgetUnreadBadge,
-              { backgroundColor: colors.status.error },
-            ]}
-          >
-            <Text
-              style={[styles.widgetUnreadText, { color: colors.text.primary }]}
-            >
-              {unreadTotal}
-            </Text>
+        <MessageCircle color={colors.text.inverse} />
+        {unreadTotal > 0 && (
+          <View style={[styles.unreadBadge, { backgroundColor: colors.danger }]}>
+            <Text style={styles.unreadText}>{unreadTotal}</Text>
           </View>
         )}
       </TouchableOpacity>
-
-      {/* Chat Modal */}
-      <Modal
-        visible={isOpen}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setIsOpen(false)}
-      >
-        <SafeAreaView
-          style={[styles.chatContainer, { backgroundColor: colors.background }]}
-        >
-          {/* Chat Header */}
-          <View
-            style={[
-              styles.chatHeader,
-              {
-                borderBottomColor: colors.border.primary,
-                backgroundColor: colors.gold,
-              },
-            ]}
-          >
-            {(isAdmin || isDriver) && selectedRoom && (
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={backToRoomList}
-              >
-                <ChevronLeft size={24} color={colors.text.inverse} />
-              </TouchableOpacity>
-            )}
-            <View style={styles.headerContent}>
-              <Text style={[styles.chatTitle, { color: colors.text.inverse }]}>
-                {isAdmin || isDriver
-                  ? selectedRoom
-                    ? selectedRoom.userName
-                    : t('chat.adminChat')
-                  : t('chat.customerSupport')}
-              </Text>
-              <Text style={styles.chatSubtitle}>
-                {isAdmin || isDriver
-                  ? selectedRoom
-                    ? t('chat.customerSupportChat')
-                    : t('chat.selectChatToStart')
-                  : t('chat.chatWithTeam')}
-              </Text>
+      <Modal visible={isOpen} animationType="slide">
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.border.primary }]}> 
+            <Text style={[styles.modalTitle, { color: colors.text.primary }]}>Chat</Text>
+            <TouchableOpacity onPress={toggleOpen}>
+              <X color={colors.text.primary} size={24} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.content}>
+            <View style={styles.roomList}>
+              <RoomList
+                rooms={chatRooms}
+                selectedRoom={selectedRoom}
+                onSelect={setSelectedRoom}
+                colors={colors}
+              />
             </View>
-            <View style={styles.headerButtons}>
-              <TouchableOpacity
-                onPress={() => setIsMinimized(!isMinimized)}
-                style={styles.headerButton}
-              >
-                <Minimize2 size={20} color={colors.text.inverse} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setIsOpen(false);
-                  setSelectedRoom(null);
-                  setShowReactions(null);
-                }}
-                style={styles.headerButton}
-              >
-                <X size={20} color={colors.text.inverse} />
-              </TouchableOpacity>
+            <View style={styles.chatArea}>
+              <MessageList messages={messages} colors={colors} />
+              <MessageInput
+                value={newMessage}
+                onChange={setNewMessage}
+                onSend={sendMessage}
+                colors={colors}
+              />
             </View>
           </View>
-
-          {!isMinimized && (
-            <KeyboardAvoidingView
-              style={styles.chatContent}
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            >
-              {(isAdmin || isDriver) && !selectedRoom ? (
-                // Admin Chat List View
-                <>
-                  {/* Search */}
-                  <View
-                    style={[
-                      styles.searchContainer,
-                      {
-                        backgroundColor: colors.surface.primary,
-                        borderColor: colors.border.primary,
-                      },
-                    ]}
-                  >
-                    <Search size={20} color="#999" />
-                    <TextInput
-                      style={[
-                        styles.searchInput,
-                        { color: colors.text.primary },
-                      ]}
-                      placeholder={t('chat.searchUsers')}
-                      value={searchQuery}
-                      onChangeText={setSearchQuery}
-                      textAlign="right"
-                      placeholderTextColor={colors.text.tertiary}
-                    />
-                  </View>
-
-                  {/* Results / Chat Rooms List */}
-                  {searchQuery.trim() ? (
-                    <FlatList
-                      data={searchResults}
-                      renderItem={({ item }) => renderSearchResult(item)}
-                      keyExtractor={(item) => item.id}
-                      style={styles.chatRoomsList}
-                      showsVerticalScrollIndicator={false}
-                      getItemLayout={(_, index) => ({
-                        length: CHAT_ROOM_ITEM_HEIGHT,
-                        offset: CHAT_ROOM_ITEM_HEIGHT * index,
-                        index,
-                      })}
-                      ListEmptyComponent={
-                        <View style={styles.emptyContainer}>
-                          <MessageCircle
-                            size={60}
-                            color={colors.interactive.disabled}
-                          />
-                          <Text
-                            style={[
-                              styles.emptyText,
-                              { color: colors.text.secondary },
-                            ]}
-                          >
-                            {t('chat.noUsersFound')}
-                          </Text>
-                        </View>
-                      }
-                    />
-                  ) : (
-                    <FlatList
-                      data={filteredRooms}
-                      renderItem={({ item }) => renderChatRoom(item)}
-                      keyExtractor={(item) => item.id}
-                      style={styles.chatRoomsList}
-                      showsVerticalScrollIndicator={false}
-                      getItemLayout={(_, index) => ({
-                        length: CHAT_ROOM_ITEM_HEIGHT,
-                        offset: CHAT_ROOM_ITEM_HEIGHT * index,
-                        index,
-                      })}
-                      ListEmptyComponent={
-                        <View style={styles.emptyContainer}>
-                          <MessageCircle
-                            size={60}
-                            color={colors.interactive.disabled}
-                          />
-                          <Text
-                            style={[
-                              styles.emptyText,
-                              { color: colors.text.secondary },
-                            ]}
-                          >
-                            {t('chat.noChatRooms')}
-                          </Text>
-                        </View>
-                      }
-                    />
-                  )}
-                </>
-              ) : (
-                // Chat Messages View
-                <>
-                  {/* Messages List */}
-                  <FlatList
-                    ref={messagesEndRef}
-                    data={messages}
-                    renderItem={({ item }) => renderMessage(item)}
-                    keyExtractor={(item) => item.id}
-                    inverted
-                    style={styles.messagesList}
-                    showsVerticalScrollIndicator={false}
-                    getItemLayout={(_, index) => ({
-                      length: MESSAGE_ITEM_HEIGHT,
-                      offset: MESSAGE_ITEM_HEIGHT * index,
-                      index,
-                    })}
-                    ListEmptyComponent={
-                      <View style={styles.emptyMessagesContainer}>
-                        <Text
-                          style={[
-                            styles.emptyMessagesText,
-                            { color: colors.text.secondary },
-                          ]}
-                        >
-                          {t('chat.noMessagesYet')}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.emptyMessagesSubtext,
-                            { color: colors.text.tertiary },
-                          ]}
-                        >
-                          {t('chat.startConversation')}
-                        </Text>
-                      </View>
-                    }
-                  />
-
-                  {/* Message Input */}
-                  <View
-                    style={[
-                      styles.inputContainer,
-                      {
-                        borderTopColor: colors.border.primary,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  >
-                    {isRecording ? (
-                      <View
-                        style={[
-                          styles.recordingContainer,
-                          { backgroundColor: colors.status.error },
-                        ]}
-                      >
-                        <TouchableOpacity
-                          style={styles.stopRecordingButton}
-                          onPress={stopRecording}
-                        >
-                          <MicOff size={20} color={colors.text.inverse} />
-                        </TouchableOpacity>
-                        <View style={styles.recordingInfo}>
-                          <Text
-                            style={[
-                              styles.recordingText,
-                              { color: colors.text.inverse },
-                            ]}
-                          >
-                            🔴 Recording... {formatDuration(recordingDuration)}
-                          </Text>
-                        </View>
-                      </View>
-                    ) : (
-                      <>
-                        <TextInput
-                          style={[
-                            styles.messageInput,
-                            {
-                              borderColor: colors.border.primary,
-                              backgroundColor: colors.surface.primary,
-                              color: colors.text.primary,
-                            },
-                          ]}
-                          value={newMessage}
-                          onChangeText={setNewMessage}
-                          placeholder={t('chat.typeMessage')}
-                          multiline
-                          maxLength={500}
-                          textAlign="right"
-                          placeholderTextColor={colors.text.tertiary}
-                        />
-                        {Platform.OS !== 'web' && (
-                          <TouchableOpacity
-                            style={[
-                              styles.micButton,
-                              {
-                                backgroundColor: colors.surface.primary,
-                                borderColor: colors.border.primary,
-                                opacity: chatConfigOk ? 1 : 0.5,
-                              },
-                            ]}
-                            onPress={startRecording}
-                            disabled={!chatConfigOk}
-
-                          >
-                            <Mic size={20} color={colors.gold} />
-                          </TouchableOpacity>
-                        )}
-                        <TouchableOpacity
-                          style={[
-                            styles.sendButton,
-                            {
-                              backgroundColor:
-                                newMessage.trim() && !isSending && chatConfigOk
-                                  ? colors.gold
-                                  : colors.interactive.disabled,
-                            },
-                          ]}
-                          onPress={sendMessage}
-                          disabled={!newMessage.trim() || isSending || !chatConfigOk}
-                        >
-                          <Send size={20} color={colors.text.inverse} />
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </View>
-                </>
-              )}
-            </KeyboardAvoidingView>
-          )}
         </SafeAreaView>
       </Modal>
-
-      {/* Reaction Picker Overlay */}
-      {showReactions && (
-        <TouchableOpacity
-          style={styles.reactionOverlay}
-          activeOpacity={1}
-          onPress={() => setShowReactions(null)}
-        />
-      )}
-
-      <UserProfileModal
-        visible={profileModalVisible}
-        userId={profileUserId || ''}
-        isAdmin={isAdmin || isDriver}
-        onMessage={messageUser}
-        onClose={() => {
-          setProfileModalVisible(false);
-          setProfileUserId(null);
-        }}
-      />
-
-      {/* Info Modal */}
-      <InfoModal
-        visible={infoModal.visible}
-        title={infoModal.title}
-        message={infoModal.message}
-        type={infoModal.type}
-        onClose={() => setInfoModal({ ...infoModal, visible: false })}
-      />
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  chatButton: {
+  fab: {
     position: 'absolute',
-    bottom: 100,
-    right: 20, // Fixed to right side for RTL
+    bottom: 16,
+    right: 16,
     width: 56,
     height: 56,
     borderRadius: 28,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-    ...Platform.select({
-      ios: { elevation: 8 },
-      android: { elevation: 8 },
-      web: { boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.3)' },
-    }),
-  },
-  chatContainer: {
-    flex: 1,
-  },
-  chatHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    marginLeft: 8,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  chatTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'right',
-  },
-  chatSubtitle: {
-    fontSize: 14,
-    color: 'rgba(14, 13, 10, 0.8)',
-    textAlign: 'right',
-  },
-  headerButtons: {
-    flexDirection: 'row',
-  },
-  headerButton: {
-    marginRight: 12,
-    padding: 4,
-  },
-  chatContent: {
-    flex: 1,
-  },
-  messagesList: {
-    flex: 1,
-    padding: 16,
-  },
-  messageContainer: {
-    marginBottom: 16,
-    maxWidth: '80%',
-    position: 'relative',
-  },
-  userMessage: {
-    alignSelf: 'flex-end',
-    borderRadius: 16,
-    borderBottomRightRadius: 4,
-    padding: 12,
-  },
-  adminMessage: {
-    alignSelf: 'flex-start',
-    borderRadius: 16,
-    borderBottomLeftRadius: 4,
-    padding: 12,
-    borderWidth: 1,
-  },
-  messageHeader: {
-    marginBottom: 4,
-  },
-  senderName: {
-    fontSize: 12,
-    fontWeight: '600',
-    opacity: 0.8,
-  },
-  clickableSender: {
-    textDecorationLine: 'underline',
-  },
-  messageText: {
-    fontSize: 16,
-    lineHeight: 20,
-  },
-  voiceMessageContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  voiceWaveform: {
-    flex: 1,
-  },
-  voiceDuration: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  reactionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-    gap: 4,
-  },
-  reactionBubble: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  reactionEmoji: {
-    fontSize: 12,
-    marginRight: 2,
-  },
-  reactionCount: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  reactionPicker: {
-    position: 'absolute',
-    top: -50,
-    right: 0,
-    flexDirection: 'row',
-    borderRadius: 25,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    zIndex: 1000,
-    ...Platform.select({
-      ios: { elevation: 5 },
-      android: { elevation: 5 },
-      web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)' },
-    }),
-  },
-  reactionOption: {
-    padding: 8,
-  },
-  reactionOptionEmoji: {
-    fontSize: 20,
-  },
-  reactionOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-    zIndex: 999,
-  },
-  messageTime: {
-    fontSize: 11,
-    marginTop: 4,
-    opacity: 0.6,
-    textAlign: 'right',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-  },
-  messageInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginLeft: 8,
-    maxHeight: 100,
-    fontSize: 16,
-  },
-  micButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-    borderWidth: 1,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
-  recordingContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  stopRecordingButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  recordingInfo: {
-    flex: 1,
-  },
-  recordingText: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 25,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    margin: 16,
-    borderWidth: 1,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-  },
-  chatRoomsList: {
-    flex: 1,
-    paddingBottom: 20,
-  },
-  chatRoomItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  userAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  userInitial: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  chatRoomInfo: {
-    flex: 1,
-  },
-  chatRoomHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  clickableUserName: {
-    textDecorationLine: 'underline',
-  },
-  lastMessage: {
-    fontSize: 14,
-    textAlign: 'right',
   },
   unreadBadge: {
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
   },
-  unreadCount: {
+  unreadText: {
+    color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
   },
-  widgetUnreadBadge: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  widgetUnreadText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  emptyText: {
-    fontSize: 16,
-    marginTop: 16,
-  },
-  emptyMessagesContainer: {
+  modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
   },
-  emptyMessagesText: {
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
-  emptyMessagesSubtext: {
-    fontSize: 14,
+  content: {
+    flex: 1,
+    flexDirection: 'row',
   },
-  userTypeLabel: {
-    fontSize: 12,
+  roomList: {
+    width: 200,
+    borderRightWidth: 1,
+  },
+  chatArea: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
 });
