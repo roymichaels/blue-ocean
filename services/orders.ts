@@ -30,13 +30,11 @@ export async function emitOrderEvents(order: Order, storeId: string) {
     },
   };
   try {
-    await eventBus.publish(ORDER_TOPIC, {
-      type: 'order.created',
+    await eventBus.publish(ORDER_TOPIC, 'order.created', {
       ...baseEvent,
     });
     if (order.paymentMethod === 'ton') {
-      await eventBus.publish(ORDER_TOPIC, {
-        type: 'escrow.deployed',
+      await eventBus.publish(ORDER_TOPIC, 'escrow.deployed', {
         ...baseEvent,
       });
 
