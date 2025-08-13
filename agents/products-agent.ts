@@ -1,5 +1,4 @@
 import { Product } from '../types';
-import tonAuth from '../services/tonAuth';
 import {
   setProduct,
   getProduct,
@@ -7,6 +6,7 @@ import {
   removeProduct,
 } from '../services/tonProducts';
 import { getStore } from '../services/tonStores';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 interface ProductSummary {
   rating: number;
@@ -18,12 +18,9 @@ class ProductsAgent {
   private summaries: Map<string, ProductSummary> = new Map();
 
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to manage products.');
-    }
+    const { address } = await ensureTonWallet(
+      'Please connect your TON wallet to manage products.',
+    );
     return { address };
   }
 

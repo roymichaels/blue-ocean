@@ -1,16 +1,13 @@
 import { randomUUID } from 'crypto';
-import tonAuth from '../services/tonAuth';
 import { Report } from '../types';
 import { addReport, listReports, removeReport } from '../services/tonReports';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 class ModerationAgent {
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to report items.');
-    }
+    const { address } = await ensureTonWallet(
+      'Please connect your TON wallet to report items.',
+    );
     return { address };
   }
 

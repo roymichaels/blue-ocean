@@ -6,6 +6,7 @@ import {
   setAdmins as storeAdmins,
   subscribeToSettingsWrites,
 } from '../services/tonSettings';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 type SettingKey =
   | 'tenantId'
@@ -32,12 +33,7 @@ class SettingsAgent {
   }
 
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to manage settings.');
-    }
+    await ensureTonWallet('Please connect your TON wallet to manage settings.');
   }
 
   async set(key: string, value: string): Promise<void> {

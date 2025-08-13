@@ -1,6 +1,6 @@
 import { Store } from '../types';
-import tonAuth from '../services/tonAuth';
 import { setStore, getStore, listStores, removeStore } from '../services/tonStores';
+import ensureTonWallet from '../utils/ensureTonWallet';
 
 interface Metrics {
   reviewSum: number;
@@ -14,12 +14,7 @@ class StoresAgent {
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
   private async ensureWallet() {
-    const address = tonAuth.getAddress();
-    const publicKey = tonAuth.getTonPublicKey();
-    if (!address || !publicKey) {
-      await tonAuth.openModal();
-      throw new Error('Please connect your TON wallet to manage stores.');
-    }
+    await ensureTonWallet('Please connect your TON wallet to manage stores.');
   }
 
   private toRecord(item: Store) {
