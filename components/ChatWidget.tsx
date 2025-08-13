@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  ScrollView,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -45,6 +45,8 @@ import chatAgent from '../agents/chat-agent';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 const CHAT_ONBOARDED_KEY = 'chatOnboarded';
+const CHAT_ROOM_ITEM_HEIGHT = 72;
+const MESSAGE_ITEM_HEIGHT = 80;
 
 
 export default function ChatWidget() {
@@ -69,7 +71,7 @@ export default function ChatWidget() {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const recordingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const messagesEndRef = useRef<ScrollView>(null);
+  const messagesEndRef = useRef<FlatList<ChatMessage>>(null);
   const [unreadTotal, setUnreadTotal] = useState(0);
   const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
   const messageSoundRef = useRef<Audio.AudioPlayer | null>(null);
@@ -289,7 +291,7 @@ const loadOrCreateDefaultRoom = async () => {
       // Scroll to bottom after messages load
       setTimeout(() => {
         if (isMounted.current) {
-          messagesEndRef.current?.scrollToEnd({ animated: false });
+          messagesEndRef.current?.scrollToOffset({ offset: 0, animated: false });
         }
       }, 100);
     } catch (error) {
@@ -486,7 +488,7 @@ const loadOrCreateDefaultRoom = async () => {
 
       setTimeout(() => {
         if (isMounted.current) {
-          messagesEndRef.current?.scrollToEnd({ animated: true });
+          messagesEndRef.current?.scrollToOffset({ offset: 0, animated: true });
         }
       }, 100);
     } catch (error) {
@@ -658,7 +660,7 @@ const loadOrCreateDefaultRoom = async () => {
       // Scroll to bottom
       setTimeout(() => {
         if (isMounted.current) {
-          messagesEndRef.current?.scrollToEnd({ animated: true });
+          messagesEndRef.current?.scrollToOffset({ offset: 0, animated: true });
         }
       }, 100);
     }
@@ -1161,13 +1163,18 @@ const loadOrCreateDefaultRoom = async () => {
 
                   {/* Results / Chat Rooms List */}
                   {searchQuery.trim() ? (
-                    <ScrollView
+                    <FlatList
+                      data={searchResults}
+                      renderItem={({ item }) => renderSearchResult(item)}
+                      keyExtractor={(item) => item.id}
                       style={styles.chatRoomsList}
                       showsVerticalScrollIndicator={false}
-                    >
-                      {searchResults.length > 0 ? (
-                        searchResults.map(renderSearchResult)
-                      ) : (
+                      getItemLayout={(_, index) => ({
+                        length: CHAT_ROOM_ITEM_HEIGHT,
+                        offset: CHAT_ROOM_ITEM_HEIGHT * index,
+                        index,
+                      })}
+                      ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                           <MessageCircle
                             size={60}
@@ -1182,16 +1189,21 @@ const loadOrCreateDefaultRoom = async () => {
                             {t('chat.noUsersFound')}
                           </Text>
                         </View>
-                      )}
-                    </ScrollView>
+                      }
+                    />
                   ) : (
-                    <ScrollView
+                    <FlatList
+                      data={filteredRooms}
+                      renderItem={({ item }) => renderChatRoom(item)}
+                      keyExtractor={(item) => item.id}
                       style={styles.chatRoomsList}
                       showsVerticalScrollIndicator={false}
-                    >
-                      {filteredRooms.length > 0 ? (
-                        filteredRooms.map(renderChatRoom)
-                      ) : (
+                      getItemLayout={(_, index) => ({
+                        length: CHAT_ROOM_ITEM_HEIGHT,
+                        offset: CHAT_ROOM_ITEM_HEIGHT * index,
+                        index,
+                      })}
+                      ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                           <MessageCircle
                             size={60}
@@ -1206,22 +1218,28 @@ const loadOrCreateDefaultRoom = async () => {
                             {t('chat.noChatRooms')}
                           </Text>
                         </View>
-                      )}
-                    </ScrollView>
+                      }
+                    />
                   )}
                 </>
               ) : (
                 // Chat Messages View
                 <>
                   {/* Messages List */}
-                  <ScrollView
+                  <FlatList
                     ref={messagesEndRef}
+                    data={messages}
+                    renderItem={({ item }) => renderMessage(item)}
+                    keyExtractor={(item) => item.id}
+                    inverted
                     style={styles.messagesList}
                     showsVerticalScrollIndicator={false}
-                  >
-                    {messages.length > 0 ? (
-                      messages.map(renderMessage)
-                    ) : (
+                    getItemLayout={(_, index) => ({
+                      length: MESSAGE_ITEM_HEIGHT,
+                      offset: MESSAGE_ITEM_HEIGHT * index,
+                      index,
+                    })}
+                    ListEmptyComponent={
                       <View style={styles.emptyMessagesContainer}>
                         <Text
                           style={[
@@ -1240,8 +1258,8 @@ const loadOrCreateDefaultRoom = async () => {
                           {t('chat.startConversation')}
                         </Text>
                       </View>
-                    )}
-                  </ScrollView>
+                    }
+                  />
 
                   {/* Message Input */}
                   <View
