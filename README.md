@@ -25,6 +25,14 @@ This Expo project uses React Native with the Expo Router.
 
 All data is ephemeral and synchronized between peers over Waku; no external services are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
 
+### Development
+
+Run the linter and TypeScript checker before committing:
+
+```sh
+yarn lint && yarn typecheck
+```
+
 ### Environment Variables
 
 The project reads configuration from a `.env` file using Expo's env support

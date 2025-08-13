@@ -7,6 +7,7 @@
     "start": "cross-env EXPO_NO_TELEMETRY=1 BROWSER=none expo start --web",
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
     "seed": "node scripts/seed.js",
     "web:clean": "node scripts/web-clean.js",
     "web:build": "expo export --platform web --output-dir dist",
@@ -17,7 +18,8 @@
     "build:ton": "ts-node scripts/build-ton.ts",
     "deploy:ton": "ts-node scripts/deploy-ton.ts",
     "ton:build": "yarn build:ton",
-    "ton:deploy": "yarn deploy:ton"
+    "ton:deploy": "yarn deploy:ton",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@babel/plugin-transform-template-literals": "^7.27.1",
@@ -113,7 +115,9 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "fs-extra": "^11.3.1",
     "globby": "^14.1.0",
+    "husky": "^9.1.7",
     "jest": "~29.7.0",
+    "lint-staged": "^16.1.5",
     "process": "^0.11.10",
     "react-test-renderer": "19.0.0",
     "stream-browserify": "^3.0.0",
@@ -126,5 +130,11 @@
     "typescript": "^5.8.3",
     "util": "^0.12.5"
   },
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "yarn@1.22.22",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "yarn lint",
+      "yarn typecheck"
+    ]
+  }
 }
