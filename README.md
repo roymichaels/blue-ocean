@@ -214,6 +214,19 @@ the app works from any gateway.
 - **Upload:** Manually pin the `dist/` directory to your pinning service (e.g.,
   Pinata) to publish it to IPFS.
 
+#### Pin `dist/` Checklist
+
+1. `npm run web:release`
+2. `node scripts/assert-relative-assets.js`
+3. Pin the entire `dist/` folder to your IPFS node or pinning service
+4. Record the returned CID for later reference
+
+#### Gateway Test Steps
+
+1. Open `https://ipfs.io/ipfs/<CID>/` and ensure the app loads
+2. Repeat with another gateway such as `https://dweb.link/ipfs/<CID>/`
+3. Navigate to a route like `/#/product/1` to confirm hash routing
+
 Deep links require additional rewrite support.
 
 ## Troubleshooting
