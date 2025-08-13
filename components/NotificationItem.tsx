@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native
 import { Package, Tag, MessageCircle, Info, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { Notification } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { spacing, typography } from '../constants/styles';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -83,8 +84,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    padding: spacing.spacer16,
+    marginBottom: spacing.spacer12,
     borderWidth: 1,
     borderLeftWidth: 4,
     ...Platform.select({
@@ -94,25 +95,25 @@ const styles = StyleSheet.create({
     }),
   },
   iconContainer: {
-    width: 40,
-    height: 40,
+    width: spacing.spacer40,
+    height: spacing.spacer40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: spacing.spacer12,
   },
   contentContainer: {
     flex: 1,
-    marginRight: 8,
+    marginRight: spacing.spacer8,
   },
   title: {
-    fontSize: 16,
+    ...typography.bodyText,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: spacing.spacer4,
   },
   message: {
     fontSize: 14,
-    marginBottom: 8,
+    marginBottom: spacing.spacer8,
     lineHeight: 20,
   },
   timestamp: {
@@ -120,6 +121,6 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     justifyContent: 'center',
-    padding: 4,
+    padding: spacing.spacer4,
   },
 });
