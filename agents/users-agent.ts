@@ -3,6 +3,7 @@ import { getUser, setUser, listUsers, removeUser } from '../services/tonUsers';
 import { getPublicKeyHex } from '../services/localIdentity';
 import SettingsAgent from './settings-agent';
 import ensureTonWallet from '../utils/ensureTonWallet';
+import validateTonAddress from '../utils/validateTonAddress';
 
 export type UsersAgentMessage =
   | { type: 'user.add'; payload: User }
@@ -27,6 +28,9 @@ class UsersAgent {
     }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = { ...user, publicKey, address, chatPublicKey };
+    if (!validateTonAddress(address)) {
+      throw new Error('Invalid TON address');
+    }
     await setUser(enriched);
   }
 
@@ -38,6 +42,9 @@ class UsersAgent {
     }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = { ...user, publicKey, address, chatPublicKey };
+    if (!validateTonAddress(address)) {
+      throw new Error('Invalid TON address');
+    }
     await setUser(enriched);
   }
 

@@ -1,5 +1,11 @@
 import usersAgent from '../agents/users-agent';
 
+jest.mock('../utils/validateTonAddress', () => ({
+  __esModule: true,
+  default: jest.fn().mockReturnValue(true),
+}));
+import validateTonAddress from '../utils/validateTonAddress';
+
 jest.mock('../services/tonAuth', () => ({
   getAddress: () => 'addr_admin',
   getTonPublicKey: () => 'pub_admin',
@@ -56,5 +62,18 @@ describe('UsersAgent TON integration', () => {
     const verified = await usersAgent.get('u2');
     expect(verified?.kycStatus).toBe('verified');
     expect(verified?.kycApprovedBy).toBe('admin1');
+  });
+
+  it('rejects invalid TON addresses', async () => {
+    (validateTonAddress as jest.Mock).mockReturnValueOnce(false);
+    const user: any = {
+      id: 'u3',
+      username: 'charlie',
+      displayName: 'Charlie',
+      role: 'user',
+      address: '',
+      publicKey: '',
+    };
+    await expect(usersAgent.add(user)).rejects.toThrow('Invalid TON address');
   });
 });
