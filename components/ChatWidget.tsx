@@ -73,6 +73,7 @@ export default function ChatWidget() {
   const [unreadTotal, setUnreadTotal] = useState(0);
   const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
   const messageSoundRef = useRef<Audio.AudioPlayer | null>(null);
+  const lastTimestampRef = useRef(0);
   const isMounted = useRef(true);
   const [pinataConfigured, setPinataConfigured] = useState(true);
   // Modal states
@@ -253,11 +254,12 @@ const loadOrCreateDefaultRoom = async () => {
         unreadCount: 0,
       };
 
+      await db.markChatRoomRead(roomId);
+      const ts = await loadMessages(roomId, adminKey || '');
+      lastTimestampRef.current = ts;
       if (isMounted.current) {
         setSelectedRoom(defaultRoom);
       }
-      await db.markChatRoomRead(roomId);
-      await loadMessages(roomId, adminKey || '');
       await maybeSendOnboardMessage(roomId, adminKey || '');
     } catch (error) {
       console.error('Error creating default room:', error);
@@ -292,6 +294,8 @@ const loadOrCreateDefaultRoom = async () => {
           messagesEndRef.current?.scrollToEnd({ animated: false });
         }
       }, 100);
+
+      return decrypted.length ? decrypted[decrypted.length - 1].timestamp : 0;
     } catch (error) {
       console.error('Error loading messages:', error);
       // Use default welcome message as fallback
@@ -307,6 +311,7 @@ const loadOrCreateDefaultRoom = async () => {
           },
         ]);
       }
+      return 0;
     }
   };
 
@@ -328,6 +333,7 @@ const loadOrCreateDefaultRoom = async () => {
       if (isMounted.current) {
         setMessages((prev) => [...prev, saved]);
       }
+      lastTimestampRef.current = saved.timestamp;
       await AsyncStorage.setItem(CHAT_ONBOARDED_KEY, 'true');
     } catch (error) {
       console.error('Failed to send onboard message', error);
@@ -335,9 +341,6 @@ const loadOrCreateDefaultRoom = async () => {
   };
 
   const openChat = async (room: ChatRoom) => {
-    if (isMounted.current) {
-      setSelectedRoom(room);
-    }
     const db = DatabaseService.getInstance();
     await db.markChatRoomRead(room.id);
     if (isMounted.current) {
@@ -345,7 +348,11 @@ const loadOrCreateDefaultRoom = async () => {
         prev.map((r) => (r.id === room.id ? { ...r, unreadCount: 0 } : r))
       );
     }
-    await loadMessages(room.id, room.userPublicKey || '');
+    const ts = await loadMessages(room.id, room.userPublicKey || '');
+    lastTimestampRef.current = ts;
+    if (isMounted.current) {
+      setSelectedRoom(room);
+    }
     await maybeSendOnboardMessage(room.id, room.userPublicKey || '');
   };
 
@@ -363,22 +370,24 @@ const loadOrCreateDefaultRoom = async () => {
       if (isMounted.current) {
         setMessages((prev) => [...prev, m]);
       }
+      lastTimestampRef.current = m.timestamp;
     };
     let unsubscribe: (() => void) | undefined;
-      waku
-        .subscribe(
-          selectedRoom.id,
-          selectedRoom.userPublicKey || adminKey || '',
-          handler,
-        )
-      .then((unsub) => {
-      unsubscribe = unsub;
-    });
-      waku.fetchHistory(
+    waku
+      .subscribe(
         selectedRoom.id,
         selectedRoom.userPublicKey || adminKey || '',
         handler,
-      );
+      )
+      .then((unsub) => {
+        unsubscribe = unsub;
+      });
+    waku.fetchHistory(
+      selectedRoom.id,
+      selectedRoom.userPublicKey || adminKey || '',
+      handler,
+      lastTimestampRef.current,
+    );
     return () => {
       unsubscribe?.();
     };
@@ -392,9 +401,9 @@ const loadOrCreateDefaultRoom = async () => {
     try {
       let room = chatRooms.find((r) => r.userId === result.id);
       let roomId = room?.id;
+      const db = DatabaseService.getInstance();
 
       if (!roomId) {
-        const db = DatabaseService.getInstance();
         roomId = await db.getOrCreateChatRoom(
           result.id,
           result.displayName,
@@ -413,10 +422,6 @@ const loadOrCreateDefaultRoom = async () => {
         }
       }
 
-      if (isMounted.current) {
-        setSelectedRoom(room!);
-      }
-      const db = DatabaseService.getInstance();
       await db.markChatRoomRead(roomId);
       if (isMounted.current) {
         setChatRooms((prev) =>
@@ -425,7 +430,11 @@ const loadOrCreateDefaultRoom = async () => {
         setSearchQuery('');
         setSearchResults([]);
       }
-      await loadMessages(roomId, room?.userPublicKey || '');
+      const ts = await loadMessages(roomId, room?.userPublicKey || '');
+      lastTimestampRef.current = ts;
+      if (isMounted.current) {
+        setSelectedRoom(room!);
+      }
       await maybeSendOnboardMessage(roomId, room?.userPublicKey || '');
     } catch (error) {
       console.error('Error opening chat with user:', error);
@@ -483,6 +492,7 @@ const loadOrCreateDefaultRoom = async () => {
         setMessages((prev) => [...prev, saved]);
         setNewMessage('');
       }
+      lastTimestampRef.current = saved.timestamp;
 
       setTimeout(() => {
         if (isMounted.current) {

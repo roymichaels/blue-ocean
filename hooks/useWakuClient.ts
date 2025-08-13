@@ -32,6 +32,7 @@ export interface WakuClient {
     roomId: string,
     peerPublicKey: string,
     callback: (msg: ChatMessage) => void,
+    after?: number,
   ) => Promise<void>;
   broadcastSystem: (message: string) => Promise<void>;
   subscribeSystem: (cb: (msg: string) => void) => Promise<() => void>;
@@ -144,12 +145,15 @@ export function useWakuClient(): WakuClient {
     roomId: string,
     peerPublicKey: string,
     cb: (msg: ChatMessage) => void,
+    after?: number,
   ) => {
     if (!nodeRef.current) return;
     const decoder = createDecoder(chatTopic(roomId));
-    for await (const msgs of nodeRef.current.store.queryGenerator({
-      contentTopics: [chatTopic(roomId)],
-    })) {
+    const options: any = { contentTopics: [chatTopic(roomId)] };
+    if (after) {
+      options.timeFilter = { startTime: new Date(after + 1) };
+    }
+    for await (const msgs of nodeRef.current.store.queryGenerator(options)) {
       for (const wakuMsg of msgs.messages) {
         if (!wakuMsg.payload) continue;
         const encrypted = bytesToUtf8(wakuMsg.payload);
