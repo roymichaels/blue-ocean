@@ -35,6 +35,14 @@ jest.mock('../services/tonStores', () => ({
 
 jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
 
+jest.mock('../agents/orders-agent', () => ({
+  subscribe: jest.fn(),
+  add: jest.fn(),
+  get: jest.fn(),
+  getAll: jest.fn().mockResolvedValue([]),
+  update: jest.fn(),
+}));
+
 jest.mock('../services/tonAuth', () => ({
   getAddress: jest.fn().mockReturnValue('buyer_address'),
   getTonPublicKey: jest.fn().mockReturnValue('buyer_pub'),
@@ -110,7 +118,7 @@ describe('multi-seller checkout flow', () => {
 
     const eventBus = require('../services/eventBus');
     expect(eventBus.publish).toHaveBeenCalledTimes(4);
-    const events = eventBus.publish.mock.calls.map((c: any) => c[1].type);
+    const events = eventBus.publish.mock.calls.map((c: any) => c[1]);
     expect(events).toEqual([
       'order.created',
       'escrow.deployed',
@@ -118,7 +126,7 @@ describe('multi-seller checkout flow', () => {
       'escrow.deployed',
     ]);
 
-    const firstPayload = eventBus.publish.mock.calls[0][1];
+    const firstPayload = eventBus.publish.mock.calls[0][2];
     expect(firstPayload.orderId).toBe(orders[0].id);
     expect(firstPayload.storeId).toBe('s1');
     expect(firstPayload.buyerAddress).toBe('buyer_address');

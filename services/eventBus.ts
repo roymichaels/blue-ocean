@@ -7,6 +7,8 @@ import {
   utf8ToBytes,
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
+import { randomUUID } from 'crypto';
+import tonAuth from './tonAuth';
 
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
@@ -34,13 +36,24 @@ async function ensureNode(): Promise<LightNode | null> {
   }
 }
 
-export async function publish(contentTopic: string, payload: unknown): Promise<void> {
+export async function publish(
+  contentTopic: string,
+  type: string,
+  payload: Record<string, any> = {},
+): Promise<void> {
   const n = await ensureNode();
   if (!n) return;
   try {
     const encoder = createEncoder({ contentTopic });
+    const event = {
+      id: randomUUID(),
+      timestamp: Date.now(),
+      actor: tonAuth.getAddress(),
+      type,
+      ...payload,
+    };
     await n.lightPush.send(encoder, {
-      payload: utf8ToBytes(JSON.stringify(payload)),
+      payload: utf8ToBytes(JSON.stringify(event)),
     });
   } catch (err) {
     console.error('Failed to publish event', err);
