@@ -22,8 +22,8 @@ class NotificationService {
         console.warn('No user ID provided for getNotifications');
         return [];
       }
-      return notificationsAgent
-        .getAll()
+      const list = await notificationsAgent.getAll();
+      return list
         .filter((n) => n.userId === userId)
         .sort((a, b) => b.timestamp - a.timestamp);
     } catch (error) {
@@ -34,7 +34,7 @@ class NotificationService {
 
   async markAsRead(id: string): Promise<boolean> {
     try {
-      const n = notificationsAgent.get(id);
+      const n = await notificationsAgent.get(id);
       if (!n) return false;
       n.read = true;
       await notificationsAgent.update(n);
@@ -47,9 +47,9 @@ class NotificationService {
 
   async markAllAsRead(userId: string): Promise<boolean> {
     try {
-      const list = notificationsAgent
-        .getAll()
-        .filter((n) => n.userId === userId && !n.read);
+      const list = (await notificationsAgent.getAll()).filter(
+        (n) => n.userId === userId && !n.read,
+      );
       for (const n of list) {
         n.read = true;
         await notificationsAgent.update(n);
@@ -101,9 +101,9 @@ class NotificationService {
         console.warn('No user ID provided for getUnreadCount');
         return 0;
       }
-      return notificationsAgent
-        .getAll()
-        .filter((n) => n.userId === userId && !n.read).length;
+      return (await notificationsAgent.getAll()).filter(
+        (n) => n.userId === userId && !n.read,
+      ).length;
     } catch (error) {
       console.error('Error in getUnreadCount:', error);
       return 0;
