@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, Save, Settings as SettingsIcon, DollarSign, Globe, Bell } from 'lucide-react-native';
+import { ArrowLeft, Save, Settings as SettingsIcon } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -20,13 +12,14 @@ import InfoModal from '../../components/InfoModal';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import commonStyles from '../../constants/styles';
 import SettingsAgent from '../../agents/settings-agent';
-import Card from '../../components/Card';
-
-
+import BrandingSettings from '../../components/settings/BrandingSettings';
+import CurrencySettings from '../../components/settings/CurrencySettings';
+import EnvironmentSettings from '../../components/settings/EnvironmentSettings';
+import LanguageSettings from '../../components/settings/LanguageSettings';
+import NotificationSettings from '../../components/settings/NotificationSettings';
 
 export default function SettingsScreen() {
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
-
   const [name, setName] = useState('');
   const [logoCidInput, setLogoCidInput] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
@@ -35,16 +28,22 @@ export default function SettingsScreen() {
   const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
-  const { t, currentLanguage } = useLanguage();
-  const { appName, logoCid, themeColor: contextThemeColor, setAppName, setLogoCid, setThemeColor } = useAppInfo();
+  const { currentLanguage, t } = useLanguage();
+  const {
+    appName,
+    logoCid,
+    themeColor: contextThemeColor,
+    setAppName,
+    setLogoCid,
+    setThemeColor,
+  } = useAppInfo();
   const [admins, setAdmins] = useState<string[]>([]);
 
-  // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
 
   useEffect(() => {
@@ -52,7 +51,6 @@ export default function SettingsScreen() {
       router.replace('/');
       return;
     }
-
     loadSettings();
   }, [isAdmin, isDriver]);
 
@@ -60,13 +58,11 @@ export default function SettingsScreen() {
     SettingsAgent.getInstance()
       .getAdmins()
       .then(setAdmins)
-      .catch(err => console.error('Failed to load admins:', err));
+      .catch((err) => console.error('Failed to load admins:', err));
   }, []);
 
   useEffect(() => {
-    // Update local state when context changes
     setCurrencySymbolState(contextCurrencySymbol);
-
     setName(appName);
     setThemeColorState(contextThemeColor);
     setLogoCidInput(logoCid || '');
@@ -75,23 +71,17 @@ export default function SettingsScreen() {
   const loadSettings = async () => {
     setLoading(true);
     try {
-      // Currency symbol is already loaded from context
       setCurrencySymbolState(contextCurrencySymbol);
-
       setName(appName);
       setThemeColorState(contextThemeColor);
-      if (logoCid) {
-        setLogoMedia([{ id: 'logo', uri: logoCid, type: 'image' }]);
-      } else {
-        setLogoMedia([]);
-      }
+      setLogoCidInput(logoCid || '');
     } catch (error) {
       console.error('Error loading settings:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
         message: 'טעינת ההגדרות נכשלה',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setLoading(false);
@@ -101,19 +91,16 @@ export default function SettingsScreen() {
   const saveSettings = async () => {
     setSaving(true);
     try {
-      // Update currency symbol in context (which will update database)
       await setCurrencySymbol(currencySymbol);
-
       await setAppName(name);
       await setThemeColor(themeColor);
       const logoUri = logoCidInput.trim();
       await setLogoCid(logoUri);
-
       setInfoModal({
         visible: true,
         title: 'הצלחה',
         message: 'ההגדרות נשמרו בהצלחה',
-        type: 'success'
+        type: 'success',
       });
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -121,7 +108,7 @@ export default function SettingsScreen() {
         visible: true,
         title: 'שגיאה',
         message: 'שמירת ההגדרות נכשלה',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setSaving(false);
@@ -130,30 +117,29 @@ export default function SettingsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft size={24} color={colors.text.primary} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
-          <View style={commonStyles.spacer24} />
-        </View>
-        <LoadingSpinner />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
+          <TouchableOpacity onPress={() => router.back()}> 
+            <ArrowLeft size={24} color={colors.text.primary} /> 
+          </TouchableOpacity> 
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text> 
+          <View style={commonStyles.spacer24} /> 
+        </View> 
+        <LoadingSpinner /> 
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <ArrowLeft size={24} color={colors.text.primary} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
-        <View style={commonStyles.spacer24} />
-      </View>
-
-      <ScrollView 
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
+        <TouchableOpacity onPress={() => router.back()}> 
+          <ArrowLeft size={24} color={colors.text.primary} /> 
+        </TouchableOpacity> 
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text> 
+        <View style={commonStyles.spacer24} /> 
+      </View> 
+      <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
@@ -163,206 +149,26 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>הגדרות כלליות</Text>
         </View>
 
-        {/* Branding Settings */}
-        <Card style={[styles.settingCard, {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary,
-        }]}> 
-          <View style={styles.settingHeader}>
-            <SettingsIcon size={20} color={colors.gold} />
-            <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות מיתוג</Text>
-          </View>
+        <BrandingSettings
+          name={name}
+          setName={setName}
+          logoCidInput={logoCidInput}
+          setLogoCidInput={setLogoCidInput}
+          themeColor={themeColor}
+          setThemeColorState={setThemeColorState}
+          colors={colors}
+          t={t}
+        />
+        <CurrencySettings
+          currencySymbol={currencySymbol}
+          setCurrencySymbolState={setCurrencySymbolState}
+          colors={colors}
+        />
+        <EnvironmentSettings colors={colors} admins={admins} />
+        <LanguageSettings colors={colors} currentLanguage={currentLanguage} />
+        <NotificationSettings colors={colors} />
 
-          <View style={styles.settingContent}>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>שם הפלטפורמה</Text>
-              <TextInput
-                style={[styles.input, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.secondary,
-                  color: colors.text.primary
-                }]}
-
-                value={name}
-                onChangeText={setName}
-                placeholder={t('ageVerification.platformName')}
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>לוגו (CID או URL)</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    borderColor: colors.border.primary,
-                    backgroundColor: colors.surface.primary,
-                    color: colors.text.primary,
-                  },
-                ]}
-                value={logoCidInput}
-                onChangeText={setLogoCidInput}
-                placeholder="ipfs://..."
-                textAlign="right"
-                placeholderTextColor={colors.text.tertiary}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>צבע נושא</Text>
-              {Platform.OS === 'web' ? (
-                <input
-                  type="color"
-                  value={themeColor}
-                  onChange={(e) => setThemeColorState(e.target.value)}
-                  style={styles.colorInput}
-                />
-              ) : (
-                <View style={styles.colorOptions}>
-                  {['#B99C5A', '#FF0000', '#00FF00', '#0000FF', '#FF00FF', '#00FFFF'].map((c) => (
-                    <TouchableOpacity
-                      key={c}
-                      onPress={() => setThemeColorState(c)}
-                      style={[
-                        styles.colorOption,
-                        {
-                          backgroundColor: c,
-                          borderWidth: themeColor === c ? 3 : 1,
-                          borderColor: themeColor === c
-                            ? colors.gold
-                            : colors.border.primary,
-                        },
-                      ]}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-        </Card>
-
-        {/* Currency Settings */}
-        <Card style={[styles.settingCard, {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary,
-        }]}> 
-          <View style={styles.settingHeader}>
-            <DollarSign size={20} color={colors.gold} />
-            <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות מטבע</Text>
-          </View>
-          
-          <View style={styles.settingContent}>
-            <Text style={[styles.settingDescription, { color: colors.text.secondary }]}>
-              הגדר את סמל המטבע שיוצג בכל רחבי האפליקציה
-            </Text>
-            
-            <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, { color: colors.text.primary }]}>סמל מטבע</Text>
-              <TextInput
-                style={[styles.input, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.secondary,
-                  color: colors.text.primary 
-                }]}
-                value={currencySymbol}
-                onChangeText={setCurrencySymbolState}
-                placeholder="₪"
-                maxLength={3}
-                textAlign="center"
-              />
-            </View>
-            
-            <Text style={[styles.helperText, { color: colors.text.tertiary }]}>
-              דוגמאות: ₪, $, €, £
-            </Text>
-          </View>
-        </Card>
-
-        {/* Advanced Settings */}
-        <Card
-          style={[
-            styles.settingCard,
-            {
-              backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary,
-            },
-          ]}
-        >
-          <View style={styles.settingHeader}>
-            <SettingsIcon size={20} color={colors.gold} />
-            <Text style={[styles.settingTitle, { color: colors.text.primary }]}>Environment</Text>
-          </View>
-
-          <View style={styles.settingContent}>
-            <Text
-              style={[
-                styles.settingDescription,
-                { color: colors.text.primary },
-              ]}
-            >
-              Admin credentials and Waku details are configured via .env and
-              cannot be edited here.
-            </Text>
-            <Text
-              style={[
-                styles.inputLabel,
-                { color: colors.text.primary, marginTop: 8 },
-              ]}
-            >
-              Admin Addresses: {admins.join(', ') || 'Not set'}
-            </Text>
-          </View>
-        </Card>
-
-        {/* Language Settings - Info Only */}
-        <Card style={[styles.settingCard, {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary,
-        }]}> 
-          <View style={styles.settingHeader}>
-            <Globe size={20} color={colors.gold} />
-            <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות שפה</Text>
-          </View>
-          
-          <View style={styles.settingContent}>
-            <Text style={[styles.settingDescription, { color: colors.text.secondary }]}>
-              ניתן לשנות את שפת האפליקציה מתפריט הפרופיל
-            </Text>
-            
-            <View style={[styles.infoBox, { backgroundColor: colors.interactive.secondary }]}>
-              <Text style={[styles.infoText, { color: colors.text.primary }]}>
-                שפה נוכחית: {currentLanguage === 'he' ? 'עברית' : 'English'}
-              </Text>
-            </View>
-          </View>
-        </Card>
-
-        {/* Notification Settings - Coming Soon */}
-        <Card style={[styles.settingCard, {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary,
-          opacity: 0.7,
-        }]}> 
-          <View style={styles.settingHeader}>
-            <Bell size={20} color={colors.gold} />
-            <Text style={[styles.settingTitle, { color: colors.text.primary }]}>הגדרות התראות</Text>
-          </View>
-          
-          <View style={styles.settingContent}>
-            <Text style={[styles.settingDescription, { color: colors.text.secondary }]}>
-              הגדרות התראות מערכת ודחיפה
-            </Text>
-            
-            <View style={[styles.comingSoonBadge, { backgroundColor: colors.gold }]}>
-              <Text style={[styles.comingSoonText, { color: colors.text.inverse }]}>בקרוב</Text>
-            </View>
-          </View>
-        </Card>
-
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.saveButton, { backgroundColor: colors.gold }]}
           onPress={saveSettings}
           disabled={saving}
@@ -378,13 +184,12 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Info Modal */}
       <InfoModal
         visible={infoModal.visible}
         title={infoModal.title}
         message={infoModal.message}
         type={infoModal.type}
-        onClose={() => setInfoModal({...infoModal, visible: false})}
+        onClose={() => setInfoModal({ ...infoModal, visible: false })}
       />
     </SafeAreaView>
   );
@@ -423,88 +228,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginRight: 8,
-  },
-  settingCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  settingHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
-    justifyContent: 'flex-end',
-  },
-  settingTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 8,
-  },
-  settingContent: {
-    padding: 16,
-  },
-  settingDescription: {
-    fontSize: 14,
-    marginBottom: 16,
-    textAlign: 'right',
-  },
-  colorInput: {
-    width: 40,
-    height: 40,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-  },
-  colorOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  colorOption: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  inputContainer: {
-    marginBottom: 8,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'right',
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-  helperText: {
-    fontSize: 12,
-    textAlign: 'right',
-  },
-  infoBox: {
-    borderRadius: 8,
-    padding: 12,
-  },
-  infoText: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  comingSoonBadge: {
-    alignSelf: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  comingSoonText: {
-    fontSize: 14,
-    fontWeight: 'bold',
   },
   saveButton: {
     flexDirection: 'row',
