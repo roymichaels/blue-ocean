@@ -17,7 +17,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import { logOrderEvent } from '../services/eventLog';
 import ensureTonWallet from '../utils/ensureTonWallet';
 import eventBus from '../services/eventBus';
-import { errorLog } from '../utils/logger';
+import { errorLog, warnLog } from '../utils/logger';
 
 const ORDER_TOPIC = '/congress/orders/1';
 
@@ -127,6 +127,7 @@ class OrdersAgent {
         }
       } catch (err) {
         errorLog('Failed to encrypt shipping address', err);
+        warnLog('Failed to encrypt shipping address', err);
       }
     }
     await setOrder(toStore);

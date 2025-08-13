@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +16,7 @@ import { User } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import commonStyles from '../../constants/styles';
+import SmartImage from '../../components/SmartImage';
 
 
 
@@ -156,7 +156,11 @@ export default function UserProfileScreen() {
         <View style={[styles.profileHeader, { borderBottomColor: colors.border.primary }]}>
           <View style={styles.avatarContainer}>
             {user.avatar ? (
-              <Image source={{ uri: user.avatar }} style={[styles.avatar, { borderColor: colors.gold }]} />
+              <SmartImage
+                uri={user.avatar}
+                style={[styles.avatar, { borderColor: colors.gold }]}
+                cachePolicy="disk"
+              />
             ) : (
               <View style={[styles.avatarPlaceholder, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}>
                 <UserIcon size={40} color={colors.interactive.disabled} />

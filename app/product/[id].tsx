@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Image,
   Alert,
   Dimensions,
   Modal,
@@ -48,6 +47,7 @@ import reviewAgent from '../../agents/review-agent';
 import commonStyles from '../../constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '../../components/FloatingCartWidget';
+import SmartImage from '../../components/SmartImage';
 
 
 
@@ -479,10 +479,11 @@ export default function ProductDetailScreen() {
           onPress={() => openMediaViewer(0)}
         >
           {mainImageUri ? (
-            <Image
-              source={{ uri: mainImageUri }}
+            <SmartImage
+              uri={mainImageUri}
               style={styles.coverImage}
-              resizeMode="cover"
+              contentFit="cover"
+              cachePolicy="disk"
             />
           ) : (
             <View style={styles.noImageContainer}>
@@ -511,10 +512,11 @@ export default function ProductDetailScreen() {
                   ]}
                   onPress={() => openMediaViewer(idx)}
                 >
-                  <Image
-                    source={{ uri: media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri }}
+                  <SmartImage
+                    uri={media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri}
                     style={styles.galleryImage}
-                    resizeMode="cover"
+                    contentFit="cover"
+                    cachePolicy="disk"
                   />
                   {media.type === 'video' && (
                     <View style={styles.videoIndicator}>
@@ -685,10 +687,11 @@ export default function ProductDetailScreen() {
                     ]}
                     onPress={() => openMediaViewer(index)}
                   >
-                    <Image
-                      source={{ uri: media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri }}
+                    <SmartImage
+                      uri={media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri}
                       style={styles.galleryImage}
-                      resizeMode="cover"
+                      contentFit="cover"
+                      cachePolicy="disk"
                     />
                     {media.type === 'video' && (
                       <View style={styles.videoIndicator}>

@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -18,6 +17,7 @@ import DatabaseService from '../../services/database';
 import { User as UserType } from '../../types';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import commonStyles from '../../constants/styles';
+import SmartImage from '../../components/SmartImage';
 
 
 
@@ -144,7 +144,11 @@ export default function KycApprovalsScreen() {
                 <View style={styles.userInfo}>
                   <View style={styles.avatarContainer}>
                     {request.avatar ? (
-                      <Image source={{ uri: request.avatar }} style={[styles.avatar, { borderColor: colors.gold }]} />
+                      <SmartImage
+                        uri={request.avatar}
+                        style={[styles.avatar, { borderColor: colors.gold }]}
+                        cachePolicy="disk"
+                      />
                     ) : (
                       <View style={[styles.avatarPlaceholder, { 
                         backgroundColor: colors.surface.secondary,
