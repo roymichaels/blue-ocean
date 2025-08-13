@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { spacing, typography } from '../constants/styles';
 
 const AGE_VERIFICATION_KEY = 'age_verified';
 
@@ -222,12 +223,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 24,
+    padding: spacing.spacer24,
     justifyContent: 'space-between',
   },
   logoSection: {
     alignItems: 'center',
-    paddingTop: 40,
+    paddingTop: spacing.spacer40,
   },
   logoContainer: {
     width: 100,
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.spacer20,
     borderWidth: 2,
   },
   logoImage: {
@@ -244,18 +245,17 @@ const styles = StyleSheet.create({
     borderRadius: Platform.OS === 'web' ? 8 : 30,
   },
   platformName: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...typography.heading1,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.spacer8,
   },
   platformSubtitle: {
-    fontSize: 16,
+    ...typography.bodyText,
     textAlign: 'center',
   },
   verificationSection: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: spacing.spacer20,
   },
   iconContainer: {
     width: 80,
@@ -263,40 +263,39 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.spacer24,
     borderWidth: 1,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...typography.heading1,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.spacer12,
   },
   subtitle: {
-    fontSize: 16,
+    ...typography.bodyText,
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-    paddingHorizontal: 20,
+    marginBottom: spacing.spacer24,
+    lineHeight: spacing.spacer24,
+    paddingHorizontal: spacing.spacer20,
   },
   warningBox: {
     borderWidth: 1,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    padding: spacing.spacer16,
+    marginBottom: spacing.spacer24,
     width: '100%',
     maxWidth: 400,
   },
   warningText: {
-    fontSize: 16,
+    ...typography.bodyText,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.spacer8,
   },
   warningSubtext: {
     fontSize: 14,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: spacing.spacer20,
   },
   question: {
     fontSize: 18,
@@ -304,43 +303,43 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonContainer: {
-    gap: 16,
-    paddingBottom: 20,
+    gap: spacing.spacer16,
+    paddingBottom: spacing.spacer20,
     width: '100%',
     maxWidth: 400,
     alignSelf: 'center',
   },
   confirmButton: {
     borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: spacing.spacer16,
+    paddingHorizontal: spacing.spacer24,
     alignItems: 'center',
   },
   confirmButtonText: {
-    fontSize: 16,
+    ...typography.bodyText,
     fontWeight: 'bold',
   },
   denyButton: {
     backgroundColor: 'transparent',
     borderWidth: 2,
     borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: spacing.spacer16,
+    paddingHorizontal: spacing.spacer24,
     alignItems: 'center',
   },
   denyButtonText: {
-    fontSize: 16,
+    ...typography.bodyText,
     fontWeight: '600',
   },
   footer: {
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: spacing.spacer20,
     borderTopWidth: 1,
   },
   footerText: {
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 18,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.spacer20,
   },
 });
