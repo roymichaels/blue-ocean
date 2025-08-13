@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TextInput,
   TouchableOpacity,
   FlatList,
@@ -89,45 +88,55 @@ export default function StorefrontScreen({ initialCategory }: Props) {
         value={search}
         onChangeText={setSearch}
       />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-        <TouchableOpacity
-          testID="category-null"
-          style={[styles.chip, { borderColor: colors.border.primary, backgroundColor: selectedCategory === null ? colors.gold : 'transparent' }]}
-          onPress={() => setSelectedCategory(null)}
-        >
-          <Text style={{ color: selectedCategory === null ? colors.text.inverse : colors.text.primary }}>All</Text>
-        </TouchableOpacity>
-        {categories.map((c) => (
+      <FlatList
+        horizontal
+        data={[null, ...categories]}
+        keyExtractor={(item) => item ?? 'all'}
+        renderItem={({ item }) => (
           <TouchableOpacity
-            key={c}
-            testID={`category-${c}`}
-            style={[styles.chip, { borderColor: colors.border.primary, backgroundColor: selectedCategory === c ? colors.gold : 'transparent' }]}
-            onPress={() => setSelectedCategory(c)}
+            testID={`category-${item ?? 'null'}`}
+            style={[
+              styles.chip,
+              {
+                borderColor: colors.border.primary,
+                backgroundColor: selectedCategory === item ? colors.gold : 'transparent',
+              },
+            ]}
+            onPress={() => setSelectedCategory(item)}
           >
-            <Text style={{ color: selectedCategory === c ? colors.text.inverse : colors.text.primary }}>{c}</Text>
+            <Text style={{ color: selectedCategory === item ? colors.text.inverse : colors.text.primary }}>
+              {item === null ? 'All' : item}
+            </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        )}
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterRow}
+      />
       {tags.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-          <TouchableOpacity
-            testID="tag-null"
-            style={[styles.chip, { borderColor: colors.border.primary, backgroundColor: selectedTag === null ? colors.gold : 'transparent' }]}
-            onPress={() => setSelectedTag(null)}
-          >
-            <Text style={{ color: selectedTag === null ? colors.text.inverse : colors.text.primary }}>All tags</Text>
-          </TouchableOpacity>
-          {tags.map((tag) => (
+        <FlatList
+          horizontal
+          data={[null, ...tags]}
+          keyExtractor={(item) => item ?? 'all'}
+          renderItem={({ item }) => (
             <TouchableOpacity
-              key={tag}
-              testID={`tag-${tag}`}
-              style={[styles.chip, { borderColor: colors.border.primary, backgroundColor: selectedTag === tag ? colors.gold : 'transparent' }]}
-              onPress={() => setSelectedTag(tag)}
+              testID={`tag-${item ?? 'null'}`}
+              style={[
+                styles.chip,
+                {
+                  borderColor: colors.border.primary,
+                  backgroundColor: selectedTag === item ? colors.gold : 'transparent',
+                },
+              ]}
+              onPress={() => setSelectedTag(item)}
             >
-              <Text style={{ color: selectedTag === tag ? colors.text.inverse : colors.text.primary }}>{tag}</Text>
+              <Text style={{ color: selectedTag === item ? colors.text.inverse : colors.text.primary }}>
+                {item === null ? 'All tags' : item}
+              </Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+          )}
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterRow}
+        />
       )}
     </>
   );
