@@ -28,13 +28,14 @@ jest.mock('../agents/settings-agent', () => ({
 
 jest.mock('../services/tonContract', () => ({
   deployOrderPayment: jest.fn().mockResolvedValue({ contractAddress: 'escrow1', txHash: 'tx1' }),
-  releasePayment: jest.fn(),
-  refundPayment: jest.fn(),
+  releasePayment: jest.fn().mockResolvedValue('hash-release'),
+  refundPayment: jest.fn().mockResolvedValue('hash-refund'),
 }));
 
 jest.mock('../services/sellerRegistry');
 jest.mock('../services/localIdentity');
 jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
+jest.mock('../services/eventBus', () => ({ publish: jest.fn() }));
 
 jest.mock('../services/tonAuth', () => ({
   getAddress: jest.fn().mockReturnValue('seller'),
@@ -50,6 +51,7 @@ const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
 const ordersAgent = require('../agents/orders-agent').default;
 const notificationsAgent = require('../agents/notifications-agent');
 const tonAuth = require('../services/tonAuth');
+const eventBus = require('../services/eventBus');
 
 describe('ordersAgent.add', () => {
   it('encrypts shipping address and persists new fields', async () => {
@@ -154,6 +156,120 @@ describe('ordersAgent admin authorization', () => {
       ordersAgent.update({ ...order, status: 'courier_found' })
     ).resolves.not.toThrow();
     expect(mockStore[order.id].status).toBe('courier_found');
+  });
+});
+
+describe('ordersAgent event emission', () => {
+  beforeEach(() => {
+    eventBus.publish.mockClear();
+    tonAuth.getAddress.mockReturnValue('seller');
+  });
+
+  it('emits order.updated on status change', async () => {
+    const order: Order = {
+      id: 'evt1',
+      userId: 'u1',
+      items: [],
+      total: 0,
+      status: 'order_received',
+      itemsHash: '',
+      paymentMethod: 'ton',
+      buyerAddress: 'buyer',
+      sellerAddress: 'seller',
+      createdAt: '',
+      updatedAt: '',
+      trackingSteps: [],
+    } as any;
+    mockStore[order.id] = order;
+    await ordersAgent.update({ ...order, status: 'courier_found' });
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      '/congress/orders/1',
+      'order.updated',
+      expect.objectContaining({ orderId: order.id, prevStatus: 'order_received', newStatus: 'courier_found' }),
+    );
+  });
+
+  it('emits dispute.updated when entering dispute', async () => {
+    const order: Order = {
+      id: 'evt2',
+      userId: 'u1',
+      items: [],
+      total: 0,
+      status: 'delivered',
+      itemsHash: '',
+      paymentMethod: 'ton',
+      buyerAddress: 'buyer',
+      sellerAddress: 'seller',
+      createdAt: '',
+      updatedAt: '',
+      trackingSteps: [],
+    } as any;
+    mockStore[order.id] = order;
+    await ordersAgent.update({ ...order, status: 'disputed' });
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      '/congress/orders/1',
+      'dispute.updated',
+      expect.objectContaining({ orderId: order.id, prevStatus: 'delivered', newStatus: 'disputed' }),
+    );
+  });
+
+  it('emits payment.received when releasing payment', async () => {
+    const order: Order = {
+      id: 'evt3',
+      userId: 'u1',
+      items: [],
+      total: 0,
+      status: 'delivered',
+      itemsHash: '',
+      paymentMethod: 'ton',
+      buyerAddress: 'buyer',
+      sellerAddress: 'seller',
+      escrowAddr: 'esc',
+      paymentContractAddress: 'esc',
+      paymentTxHash: 'tx',
+      createdAt: '',
+      updatedAt: '',
+      trackingSteps: [],
+    } as any;
+    mockStore[order.id] = order;
+    await ordersAgent.releasePayment(order.id);
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      '/congress/orders/1',
+      'payment.received',
+      expect.objectContaining({ orderId: order.id }),
+    );
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      '/congress/orders/1',
+      'order.updated',
+      expect.objectContaining({ prevStatus: 'delivered', newStatus: 'released' }),
+    );
+  });
+
+  it('emits order.updated when refunding payment', async () => {
+    const order: Order = {
+      id: 'evt4',
+      userId: 'u1',
+      items: [],
+      total: 0,
+      status: 'delivered',
+      itemsHash: '',
+      paymentMethod: 'ton',
+      buyerAddress: 'buyer',
+      sellerAddress: 'seller',
+      escrowAddr: 'esc',
+      paymentContractAddress: 'esc',
+      paymentTxHash: 'tx',
+      createdAt: '',
+      updatedAt: '',
+      trackingSteps: [],
+    } as any;
+    mockStore[order.id] = order;
+    await ordersAgent.refundPayment(order.id);
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      '/congress/orders/1',
+      'order.updated',
+      expect.objectContaining({ prevStatus: 'delivered', newStatus: 'refunded' }),
+    );
   });
 });
 

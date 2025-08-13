@@ -16,6 +16,9 @@ import { encryptShippingInfo } from '../utils/shippingCrypto';
 import { sha256 } from '@noble/hashes/sha256';
 import { logOrderEvent } from '../services/eventLog';
 import ensureTonWallet from '../utils/ensureTonWallet';
+import eventBus from '../services/eventBus';
+
+const ORDER_TOPIC = '/congress/orders/1';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -31,6 +34,22 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 class OrdersAgent {
   private subscribers: Set<(o: Order) => void> = new Set();
   private sellerMetrics: Record<string, { completed: number; refunds: number }> = {};
+
+  private buildBaseEvent(order: Order) {
+    return {
+      id: order.id,
+      orderId: order.id,
+      storeId: order.items?.[0]?.product?.storeId || '',
+      buyerAddress: order.buyerAddress,
+      sellerAddress: order.sellerAddress,
+      payment: {
+        method: order.paymentMethod,
+        contractAddress: order.paymentContractAddress,
+        txHash: order.paymentTxHash,
+        total: order.total,
+      },
+    };
+  }
 
   private async recordSellerMetric(seller?: string, type?: 'completed' | 'refunded') {
     if (!seller) return;
@@ -151,6 +170,11 @@ class OrdersAgent {
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
+    await eventBus.publish(ORDER_TOPIC, 'order.updated', {
+      ...this.buildBaseEvent(order),
+      prevStatus: current.status,
+      newStatus: order.status,
+    });
     this.subscribers.forEach((cb) => cb(order));
     if (statusChanged) {
       await this.notifyStatusChange(order);
@@ -160,6 +184,11 @@ class OrdersAgent {
         await this.recordSellerMetric(order.sellerAddress, 'refunded');
       }
       if (order.status === 'disputed' || current.status === 'disputed') {
+        await eventBus.publish(ORDER_TOPIC, 'dispute.updated', {
+          ...this.buildBaseEvent(order),
+          prevStatus: current.status,
+          newStatus: order.status,
+        });
         await this.notifyDisputeUpdate(order);
       }
     }
@@ -228,6 +257,14 @@ class OrdersAgent {
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
+    await eventBus.publish(ORDER_TOPIC, 'order.updated', {
+      ...this.buildBaseEvent(updated),
+      prevStatus: order.status,
+      newStatus: updated.status,
+    });
+    await eventBus.publish(ORDER_TOPIC, 'payment.received', {
+      ...this.buildBaseEvent(updated),
+    });
     await Promise.all(
       order.items.map((item) =>
         productsAgent.decrementStock(
@@ -273,6 +310,11 @@ class OrdersAgent {
       },
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
+    });
+    await eventBus.publish(ORDER_TOPIC, 'order.updated', {
+      ...this.buildBaseEvent(updated),
+      prevStatus: order.status,
+      newStatus: updated.status,
     });
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
