@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  I18nManager,
+} from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import productsAgent from '../../agents/products-agent';
 import reviewAgent from '../../agents/review-agent';
@@ -26,6 +35,7 @@ export default function StorefrontScreen({ initialCategory }: Props) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [filtered, setFiltered] = useState<Product[]>([]);
   const fuseRef = useRef<Fuse<Product> | null>(null);
+  const CARD_HEIGHT = 220;
 
   useEffect(() => {
     const load = async () => {
@@ -69,11 +79,8 @@ export default function StorefrontScreen({ initialCategory }: Props) {
     setFiltered(result);
   }, [products, search, selectedCategory, selectedTag]);
 
-  return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
-    >
+  const renderHeader = () => (
+    <>
       <TextInput
         testID="search-input"
         style={[styles.searchInput, { borderColor: colors.border.primary, color: colors.text.primary }]}
@@ -122,20 +129,44 @@ export default function StorefrontScreen({ initialCategory }: Props) {
           ))}
         </ScrollView>
       )}
-      {filtered.map((p) => (
-        <View key={p.id} style={styles.product}>
-          <ProductCard product={p} style={{ marginBottom: 4 }} />
-          <Text style={{ color: colors.text.secondary, textAlign: 'right' }}>
-            ⭐ {reviews[p.id]?.rating.toFixed(1) || '0'} ({reviews[p.id]?.count || 0})
-          </Text>
-        </View>
-      ))}
-      {filtered.length === 0 && (
+    </>
+  );
+
+  const renderItem = ({ item: p }: { item: Product }) => (
+    <View style={styles.product}>
+      <ProductCard product={p} style={{ marginBottom: 4 }} />
+      <Text style={{ color: colors.text.secondary, textAlign: 'right' }}>
+        ⭐ {reviews[p.id]?.rating.toFixed(1) || '0'} ({reviews[p.id]?.count || 0})
+      </Text>
+    </View>
+  );
+
+  const getItemLayout = (_data: any, index: number) => ({
+    length: CARD_HEIGHT,
+    offset: CARD_HEIGHT * index,
+    index,
+  });
+
+  return (
+    <FlatList
+      data={filtered}
+      keyExtractor={(item) => item.id}
+      renderItem={renderItem}
+      ListHeaderComponent={renderHeader}
+      ListEmptyComponent={() => (
         <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
           אין מוצרים זמינים
         </Text>
       )}
-    </ScrollView>
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={[
+        styles.content,
+        { direction: I18nManager.isRTL ? 'rtl' : 'ltr' },
+      ]}
+      initialNumToRender={8}
+      windowSize={5}
+      getItemLayout={getItemLayout}
+    />
   );
 }
 
