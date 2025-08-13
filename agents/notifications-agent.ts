@@ -112,7 +112,7 @@ class NotificationsAgent {
     try {
       const bootstrap = getWakuBootstrapNodes();
       if (bootstrap.length === 0) bootstrap.push(DEFAULT_BOOTSTRAP);
-      this.node = await createLightNode({ libp2p: { bootstrap } });
+      this.node = await createLightNode({ libp2p: { bootstrap } } as any);
       await this.node.start();
       await waitForRemotePeer(this.node, [Protocols.Relay]);
       return this.node;
