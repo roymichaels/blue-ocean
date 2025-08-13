@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   TouchableOpacity,
   FlatList,
   Dimensions,
@@ -37,6 +36,7 @@ import EmptyState from '../../components/EmptyState';
 import BannerFormModal from '../../components/BannerFormModal';
 import CartModal from '../../components/CartModal';
 import ProductFormModal from '../../components/ProductFormModal';
+import SmartImage from '../../components/SmartImage';
 
 const { width } = Dimensions.get('window');
 const BANNER_WIDTH = width - 32;
@@ -265,10 +265,11 @@ export default function HomeScreen() {
         style={styles.bannerTouchable}
         onPress={() => router.push(`/category/${item.category}`)}
       >
-        <Image
-          source={{ uri: item.image }}
+        <SmartImage
+          uri={item.image}
           style={styles.heroImage}
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="disk"
         />
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>

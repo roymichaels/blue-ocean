@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   TextInput,
   Modal,
   Platform,
@@ -24,6 +23,7 @@ import ConfirmationModal from '../../components/ConfirmationModal';
 import { useAuthModal } from '../../components/AuthModalContext';
 import commonStyles from '../../constants/styles';
 import Card from '../../components/Card';
+import SmartImage from '../../components/SmartImage';
 
 
 
@@ -299,7 +299,11 @@ export default function ReviewsScreen() {
           style={styles.productInfo}
           onPress={() => router.push(`/product/${item.productId}`)}
         >
-          <Image source={{ uri: item.productImage }} style={styles.productThumbnail} />
+          <SmartImage
+            uri={item.productImage}
+            style={styles.productThumbnail}
+            cachePolicy="disk"
+          />
           <View style={styles.productDetails}>
             <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={1}>
               {item.productName}
@@ -314,7 +318,11 @@ export default function ReviewsScreen() {
 
       <View style={[styles.reviewContent, { borderTopColor: colors.border.primary }]}>
         <View style={styles.userInfo}>
-          <Image source={{ uri: item.userAvatar }} style={styles.userAvatar} />
+          <SmartImage
+            uri={item.userAvatar}
+            style={styles.userAvatar}
+            cachePolicy="disk"
+          />
           <View>
             <Text style={[styles.userName, { color: colors.text.primary }]}>{item.userName}</Text>
             {item.verified && (
@@ -397,9 +405,10 @@ export default function ReviewsScreen() {
           <View style={[styles.orderSelectorItems, { borderTopColor: colors.border.secondary }]}>
             {item.items.slice(0, 2).map((orderItem, index) => (
               <View key={index} style={styles.orderSelectorItemRow}>
-                <Image 
-                  source={{ uri: orderItem.product.images[0] }} 
-                  style={styles.orderSelectorItemImage} 
+                <SmartImage
+                  uri={orderItem.product.images[0]}
+                  style={styles.orderSelectorItemImage}
+                  cachePolicy="disk"
                 />
                 <Text style={[styles.orderSelectorItemName, { color: colors.text.primary }]} numberOfLines={1}>
                   {orderItem.product.name} x{orderItem.quantity}
@@ -697,9 +706,10 @@ export default function ReviewsScreen() {
                 <View style={[styles.selectedOrderItems, { borderTopColor: colors.border.secondary }]}>
                   {selectedOrder.items.map((item, index) => (
                     <View key={index} style={styles.selectedOrderItem}>
-                      <Image 
-                        source={{ uri: item.product.images[0] }} 
-                        style={styles.selectedOrderItemImage} 
+                      <SmartImage
+                        uri={item.product.images[0]}
+                        style={styles.selectedOrderItemImage}
+                        cachePolicy="disk"
                       />
                       <View style={styles.selectedOrderItemDetails}>
                         <Text style={[styles.selectedOrderItemName, { color: colors.text.primary }]}>
