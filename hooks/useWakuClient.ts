@@ -14,6 +14,8 @@ import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
 import DatabaseService from '../services/database';
 import { ChatMessage } from '../types';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
+import { verifyMessageSignature } from '../utils/verifyMessageSignature';
+import { WakuMessage } from '../types/waku';
 
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
@@ -114,19 +116,33 @@ export function useWakuClient(): WakuClient {
     const decoder = createDecoder(chatTopic(roomId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
-      const encrypted = bytesToUtf8(wakuMsg.payload);
-      const text = await decryptMessage(encrypted, roomId, peerPublicKey);
-      const chat: ChatMessage = {
-        id: Date.now().toString(),
-        senderId: wakuMsg.meta?.sender || 'peer',
-        senderName: wakuMsg.meta?.sender || 'peer',
-        message: text,
-        timestamp: Date.now(),
-        isAdmin: false,
-      };
-      const db = DatabaseService.getInstance();
-      await db.sendChatMessage(roomId, { ...chat, message: encrypted });
-      cb(chat);
+      try {
+        const signed: WakuMessage<string> = JSON.parse(
+          bytesToUtf8(wakuMsg.payload),
+        );
+        if (
+          !(await verifyMessageSignature(signed, signed.sender.publicKey))
+        )
+          return;
+        const text = await decryptMessage(
+          signed.payload,
+          roomId,
+          peerPublicKey,
+        );
+        const chat: ChatMessage = {
+          id: Date.now().toString(),
+          senderId: signed.sender.publicKey,
+          senderName: signed.sender.publicKey,
+          message: text,
+          timestamp: Date.now(),
+          isAdmin: false,
+        };
+        const db = DatabaseService.getInstance();
+        await db.sendChatMessage(roomId, { ...chat, message: signed.payload });
+        cb(chat);
+      } catch {
+        /* ignore malformed messages */
+      }
     };
     const maybeUnsub = (nodeRef.current.relay as any).addObserver(
       handler,
@@ -157,19 +173,35 @@ export function useWakuClient(): WakuClient {
     for await (const msgs of nodeRef.current.store.queryGenerator(options)) {
       for (const wakuMsg of msgs.messages) {
         if (!wakuMsg.payload) continue;
-        const encrypted = bytesToUtf8(wakuMsg.payload);
-        const text = await decryptMessage(encrypted, roomId, peerPublicKey);
-        const chat: ChatMessage = {
-          id: Date.now().toString(),
-          senderId: wakuMsg.meta?.sender || 'peer',
-          senderName: wakuMsg.meta?.sender || 'peer',
-          message: text,
-          timestamp: wakuMsg.timestamp ? Number(wakuMsg.timestamp) : Date.now(),
-          isAdmin: false,
-        };
-        const db = DatabaseService.getInstance();
-        await db.sendChatMessage(roomId, { ...chat, message: encrypted });
-        cb(chat);
+        try {
+          const signed: WakuMessage<string> = JSON.parse(
+            bytesToUtf8(wakuMsg.payload),
+          );
+          if (
+            !(await verifyMessageSignature(signed, signed.sender.publicKey))
+          )
+            continue;
+          const text = await decryptMessage(
+            signed.payload,
+            roomId,
+            peerPublicKey,
+          );
+          const chat: ChatMessage = {
+            id: Date.now().toString(),
+            senderId: signed.sender.publicKey,
+            senderName: signed.sender.publicKey,
+            message: text,
+            timestamp: wakuMsg.timestamp
+              ? Number(wakuMsg.timestamp)
+              : Date.now(),
+            isAdmin: false,
+          };
+          const db = DatabaseService.getInstance();
+          await db.sendChatMessage(roomId, { ...chat, message: signed.payload });
+          cb(chat);
+        } catch {
+          /* ignore malformed messages */
+        }
       }
     }
   };
