@@ -73,13 +73,14 @@ export default function StoreProductsScreen() {
         data={products}
         keyExtractor={(p) => p.id}
         renderItem={({ item: p }) => (
-          <ProductCard
-            product={p}
-            isAdmin
-            onEdit={() => openForm(p)}
-            onDelete={(id) => handleDeleted(id)}
-            style={{ marginBottom: 12 }}
-          />
+          <TouchableOpacity style={{ marginBottom: 12 }}>
+            <ProductCard
+              product={p}
+              isAdmin
+              onEdit={() => openForm(p)}
+              onDelete={(id) => handleDeleted(id)}
+            />
+          </TouchableOpacity>
         )}
         ListEmptyComponent={
           <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>אין מוצרים</Text>
