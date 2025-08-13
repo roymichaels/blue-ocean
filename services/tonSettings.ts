@@ -12,6 +12,10 @@ import {
   bytesToUtf8,
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
+import { verifyMessageSignature } from '../utils/verifyMessageSignature';
+import { WakuMessage } from '../types/waku';
+import { sign } from '@noble/ed25519';
+import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
 const ADDRESS =
   config.TON_SETTINGS_ADDRESS ??
@@ -64,9 +68,23 @@ async function emit(event: SettingsWriteEvent) {
   const n = await ensureNode();
   if (!n) return;
   try {
+    const priv = await getPrivateKey();
+    const pub = await getPublicKeyHex();
+    const msg: WakuMessage<SettingsWriteEvent> = {
+      type: event.type,
+      payload: event,
+      sender: { publicKey: pub },
+      signature: '',
+    };
+    const msgBytes = new TextEncoder().encode(
+      JSON.stringify({ type: msg.type, payload: msg.payload, sender: msg.sender }),
+    );
+    const sig = await sign(msgBytes, priv);
+    msg.signature = Buffer.from(sig).toString('hex');
+
     const encoder = createEncoder({ contentTopic: '/congress/settings/1' });
     await n.lightPush.send(encoder, {
-      payload: utf8ToBytes(JSON.stringify(event)),
+      payload: utf8ToBytes(JSON.stringify(msg)),
     });
   } catch (err) {
     errorLog('Failed to broadcast settings.write', err);
@@ -79,12 +97,19 @@ export async function subscribeToSettingsWrites(
   const n = await ensureNode();
   if (!n) return () => {};
   const decoder = createDecoder('/congress/settings/1');
-  const handler = (wakuMsg: any) => {
+  const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
-      const evt = JSON.parse(bytesToUtf8(wakuMsg.payload));
+      const signed: WakuMessage<SettingsWriteEvent> = JSON.parse(
+        bytesToUtf8(wakuMsg.payload),
+      );
+      if (
+        !(await verifyMessageSignature(signed, signed.sender.publicKey))
+      )
+        return;
+      const evt = signed.payload;
       if (evt && evt.type === 'settings.write') {
-        cb(evt as SettingsWriteEvent);
+        cb(evt);
       }
     } catch {
       /* ignore malformed events */
