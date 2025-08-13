@@ -65,6 +65,9 @@ const styles = StyleSheet.create({
   loader: {
     padding: 8,
   },
+  loader: {
+    padding: 8,
+  },
 });
 
 export default MessageList;
