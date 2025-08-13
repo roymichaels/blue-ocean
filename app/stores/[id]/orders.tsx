@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { listOrdersBySeller } from '../../../services/tonOrders';
@@ -11,6 +11,14 @@ export default function StoreOrdersScreen() {
   const { colors } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
   const address = useTonAddress();
+
+  const handlePress = (order: Order) => {
+    console.log('Pressed order', order.id);
+  };
+
+  const handleLongPress = (order: Order) => {
+    console.log('Long pressed order', order.id);
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -42,11 +50,15 @@ export default function StoreOrdersScreen() {
       data={orders}
       keyExtractor={(order) => order.id}
       renderItem={({ item: o }) => (
-        <View style={[styles.orderItem, { borderColor: colors.border.primary }]}>
+        <TouchableOpacity
+          style={[styles.orderItem, { borderColor: colors.border.primary }]}
+          onPress={() => handlePress(o)}
+          onLongPress={() => handleLongPress(o)}
+        >
           <Text style={{ color: colors.text.primary }}>#{o.id}</Text>
           <Text style={{ color: colors.text.primary }}>{o.status}</Text>
           <Text style={{ color: colors.text.primary }}>{o.total}</Text>
-        </View>
+        </TouchableOpacity>
       )}
       ListEmptyComponent={
         <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>אין הזמנות</Text>
