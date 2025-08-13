@@ -11,7 +11,8 @@
     "seed": "node scripts/seed.js",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@babel/plugin-transform-template-literals": "^7.27.1",

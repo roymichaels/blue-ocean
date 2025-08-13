@@ -17,4 +17,5 @@ module.exports = {
   },
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],
+  globalSetup: '<rootDir>/tests/lintTypeCheck.js',
 };

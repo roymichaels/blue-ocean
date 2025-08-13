@@ -33,6 +33,13 @@ Run the linter and TypeScript checker before committing:
 yarn lint && yarn typecheck
 ```
 
+The project uses Husky and `lint-staged` to run these checks on staged files.
+Install the Git hooks after cloning:
+
+```sh
+yarn husky install
+```
+
 ### Environment Variables
 
 The project reads configuration from a `.env` file using Expo's env support
