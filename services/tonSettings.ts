@@ -150,6 +150,16 @@ export async function fetchSettings(): Promise<TonSettings> {
   };
 }
 
+export async function getFeeBps(): Promise<number> {
+  const raw = await getSetting('feeBps');
+  const parsed = Number(raw);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export async function setFeeBps(value: number, actor: string): Promise<void> {
+  await setSetting('feeBps', String(value), actor);
+}
+
 export async function getAdmins(): Promise<string[]> {
   const raw = await getSetting('admins');
   try {
