@@ -4,11 +4,10 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
-import { PanGestureHandler, PinchGestureHandler, State } from 'react-native-gesture-handler';
+import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedGestureHandler,
   useAnimatedStyle,
@@ -16,8 +15,6 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
-
-const { width, height } = Dimensions.get('window');
 
 interface MediaItem {
   type: 'image' | 'video';
@@ -33,6 +30,7 @@ interface Props {
 
 export default function MediaViewer({ media, initialIndex, onClose }: Props) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const insets = useSafeAreaInsets();
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -80,7 +78,13 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+      <TouchableOpacity
+        style={[
+          styles.closeButton,
+          { top: insets.top + 16, right: insets.right + 16 },
+        ]}
+        onPress={onClose}
+      >
         <X size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
@@ -128,8 +132,6 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 60,
-    right: 20,
     zIndex: 1000,
     width: 40,
     height: 40,
@@ -150,8 +152,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mediaWrapper: {
-    width: width,
-    height: height * 0.7,
+    width: '100%',
+    height: '70%',
     justifyContent: 'center',
     alignItems: 'center',
   },
