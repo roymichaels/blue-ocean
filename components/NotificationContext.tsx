@@ -1,40 +1,116 @@
 import { errorLog } from '@/utils/logger';
-import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+  useRef,
+  useCallback,
+} from 'react';
 import NotificationService from '../services/notification';
 import { Notification } from '../types';
 import NotificationPopup from './NotificationPopup';
 import { useAuth } from './AuthContext';
 import { useWakuClient } from '../hooks/useWakuClient';
 
-interface NotificationContextType {
+interface NotificationState {
   unreadCount: number;
-  showNotification: (title: string, message: string, type?: 'success' | 'info' | 'warning' | 'error') => void;
   refreshNotifications: () => Promise<void>;
 }
 
-const NotificationContext = createContext<NotificationContextType>({
+interface NotificationActions {
+  showNotification: (
+    title: string,
+    message: string,
+    type?: 'success' | 'info' | 'warning' | 'error',
+  ) => void;
+}
+
+const NotificationStateContext = createContext<NotificationState>({
   unreadCount: 0,
-  showNotification: () => {},
   refreshNotifications: async () => {},
 });
 
-export const useNotifications = () => useContext(NotificationContext);
+const NotificationActionsContext = createContext<NotificationActions>({
+  showNotification: () => {},
+});
+
+export const useNotificationState = () => useContext(NotificationStateContext);
+export const useNotificationActions = () => useContext(NotificationActionsContext);
+
+export const useNotifications = () => {
+  return { ...useNotificationState(), ...useNotificationActions() };
+};
 
 interface NotificationProviderProps {
   children: ReactNode;
 }
 
 export function NotificationProvider({ children }: NotificationProviderProps) {
-  const [unreadCount, setUnreadCount] = useState(0);
+  return (
+    <NotificationPopupProvider>
+      <NotificationCountProvider>{children}</NotificationCountProvider>
+    </NotificationPopupProvider>
+  );
+}
+
+function NotificationPopupProvider({ children }: { children: ReactNode }) {
   const [activeNotification, setActiveNotification] = useState<{
     title: string;
     message: string;
     type: 'success' | 'info' | 'warning' | 'error';
   } | null>(null);
+
+  const showNotification = useCallback(
+    (
+      title: string,
+      message: string,
+      type: 'success' | 'info' | 'warning' | 'error' = 'info',
+    ) => {
+      setActiveNotification({ title, message, type });
+    },
+    [],
+  );
+
+  const handleClose = () => setActiveNotification(null);
+
+  return (
+    <NotificationActionsContext.Provider value={{ showNotification }}>
+      {children}
+      {activeNotification && (
+        <NotificationPopup
+          title={activeNotification.title}
+          message={activeNotification.message}
+          type={activeNotification.type}
+          onClose={handleClose}
+        />
+      )}
+    </NotificationActionsContext.Provider>
+  );
+}
+
+function NotificationCountProvider({ children }: { children: ReactNode }) {
+  const [unreadCount, setUnreadCount] = useState(0);
   const { isLoggedIn, user } = useAuth();
   const notificationSubscription = useRef<any>(null);
   const waku = useWakuClient();
   const wakuUnsub = useRef<(() => void) | null>(null);
+  const { showNotification } = useNotificationActions();
+
+  const refreshNotifications = useCallback(async () => {
+    if (!isLoggedIn || !user) {
+      setUnreadCount(0);
+      return;
+    }
+    try {
+      const notificationService = NotificationService.getInstance();
+      const count = await notificationService.getUnreadCount(user.id);
+      setUnreadCount(count);
+    } catch (error) {
+      errorLog('Error refreshing notifications:', error);
+    }
+  }, [isLoggedIn, user]);
 
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -46,38 +122,30 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       cleanupSubscription();
       cleanupWakuSubscription();
     }
-
     return () => {
       cleanupSubscription();
       cleanupWakuSubscription();
     };
-  }, [isLoggedIn, user]);
+  }, [isLoggedIn, user, refreshNotifications]);
 
   const setupRealtimeSubscription = () => {
     if (!user) return;
-    
     const notificationService = NotificationService.getInstance();
-    
-    // Clean up any existing subscription
     cleanupSubscription();
-    
-    // Set up new subscription
     notificationSubscription.current = notificationService.subscribeToUserNotifications(
       user.id,
       (notification) => {
-        // Update unread count
-        setUnreadCount(prev => prev + 1);
-        
-        // Show notification popup
+        setUnreadCount((prev) => prev + 1);
         showNotification(
           notification.title,
           notification.message,
-          notification.type === 'order' ? 'success' :
-          notification.type === 'promo' ? 'info' :
-          notification.type === 'message' ? 'info' :
-          'info'
+          notification.type === 'order'
+            ? 'success'
+            : notification.type === 'promo' || notification.type === 'message'
+              ? 'info'
+              : 'info',
         );
-      }
+      },
     );
   };
 
@@ -122,50 +190,12 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }
   };
 
-  const refreshNotifications = async () => {
-    if (!isLoggedIn || !user) {
-      setUnreadCount(0);
-      return;
-    }
-    
-    try {
-      const notificationService = NotificationService.getInstance();
-      const count = await notificationService.getUnreadCount(user.id);
-      setUnreadCount(count);
-    } catch (error) {
-      errorLog('Error refreshing notifications:', error);
-    }
-  };
-
-  const showNotification = (
-    title: string, 
-    message: string, 
-    type: 'success' | 'info' | 'warning' | 'error' = 'info'
-  ) => {
-    setActiveNotification({ title, message, type });
-  };
-
-  const handleCloseNotification = () => {
-    setActiveNotification(null);
-  };
-
   return (
-    <NotificationContext.Provider 
-      value={{ 
-        unreadCount, 
-        showNotification,
-        refreshNotifications
-      }}
+    <NotificationStateContext.Provider
+      value={{ unreadCount, refreshNotifications }}
     >
       {children}
-      {activeNotification && (
-        <NotificationPopup
-          title={activeNotification.title}
-          message={activeNotification.message}
-          type={activeNotification.type}
-          onClose={handleCloseNotification}
-        />
-      )}
-    </NotificationContext.Provider>
+    </NotificationStateContext.Provider>
   );
 }
+

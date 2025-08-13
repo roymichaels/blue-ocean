@@ -733,11 +733,15 @@ const loadOrCreateDefaultRoom = async () => {
 
   const { chatRooms, selectedRoom, setSelectedRoom, loadChatRooms, unreadTotal } =
     useChatRooms(isOpen);
-  const { messages, newMessage, setNewMessage, sendMessage } = useChatMessages(
-    selectedRoom,
-    user,
-    isAdmin,
-  );
+  const {
+    messages,
+    newMessage,
+    setNewMessage,
+    sendMessage,
+    loadOlderMessages,
+    hasMore,
+    loadingMore,
+  } = useChatMessages(selectedRoom, user, isAdmin);
 
   const toggleOpen = () => {
     const next = !isOpen;
@@ -780,7 +784,13 @@ const loadOrCreateDefaultRoom = async () => {
               />
             </View>
             <View style={styles.chatArea}>
-              <MessageList messages={messages} colors={colors} />
+              <MessageList
+                messages={messages}
+                colors={colors}
+                onLoadMore={loadOlderMessages}
+                hasMore={hasMore}
+                loadingMore={loadingMore}
+              />
               <MessageInput
                 value={newMessage}
                 onChange={setNewMessage}

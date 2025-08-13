@@ -1,14 +1,13 @@
 import { errorLog } from '@/utils/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import DatabaseService from '../services/database';
 import { ChatRoom } from '../types';
 
 export function useChatRooms(isOpen: boolean) {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
-  const [unreadTotal, setUnreadTotal] = useState(0);
 
-  const loadChatRooms = async () => {
+  const loadChatRooms = useCallback(async () => {
     try {
       const db = DatabaseService.getInstance();
       const rooms = await db.getChatRooms();
@@ -16,17 +15,18 @@ export function useChatRooms(isOpen: boolean) {
     } catch (err) {
       errorLog('Failed to load chat rooms', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
       loadChatRooms();
     }
-  }, [isOpen]);
+  }, [isOpen, loadChatRooms]);
 
-  useEffect(() => {
-    setUnreadTotal(chatRooms.reduce((sum, r) => sum + r.unreadCount, 0));
-  }, [chatRooms]);
+  const unreadTotal = useMemo(
+    () => chatRooms.reduce((sum, r) => sum + r.unreadCount, 0),
+    [chatRooms],
+  );
 
   return { chatRooms, selectedRoom, setSelectedRoom, loadChatRooms, unreadTotal };
 }

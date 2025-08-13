@@ -1,11 +1,26 @@
 import { errorLog } from '@/utils/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import DatabaseService from '../services/database';
 import { ChatMessage, ChatRoom, User } from '../types';
+import { useWakuClient } from './useWakuClient';
 
 export function useChatMessages(selectedRoom: ChatRoom | null, user: User | null | undefined, isAdmin: boolean) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const waku = useWakuClient();
+
+  const loadMessages = useCallback(async (roomId: string) => {
+    try {
+      const db = DatabaseService.getInstance();
+      const msgs = await db.getChatMessages(roomId);
+      setMessages(msgs);
+      setHasMore(true);
+    } catch (err) {
+      errorLog('Failed to load messages', err);
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedRoom) {
@@ -13,19 +28,9 @@ export function useChatMessages(selectedRoom: ChatRoom | null, user: User | null
     } else {
       setMessages([]);
     }
-  }, [selectedRoom?.id]);
+  }, [selectedRoom?.id, loadMessages]);
 
-  const loadMessages = async (roomId: string) => {
-    try {
-      const db = DatabaseService.getInstance();
-      const msgs = await db.getChatMessages(roomId);
-      setMessages(msgs);
-    } catch (err) {
-      errorLog('Failed to load messages', err);
-    }
-  };
-
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!selectedRoom || !user || !newMessage.trim()) return;
     const msg: ChatMessage = {
       id: `msg_${Date.now()}`,
@@ -43,8 +48,44 @@ export function useChatMessages(selectedRoom: ChatRoom | null, user: User | null
     } catch (err) {
       errorLog('Failed to send message', err);
     }
-  };
+  }, [selectedRoom, user, newMessage, isAdmin]);
 
-  return { messages, newMessage, setNewMessage, sendMessage };
+  const loadOlderMessages = useCallback(async () => {
+    if (!selectedRoom || loadingMore || !hasMore) return;
+    const oldest = messages[0]?.timestamp;
+    if (!oldest) return;
+    setLoadingMore(true);
+    try {
+      const fetched = await waku.fetchHistory(
+        selectedRoom.id,
+        selectedRoom.userPublicKey || '',
+        (msg) => {
+          setMessages((prev) => [msg, ...prev]);
+        },
+        undefined,
+        oldest - 1,
+      );
+      if (fetched === 0) setHasMore(false);
+    } catch (err) {
+      errorLog('Failed to load older messages', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [selectedRoom, loadingMore, hasMore, messages, waku]);
+
+  const sortedMessages = useMemo(
+    () => [...messages].sort((a, b) => a.timestamp - b.timestamp),
+    [messages],
+  );
+
+  return {
+    messages: sortedMessages,
+    newMessage,
+    setNewMessage,
+    sendMessage,
+    loadOlderMessages,
+    hasMore,
+    loadingMore,
+  };
 }
 export default useChatMessages;
