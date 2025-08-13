@@ -128,6 +128,10 @@ class OrderService {
       pay = { ...pay, contractAddress, txHash };
     }
 
+    if (!pay?.buyerAddress) {
+      pay = { ...pay, buyerAddress: tonAuth.getAddress() || undefined };
+    }
+
     const orderId = randomUUID();
     const timestamp = new Date().toISOString();
     const itemsHash = Buffer.from(
@@ -183,6 +187,7 @@ class OrderService {
             }
           : {
               method: 'cash_on_delivery' as const,
+              buyerAddress: tonAuth.getAddress() || undefined,
               sellerAddress: store?.owner,
             };
       const order = await this.createOrder(
