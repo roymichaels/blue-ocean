@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { Image as ExpoImage, ImageProps } from 'expo-image';
 
-const placeholder = require('../assets/images/icon.png');
+const fallback = require('../assets/images/icon.png');
+const shimmer = { blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J]' };
 
 interface SmartImageProps extends Omit<ImageProps, 'source'> {
   uri: string;
 }
 
-export default function SmartImage({ uri, style, contentFit = 'cover', cachePolicy = 'disk', ...props }: SmartImageProps) {
+export default function SmartImage({
+  uri,
+  style,
+  contentFit = 'cover',
+  cachePolicy = 'disk',
+  placeholder = shimmer,
+  ...props
+}: SmartImageProps) {
   const [source, setSource] = useState<{ uri: string } | number>({ uri });
 
   return (
@@ -18,7 +26,8 @@ export default function SmartImage({ uri, style, contentFit = 'cover', cachePoli
       contentFit={contentFit}
       cachePolicy={cachePolicy}
       placeholder={placeholder}
-      onError={() => setSource(placeholder)}
+      transition={300}
+      onError={() => setSource(fallback)}
     />
   );
 }

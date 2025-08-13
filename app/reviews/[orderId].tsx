@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Star, ArrowLeft } from 'lucide-react-native';
@@ -9,6 +9,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ordersAgent from '../../agents/orders-agent';
 import reviewAgent from '../../agents/review-agent';
 import { Order, Review } from '../../types';
+import SmartImage from '../../components/SmartImage';
 
 export default function SubmitReviewScreen() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
@@ -102,9 +103,15 @@ export default function SubmitReviewScreen() {
         <View style={{ width: 40 }} />
       </View>
       <ScrollView contentContainerStyle={styles.content}> 
-        <View style={styles.productRow}> 
-          <Image source={{ uri: item.product.images[0] }} style={styles.productImage} />
-          <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={1}>{item.product.name}</Text>
+        <View style={styles.productRow}>
+          <SmartImage
+            uri={item.product.images[0]}
+            style={styles.productImage}
+            cachePolicy="disk"
+          />
+          <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={1}>
+            {item.product.name}
+          </Text>
         </View>
         <View style={styles.ratingSection}> 
           {renderStars()}

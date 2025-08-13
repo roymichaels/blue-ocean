@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  Image,
   Linking,
   Platform,
 } from 'react-native';
@@ -21,6 +20,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
 import { DeliveryJob, User } from '../../types';
 import commonStyles from '../../constants/styles';
+import SmartImage from '../../components/SmartImage';
 
 export default function AdminDeliveriesScreen() {
   const { isAdmin } = useAuth();
@@ -250,9 +250,10 @@ export default function AdminDeliveriesScreen() {
             )}
             {job.proofUri && (
               <TouchableOpacity onPress={() => openProof(job.proofUri!)}>
-                <Image
-                  source={{ uri: job.proofUri }}
+                <SmartImage
+                  uri={job.proofUri}
                   style={styles.proofImage}
+                  cachePolicy="disk"
                 />
               </TouchableOpacity>
             )}

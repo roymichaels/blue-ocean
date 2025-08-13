@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Modal,
   TextInput,
   Platform,
@@ -26,6 +25,7 @@ import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import commonStyles from '../../constants/styles';
 import Card from '../../components/Card';
+import SmartImage from '../../components/SmartImage';
 
 
 
@@ -436,7 +436,12 @@ export default function SubcategoryScreen() {
     >
       <View style={styles.productImageContainer}>
         {item.images && item.images.length > 0 ? (
-          <Image source={{ uri: item.images[0] }} style={styles.productImage} resizeMode="cover" />
+          <SmartImage
+            uri={item.images[0]}
+            style={styles.productImage}
+            contentFit="cover"
+            cachePolicy="disk"
+          />
         ) : (
           <View style={styles.noImageContainer}>
             <Text style={styles.noImageText}>אין תמונה</Text>
