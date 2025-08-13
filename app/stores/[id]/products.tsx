@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { listProducts } from '../../../services/tonProducts';
@@ -7,6 +7,8 @@ import { Product } from '../../../types';
 import ProductCard from '../../../components/ProductCard';
 import ProductFormModal from '../../../components/ProductFormModal';
 import { useTonAddress } from '../../../services/tonAuth';
+
+const ITEM_HEIGHT = 200;
 
 export default function StoreProductsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -67,21 +69,24 @@ export default function StoreProductsScreen() {
       >
         <Text style={{ color: colors.text.primary }}>הוסף מוצר</Text>
       </TouchableOpacity>
-      <ScrollView contentContainerStyle={styles.list}>
-        {products.map((p) => (
+      <FlatList
+        data={products}
+        keyExtractor={(p) => p.id}
+        renderItem={({ item: p }) => (
           <ProductCard
-            key={p.id}
             product={p}
             isAdmin
             onEdit={() => openForm(p)}
             onDelete={(id) => handleDeleted(id)}
             style={{ marginBottom: 12 }}
           />
-        ))}
-        {products.length === 0 && (
-          <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>אין מוצרים</Text>
         )}
-      </ScrollView>
+        ListEmptyComponent={
+          <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>אין מוצרים</Text>
+        }
+        contentContainerStyle={styles.list}
+        getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+      />
       <ProductFormModal
         visible={formVisible}
         product={editingProduct}
