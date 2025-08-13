@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   menuItem: {
     flexDirection: 'row',
@@ -649,7 +649,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 12,
     fontWeight: '500',
-    textAlign: 'right',
+    textAlign: 'end',
     flex: 1,
   },
   languageContainer: {

@@ -76,7 +76,7 @@ export default function StorefrontStoreScreen() {
       {products.map((p) => (
         <View key={p.id} style={styles.product}>
           <ProductCard product={p} style={{ marginBottom: 4 }} />
-          <Text style={{ color: colors.text.secondary, textAlign: 'right' }}>
+          <Text style={{ color: colors.text.secondary, textAlign: 'end' }}>
             ⭐ {reviews[p.id]?.rating.toFixed(1) || '0'} ({reviews[p.id]?.count || 0})
           </Text>
         </View>

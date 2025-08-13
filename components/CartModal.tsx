@@ -463,7 +463,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             value={shippingAddress.name}
             onChangeText={(text) => setShippingAddress({ ...shippingAddress, name: text })}
             placeholder="הכנס שם מלא"
-            textAlign="right"
+            textAlign="end"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -485,7 +485,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             onChangeText={(text) => setShippingAddress({ ...shippingAddress, phone: text })}
             placeholder="הכנס מספר טלפון"
             keyboardType="phone-pad"
-            textAlign="right"
+            textAlign="end"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -506,7 +506,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             value={shippingAddress.street}
             onChangeText={(text) => setShippingAddress({ ...shippingAddress, street: text })}
             placeholder="הכנס כתובת מלאה"
-            textAlign="right"
+            textAlign="end"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -528,7 +528,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               value={shippingAddress.city}
               onChangeText={(text) => setShippingAddress({ ...shippingAddress, city: text })}
               placeholder="עיר"
-              textAlign="right"
+              textAlign="end"
               placeholderTextColor={colors.text.tertiary}
             />
           </View>
@@ -552,7 +552,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               }
               placeholder="מיקוד"
               keyboardType="numeric"
-              textAlign="right"
+              textAlign="end"
               placeholderTextColor={colors.text.tertiary}
             />
           </View>
@@ -577,7 +577,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             placeholder="הערות למשלוח"
             multiline
             numberOfLines={3}
-            textAlign="right"
+            textAlign="end"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -1320,9 +1320,9 @@ const styles = StyleSheet.create({
   },
   productImage: { width: 60, height: 60, borderRadius: 8, marginRight: 12 },
   productInfo: { flex: 1, marginRight: 12 },
-  productName: { fontSize: 14, fontWeight: '600', marginBottom: 4, textAlign: 'right' },
-  productPrice: { fontSize: 16, fontWeight: 'bold', textAlign: 'right' },
-  tierInfo: { fontSize: 12, textAlign: 'right' },
+  productName: { fontSize: 14, fontWeight: '600', marginBottom: 4, textAlign: 'end' },
+  productPrice: { fontSize: 16, fontWeight: 'bold', textAlign: 'end' },
+  tierInfo: { fontSize: 12, textAlign: 'end' },
   quantityControls: { flexDirection: 'row', alignItems: 'center', marginRight: 12 },
   quantityButton: {
     width: 32,
@@ -1343,7 +1343,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   totalContainer: { flex: 1 },
-  totalText: { fontSize: 18, fontWeight: 'bold', textAlign: 'right' },
+  totalText: { fontSize: 18, fontWeight: 'bold', textAlign: 'end' },
   checkoutButton: {
     borderRadius: 12,
     paddingVertical: 12,
@@ -1363,7 +1363,7 @@ const styles = StyleSheet.create({
   formGroup: { marginBottom: 16 },
   formRow: { flexDirection: 'row', gap: 12 },
   formGroupHalf: { flex: 1 },
-  formLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
+  formLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8, textAlign: 'end' },
   formInput: {
     borderWidth: 1,
     borderRadius: 8,
@@ -1373,9 +1373,9 @@ const styles = StyleSheet.create({
   },
   textArea: { height: 80, textAlignVertical: 'top' },
   orderSummary: { borderRadius: 12, padding: 16, marginVertical: 24, borderWidth: 1 },
-  summaryTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12, textAlign: 'right' },
+  summaryTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12, textAlign: 'end' },
   summaryItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  summaryItemName: { fontSize: 14, flex: 1, textAlign: 'right' },
+  summaryItemName: { fontSize: 14, flex: 1, textAlign: 'end' },
   summaryItemPrice: { fontSize: 14, fontWeight: '600' },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   summaryLabel: { fontSize: 14 },
@@ -1411,14 +1411,14 @@ const styles = StyleSheet.create({
   },
   paymentOptionEmoji: { fontSize: 20 },
   paymentOptionInfo: { flex: 1 },
-  paymentOptionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4, textAlign: 'right' },
-  paymentOptionDescription: { fontSize: 12, textAlign: 'right' },
+  paymentOptionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4, textAlign: 'end' },
+  paymentOptionDescription: { fontSize: 12, textAlign: 'end' },
   paymentOptionCheck: { marginLeft: 12 },
   shippingAddressSummary: { borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1 },
   summaryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   editLink: { fontSize: 14, fontWeight: '500' },
-  addressText: { fontSize: 14, lineHeight: 20, textAlign: 'right' },
-  notesText: { fontSize: 12, marginTop: 8, fontStyle: 'italic', textAlign: 'right' },
+  addressText: { fontSize: 14, lineHeight: 20, textAlign: 'end' },
+  notesText: { fontSize: 12, marginTop: 8, fontStyle: 'italic', textAlign: 'end' },
   paymentMethodSummary: { borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1 },
   paymentMethodInfo: { flexDirection: 'row', alignItems: 'center' },
   paymentMethodEmoji: { fontSize: 20, marginRight: 12 },

@@ -62,7 +62,7 @@ export default function StoreDashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  title: { fontSize: 20, fontWeight: '600', marginBottom: 24, textAlign: 'right' },
+  title: { fontSize: 20, fontWeight: '600', marginBottom: 24, textAlign: 'end' },
   stats: { marginBottom: 24, gap: 8, alignItems: 'flex-end' },
   statText: { fontSize: 16 },
   nav: { gap: 12 },

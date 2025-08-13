@@ -73,8 +73,8 @@ const StoreCreation: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { gap: 16 },
-  label: { fontSize: 16, fontWeight: '600', textAlign: 'right' },
-  input: { borderWidth: 1, borderRadius: 8, padding: 8, textAlign: 'right' },
+  label: { fontSize: 16, fontWeight: '600', textAlign: 'end' },
+  input: { borderWidth: 1, borderRadius: 8, padding: 8, textAlign: 'end' },
 });
 
 export default StoreCreation;

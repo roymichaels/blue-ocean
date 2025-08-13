@@ -316,7 +316,7 @@ export default function CategoriesScreen() {
                   setNewCategory({ ...newCategory, id: text })
                 }
                 placeholder="הכנס מזהה קטגוריה (באנגלית)"
-                textAlign="left"
+                textAlign="start"
                 editable={!editingCategory} // Don't allow editing ID for existing categories
               />
             </View>
@@ -339,7 +339,7 @@ export default function CategoriesScreen() {
                   setNewCategory({ ...newCategory, name: text })
                 }
                 placeholder="הכנס שם קטגוריה"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   adminActions: {
     position: 'absolute',
     top: 8,
-    left: 8,
+    start: 8,
     flexDirection: 'row',
   },
   adminActionButton: {
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   formInput: {
     borderWidth: 1,

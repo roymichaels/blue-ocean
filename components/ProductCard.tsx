@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   favoriteButton: {
     position: 'absolute',
     top: 8,
-    left: 8,
+    start: 8,
     width: 28,
     height: 28,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   cartButton: {
     position: 'absolute',
     bottom: 8,
-    right: 8,
+    end: 8,
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   adminActions: {
     position: 'absolute',
     top: 8,
-    right: 8,
+    end: 8,
     flexDirection: 'row',
   },
   adminButton: {
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   badgesContainer: {
     position: 'absolute',
     bottom: 8,
-    left: 8,
+    start: 8,
     flexDirection: 'row',
     flexWrap: 'wrap',
     maxWidth: '70%',
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 8,
     lineHeight: 18,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   priceContainer: {
     flexDirection: 'row',
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   selectedVariantText: {
     fontSize: 12,
     marginBottom: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   stockContainer: {
     flexDirection: 'row',

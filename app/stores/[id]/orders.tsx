@@ -73,7 +73,7 @@ export default function StoreOrdersScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16 },
-  title: { fontSize: 20, fontWeight: '600', marginBottom: 16, textAlign: 'right' },
+  title: { fontSize: 20, fontWeight: '600', marginBottom: 16, textAlign: 'end' },
   orderItem: { padding: 12, borderWidth: 1, borderRadius: 8, marginBottom: 12 },
 });
 

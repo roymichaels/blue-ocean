@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   actionsGrid: {
     flexDirection: 'row',
@@ -653,7 +653,7 @@ const styles = StyleSheet.create({
   reportText: {
     fontSize: 14,
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   reportActions: {
     flexDirection: 'row',
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   activityItem: {
     flexDirection: 'row',
@@ -691,7 +691,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: 8,
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   unreadText: {
     fontWeight: '600',

@@ -267,7 +267,7 @@ export default function ProductFormModal({
                 value={imageUrls}
                 onChangeText={setImageUrls}
                 placeholder="ipfs://..."
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -285,7 +285,7 @@ export default function ProductFormModal({
                 value={videoUrls}
                 onChangeText={setVideoUrls}
                 placeholder="ipfs://..."
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -300,7 +300,7 @@ export default function ProductFormModal({
                 value={editingProduct.name}
                 onChangeText={text => setEditingProduct({ ...editingProduct, name: text })}
                 placeholder="הכנס שם מוצר"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -316,7 +316,7 @@ export default function ProductFormModal({
                 onChangeText={text => setEditingProduct({ ...editingProduct, price: parseFloat(text) || 0 })}
                 placeholder="הכנס מחיר"
                 keyboardType="numeric"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -352,7 +352,7 @@ export default function ProductFormModal({
                 placeholder="הכנס תיאור מוצר"
                 multiline
                 numberOfLines={4}
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -420,7 +420,7 @@ export default function ProductFormModal({
                     value={variant.color}
                     onChangeText={(text) => updateVariant(index, 'color', text)}
                     placeholder="צבע"
-                    textAlign="right"
+                    textAlign="end"
                   />
                   <TextInput
                     style={[
@@ -435,7 +435,7 @@ export default function ProductFormModal({
                     onChangeText={(text) => updateVariant(index, 'stock', parseInt(text) || 0)}
                     placeholder="מלאי"
                     keyboardType="numeric"
-                    textAlign="right"
+                    textAlign="end"
                   />
                   <TouchableOpacity onPress={() => removeVariant(index)} style={styles.removeVariantButton}>
                     <Trash2 size={20} color={colors.status.error} />
@@ -463,7 +463,7 @@ export default function ProductFormModal({
                 onChangeText={text => setEditingProduct({ ...editingProduct, stock: parseInt(text) || 0 })}
                 placeholder="הכנס כמות במלאי"
                 keyboardType="numeric"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -481,7 +481,7 @@ export default function ProductFormModal({
                   setEditingProduct({ ...editingProduct, badges });
                 }}
                 placeholder="הכנס תגיות מופרדות בפסיקים (למשל: חדש, מבצע, מומלץ)"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontWeight: 'bold' },
   modalContent: { padding: 16 },
   formGroup: { marginBottom: 20 },
-  formLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
+  formLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'end' },
   formInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },
   textArea: { height: 100, textAlignVertical: 'top' },
   modalActions: { gap: 16, marginTop: 20, marginBottom: 40 },
@@ -664,9 +664,9 @@ const styles = StyleSheet.create({
   buttonSpinner: { marginRight: 8 },
   deleteButton: { borderRadius: 12, paddingVertical: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   deleteButtonText: { fontSize: 16, fontWeight: '600', marginLeft: 8 },
-  helperText: { fontSize: 12, marginTop: 4, textAlign: 'right' },
+  helperText: { fontSize: 12, marginTop: 4, textAlign: 'end' },
   categorySelector: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12 },
-  categorySelectorText: { fontSize: 16, textAlign: 'right' },
+  categorySelectorText: { fontSize: 16, textAlign: 'end' },
   categorySelectorOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   categorySelectorContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '80%' },
   categorySelectorHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
   categorySelectorItemId: { fontSize: 12 },
   pricingTierInfo: { marginLeft: 12, flex: 1, alignItems: 'flex-end' },
   pricingTierDiscount: { fontSize: 14, fontWeight: 'bold' },
-  pricingTierDescription: { fontSize: 12, textAlign: 'right' },
+  pricingTierDescription: { fontSize: 12, textAlign: 'end' },
   variantRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   colorPreview: { width: 24, height: 24, borderRadius: 12, marginRight: 8, borderWidth: 1 },
   variantColorInput: { flex: 1, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },

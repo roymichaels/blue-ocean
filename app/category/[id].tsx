@@ -310,7 +310,7 @@ export default function CategoryScreen() {
                 value={newSubcategory.id}
                 onChangeText={(text) => setNewSubcategory({...newSubcategory, id: text})}
                 placeholder="הכנס מזהה תת-קטגוריה (באנגלית)"
-                textAlign="left"
+                textAlign="start"
                 editable={!editingSubcategory} // Don't allow editing ID for existing subcategories
               />
             </View>
@@ -326,7 +326,7 @@ export default function CategoryScreen() {
                 value={newSubcategory.name}
                 onChangeText={(text) => setNewSubcategory({...newSubcategory, name: text})}
                 placeholder="הכנס שם תת-קטגוריה"
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   adminActions: {
     position: 'absolute',
     top: 8,
-    left: 8,
+    start: 8,
     flexDirection: 'row',
   },
   adminActionButton: {
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   formInput: {
     borderWidth: 1,

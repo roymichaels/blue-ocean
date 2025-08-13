@@ -285,11 +285,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   orderDate: {
     fontSize: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   orderStatus: {
     flexDirection: 'row',
@@ -307,18 +307,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   itemText: {
     fontSize: 14,
     marginBottom: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   moreItems: {
     fontSize: 12,
     fontWeight: '500',
     marginTop: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   orderFooter: {
     flexDirection: 'row',

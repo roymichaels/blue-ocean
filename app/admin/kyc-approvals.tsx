@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   userDetailRow: {
     flexDirection: 'row',
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   notesText: {
     fontSize: 14,
     lineHeight: 20,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   actionButtons: {
     flexDirection: 'row',

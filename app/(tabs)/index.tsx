@@ -440,7 +440,7 @@ export default function HomeScreen() {
               keyboardType="numeric"
               value={minPrice}
               onChangeText={setMinPrice}
-              textAlign="right"
+              textAlign="end"
             />
             <TextInput
               style={[
@@ -455,7 +455,7 @@ export default function HomeScreen() {
               keyboardType="numeric"
               value={maxPrice}
               onChangeText={setMaxPrice}
-              textAlign="right"
+              textAlign="end"
             />
           </View>
         </View>
@@ -814,8 +814,8 @@ const styles = StyleSheet.create({
   heroOverlay: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     bottom: 0,
     backgroundColor: 'rgba(14, 13, 10, 0.4)',
     justifyContent: 'center',
@@ -837,17 +837,17 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   heroSubtitle: {
     fontSize: 16,
     marginBottom: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   bannerAdminActions: {
     position: 'absolute',
     top: 8,
-    left: 8,
+    start: 8,
     flexDirection: 'row',
   },
   bannerAdminButton: {
@@ -862,8 +862,8 @@ const styles = StyleSheet.create({
   bannerIndicators: {
     position: 'absolute',
     bottom: 16,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     flexDirection: 'row',
     justifyContent: 'center',
   },
@@ -952,7 +952,7 @@ const styles = StyleSheet.create({
   categoryAdminActions: {
     position: 'absolute',
     top: -4,
-    left: -4,
+    start: -4,
     flexDirection: 'row',
   },
   categoryAdminButton: {
@@ -1005,7 +1005,7 @@ const styles = StyleSheet.create({
   },
   sortOptionText: {
     fontSize: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   selectedDot: {
     width: 12,
@@ -1015,7 +1015,7 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: 12,
     marginTop: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   adminActionsContainer: {
     padding: 16,
@@ -1066,7 +1066,7 @@ const styles = StyleSheet.create({
   },
   categorySelectorText: {
     fontSize: 16,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   categorySelectorOverlay: {
     flex: 1,

@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   mediaList: {
     paddingRight: 16,
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   playOverlay: {
     position: 'absolute',
     top: '50%',
-    left: '50%',
+    start: '50%',
     transform: [{ translateX: -12 }, { translateY: -12 }],
     width: 24,
     height: 24,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   videoIndicator: {
     position: 'absolute',
     top: 4,
-    right: 4,
+    end: 4,
     backgroundColor: 'rgba(0,0,0,0.7)',
     borderRadius: 4,
     padding: 2,
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   removeButton: {
     position: 'absolute',
     top: 4,
-    left: 4,
+    start: 4,
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -392,8 +392,8 @@ const styles = StyleSheet.create({
   progressWrapper: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.3)',
     justifyContent: 'center',
@@ -410,8 +410,8 @@ const styles = StyleSheet.create({
   primaryBadge: {
     position: 'absolute',
     bottom: 4,
-    left: 4,
-    right: 4,
+    start: 4,
+    end: 4,
     borderRadius: 4,
     paddingVertical: 2,
     paddingHorizontal: 4,
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: 12,
     marginTop: 8,
-    textAlign: 'right',
+    textAlign: 'end',
     lineHeight: 16,
   },
 });

@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'absolute',
     top: -5,
-    right: -5,
+    end: -5,
     minWidth: 20,
     paddingHorizontal: 2,
   },

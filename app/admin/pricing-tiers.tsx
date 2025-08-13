@@ -297,9 +297,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
-  infoText: { fontSize: 14, lineHeight: 20, textAlign: 'right' },
+  infoText: { fontSize: 14, lineHeight: 20, textAlign: 'end' },
   tiersGrid: { gap: 16 },
   tierCard: {
     borderRadius: 12,
@@ -321,9 +321,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
-    textAlign: 'right',
+    textAlign: 'end',
   },
-  tierDiscount: { fontSize: 14, fontWeight: '600', textAlign: 'right' },
+  tierDiscount: { fontSize: 14, fontWeight: '600', textAlign: 'end' },
   editButton: { padding: 8 },
   tierDetails: { borderTopWidth: 1, paddingTop: 12 },
   tierDetailItem: {
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   tierDetailText: { fontSize: 14, marginRight: 8 },
-  tierDescription: { fontSize: 14, lineHeight: 20, textAlign: 'right' },
+  tierDescription: { fontSize: 14, lineHeight: 20, textAlign: 'end' },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',

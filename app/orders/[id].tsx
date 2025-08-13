@@ -96,21 +96,21 @@ export default function OrderDetailScreen() {
           <Text style={[styles.status, { color: colors.text.primary }]}>סטטוס נוכחי: {statusLabel(order.status)}</Text>
           {isSeller && (order.shippingAddress as ShippingAddress | undefined) && (
             <View style={{ marginBottom: 16 }}>
-              <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+              <Text style={{ color: colors.text.primary, textAlign: 'end' }}>
                 {(order.shippingAddress as ShippingAddress).name}
               </Text>
-              <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+              <Text style={{ color: colors.text.primary, textAlign: 'end' }}>
                 {(order.shippingAddress as ShippingAddress).street}
               </Text>
-              <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+              <Text style={{ color: colors.text.primary, textAlign: 'end' }}>
                 {(order.shippingAddress as ShippingAddress).city}{' '}
                 {(order.shippingAddress as ShippingAddress).postalCode}
               </Text>
-              <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+              <Text style={{ color: colors.text.primary, textAlign: 'end' }}>
                 {(order.shippingAddress as ShippingAddress).phone}
               </Text>
               {(order.shippingAddress as ShippingAddress).notes && (
-                <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
+                <Text style={{ color: colors.text.primary, textAlign: 'end' }}>
                   הערות: {(order.shippingAddress as ShippingAddress).notes}
                 </Text>
               )}
@@ -148,7 +148,7 @@ export default function OrderDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16 },
-  status: { fontSize: 18, fontWeight: '600', textAlign: 'right', marginBottom: 24 },
+  status: { fontSize: 18, fontWeight: '600', textAlign: 'end', marginBottom: 24 },
   actions: { gap: 12 },
   button: { paddingVertical: 12, borderRadius: 8 },
   buttonText: { fontSize: 16, textAlign: 'center', fontWeight: '600' },

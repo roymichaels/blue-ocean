@@ -206,7 +206,7 @@ export default function BannerFormModal({
                 value={imageUrl}
                 onChangeText={setImageUrl}
                 placeholder="ipfs://..."
-                textAlign="right"
+                textAlign="end"
               />
             </View>
 
@@ -228,7 +228,7 @@ export default function BannerFormModal({
                   setEditingBanner({ ...editingBanner, title: text })
                 }
                 placeholder="הכנס כותרת באנר"
-                textAlign="right"
+                textAlign="end"
                 placeholderTextColor={colors.text.tertiary}
               />
             </View>
@@ -251,7 +251,7 @@ export default function BannerFormModal({
                   setEditingBanner({ ...editingBanner, subtitle: text })
                 }
                 placeholder="הכנס כותרת משנה"
-                textAlign="right"
+                textAlign="end"
                 placeholderTextColor={colors.text.tertiary}
               />
             </View>
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   formInput: {
     borderWidth: 1,
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  categorySelectorText: { fontSize: 16, textAlign: 'right' },
+  categorySelectorText: { fontSize: 16, textAlign: 'end' },
   categorySelectorOverlay: { flex: 1, justifyContent: 'flex-end' },
   categorySelectorContent: {
     borderTopLeftRadius: 20,
