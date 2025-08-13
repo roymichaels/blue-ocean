@@ -14,6 +14,7 @@ import { __clear } from './tonKvMock';
 import * as tonSettings from '../services/tonSettings';
 const directSetAdmins = tonSettings.setAdmins;
 const __store = (tonSettings as any).__store;
+let subscribed: (evt: any) => void;
 
 describe('SettingsAgent TON integration', () => {
   beforeEach(() => {
@@ -21,6 +22,13 @@ describe('SettingsAgent TON integration', () => {
     (SettingsAgent as any).instance = undefined;
     (SettingsAgent as any).ADMIN_CACHE_TTL = 10; // short TTL for tests
     for (const k of Object.keys(__store)) delete __store[k];
+    subscribed = () => {};
+    (tonSettings.subscribeToSettingsWrites as jest.Mock).mockImplementation(
+      async (cb) => {
+        subscribed = cb;
+        return () => {};
+      },
+    );
   });
 
   it('returns null when setting missing', async () => {
@@ -43,6 +51,30 @@ describe('SettingsAgent TON integration', () => {
     expect(fee).toBe('500');
   });
 
+  it('refreshes admin list on settings write event', async () => {
+    const getSpy = jest.spyOn(tonSettings, 'getAdmins');
+    const agent = SettingsAgent.getInstance();
+    await agent.setAdmins(['addr_admin']);
+
+    expect(await agent.getAdmins()).toEqual(['addr_admin']);
+    await directSetAdmins(['addr_other'], 'addr_admin');
+    expect(await agent.getAdmins()).toEqual(['addr_admin']);
+    expect(getSpy).toHaveBeenCalledTimes(0);
+
+    subscribed({
+      type: 'settings.write',
+      key: 'admins',
+      value: JSON.stringify(['addr_other']),
+      actor: 'addr_other',
+      timestamp: Date.now(),
+    });
+
+    const refreshed = await agent.getAdmins();
+    expect(refreshed).toEqual(['addr_other']);
+    expect(getSpy).toHaveBeenCalledTimes(1);
+    getSpy.mockRestore();
+  });
+
   it('refreshes admin list after TTL expiry', async () => {
     const agent = SettingsAgent.getInstance();
     await agent.setAdmins(['addr_admin']);
@@ -56,5 +88,24 @@ describe('SettingsAgent TON integration', () => {
     await new Promise((r) => setTimeout(r, 20));
     const refreshed = await agent.getAdmins();
     expect(refreshed).toEqual(['addr_other']);
+  });
+
+  it('resets admin cache TTL after setAdmins', async () => {
+    const getSpy = jest.spyOn(tonSettings, 'getAdmins');
+    const agent = SettingsAgent.getInstance();
+    await agent.setAdmins(['addr_admin']);
+    await new Promise((r) => setTimeout(r, 20));
+    await agent.setAdmins(['addr_cached']);
+
+    const cached = await agent.getAdmins();
+    expect(cached).toEqual(['addr_cached']);
+    expect(getSpy).toHaveBeenCalledTimes(0);
+
+    await directSetAdmins(['addr_fetch'], 'addr_admin');
+    await new Promise((r) => setTimeout(r, 20));
+    const fetched = await agent.getAdmins();
+    expect(fetched).toEqual(['addr_fetch']);
+    expect(getSpy).toHaveBeenCalledTimes(1);
+    getSpy.mockRestore();
   });
 });
