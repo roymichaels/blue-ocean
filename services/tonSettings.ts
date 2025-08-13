@@ -1,3 +1,4 @@
+import { debugLog, errorLog } from '@/utils/logger';
 import { getValue, setValue, listValues } from './tonKvStore';
 import config from '../utils/appConfig';
 import {
@@ -53,7 +54,7 @@ async function ensureNode(): Promise<LightNode | null> {
     await waitForRemotePeer(node, [Protocols.Relay]);
     return node;
   } catch (err) {
-    console.error('Failed to start Waku node', err);
+    errorLog('Failed to start Waku node', err);
     node = null;
     return null;
   }
@@ -68,7 +69,7 @@ async function emit(event: SettingsWriteEvent) {
       payload: utf8ToBytes(JSON.stringify(event)),
     });
   } catch (err) {
-    console.error('Failed to broadcast settings.write', err);
+    errorLog('Failed to broadcast settings.write', err);
   }
 }
 
@@ -131,7 +132,7 @@ export async function fetchSettings(): Promise<TonSettings> {
   if (map['feeBps'] !== undefined) {
     const parsed = Number(map['feeBps']);
     if (Number.isNaN(parsed)) {
-      console.warn(
+      debugLog(
         `Invalid feeBps value "${map['feeBps']}"; defaulting to 0`,
       );
     } else {

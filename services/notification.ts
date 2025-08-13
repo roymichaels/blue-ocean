@@ -1,3 +1,4 @@
+import { debugLog, errorLog } from '@/utils/logger';
 import { randomUUID } from 'crypto';
 import { Notification } from '../types';
 import notificationsAgent, {
@@ -20,7 +21,7 @@ class NotificationService {
   async getNotifications(userId?: string): Promise<Notification[]> {
     try {
       if (!userId) {
-        console.warn('No user ID provided for getNotifications');
+        debugLog('No user ID provided for getNotifications');
         return [];
       }
       const list = await notificationsAgent.getAll();
@@ -28,7 +29,7 @@ class NotificationService {
         .filter((n) => n.userId === userId)
         .sort((a, b) => b.timestamp - a.timestamp);
     } catch (error) {
-      console.error('Error in getNotifications:', error);
+      errorLog('Error in getNotifications:', error);
       return [];
     }
   }
@@ -41,7 +42,7 @@ class NotificationService {
       await notificationsAgent.update(n);
       return true;
     } catch (error) {
-      console.error('Error in markAsRead:', error);
+      errorLog('Error in markAsRead:', error);
       return false;
     }
   }
@@ -57,7 +58,7 @@ class NotificationService {
       }
       return true;
     } catch (error) {
-      console.error('Error in markAllAsRead:', error);
+      errorLog('Error in markAllAsRead:', error);
       return false;
     }
   }
@@ -67,7 +68,7 @@ class NotificationService {
       await notificationsAgent.remove(id);
       return true;
     } catch (error) {
-      console.error('Error in deleteNotification:', error);
+      errorLog('Error in deleteNotification:', error);
       return false;
     }
   }
@@ -91,7 +92,7 @@ class NotificationService {
       await notificationsAgent.add(newNotification);
       return newNotification;
     } catch (error) {
-      console.error('Error in addNotification:', error);
+      errorLog('Error in addNotification:', error);
       return null;
     }
   }
@@ -99,14 +100,14 @@ class NotificationService {
   async getUnreadCount(userId?: string): Promise<number> {
     try {
       if (!userId) {
-        console.warn('No user ID provided for getUnreadCount');
+        debugLog('No user ID provided for getUnreadCount');
         return 0;
       }
       return (await notificationsAgent.getAll()).filter(
         (n) => n.userId === userId && !n.read,
       ).length;
     } catch (error) {
-      console.error('Error in getUnreadCount:', error);
+      errorLog('Error in getUnreadCount:', error);
       return 0;
     }
   }

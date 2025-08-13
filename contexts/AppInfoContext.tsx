@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, {
   createContext,
   useState,
@@ -111,10 +112,10 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
         if (remote.admins) setAdmins(remote.admins);
       } catch (err) {
         Alert.alert('שגיאה', 'טעינת הגדרות מהשרת נכשלה');
-        console.error('Failed fetching branding from server:', err);
+        errorLog('Failed fetching branding from server:', err);
       }
     } catch (e) {
-      console.error('Error loading app info:', e);
+      errorLog('Error loading app info:', e);
     }
   };
 
@@ -140,7 +141,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await tenantSvc.whenReady();
     } catch (e) {
       Alert.alert('שגיאה', 'התחברות לשירות ההגדרת נכשלה');
-      console.error('Failed initializing SettingsAgent:', e);
+      errorLog('Failed initializing SettingsAgent:', e);
       throw e;
     }
     try {
@@ -148,7 +149,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת שם הפלטפורמה נכשלה');
-      console.error('Error setting platform name:', e);
+      errorLog('Error setting platform name:', e);
       throw e;
     }
   };
@@ -160,7 +161,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await AsyncStorage.setItem(LOGO_KEY, logo);
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
-      console.error('Error setting platform logo:', e);
+      errorLog('Error setting platform logo:', e);
       throw e;
     }
     const tenantSvc = SettingsAgent.getInstance();
@@ -168,7 +169,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await tenantSvc.whenReady();
     } catch (e) {
       Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
-      console.error('Failed initializing SettingsAgent:', e);
+      errorLog('Failed initializing SettingsAgent:', e);
       throw e;
     }
     try {
@@ -176,7 +177,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת לוגו נכשלה');
-      console.error('Error setting platform logo:', e);
+      errorLog('Error setting platform logo:', e);
       throw e;
     }
   };
@@ -188,7 +189,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await AsyncStorage.setItem(COLOR_KEY, color);
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת צבע ערכת הנושא נכשלה');
-      console.error('Error setting theme color:', e);
+      errorLog('Error setting theme color:', e);
       throw e;
     }
     const tenantSvc = SettingsAgent.getInstance();
@@ -196,7 +197,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       await tenantSvc.whenReady();
     } catch (e) {
       Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
-      console.error('Failed initializing SettingsAgent:', e);
+      errorLog('Failed initializing SettingsAgent:', e);
       throw e;
     }
     try {
@@ -204,7 +205,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       scheduleLoadInfo();
     } catch (e) {
       Alert.alert('שגיאה', 'שמירת צבע ערכת הנושא נכשלה');
-      console.error('Error setting theme color:', e);
+      errorLog('Error setting theme color:', e);
       throw e;
     }
   };

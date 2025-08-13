@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
@@ -49,7 +50,7 @@ class CartService {
               this.wishlistItems = JSON.parse(wishlistData);
             }
           } else {
-            console.error('Error fetching wishlist from DB:', err);
+            errorLog('Error fetching wishlist from DB:', err);
           }
         }
       } else {
@@ -62,7 +63,7 @@ class CartService {
       await this.recalcPricing();
       this.notifyListeners();
     } catch (error) {
-      console.error('Error loading cart/wishlist from storage:', error);
+      errorLog('Error loading cart/wishlist from storage:', error);
     }
   }
 
@@ -78,7 +79,7 @@ class CartService {
         );
       }
     } catch (error) {
-      console.error('Error saving cart/wishlist to storage:', error);
+      errorLog('Error saving cart/wishlist to storage:', error);
     }
   }
 
@@ -254,7 +255,7 @@ class CartService {
       try {
         await db.addWishlistItem(uid, product.id);
       } catch (err) {
-        console.error('Error saving wishlist item:', err);
+        errorLog('Error saving wishlist item:', err);
       }
     }
 
@@ -271,7 +272,7 @@ class CartService {
       try {
         await db.removeWishlistItem(uid, productId);
       } catch (err) {
-        console.error('Error removing wishlist item:', err);
+        errorLog('Error removing wishlist item:', err);
       }
     }
 

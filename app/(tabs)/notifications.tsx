@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -55,7 +56,7 @@ export default function NotificationsScreen() {
       const data = await notificationService.getNotifications(user.id);
       setNotifications(data);
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      errorLog('Error loading notifications:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -83,7 +84,7 @@ export default function NotificationsScreen() {
         );
       }
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      errorLog('Error marking notification as read:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -114,7 +115,7 @@ export default function NotificationsScreen() {
         });
       }
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      errorLog('Error marking all notifications as read:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -134,7 +135,7 @@ export default function NotificationsScreen() {
         setNotifications(prev => prev.filter(notification => notification.id !== id));
       }
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      errorLog('Error deleting notification:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

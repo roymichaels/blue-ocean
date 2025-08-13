@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import TonWeb from 'tonweb';
 import type { Cell } from 'tonweb/dist/types/boc/cell';
 import { Buffer } from 'buffer';
@@ -61,7 +62,7 @@ export async function deployOrderPayment(
     const contractAddress = ORDER_PAYMENT_FACTORY_ADDRESS;
     return { contractAddress, txHash };
   } catch (e) {
-    console.error('Failed to deploy order payment', e);
+    errorLog('Failed to deploy order payment', e);
     throw e;
   }
 }
@@ -81,7 +82,7 @@ export async function releasePayment(contractAddress: string): Promise<string> {
     ]);
     return txHash;
   } catch (e) {
-    console.error('Failed to release payment', e);
+    errorLog('Failed to release payment', e);
     throw e;
   }
 }
@@ -101,7 +102,7 @@ export async function refundPayment(contractAddress: string): Promise<string> {
     ]);
     return txHash;
   } catch (e) {
-    console.error('Failed to refund payment', e);
+    errorLog('Failed to refund payment', e);
     throw e;
   }
 }
@@ -124,7 +125,7 @@ export async function adminResolve(
     ]);
     return txHash;
   } catch (e) {
-    console.error('Failed to resolve dispute', e);
+    errorLog('Failed to resolve dispute', e);
     throw e;
   }
 }

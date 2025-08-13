@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { configureRTL } from '../utils/rtl';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -51,7 +52,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
         await setLanguage(storedLanguage as Language);
       }
     } catch (error) {
-      console.error('Error loading stored language:', error);
+      errorLog('Error loading stored language:', error);
     }
   };
 
@@ -72,7 +73,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       // Store language preference
       await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
     } catch (error) {
-      console.error('Error setting language:', error);
+      errorLog('Error setting language:', error);
     }
   };
 

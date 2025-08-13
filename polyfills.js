@@ -1,3 +1,4 @@
+import { debugLog } from './utils/logger';
 // polyfills.ts (must be the first import)
 
 import 'react-native-url-polyfill/auto';
@@ -10,7 +11,7 @@ try {
     require('expo-standard-web-crypto'); // provides global.crypto.subtle
   }
 } catch (err) {
-  console.warn('❌ Polyfill load failed:', err);
+  debugLog('❌ Polyfill load failed:', err);
 }
 
 // Provide synchronous SHA-512 for @noble/ed25519

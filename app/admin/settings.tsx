@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -58,7 +59,7 @@ export default function SettingsScreen() {
     SettingsAgent.getInstance()
       .getAdmins()
       .then(setAdmins)
-      .catch((err) => console.error('Failed to load admins:', err));
+      .catch((err) => errorLog('Failed to load admins:', err));
   }, []);
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function SettingsScreen() {
       setThemeColorState(contextThemeColor);
       setLogoCidInput(logoCid || '');
     } catch (error) {
-      console.error('Error loading settings:', error);
+      errorLog('Error loading settings:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -103,7 +104,7 @@ export default function SettingsScreen() {
         type: 'success',
       });
     } catch (error) {
-      console.error('Error saving settings:', error);
+      errorLog('Error saving settings:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -56,7 +57,7 @@ export default function AdminDeliveriesScreen() {
       setJobs(allJobs);
       setDrivers(users.filter((u) => u.role === 'driver'));
     } catch (error) {
-      console.error('Error loading deliveries:', error);
+      errorLog('Error loading deliveries:', error);
       Alert.alert('שגיאה', 'טעינת המשלוחים נכשלה');
     } finally {
       setLoading(false);
@@ -73,7 +74,7 @@ export default function AdminDeliveriesScreen() {
       setShowDriverDropdown(false);
       loadData();
     } catch (error) {
-      console.error('Error creating job:', error);
+      errorLog('Error creating job:', error);
       Alert.alert('שגיאה', 'יצירת המשימה נכשלה');
     }
   };
@@ -89,7 +90,7 @@ export default function AdminDeliveriesScreen() {
       // TODO: re-enable Matrix later
       loadData();
     } catch (error) {
-      console.error('Error updating job:', error);
+      errorLog('Error updating job:', error);
       Alert.alert('שגיאה', 'עדכון סטטוס נכשל');
     }
   };

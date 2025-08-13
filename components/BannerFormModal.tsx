@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -126,7 +127,7 @@ export default function BannerFormModal({
 
       onClose();
     } catch (error) {
-      console.error('Error saving banner:', error);
+      errorLog('Error saving banner:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -147,7 +148,7 @@ export default function BannerFormModal({
       onDeleted?.(banner.id);
       onClose();
     } catch (error) {
-      console.error('Error deleting banner:', error);
+      errorLog('Error deleting banner:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

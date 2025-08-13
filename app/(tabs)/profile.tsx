@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -87,7 +88,7 @@ export default function ProfileScreen() {
         setWishlistCount(wishlist);
         setReviewCount(reviews.filter((r) => r.userId === user.id).length);
       } catch (err) {
-        console.error('Error loading profile data', err);
+        errorLog('Error loading profile data', err);
       }
     };
     fetchData();
@@ -103,7 +104,7 @@ export default function ProfileScreen() {
         setNotificationsEnabled(notificationsSetting === 'true');
       }
     } catch (error) {
-      console.error('Error loading settings:', error);
+      errorLog('Error loading settings:', error);
     }
   };
 
@@ -112,7 +113,7 @@ export default function ProfileScreen() {
     try {
       await AsyncStorage.setItem(NOTIFICATIONS_STORAGE_KEY, value.toString());
     } catch (error) {
-      console.error('Error saving notifications setting:', error);
+      errorLog('Error saving notifications setting:', error);
     }
   };
 
@@ -136,7 +137,7 @@ export default function ProfileScreen() {
         type: 'success',
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      errorLog('Logout error:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

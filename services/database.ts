@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import usersAgent from '../agents/users-agent';
 import categoriesAgent from '../agents/categories-agent';
@@ -361,7 +362,7 @@ class DatabaseService {
         JSON.stringify(trimmed),
       );
     } catch (err) {
-      console.error('Failed to persist chat messages', err);
+      errorLog('Failed to persist chat messages', err);
     }
     const room = this.chatRooms.get(roomId);
     if (room) {
@@ -387,7 +388,7 @@ class DatabaseService {
             JSON.stringify(msgs),
           );
         } catch (err) {
-          console.error('Failed to persist chat messages', err);
+          errorLog('Failed to persist chat messages', err);
         }
         return;
       }

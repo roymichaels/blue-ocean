@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchSettings } from '../services/tonSettings';
 
@@ -79,7 +80,7 @@ export async function loadTenantSettings(): Promise<void> {
       [ADMINS_KEY, JSON.stringify(remote.admins ?? [])],
     ]);
   } catch (e) {
-    console.error('Error loading tenant settings:', e);
+    errorLog('Error loading tenant settings:', e);
   }
 }
 

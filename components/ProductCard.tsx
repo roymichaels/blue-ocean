@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -92,7 +93,7 @@ export default function ProductCard({
           const thumb = await svc.generateVideoThumbnail(product.videos[0]);
           if (thumb) setVideoThumbnail(thumb);
         } catch (err) {
-          console.error('Error generating video thumbnail:', err);
+          errorLog('Error generating video thumbnail:', err);
         }
       }
     };
@@ -107,7 +108,7 @@ export default function ProductCard({
         setPricingTier(tier);
       }
     } catch (error) {
-      console.error('Error loading pricing tier:', error);
+      errorLog('Error loading pricing tier:', error);
     }
   };
 

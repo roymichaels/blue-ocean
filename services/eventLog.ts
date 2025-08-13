@@ -1,3 +1,4 @@
+import { debugLog, errorLog } from '@/utils/logger';
 import {
   LightNode,
   createLightNode,
@@ -38,7 +39,7 @@ async function ensureNode(): Promise<LightNode | null> {
   try {
     const bootstrap = getWakuBootstrapNodes();
     if (bootstrap.length === 0) {
-      console.warn(
+      debugLog(
         'No Waku bootstrap nodes configured; using default bootstrap. Please configure your own nodes.',
       );
       bootstrap.push(DEFAULT_BOOTSTRAP);
@@ -48,7 +49,7 @@ async function ensureNode(): Promise<LightNode | null> {
     await waitForRemotePeer(node, [Protocols.Relay]);
     return node;
   } catch (err) {
-    console.error('Failed to start Waku node', err);
+    errorLog('Failed to start Waku node', err);
     node = null;
     return null;
   }
@@ -66,6 +67,6 @@ export async function logOrderEvent(
       payload: utf8ToBytes(JSON.stringify(eventWithId)),
     });
   } catch (err) {
-    console.error('Failed to log order event', err);
+    errorLog('Failed to log order event', err);
   }
 }

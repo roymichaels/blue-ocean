@@ -1,3 +1,4 @@
+import { debugLog, errorLog } from '@/utils/logger';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -40,7 +41,7 @@ export default function ChatWidget() {
     SettingsAgent.getInstance()
       .getAdmins()
       .then((a) => setAdminKey(a[0] || ''))
-      .catch((err) => console.error('Failed to load admin key', err));
+      .catch((err) => errorLog('Failed to load admin key', err));
   }, []);
 
   useEffect(() => {
@@ -112,7 +113,7 @@ export default function ChatWidget() {
         );
         messageSoundRef.current = player;
       } catch (err) {
-        console.error('Failed to load message sound', err);
+        errorLog('Failed to load message sound', err);
       }
     };
     loadSound();
@@ -135,7 +136,7 @@ export default function ChatWidget() {
           }));
           setSearchResults(mapped);
         } catch (error) {
-          console.error('Error searching users:', error);
+          errorLog('Error searching users:', error);
           setInfoModal({
             visible: true,
             title: t('errors.somethingWentWrong'),
@@ -164,7 +165,7 @@ export default function ChatWidget() {
         setChatRooms(roomsData);
       }
     } catch (error) {
-      console.error('Error loading chat rooms:', error);
+      errorLog('Error loading chat rooms:', error);
       // Use default room as fallback
       if (isMounted.current) {
         setChatRooms([
@@ -208,7 +209,7 @@ const loadOrCreateDefaultRoom = async () => {
       }
       await maybeSendOnboardMessage(roomId, adminKey || '');
     } catch (error) {
-      console.error('Error creating default room:', error);
+      errorLog('Error creating default room:', error);
       if (isMounted.current) {
         setInfoModal({
           visible: true,
@@ -243,7 +244,7 @@ const loadOrCreateDefaultRoom = async () => {
 
       return decrypted.length ? decrypted[decrypted.length - 1].timestamp : 0;
     } catch (error) {
-      console.error('Error loading messages:', error);
+      errorLog('Error loading messages:', error);
       // Use default welcome message as fallback
       if (isMounted.current) {
         setMessages([
@@ -282,7 +283,7 @@ const loadOrCreateDefaultRoom = async () => {
       lastTimestampRef.current = saved.timestamp;
       await AsyncStorage.setItem(CHAT_ONBOARDED_KEY, 'true');
     } catch (error) {
-      console.error('Failed to send onboard message', error);
+      errorLog('Failed to send onboard message', error);
     }
   };
 
@@ -383,7 +384,7 @@ const loadOrCreateDefaultRoom = async () => {
       }
       await maybeSendOnboardMessage(roomId, room?.userPublicKey || '');
     } catch (error) {
-      console.error('Error opening chat with user:', error);
+      errorLog('Error opening chat with user:', error);
     }
   };
 
@@ -446,7 +447,7 @@ const loadOrCreateDefaultRoom = async () => {
         }
       }, 100);
     } catch (error) {
-      console.error('Error sending message:', error);
+      errorLog('Error sending message:', error);
       if (isMounted.current) {
         setInfoModal({
           visible: true,
@@ -526,7 +527,7 @@ const loadOrCreateDefaultRoom = async () => {
         }
       }, 1000);
     } catch (error) {
-      console.error('Failed to start recording:', error);
+      errorLog('Failed to start recording:', error);
       if (isMounted.current) {
         setInfoModal({
           visible: true,
@@ -547,7 +548,7 @@ const loadOrCreateDefaultRoom = async () => {
     try {
       await currentRecording.stop();
     } catch (error) {
-      console.error('Failed to stop recording:', error);
+      errorLog('Failed to stop recording:', error);
     } finally {
       if (recordingTimer.current) {
         clearInterval(recordingTimer.current);
@@ -565,7 +566,7 @@ const loadOrCreateDefaultRoom = async () => {
         return;
       }
     } catch (error) {
-      console.error('Error ensuring chat configured:', error);
+      errorLog('Error ensuring chat configured:', error);
       if (isMounted.current) {
         setInfoModal({
           visible: true,
@@ -669,7 +670,7 @@ const loadOrCreateDefaultRoom = async () => {
         }
       });
     } catch (error) {
-      console.error('Failed to play audio:', error);
+      errorLog('Failed to play audio:', error);
     }
   };
 
@@ -720,7 +721,7 @@ const loadOrCreateDefaultRoom = async () => {
         await db.updateMessageReactions(messageId, updated);
       }
     } catch (error) {
-      console.error('Error adding reaction:', error);
+      errorLog('Error adding reaction:', error);
       if (isMounted.current) {
         setShowReactions(null);
       }

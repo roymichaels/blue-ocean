@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -128,7 +129,7 @@ export default function SubcategoryScreen() {
       const filteredProducts = productsData.filter(product => product.subcategory === id);
       setProducts(filteredProducts);
     } catch (error) {
-      console.error('Error loading subcategory data:', error);
+      errorLog('Error loading subcategory data:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -146,7 +147,7 @@ export default function SubcategoryScreen() {
       const tiers = await db.getPricingTiers();
       setPricingTiers(tiers);
     } catch (error) {
-      console.error('Error loading pricing tiers:', error);
+      errorLog('Error loading pricing tiers:', error);
     }
   };
 
@@ -191,7 +192,7 @@ export default function SubcategoryScreen() {
       setShowSubcategoryEditModal(false);
       setInfoModal({ visible: true, title: "הצלחה", message: "תת-הקטגוריה עודכנה בהצלחה", type: "success" });
     } catch (error) {
-      console.error("Error updating subcategory:", error);
+      errorLog("Error updating subcategory:", error);
       setInfoModal({ visible: true, title: "שגיאה", message: "עדכון תת-הקטגוריה נכשל", type: "error" });
     } finally {
       setLoading(false);
@@ -208,7 +209,7 @@ export default function SubcategoryScreen() {
       setInfoModal({ visible: true, title: "הצלחה", message: "תת-הקטגוריה נמחקה בהצלחה", type: "success" });
       router.back();
     } catch (error) {
-      console.error("Error deleting subcategory:", error);
+      errorLog("Error deleting subcategory:", error);
       setInfoModal({ visible: true, title: "שגיאה", message: "מחיקת תת-הקטגוריה נכשלה", type: "error" });
     } finally {
       setLoading(false);
@@ -345,7 +346,7 @@ export default function SubcategoryScreen() {
       
       setShowProductModal(false);
     } catch (error) {
-      console.error('Error saving product:', error);
+      errorLog('Error saving product:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -393,7 +394,7 @@ export default function SubcategoryScreen() {
         type: 'success'
       });
     } catch (error) {
-      console.error('Error deleting product:', error);
+      errorLog('Error deleting product:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

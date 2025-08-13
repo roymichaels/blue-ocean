@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -51,7 +52,7 @@ export default function CategoriesScreen() {
       const categoriesData = await db.getCategories();
       setCategories(categoriesData);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      errorLog('Error loading categories:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -124,7 +125,7 @@ export default function CategoriesScreen() {
 
       setShowCategoryModal(false);
     } catch (error) {
-      console.error('Error saving category:', error);
+      errorLog('Error saving category:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -154,7 +155,7 @@ export default function CategoriesScreen() {
         type: 'success',
       });
     } catch (error) {
-      console.error('Error deleting category:', error);
+      errorLog('Error deleting category:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

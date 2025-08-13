@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -63,7 +64,7 @@ export default function UserManagementScreen() {
       setUsers(allUsers);
       setFilteredUsers(allUsers);
     } catch (error) {
-      console.error('Error loading users:', error);
+      errorLog('Error loading users:', error);
       Alert.alert('שגיאה', 'אירעה שגיאה בטעינת המשתמשים');
     } finally {
       setLoading(false);
@@ -138,7 +139,7 @@ export default function UserManagementScreen() {
         'success'
       );
     } catch (error) {
-      console.error('Error updating user:', error);
+      errorLog('Error updating user:', error);
       Alert.alert('שגיאה', 'אירעה שגיאה בעדכון המשתמש');
     } finally {
       setLoading(false);
@@ -163,7 +164,7 @@ export default function UserManagementScreen() {
         Alert.alert('שגיאה', 'אירעה שגיאה באימות המשתמש');
       }
     } catch (error) {
-      console.error('Error verifying user KYC:', error);
+      errorLog('Error verifying user KYC:', error);
       Alert.alert('שגיאה', 'אירעה שגיאה באימות המשתמש');
     } finally {
       setLoading(false);

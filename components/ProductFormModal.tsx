@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -104,7 +105,7 @@ export default function ProductFormModal({
         setAvailableSubcategories(category?.subcategories || []);
       }
     } catch (error) {
-      console.error('Error loading categories:', error);
+      errorLog('Error loading categories:', error);
     }
   };
 
@@ -114,7 +115,7 @@ export default function ProductFormModal({
       const data = await db.getPricingTiers();
       setPricingTiers(data);
     } catch (error) {
-      console.error('Error loading pricing tiers:', error);
+      errorLog('Error loading pricing tiers:', error);
     }
   };
 
@@ -210,7 +211,7 @@ export default function ProductFormModal({
       onSaved?.(saved, isNew);
       setTimeout(onClose, 500);
     } catch (error) {
-      console.error('Error saving product:', error);
+      errorLog('Error saving product:', error);
       setInfoModal({ visible: true, title: 'שגיאה', message: 'שמירת המוצר נכשלה', type: 'error' });
     } finally {
       setLoading(false);
@@ -231,7 +232,7 @@ export default function ProductFormModal({
       onDeleted?.(product.id);
       setTimeout(onClose, 500);
     } catch (error) {
-      console.error('Error deleting product:', error);
+      errorLog('Error deleting product:', error);
       setInfoModal({ visible: true, title: 'שגיאה', message: 'מחיקת המוצר נכשלה', type: 'error' });
     } finally {
       setLoading(false);

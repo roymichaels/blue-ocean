@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import { useEffect, useRef } from 'react';
 import {
   LightNode,
@@ -64,7 +65,7 @@ export function useWakuClient(): WakuClient {
         await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
         if (!cancelled) nodeRef.current = node;
       } catch (err) {
-        console.error('Failed to start Waku node', err);
+        errorLog('Failed to start Waku node', err);
         if (node) {
           try {
             await node.stop();
