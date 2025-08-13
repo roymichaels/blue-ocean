@@ -49,8 +49,10 @@ export default function ReviewsScreen() {
 
   const goBack = () => {
     // If there's no history, navigate home
-    // @ts-ignore -- canGoBack not typed in expo-router
-    if (router.canGoBack?.()) {
+    const canGoBack =
+      typeof (router as any).canGoBack === 'function' &&
+      (router as any).canGoBack();
+    if (canGoBack) {
       router.back();
     } else {
       router.replace('/(tabs)');

@@ -36,8 +36,10 @@ export default function DriverDashboardScreen() {
 
   const goBack = () => {
     // Fallback to home when history is empty
-    // @ts-ignore -- canGoBack not typed in expo-router
-    if (router.canGoBack?.()) {
+    const canGoBack =
+      typeof (router as any).canGoBack === 'function' &&
+      (router as any).canGoBack();
+    if (canGoBack) {
       router.back();
     } else {
       router.replace('/(tabs)');
