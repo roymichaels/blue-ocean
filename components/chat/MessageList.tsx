@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   FlatList,
   View,
@@ -9,6 +9,7 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { ChatMessage } from '../../types';
+import eventBus from '../../services/eventBus';
 
 interface Props {
   messages: ChatMessage[];
@@ -25,9 +26,14 @@ const MessageList: React.FC<Props> = ({
   hasMore,
   loadingMore,
 }) => {
+  useEffect(() => {
+    eventBus.track('chat.view', { messageCount: messages.length });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (!onLoadMore || !hasMore || loadingMore) return;
     if (e.nativeEvent.contentOffset.y <= 0) {
+      eventBus.track('chat.load_more', { messageCount: messages.length });
       onLoadMore();
     }
   };

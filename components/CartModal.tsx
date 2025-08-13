@@ -28,6 +28,7 @@ import CartService from '../services/cart';
 import { getStore } from '../services/tonStores';
 import { CartItem, ShippingAddress, Store } from '../types';
 import OrderService from '../services/orders';
+import eventBus from '../services/eventBus';
 import { useAuth } from './AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import commonStyles from '../constants/styles';
@@ -236,6 +237,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return;
     }
 
+    eventBus.track('checkout.start', { items: cartItems.length, total: getTotal() });
     setCheckoutStep('shipping');
   };
 
@@ -314,7 +316,10 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         shippingAddress,
         'ton'
       );
-
+      eventBus.track('checkout.complete', {
+        orderIds: orders.map((o) => o.id),
+        total: getTotal(),
+      });
       setOrderIds(orders.map((o) => o.id));
       setOrderPlaced(true);
       await cartService.clearCart();

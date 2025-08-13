@@ -14,6 +14,7 @@ import reviewAgent from '../../agents/review-agent';
 import ProductCard from '../../components/ProductCard';
 import { Product } from '../../types';
 import Fuse from 'fuse.js';
+import eventBus from '../../services/eventBus';
 
 interface ReviewMap {
   [productId: string]: { rating: number; count: number };
@@ -35,6 +36,10 @@ export default function StorefrontScreen({ initialCategory }: Props) {
   const [filtered, setFiltered] = useState<Product[]>([]);
   const fuseRef = useRef<Fuse<Product> | null>(null);
   const CARD_HEIGHT = 220;
+
+  useEffect(() => {
+    eventBus.track('catalog.view', { category: initialCategory || null });
+  }, [initialCategory]);
 
   useEffect(() => {
     const load = async () => {
