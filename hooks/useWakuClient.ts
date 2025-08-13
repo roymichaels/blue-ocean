@@ -36,7 +36,8 @@ export interface WakuClient {
     peerPublicKey: string,
     callback: (msg: ChatMessage) => void,
     after?: number,
-  ) => Promise<void>;
+    before?: number,
+  ) => Promise<number>;
   broadcastSystem: (message: string) => Promise<void>;
   subscribeSystem: (cb: (msg: string) => void) => Promise<() => void>;
   broadcastOrder: (message: string) => Promise<void>;
@@ -163,13 +164,17 @@ export function useWakuClient(): WakuClient {
     peerPublicKey: string,
     cb: (msg: ChatMessage) => void,
     after?: number,
+    before?: number,
   ) => {
-    if (!nodeRef.current) return;
+    if (!nodeRef.current) return 0;
     const decoder = createDecoder(chatTopic(roomId));
     const options: any = { contentTopics: [chatTopic(roomId)] };
-    if (after) {
-      options.timeFilter = { startTime: new Date(after + 1) };
+    if (after || before) {
+      options.timeFilter = {};
+      if (after) options.timeFilter.startTime = new Date(after + 1);
+      if (before) options.timeFilter.endTime = new Date(before - 1);
     }
+    let count = 0;
     for await (const msgs of nodeRef.current.store.queryGenerator(options)) {
       for (const wakuMsg of msgs.messages) {
         if (!wakuMsg.payload) continue;
@@ -199,11 +204,13 @@ export function useWakuClient(): WakuClient {
           const db = DatabaseService.getInstance();
           await db.sendChatMessage(roomId, { ...chat, message: signed.payload });
           cb(chat);
+          count += 1;
         } catch {
           /* ignore malformed messages */
         }
       }
     }
+    return count;
   };
 
   const broadcastSystem = async (message: string) => {

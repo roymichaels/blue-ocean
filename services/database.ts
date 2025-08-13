@@ -51,6 +51,22 @@ class DatabaseService {
 
   private constructor() {}
 
+  private async cacheChatMessages(
+    roomId: string,
+    msgs: ChatMessage[],
+  ): Promise<void> {
+    const trimmed = msgs.slice(-CHAT_MESSAGE_LIMIT);
+    this.chatMessages.set(roomId, trimmed);
+    try {
+      await AsyncStorage.setItem(
+        `${CHAT_STORAGE_PREFIX}${roomId}`,
+        JSON.stringify(trimmed),
+      );
+    } catch (err) {
+      errorLog('Failed to persist chat messages', err);
+    }
+  }
+
   public static getInstance(): DatabaseService {
     if (!DatabaseService.instance) {
       DatabaseService.instance = new DatabaseService();
@@ -353,8 +369,7 @@ class DatabaseService {
       } catch {
         msgs = [];
       }
-      msgs = msgs.slice(-CHAT_MESSAGE_LIMIT);
-      this.chatMessages.set(roomId, msgs);
+      await this.cacheChatMessages(roomId, msgs);
     }
     return msgs;
   }
@@ -362,16 +377,7 @@ class DatabaseService {
   async sendChatMessage(roomId: string, msg: ChatMessage): Promise<void> {
     const msgs = this.chatMessages.get(roomId) || [];
     msgs.push(msg);
-    const trimmed = msgs.slice(-CHAT_MESSAGE_LIMIT);
-    this.chatMessages.set(roomId, trimmed);
-    try {
-      await AsyncStorage.setItem(
-        `${CHAT_STORAGE_PREFIX}${roomId}`,
-        JSON.stringify(trimmed),
-      );
-    } catch (err) {
-      errorLog('Failed to persist chat messages', err);
-    }
+    await this.cacheChatMessages(roomId, msgs);
     const room = this.chatRooms.get(roomId);
     if (room) {
       room.lastMessage = msg.message;
@@ -389,15 +395,7 @@ class DatabaseService {
       const idx = msgs.findIndex((m) => m.id === id);
       if (idx >= 0) {
         msgs[idx] = { ...msgs[idx], reactions };
-        this.chatMessages.set(roomId, msgs);
-        try {
-          await AsyncStorage.setItem(
-            `${CHAT_STORAGE_PREFIX}${roomId}`,
-            JSON.stringify(msgs),
-          );
-        } catch (err) {
-          errorLog('Failed to persist chat messages', err);
-        }
+        await this.cacheChatMessages(roomId, msgs);
         return;
       }
     }
