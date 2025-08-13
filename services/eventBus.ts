@@ -8,13 +8,21 @@ import {
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 
+const DEFAULT_BOOTSTRAP =
+  '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
+
 let node: LightNode | null = null;
 
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
     const bootstrap = getWakuBootstrapNodes();
-    if (bootstrap.length === 0) return null;
+    if (bootstrap.length === 0) {
+      console.warn(
+        'No Waku bootstrap nodes configured. Using default bootstrap. Set EXPO_PUBLIC_WAKU_BOOTSTRAP to customize.',
+      );
+      bootstrap.push(DEFAULT_BOOTSTRAP);
+    }
     node = await createLightNode({ libp2p: { bootstrap } });
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
