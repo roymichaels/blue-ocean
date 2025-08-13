@@ -5,7 +5,7 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
   Alert,
 } from 'react-native';
 import SmartImage from './SmartImage';
@@ -63,22 +63,26 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
     router.push(`/product/${productId}`);
   };
 
-  const renderWishlistItem = (item: WishlistItem) => (
+  const ITEM_HEIGHT = 118;
+
+  const renderWishlistItem = ({ item }: { item: WishlistItem }) => (
     <TouchableOpacity
-      key={item.id}
-      style={[styles.wishlistItem, { 
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary 
-      }]}
+      style={[
+        styles.wishlistItem,
+        {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+        },
+      ]}
       onPress={() => viewProduct(item.productId)}
     >
       <SmartImage uri={item.product.images[0]} style={styles.productImage} contentFit="cover" cachePolicy="disk" />
-      
+
       <View style={styles.productInfo}>
         <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={2}>
           {item.product.name}
         </Text>
-        
+
         <View style={styles.priceContainer}>
           <Text style={[styles.currentPrice, { color: colors.gold }]}>{currencySymbol}{item.product.price.toFixed(2)}</Text>
           {item.product.originalPrice && (
@@ -92,10 +96,14 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
         </View>
 
         <View style={styles.stockContainer}>
-          <View style={[
-            styles.stockIndicator,
-            { backgroundColor: item.product.stock > 0 ? colors.status.success : colors.status.error }
-          ]} />
+          <View
+            style={[
+              styles.stockIndicator,
+              {
+                backgroundColor: item.product.stock > 0 ? colors.status.success : colors.status.error,
+              },
+            ]}
+          />
           <Text style={[styles.stockText, { color: colors.text.secondary }]}>
             {item.product.stock > 0 ? `במלאי (${item.product.stock})` : 'אזל מהמלאי'}
           </Text>
@@ -134,9 +142,18 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
         </View>
 
         {wishlistItems.length > 0 ? (
-          <ScrollView style={styles.wishlistList} showsVerticalScrollIndicator={false}>
-            {wishlistItems.map(renderWishlistItem)}
-          </ScrollView>
+          <FlatList
+            data={wishlistItems}
+            keyExtractor={(item) => item.id}
+            renderItem={renderWishlistItem}
+            style={styles.wishlistList}
+            showsVerticalScrollIndicator={false}
+            getItemLayout={(_, index) => ({
+              length: ITEM_HEIGHT,
+              offset: ITEM_HEIGHT * index,
+              index,
+            })}
+          />
         ) : (
           <View style={styles.emptyWishlist}>
             <Heart size={80} color={colors.interactive.disabled} />
