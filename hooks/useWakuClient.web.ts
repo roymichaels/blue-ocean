@@ -29,6 +29,7 @@ export function useWakuClient() {
       _roomId: string,
       _peerPublicKey: string,
       _cb: (msg: ChatMessage) => void,
+      _after?: number,
     ) => {},
     broadcastSystem: async (_msg: string) => {},
     subscribeSystem: async (_cb: (msg: string) => void) => () => {},

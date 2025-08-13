@@ -1,4 +1,5 @@
 // @ts-nocheck
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import usersAgent from '../agents/users-agent';
 import categoriesAgent from '../agents/categories-agent';
 import productsAgent from '../agents/products-agent';
@@ -22,6 +23,9 @@ import {
   Order,
   WishlistItem,
 } from '../types';
+
+const CHAT_MESSAGE_LIMIT = 50;
+const CHAT_STORAGE_PREFIX = 'chat_messages_';
 
 class DatabaseService {
   private static instance: DatabaseService;
@@ -287,13 +291,33 @@ class DatabaseService {
   }
 
   async getChatMessages(roomId: string): Promise<ChatMessage[]> {
-    return this.chatMessages.get(roomId) || [];
+    let msgs = this.chatMessages.get(roomId);
+    if (!msgs) {
+      try {
+        const raw = await AsyncStorage.getItem(`${CHAT_STORAGE_PREFIX}${roomId}`);
+        msgs = raw ? JSON.parse(raw) : [];
+      } catch {
+        msgs = [];
+      }
+      msgs = (msgs || []).slice(-CHAT_MESSAGE_LIMIT);
+      this.chatMessages.set(roomId, msgs!);
+    }
+    return msgs || [];
   }
 
   async sendChatMessage(roomId: string, msg: ChatMessage): Promise<void> {
     const msgs = this.chatMessages.get(roomId) || [];
     msgs.push(msg);
-    this.chatMessages.set(roomId, msgs);
+    const trimmed = msgs.slice(-CHAT_MESSAGE_LIMIT);
+    this.chatMessages.set(roomId, trimmed);
+    try {
+      await AsyncStorage.setItem(
+        `${CHAT_STORAGE_PREFIX}${roomId}`,
+        JSON.stringify(trimmed),
+      );
+    } catch (err) {
+      console.error('Failed to persist chat messages', err);
+    }
     const room = this.chatRooms.get(roomId);
     if (room) {
       room.lastMessage = msg.message;
@@ -309,6 +333,14 @@ class DatabaseService {
       if (idx >= 0) {
         msgs[idx] = { ...msgs[idx], reactions };
         this.chatMessages.set(roomId, msgs);
+        try {
+          await AsyncStorage.setItem(
+            `${CHAT_STORAGE_PREFIX}${roomId}`,
+            JSON.stringify(msgs),
+          );
+        } catch (err) {
+          console.error('Failed to persist chat messages', err);
+        }
         return;
       }
     }
