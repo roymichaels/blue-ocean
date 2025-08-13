@@ -184,9 +184,9 @@ export default function ChatWidget() {
         try {
           const db = DatabaseService.getInstance();
           const results = await db.searchUserProfiles(searchQuery.trim());
-          const mapped = results.map((r: any) => ({
-            id: r.matrix_user_id,
-            displayName: r.display_name || r.app_username || r.matrix_user_id,
+          const mapped = results.map((r: User) => ({
+            id: r.id,
+            displayName: r.displayName || r.username || r.id,
             isAppUser: true,
           }));
           setSearchResults(mapped);
