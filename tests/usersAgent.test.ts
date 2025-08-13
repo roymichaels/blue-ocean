@@ -12,10 +12,12 @@ jest.mock('../services/localIdentity', () => ({
 
 jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
 import { __clear } from './tonKvMock';
+import { setAdmins } from '../services/tonSettings';
 
 describe('UsersAgent TON integration', () => {
   beforeEach(() => {
     __clear();
+    void setAdmins(['addr_admin'], 'addr_admin');
   });
 
   it('adds and retrieves users via TON service', async () => {

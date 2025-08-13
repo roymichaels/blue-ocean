@@ -48,7 +48,13 @@ class UsersAgent {
   }
 
   async remove(id: string): Promise<void> {
-    await this.ensureWallet();
+    const { address } = await this.ensureWallet();
+    const user = await getUser(id);
+    if (!user) throw new Error('User not found');
+    const admins = await SettingsAgent.getInstance().getAdmins();
+    if (address !== user.address && !admins.includes(address)) {
+      throw new Error('Only the user or an admin can remove this user');
+    }
     await removeUser(id);
   }
 
