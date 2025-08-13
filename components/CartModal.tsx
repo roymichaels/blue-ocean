@@ -6,12 +6,12 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  Image,
   TextInput,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import {
   X,
   Minus,
@@ -346,9 +346,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
       ]}
     >
-      <Image
-        source={{ uri: item.product.images?.[0] || '' }}
+      <SmartImage
+        uri={item.product.images?.[0] || ''}
         style={styles.productImage}
+        contentFit="cover"
+        cachePolicy="disk"
       />
 
       <View style={styles.productInfo}>

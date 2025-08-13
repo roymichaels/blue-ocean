@@ -7,11 +7,11 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  Image,
   Animated,
   Easing,
   Alert,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { X, CircleCheck as CheckCircle, Circle, Package, Truck, MapPin, Star, Phone, MessageCircle, Copy } from 'lucide-react-native';
 import { Order, OrderStatus } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
@@ -444,9 +444,11 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
             <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>פריטים בהזמנה</Text>
             {order.items.map((item, index) => (
               <View key={index} style={[styles.orderItem, { borderBottomColor: colors.border.secondary }]}>
-                <Image 
-                  source={{ uri: item.product.images[0] }}
+                <SmartImage
+                  uri={item.product.images[0]}
                   style={styles.itemImage}
+                  contentFit="cover"
+                  cachePolicy="disk"
                 />
                 <View style={styles.itemInfo}>
                   <Text style={[styles.itemName, { color: colors.text.primary }]}>{item.product.name}</Text>

@@ -5,11 +5,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   Alert,
   Platform
 } from 'react-native';
+import SmartImage from './SmartImage';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Upload, Camera, File as FileIcon } from 'lucide-react-native';
@@ -106,7 +106,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
     <View style={styles.container}>
       {uri ? (
         uri.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-          <Image source={{ uri }} style={styles.preview} />
+          <SmartImage uri={uri} style={styles.preview} contentFit="cover" cachePolicy="disk" />
         ) : (
           <View style={[styles.filePreview, { borderColor: colors.border.primary }]}>
             <FileIcon size={24} color={colors.text.primary} />

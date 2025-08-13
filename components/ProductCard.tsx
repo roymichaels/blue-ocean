@@ -5,9 +5,9 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   Alert,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { Heart, Pencil, ShoppingCart, Tag } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Product, PricingTier } from '../types';
@@ -160,10 +160,10 @@ export default function ProductCard({
     ]} onPress={handlePress}>
       <View style={styles.imageContainer}>
         {product.images && product.images.length > 0 ? (
-          <Image source={{ uri: product.images[0] }} style={styles.image} resizeMode="cover" />
+          <SmartImage uri={product.images[0]} style={styles.image} contentFit="cover" cachePolicy="disk" />
         ) : product.videos && product.videos.length > 0 ? (
           videoThumbnail ? (
-            <Image source={{ uri: videoThumbnail }} style={styles.image} resizeMode="cover" />
+            <SmartImage uri={videoThumbnail} style={styles.image} contentFit="cover" cachePolicy="disk" />
           ) : (
             <View style={styles.noImageContainer}>
               <Text style={styles.noImageText}>אין תמונה</Text>

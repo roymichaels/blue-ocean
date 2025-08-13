@@ -7,9 +7,9 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  Image,
   Platform,
 } from 'react-native';
+import SmartImage from './SmartImage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -88,11 +88,7 @@ export default function AgeVerificationModal() {
                 ]}
               >
                 {logoCid ? (
-                  <Image
-                    source={{ uri: logoCid }}
-                    style={styles.logoImage}
-                    resizeMode="contain"
-                  />
+                  <SmartImage uri={logoCid} style={styles.logoImage} contentFit="contain" cachePolicy="disk" />
                 ) : (
                   <Shield size={60} color={colors.gold} />
                 )}
