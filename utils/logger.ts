@@ -10,6 +10,11 @@ export function debugLog(...args: unknown[]): void {
   }
 }
 
+export function warnLog(...args: unknown[]): void {
+  // eslint-disable-next-line no-console
+  console.warn(...args);
+}
+
 export function errorLog(...args: unknown[]): void {
   // eslint-disable-next-line no-console
   console.error(...args);

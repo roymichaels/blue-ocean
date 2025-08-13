@@ -27,8 +27,9 @@ jest.mock('../components/MoonPayModal', () => ({
 
 describe('MoonPayButton', () => {
   afterEach(() => {
-    // @ts-ignore
-    global.fetch && (global.fetch as jest.Mock).mockRestore?.();
+    if (global.fetch) {
+      (global.fetch as jest.Mock).mockRestore?.();
+    }
   });
 
   it('computes TON amount and renders modal', async () => {

@@ -77,7 +77,7 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
   const currentMedia = media[currentIndex];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingBottom: insets.bottom }]}>
       <TouchableOpacity
         style={[
           styles.closeButton,
@@ -109,7 +109,7 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
 
       {/* Media indicators */}
       {media.length > 1 && (
-        <View style={styles.indicators}>
+        <View style={[styles.indicators, { bottom: insets.bottom + 24 }]}>
           {media.map((_, index) => (
             <View
               key={index}

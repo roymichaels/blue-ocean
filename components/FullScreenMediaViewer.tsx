@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import SmartImage from './SmartImage';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X, ChevronLeft, ChevronRight, Share2, Download } from 'lucide-react-native';
 import { PanGestureHandler, PinchGestureHandler, State } from 'react-native-gesture-handler';
 import Animated, {
@@ -61,6 +61,7 @@ export default function FullScreenMediaViewer({
   const translateY = useSharedValue(0);
   const [player, setPlayer] = useState<VideoPlayer | null>(null);
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const currentMedia = media[currentIndex];
 
@@ -202,8 +203,16 @@ export default function FullScreenMediaViewer({
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
-            <SafeAreaView style={[styles.container, { backgroundColor: '#000000' }]}>
-              <TouchableOpacity style={styles.exitButton} onPress={onClose}>
+            <SafeAreaView
+              style={[styles.container, { backgroundColor: '#000000', paddingBottom: insets.bottom }]}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.exitButton,
+                  { top: insets.top + 16, right: insets.right + 16 },
+                ]}
+                onPress={onClose}
+              >
                 <X size={24} color={colors.text.inverse} />
               </TouchableOpacity>
         <StatusBar hidden={!controlsVisible} />
@@ -262,10 +271,10 @@ export default function FullScreenMediaViewer({
             )}
 
             {/* Bottom Controls */}
-            <Animated.View 
+            <Animated.View
               style={[
                 styles.bottomControls,
-                { opacity: controlsVisible ? 1 : 0 }
+                { opacity: controlsVisible ? 1 : 0, paddingBottom: 16 + insets.bottom }
               ]}
             >
               <View style={styles.mediaIndicators}>
