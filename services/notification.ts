@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Notification } from '../types';
 import notificationsAgent, {
   notificationTemplates,
@@ -79,7 +80,7 @@ class NotificationService {
   }): Promise<Notification | null> {
     try {
       const newNotification: Notification = {
-        id: `ntf_${Date.now()}`,
+        id: randomUUID(),
         userId: notification.userId,
         title: notification.title,
         message: notification.message,
