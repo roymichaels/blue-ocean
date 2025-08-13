@@ -10,6 +10,8 @@ try {
 
 const { faker } = require('@faker-js/faker');
 const { store } = require('../lib/memoryStore');
+const fs = require('fs');
+const path = require('path');
 
 async function seed() {
   const tenants = ['thecongress', 'thebull'];
@@ -26,11 +28,22 @@ async function seed() {
   }));
   store.users.push(...users);
 
+  // Stores (sellers)
+  const stores = Array.from({ length: 10 }).map(() => ({
+    id: `store_${Date.now()}_${faker.number.int()}`,
+    name: faker.company.name(),
+    owner: faker.person.fullName(),
+    nftId: faker.string.uuid(),
+    reputation: faker.number.float({ min: 0, max: 5, precision: 0.1 }),
+  }));
+  store.stores.push(...stores);
+
   // Products
   const categories = ['general', 'misc'];
-  const products = Array.from({ length: 10 }).map(() => ({
+  const products = Array.from({ length: 100 }).map(() => ({
     id: `prod_${Date.now()}_${faker.number.int()}`,
     tenant_id: faker.helpers.arrayElement(tenants),
+    storeId: faker.helpers.arrayElement(stores).id,
     name: faker.commerce.productName(),
     price: Number(faker.commerce.price({ min: 5, max: 100 })),
     description: faker.commerce.productDescription(),
@@ -104,6 +117,22 @@ async function seed() {
       theme_color: faker.color.rgb(),
     };
   }
+
+  // Write seed data to JSON fixture
+  const outputPath = path.join(__dirname, '../assets/seed');
+  fs.mkdirSync(outputPath, { recursive: true });
+  const seedData = {
+    users: store.users,
+    stores: store.stores,
+    products: store.products,
+    orders: store.orders,
+    notifications: store.notifications,
+    tenantSettings: store.tenantSettings,
+  };
+  fs.writeFileSync(
+    path.join(outputPath, 'seed-data.json'),
+    JSON.stringify(seedData, null, 2),
+  );
 
   console.log('Seed data inserted into memory store');
 }

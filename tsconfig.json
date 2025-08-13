@@ -16,7 +16,9 @@
       "react",
       "react-native",
       "jest",
-      "node"
+      "node",
+      "bcryptjs",
+      "minimatch"
     ],
     "skipLibCheck": true,
     "baseUrl": ".",
