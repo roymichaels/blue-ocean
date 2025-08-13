@@ -1,4 +1,5 @@
 import { Notification } from '../types';
+import { NotificationEvent } from '../types/waku';
 import {
   setNotification,
   getNotification,
@@ -15,17 +16,11 @@ import {
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import ensureTonWallet from '../utils/ensureTonWallet';
+import { errorLog } from '../utils/logger';
 
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 const ORDER_TOPIC = '/congress/orders/1';
-
-export type NotificationEvent =
-  | 'order.created'
-  | 'payment.received'
-  | 'status.updated'
-  | 'dispute.updated'
-  | 'escrow.deployed';
 
 type NotificationTemplate = (
   item: Notification,
@@ -117,7 +112,7 @@ class NotificationsAgent {
       await waitForRemotePeer(this.node, [Protocols.Relay]);
       return this.node;
     } catch (err) {
-      console.error('Failed to start Waku node', err);
+      errorLog('Failed to start Waku node', err);
       this.node = null;
       return null;
     }
@@ -142,7 +137,7 @@ class NotificationsAgent {
         });
       }
     } catch (err) {
-      console.error('Failed to broadcast notification', err);
+      errorLog('Failed to broadcast notification', err);
     }
   }
 }

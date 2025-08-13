@@ -4,6 +4,8 @@ import { getPublicKeyHex } from '../services/localIdentity';
 import SettingsAgent from './settings-agent';
 import ensureTonWallet from '../utils/ensureTonWallet';
 import validateTonAddress from '../utils/validateTonAddress';
+import { verifyMessageSignature } from '../utils/verifyMessageSignature';
+import type { WakuMessage } from '../types/waku';
 
 export type UsersAgentMessage =
   | { type: 'user.add'; payload: User }
@@ -111,7 +113,9 @@ class UsersAgent {
     return await listUsers();
   }
 
-  async handleMessage(msg: UsersAgentMessage): Promise<void> {
+  async handleMessage(signed: WakuMessage<UsersAgentMessage>): Promise<void> {
+    if (!(await verifyMessageSignature(signed, signed.sender.publicKey))) return;
+    const msg = signed.payload;
     switch (msg.type) {
       case 'user.add':
         await this.add(msg.payload);

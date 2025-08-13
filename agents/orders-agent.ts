@@ -17,6 +17,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import { logOrderEvent } from '../services/eventLog';
 import ensureTonWallet from '../utils/ensureTonWallet';
 import eventBus from '../services/eventBus';
+import { errorLog } from '../utils/logger';
 
 const ORDER_TOPIC = '/congress/orders/1';
 
@@ -125,7 +126,7 @@ class OrdersAgent {
           delete toStore.shippingAddress;
         }
       } catch (err) {
-        console.warn('Failed to encrypt shipping address', err);
+        errorLog('Failed to encrypt shipping address', err);
       }
     }
     await setOrder(toStore);
@@ -343,7 +344,7 @@ class OrdersAgent {
     try {
       await notificationsAgent.broadcast('status.updated', notification);
     } catch (err) {
-      console.error('Failed to send notification', err);
+      errorLog('Failed to send notification', err);
     }
   }
 
@@ -360,7 +361,7 @@ class OrdersAgent {
     try {
       await notificationsAgent.broadcast('order.created', notification);
     } catch (err) {
-      console.error('Failed to send notification', err);
+      errorLog('Failed to send notification', err);
     }
   }
 
@@ -377,7 +378,7 @@ class OrdersAgent {
     try {
       await notificationsAgent.broadcast('payment.received', notification);
     } catch (err) {
-      console.error('Failed to send notification', err);
+      errorLog('Failed to send notification', err);
     }
   }
 
@@ -394,7 +395,7 @@ class OrdersAgent {
     try {
       await notificationsAgent.broadcast('dispute.updated', notification);
     } catch (err) {
-      console.error('Failed to send notification', err);
+      errorLog('Failed to send notification', err);
     }
   }
 }

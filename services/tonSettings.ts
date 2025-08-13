@@ -13,7 +13,7 @@ import {
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { verifyMessageSignature } from '../utils/verifyMessageSignature';
-import { WakuMessage } from '../types/waku';
+import { WakuMessage, SettingsWriteEvent } from '../types/waku';
 import { sign } from '@noble/ed25519';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
@@ -36,14 +36,6 @@ export interface TonSettings {
 
 export async function getSetting(key: string): Promise<string | null> {
   return await getValue(ADDRESS, key);
-}
-
-export interface SettingsWriteEvent {
-  type: 'settings.write';
-  key: string;
-  value: string;
-  actor: string;
-  timestamp: number;
 }
 
 let node: LightNode | null = null;
