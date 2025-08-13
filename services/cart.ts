@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '../types';
 import DatabaseService from './database';
 import cartAgent from '../agents/cart-agent';
+import eventBus from './eventBus';
  
 
 const CART_STORAGE_KEY = 'cart_items';
@@ -181,7 +182,7 @@ class CartService {
       this.cartItems.push(cartItem);
       await cartAgent.add(cartItem);
     }
-
+    eventBus.track('cart.add', { productId: product.id, quantity });
     await this.recalcPricing();
     await this.saveToStorage();
     this.notifyListeners();
@@ -190,6 +191,7 @@ class CartService {
   public async removeFromCart(itemId: string): Promise<void> {
     this.cartItems = this.cartItems.filter(item => item.id !== itemId);
     await cartAgent.remove(itemId);
+    eventBus.track('cart.remove', { itemId });
     await this.recalcPricing();
     await this.saveToStorage();
     this.notifyListeners();
@@ -203,6 +205,7 @@ class CartService {
       } else {
         this.cartItems[itemIndex].quantity = quantity;
         await cartAgent.update(this.cartItems[itemIndex]);
+        eventBus.track('cart.update', { itemId, quantity });
         await this.recalcPricing();
         await this.saveToStorage();
         this.notifyListeners();
@@ -215,6 +218,7 @@ class CartService {
     for (const item of cartAgent.getAll()) {
       await cartAgent.remove(item.id);
     }
+    eventBus.track('cart.clear');
     await this.recalcPricing();
     await this.saveToStorage();
     this.notifyListeners();

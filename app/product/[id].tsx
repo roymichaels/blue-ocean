@@ -48,6 +48,7 @@ import commonStyles from '../../constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '../../components/FloatingCartWidget';
 import SmartImage from '../../components/SmartImage';
+import eventBus from '../../services/eventBus';
 
 
 
@@ -158,7 +159,10 @@ export default function ProductDetailScreen() {
         });
         return;
       }
-      setProduct(fetched);
+      if (fetched) {
+        setProduct(fetched);
+        eventBus.track('catalog.product_view', { productId: fetched.id });
+      }
     } catch (error) {
       errorLog('Error loading product:', error);
       setInfoModal({

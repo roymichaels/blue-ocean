@@ -8,11 +8,13 @@ import {
   utf8ToBytes,
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
-import { randomUUID } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 import tonAuth from './tonAuth';
 
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
+const ANALYTICS_TOPIC = '/congress/analytics/1';
+const sessionId = randomUUID();
 
 let node: LightNode | null = null;
 
@@ -46,10 +48,12 @@ export async function publish(
   if (!n) return;
   try {
     const encoder = createEncoder({ contentTopic });
+    const addr = tonAuth.getAddress();
     const event = {
       id: randomUUID(),
       timestamp: Date.now(),
-      actor: tonAuth.getAddress(),
+      actor: addr ? createHash('sha256').update(addr).digest('hex') : undefined,
+      sessionId,
       type,
       ...payload,
     };
@@ -61,5 +65,12 @@ export async function publish(
   }
 }
 
-export default { publish };
+export async function track(
+  type: string,
+  payload: Record<string, any> = {},
+): Promise<void> {
+  await publish(ANALYTICS_TOPIC, type, payload);
+}
+
+export default { publish, track };
 
