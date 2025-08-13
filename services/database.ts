@@ -1,10 +1,8 @@
-// @ts-nocheck
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import usersAgent from '../agents/users-agent';
 import categoriesAgent from '../agents/categories-agent';
 import productsAgent from '../agents/products-agent';
 import ordersAgent from '../agents/orders-agent';
-import cartAgent from '../agents/cart-agent';
 import SettingsAgent from '../agents/settings-agent';
 import reviewAgent from '../agents/review-agent';
 import { listAllReviews } from '../services/tonReviews';
@@ -22,6 +20,8 @@ import {
   DeliveryJob,
   Order,
   WishlistItem,
+  CustomerTier,
+  KycStatus,
 } from '../types';
 
 const CHAT_MESSAGE_LIMIT = 50;
@@ -30,14 +30,23 @@ const CHAT_STORAGE_PREFIX = 'chat_messages_';
 class DatabaseService {
   private static instance: DatabaseService;
 
-  private heroBanners: Map<string, HeroBanner> = new Map();
-  private pricingTiers: Map<string, PricingTier> = new Map();
-  private mixGroups: Map<string, MixGroup> = new Map();
-  private reviews: Map<string, Review> = new Map();
-  private chatRooms: Map<string, ChatRoom> = new Map();
-  private chatMessages: Map<string, ChatMessage[]> = new Map();
+  private heroBanners: Map<string, HeroBanner> = new Map<string, HeroBanner>();
+  private pricingTiers: Map<string, PricingTier> = new Map<
+    string,
+    PricingTier
+  >();
+  private mixGroups: Map<string, MixGroup> = new Map<string, MixGroup>();
+  private reviews: Map<string, Review> = new Map<string, Review>();
+  private chatRooms: Map<string, ChatRoom> = new Map<string, ChatRoom>();
+  private chatMessages: Map<string, ChatMessage[]> = new Map<
+    string,
+    ChatMessage[]
+  >();
   private wishlist: Record<string, WishlistItem[]> = {};
-  private deliveryJobs: Map<string, DeliveryJob> = new Map();
+  private deliveryJobs: Map<string, DeliveryJob> = new Map<
+    string,
+    DeliveryJob
+  >();
 
   private constructor() {}
 
@@ -52,7 +61,10 @@ class DatabaseService {
     return usersAgent.get(id) || null;
   }
 
-  async updateUserRole(userId: string, role: 'user' | 'driver' | 'admin'): Promise<void> {
+  async updateUserRole(
+    userId: string,
+    role: 'user' | 'driver' | 'admin',
+  ): Promise<void> {
     const user = await this.getUserProfile(userId);
     if (!user) return;
     user.role = role;
@@ -63,8 +75,15 @@ class DatabaseService {
     return categoriesAgent.getAll();
   }
 
-  async addCategory(category: Omit<Category, 'subcategories'> & { subcategories?: Category['subcategories'] }): Promise<void> {
-    await categoriesAgent.add({ ...category, subcategories: category.subcategories });
+  async addCategory(
+    category: Omit<Category, 'subcategories'> & {
+      subcategories?: Category['subcategories'];
+    },
+  ): Promise<void> {
+    await categoriesAgent.add({
+      ...category,
+      subcategories: category.subcategories,
+    });
   }
 
   async updateCategory(id: string, data: Partial<Category>): Promise<void> {
@@ -97,7 +116,7 @@ class DatabaseService {
 
   async addProduct(product: Omit<Product, 'id'>): Promise<string> {
     const id = `prod_${Date.now()}`;
-    const full: Product = { id, ...product } as Product;
+    const full: Product = { id, ...product };
     await productsAgent.add(full);
     return id;
   }
@@ -121,9 +140,12 @@ class DatabaseService {
     await categoriesAgent.update(cat);
   }
 
-  async updateSubcategory(id: string, data: Partial<Subcategory>): Promise<void> {
+  async updateSubcategory(
+    id: string,
+    data: Partial<Subcategory>,
+  ): Promise<void> {
     for (const cat of categoriesAgent.getAll()) {
-      const idx = cat.subcategories?.findIndex(s => s.id === id) ?? -1;
+      const idx = cat.subcategories?.findIndex((s) => s.id === id) ?? -1;
       if (idx >= 0 && cat.subcategories) {
         cat.subcategories[idx] = { ...cat.subcategories[idx], ...data };
         await categoriesAgent.update(cat);
@@ -135,7 +157,7 @@ class DatabaseService {
   async deleteSubcategory(id: string): Promise<void> {
     for (const cat of categoriesAgent.getAll()) {
       const before = cat.subcategories?.length || 0;
-      cat.subcategories = cat.subcategories?.filter(s => s.id !== id);
+      cat.subcategories = cat.subcategories?.filter((s) => s.id !== id);
       if ((cat.subcategories?.length || 0) !== before) {
         await categoriesAgent.update(cat);
         return;
@@ -156,7 +178,10 @@ class DatabaseService {
     this.pricingTiers.set(tier.id, tier);
   }
 
-  async updatePricingTier(id: string, data: Partial<PricingTier>): Promise<void> {
+  async updatePricingTier(
+    id: string,
+    data: Partial<PricingTier>,
+  ): Promise<void> {
     const existing = this.pricingTiers.get(id);
     if (!existing) return;
     this.pricingTiers.set(id, { ...existing, ...data });
@@ -175,10 +200,12 @@ class DatabaseService {
     return Array.from(this.heroBanners.values());
   }
 
-  async addHeroBanner(banner: Omit<HeroBanner, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async addHeroBanner(
+    banner: Omit<HeroBanner, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<string> {
     const id = `banner_${Date.now()}`;
     const now = new Date().toISOString();
-    const full: HeroBanner = { id, createdAt: now, updatedAt: now, ...banner } as HeroBanner;
+    const full: HeroBanner = { id, createdAt: now, updatedAt: now, ...banner };
     this.heroBanners.set(id, full);
     return id;
   }
@@ -186,7 +213,11 @@ class DatabaseService {
   async updateHeroBanner(id: string, data: Partial<HeroBanner>): Promise<void> {
     const existing = this.heroBanners.get(id);
     if (!existing) return;
-    this.heroBanners.set(id, { ...existing, ...data, updatedAt: new Date().toISOString() });
+    this.heroBanners.set(id, {
+      ...existing,
+      ...data,
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   async deleteHeroBanner(id: string): Promise<void> {
@@ -219,7 +250,7 @@ class DatabaseService {
 
   // Orders
   async getUserOrders(userId: string): Promise<Order[]> {
-    return ordersAgent.getAll().filter(o => o.userId === userId);
+    return ordersAgent.getAll().filter((o) => o.userId === userId);
   }
 
   async getAllUserProfiles(): Promise<User[]> {
@@ -229,27 +260,36 @@ class DatabaseService {
   async searchUserProfiles(query: string): Promise<User[]> {
     return usersAgent
       .getAll()
-      .filter(u => u.displayName?.toLowerCase().includes(query.toLowerCase()));
+      .filter((u) =>
+        u.displayName?.toLowerCase().includes(query.toLowerCase()),
+      );
   }
 
-  async updateUserCustomerTier(userId: string, tier: string): Promise<void> {
+  async updateUserCustomerTier(
+    userId: string,
+    tier: CustomerTier,
+  ): Promise<void> {
     const user = usersAgent.get(userId);
     if (!user) return;
-    (user as any).customerTier = tier;
+    user.customerTier = tier;
     await usersAgent.update(user);
   }
 
-  async updateUserKycStatus(userId: string, status: string, adminId?: string): Promise<boolean> {
+  async updateUserKycStatus(
+    userId: string,
+    status: KycStatus,
+    adminId?: string,
+  ): Promise<boolean> {
     const user = usersAgent.get(userId);
     if (!user) return false;
-    (user as any).kycStatus = status as any;
-    (user as any).kycApprovedBy = adminId;
+    user.kycStatus = status;
+    user.kycApprovedBy = adminId;
     await usersAgent.update(user);
     return true;
   }
 
   async getPendingKycRequests(): Promise<User[]> {
-    return usersAgent.getAll().filter(u => (u as any).kycStatus === 'pending');
+    return usersAgent.getAll().filter((u) => u.kycStatus === 'pending');
   }
 
   // Chat
@@ -264,7 +304,10 @@ class DatabaseService {
     roomId?: string,
   ): Promise<string> {
     for (const room of this.chatRooms.values()) {
-      if ((roomId && room.id === roomId) || (!roomId && room.userId === userId)) {
+      if (
+        (roomId && room.id === roomId) ||
+        (!roomId && room.userId === userId)
+      ) {
         if (userPublicKey) room.userPublicKey = userPublicKey;
         return room.id;
       }
@@ -294,15 +337,17 @@ class DatabaseService {
     let msgs = this.chatMessages.get(roomId);
     if (!msgs) {
       try {
-        const raw = await AsyncStorage.getItem(`${CHAT_STORAGE_PREFIX}${roomId}`);
-        msgs = raw ? JSON.parse(raw) : [];
+        const raw = await AsyncStorage.getItem(
+          `${CHAT_STORAGE_PREFIX}${roomId}`,
+        );
+        msgs = raw ? (JSON.parse(raw) as ChatMessage[]) : [];
       } catch {
         msgs = [];
       }
-      msgs = (msgs || []).slice(-CHAT_MESSAGE_LIMIT);
-      this.chatMessages.set(roomId, msgs!);
+      msgs = msgs.slice(-CHAT_MESSAGE_LIMIT);
+      this.chatMessages.set(roomId, msgs);
     }
-    return msgs || [];
+    return msgs;
   }
 
   async sendChatMessage(roomId: string, msg: ChatMessage): Promise<void> {
@@ -327,9 +372,12 @@ class DatabaseService {
     }
   }
 
-  async updateMessageReactions(id: string, reactions: Record<string, string[]>): Promise<void> {
+  async updateMessageReactions(
+    id: string,
+    reactions: Record<string, string[]>,
+  ): Promise<void> {
     for (const [roomId, msgs] of this.chatMessages) {
-      const idx = msgs.findIndex(m => m.id === id);
+      const idx = msgs.findIndex((m) => m.id === id);
       if (idx >= 0) {
         msgs[idx] = { ...msgs[idx], reactions };
         this.chatMessages.set(roomId, msgs);
@@ -353,7 +401,7 @@ class DatabaseService {
 
   async addWishlistItem(userId: string, productId: string): Promise<void> {
     const list = this.wishlist[userId] || [];
-    if (list.some(w => w.productId === productId)) return;
+    if (list.some((w) => w.productId === productId)) return;
     const product = productsAgent.get(productId);
     if (!product) return;
     list.push({
@@ -367,7 +415,7 @@ class DatabaseService {
 
   async removeWishlistItem(userId: string, productId: string): Promise<void> {
     const list = this.wishlist[userId] || [];
-    this.wishlist[userId] = list.filter(w => w.productId !== productId);
+    this.wishlist[userId] = list.filter((w) => w.productId !== productId);
   }
 
   // Delivery jobs
@@ -376,7 +424,9 @@ class DatabaseService {
   }
 
   async getDeliveryJobsForDriver(driverId: string): Promise<DeliveryJob[]> {
-    return Array.from(this.deliveryJobs.values()).filter(j => j.driverId === driverId);
+    return Array.from(this.deliveryJobs.values()).filter(
+      (j) => j.driverId === driverId,
+    );
   }
 
   async createDeliveryJob(orderId: string, driverId: string): Promise<string> {
@@ -393,7 +443,10 @@ class DatabaseService {
     return id;
   }
 
-  async updateDeliveryJobStatus(id: string, status: DeliveryJob['status']): Promise<void> {
+  async updateDeliveryJobStatus(
+    id: string,
+    status: DeliveryJob['status'],
+  ): Promise<void> {
     const job = this.deliveryJobs.get(id);
     if (!job) return;
     job.status = status;
