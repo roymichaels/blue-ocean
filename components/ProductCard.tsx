@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  Platform,
 } from 'react-native';
 import { Heart, Pencil, ShoppingCart, Tag } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -18,6 +17,7 @@ import DatabaseService from '../services/database';
 import MediaService from '../services/media';
 import { useTonAddress } from '../services/tonAuth';
 import productsAgent from '../agents/products-agent';
+import Card from './Card';
 
 interface ProductCardProps {
   product: Product;
@@ -149,18 +149,13 @@ export default function ProductCard({
   const hasTieredPricing = pricingTier && pricingTier.pricePerUnit !== undefined;
 
   return (
-    <TouchableOpacity style={[
+    <Card Component={TouchableOpacity} style={[
       styles.container,
-      { 
+      {
         backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary 
+        borderColor: colors.border.primary
       },
       style,
-      Platform.select({
-        ios: { elevation: 2 },
-        android: { elevation: 2 },
-        web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
-      }),
     ]} onPress={handlePress}>
       <View style={styles.imageContainer}>
         {product.images && product.images.length > 0 ? (
@@ -303,7 +298,7 @@ export default function ProductCard({
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </Card>
   );
 }
 
