@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -247,7 +248,7 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
       
       Alert.alert('הצלחה', t('orders.detailsCopied'));
     } catch (error) {
-      console.error('Error copying order details:', error);
+      errorLog('Error copying order details:', error);
       Alert.alert('שגיאה', 'אירעה שגיאה בהעתקת פרטי ההזמנה');
     }
   };

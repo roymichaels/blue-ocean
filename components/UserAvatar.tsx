@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -80,7 +81,7 @@ export default function UserAvatar() {
       // Navigate to home page after logout
       router.replace('/');
     } catch (error) {
-      console.error('Logout error:', error);
+      errorLog('Logout error:', error);
     } finally {
       setLogoutConfirmVisible(false);
     }

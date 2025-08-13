@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -115,7 +116,7 @@ export default function HomeScreen() {
       setCategories(categoriesData);
       setHeroBanners(bannersData);
     } catch (error) {
-      console.error('Error loading data:', error);
+      errorLog('Error loading data:', error);
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -60,7 +61,7 @@ export default function MediaUploader({
               setThumbnailMap(prev => ({ ...prev, [item.id]: thumb }));
             }
           } catch (err) {
-            console.error('Error loading thumbnail:', err);
+            errorLog('Error loading thumbnail:', err);
           }
         }
       }
@@ -107,7 +108,7 @@ export default function MediaUploader({
               setThumbnailMap((m) => ({ ...m, [id]: thumb }));
             }
           } catch (err) {
-            console.error('Error generating thumbnail:', err);
+            errorLog('Error generating thumbnail:', err);
           }
         }
 
@@ -134,7 +135,7 @@ export default function MediaUploader({
         });
       }
     } catch (error) {
-      console.error('Error handling upload:', error);
+      errorLog('Error handling upload:', error);
       Alert.alert('Error', 'Failed to upload media. Please try again.');
     } finally {
       setUploading(false);
@@ -171,7 +172,7 @@ export default function MediaUploader({
 
       await handleUpload(result);
     } catch (error) {
-      console.error('Error picking media:', error);
+      errorLog('Error picking media:', error);
       Alert.alert('Error', 'Failed to pick media. Please try again.');
     }
   };
@@ -201,7 +202,7 @@ export default function MediaUploader({
 
       await handleUpload(result);
     } catch (error) {
-      console.error('Error taking photo:', error);
+      errorLog('Error taking photo:', error);
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     }
   };

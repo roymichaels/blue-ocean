@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -91,7 +92,7 @@ export default function ReviewsScreen() {
         setUserOrders(deliveredOrders);
       }
     } catch (error) {
-      console.error('Error loading reviews:', error);
+      errorLog('Error loading reviews:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -178,7 +179,7 @@ export default function ReviewsScreen() {
         type: 'success'
       });
     } catch (error) {
-      console.error('Error submitting review:', error);
+      errorLog('Error submitting review:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -208,7 +209,7 @@ export default function ReviewsScreen() {
         await db.updateReview(reviewId, { helpful: review.helpful + 1 });
       }
     } catch (error) {
-      console.error('Error marking review as helpful:', error);
+      errorLog('Error marking review as helpful:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -254,7 +255,7 @@ export default function ReviewsScreen() {
         type: 'success'
       });
     } catch (error) {
-      console.error('Error deleting review:', error);
+      errorLog('Error deleting review:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

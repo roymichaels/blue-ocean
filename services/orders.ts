@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import { randomUUID } from 'crypto';
 import ordersAgent from '../agents/orders-agent';
 import eventBus from './eventBus';
@@ -40,7 +41,7 @@ export async function emitOrderEvents(order: Order, storeId: string) {
 
     }
   } catch (err) {
-    console.error('Failed to emit order events', err);
+    errorLog('Failed to emit order events', err);
   }
 }
 

@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DatabaseService from '../services/database';
@@ -46,7 +47,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
         await AsyncStorage.setItem(CURRENCY_STORAGE_KEY, dbSymbol);
       }
     } catch (error) {
-      console.error('Error loading currency symbol:', error);
+      errorLog('Error loading currency symbol:', error);
     }
   };
 
@@ -61,7 +62,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       const db = DatabaseService.getInstance();
       await db.updateSetting('currency_symbol', symbol);
     } catch (error) {
-      console.error('Error setting currency symbol:', error);
+      errorLog('Error setting currency symbol:', error);
     }
   };
 

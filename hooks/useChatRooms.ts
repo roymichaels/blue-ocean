@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import { useState, useEffect } from 'react';
 import DatabaseService from '../services/database';
 import { ChatRoom } from '../types';
@@ -13,7 +14,7 @@ export function useChatRooms(isOpen: boolean) {
       const rooms = await db.getChatRooms();
       setChatRooms(rooms);
     } catch (err) {
-      console.error('Failed to load chat rooms', err);
+      errorLog('Failed to load chat rooms', err);
     }
   };
 

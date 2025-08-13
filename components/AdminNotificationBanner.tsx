@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -44,7 +45,7 @@ export default function AdminNotificationBanner() {
         showBanner();
       }
     } catch (error) {
-      console.error('Error checking notifications:', error);
+      errorLog('Error checking notifications:', error);
     }
   };
 

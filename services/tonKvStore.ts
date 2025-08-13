@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import TonWeb from 'tonweb';
 import type { Cell } from 'tonweb/dist/types/boc/cell';
 import { Buffer } from 'buffer';
@@ -49,7 +50,7 @@ export async function getValue(address: string, key: string): Promise<string | n
       return Buffer.from(bytes).toString('utf8');
     });
   } catch (e) {
-    console.error('Failed to get value', e);
+    errorLog('Failed to get value', e);
     return null;
   }
 }
@@ -70,7 +71,7 @@ export async function listValues(address: string): Promise<{ key: string; value:
       return items;
     });
   } catch (e) {
-    console.error('Failed to list values', e);
+    errorLog('Failed to list values', e);
     return [];
   }
 }

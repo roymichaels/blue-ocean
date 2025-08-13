@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -120,7 +121,7 @@ export default function AdminDashboardScreen() {
         'success'
       );
     } catch (error) {
-      console.error('Error loading data:', error);
+      errorLog('Error loading data:', error);
       showNotification(
         'שגיאה',
         'טעינת נתוני לוח הבקרה נכשלה',
@@ -148,7 +149,7 @@ export default function AdminDashboardScreen() {
       setReports((prev) => prev.filter((r) => r.id !== report.id));
       showNotification('Success', 'Item removed', 'success');
     } catch (err) {
-      console.error('Failed to remove item:', err);
+      errorLog('Failed to remove item:', err);
       showNotification('Error', 'Removal failed', 'error');
     }
   };
@@ -158,7 +159,7 @@ export default function AdminDashboardScreen() {
       await moderationAgent.remove(id);
       setReports((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
-      console.error('Failed to dismiss report:', err);
+      errorLog('Failed to dismiss report:', err);
     }
   };
 

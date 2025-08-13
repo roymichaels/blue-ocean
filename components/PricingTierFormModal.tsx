@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -113,7 +114,7 @@ export default function PricingTierFormModal({
       }
       onClose();
     } catch (error) {
-      console.error('Error saving pricing tier:', error);
+      errorLog('Error saving pricing tier:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -134,7 +135,7 @@ export default function PricingTierFormModal({
       onDeleted?.(editingTier.id);
       onClose();
     } catch (error) {
-      console.error('Error deleting pricing tier:', error);
+      errorLog('Error deleting pricing tier:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

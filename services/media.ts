@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import PinataService from './pinata';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 
@@ -34,7 +35,7 @@ class MediaService {
       const pinataService = PinataService.getInstance();
       return await pinataService.uploadFile(uri, name, onProgress);
     } catch (error) {
-      console.error('Error uploading media:', error);
+      errorLog('Error uploading media:', error);
       // Return the original URI as fallback
       return uri;
     }
@@ -49,7 +50,7 @@ class MediaService {
       const uploadPromises = files.map(file => this.uploadMedia(file.uri, file.name));
       return await Promise.all(uploadPromises);
     } catch (error) {
-      console.error('Error uploading multiple files:', error);
+      errorLog('Error uploading multiple files:', error);
       // Return original URIs as fallback
       return files.map(file => file.uri);
     }
@@ -102,7 +103,7 @@ class MediaService {
       });
       return thumbnailUri;
     } catch (error) {
-      console.error('Error generating video thumbnail:', error);
+      errorLog('Error generating video thumbnail:', error);
       return null;
     }
   }

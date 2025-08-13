@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import TonWeb from 'tonweb';
 
 const DEFAULT_RPC = 'https://toncenter.com/api/v2/jsonRPC';
@@ -17,7 +18,7 @@ export async function withTonWeb<T>(callback: (tonweb: TonWeb) => Promise<T>): P
       return await callback(tonweb);
     } catch (error) {
       lastError = error;
-      console.error(`Ton RPC call failed for ${url}`, error);
+      errorLog(`Ton RPC call failed for ${url}`, error);
     }
   }
   throw lastError;

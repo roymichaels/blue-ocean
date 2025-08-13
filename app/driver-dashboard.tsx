@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 // --- DRIVER DASHBOARD ---
 
 import React, { useEffect, useState } from 'react';
@@ -58,7 +59,7 @@ export default function DriverDashboardScreen() {
       const myJobs = await db.getDeliveryJobsForDriver(user?.id || '');
       setJobs(myJobs);
     } catch (error) {
-      console.error('Error loading jobs:', error);
+      errorLog('Error loading jobs:', error);
       Alert.alert('שגיאה', 'טעינת המשימות נכשלה');
     } finally {
       setLoading(false);
@@ -74,7 +75,7 @@ export default function DriverDashboardScreen() {
       await db.updateDeliveryJobStatus(jobId, status);
       loadJobs();
     } catch (error) {
-      console.error('Error updating job status:', error);
+      errorLog('Error updating job status:', error);
       Alert.alert('שגיאה', 'עדכון סטטוס נכשל');
     }
   };

@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import NotificationService from '../services/notification';
 import { Notification } from '../types';
@@ -109,7 +110,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
               : 'info',
         );
       } catch (err) {
-        console.error('Failed to parse notification', err);
+        errorLog('Failed to parse notification', err);
       }
     });
   };
@@ -132,7 +133,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       const count = await notificationService.getUnreadCount(user.id);
       setUnreadCount(count);
     } catch (error) {
-      console.error('Error refreshing notifications:', error);
+      errorLog('Error refreshing notifications:', error);
     }
   };
 

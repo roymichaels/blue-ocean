@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -94,7 +95,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
       setUri(uploaded);
       onUploaded?.(uploaded);
     } catch (error) {
-      console.error('Error uploading proof:', error);
+      errorLog('Error uploading proof:', error);
       Alert.alert('שגיאה', 'העלאת הקובץ נכשלה');
     } finally {
       setUploading(false);

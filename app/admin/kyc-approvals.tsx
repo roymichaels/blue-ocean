@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -44,7 +45,7 @@ export default function KycApprovalsScreen() {
       const requests = await db.getPendingKycRequests();
       setPendingRequests(requests);
     } catch (error) {
-      console.error('Error loading pending KYC requests:', error);
+      errorLog('Error loading pending KYC requests:', error);
       Alert.alert('שגיאה', 'אירעה שגיאה בטעינת בקשות האימות');
     } finally {
       setLoading(false);
@@ -66,7 +67,7 @@ export default function KycApprovalsScreen() {
         Alert.alert('שגיאה', 'אירעה שגיאה באישור האימות');
       }
     } catch (error) {
-      console.error('Error approving KYC request:', error);
+      errorLog('Error approving KYC request:', error);
       Alert.alert('שגיאה', 'אירעה שגיאה באישור האימות');
     }
   };
@@ -86,7 +87,7 @@ export default function KycApprovalsScreen() {
         Alert.alert('שגיאה', 'אירעה שגיאה בדחיית האימות');
       }
     } catch (error) {
-      console.error('Error rejecting KYC request:', error);
+      errorLog('Error rejecting KYC request:', error);
       Alert.alert('שגיאה', 'אירעה שגיאה בדחיית האימות');
     }
   };

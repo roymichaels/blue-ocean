@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -136,7 +137,7 @@ export default function ProductDetailScreen() {
               setVideoThumbnails((prev) => ({ ...prev, [id]: thumb }));
             }
           } catch (err) {
-            console.error('Error generating video thumbnail:', err);
+            errorLog('Error generating video thumbnail:', err);
           }
         }
       }
@@ -159,7 +160,7 @@ export default function ProductDetailScreen() {
       }
       setProduct(fetched);
     } catch (error) {
-      console.error('Error loading product:', error);
+      errorLog('Error loading product:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -175,7 +176,7 @@ export default function ProductDetailScreen() {
       const categoriesData = await db.getCategories();
       setCategories(categoriesData);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      errorLog('Error loading categories:', error);
     }
   };
 
@@ -185,7 +186,7 @@ export default function ProductDetailScreen() {
       const tiersData = await db.getPricingTiers();
       setPricingTiers(tiersData);
     } catch (error) {
-      console.error('Error loading pricing tiers:', error);
+      errorLog('Error loading pricing tiers:', error);
     }
   };
 
@@ -194,7 +195,7 @@ export default function ProductDetailScreen() {
       const list = await reviewAgent.getByProduct(id);
       setReviews(list);
     } catch (err) {
-      console.error('Error loading reviews:', err);
+      errorLog('Error loading reviews:', err);
     }
   };
 
@@ -263,7 +264,7 @@ export default function ProductDetailScreen() {
             url: window.location.href,
           })
           .catch((error) => {
-            console.error('Error sharing:', error);
+            errorLog('Error sharing:', error);
           });
       } else {
         setInfoModal({
@@ -322,7 +323,7 @@ export default function ProductDetailScreen() {
         type: 'success',
       });
     } catch (err) {
-      console.error('Error reporting product:', err);
+      errorLog('Error reporting product:', err);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

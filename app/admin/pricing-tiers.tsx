@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -58,7 +59,7 @@ export default function PricingTiersScreen() {
       const tiersData = await db.getPricingTiers();
       setPricingTiers(tiersData);
     } catch (error) {
-      console.error('Error loading pricing tiers:', error);
+      errorLog('Error loading pricing tiers:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

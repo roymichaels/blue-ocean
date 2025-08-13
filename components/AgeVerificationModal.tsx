@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -37,7 +38,7 @@ export default function AgeVerificationModal() {
         setVisible(true);
       }
     } catch (error) {
-      console.error('Error checking age verification:', error);
+      errorLog('Error checking age verification:', error);
       setVisible(true);
     } finally {
       setLoading(false);
@@ -49,7 +50,7 @@ export default function AgeVerificationModal() {
       await AsyncStorage.setItem(AGE_VERIFICATION_KEY, 'true');
       setVisible(false);
     } catch (error) {
-      console.error('Error saving age verification:', error);
+      errorLog('Error saving age verification:', error);
     }
   };
 

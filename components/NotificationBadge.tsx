@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import NotificationService from '../services/notification';
@@ -34,7 +35,7 @@ export default function NotificationBadge({ size = 20, style }: NotificationBadg
       const count = await notificationService.getUnreadCount(user?.id);
       setUnreadCount(count);
     } catch (error) {
-      console.error('Error loading unread count:', error);
+      errorLog('Error loading unread count:', error);
     }
   };
 

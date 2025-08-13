@@ -1,3 +1,4 @@
+import { debugLog } from '@/utils/logger';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -40,7 +41,7 @@ export default function OrderDetailScreen() {
             }
           }
         } catch (err) {
-          console.warn('Failed to decrypt shipping address', err);
+          debugLog('Failed to decrypt shipping address', err);
         }
       }
       setOrder(decrypted);

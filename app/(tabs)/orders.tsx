@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -61,7 +62,7 @@ export default function OrdersScreen() {
       const userOrders = await orderService.getUserOrders(user?.id || '');
       setOrders(userOrders);
     } catch (error) {
-      console.error('Error loading orders:', error);
+      errorLog('Error loading orders:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

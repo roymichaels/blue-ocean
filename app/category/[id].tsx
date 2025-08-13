@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -61,7 +62,7 @@ export default function CategoryScreen() {
         setSubcategories(foundCategory.subcategories || []);
       }
     } catch (error) {
-      console.error('Error loading category:', error);
+      errorLog('Error loading category:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -135,7 +136,7 @@ export default function CategoryScreen() {
       
       setShowSubcategoryModal(false);
     } catch (error) {
-      console.error('Error saving subcategory:', error);
+      errorLog('Error saving subcategory:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',
@@ -164,7 +165,7 @@ export default function CategoryScreen() {
         type: 'success'
       });
     } catch (error) {
-      console.error('Error deleting subcategory:', error);
+      errorLog('Error deleting subcategory:', error);
       setInfoModal({
         visible: true,
         title: 'שגיאה',

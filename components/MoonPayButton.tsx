@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -36,7 +37,7 @@ export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
         setAmountTON(undefined);
       }
     } catch (err) {
-      console.error('Error fetching TON price:', err);
+      errorLog('Error fetching TON price:', err);
       setAmountTON(undefined);
     }
     setVisible(true);

@@ -1,3 +1,4 @@
+import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -43,7 +44,7 @@ export default function UserProfileScreen() {
       const userProfile = await db.getUserProfile(decodeURIComponent(id as string));
       setUser(userProfile);
     } catch (error) {
-      console.error('Error loading user profile:', error);
+      errorLog('Error loading user profile:', error);
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ export default function UserProfileScreen() {
       // Messaging via Matrix is currently disabled and tracked separately.
       // TODO: re-enable Matrix later
     } catch (error) {
-      console.error('Error opening chat:', error);
+      errorLog('Error opening chat:', error);
       Alert.alert('שגיאה', "אירעה שגיאה בפתיחת הצ'אט");
     }
   };
