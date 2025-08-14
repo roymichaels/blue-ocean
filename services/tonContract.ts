@@ -5,14 +5,11 @@ import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
 import { getTonConnect } from './tonAuth';
 import { fetchSettings } from './tonSettings';
+import { requireEnv } from '@/utils/appConfig';
 
-/**
- * Address of the OrderPayment factory contract.
- * Replace the placeholder with the actual address when shipping.
- */
-export const ORDER_PAYMENT_FACTORY_ADDRESS =
-  process.env.ORDER_PAYMENT_FACTORY_ADDRESS ??
-  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+export const ORDER_PAYMENT_FACTORY_ADDRESS = requireEnv(
+  'ORDER_PAYMENT_FACTORY_ADDRESS',
+);
 
 function makeComment(message: string): Cell {
   const cell = new TonWeb.boc.Cell();

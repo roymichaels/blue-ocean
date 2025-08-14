@@ -74,7 +74,7 @@ async function emit(event: SettingsWriteEvent) {
     const sig = await sign(msgBytes, priv);
     msg.signature = Buffer.from(sig).toString('hex');
 
-    const encoder = createEncoder({ contentTopic: '/congress/settings/1' });
+    const encoder = createEncoder({ contentTopic: '/blue-ocean/settings/1' });
     await n.lightPush.send(encoder, {
       payload: utf8ToBytes(JSON.stringify(msg)),
     });
@@ -88,7 +88,7 @@ export async function subscribeToSettingsWrites(
 ): Promise<() => void> {
   const n = await ensureNode();
   if (!n) return () => {};
-  const decoder = createDecoder('/congress/settings/1');
+  const decoder = createDecoder('/blue-ocean/settings/1');
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
@@ -157,7 +157,7 @@ export async function fetchSettings(): Promise<TonSettings> {
     }
   }
   return {
-    tenantId: map['tenantId'] ?? 'thecongress',
+    tenantId: map['tenantId'] ?? 'blue-ocean',
     appName: map['appName'] ?? 'Blue Ocean',
     theme: { primary: map['theme.primary'] ?? '#B99C5A' },
     brand: { logoCid: map['brand.logoCid'] ?? '' },

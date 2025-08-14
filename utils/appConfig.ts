@@ -4,6 +4,11 @@
 const ENV_KEYS = [
   'EXPO_PUBLIC_DEBUG_LOGS',
   'EXPO_PUBLIC_WAKU_BOOTSTRAP',
+  'ADMIN_WALLET_ADDRESS',
+  'ORDER_PAYMENT_FACTORY_ADDRESS',
+  'TON_RPC_URL',
+  'TON_RPC_FALLBACK_URLS',
+  'ENABLE_UNSAFE_TON_PRIVATE_KEY',
 ];
 
 function loadConfig(): Record<string, string> {
@@ -36,6 +41,24 @@ export function getWakuBootstrapNodes(): string[] {
     .split(',')
     .map((addr) => addr.trim())
     .filter(Boolean);
+}
+
+export function requireEnv(key: string): string {
+  const value = config[key] || process.env[key];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+  return value;
+}
+
+export function getTonRpcUrls(): string[] {
+  const primary = requireEnv('TON_RPC_URL');
+  const fallbacks = config.TON_RPC_FALLBACK_URLS || process.env.TON_RPC_FALLBACK_URLS || '';
+  const extra = fallbacks
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean);
+  return [primary, ...extra];
 }
 
 export default config;

@@ -1,9 +1,11 @@
 # 🤖 Autonomous Agents Overview – Blue Ocean
 
 This document outlines the autonomous agents in **Blue Ocean**, a fully decentralized, serverless, encrypted e-commerce protocol.
+
 All agents communicate over the Waku network and replicate data locally in memory.
 There is **no centralized backend** and **no SQLite**.
 Configuration such as debug logging and Waku peers is supplied through `EXPO_PUBLIC_*` environment variables.
+
 All SQL migration files have been removed.
 
 ---
@@ -21,6 +23,7 @@ All SQL migration files have been removed.
 
 | Topic                  | Purpose                             |
 |------------------------|-------------------------------------|
+
 | `/congress/settings/1` | Store name, color, app config       |
 | `/congress/users/1`    | Registered users + roles + keys     |
 | `/congress/products/1` | Product catalog                     |
@@ -30,6 +33,11 @@ All SQL migration files have been removed.
 | `/congress/reviews/1`  | Product reviews                     |
 | `/congress/analytics/1`| Anonymous analytics events          |
 | `/congress/chat/1/<roomId>` | Encrypted buyer/seller chat     |
+| `/blue-ocean/settings/1` | Store name, color, app config       |
+| `/blue-ocean/users/1`    | Registered users + roles + keys     |
+| `/blue-ocean/products/1` | Product catalog                     |
+| `/blue-ocean/stores/1`   | Store registry + metadata           |
+| `/blue-ocean/orders/1`   | Orders placed by users              |
 
 All topics are encrypted (optionally) and signed.
 
@@ -38,25 +46,25 @@ All topics are encrypted (optionally) and signed.
 ## 🧱 Agents
 
 ### 🛠 `settings-agent.ts`
-- Subscribes to `/congress/settings/1`
+- Subscribes to `/blue-ocean/settings/1`
 - Receives system config updates
 - Validates sender as `admin`
 - Updates in-memory state (e.g. theme color, app name)
 
 ### 🧍 `users-agent.ts`
-- Subscribes to `/congress/users/1`
+- Subscribes to `/blue-ocean/users/1`
 - On first boot, creates local identity and registers user as `admin`
 - Accepts signed user messages
 - Rejects duplicate or unauthenticated roles
 
 ### 🛍️ `products-agent.ts`
-- Subscribes to `/congress/products/1`
+- Subscribes to `/blue-ocean/products/1`
 - Validates that `product.create` and `product.update` come from verified admins
 - Hydrates catalog in memory
 - Optionally stores lightweight index in IPFS
 
 ### 📦 `orders-agent.ts`
-- Subscribes to `/congress/orders/1`
+- Subscribes to `/blue-ocean/orders/1`
 - Receives new order messages
 - Only applies if sender matches `userId` in message
 - Maintains ephemeral order history locally

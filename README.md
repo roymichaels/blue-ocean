@@ -59,11 +59,20 @@ yarn husky install
 ### Environment Variables
 
 The project reads configuration from a `.env` file using Expo's env support
-for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Only a
-minimal set of keys is supported. Copy `.env.example` to `.env` and set:
+for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
+`.env.example` to `.env` and set the following variables:
 
-- `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`)
-- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers
+- `ADMIN_WALLET_ADDRESS` – wallet granted admin rights if no on-chain list
+  exists (required)
+- `ORDER_PAYMENT_FACTORY_ADDRESS` – address of the deployed OrderPayment
+  factory contract (required)
+- `TON_RPC_URL` – primary TON RPC endpoint used for blockchain calls (required)
+- `TON_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional)
+- `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default
+  `false`)
+- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional)
+- `ENABLE_UNSAFE_TON_PRIVATE_KEY` – expose wallet private key for testing
+  (`true`/`false`, default `false`)
 - `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` – MoonPay public API key (optional;
   enables credit card purchases)
 
