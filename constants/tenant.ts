@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchSettings } from '../services/tonSettings';
 
-export let TENANT = 'thecongress';
+export let TENANT = 'blue-ocean';
 
 export interface TenantSettings {
   appName: string;

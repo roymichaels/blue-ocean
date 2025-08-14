@@ -1,4 +1,4 @@
-# The Congress
+# Blue Ocean
 
 This Expo project uses React Native with the Expo Router.
 

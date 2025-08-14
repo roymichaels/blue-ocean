@@ -6,7 +6,7 @@
       "email": "Alfreda44@gmail.com",
       "displayName": "Michael VonRueden",
       "role": "user",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "isAdmin": false
     },
     {
@@ -24,7 +24,7 @@
       "email": "Garland.Ebert@gmail.com",
       "displayName": "Beatrice Bogisich",
       "role": "user",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "isAdmin": false
     },
     {
@@ -33,7 +33,7 @@
       "email": "Jailyn82@yahoo.com",
       "displayName": "Yolanda Langworth",
       "role": "user",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "isAdmin": false
     },
     {
@@ -121,7 +121,7 @@
   "products": [
     {
       "id": "prod_1755121136450_2497607293206528",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_8373897976086528",
       "name": "Unbranded Granite Bike",
       "price": 96,
@@ -151,7 +151,7 @@
     },
     {
       "id": "prod_1755121136450_3492205626916864",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_4513369254002688",
       "name": "Elegant Fresh Mouse",
       "price": 32,
@@ -166,7 +166,7 @@
     },
     {
       "id": "prod_1755121136451_4491041589690368",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_6054709322317824",
       "name": "Refined Concrete Bike",
       "price": 8,
@@ -181,7 +181,7 @@
     },
     {
       "id": "prod_1755121136451_8867989732458496",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_4513369254002688",
       "name": "Licensed Wooden Sausages",
       "price": 36,
@@ -196,7 +196,7 @@
     },
     {
       "id": "prod_1755121136451_3216826500644864",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_5898906808352768",
       "name": "Bespoke Plastic Computer",
       "price": 13,
@@ -211,7 +211,7 @@
     },
     {
       "id": "prod_1755121136451_721912674123776",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_8373897976086528",
       "name": "Handmade Fresh Ball",
       "price": 32,
@@ -226,7 +226,7 @@
     },
     {
       "id": "prod_1755121136451_6893034811686912",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_3055014098501632",
       "name": "Rustic Fresh Pants",
       "price": 73,
@@ -241,7 +241,7 @@
     },
     {
       "id": "prod_1755121136451_1952487890223104",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_4513369254002688",
       "name": "Refined Fresh Keyboard",
       "price": 16,
@@ -256,7 +256,7 @@
     },
     {
       "id": "prod_1755121136451_1422351914762240",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_1952280202969088",
       "name": "Fantastic Frozen Cheese",
       "price": 82,
@@ -271,7 +271,7 @@
     },
     {
       "id": "prod_1755121136451_8904979454623744",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136445_7979549119741952",
       "name": "Licensed Soft Pizza",
       "price": 65,
@@ -286,7 +286,7 @@
     },
     {
       "id": "prod_1755121136451_4394380496470016",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_1952280202969088",
       "name": "Luxurious Frozen Towels",
       "price": 50,
@@ -301,7 +301,7 @@
     },
     {
       "id": "prod_1755121136451_2291389209509888",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_1952280202969088",
       "name": "Luxurious Frozen Pants",
       "price": 27,
@@ -316,7 +316,7 @@
     },
     {
       "id": "prod_1755121136451_6856570396737536",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_3055014098501632",
       "name": "Handmade Bronze Ball",
       "price": 88,
@@ -331,7 +331,7 @@
     },
     {
       "id": "prod_1755121136451_3360682554687488",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_1673486026145792",
       "name": "Oriental Cotton Fish",
       "price": 92,
@@ -391,7 +391,7 @@
     },
     {
       "id": "prod_1755121136452_7142872149131264",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_1673486026145792",
       "name": "Elegant Rubber Salad",
       "price": 73,
@@ -406,7 +406,7 @@
     },
     {
       "id": "prod_1755121136452_3742431390466048",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_1952280202969088",
       "name": "Intelligent Steel Car",
       "price": 78,
@@ -421,7 +421,7 @@
     },
     {
       "id": "prod_1755121136452_4396662290120704",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_8244856069554176",
       "name": "Gorgeous Metal Computer",
       "price": 9,
@@ -436,7 +436,7 @@
     },
     {
       "id": "prod_1755121136452_6124751242133504",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_1952280202969088",
       "name": "Handcrafted Granite Sausages",
       "price": 70,
@@ -451,7 +451,7 @@
     },
     {
       "id": "prod_1755121136452_1072242578423808",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_8244856069554176",
       "name": "Handcrafted Frozen Towels",
       "price": 72,
@@ -481,7 +481,7 @@
     },
     {
       "id": "prod_1755121136452_8705978019086336",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_4513369254002688",
       "name": "Tasty Plastic Table",
       "price": 87,
@@ -496,7 +496,7 @@
     },
     {
       "id": "prod_1755121136452_7401177572442112",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_8244856069554176",
       "name": "Incredible Wooden Gloves",
       "price": 63,
@@ -511,7 +511,7 @@
     },
     {
       "id": "prod_1755121136452_2333588620050432",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_6054709322317824",
       "name": "Ergonomic Steel Salad",
       "price": 80,
@@ -601,7 +601,7 @@
     },
     {
       "id": "prod_1755121136452_4513090009825280",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_8244856069554176",
       "name": "Gorgeous Bronze Soap",
       "price": 78,
@@ -616,7 +616,7 @@
     },
     {
       "id": "prod_1755121136452_8181784132976640",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_5898906808352768",
       "name": "Fantastic Fresh Table",
       "price": 60,
@@ -646,7 +646,7 @@
     },
     {
       "id": "prod_1755121136452_4697535333531648",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136445_7979549119741952",
       "name": "Rustic Rubber Towels",
       "price": 37,
@@ -721,7 +721,7 @@
     },
     {
       "id": "prod_1755121136452_2306122922852352",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_5898906808352768",
       "name": "Practical Rubber Salad",
       "price": 68,
@@ -751,7 +751,7 @@
     },
     {
       "id": "prod_1755121136452_299315352305664",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_5898906808352768",
       "name": "Modern Rubber Hat",
       "price": 100,
@@ -796,7 +796,7 @@
     },
     {
       "id": "prod_1755121136452_4518704284958720",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_5812266049994752",
       "name": "Recycled Soft Chair",
       "price": 65,
@@ -826,7 +826,7 @@
     },
     {
       "id": "prod_1755121136453_8587831561682944",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136445_7979549119741952",
       "name": "Electronic Plastic Shirt",
       "price": 26,
@@ -841,7 +841,7 @@
     },
     {
       "id": "prod_1755121136453_397222925565952",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_8244856069554176",
       "name": "Handcrafted Plastic Chair",
       "price": 37,
@@ -856,7 +856,7 @@
     },
     {
       "id": "prod_1755121136453_733054786076672",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136445_7979549119741952",
       "name": "Fantastic Soft Computer",
       "price": 59,
@@ -871,7 +871,7 @@
     },
     {
       "id": "prod_1755121136453_1132329609199616",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136445_7979549119741952",
       "name": "Bespoke Frozen Towels",
       "price": 37,
@@ -886,7 +886,7 @@
     },
     {
       "id": "prod_1755121136453_11213943603200",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_4513369254002688",
       "name": "Fantastic Cotton Pizza",
       "price": 80,
@@ -901,7 +901,7 @@
     },
     {
       "id": "prod_1755121136453_4617805177552896",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_8373897976086528",
       "name": "Handcrafted Concrete Table",
       "price": 33,
@@ -931,7 +931,7 @@
     },
     {
       "id": "prod_1755121136453_6574610371837952",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_8373897976086528",
       "name": "Luxurious Rubber Sausages",
       "price": 42,
@@ -946,7 +946,7 @@
     },
     {
       "id": "prod_1755121136453_5794070548971520",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_1952280202969088",
       "name": "Small Granite Pizza",
       "price": 15,
@@ -1036,7 +1036,7 @@
     },
     {
       "id": "prod_1755121136453_4333357492076544",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_5812266049994752",
       "name": "Bespoke Cotton Fish",
       "price": 57,
@@ -1051,7 +1051,7 @@
     },
     {
       "id": "prod_1755121136453_6865738916691968",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_4513369254002688",
       "name": "Tasty Fresh Bike",
       "price": 66,
@@ -1066,7 +1066,7 @@
     },
     {
       "id": "prod_1755121136453_3407449937674240",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_6054709322317824",
       "name": "Oriental Frozen Towels",
       "price": 97,
@@ -1081,7 +1081,7 @@
     },
     {
       "id": "prod_1755121136453_1736032324157440",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_8244856069554176",
       "name": "Incredible Cotton Car",
       "price": 62,
@@ -1111,7 +1111,7 @@
     },
     {
       "id": "prod_1755121136453_4340925889249280",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_4513369254002688",
       "name": "Intelligent Soft Bacon",
       "price": 26,
@@ -1141,7 +1141,7 @@
     },
     {
       "id": "prod_1755121136453_8817343419383808",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_5812266049994752",
       "name": "Bespoke Granite Soap",
       "price": 54,
@@ -1231,7 +1231,7 @@
     },
     {
       "id": "prod_1755121136453_2205871281012736",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_6054709322317824",
       "name": "Small Granite Cheese",
       "price": 52,
@@ -1291,7 +1291,7 @@
     },
     {
       "id": "prod_1755121136453_8132237081968640",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_5898906808352768",
       "name": "Small Soft Sausages",
       "price": 53,
@@ -1306,7 +1306,7 @@
     },
     {
       "id": "prod_1755121136453_7632024749735936",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_5898906808352768",
       "name": "Sleek Granite Chips",
       "price": 61,
@@ -1321,7 +1321,7 @@
     },
     {
       "id": "prod_1755121136453_7887180187828224",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_8244856069554176",
       "name": "Intelligent Soft Chicken",
       "price": 35,
@@ -1336,7 +1336,7 @@
     },
     {
       "id": "prod_1755121136453_8900127347441664",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_6054709322317824",
       "name": "Oriental Rubber Pants",
       "price": 89,
@@ -1351,7 +1351,7 @@
     },
     {
       "id": "prod_1755121136453_4692531002474496",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_4513369254002688",
       "name": "Recycled Metal Salad",
       "price": 58,
@@ -1366,7 +1366,7 @@
     },
     {
       "id": "prod_1755121136453_4459446486958080",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136448_1952280202969088",
       "name": "Incredible Bronze Ball",
       "price": 71,
@@ -1441,7 +1441,7 @@
     },
     {
       "id": "prod_1755121136453_560801953873920",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136445_7979549119741952",
       "name": "Gorgeous Fresh Hat",
       "price": 79,
@@ -1456,7 +1456,7 @@
     },
     {
       "id": "prod_1755121136454_217329803722752",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_5812266049994752",
       "name": "Handmade Cotton Computer",
       "price": 74,
@@ -1471,7 +1471,7 @@
     },
     {
       "id": "prod_1755121136454_2559873722089472",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136445_7979549119741952",
       "name": "Handmade Cotton Bacon",
       "price": 67,
@@ -1546,7 +1546,7 @@
     },
     {
       "id": "prod_1755121136454_5396513853276160",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_1673486026145792",
       "name": "Refined Wooden Shirt",
       "price": 22,
@@ -1606,7 +1606,7 @@
     },
     {
       "id": "prod_1755121136454_6796575743410176",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "storeId": "store_1755121136449_3055014098501632",
       "name": "Practical Rubber Fish",
       "price": 23,
@@ -1631,7 +1631,7 @@
           "productId": "prod_1755121136453_8132237081968640",
           "product": {
             "id": "prod_1755121136453_8132237081968640",
-            "tenant_id": "thecongress",
+            "tenant_id": "blue-ocean",
             "storeId": "store_1755121136448_5898906808352768",
             "name": "Small Soft Sausages",
             "price": 53,
@@ -1653,7 +1653,7 @@
           "productId": "prod_1755121136451_3360682554687488",
           "product": {
             "id": "prod_1755121136451_3360682554687488",
-            "tenant_id": "thecongress",
+            "tenant_id": "blue-ocean",
             "storeId": "store_1755121136449_1673486026145792",
             "name": "Oriental Cotton Fish",
             "price": 92,
@@ -1696,7 +1696,7 @@
           "productId": "prod_1755121136451_8904979454623744",
           "product": {
             "id": "prod_1755121136451_8904979454623744",
-            "tenant_id": "thecongress",
+            "tenant_id": "blue-ocean",
             "storeId": "store_1755121136445_7979549119741952",
             "name": "Licensed Soft Pizza",
             "price": 65,
@@ -1718,7 +1718,7 @@
           "productId": "prod_1755121136452_4518704284958720",
           "product": {
             "id": "prod_1755121136452_4518704284958720",
-            "tenant_id": "thecongress",
+            "tenant_id": "blue-ocean",
             "storeId": "store_1755121136449_5812266049994752",
             "name": "Recycled Soft Chair",
             "price": 65,
@@ -1796,7 +1796,7 @@
     },
     {
       "id": "order_1755121136456_3",
-      "tenant_id": "thecongress",
+      "tenant_id": "blue-ocean",
       "userId": "user_1755121136444_8275548606300160",
       "items": [
         {
@@ -1848,7 +1848,7 @@
           "productId": "prod_1755121136453_4340925889249280",
           "product": {
             "id": "prod_1755121136453_4340925889249280",
-            "tenant_id": "thecongress",
+            "tenant_id": "blue-ocean",
             "storeId": "store_1755121136448_4513369254002688",
             "name": "Intelligent Soft Bacon",
             "price": 26,
@@ -1995,8 +1995,8 @@
     }
   ],
   "tenantSettings": {
-    "thecongress": {
-      "tenant_id": "thecongress",
+    "blue-ocean": {
+      "tenant_id": "blue-ocean",
       "platform_name": "Conroy, Mante and Kunze",
       "platform_logo": "https://picsum.photos/seed/b5KDH/640/480",
       "theme_color": "#8b2209"
