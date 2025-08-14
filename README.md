@@ -72,11 +72,21 @@ for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
   `false`)
 - `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional)
 - `ENABLE_UNSAFE_TON_PRIVATE_KEY` – expose wallet private key for testing
-  (`true`/`false`, default `false`)
+  (`true`/`false`, default `false`; ignored in production builds)
 - `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` – MoonPay public API key (optional;
   enables credit card purchases)
 
 These values are read at build time and cannot be changed from the UI.
+
+### Secure Key Management
+
+Store sensitive values such as `ADMIN_WALLET_ADDRESS` and
+`ORDER_PAYMENT_FACTORY_ADDRESS` in a dedicated secrets manager (e.g., AWS
+Secrets Manager, Hashicorp Vault). Inject them as environment variables at
+runtime; the app will throw on startup if required keys are missing. Avoid
+committing secrets to source control. See
+[`docs/secure-key-management.md`](docs/secure-key-management.md) for
+additional guidance.
 
 ### Wallet Allowlist & Waku Bootstrap
 
