@@ -1,6 +1,6 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { getValue, setValue, listValues } from './tonKvStore';
-import config from '../utils/appConfig';
+import config, { requireEnv } from '../utils/appConfig';
 import {
   LightNode,
   Protocols,
@@ -22,6 +22,14 @@ const ADDRESS =
   'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
+
+const ADMIN_ADDRESS = requireEnv('ADMIN_WALLET_ADDRESS');
+
+function assertAdmin(actor: string): void {
+  if (actor !== ADMIN_ADDRESS) {
+    throw new Error('Admin wallet address required');
+  }
+}
 
 export interface TonSettings {
   tenantId: string;
@@ -124,6 +132,7 @@ export async function setSetting(
   value: string,
   actor: string,
 ) {
+  assertAdmin(actor);
   const res = await setValue(ADDRESS, key, value);
   await emit({
     type: 'settings.write',

@@ -80,6 +80,9 @@ export const getAddress = (): string | null =>
  * unset this function will always return `null`.
  */
 export const getTonPrivateKey = (): string | null => {
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
   if (config.ENABLE_UNSAFE_TON_PRIVATE_KEY !== 'true') {
     return null;
   }
@@ -94,7 +97,10 @@ const api = {
   getAddress,
 } as const;
 
-if (config.ENABLE_UNSAFE_TON_PRIVATE_KEY === 'true') {
+if (
+  process.env.NODE_ENV !== 'production' &&
+  config.ENABLE_UNSAFE_TON_PRIVATE_KEY === 'true'
+) {
   (api as any).getTonPrivateKey = getTonPrivateKey;
 }
 
