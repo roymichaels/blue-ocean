@@ -19,7 +19,7 @@ import ensureTonWallet from '../utils/ensureTonWallet';
 import eventBus from '../services/eventBus';
 import { errorLog, warnLog } from '../utils/logger';
 
-const ORDER_TOPIC = '/congress/orders/1';
+const ORDER_TOPIC = '/blue-ocean/orders/1';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchSettings } from '../services/tonSettings';
 import config from '../utils/appConfig';
 
-export let TENANT = 'thecongress';
+export let TENANT = 'blue-ocean';
 
 export interface TenantSettings {
   appName: string;

@@ -186,7 +186,7 @@ describe('ordersAgent event emission', () => {
     mockStore[order.id] = order;
     await ordersAgent.update({ ...order, status: 'courier_found' });
     expect(eventBus.publish).toHaveBeenCalledWith(
-      '/congress/orders/1',
+      '/blue-ocean/orders/1',
       'order.updated',
       expect.objectContaining({ orderId: order.id, prevStatus: 'order_received', newStatus: 'courier_found' }),
     );
@@ -210,7 +210,7 @@ describe('ordersAgent event emission', () => {
     mockStore[order.id] = order;
     await ordersAgent.update({ ...order, status: 'disputed' });
     expect(eventBus.publish).toHaveBeenCalledWith(
-      '/congress/orders/1',
+      '/blue-ocean/orders/1',
       'dispute.updated',
       expect.objectContaining({ orderId: order.id, prevStatus: 'delivered', newStatus: 'disputed' }),
     );
@@ -237,12 +237,12 @@ describe('ordersAgent event emission', () => {
     mockStore[order.id] = order;
     await ordersAgent.releasePayment(order.id);
     expect(eventBus.publish).toHaveBeenCalledWith(
-      '/congress/orders/1',
+      '/blue-ocean/orders/1',
       'payment.received',
       expect.objectContaining({ orderId: order.id }),
     );
     expect(eventBus.publish).toHaveBeenCalledWith(
-      '/congress/orders/1',
+      '/blue-ocean/orders/1',
       'order.updated',
       expect.objectContaining({ prevStatus: 'delivered', newStatus: 'released' }),
     );
@@ -269,7 +269,7 @@ describe('ordersAgent event emission', () => {
     mockStore[order.id] = order;
     await ordersAgent.refundPayment(order.id);
     expect(eventBus.publish).toHaveBeenCalledWith(
-      '/congress/orders/1',
+      '/blue-ocean/orders/1',
       'order.updated',
       expect.objectContaining({ prevStatus: 'delivered', newStatus: 'refunded' }),
     );

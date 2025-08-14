@@ -20,7 +20,7 @@ import { errorLog } from '../utils/logger';
 
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
-const ORDER_TOPIC = '/congress/orders/1';
+const ORDER_TOPIC = '/blue-ocean/orders/1';
 
 type NotificationTemplate = (
   item: Notification,

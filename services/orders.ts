@@ -14,7 +14,7 @@ import { getStore } from './tonStores';
 import tonAuth from './tonAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
 
-const ORDER_TOPIC = '/congress/orders/1';
+const ORDER_TOPIC = '/blue-ocean/orders/1';
 
 export async function emitOrderEvents(order: Order, storeId: string) {
   const baseEvent = {
