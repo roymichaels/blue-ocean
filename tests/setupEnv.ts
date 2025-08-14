@@ -7,6 +7,6 @@ const { loadTenantSettings } = require('../constants/tenant');
 var __DEV__ = false;
 
 beforeEach(async () => {
-  insertConfig({});
+  insertConfig({ TON_RPC_URL: 'https://ton.test' });
   await loadTenantSettings();
 });

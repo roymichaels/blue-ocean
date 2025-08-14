@@ -1,9 +1,8 @@
 import { errorLog } from '@/utils/logger';
 import TonWeb from 'tonweb';
+import { getTonRpcUrls } from '@/utils/appConfig';
 
-const DEFAULT_RPC = 'https://toncenter.com/api/v2/jsonRPC';
-const FALLBACK_RPC = process.env.TON_RPC_FALLBACK_URLS?.split(',').filter(Boolean) ?? [];
-const RPC_ENDPOINTS = [process.env.TON_RPC_URL || DEFAULT_RPC, ...FALLBACK_RPC];
+const RPC_ENDPOINTS = getTonRpcUrls();
 
 export function getTonWeb(url: string = RPC_ENDPOINTS[0]): TonWeb {
   const provider = new TonWeb.HttpProvider(url);

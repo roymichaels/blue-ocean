@@ -10,6 +10,7 @@ import React, {
   useEffect,
   type ReactNode,
 } from 'react';
+import config from '../utils/appConfig';
 
 // Global reference used by non-hook utilities (e.g. tests or legacy helpers)
 export let tonConnect: TonConnectUI | null = null;
@@ -79,7 +80,7 @@ export const getAddress = (): string | null =>
  * unset this function will always return `null`.
  */
 export const getTonPrivateKey = (): string | null => {
-  if (process.env.ENABLE_UNSAFE_TON_PRIVATE_KEY !== 'true') {
+  if (config.ENABLE_UNSAFE_TON_PRIVATE_KEY !== 'true') {
     return null;
   }
   return (tonConnect?.account as any)?.privateKey ?? null;
@@ -93,7 +94,7 @@ const api = {
   getAddress,
 } as const;
 
-if (process.env.ENABLE_UNSAFE_TON_PRIVATE_KEY === 'true') {
+if (config.ENABLE_UNSAFE_TON_PRIVATE_KEY === 'true') {
   (api as any).getTonPrivateKey = getTonPrivateKey;
 }
 
