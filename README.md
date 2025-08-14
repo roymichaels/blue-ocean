@@ -14,7 +14,7 @@ yarn start      # web
 yarn test
 ```
 
-## Setup
+## Setup Guide
 
 1. **Install dependencies**
 
@@ -22,18 +22,28 @@ yarn test
    yarn install
    ```
 
-2. **Create a `.env` file**
+2. **Create and populate `.env`**
 
-   Copy `.env.example` to `.env` and fill in the required keys.
+   ```sh
+   cp .env.example .env
+   ```
+
+   Fill in each variable as described in [Environment Variables](#environment-variables).
 
 3. **Start the Expo project**
 
    - **Web**: `yarn start`
    - **Mobile**: `yarn dev`
 
-4. **Connect a TON wallet**
+4. **Configure and connect a TON wallet**
 
-   When the app loads, tap the wallet button to open the TonConnect modal. Scan the QR code with a wallet like Tonkeeper or use an injected extension to link your account.
+   - Install a wallet such as Tonkeeper.
+   - When the app loads, tap the wallet button to open the TonConnect modal and scan the QR code or connect via a browser extension.
+
+5. **Admin onboarding**
+
+   - The wallet specified in `ADMIN_WALLET_ADDRESS` receives admin rights on first run.
+   - To add more admins, open **Admin → Settings** and add additional wallet addresses or use `SettingsAgent.setAdmins()`.
 
 ### TON Address Format
 
@@ -62,19 +72,17 @@ The project reads configuration from a `.env` file using Expo's env support
 for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
 `.env.example` to `.env` and set the following variables:
 
-- `ADMIN_WALLET_ADDRESS` – wallet granted admin rights if no on-chain list
-  exists (required)
-- `ORDER_PAYMENT_FACTORY_ADDRESS` – address of the deployed OrderPayment
-  factory contract (required)
-- `TON_RPC_URL` – primary TON RPC endpoint used for blockchain calls (required)
-- `TON_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional)
-- `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default
-  `false`)
-- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional)
-- `ENABLE_UNSAFE_TON_PRIVATE_KEY` – expose wallet private key for testing
-  (`true`/`false`, default `false`)
-- `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` – MoonPay public API key (optional;
-  enables credit card purchases)
+| Variable | Required | Description |
+| -------- | -------- | ----------- |
+| `ADMIN_WALLET_ADDRESS` | yes | Wallet granted admin rights if no on-chain list exists. |
+| `ORDER_PAYMENT_FACTORY_ADDRESS` | yes | Address of the deployed OrderPayment factory contract. |
+| `TON_RPC_URL` | yes | Primary TON RPC endpoint used for blockchain calls. |
+| `TON_RPC_FALLBACK_URLS` | no | Comma-separated backup RPC endpoints. |
+| `EXPO_PUBLIC_WAKU_BOOTSTRAP` | no | Comma-separated list of Waku peers for network bootstrap. |
+| `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
+| `ENABLE_UNSAFE_TON_PRIVATE_KEY` | no | Exposes wallet private key for testing. Never use in production. |
+| `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` | no | MoonPay public API key enabling credit card purchases. |
+| `PINATA_JWT` | no | JWT for pinning assets to Pinata via `scripts/pinata-upload.ts`. |
 
 These values are read at build time and cannot be changed from the UI.
 
