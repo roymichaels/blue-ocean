@@ -21,20 +21,15 @@ All SQL migration files have been removed.
 | Topic                  | Purpose                             |
 |------------------------|-------------------------------------|
 
-| `/congress/settings/1` | Store name, color, app config       |
-| `/congress/users/1`    | Registered users + roles + keys     |
-| `/congress/products/1` | Product catalog                     |
-| `/congress/stores/1`   | Store registry + metadata           |
-| `/congress/orders/1`   | Orders placed by users & status updates |
-| `/congress/notifications/1` | System-wide notifications        |
-| `/congress/reviews/1`  | Product reviews                     |
-| `/congress/analytics/1`| Anonymous analytics events          |
-| `/congress/chat/1/<roomId>` | Encrypted buyer/seller chat     |
 | `/blue-ocean/settings/1` | Store name, color, app config       |
 | `/blue-ocean/users/1`    | Registered users + roles + keys     |
 | `/blue-ocean/products/1` | Product catalog                     |
 | `/blue-ocean/stores/1`   | Store registry + metadata           |
-| `/blue-ocean/orders/1`   | Orders placed by users              |
+| `/blue-ocean/orders/1`   | Orders placed by users & status updates |
+| `/blue-ocean/notifications/1` | System-wide notifications        |
+| `/blue-ocean/reviews/1`  | Product reviews                     |
+| `/blue-ocean/analytics/1`| Anonymous analytics events          |
+| `/blue-ocean/chat/1/<roomId>` | Encrypted buyer/seller chat     |
 
 All topics are encrypted (optionally) and signed.
 
@@ -67,14 +62,14 @@ All topics are encrypted (optionally) and signed.
 - Maintains ephemeral order history locally
 
 ### 🔔 `notifications-agent.ts`
-- Subscribes to `/congress/orders/1` for order events
-- Broadcasts messages on `/congress/notifications/1`
-- Broadcasts order events on `/congress/orders/1`
-- Sends system messages on `/congress/notifications/1`
+- Subscribes to `/blue-ocean/orders/1` for order events
+- Broadcasts messages on `/blue-ocean/notifications/1`
+- Broadcasts order events on `/blue-ocean/orders/1`
+- Sends system messages on `/blue-ocean/notifications/1`
 - Persists notifications locally for each user
 
 ### ⭐ `review-agent.ts`
-- Uses `/congress/reviews/1` to distribute product reviews
+- Uses `/blue-ocean/reviews/1` to distribute product reviews
 - Validates reviews against completed orders
 - Updates store reputation scores
 
