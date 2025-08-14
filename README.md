@@ -96,6 +96,8 @@ for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
   (`true`/`false`, default `false`; ignored in production builds)
 - `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` – MoonPay public API key (optional;
   enables credit card purchases)
+- `PINATA_JWT` – JWT used by `scripts/pinata-upload.ts` to pin assets to
+  Pinata (optional)
 
 These values are read at build time and cannot be changed from the UI.
 
