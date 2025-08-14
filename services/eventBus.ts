@@ -13,7 +13,7 @@ import tonAuth from './tonAuth';
 
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
-const ANALYTICS_TOPIC = '/congress/analytics/1';
+const ANALYTICS_TOPIC = '/blue-ocean/analytics/1';
 const sessionId = randomUUID();
 
 let node: LightNode | null = null;

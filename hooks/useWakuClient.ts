@@ -45,11 +45,11 @@ export interface WakuClient {
 }
 
 function chatTopic(roomId: string) {
-  return `/congress/chat/1/${roomId}`;
+  return `/blue-ocean/chat/1/${roomId}`;
 }
 
-const SYSTEM_TOPIC = '/congress/notifications/1';
-const ORDER_TOPIC = '/congress/orders/1';
+const SYSTEM_TOPIC = '/blue-ocean/notifications/1';
+const ORDER_TOPIC = '/blue-ocean/orders/1';
 
 export function useWakuClient(): WakuClient {
   const nodeRef = useRef<LightNode>();

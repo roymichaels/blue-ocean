@@ -1,8 +1,9 @@
 import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchSettings } from '../services/tonSettings';
+import config from '../utils/appConfig';
 
-export let TENANT = 'thecongress';
+export let TENANT = 'blue-ocean';
 
 export interface TenantSettings {
   appName: string;
@@ -20,7 +21,7 @@ export let AppConfig: TenantSettings = {
   logoCid: '',
   feeAddress: '',
   feeBps: 0,
-  admins: [],
+  admins: config.ADMIN_WALLET_ADDRESS ? [config.ADMIN_WALLET_ADDRESS] : [],
 };
 
 export async function loadTenantSettings(): Promise<void> {

@@ -1,6 +1,6 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { getValue, setValue, listValues } from './tonKvStore';
-import config from '../utils/appConfig';
+import config, { requireEnv } from '../utils/appConfig';
 import {
   LightNode,
   Protocols,
@@ -22,6 +22,14 @@ const ADDRESS =
   'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
+
+const ADMIN_ADDRESS = requireEnv('ADMIN_WALLET_ADDRESS');
+
+function assertAdmin(actor: string): void {
+  if (actor !== ADMIN_ADDRESS) {
+    throw new Error('Admin wallet address required');
+  }
+}
 
 export interface TonSettings {
   tenantId: string;
@@ -74,7 +82,7 @@ async function emit(event: SettingsWriteEvent) {
     const sig = await sign(msgBytes, priv);
     msg.signature = Buffer.from(sig).toString('hex');
 
-    const encoder = createEncoder({ contentTopic: '/congress/settings/1' });
+    const encoder = createEncoder({ contentTopic: '/blue-ocean/settings/1' });
     await n.lightPush.send(encoder, {
       payload: utf8ToBytes(JSON.stringify(msg)),
     });
@@ -88,7 +96,7 @@ export async function subscribeToSettingsWrites(
 ): Promise<() => void> {
   const n = await ensureNode();
   if (!n) return () => {};
-  const decoder = createDecoder('/congress/settings/1');
+  const decoder = createDecoder('/blue-ocean/settings/1');
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
@@ -124,6 +132,7 @@ export async function setSetting(
   value: string,
   actor: string,
 ) {
+  assertAdmin(actor);
   const res = await setValue(ADDRESS, key, value);
   await emit({
     type: 'settings.write',
@@ -157,7 +166,7 @@ export async function fetchSettings(): Promise<TonSettings> {
     }
   }
   return {
-    tenantId: map['tenantId'] ?? 'thecongress',
+    tenantId: map['tenantId'] ?? 'blue-ocean',
     appName: map['appName'] ?? 'Blue Ocean',
     theme: { primary: map['theme.primary'] ?? '#B99C5A' },
     brand: { logoCid: map['brand.logoCid'] ?? '' },

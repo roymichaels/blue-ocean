@@ -13,8 +13,9 @@ import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from './tonStores';
 import tonAuth from './tonAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
+import { requireEnv } from '../utils/appConfig';
 
-const ORDER_TOPIC = '/congress/orders/1';
+const ORDER_TOPIC = '/blue-ocean/orders/1';
 
 export async function emitOrderEvents(order: Order, storeId: string) {
   const baseEvent = {
@@ -242,6 +243,11 @@ class OrderService {
   async resolveDispute(orderId: string, toSeller: boolean): Promise<void> {
     const order = await ordersAgent.get(orderId);
     if (!order || !order.escrowAddr) return;
+    const actor = tonAuth.getAddress();
+    const admin = requireEnv('ADMIN_WALLET_ADDRESS');
+    if (!actor || actor !== admin) {
+      throw new Error('Admin wallet address required');
+    }
     await adminResolve(order.escrowAddr, toSeller);
     await this.updateOrderStatus(orderId, toSeller ? 'released' : 'refunded');
   }

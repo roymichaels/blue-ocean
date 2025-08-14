@@ -5,7 +5,7 @@ import productsAgent from './products-agent';
 import storesAgent from './stores-agent';
 import ensureTonWallet from '../utils/ensureTonWallet';
 
-const TOPIC = '/congress/reviews/1';
+const TOPIC = '/blue-ocean/reviews/1';
 
 class ReviewAgent {
   private subscribers: Set<(r: Review) => void> = new Set();

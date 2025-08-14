@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 async function seed() {
-  const tenants = ['thecongress', 'thebull'];
+  const tenants = ['blue-ocean', 'thebull'];
 
   // Users
   const users = Array.from({ length: 5 }).map(() => ({

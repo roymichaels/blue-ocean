@@ -18,7 +18,7 @@ export async function setAdmins(admins: string[]): Promise<void> {
 
 export async function fetchSettings() {
   return {
-    tenantId: store['tenantId'] ?? 'thecongress',
+    tenantId: store['tenantId'] ?? 'blue-ocean',
     appName: store['appName'] ?? 'Blue Ocean',
     theme: { primary: store['theme.primary'] ?? '#B99C5A' },
     brand: { logoCid: store['brand.logoCid'] ?? '' },
