@@ -1,6 +1,9 @@
-# The Congress
+# Blue Ocean
 
-This Expo project uses React Native with the Expo Router.
+Blue Ocean is a decentralized e‑commerce demo built with React Native and the Expo Router.
+Autonomous agents communicate over the Waku peer‑to‑peer network, keep their state in
+memory, and hydrate from message history on boot. Configuration such as debug logging or
+Waku bootstrap peers is supplied through `EXPO_PUBLIC_*` environment variables.
 
 ## Quickstart
 
