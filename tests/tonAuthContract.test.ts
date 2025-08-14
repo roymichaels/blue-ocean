@@ -8,12 +8,12 @@ jest.mock('../services/tonSettings', () => ({
   }),
 }));
 
-import {
-  deployOrderPayment,
-  releasePayment,
-  refundPayment,
-  ORDER_PAYMENT_FACTORY_ADDRESS,
-} from '../services/tonContract';
+import { insertConfig } from './testUtils';
+
+let deployOrderPayment: any;
+let releasePayment: any;
+let refundPayment: any;
+let ORDER_PAYMENT_FACTORY_ADDRESS: string;
 
 describe('tonAuth.requestSignature', () => {
   it('uses TonConnect signData', async () => {
@@ -40,6 +40,16 @@ describe('Ton contract flows', () => {
   } as any;
 
   beforeEach(() => {
+    jest.resetModules();
+    insertConfig({
+      ORDER_PAYMENT_FACTORY_ADDRESS: 'EQtestfactory',
+    });
+    ({
+      deployOrderPayment,
+      releasePayment,
+      refundPayment,
+      ORDER_PAYMENT_FACTORY_ADDRESS,
+    } = require('../services/tonContract'));
     jest.spyOn(tonAuth, 'getTonConnect').mockReturnValue(mockTonConnect);
     jest.clearAllMocks();
   });
