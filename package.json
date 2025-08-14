@@ -117,8 +117,6 @@
     "stream-browserify": "^3.0.0",
     "ton-core": "^0.53.0",
     "ton-crypto": "^3.2.0",
-    "@ton/sandbox": "^0.36.0",
-    "@ton/test-utils": "^0.10.0",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
