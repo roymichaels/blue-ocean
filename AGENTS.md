@@ -1,8 +1,11 @@
 # 🤖 Autonomous Agents Overview – Blue Ocean
 
 This document outlines the autonomous agents in **Blue Ocean**, a fully decentralized, serverless, encrypted e-commerce protocol.
-All agents communicate over the Waku network and replicate data locally in memory.  
-There is **no centralized backend**, **no SQLite**, and **no .env config**.
+
+All agents communicate over the Waku network and replicate data locally in memory.
+There is **no centralized backend** and **no SQLite**.
+Configuration such as debug logging and Waku peers is supplied through `EXPO_PUBLIC_*` environment variables.
+
 All SQL migration files have been removed.
 
 ---
@@ -20,6 +23,16 @@ All SQL migration files have been removed.
 
 | Topic                  | Purpose                             |
 |------------------------|-------------------------------------|
+
+| `/congress/settings/1` | Store name, color, app config       |
+| `/congress/users/1`    | Registered users + roles + keys     |
+| `/congress/products/1` | Product catalog                     |
+| `/congress/stores/1`   | Store registry + metadata           |
+| `/congress/orders/1`   | Orders placed by users & status updates |
+| `/congress/notifications/1` | System-wide notifications        |
+| `/congress/reviews/1`  | Product reviews                     |
+| `/congress/analytics/1`| Anonymous analytics events          |
+| `/congress/chat/1/<roomId>` | Encrypted buyer/seller chat     |
 | `/blue-ocean/settings/1` | Store name, color, app config       |
 | `/blue-ocean/users/1`    | Registered users + roles + keys     |
 | `/blue-ocean/products/1` | Product catalog                     |
@@ -55,6 +68,16 @@ All topics are encrypted (optionally) and signed.
 - Receives new order messages
 - Only applies if sender matches `userId` in message
 - Maintains ephemeral order history locally
+
+### 🔔 `notifications-agent.ts`
+- Broadcasts order events on `/congress/orders/1`
+- Sends system messages on `/congress/notifications/1`
+- Persists notifications locally for each user
+
+### ⭐ `review-agent.ts`
+- Uses `/congress/reviews/1` to distribute product reviews
+- Validates reviews against completed orders
+- Updates store reputation scores
 
 ---
 
@@ -97,9 +120,7 @@ If allowed, agent updates its state
 Duplicate messages are ignored via hash cache
 
 🧪 Future Agents
-chat-agent.ts: for encrypted user-to-user or user-to-AI messaging
-
-review-agent.ts: product reviews from clients
+chat-agent.ts: encrypted user-to-user or user-to-AI messaging
 
 moderation-agent.ts: flags or reports synced over Waku
 
