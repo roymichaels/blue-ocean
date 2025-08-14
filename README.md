@@ -83,8 +83,31 @@ for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
 | `ENABLE_UNSAFE_TON_PRIVATE_KEY` | no | Exposes wallet private key for testing. Never use in production. |
 | `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` | no | MoonPay public API key enabling credit card purchases. |
 | `PINATA_JWT` | no | JWT for pinning assets to Pinata via `scripts/pinata-upload.ts`. |
+- `ADMIN_WALLET_ADDRESS` – wallet granted admin rights if no on-chain list
+  exists (required)
+- `ORDER_PAYMENT_FACTORY_ADDRESS` – address of the deployed OrderPayment
+  factory contract (required)
+- `TON_RPC_URL` – primary TON RPC endpoint used for blockchain calls (required)
+- `TON_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional)
+- `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default
+  `false`)
+- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional)
+- `ENABLE_UNSAFE_TON_PRIVATE_KEY` – expose wallet private key for testing
+  (`true`/`false`, default `false`; ignored in production builds)
+- `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` – MoonPay public API key (optional;
+  enables credit card purchases)
 
 These values are read at build time and cannot be changed from the UI.
+
+### Secure Key Management
+
+Store sensitive values such as `ADMIN_WALLET_ADDRESS` and
+`ORDER_PAYMENT_FACTORY_ADDRESS` in a dedicated secrets manager (e.g., AWS
+Secrets Manager, Hashicorp Vault). Inject them as environment variables at
+runtime; the app will throw on startup if required keys are missing. Avoid
+committing secrets to source control. See
+[`docs/secure-key-management.md`](docs/secure-key-management.md) for
+additional guidance.
 
 ### Wallet Allowlist & Waku Bootstrap
 

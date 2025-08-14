@@ -1,12 +1,16 @@
 // Configuration values are loaded from environment variables.
 // Only a minimal set of keys is supported at runtime.
 
-const ENV_KEYS = [
-  'EXPO_PUBLIC_DEBUG_LOGS',
-  'EXPO_PUBLIC_WAKU_BOOTSTRAP',
+const REQUIRED_ENV_KEYS = [
   'ADMIN_WALLET_ADDRESS',
   'ORDER_PAYMENT_FACTORY_ADDRESS',
   'TON_RPC_URL',
+];
+
+const ENV_KEYS = [
+  'EXPO_PUBLIC_DEBUG_LOGS',
+  'EXPO_PUBLIC_WAKU_BOOTSTRAP',
+  ...REQUIRED_ENV_KEYS,
   'TON_RPC_FALLBACK_URLS',
   'ENABLE_UNSAFE_TON_PRIVATE_KEY',
 ];
@@ -16,7 +20,15 @@ function loadConfig(): Record<string, string> {
   for (const key of ENV_KEYS) {
     const value = process.env[key];
     if (value !== undefined) {
+      if (
+        key === 'ENABLE_UNSAFE_TON_PRIVATE_KEY' &&
+        process.env.NODE_ENV === 'production'
+      ) {
+        continue;
+      }
       cfg[key] = value;
+    } else if (REQUIRED_ENV_KEYS.includes(key)) {
+      throw new Error(`Missing required environment variable: ${key}`);
     }
   }
   return cfg;
