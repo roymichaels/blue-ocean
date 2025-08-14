@@ -11,7 +11,7 @@ When production goes sideways, use this guide to restore service quickly.
 
 ## Endpoint Failover
 
-1. **Swap Waku bootstrap peers** in `.env` with a healthy list.
+1. **Swap `EXPO_PUBLIC_WAKU_BOOTSTRAP`** in `.env` with a healthy list of peers.
 2. **Override TON RPC:** restart deployments using `--endpoint <backup-url>`.
 3. **Flush caches** with `expo start -c` to ensure new endpoints are used.
 4. **Monitor** connectivity logs from agents for successful peer discovery.
