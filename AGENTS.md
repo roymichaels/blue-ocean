@@ -1,11 +1,8 @@
 # 🤖 Autonomous Agents Overview – Blue Ocean
 
-This document outlines the autonomous agents in **Blue Ocean**, a fully decentralized, serverless, encrypted e-commerce protocol.
-
-All agents communicate over the Waku network and replicate data locally in memory.
+This document outlines the autonomous agents in **Blue Ocean**, a fully decentralized, serverless, encrypted e-commerce protocol. All agents communicate over the Waku network and replicate data locally in memory.
 There is **no centralized backend** and **no SQLite**.
 Configuration such as debug logging and Waku peers is supplied through `EXPO_PUBLIC_*` environment variables.
-
 All SQL migration files have been removed.
 
 ---
@@ -70,6 +67,8 @@ All topics are encrypted (optionally) and signed.
 - Maintains ephemeral order history locally
 
 ### 🔔 `notifications-agent.ts`
+- Subscribes to `/congress/orders/1` for order events
+- Broadcasts messages on `/congress/notifications/1`
 - Broadcasts order events on `/congress/orders/1`
 - Sends system messages on `/congress/notifications/1`
 - Persists notifications locally for each user
