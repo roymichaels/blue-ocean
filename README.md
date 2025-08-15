@@ -318,17 +318,17 @@ Module resolution relies on custom aliases defined in `metro.config.js` and `web
 
 ## Docker
 
-Use Docker to run the project in a reproducible environment:
+Run the app and build artifacts inside containers for reproducibility:
 
 ```sh
-docker build -t blue-ocean .
-docker run -p 19000-19002:19000-19002 blue-ocean
-```
+# start the Expo development server
+yarn docker:dev
 
-For hot reloading and easier development you can also use Docker Compose:
+# produce a deterministic web build in ./dist
+yarn docker:build:web
 
-```sh
-docker compose up
+# preview the build locally
+yarn docker:preview
 ```
 
 ## Tests
