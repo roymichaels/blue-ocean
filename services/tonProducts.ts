@@ -47,3 +47,14 @@ export async function listProducts(): Promise<Product[]> {
     };
   });
 }
+
+export async function setProductBatch(products: Product[]) {
+  for (const p of products) {
+    await setProduct(p);
+  }
+}
+
+export async function estimateSetProductBatch(products: Product[]): Promise<number> {
+  const payload = products.map(p => JSON.stringify(p)).join('');
+  return payload.length;
+}
