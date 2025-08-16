@@ -4,6 +4,7 @@ import {
   getProduct,
   listProducts,
   removeProduct,
+  getProducts,
 } from '../services/tonProducts';
 import { getStore } from '../services/tonStores';
 import ensureTonWallet from '../utils/ensureTonWallet';
@@ -23,9 +24,15 @@ import { getPrivateKey, getPublicKeyHex } from '../services/localIdentity';
 import { sign } from '@noble/ed25519';
 import type { WakuMessage } from '../types/waku';
 import { errorLog } from '../utils/logger';
-import { productUpdatedSchema } from '../schemas/waku/product.updated';
+
+import {
+  getProductCache,
+  setProductCache,
+  clearProductCache,
+} from '../services/productCache';
 
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
+const PAGE_SIZE = 50;
 
 interface ProductSummary {
   rating: number;
@@ -159,7 +166,35 @@ class ProductsAgent {
 
   async getAll(): Promise<Product[]> {
     if (this.cache.size > 0) return Array.from(this.cache.values());
+
+    const cached = await getProductCache();
+    if (cached) {
+      const products: Product[] = [];
+      for (let i = 0; i < cached.index.length; i += PAGE_SIZE) {
+        const slice = cached.index.slice(i, i + PAGE_SIZE);
+        const batch = await getProducts(slice);
+        batch.forEach((p) => {
+          this.cache.set(p.id, p);
+          this.summaries.set(p.id, { rating: p.rating, reviews: p.reviews });
+        });
+        products.push(...batch);
+      }
+      void this.refreshAndPersist(cached.version);
+      return products;
+    }
+    return await this.refreshAndPersist();
+  }
+
+  private async refreshAndPersist(prevVersion = 0): Promise<Product[]> {
     const prods = await listProducts();
+    const version = prods.reduce((max, p) => {
+      const t = p.updatedAt ? Date.parse(p.updatedAt) : 0;
+      return t > max ? t : max;
+    }, 0);
+    if (version !== prevVersion) {
+      await clearProductCache();
+      await setProductCache({ version, index: prods.map((p) => p.id) });
+    }
     prods.forEach((p) => {
       this.cache.set(p.id, p);
       this.summaries.set(p.id, { rating: p.rating, reviews: p.reviews });

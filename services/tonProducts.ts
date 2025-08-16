@@ -48,6 +48,15 @@ export async function listProducts(): Promise<Product[]> {
   });
 }
 
+export async function getProducts(ids: string[]): Promise<Product[]> {
+  const res: Product[] = [];
+  for (const id of ids) {
+    const prod = await getProduct(id);
+    if (prod) res.push(prod);
+  }
+  return res;
+}
+
 export async function setProductBatch(products: Product[]) {
   for (const p of products) {
     await setProduct(p);
