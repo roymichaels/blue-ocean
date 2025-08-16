@@ -1,3 +1,7 @@
+process.env.ADMIN_WALLET_ADDRESS = '0x0';
+process.env.ORDER_PAYMENT_FACTORY_ADDRESS = '0x0';
+process.env.TON_RPC_URL = 'https://ton.example';
+
 import PinataService from '../services/pinata';
 
 describe('PinataService', () => {
