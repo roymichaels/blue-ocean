@@ -4,7 +4,7 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -125,6 +125,82 @@ export default function OrdersScreen() {
     openAuthModal();
   };
 
+  const renderOrder = ({ item: order }: { item: Order }) => (
+    <TouchableOpacity
+      style={[styles.orderCard, {
+        backgroundColor: colors.surface.primary,
+        borderColor: colors.border.primary
+      }]}
+      onPress={() => openOrderTracking(order)}
+    >
+      <View style={[styles.orderHeader, { borderBottomColor: colors.border.secondary }]}>
+        <View style={styles.orderInfo}>
+          <Text style={[styles.orderNumber, { color: colors.text.primary }]}>הזמנה #{order.id.slice(-6)}</Text>
+          <Text style={[styles.orderDate, { color: colors.text.secondary }]}>{formatDate(order.createdAt)}</Text>
+        </View>
+        <View style={styles.orderStatus}>
+          {getOrderStatusIcon(order.status)}
+          <Text style={[
+            styles.statusText,
+            { color: getOrderStatusColor(order.status) }
+          ]}>
+            {getOrderStatusText(order.status)}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.orderItems}>
+        <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>פריטים:</Text>
+        {order.items.slice(0, 2).map((item, index) => (
+          <Text key={index} style={[styles.itemText, { color: colors.text.secondary }]}>
+            {item.product.name} x{item.quantity}
+          </Text>
+        ))}
+        {order.items.length > 2 && (
+          <Text style={[styles.moreItems, { color: colors.gold }]}>
+            +{order.items.length - 2} פריטים נוספים
+          </Text>
+        )}
+      </View>
+
+      <View style={[styles.orderFooter, { borderTopColor: colors.border.secondary }]}>
+        <Text style={[styles.orderTotal, { color: colors.gold }]}>₪{order.total.toFixed(2)}</Text>
+        <View style={styles.viewDetails}>
+          <Text style={[styles.viewDetailsText, { color: colors.gold }]}>פרטים</Text>
+          <ChevronLeft size={16} color={colors.gold} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderEmpty = () => (
+    isLoggedIn ? (
+      <View style={styles.emptyState}>
+        <Package size={80} color={colors.interactive.disabled} />
+        <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין הזמנות עדיין</Text>
+        <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>ההזמנות שלך יופיעו כאן לאחר שתבצע רכישה</Text>
+        <TouchableOpacity
+          style={[styles.shopButton, { backgroundColor: colors.gold }]}
+          onPress={() => router.push('/(tabs)')}
+        >
+          <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחל לקנות</Text>
+        </TouchableOpacity>
+      </View>
+    ) : (
+      <View style={styles.emptyState}>
+        <Package size={80} color={colors.interactive.disabled} />
+        <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>נדרשת התחברות</Text>
+        <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>עליך להתחבר כדי לראות את ההזמנות שלך</Text>
+        <TouchableOpacity
+          style={[styles.shopButton, { backgroundColor: colors.gold }]}
+          onPress={handleLogin}
+        >
+          <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחבר</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  );
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <GlobalHeader showSearch={false} />
@@ -136,91 +212,18 @@ export default function OrdersScreen() {
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ההזמנות שלי</Text>
         <View style={commonStyles.spacer24} />
       </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {isLoggedIn ? (
-          orders.length > 0 ? (
-            <View style={styles.ordersList}>
-              {orders.map((order) => (
-                <TouchableOpacity 
-                  key={order.id}
-                  style={[styles.orderCard, { 
-                    backgroundColor: colors.surface.primary,
-                    borderColor: colors.border.primary 
-                  }]}
-                  onPress={() => openOrderTracking(order)}
-                >
-                  <View style={[styles.orderHeader, { borderBottomColor: colors.border.secondary }]}>
-                    <View style={styles.orderInfo}>
-                      <Text style={[styles.orderNumber, { color: colors.text.primary }]}>הזמנה #{order.id.slice(-6)}</Text>
-                      <Text style={[styles.orderDate, { color: colors.text.secondary }]}>{formatDate(order.createdAt)}</Text>
-                    </View>
-                    <View style={styles.orderStatus}>
-                      {getOrderStatusIcon(order.status)}
-                      <Text style={[
-                        styles.statusText,
-                        { color: getOrderStatusColor(order.status) }
-                      ]}>
-                        {getOrderStatusText(order.status)}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.orderItems}>
-                    <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>פריטים:</Text>
-                    {order.items.slice(0, 2).map((item, index) => (
-                      <Text key={index} style={[styles.itemText, { color: colors.text.secondary }]}>
-                        {item.product.name} x{item.quantity}
-                      </Text>
-                    ))}
-                    {order.items.length > 2 && (
-                      <Text style={[styles.moreItems, { color: colors.gold }]}>
-                        +{order.items.length - 2} פריטים נוספים
-                      </Text>
-                    )}
-                  </View>
-
-                  <View style={[styles.orderFooter, { borderTopColor: colors.border.secondary }]}>
-                    <Text style={[styles.orderTotal, { color: colors.gold }]}>₪{order.total.toFixed(2)}</Text>
-                    <View style={styles.viewDetails}>
-                      <Text style={[styles.viewDetailsText, { color: colors.gold }]}>פרטים</Text>
-                      <ChevronLeft size={16} color={colors.gold} />
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <View style={styles.emptyState}>
-              <Package size={80} color={colors.interactive.disabled} />
-              <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין הזמנות עדיין</Text>
-              <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
-                ההזמנות שלך יופיעו כאן לאחר שתבצע רכישה
-              </Text>
-              <TouchableOpacity 
-                style={[styles.shopButton, { backgroundColor: colors.gold }]}
-                onPress={() => router.push('/(tabs)')}
-              >
-                <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחל לקנות</Text>
-              </TouchableOpacity>
-            </View>
-          )
-        ) : (
-          <View style={styles.emptyState}>
-            <Package size={80} color={colors.interactive.disabled} />
-            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>נדרשת התחברות</Text>
-            <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
-              עליך להתחבר כדי לראות את ההזמנות שלך
-            </Text>
-            <TouchableOpacity 
-              style={[styles.shopButton, { backgroundColor: colors.gold }]}
-              onPress={handleLogin}
-            >
-              <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחבר</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
+      <FlatList
+        data={isLoggedIn ? orders : []}
+        keyExtractor={(order) => order.id}
+        renderItem={renderOrder}
+        contentContainerStyle={[
+          styles.content,
+          { flexGrow: 1 },
+          isLoggedIn && orders.length > 0 && styles.ordersList
+        ]}
+        ListEmptyComponent={renderEmpty}
+        showsVerticalScrollIndicator={false}
+      />
 
       {/* Order Tracking Modal */}
       <OrderTrackingModal
@@ -298,7 +301,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 14,
     fontWeight: '600',
-    marginLeft: 4,
+    marginStart: 4,
   },
   orderItems: {
     marginBottom: 12,
