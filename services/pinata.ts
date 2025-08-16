@@ -1,5 +1,5 @@
 import { debugLog } from '@/utils/logger';
-import { CID } from 'multiformats/cid';
+import isCidOrUrl from '@/utils/isCidOrUrl';
 
 /**
  * Minimal Pinata helper. Uploads are not supported inside the app.
@@ -20,27 +20,9 @@ class PinataService {
 
   /**
    * Check whether a string is already an IPFS CID or a regular HTTP(S) URL.
-   * This relies on multiformats to validate CIDs and the WHATWG URL parser for
-   * web links.
    */
   public isCidOrUrl(uri: string): boolean {
-    if (!uri) return false;
-
-    // Accept valid HTTP(S) URLs
-    try {
-      // eslint-disable-next-line no-new
-      new URL(uri);
-      return true;
-    } catch {}
-
-    // Strip ipfs:// prefix if present and attempt to parse as CID
-    const cleaned = uri.replace(/^ipfs:\/\//, '').split('/')[0];
-    try {
-      CID.parse(cleaned);
-      return true;
-    } catch {
-      return false;
-    }
+    return isCidOrUrl(uri);
   }
 
   /**

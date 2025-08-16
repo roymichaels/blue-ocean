@@ -10,6 +10,7 @@ import {
   TextInput,
   SafeAreaView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
@@ -18,6 +19,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
+import { Video } from 'expo-video';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
@@ -45,7 +47,15 @@ export default function ProductFormModal({
   const [editingProduct, setEditingProduct] = useState<Partial<Product>>({});
   const [imageUrls, setImageUrls] = useState('');
   const [videoUrls, setVideoUrls] = useState('');
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const pinata = PinataService.getInstance();
+
+  const toHttpUrl = (uri: string) =>
+    uri.startsWith('ipfs://') ? `https://ipfs.io/ipfs/${uri.replace('ipfs://', '')}` : uri;
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [variants, setVariants] = useState<{ color: string; stock: number }[]>([]);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
@@ -155,6 +165,8 @@ export default function ProductFormModal({
       setInfoModal({ visible: true, title: 'שגיאה', message: 'אנא מלא את כל השדות הנדרשים', type: 'error' });
       return;
     }
+    setImageError(null);
+    setVideoError(null);
     const images = imageUrls
       .split('\n')
       .map((s) => s.trim())
@@ -168,16 +180,32 @@ export default function ProductFormModal({
       return;
     }
 
-    const pinata = PinataService.getInstance();
-    const allMedia = [...images, ...videos];
-    for (const uri of allMedia) {
+    let hasError = false;
+    images.forEach((uri, index) => {
       if (!pinata.isCidOrUrl(uri)) {
-        setInfoModal({
-          visible: true,
-          title: 'שגיאה',
-          message: 'כל המדיה חייבת להיות CID או קישור תקין',
-          type: 'error',
-        });
+        setImageError(`שורה ${index + 1} אינה CID או קישור תקין`);
+        hasError = true;
+      }
+    });
+    videos.forEach((uri, index) => {
+      if (!pinata.isCidOrUrl(uri)) {
+        setVideoError(`שורה ${index + 1} אינה CID או קישור תקין`);
+        hasError = true;
+      }
+    });
+    if (hasError) return;
+
+    const allMedia = [...images, ...videos];
+    const first = allMedia[0];
+    if (first) {
+      try {
+        const res = await fetch(toHttpUrl(first), { method: 'HEAD' });
+        if (!res.ok) {
+          setInfoModal({ visible: true, title: 'שגיאה', message: 'המדיה הראשונה אינה נגישה', type: 'error' });
+          return;
+        }
+      } catch {
+        setInfoModal({ visible: true, title: 'שגיאה', message: 'המדיה הראשונה אינה נגישה', type: 'error' });
         return;
       }
     }
@@ -265,10 +293,27 @@ export default function ProductFormModal({
                   textAlignVertical: 'top'
                 }]}
                 value={imageUrls}
-                onChangeText={setImageUrls}
+                onChangeText={(text) => {
+                  setImageUrls(text);
+                  const first = text.split('\n').map(s => s.trim()).find(Boolean) || null;
+                  if (first && pinata.isCidOrUrl(first)) {
+                    setImagePreview(first);
+                  } else {
+                    setImagePreview(null);
+                  }
+                  setImageError(null);
+                }}
                 placeholder="ipfs://..."
                 textAlign="end"
               />
+              {imagePreview ? (
+                <Image source={{ uri: toHttpUrl(imagePreview) }} style={styles.mediaPreview} />
+              ) : (
+                <View style={[styles.mediaPreview, { backgroundColor: colors.surface.secondary }]} />
+              )}
+              {imageError && (
+                <Text style={[styles.errorText, { color: colors.status.error }]}>{imageError}</Text>
+              )}
             </View>
 
             <View style={styles.formGroup}>
@@ -283,10 +328,32 @@ export default function ProductFormModal({
                   textAlignVertical: 'top'
                 }]}
                 value={videoUrls}
-                onChangeText={setVideoUrls}
+                onChangeText={(text) => {
+                  setVideoUrls(text);
+                  const first = text.split('\n').map(s => s.trim()).find(Boolean) || null;
+                  if (first && pinata.isCidOrUrl(first)) {
+                    setVideoPreview(first);
+                  } else {
+                    setVideoPreview(null);
+                  }
+                  setVideoError(null);
+                }}
                 placeholder="ipfs://..."
                 textAlign="end"
               />
+              {videoPreview ? (
+                <Video
+                  source={{ uri: toHttpUrl(videoPreview) }}
+                  style={styles.mediaPreview}
+                  useNativeControls
+                  isLooping
+                />
+              ) : (
+                <View style={[styles.mediaPreview, { backgroundColor: colors.surface.secondary }]} />
+              )}
+              {videoError && (
+                <Text style={[styles.errorText, { color: colors.status.error }]}>{videoError}</Text>
+              )}
             </View>
 
             <View style={styles.formGroup}>
@@ -687,4 +754,6 @@ const styles = StyleSheet.create({
   removeVariantButton: { marginLeft: 8 },
   addVariantButton: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingVertical: 12, marginTop: 8 },
   addVariantText: { fontSize: 16, fontWeight: '500', marginLeft: 8 },
+  mediaPreview: { width: '100%', height: 120, marginTop: 8, borderRadius: 8 },
+  errorText: { fontSize: 14, marginTop: 4, textAlign: 'end' },
 });
