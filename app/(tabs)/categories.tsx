@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  FlatList,
   Modal,
   TextInput,
 } from 'react-native';
@@ -32,6 +33,13 @@ export default function CategoriesScreen() {
   const [loading, setLoading] = useState(true);
   const { isAdmin } = useAuth();
   const { colors } = useTheme();
+  const NUM_COLUMNS = 2;
+  const ITEM_HEIGHT = 176;
+  const getItemLayout = (_: Category[] | null | undefined, index: number) => ({
+    length: ITEM_HEIGHT,
+    offset: ITEM_HEIGHT * Math.floor(index / NUM_COLUMNS),
+    index,
+  });
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -256,19 +264,19 @@ export default function CategoriesScreen() {
         </View>
       </View>
 
-      <ScrollView
+      <FlatList
+        data={categories}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.categoryWrapper}>{renderCategory({ item })}</View>
+        )}
+        numColumns={NUM_COLUMNS}
         style={styles.scrollContainer}
         contentContainerStyle={styles.categoriesContainer}
+        columnWrapperStyle={styles.categoriesGrid}
         showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.categoriesGrid}>
-          {categories.map((item, index) => (
-            <View key={item.id} style={styles.categoryWrapper}>
-              {renderCategory({ item })}
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+        getItemLayout={getItemLayout}
+      />
 
       {/* Category Edit/Add Modal */}
       <Modal
