@@ -31,6 +31,14 @@ export interface Product {
   updatedAt?: string;
 }
 
+export interface ProductIndexItem {
+  id: string;
+  storeId: string;
+  price: number;
+  metadataUri: string;
+  image: string;
+}
+
 export interface Store {
   id: string;
   name: string;
