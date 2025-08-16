@@ -3,4 +3,5 @@ export {
   type SettingsWriteEvent,
   type NotificationEvent,
   type NotificationWakuPayload,
+  type ProductUpdatedMessage,
 } from '../schemas/waku';
