@@ -5,6 +5,7 @@ import {
   listProducts,
   removeProduct,
   getProducts,
+  getVersion,
 } from '../services/tonProducts';
 import { getStore } from '../services/tonStores';
 import ensureTonWallet from '../utils/ensureTonWallet';
@@ -44,6 +45,8 @@ class ProductsAgent {
   private cache: Map<string, Product> = new Map();
   private summaries: Map<string, ProductSummary> = new Map();
   private node: LightNode | null = null;
+  private version = 0;
+  private loading: Promise<void> | null = null;
 
   constructor() {
     void this.subscribe();
@@ -75,18 +78,55 @@ class ProductsAgent {
         const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
         const signed = await verifyBeforeWrite(raw, productUpdatedSchema);
         if (!signed) return;
-        const prod = signed.payload;
-        this.cache.set(prod.id, prod);
-        this.summaries.set(prod.id, {
-          rating: prod.rating,
-          reviews: prod.reviews,
-        });
-        void this.refreshAndPersist();
+        void this.invalidateCache();
       } catch (err) {
         errorLog('Failed to process product update', err);
       }
     };
     (n.relay as any).addObserver(handler, [decoder]);
+  }
+
+  private async invalidateCache() {
+    this.cache.clear();
+    this.summaries.clear();
+    this.version = 0;
+    await clearProductCache();
+  }
+
+  private async loadFromIndex(index: string[]): Promise<void> {
+    for (let i = 0; i < index.length; i += PAGE_SIZE) {
+      const slice = index.slice(i, i + PAGE_SIZE);
+      const batch = await getProducts(slice);
+      batch.forEach((p) => {
+        this.cache.set(p.id, p);
+        this.summaries.set(p.id, { rating: p.rating, reviews: p.reviews });
+      });
+    }
+  }
+
+  private async ensureCache(): Promise<void> {
+    if (this.loading) return this.loading;
+    this.loading = (async () => {
+      const chainVersion = await getVersion();
+      if (this.cache.size > 0 && this.version === chainVersion) {
+        this.loading = null;
+        return;
+      }
+      const cached = await getProductCache();
+      if (cached && cached.version === chainVersion) {
+        await this.loadFromIndex(cached.index);
+        this.version = chainVersion;
+      } else {
+        await this.invalidateCache();
+        const products = await listProducts();
+        const ids = products.map((p) => p.id);
+        await this.loadFromIndex(ids);
+        await setProductCache({ version: chainVersion, index: ids });
+        this.version = chainVersion;
+      }
+      this.loading = null;
+    })();
+    await this.loading;
   }
 
   private async broadcast(product: Product) {
@@ -156,6 +196,7 @@ class ProductsAgent {
   }
 
   async get(id: string): Promise<Product | null> {
+    await this.ensureCache();
     const cached = this.cache.get(id);
     if (cached) return cached;
     const prod = await getProduct(id);
@@ -167,41 +208,8 @@ class ProductsAgent {
   }
 
   async getAll(): Promise<Product[]> {
-    if (this.cache.size > 0) return Array.from(this.cache.values());
-
-    const cached = await getProductCache();
-    if (cached) {
-      const products: Product[] = [];
-      for (let i = 0; i < cached.index.length; i += PAGE_SIZE) {
-        const slice = cached.index.slice(i, i + PAGE_SIZE);
-        const batch = await getProducts(slice);
-        batch.forEach((p) => {
-          this.cache.set(p.id, p);
-          this.summaries.set(p.id, { rating: p.rating, reviews: p.reviews });
-        });
-        products.push(...batch);
-      }
-      void this.refreshAndPersist(cached.version);
-      return products;
-    }
-    return await this.refreshAndPersist();
-  }
-
-  private async refreshAndPersist(prevVersion = 0): Promise<Product[]> {
-    const prods = await listProducts();
-    const version = prods.reduce((max, p) => {
-      const t = p.updatedAt ? Date.parse(p.updatedAt) : 0;
-      return t > max ? t : max;
-    }, 0);
-    if (version !== prevVersion) {
-      await clearProductCache();
-      await setProductCache({ version, index: prods.map((p) => p.id) });
-    }
-    prods.forEach((p) => {
-      this.cache.set(p.id, p);
-      this.summaries.set(p.id, { rating: p.rating, reviews: p.reviews });
-    });
-    return prods;
+    await this.ensureCache();
+    return Array.from(this.cache.values());
   }
 
   async getSummary(id: string): Promise<ProductSummary> {

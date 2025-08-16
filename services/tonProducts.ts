@@ -1,6 +1,7 @@
 import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { Product } from '../types';
 import config from '../utils/appConfig';
+import { withTonWeb } from './tonProvider';
 
 const ADDRESS =
   config.TON_PRODUCTS_ADDRESS ??
@@ -66,4 +67,16 @@ export async function setProductBatch(products: Product[]) {
 export async function estimateSetProductBatch(products: Product[]): Promise<number> {
   const payload = products.map(p => JSON.stringify(p)).join('');
   return payload.length;
+}
+
+export async function getVersion(): Promise<number> {
+  try {
+    return await withTonWeb(async tw => {
+      const result = await tw.provider.call(ADDRESS, 'getVersion', []);
+      const ver = result.stack?.[0]?.[1]?.number ?? result.stack?.[0]?.[1]?.value ?? '0';
+      return Number(ver);
+    });
+  } catch {
+    return 0;
+  }
 }
