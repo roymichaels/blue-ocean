@@ -20,6 +20,7 @@ import {
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
+import { productUpdatedSchema } from '../schemas/waku/product.updated';
 import { getPrivateKey, getPublicKeyHex } from '../services/localIdentity';
 import { sign } from '@noble/ed25519';
 import type { WakuMessage } from '../types/waku';
@@ -80,6 +81,7 @@ class ProductsAgent {
           rating: prod.rating,
           reviews: prod.reviews,
         });
+        void this.refreshAndPersist();
       } catch (err) {
         errorLog('Failed to process product update', err);
       }
