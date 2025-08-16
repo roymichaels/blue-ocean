@@ -9,6 +9,7 @@ export default function AdminLayout() {
       <Stack.Screen name="user-management" />
       <Stack.Screen name="pricing-tiers" />
       <Stack.Screen name="deliveries" />
+      <Stack.Screen name="bulk-upload" />
     </Stack>
   );
 }
