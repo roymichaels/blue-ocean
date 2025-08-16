@@ -12,9 +12,10 @@ import {
   bytesToUtf8,
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
-import { verifyMessageSignature } from '../utils/verifyMessageSignature';
 import type { SettingsWriteEvent, WakuMessage } from '../types/waku';
-import { parseWakuMessage, settingsWriteEventSchema } from '../schemas/waku';
+import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
+import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
+import { z } from 'zod';
 import { sign } from '@noble/ed25519';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
@@ -102,15 +103,15 @@ export async function subscribeToSettingsWrites(
     if (!wakuMsg.payload) return;
     try {
       const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
-      const signed = parseWakuMessage(raw, settingsWriteEventSchema);
+      const schema = wakuMessageSchema.extend({
+        type: z.literal('settings.write'),
+        payload: settingsWriteEventSchema,
+      });
+      const signed = await verifyBeforeWrite(raw, schema);
       if (!signed) return;
-      if (
-        !(await verifyMessageSignature(signed, signed.sender.publicKey))
-      )
-        return;
       cb(signed.payload);
-    } catch {
-      /* ignore malformed events */
+    } catch (err) {
+      errorLog('Failed to process settings.write', err);
     }
   };
   const maybeUnsub = (n.relay as any).addObserver(handler, [decoder]) as

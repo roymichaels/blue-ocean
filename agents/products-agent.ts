@@ -19,11 +19,12 @@ import {
   bytesToUtf8,
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
-import { verifyMessageSignature } from '../utils/verifyMessageSignature';
+import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { getPrivateKey, getPublicKeyHex } from '../services/localIdentity';
 import { sign } from '@noble/ed25519';
 import type { WakuMessage } from '../types/waku';
 import { errorLog } from '../utils/logger';
+
 import {
   getProductCache,
   setProductCache,
@@ -71,21 +72,16 @@ class ProductsAgent {
       if (!wakuMsg.payload) return;
       try {
         const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
-        const signed = raw as WakuMessage<Product>;
-        if (signed.type !== 'product.updated') return;
-        if (
-          !(await verifyMessageSignature(signed, signed.sender.publicKey))
-        )
-          return;
+        const signed = await verifyBeforeWrite(raw, productUpdatedSchema);
+        if (!signed) return;
         const prod = signed.payload;
         this.cache.set(prod.id, prod);
         this.summaries.set(prod.id, {
           rating: prod.rating,
           reviews: prod.reviews,
         });
-        await clearProductCache();
-      } catch {
-        /* ignore */
+      } catch (err) {
+        errorLog('Failed to process product update', err);
       }
     };
     (n.relay as any).addObserver(handler, [decoder]);

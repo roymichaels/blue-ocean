@@ -14,8 +14,8 @@ import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
 import DatabaseService from '../services/database';
 import { ChatMessage } from '../types';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
-import { verifyMessageSignature } from '../utils/verifyMessageSignature';
-import { parseWakuMessage } from '../schemas/waku';
+import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
+import { wakuMessageSchema } from '../schemas/waku';
 import { z } from 'zod';
 
 const DEFAULT_BOOTSTRAP =
@@ -120,12 +120,9 @@ export function useWakuClient(): WakuClient {
       if (!wakuMsg.payload) return;
       try {
         const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
-        const signed = parseWakuMessage(raw, z.string());
+        const schema = wakuMessageSchema.extend({ payload: z.string() });
+        const signed = await verifyBeforeWrite(raw, schema);
         if (!signed) return;
-        if (
-          !(await verifyMessageSignature(signed, signed.sender.publicKey))
-        )
-          return;
         const text = await decryptMessage(
           signed.payload,
           roomId,
@@ -181,12 +178,9 @@ export function useWakuClient(): WakuClient {
         if (!wakuMsg.payload) continue;
         try {
           const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
-          const signed = parseWakuMessage(raw, z.string());
+          const schema = wakuMessageSchema.extend({ payload: z.string() });
+          const signed = await verifyBeforeWrite(raw, schema);
           if (!signed) continue;
-          if (
-            !(await verifyMessageSignature(signed, signed.sender.publicKey))
-          )
-            continue;
           const text = await decryptMessage(
             signed.payload,
             roomId,
