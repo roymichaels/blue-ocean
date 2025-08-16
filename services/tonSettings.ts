@@ -13,7 +13,8 @@ import {
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { verifyMessageSignature } from '../utils/verifyMessageSignature';
-import { WakuMessage, SettingsWriteEvent } from '../types/waku';
+import type { SettingsWriteEvent, WakuMessage } from '../types/waku';
+import { parseWakuMessage, settingsWriteEventSchema } from '../schemas/waku';
 import { sign } from '@noble/ed25519';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
@@ -100,17 +101,14 @@ export async function subscribeToSettingsWrites(
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
-      const signed: WakuMessage<SettingsWriteEvent> = JSON.parse(
-        bytesToUtf8(wakuMsg.payload),
-      );
+      const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+      const signed = parseWakuMessage(raw, settingsWriteEventSchema);
+      if (!signed) return;
       if (
         !(await verifyMessageSignature(signed, signed.sender.publicKey))
       )
         return;
-      const evt = signed.payload;
-      if (evt && evt.type === 'settings.write') {
-        cb(evt);
-      }
+      cb(signed.payload);
     } catch {
       /* ignore malformed events */
     }
