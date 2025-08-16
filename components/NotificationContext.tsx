@@ -13,6 +13,7 @@ import { Notification } from '../types';
 import NotificationPopup from './NotificationPopup';
 import { useAuth } from './AuthContext';
 import { useWakuClient } from '../hooks/useWakuClient';
+import { parseNotificationWakuPayload } from '../schemas/waku';
 
 interface NotificationState {
   unreadCount: number;
@@ -165,7 +166,9 @@ function NotificationCountProvider({ children }: { children: ReactNode }) {
     }
     wakuUnsub.current = await waku.subscribeOrders((message) => {
       try {
-        const n: Notification = JSON.parse(message);
+        const payload = parseNotificationWakuPayload(JSON.parse(message));
+        if (!payload) return;
+        const n = payload.notification;
         if (n.userId !== user.id) return;
         setUnreadCount((prev) => prev + 1);
         showNotification(

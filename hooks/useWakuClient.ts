@@ -15,7 +15,8 @@ import DatabaseService from '../services/database';
 import { ChatMessage } from '../types';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { verifyMessageSignature } from '../utils/verifyMessageSignature';
-import { WakuMessage } from '../types/waku';
+import { parseWakuMessage } from '../schemas/waku';
+import { z } from 'zod';
 
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
@@ -118,9 +119,9 @@ export function useWakuClient(): WakuClient {
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
-        const signed: WakuMessage<string> = JSON.parse(
-          bytesToUtf8(wakuMsg.payload),
-        );
+        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const signed = parseWakuMessage(raw, z.string());
+        if (!signed) return;
         if (
           !(await verifyMessageSignature(signed, signed.sender.publicKey))
         )
@@ -179,9 +180,9 @@ export function useWakuClient(): WakuClient {
       for (const wakuMsg of msgs.messages) {
         if (!wakuMsg.payload) continue;
         try {
-          const signed: WakuMessage<string> = JSON.parse(
-            bytesToUtf8(wakuMsg.payload),
-          );
+          const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+          const signed = parseWakuMessage(raw, z.string());
+          if (!signed) continue;
           if (
             !(await verifyMessageSignature(signed, signed.sender.publicKey))
           )
