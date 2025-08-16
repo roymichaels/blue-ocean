@@ -7,6 +7,24 @@ import {
 } from '../services/tonProducts';
 import { getStore } from '../services/tonStores';
 import ensureTonWallet from '../utils/ensureTonWallet';
+import {
+  LightNode,
+  createLightNode,
+  waitForRemotePeer,
+  createEncoder,
+  createDecoder,
+  Protocols,
+  utf8ToBytes,
+  bytesToUtf8,
+} from '@waku/sdk';
+import { getWakuBootstrapNodes } from '../utils/appConfig';
+import { verifyMessageSignature } from '../utils/verifyMessageSignature';
+import { getPrivateKey, getPublicKeyHex } from '../services/localIdentity';
+import { sign } from '@noble/ed25519';
+import type { WakuMessage } from '../types/waku';
+import { errorLog } from '../utils/logger';
+
+const PRODUCT_TOPIC = '/blue-ocean/products/1';
 
 interface ProductSummary {
   rating: number;
@@ -16,6 +34,80 @@ interface ProductSummary {
 class ProductsAgent {
   private cache: Map<string, Product> = new Map();
   private summaries: Map<string, ProductSummary> = new Map();
+  private node: LightNode | null = null;
+
+  constructor() {
+    void this.subscribe();
+  }
+
+  private async ensureNode(): Promise<LightNode | null> {
+    if (this.node) return this.node;
+    try {
+      const bootstrap = getWakuBootstrapNodes();
+      if (bootstrap.length === 0) return null;
+      this.node = await createLightNode({ libp2p: { bootstrap } as any });
+      await this.node.start();
+      await waitForRemotePeer(this.node, [Protocols.Relay]);
+      return this.node;
+    } catch (err) {
+      errorLog('Failed to start Waku node', err);
+      this.node = null;
+      return null;
+    }
+  }
+
+  private async subscribe() {
+    const n = await this.ensureNode();
+    if (!n) return;
+    const decoder = createDecoder(PRODUCT_TOPIC);
+    const handler = async (wakuMsg: any) => {
+      if (!wakuMsg.payload) return;
+      try {
+        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const signed = raw as WakuMessage<Product>;
+        if (signed.type !== 'product.updated') return;
+        if (
+          !(await verifyMessageSignature(signed, signed.sender.publicKey))
+        )
+          return;
+        const prod = signed.payload;
+        this.cache.set(prod.id, prod);
+        this.summaries.set(prod.id, {
+          rating: prod.rating,
+          reviews: prod.reviews,
+        });
+      } catch {
+        /* ignore */
+      }
+    };
+    (n.relay as any).addObserver(handler, [decoder]);
+  }
+
+  private async broadcast(product: Product) {
+    const n = await this.ensureNode();
+    if (!n) return;
+    try {
+      const priv = await getPrivateKey();
+      const pub = await getPublicKeyHex();
+      const msg: WakuMessage<Product> = {
+        type: 'product.updated',
+        payload: product,
+        sender: { publicKey: pub },
+        signature: '',
+      };
+      const msgBytes = new TextEncoder().encode(
+        JSON.stringify({ type: msg.type, payload: msg.payload, sender: msg.sender }),
+      );
+      const sig = await sign(msgBytes, priv);
+      msg.signature = Buffer.from(sig).toString('hex');
+      const encoder = createEncoder({ contentTopic: PRODUCT_TOPIC });
+      await n.lightPush.send(encoder, {
+        payload: utf8ToBytes(JSON.stringify(msg)),
+      });
+    } catch (err) {
+      errorLog('Failed to broadcast product update', err);
+    }
+  }
 
   private async ensureWallet() {
     const { address } = await ensureTonWallet(
@@ -37,6 +129,7 @@ class ProductsAgent {
     await setProduct(item);
     this.cache.set(item.id, item);
     this.summaries.set(item.id, { rating: item.rating, reviews: item.reviews });
+    await this.broadcast(item);
   }
 
   async update(item: Product): Promise<void> {
@@ -44,6 +137,7 @@ class ProductsAgent {
     await setProduct(item);
     this.cache.set(item.id, item);
     this.summaries.set(item.id, { rating: item.rating, reviews: item.reviews });
+    await this.broadcast(item);
   }
 
   async remove(id: string): Promise<void> {

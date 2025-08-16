@@ -14,11 +14,13 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
-import { Product, Category, Subcategory, PricingTier } from '../types';
+import { Product, Category, Subcategory, PricingTier, ProductIndexItem } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
+import ipfsService from '../services/ipfsService';
+import { setProductBatch } from '../services/tonProductIndex';
 import { Video } from 'expo-video';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
@@ -212,14 +214,23 @@ export default function ProductFormModal({
 
     setLoading(true);
     try {
+      const pinnedImages = await Promise.all(
+        images.map((uri, idx) => ipfsService.pinFile(uri, `image-${idx}`)),
+      );
+      const metadataCid = await ipfsService.pinJson({
+        ...editingProduct,
+        images: pinnedImages,
+        videos,
+      });
+
       const db = DatabaseService.getInstance();
       const totalVariantStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
       const data = {
         ...editingProduct,
         storeId: editingProduct.storeId || address || '',
-        images,
+        images: pinnedImages,
         videos,
-        colors: variants.map(v => v.color),
+        colors: variants.map((v) => v.color),
         variants,
         stock: variants.length > 0 ? totalVariantStock : editingProduct.stock,
       };
@@ -235,12 +246,31 @@ export default function ProductFormModal({
         isNew = true;
       }
 
-      setInfoModal({ visible: true, title: 'הצלחה', message: 'המוצר נשמר בהצלחה', type: 'success' });
+      const indexItem: ProductIndexItem = {
+        id: saved.id,
+        storeId: saved.storeId,
+        price: saved.price,
+        metadataUri: metadataCid,
+        image: pinnedImages[0] || '',
+      };
+      await setProductBatch([indexItem]);
+
+      setInfoModal({
+        visible: true,
+        title: 'הצלחה',
+        message: 'המוצר נשמר בהצלחה',
+        type: 'success',
+      });
       onSaved?.(saved, isNew);
       setTimeout(onClose, 500);
     } catch (error) {
       errorLog('Error saving product:', error);
-      setInfoModal({ visible: true, title: 'שגיאה', message: 'שמירת המוצר נכשלה', type: 'error' });
+      setInfoModal({
+        visible: true,
+        title: 'שגיאה',
+        message: 'שמירת המוצר נכשלה',
+        type: 'error',
+      });
     } finally {
       setLoading(false);
     }
