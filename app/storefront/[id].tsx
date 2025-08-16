@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import storesAgent from '../../agents/stores-agent';
 import productsAgent from '../../agents/products-agent';
@@ -12,6 +12,8 @@ interface ReviewMap {
   [productId: string]: { rating: number; count: number };
 }
 
+const ITEM_HEIGHT = 150;
+
 export default function StorefrontStoreScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
@@ -19,6 +21,15 @@ export default function StorefrontStoreScreen() {
   const [score, setScore] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<ReviewMap>({});
+
+  const renderItem = ({ item }: { item: Product }) => (
+    <View style={styles.product}>
+      <ProductCard product={item} style={{ marginBottom: 4 }} />
+      <Text style={{ color: colors.text.secondary, textAlign: 'end' }}>
+        ⭐ {reviews[item.id]?.rating?.toFixed(1) || '0'} ({reviews[item.id]?.count || 0})
+      </Text>
+    </View>
+  );
 
   useEffect(() => {
     let callback: ((sid: string, s: number) => void) | undefined;
@@ -65,28 +76,27 @@ export default function StorefrontStoreScreen() {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
-    >
-      <Text style={[styles.name, { color: colors.text.primary }]}>{store.name}</Text>
-      <Text style={{ color: colors.text.secondary, marginBottom: 16 }}>
-        Reputation: {score.toFixed(1)}
-      </Text>
-      {products.map((p) => (
-        <View key={p.id} style={styles.product}>
-          <ProductCard product={p} style={{ marginBottom: 4 }} />
-          <Text style={{ color: colors.text.secondary, textAlign: 'end' }}>
-            ⭐ {reviews[p.id]?.rating.toFixed(1) || '0'} ({reviews[p.id]?.count || 0})
+    <FlatList
+      data={products}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id}
+      ListHeaderComponent={
+        <View>
+          <Text style={[styles.name, { color: colors.text.primary }]}>{store.name}</Text>
+          <Text style={{ color: colors.text.secondary, marginBottom: 16 }}>
+            Reputation: {score.toFixed(1)}
           </Text>
         </View>
-      ))}
-      {products.length === 0 && (
+      }
+      ListEmptyComponent={
         <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
           אין מוצרים זמינים
         </Text>
-      )}
-    </ScrollView>
+      }
+      contentContainerStyle={styles.content}
+      style={[styles.container, { backgroundColor: colors.background }]}
+      getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+    />
   );
 }
 
