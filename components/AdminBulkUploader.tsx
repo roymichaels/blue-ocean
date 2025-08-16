@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import pLimit from 'p-limit';
 import { useTheme } from '../contexts/ThemeContext';
-import MediaService from '../services/media';
 import { Product } from '../types';
-import { setProductBatch, estimateSetProductBatch } from '../services/tonProducts';
+import { parseJson, parseCsv, processRecords } from './BulkProductUploader';
 
 interface Summary {
   success: number;
@@ -37,42 +35,11 @@ export default function AdminBulkUploader() {
       setSummary({ success: 0, failed: 0 });
       return;
     }
-    await processRecords(records);
-  };
-
-  const processRecords = async (records: Product[]) => {
     setProcessing(true);
     setProgress(0);
-    const limit = pLimit(5);
-    const media = MediaService.getInstance();
-    let completed = 0;
-    const pinResults = await Promise.allSettled(
-      records.map((rec, idx) =>
-        limit(async () => {
-          const pinnedImages = await Promise.all(
-            (rec.images || []).map((img, i) => media.uploadMedia(img, `prod-${idx}-${i}`))
-          );
-          rec.images = pinnedImages;
-          const dataUri = `data:application/json,${encodeURIComponent(JSON.stringify(rec))}`;
-          await media.uploadMedia(dataUri, `prod-${idx}.json`);
-          completed++;
-          setProgress(Math.round((completed / records.length) * 100));
-        })
-      )
-    );
-    const success = pinResults.filter(r => r.status === 'fulfilled').length;
-    const failed = pinResults.length - success;
-
-    const BATCH_SIZE = 25;
-    const gasEstimates: number[] = [];
-    for (let i = 0; i < records.length; i += BATCH_SIZE) {
-      const batch = records.slice(i, i + BATCH_SIZE);
-      const g = await estimateSetProductBatch(batch);
-      gasEstimates.push(g);
-      await setProductBatch(batch);
-    }
-    setGas(gasEstimates);
+    const { success, failed, gas: gasEstimates } = await processRecords(records, setProgress);
     setSummary({ success, failed });
+    setGas(gasEstimates);
     setProcessing(false);
   };
 
@@ -108,29 +75,6 @@ export default function AdminBulkUploader() {
       )}
     </ScrollView>
   );
-}
-
-function parseJson(text: string): Product[] {
-  const data = JSON.parse(text);
-  return Array.isArray(data) ? data : [data];
-}
-
-function parseCsv(text: string): Product[] {
-  const lines = text.trim().split(/\r?\n/);
-  const headers = lines.shift()!.split(',').map(h => h.trim());
-  return lines.map(line => {
-    const values = line.split(',').map(v => v.trim());
-    const rec: any = {};
-    headers.forEach((h, i) => {
-      rec[h] = values[i];
-    });
-    rec.price = Number(rec.price);
-    rec.rating = Number(rec.rating);
-    rec.reviews = Number(rec.reviews);
-    rec.stock = Number(rec.stock);
-    rec.images = rec.images ? rec.images.split('|').map((s: string) => s.trim()) : [];
-    return rec as Product;
-  });
 }
 
 const styles = StyleSheet.create({
