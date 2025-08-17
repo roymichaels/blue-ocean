@@ -37,6 +37,7 @@ import BannerFormModal from '../../components/BannerFormModal';
 import CartModal from '../../components/CartModal';
 import ProductFormModal from '../../components/ProductFormModal';
 import SmartImage from '../../components/SmartImage';
+import InfoModal from '../../components/InfoModal';
 
 const { width } = Dimensions.get('window');
 const BANNER_WIDTH = width - 32;
@@ -65,6 +66,13 @@ export default function HomeScreen() {
   const [productFormVisible, setProductFormVisible] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [showCartModal, setShowCartModal] = useState(false);
+  const [infoModal, setInfoModal] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
+    buttonText: undefined as string | undefined,
+  });
   const { isAdmin } = useAuth();
   const { t } = useLanguage();
   const { colors } = useTheme();
@@ -116,7 +124,14 @@ export default function HomeScreen() {
       setCategories(categoriesData);
       setHeroBanners(bannersData);
     } catch (error) {
-      errorLog('Error loading data:', error);
+      errorLog('HomeScreen loadData error:', error);
+      setInfoModal({
+        visible: true,
+        title: t('common.error'),
+        message: t('home.loadErrorMessage'),
+        type: 'error',
+        buttonText: t('common.reload'),
+      });
     } finally {
       setLoading(false);
     }
@@ -336,6 +351,11 @@ export default function HomeScreen() {
       default:
         return t('home.newest');
     }
+  };
+
+  const handleReload = () => {
+    setInfoModal((prev) => ({ ...prev, visible: false }));
+    loadData();
   };
 
   if (loading) {
@@ -744,6 +764,16 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+
+      <InfoModal
+        visible={infoModal.visible}
+        title={infoModal.title}
+        message={infoModal.message}
+        type={infoModal.type}
+        buttonText={infoModal.buttonText}
+        onClose={handleReload}
+        autoClose={false}
+      />
 
       {/* Cart Modal */}
       <CartModal
