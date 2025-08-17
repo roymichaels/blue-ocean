@@ -43,33 +43,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const connectionRestored = useIsConnectionRestored();
   const [user, setUser] = useState<User | null>(null);
 
+  const checkAuthState = async () => {
+    const walletAddress = tonConnectUI.account?.address || address;
+    if (!walletAddress) {
+      setUser(null);
+      return;
+    }
+
+    const db = DatabaseService.getInstance();
+    const profile = await db.getUserProfile(walletAddress);
+
+    setUser(
+      profile || {
+        id: walletAddress,
+        username: walletAddress,
+        displayName: walletAddress,
+        isAdmin: false,
+        address: walletAddress,
+        role: 'user',
+      }
+    );
+  };
+
+  const refreshSession = async () => {
+    await checkAuthState();
+  };
+
   useEffect(() => {
-    let mounted = true;
-    const fetchUser = async () => {
-      if (!address) {
-        if (mounted) setUser(null);
-        return;
-      }
-      const db = DatabaseService.getInstance();
-      const profile = await db.getUserProfile(address);
-      if (mounted) {
-        setUser(
-          profile || {
-            id: address,
-            username: address,
-            displayName: address,
-            isAdmin: false,
-            address,
-            role: 'user',
-          }
-        );
-      }
-    };
-    fetchUser();
-    return () => {
-      mounted = false;
-    };
-  }, [address]);
+    if (!connectionRestored) return;
+    checkAuthState();
+  }, [address, connectionRestored]);
 
   const login = async () => {
     openModal();
@@ -100,8 +103,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         login,
         signup,
         logout,
-        checkAuthState: async () => {},
-        refreshSession: async () => {},
+        checkAuthState,
+        refreshSession,
       }}
     >
       {children}
