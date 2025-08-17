@@ -4,6 +4,7 @@ import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup
 import DatabaseService from './database';
 import cartAgent from '../agents/cart-agent';
 import eventBus from './eventBus';
+import tonAuth from './tonAuth';
  
 
 const CART_STORAGE_KEY = 'cart_items';
@@ -18,7 +19,13 @@ class CartService {
   private groupCache: Record<string, MixGroup> = {};
 
   private async getCurrentUserId(): Promise<string | null> {
-    return null;
+    try {
+      const addr = tonAuth.getAddress?.();
+      return addr ?? null;
+    } catch (err) {
+      errorLog('Failed to get current user', err);
+      return null;
+    }
   }
 
   public static getInstance(): CartService {
@@ -34,27 +41,27 @@ class CartService {
 
   private async loadFromStorage() {
     try {
-      const cartData = await AsyncStorage.getItem(CART_STORAGE_KEY);
-      if (cartData) {
-        this.cartItems = JSON.parse(cartData);
-      }
-
       const uid = await this.getCurrentUserId();
+
       if (uid) {
+        try {
+          this.cartItems = await cartAgent.getAll();
+        } catch (err) {
+          errorLog('Error fetching cart from storage:', err);
+        }
+
         const db = DatabaseService.getInstance();
         try {
           this.wishlistItems = await db.getWishlistItems(uid);
         } catch (err) {
-          if (err instanceof Error && err.message === 'WISHLIST_TABLE_MISSING') {
-            const wishlistData = await AsyncStorage.getItem(WISHLIST_STORAGE_KEY);
-            if (wishlistData) {
-              this.wishlistItems = JSON.parse(wishlistData);
-            }
-          } else {
-            errorLog('Error fetching wishlist from DB:', err);
-          }
+          errorLog('Error fetching wishlist from DB:', err);
         }
       } else {
+        const cartData = await AsyncStorage.getItem(CART_STORAGE_KEY);
+        if (cartData) {
+          this.cartItems = JSON.parse(cartData);
+        }
+
         const wishlistData = await AsyncStorage.getItem(WISHLIST_STORAGE_KEY);
         if (wishlistData) {
           this.wishlistItems = JSON.parse(wishlistData);
@@ -70,10 +77,12 @@ class CartService {
 
   private async saveToStorage() {
     try {
-      await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.cartItems));
-
       const uid = await this.getCurrentUserId();
       if (!uid) {
+        await AsyncStorage.setItem(
+          CART_STORAGE_KEY,
+          JSON.stringify(this.cartItems)
+        );
         await AsyncStorage.setItem(
           WISHLIST_STORAGE_KEY,
           JSON.stringify(this.wishlistItems)
