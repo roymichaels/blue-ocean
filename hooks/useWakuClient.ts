@@ -223,9 +223,17 @@ export function useWakuClient(): WakuClient {
   const subscribeSystem = async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
     const decoder = createDecoder(SYSTEM_TOPIC);
-    const handler = (wakuMsg: any) => {
+    const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
-      cb(bytesToUtf8(wakuMsg.payload));
+      try {
+        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const schema = wakuMessageSchema.extend({ payload: z.string() });
+        const signed = await verifyBeforeWrite(raw, schema);
+        if (!signed) return;
+        cb(signed.payload);
+      } catch (err) {
+        errorLog('Malformed system message', err);
+      }
     };
     const maybeUnsub = (nodeRef.current.relay as any).addObserver(
       handler,
@@ -243,9 +251,17 @@ export function useWakuClient(): WakuClient {
   const subscribeOrders = async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
     const decoder = createDecoder(ORDER_TOPIC);
-    const handler = (wakuMsg: any) => {
+    const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
-      cb(bytesToUtf8(wakuMsg.payload));
+      try {
+        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const schema = wakuMessageSchema.extend({ payload: z.string() });
+        const signed = await verifyBeforeWrite(raw, schema);
+        if (!signed) return;
+        cb(signed.payload);
+      } catch (err) {
+        errorLog('Malformed order message', err);
+      }
     };
     const maybeUnsub = (nodeRef.current.relay as any).addObserver(
       handler,
