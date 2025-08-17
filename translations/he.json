@@ -22,7 +22,8 @@
     "free": "חינם",
     "premium": "פרימיום",
     "info": "מידע",
-    "understood": "הבנתי"
+    "understood": "הבנתי",
+    "reload": "טען מחדש"
   },
   "navigation": {
     "home": "בית",
@@ -85,7 +86,8 @@
     "newest": "החדשים ביותר",
     "priceLowHigh": "מחיר: נמוך לגבוה",
     "priceHighLow": "מחיר: גבוה לנמוך",
-    "highRating": "דירוג גבוה"
+    "highRating": "דירוג גבוה",
+    "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש."
   },
   "product": {
     "inStock": "במלאי ({count})",

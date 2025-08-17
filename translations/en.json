@@ -22,7 +22,8 @@
     "free": "Free",
     "premium": "Premium",
     "info": "Information",
-    "understood": "Understood"
+    "understood": "Understood",
+    "reload": "Reload"
   },
   "navigation": {
     "home": "Home",
@@ -85,7 +86,8 @@
     "newest": "Newest",
     "priceLowHigh": "Price: Low to High",
     "priceHighLow": "Price: High to Low",
-    "highRating": "High Rating"
+    "highRating": "High Rating",
+    "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload."
   },
   "product": {
     "inStock": "In Stock ({count})",
