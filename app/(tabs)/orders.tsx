@@ -19,6 +19,7 @@ import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
 import commonStyles from '../../constants/styles';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 
 
@@ -29,6 +30,7 @@ export default function OrdersScreen() {
   const { openAuthModal } = useAuthModal();
   const { isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
+  const { t, currentLanguage } = useLanguage();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -65,8 +67,8 @@ export default function OrdersScreen() {
       errorLog('Error loading orders:', error);
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'טעינת ההזמנות נכשלה',
+        title: t('common.error'),
+        message: t('orders.loadFailed'),
         type: 'error'
       });
     }
@@ -77,16 +79,8 @@ export default function OrdersScreen() {
     setShowOrderTracking(true);
   };
 
-  const getOrderStatusText = (status: string) => {
-    switch (status) {
-      case 'order_received': return 'הזמנה התקבלה';
-      case 'courier_found': return 'נמצא שליח';
-      case 'courier_picked_up': return 'שליח אסף';
-      case 'courier_on_way': return 'שליח בדרך';
-      case 'delivered': return 'נמסר';
-      default: return status;
-    }
-  };
+  const getOrderStatusText = (status: string) =>
+    t(`orders.status.${status}`, status);
 
   const getOrderStatusColor = (status: string) => {
     switch (status) {
@@ -112,13 +106,16 @@ export default function OrdersScreen() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('he-IL', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return date.toLocaleDateString(
+      currentLanguage === 'he' ? 'he-IL' : 'en-US',
+      {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+    );
   };
 
   const handleLogin = () => {
@@ -135,7 +132,9 @@ export default function OrdersScreen() {
     >
       <View style={[styles.orderHeader, { borderBottomColor: colors.border.secondary }]}>
         <View style={styles.orderInfo}>
-          <Text style={[styles.orderNumber, { color: colors.text.primary }]}>הזמנה #{order.id.slice(-6)}</Text>
+          <Text style={[styles.orderNumber, { color: colors.text.primary }]}> 
+            {t('orders.orderNumber', { id: order.id.slice(-6) })}
+          </Text>
           <Text style={[styles.orderDate, { color: colors.text.secondary }]}>{formatDate(order.createdAt)}</Text>
         </View>
         <View style={styles.orderStatus}>
@@ -150,7 +149,9 @@ export default function OrdersScreen() {
       </View>
 
       <View style={styles.orderItems}>
-        <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>פריטים:</Text>
+        <Text style={[styles.itemsTitle, { color: colors.text.primary }]}>
+          {t('orders.itemsLabel')}
+        </Text>
         {order.items.slice(0, 2).map((item, index) => (
           <Text key={index} style={[styles.itemText, { color: colors.text.secondary }]}>
             {item.product.name} x{item.quantity}
@@ -158,7 +159,7 @@ export default function OrdersScreen() {
         ))}
         {order.items.length > 2 && (
           <Text style={[styles.moreItems, { color: colors.gold }]}>
-            +{order.items.length - 2} פריטים נוספים
+            {t('orders.moreItems', { count: order.items.length - 2 })}
           </Text>
         )}
       </View>
@@ -166,7 +167,9 @@ export default function OrdersScreen() {
       <View style={[styles.orderFooter, { borderTopColor: colors.border.secondary }]}>
         <Text style={[styles.orderTotal, { color: colors.gold }]}>₪{order.total.toFixed(2)}</Text>
         <View style={styles.viewDetails}>
-          <Text style={[styles.viewDetailsText, { color: colors.gold }]}>פרטים</Text>
+          <Text style={[styles.viewDetailsText, { color: colors.gold }]}> 
+            {t('orders.details')}
+          </Text>
           <ChevronLeft size={16} color={colors.gold} />
         </View>
       </View>
@@ -177,25 +180,37 @@ export default function OrdersScreen() {
     isLoggedIn ? (
       <View style={styles.emptyState}>
         <Package size={80} color={colors.interactive.disabled} />
-        <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין הזמנות עדיין</Text>
-        <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>ההזמנות שלך יופיעו כאן לאחר שתבצע רכישה</Text>
+        <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+          {t('orders.emptyTitle')}
+        </Text>
+        <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}> 
+          {t('orders.emptyMessage')}
+        </Text>
         <TouchableOpacity
           style={[styles.shopButton, { backgroundColor: colors.gold }]}
           onPress={() => router.push('/(tabs)')}
         >
-          <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחל לקנות</Text>
+          <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}> 
+            {t('orders.shopNow')}
+          </Text>
         </TouchableOpacity>
       </View>
     ) : (
       <View style={styles.emptyState}>
         <Package size={80} color={colors.interactive.disabled} />
-        <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>נדרשת התחברות</Text>
-        <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>עליך להתחבר כדי לראות את ההזמנות שלך</Text>
+        <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+          {t('orders.loginRequiredTitle')}
+        </Text>
+        <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}> 
+          {t('orders.loginRequiredMessage')}
+        </Text>
         <TouchableOpacity
           style={[styles.shopButton, { backgroundColor: colors.gold }]}
           onPress={handleLogin}
         >
-          <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}>התחבר</Text>
+          <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}> 
+            {t('auth.login')}
+          </Text>
         </TouchableOpacity>
       </View>
     )
@@ -209,7 +224,9 @@ export default function OrdersScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ההזמנות שלי</Text>
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}> 
+          {t('orders.myOrders')}
+        </Text>
         <View style={commonStyles.spacer24} />
       </View>
       <FlatList
