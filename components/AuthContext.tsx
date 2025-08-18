@@ -45,27 +45,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuthState = async () => {
     const walletAddress = tonConnectUI.account?.address || address;
+
     if (!walletAddress) {
+      // Wallet not connected – ensure we clear any stale user data
       setUser(null);
       return;
     }
 
     const db = DatabaseService.getInstance();
-    const profile = await db.getUserProfile(walletAddress);
 
-    setUser(
-      profile || {
-        id: walletAddress,
-        username: walletAddress,
-        displayName: walletAddress,
-        isAdmin: false,
-        address: walletAddress,
-        role: 'user',
-      }
-    );
+    try {
+      const profile = await db.getUserProfile(walletAddress);
+      setUser(
+        profile || {
+          id: walletAddress,
+          username: walletAddress,
+          displayName: walletAddress,
+          isAdmin: false,
+          address: walletAddress,
+          role: 'user',
+        },
+      );
+    } catch {
+      // In case of any failure, fall back to clearing the user state
+      setUser(null);
+    }
   };
 
   const refreshSession = async () => {
+    // Re-check the authentication state when recovering from a lost
+    // connection or after the wallet reconnects.
+    if (!tonConnectUI.account?.address && !address) {
+      setUser(null);
+      return;
+    }
+
     await checkAuthState();
   };
 
