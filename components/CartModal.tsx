@@ -169,8 +169,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     if (!isLoggedIn) {
       setInfoModal({
         visible: true,
-        title: 'נדרשת התחברות',
-        message: 'עליך להתחבר כדי להשלים את ההזמנה',
+        title: t('cart.loginRequiredTitle'),
+        message: t('cart.loginRequiredMessage'),
         type: 'info',
       });
       return;
@@ -178,8 +178,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     if (!cartItems.length) {
       setInfoModal({
         visible: true,
-        title: 'עגלה ריקה',
-        message: 'אנא הוסף מוצרים לעגלה כדי להמשיך',
+        title: t('cart.emptyCartTitle'),
+        message: t('cart.emptyCartMessage'),
         type: 'warning',
       });
       return;
@@ -191,8 +191,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     if (overstock) {
       setInfoModal({
         visible: true,
-        title: 'חוסר במלאי',
-        message: 'כמות מבוקשת עולה על המלאי הזמין',
+        title: t('cart.outOfStockTitle'),
+        message: t('cart.outOfStockMessage'),
         type: 'warning',
       });
       return;
@@ -268,8 +268,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     if (!shippingAddress.name.trim()) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אנא הכנס שם מלא',
+        title: t('common.error'),
+        message: t('cart.enterFullName'),
         type: 'error',
       });
       return false;
@@ -277,8 +277,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     if (!shippingAddress.phone.trim()) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אנא הכנס מספר טלפון',
+        title: t('common.error'),
+        message: t('cart.enterPhone'),
         type: 'error',
       });
       return false;
@@ -286,8 +286,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     if (!shippingAddress.street.trim()) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אנא הכנס כתובת רחוב',
+        title: t('common.error'),
+        message: t('cart.enterStreet'),
         type: 'error',
       });
       return false;
@@ -295,8 +295,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     if (!shippingAddress.city.trim()) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אנא הכנס עיר',
+        title: t('common.error'),
+        message: t('cart.enterCity'),
         type: 'error',
       });
       return false;
@@ -325,8 +325,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       await cartService.clearCart();
 
       showNotification(
-        'הזמנה התקבלה',
-        `נוצרו ${orders.length} הזמנות בהצלחה`,
+        t('cart.orderReceived'),
+        t('cart.ordersCreated', { count: orders.length }),
         'success'
       );
 
@@ -334,8 +334,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     } catch (error) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אירעה שגיאה ביצירת ההזמנה',
+        title: t('common.error'),
+        message: t('cart.orderCreationError'),
         type: 'error',
       });
     } finally {
@@ -448,13 +448,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         <View style={styles.checkoutHeader}>
           <MapPin size={24} color={colors.gold} />
           <Text style={[styles.checkoutTitle, { color: colors.text.primary }]}>
-            כתובת משלוח
+            {t('cart.shippingAddress')}
           </Text>
         </View>
 
         <View style={styles.formGroup}>
           <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-            שם מלא *
+            {t('cart.fullName')}
           </Text>
           <TextInput
             style={[
@@ -467,7 +467,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             ]}
             value={shippingAddress.name}
             onChangeText={(text) => setShippingAddress({ ...shippingAddress, name: text })}
-            placeholder="הכנס שם מלא"
+            placeholder={t('cart.fullNamePlaceholder')}
             textAlign="end"
             placeholderTextColor={colors.text.tertiary}
           />
@@ -475,7 +475,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
         <View style={styles.formGroup}>
           <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-            טלפון *
+            {t('cart.phone')}
           </Text>
           <TextInput
             style={[
@@ -488,7 +488,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             ]}
             value={shippingAddress.phone}
             onChangeText={(text) => setShippingAddress({ ...shippingAddress, phone: text })}
-            placeholder="הכנס מספר טלפון"
+            placeholder={t('cart.phonePlaceholder')}
             keyboardType="phone-pad"
             textAlign="end"
             placeholderTextColor={colors.text.tertiary}
@@ -497,7 +497,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
         <View style={styles.formGroup}>
           <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-            רחוב וכתובת *
+            {t('cart.streetAddress')}
           </Text>
           <TextInput
             style={[
@@ -510,7 +510,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             ]}
             value={shippingAddress.street}
             onChangeText={(text) => setShippingAddress({ ...shippingAddress, street: text })}
-            placeholder="הכנס כתובת מלאה"
+            placeholder={t('cart.streetAddressPlaceholder')}
             textAlign="end"
             placeholderTextColor={colors.text.tertiary}
           />
@@ -519,7 +519,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         <View style={styles.formRow}>
           <View style={styles.formGroupHalf}>
             <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-              עיר *
+              {t('cart.city')}
             </Text>
             <TextInput
               style={[
@@ -532,7 +532,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               ]}
               value={shippingAddress.city}
               onChangeText={(text) => setShippingAddress({ ...shippingAddress, city: text })}
-              placeholder="עיר"
+              placeholder={t('cart.cityPlaceholder')}
               textAlign="end"
               placeholderTextColor={colors.text.tertiary}
             />
@@ -540,7 +540,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
           <View style={styles.formGroupHalf}>
             <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-              מיקוד
+              {t('cart.postalCode')}
             </Text>
             <TextInput
               style={[
@@ -555,7 +555,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               onChangeText={(text) =>
                 setShippingAddress({ ...shippingAddress, postalCode: text })
               }
-              placeholder="מיקוד"
+              placeholder={t('cart.postalCodePlaceholder')}
               keyboardType="numeric"
               textAlign="end"
               placeholderTextColor={colors.text.tertiary}
@@ -565,7 +565,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
         <View style={styles.formGroup}>
           <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-            הערות (אופציונלי)
+            {t('cart.notes')}
           </Text>
           <TextInput
             style={[
@@ -579,7 +579,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             ]}
             value={shippingAddress.notes}
             onChangeText={(text) => setShippingAddress({ ...shippingAddress, notes: text })}
-            placeholder="הערות למשלוח"
+            placeholder={t('cart.notesPlaceholder')}
             multiline
             numberOfLines={3}
             textAlign="end"
@@ -594,11 +594,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           ]}
         >
           <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
-            סיכום הזמנה
+            {t('cart.orderSummary')}
           </Text>
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
-              סה"כ מוצרים:
+              {t('cart.productsTotal')}
             </Text>
             <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
               {cartItems.length}
@@ -606,7 +606,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </View>
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
-              סה"כ פריטים:
+              {t('cart.itemsTotal')}
             </Text>
             <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
               {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
@@ -614,7 +614,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </View>
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
-              עלות משלוח:
+              {t('cart.shippingCost')}
             </Text>
             <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
               {currencySymbol}0.00
@@ -628,7 +628,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             ]}
           >
             <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
-              סה"כ לתשלום:
+              {t('cart.totalDue')}
             </Text>
             <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
               {currencySymbol}
@@ -642,7 +642,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <ChevronRight size={20} color={colors.text.primary} />
           <Text style={[styles.backButtonText, { color: colors.text.primary }]}>
-            חזרה לעגלה
+            {t('cart.backToCart')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -650,7 +650,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           onPress={goToPayment}
         >
           <Text style={[styles.nextButtonText, { color: colors.text.inverse }]}>
-            המשך לתשלום
+            {t('cart.proceedToPayment')}
           </Text>
           <ChevronLeft size={20} color={colors.text.inverse} />
         </TouchableOpacity>
@@ -671,7 +671,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         <View style={styles.checkoutHeader}>
           <CreditCard size={24} color={colors.gold} />
           <Text style={[styles.checkoutTitle, { color: colors.text.primary }]}>
-            אמצעי תשלום
+            {t('cart.paymentMethods')}
           </Text>
         </View>
 
@@ -687,11 +687,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               <Text style={styles.paymentOptionEmoji}>💰</Text>
             </View>
             <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>
-                תשלום במזומן בעת המסירה
+              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}> 
+                {t('cart.cashOnDelivery')}
               </Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>
-                שלם למשלוח בעת קבלת ההזמנה
+              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}> 
+                {t('cart.cashOnDeliveryDesc')}
               </Text>
             </View>
             <View style={styles.paymentOptionCheck}>
@@ -711,11 +711,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               <Text style={styles.paymentOptionEmoji}>💳</Text>
             </View>
             <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>
-                כרטיס אשראי
+              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}> 
+                {t('cart.creditCard')}
               </Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>
-                יהיה זמין בקרוב
+              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}> 
+                {t('cart.comingSoon')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -732,11 +732,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               <Text style={styles.paymentOptionEmoji}>📱</Text>
             </View>
             <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>
-                אפליקציות תשלום
+              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}> 
+                {t('cart.paymentApps')}
               </Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>
-                יהיה זמין בקרוב
+              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}> 
+                {t('cart.comingSoon')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -751,9 +751,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           ]}
         >
           <View style={styles.summaryHeader}>
-            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>כתובת למשלוח</Text>
+            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
+              {t('cart.shippingAddress')}
+            </Text>
             <TouchableOpacity onPress={() => setCheckoutStep('shipping')}>
-              <Text style={[styles.editLink, { color: colors.gold }]}>ערוך</Text>
+              <Text style={[styles.editLink, { color: colors.gold }]}>
+                {t('common.edit')}
+              </Text>
             </TouchableOpacity>
           </View>
           <Text style={[styles.addressText, { color: colors.text.primary }]}>
@@ -766,8 +770,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             {shippingAddress.phone}
           </Text>
           {!!shippingAddress.notes && (
-            <Text style={[styles.notesText, { color: colors.text.secondary }]}>
-              הערות: {shippingAddress.notes}
+            <Text style={[styles.notesText, { color: colors.text.secondary }]}> 
+              {t('cart.notes')}: {shippingAddress.notes}
             </Text>
           )}
         </View>
@@ -780,8 +784,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
             ]}
           >
-            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
-              {stores[storeId]?.name || 'חנות'}
+            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}> 
+              {stores[storeId]?.name || t('cart.storeFallback')}
             </Text>
             {items.map((item) => (
               <View key={item.id} style={styles.summaryItem}>
@@ -801,8 +805,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                 { borderTopColor: colors.border.primary },
               ]}
             >
-              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
-                סה"כ לחנות:
+              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}> 
+                {t('cart.storeTotal')}
               </Text>
               <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
                 {currencySymbol}
@@ -819,7 +823,9 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           ]}
         >
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>עלות משלוח:</Text>
+            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
+              {t('cart.shippingCost')}
+            </Text>
             <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
               {currencySymbol}0.00
             </Text>
@@ -831,8 +837,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               { borderTopColor: colors.border.primary },
             ]}
           >
-            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
-              סה"כ לתשלום:
+            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}> 
+              {t('cart.totalDue')}
             </Text>
             <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
               {currencySymbol}
@@ -845,16 +851,16 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       <View style={[styles.footer, { borderTopColor: colors.border.primary }]}>
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <ChevronRight size={20} color={colors.text.primary} />
-          <Text style={[styles.backButtonText, { color: colors.text.primary }]}>
-            חזרה לכתובת
+          <Text style={[styles.backButtonText, { color: colors.text.primary }]}> 
+            {t('cart.backToAddress')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.nextButton, { backgroundColor: colors.gold }]}
           onPress={goToConfirmation}
         >
-          <Text style={[styles.nextButtonText, { color: colors.text.inverse }]}>
-            המשך לסיכום
+          <Text style={[styles.nextButtonText, { color: colors.text.inverse }]}> 
+            {t('cart.proceedToSummary')}
           </Text>
           <ChevronLeft size={20} color={colors.text.inverse} />
         </TouchableOpacity>
@@ -873,11 +879,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.confirmationHeader}>
-          <Text style={[styles.confirmationTitle, { color: colors.text.primary }]}>
-            אישור הזמנה
+          <Text style={[styles.confirmationTitle, { color: colors.text.primary }]}> 
+            {t('cart.orderConfirmation')}
           </Text>
-          <Text style={[styles.confirmationSubtitle, { color: colors.text.secondary }]}>
-            אנא בדוק את פרטי ההזמנה לפני השלמת הרכישה
+          <Text style={[styles.confirmationSubtitle, { color: colors.text.secondary }]}> 
+            {t('cart.reviewOrderMessage')}
           </Text>
         </View>
 
@@ -888,12 +894,16 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           ]}
         >
           <View style={styles.summaryHeader}>
-            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>כתובת למשלוח</Text>
+            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
+              {t('cart.shippingAddress')}
+            </Text>
             <TouchableOpacity onPress={() => setCheckoutStep('shipping')}>
-              <Text style={[styles.editLink, { color: colors.gold }]}>ערוך</Text>
+              <Text style={[styles.editLink, { color: colors.gold }]}>
+                {t('common.edit')}
+              </Text>
             </TouchableOpacity>
           </View>
-          <Text style={[styles.addressText, { color: colors.text.primary }]}>
+          <Text style={[styles.addressText, { color: colors.text.primary }]}> 
             {shippingAddress.name}
             {'\n'}
             {shippingAddress.street}
@@ -903,8 +913,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             {shippingAddress.phone}
           </Text>
           {!!shippingAddress.notes && (
-            <Text style={[styles.notesText, { color: colors.text.secondary }]}>
-              הערות: {shippingAddress.notes}
+            <Text style={[styles.notesText, { color: colors.text.secondary }]}> 
+              {t('cart.notes')}: {shippingAddress.notes}
             </Text>
           )}
         </View>
@@ -916,15 +926,19 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           ]}
         >
           <View style={styles.summaryHeader}>
-            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>אמצעי תשלום</Text>
+            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
+              {t('cart.paymentMethods')}
+            </Text>
             <TouchableOpacity onPress={() => setCheckoutStep('payment')}>
-              <Text style={[styles.editLink, { color: colors.gold }]}>ערוך</Text>
+              <Text style={[styles.editLink, { color: colors.gold }]}>
+                {t('common.edit')}
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.paymentMethodInfo}>
             <Text style={styles.paymentMethodEmoji}>💰</Text>
-            <Text style={[styles.paymentMethodText, { color: colors.text.primary }]}>
-              תשלום במזומן בעת המסירה
+            <Text style={[styles.paymentMethodText, { color: colors.text.primary }]}> 
+              {t('cart.cashOnDelivery')}
             </Text>
           </View>
         </View>
@@ -939,10 +953,12 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           >
             <View style={styles.summaryHeader}>
               <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
-                פריטים מהחנות {stores[storeId]?.name || ''}
+                {t('cart.itemsFromStore', { store: stores[storeId]?.name || '' })}
               </Text>
               <TouchableOpacity onPress={() => setCheckoutStep('cart')}>
-                <Text style={[styles.editLink, { color: colors.gold }]}>ערוך</Text>
+                <Text style={[styles.editLink, { color: colors.gold }]}>
+                  {t('common.edit')}
+                </Text>
               </TouchableOpacity>
             </View>
             {items.map((item) => (
@@ -963,8 +979,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                 { borderTopColor: colors.border.primary },
               ]}
             >
-              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
-                סה"כ לחנות:
+              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}> 
+                {t('cart.storeTotal')}
               </Text>
               <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
                 {currencySymbol}
@@ -981,10 +997,10 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           ]}
         >
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}>
-              עלות משלוח:
+            <Text style={[styles.summaryLabel, { color: colors.text.secondary }]}> 
+              {t('cart.shippingCost')}
             </Text>
-            <Text style={[styles.summaryValue, { color: colors.text.primary }]}>
+            <Text style={[styles.summaryValue, { color: colors.text.primary }]}> 
               {currencySymbol}0.00
             </Text>
           </View>
@@ -995,10 +1011,10 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
               { borderTopColor: colors.border.primary },
             ]}
           >
-            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
-              סה"כ לתשלום:
+            <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}> 
+              {t('cart.totalDue')}
             </Text>
-            <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
+            <Text style={[styles.summaryTotalValue, { color: colors.gold }]}> 
               {currencySymbol}
               {getTotal().toFixed(2)}
             </Text>
@@ -1006,9 +1022,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         </View>
 
         <View style={styles.termsContainer}>
-          <Text style={[styles.termsText, { color: colors.text.tertiary }]}>
-            בלחיצה על "השלם הזמנה" אתה מאשר את תנאי השימוש ומדיניות הפרטיות שלנו.
-            התשלום יתבצע במזומן בעת קבלת המשלוח.
+          <Text style={[styles.termsText, { color: colors.text.tertiary }]}> 
+            {t('cart.termsNotice')}{'\n'}{t('cart.cashOnDeliveryNotice')}
           </Text>
         </View>
       </ScrollView>
@@ -1016,8 +1031,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       <View style={[styles.footer, { borderTopColor: colors.border.primary }]}>
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <ChevronRight size={20} color={colors.text.primary} />
-          <Text style={[styles.backButtonText, { color: colors.text.primary }]}>
-            חזרה לתשלום
+          <Text style={[styles.backButtonText, { color: colors.text.primary }]}> 
+            {t('cart.backToPayment')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -1032,8 +1047,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           {loading ? (
             <ActivityIndicator size="small" color={colors.text.inverse} />
           ) : (
-            <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}>
-              השלם הזמנה
+            <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}> 
+              {t('cart.completeOrder')}
             </Text>
           )}
         </TouchableOpacity>
@@ -1051,24 +1066,26 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       >
         <Check size={60} color={colors.text.inverse} />
       </View>
-      <Text style={[styles.successTitle, { color: colors.text.primary }]}>
-        ההזמנה הושלמה בהצלחה!
+      <Text style={[styles.successTitle, { color: colors.text.primary }]}> 
+        {t('cart.orderSuccessTitle')}
       </Text>
       <Text style={[styles.successOrderId, { color: colors.gold }]}>
         {orderIds.length === 1
-          ? `מספר הזמנה: #${orderIds[0].slice(-6)}`
-          : `מספרי הזמנות: ${orderIds.map((id) => `#${id.slice(-6)}`).join(', ')}`}
+          ? t('cart.orderNumber', { id: orderIds[0].slice(-6) })
+          : t('cart.orderNumbers', {
+              ids: orderIds.map((id) => `#${id.slice(-6)}`).join(', '),
+            })}
       </Text>
       <Text style={[styles.successMessage, { color: colors.text.secondary }]}>
-        תודה על הזמנתך! קיבלנו את ההזמנה שלך והיא בטיפול.
-        תוכל לעקוב אחר סטטוס ההזמנה בעמוד ההזמנות שלך.
+        {t('cart.orderSuccessMessage')}{'\n'}
+        {t('cart.orderSuccessFollowUp')}
       </Text>
       <TouchableOpacity
         style={[styles.successButton, { backgroundColor: colors.gold }]}
         onPress={onClose}
       >
-        <Text style={[styles.successButtonText, { color: colors.text.inverse }]}>
-          סגור
+        <Text style={[styles.successButtonText, { color: colors.text.inverse }]}> 
+          {t('common.close')}
         </Text>
       </TouchableOpacity>
     </View>
@@ -1096,7 +1113,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                 <View style={[styles.footer, { borderTopColor: colors.border.primary }]}>
                   <View style={styles.totalContainer}>
                     <Text style={[styles.totalText, { color: colors.text.primary }]}>
-                      סה"כ: {currencySymbol}
+                      {t('cart.total')} {currencySymbol}
                       {getTotal().toFixed(2)}
                     </Text>
                   </View>
@@ -1112,7 +1129,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                         { color: colors.text.inverse },
                       ]}
                     >
-                      המשך לתשלום
+                      {t('cart.proceedToPayment')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -1120,11 +1137,11 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             ) : (
               <View style={styles.emptyCart}>
                 <ShoppingCart size={80} color={colors.interactive.disabled} />
-                <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
-                  העגלה ריקה
+                <Text style={[styles.emptyTitle, { color: colors.text.primary }]}> 
+                  {t('cart.emptyCartTitle')}
                 </Text>
-                <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
-                  הוסף מוצרים לעגלה כדי להתחיל
+                <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}> 
+                  {t('cart.emptyCartMessage')}
                 </Text>
               </View>
             )}
@@ -1138,16 +1155,16 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
         <View style={[styles.container, { backgroundColor: colors.background }]}>
           <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-            <Text style={[styles.title, { color: colors.text.primary }]}>
+            <Text style={[styles.title, { color: colors.text.primary }]}> 
               {orderPlaced
-                ? 'הזמנה הושלמה'
+                ? t('cart.orderComplete')
                 : checkoutStep === 'cart'
-                ? 'עגלת קניות'
+                ? t('cart.cartTitle')
                 : checkoutStep === 'shipping'
-                ? 'פרטי משלוח'
+                ? t('cart.shippingDetails')
                 : checkoutStep === 'payment'
-                ? 'אמצעי תשלום'
-                : 'אישור הזמנה'}
+                ? t('cart.paymentMethod')
+                : t('cart.orderConfirmation')}
             </Text>
             {!orderPlaced && (
               <TouchableOpacity onPress={onClose}>
@@ -1174,7 +1191,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                     { color: colors.gold },
                   ]}
                 >
-                  עגלה
+                  {t('cart.stepCart')}
                 </Text>
               </View>
               <View
@@ -1196,7 +1213,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                     { color: colors.gold },
                   ]}
                 >
-                  משלוח
+                  {t('cart.stepShipping')}
                 </Text>
               </View>
               <View
@@ -1224,7 +1241,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                       : { color: colors.text.secondary },
                   ]}
                 >
-                  תשלום
+                  {t('cart.stepPayment')}
                 </Text>
               </View>
               <View
@@ -1252,7 +1269,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
                       : { color: colors.text.secondary },
                   ]}
                 >
-                  אישור
+                  {t('cart.stepConfirmation')}
                 </Text>
               </View>
             </View>
