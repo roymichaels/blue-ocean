@@ -20,6 +20,7 @@ import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
 import commonStyles from '../../constants/styles';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 
 
@@ -31,6 +32,7 @@ export default function OrdersScreen() {
   const { isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const { t, currentLanguage } = useLanguage();
+  const { currencySymbol } = useCurrency();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -154,7 +156,7 @@ export default function OrdersScreen() {
         </Text>
         {order.items.slice(0, 2).map((item, index) => (
           <Text key={index} style={[styles.itemText, { color: colors.text.secondary }]}>
-            {item.product.name} x{item.quantity}
+            {t('orders.itemQuantity', { name: item.product.name, quantity: item.quantity })}
           </Text>
         ))}
         {order.items.length > 2 && (
@@ -165,7 +167,10 @@ export default function OrdersScreen() {
       </View>
 
       <View style={[styles.orderFooter, { borderTopColor: colors.border.secondary }]}>
-        <Text style={[styles.orderTotal, { color: colors.gold }]}>₪{order.total.toFixed(2)}</Text>
+        <Text style={[styles.orderTotal, { color: colors.gold }]}>
+          {currencySymbol}
+          {order.total.toFixed(2)}
+        </Text>
         <View style={styles.viewDetails}>
           <Text style={[styles.viewDetailsText, { color: colors.gold }]}> 
             {t('orders.details')}
