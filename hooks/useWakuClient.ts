@@ -229,7 +229,10 @@ export function useWakuClient(): WakuClient {
         const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
         const schema = wakuMessageSchema.extend({ payload: z.string() });
         const signed = await verifyBeforeWrite(raw, schema);
-        if (!signed) return;
+        if (!signed) {
+          errorLog('Dropping unverified system message', raw);
+          return;
+        }
         cb(signed.payload);
       } catch (err) {
         errorLog('Malformed system message', err);
@@ -257,7 +260,10 @@ export function useWakuClient(): WakuClient {
         const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
         const schema = wakuMessageSchema.extend({ payload: z.string() });
         const signed = await verifyBeforeWrite(raw, schema);
-        if (!signed) return;
+        if (!signed) {
+          errorLog('Dropping unverified order message', raw);
+          return;
+        }
         cb(signed.payload);
       } catch (err) {
         errorLog('Malformed order message', err);
