@@ -21,4 +21,5 @@ using the standard Waku message envelope:
 - **sender.publicKey** – identity of the signer.
 - **signature** – signature produced by the sender's key over the message content.
 
-Clients verify signatures and drop any message that fails validation.
+Clients verify signatures (e.g. via `verifyBeforeWrite`) and drop or log
+any message that fails validation.
