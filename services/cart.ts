@@ -45,7 +45,8 @@ class CartService {
 
       if (uid) {
         try {
-          this.cartItems = await cartAgent.getAll();
+          const all = await cartAgent.getAll();
+          this.cartItems = all.filter((it) => it.id.startsWith(`${uid}_`));
         } catch (err) {
           errorLog('Error fetching cart from storage:', err);
         }
@@ -181,8 +182,9 @@ class CartService {
       this.cartItems[existingItemIndex].quantity += quantity;
       await cartAgent.update(this.cartItems[existingItemIndex]);
     } else {
+      const uid = await this.getCurrentUserId();
       const cartItem: CartItem = {
-        id: `${product.id}_${Date.now()}`,
+        id: `${uid ? uid + '_' : ''}${product.id}_${Date.now()}`,
         productId: product.id,
         product,
         quantity,
@@ -223,9 +225,13 @@ class CartService {
   }
 
   public async clearCart(): Promise<void> {
+    const uid = await this.getCurrentUserId();
     this.cartItems = [];
-    for (const item of cartAgent.getAll()) {
-      await cartAgent.remove(item.id);
+    const allItems = await cartAgent.getAll();
+    for (const item of allItems) {
+      if (!uid || item.id.startsWith(`${uid}_`)) {
+        await cartAgent.remove(item.id);
+      }
     }
     eventBus.track('cart.clear');
     await this.recalcPricing();
