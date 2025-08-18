@@ -44,7 +44,15 @@ const product: Product = {
   stock: 1,
 };
 
-const cartItem: CartItem = {
+const userCartItem: CartItem = {
+  id: 'user1_ci1',
+  productId: 'p1',
+  product,
+  quantity: 1,
+  addedAt: new Date().toISOString(),
+};
+
+const anonCartItem: CartItem = {
   id: 'ci1',
   productId: 'p1',
   product,
@@ -71,7 +79,7 @@ describe('CartService storage', () => {
 
   it('loads user cart and wishlist when logged in', async () => {
     (tonAuth.getAddress as jest.Mock).mockReturnValue('user1');
-    (cartAgent.getAll as jest.Mock).mockResolvedValue([cartItem]);
+    (cartAgent.getAll as jest.Mock).mockResolvedValue([userCartItem]);
     (DatabaseService.getInstance as jest.Mock).mockReturnValue({
       getWishlistItems: jest.fn().mockResolvedValue([wishItem]),
     });
@@ -79,7 +87,7 @@ describe('CartService storage', () => {
     const svc = CartService.getInstance();
     await new Promise(r => setTimeout(r, 0));
 
-    expect(svc.getCartItems()).toEqual([cartItem]);
+    expect(svc.getCartItems()).toEqual([userCartItem]);
     expect(svc.getWishlistItems()).toEqual([wishItem]);
     expect(AsyncStorage.getItem).not.toHaveBeenCalled();
   });
@@ -87,7 +95,7 @@ describe('CartService storage', () => {
   it('falls back to anonymous storage when no user', async () => {
     (tonAuth.getAddress as jest.Mock).mockReturnValue(null);
     (AsyncStorage.getItem as jest.Mock).mockImplementation((key: string) => {
-      if (key === 'cart_items') return Promise.resolve(JSON.stringify([cartItem]));
+      if (key === 'cart_items') return Promise.resolve(JSON.stringify([anonCartItem]));
       if (key === 'wishlist_items') return Promise.resolve(JSON.stringify([wishItem]));
       return Promise.resolve(null);
     });
@@ -95,7 +103,7 @@ describe('CartService storage', () => {
     const svc = CartService.getInstance();
     await new Promise(r => setTimeout(r, 0));
 
-    expect(svc.getCartItems()).toEqual([cartItem]);
+    expect(svc.getCartItems()).toEqual([anonCartItem]);
     expect(svc.getWishlistItems()).toEqual([wishItem]);
     expect(cartAgent.getAll).not.toHaveBeenCalled();
     expect(DatabaseService.getInstance).not.toHaveBeenCalled();
