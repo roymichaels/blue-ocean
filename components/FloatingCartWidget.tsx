@@ -16,6 +16,7 @@ import CartService from '../services/cart';
 import { CartItem } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -27,6 +28,7 @@ export default function FloatingCartWidget() {
   const [animatedOpacity] = useState(new Animated.Value(0));
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+  const { t } = useLanguage();
   const isRTL = I18nManager.isRTL;
 
   useEffect(() => {
@@ -131,8 +133,13 @@ export default function FloatingCartWidget() {
             </View>
           </View>
           <View style={styles.headerText}>
-            <Text style={[styles.headerTitle, { color: colors.text.primary }]} numberOfLines={1}>עגלת קניות</Text>
-            <Text style={[styles.headerSubtitle, { color: colors.gold }]} numberOfLines={1}>{currencySymbol}{getTotal().toFixed(2)}</Text>
+            <Text style={[styles.headerTitle, { color: colors.text.primary }]} numberOfLines={1}>
+              {t('cart.cartTitle')}
+            </Text>
+            <Text style={[styles.headerSubtitle, { color: colors.gold }]} numberOfLines={1}>
+              {currencySymbol}
+              {getTotal().toFixed(2)}
+            </Text>
           </View>
         </View>
 
@@ -244,7 +251,9 @@ export default function FloatingCartWidget() {
           <View style={[styles.footer, { borderTopColor: colors.border.primary }]}>
             <TouchableOpacity style={[styles.checkoutButton, { backgroundColor: colors.gold }]} onPress={goToCheckout}>
               <Text style={[styles.checkoutButtonText, { color: colors.text.inverse }]}>
-                המשך לתשלום • {currencySymbol}{getTotal().toFixed(2)}
+                {t('cart.proceedToPaymentTotal', {
+                  total: `${currencySymbol}${getTotal().toFixed(2)}`,
+                })}
               </Text>
             </TouchableOpacity>
           </View>
