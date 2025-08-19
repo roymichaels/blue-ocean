@@ -3,6 +3,7 @@ import { deployOrderPayment } from '../services/tonContract';
 import { CartItem, ShippingAddress } from '../types';
 
 const mockStore: Record<string, any> = {};
+const mockProducts: Record<string, any> = {};
 
 jest.mock('../services/tonOrders', () => ({
   setOrder: jest.fn(async (o: any) => { mockStore[o.id] = o; }),
@@ -31,6 +32,13 @@ jest.mock('../services/tonUsers', () => ({
 
 jest.mock('../services/tonStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
+}));
+
+jest.mock('../services/tonProducts', () => ({
+  getProduct: jest.fn(async (id: string) => mockProducts[id] || null),
+  setProduct: jest.fn(async (p: any) => {
+    mockProducts[p.id] = p;
+  }),
 }));
 
 jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
@@ -95,6 +103,9 @@ describe('multi-seller checkout flow', () => {
         addedAt: '',
       },
     ];
+
+    mockProducts['p1'] = { ...items[0].product };
+    mockProducts['p2'] = { ...items[1].product };
 
     const shipping: ShippingAddress = {
       name: 'A',
