@@ -15,6 +15,7 @@ export interface TenantSettings {
   admins?: string[];
   rpcUrl: string;
   rpcFallbackUrls?: string[];
+  wakuBootstrap?: string[];
 }
 
 export let AppConfig: TenantSettings = {
@@ -26,6 +27,7 @@ export let AppConfig: TenantSettings = {
   admins: config.ADMIN_WALLET_ADDRESS ? [config.ADMIN_WALLET_ADDRESS] : [],
   rpcUrl: '',
   rpcFallbackUrls: [],
+  wakuBootstrap: [],
 };
 
 export async function loadTenantSettings(): Promise<void> {
@@ -39,21 +41,34 @@ export async function loadTenantSettings(): Promise<void> {
   const ADMINS_KEY = 'app_admins';
   const RPC_URL_KEY = 'app_rpc_url';
   const RPC_FALLBACK_KEY = 'app_rpc_fallback_urls';
+  const WAKU_BOOTSTRAP_KEY = 'app_waku_bootstrap';
 
   try {
-    const [t, name, color, logo, fiat, feeAddr, feeBps, admins, rpc, rpcFallback] =
-      await AsyncStorage.multiGet([
-        TENANT_KEY,
-        NAME_KEY,
-        COLOR_KEY,
-        LOGO_KEY,
-        FIAT_KEY,
-        FEE_ADDR_KEY,
-        FEE_BPS_KEY,
-        ADMINS_KEY,
-        RPC_URL_KEY,
-        RPC_FALLBACK_KEY,
-      ]);
+    const [
+      t,
+      name,
+      color,
+      logo,
+      fiat,
+      feeAddr,
+      feeBps,
+      admins,
+      rpc,
+      rpcFallback,
+      waku,
+    ] = await AsyncStorage.multiGet([
+      TENANT_KEY,
+      NAME_KEY,
+      COLOR_KEY,
+      LOGO_KEY,
+      FIAT_KEY,
+      FEE_ADDR_KEY,
+      FEE_BPS_KEY,
+      ADMINS_KEY,
+      RPC_URL_KEY,
+      RPC_FALLBACK_KEY,
+      WAKU_BOOTSTRAP_KEY,
+    ]);
 
     if (t?.[1]) TENANT = t[1];
     AppConfig = {
@@ -66,6 +81,7 @@ export async function loadTenantSettings(): Promise<void> {
       admins: admins?.[1] ? JSON.parse(admins[1]) : [],
       rpcUrl: rpc?.[1] || '',
       rpcFallbackUrls: rpcFallback?.[1] ? JSON.parse(rpcFallback[1]) : [],
+      wakuBootstrap: waku?.[1] ? JSON.parse(waku[1]) : [],
     };
 
     const remote = await fetchSettings();
@@ -80,6 +96,7 @@ export async function loadTenantSettings(): Promise<void> {
       admins: remote.admins ?? [],
       rpcUrl: remote.rpcUrl,
       rpcFallbackUrls: remote.rpcFallbackUrls ?? [],
+      wakuBootstrap: remote.wakuBootstrap ?? [],
     };
 
     await AsyncStorage.multiSet([
@@ -93,6 +110,7 @@ export async function loadTenantSettings(): Promise<void> {
       [ADMINS_KEY, JSON.stringify(remote.admins ?? [])],
       [RPC_URL_KEY, remote.rpcUrl],
       [RPC_FALLBACK_KEY, JSON.stringify(remote.rpcFallbackUrls ?? [])],
+      [WAKU_BOOTSTRAP_KEY, JSON.stringify(remote.wakuBootstrap ?? [])],
     ]);
   } catch (e) {
     errorLog('Error loading tenant settings:', e);
