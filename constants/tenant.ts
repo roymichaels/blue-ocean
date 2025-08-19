@@ -13,6 +13,8 @@ export interface TenantSettings {
   feeAddress?: string;
   feeBps?: number;
   admins?: string[];
+  rpcUrl: string;
+  rpcFallbackUrls?: string[];
 }
 
 export let AppConfig: TenantSettings = {
@@ -22,6 +24,8 @@ export let AppConfig: TenantSettings = {
   feeAddress: '',
   feeBps: 0,
   admins: config.ADMIN_WALLET_ADDRESS ? [config.ADMIN_WALLET_ADDRESS] : [],
+  rpcUrl: '',
+  rpcFallbackUrls: [],
 };
 
 export async function loadTenantSettings(): Promise<void> {
@@ -33,9 +37,11 @@ export async function loadTenantSettings(): Promise<void> {
   const FEE_ADDR_KEY = 'app_fee_address';
   const FEE_BPS_KEY = 'app_fee_bps';
   const ADMINS_KEY = 'app_admins';
+  const RPC_URL_KEY = 'app_rpc_url';
+  const RPC_FALLBACK_KEY = 'app_rpc_fallback_urls';
 
   try {
-    const [t, name, color, logo, fiat, feeAddr, feeBps, admins] =
+    const [t, name, color, logo, fiat, feeAddr, feeBps, admins, rpc, rpcFallback] =
       await AsyncStorage.multiGet([
         TENANT_KEY,
         NAME_KEY,
@@ -45,6 +51,8 @@ export async function loadTenantSettings(): Promise<void> {
         FEE_ADDR_KEY,
         FEE_BPS_KEY,
         ADMINS_KEY,
+        RPC_URL_KEY,
+        RPC_FALLBACK_KEY,
       ]);
 
     if (t?.[1]) TENANT = t[1];
@@ -56,6 +64,8 @@ export async function loadTenantSettings(): Promise<void> {
       feeAddress: feeAddr?.[1] || '',
       feeBps: feeBps?.[1] ? parseInt(feeBps[1]) : 0,
       admins: admins?.[1] ? JSON.parse(admins[1]) : [],
+      rpcUrl: rpc?.[1] || '',
+      rpcFallbackUrls: rpcFallback?.[1] ? JSON.parse(rpcFallback[1]) : [],
     };
 
     const remote = await fetchSettings();
@@ -68,6 +78,8 @@ export async function loadTenantSettings(): Promise<void> {
       feeAddress: remote.feeAddress ?? '',
       feeBps: remote.feeBps ?? 0,
       admins: remote.admins ?? [],
+      rpcUrl: remote.rpcUrl,
+      rpcFallbackUrls: remote.rpcFallbackUrls ?? [],
     };
 
     await AsyncStorage.multiSet([
@@ -79,6 +91,8 @@ export async function loadTenantSettings(): Promise<void> {
       [FEE_ADDR_KEY, remote.feeAddress ?? ''],
       [FEE_BPS_KEY, String(remote.feeBps ?? 0)],
       [ADMINS_KEY, JSON.stringify(remote.admins ?? [])],
+      [RPC_URL_KEY, remote.rpcUrl],
+      [RPC_FALLBACK_KEY, JSON.stringify(remote.rpcFallbackUrls ?? [])],
     ]);
   } catch (e) {
     errorLog('Error loading tenant settings:', e);

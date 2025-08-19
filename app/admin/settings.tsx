@@ -18,6 +18,7 @@ import CurrencySettings from '../../components/settings/CurrencySettings';
 import EnvironmentSettings from '../../components/settings/EnvironmentSettings';
 import LanguageSettings from '../../components/settings/LanguageSettings';
 import NotificationSettings from '../../components/settings/NotificationSettings';
+import RpcSettings from '../../components/settings/RpcSettings';
 
 export default function SettingsScreen() {
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
@@ -166,6 +167,7 @@ export default function SettingsScreen() {
           colors={colors}
         />
         <EnvironmentSettings colors={colors} admins={admins} />
+        <RpcSettings colors={colors} />
         <LanguageSettings colors={colors} currentLanguage={currentLanguage} />
         <NotificationSettings colors={colors} />
 
