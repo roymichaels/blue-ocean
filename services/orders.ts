@@ -158,7 +158,6 @@ class OrderService {
 
     await ordersAgent.add(order);
     this.notifyListeners();
-    this.simulateOrderProgress(orderId);
     return order;
   }
 
@@ -200,21 +199,6 @@ class OrderService {
       orders.push(order);
     }
     return orders;
-  }
-
-  private simulateOrderProgress(orderId: string) {
-    const statusProgression: OrderStatus[] = [
-      'courier_found',
-      'courier_picked_up',
-      'courier_on_way',
-      'delivered',
-    ];
-    const delays = [30000, 60000, 120000, 180000];
-    for (let i = 0; i < statusProgression.length; i++) {
-      setTimeout(async () => {
-        await this.updateOrderStatus(orderId, statusProgression[i]);
-      }, delays[i]);
-    }
   }
 
   async getOrder(id: string): Promise<Order | null> {
