@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { Order, OrderStatus, Notification } from '../types';
+import { Order, OrderStatus, Notification, OrderTrackingStep } from '../types';
 import tonAuth from '../services/tonAuth';
 import notificationsAgent from './notifications-agent';
 import { setOrder, getOrder, listOrders, removeOrder, listOrdersBySeller } from '../services/tonOrders';
@@ -18,6 +18,17 @@ import { logOrderEvent } from '../services/eventLog';
 import ensureTonWallet from '../utils/ensureTonWallet';
 import eventBus from '../services/eventBus';
 import { errorLog, warnLog } from '../utils/logger';
+import {
+  LightNode,
+  createLightNode,
+  waitForRemotePeer,
+  createDecoder,
+  Protocols,
+  bytesToUtf8,
+} from '@waku/sdk';
+import { getWakuBootstrapNodes } from '../utils/appConfig';
+import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
+import { orderStatusMessageSchema } from '../schemas/waku/order.status';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 
@@ -35,6 +46,11 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 class OrdersAgent {
   private subscribers: Set<(o: Order) => void> = new Set();
   private sellerMetrics: Record<string, { completed: number; refunds: number }> = {};
+  private node: LightNode | null = null;
+
+  constructor() {
+    void this.subscribeWaku();
+  }
 
   private buildBaseEvent(order: Order) {
     return {
@@ -69,6 +85,85 @@ class OrdersAgent {
 
   getSellerMetrics(address: string) {
     return this.sellerMetrics[address] || { completed: 0, refunds: 0 };
+  }
+
+  private async ensureNode(): Promise<LightNode | null> {
+    if (this.node) return this.node;
+    try {
+      const bootstrap = getWakuBootstrapNodes();
+      if (bootstrap.length === 0) return null;
+      this.node = await createLightNode({ libp2p: { bootstrap } as any });
+      await this.node.start();
+      await waitForRemotePeer(this.node, [Protocols.Relay]);
+      return this.node;
+    } catch (err) {
+      errorLog('Failed to start Waku node', err);
+      this.node = null;
+      return null;
+    }
+  }
+
+  private async subscribeWaku() {
+    const n = await this.ensureNode();
+    if (!n) return;
+    const decoder = createDecoder(ORDER_TOPIC);
+    const handler = async (wakuMsg: any) => {
+      if (!wakuMsg.payload) return;
+      try {
+        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const signed = await verifyBeforeWrite(raw, orderStatusMessageSchema);
+        if (!signed) return;
+        const { orderId, status } = signed.payload;
+        await this.applyRemoteStatus(orderId, status);
+      } catch (err) {
+        errorLog('Failed to process order status update', err);
+      }
+    };
+    (n.relay as any).addObserver(handler, [decoder]);
+  }
+
+  private getTrackingSteps(status: OrderStatus): OrderTrackingStep[] {
+    const allSteps: OrderTrackingStep[] = [
+      { status: 'order_received', title: 'הזמנה התקבלה', timestamp: new Date().toISOString(), completed: false },
+      { status: 'courier_found', title: 'נמצא שליח מתאים', timestamp: '', completed: false },
+      { status: 'courier_picked_up', title: 'שליח אסף את ההזמנה', timestamp: '', completed: false },
+      { status: 'courier_on_way', title: 'שליח בדרך אלייך', timestamp: '', completed: false },
+      { status: 'delivered', title: 'הזמנה התקבלה (השאר ביקורת)', timestamp: '', completed: false },
+    ];
+    const statusOrder: OrderStatus[] = [
+      'order_received',
+      'courier_found',
+      'courier_picked_up',
+      'courier_on_way',
+      'delivered',
+    ];
+    const currentIndex = statusOrder.indexOf(status);
+    for (let i = 0; i <= currentIndex; i++) {
+      allSteps[i].completed = true;
+      if (!allSteps[i].timestamp) {
+        const now = new Date();
+        const minutesAgo = (currentIndex - i) * 10;
+        allSteps[i].timestamp = new Date(now.getTime() - minutesAgo * 60000).toISOString();
+      }
+    }
+    return allSteps;
+  }
+
+  private async applyRemoteStatus(orderId: string, status: OrderStatus) {
+    const order = await this.get(orderId);
+    if (!order) return;
+    if (order.status === status) return;
+    const allowed = ALLOWED_STATUS_TRANSITIONS[order.status] || [];
+    if (!allowed.includes(status)) return;
+    const updated: Order = {
+      ...order,
+      status,
+      trackingSteps: this.getTrackingSteps(status),
+      updatedAt: new Date().toISOString(),
+    };
+    await setOrder(updated);
+    this.subscribers.forEach((cb) => cb(updated));
+    await this.notifyStatusChange(updated);
   }
 
   private async ensureWallet() {
