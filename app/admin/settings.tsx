@@ -19,12 +19,14 @@ import EnvironmentSettings from '../../components/settings/EnvironmentSettings';
 import LanguageSettings from '../../components/settings/LanguageSettings';
 import NotificationSettings from '../../components/settings/NotificationSettings';
 import RpcSettings from '../../components/settings/RpcSettings';
+import MoonPaySettings from '../../components/settings/MoonPaySettings';
 
 export default function SettingsScreen() {
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
   const [name, setName] = useState('');
   const [logoCidInput, setLogoCidInput] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
+  const [fiatKeyInput, setFiatKeyInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { isAdmin, isDriver } = useAuth();
@@ -35,9 +37,11 @@ export default function SettingsScreen() {
     appName,
     logoCid,
     themeColor: contextThemeColor,
+    fiatKey,
     setAppName,
     setLogoCid,
     setThemeColor,
+    setFiatKey,
   } = useAppInfo();
   const [admins, setAdmins] = useState<string[]>([]);
 
@@ -68,7 +72,8 @@ export default function SettingsScreen() {
     setName(appName);
     setThemeColorState(contextThemeColor);
     setLogoCidInput(logoCid || '');
-  }, [contextCurrencySymbol, appName, logoCid, contextThemeColor]);
+    setFiatKeyInput(fiatKey || '');
+  }, [contextCurrencySymbol, appName, logoCid, contextThemeColor, fiatKey]);
 
   const loadSettings = async () => {
     setLoading(true);
@@ -77,6 +82,7 @@ export default function SettingsScreen() {
       setName(appName);
       setThemeColorState(contextThemeColor);
       setLogoCidInput(logoCid || '');
+      setFiatKeyInput(fiatKey || '');
     } catch (error) {
       errorLog('Error loading settings:', error);
       setInfoModal({
@@ -98,6 +104,7 @@ export default function SettingsScreen() {
       await setThemeColor(themeColor);
       const logoUri = logoCidInput.trim();
       await setLogoCid(logoUri);
+      await setFiatKey(fiatKeyInput.trim());
       setInfoModal({
         visible: true,
         title: 'הצלחה',
@@ -164,6 +171,11 @@ export default function SettingsScreen() {
         <CurrencySettings
           currencySymbol={currencySymbol}
           setCurrencySymbolState={setCurrencySymbolState}
+          colors={colors}
+        />
+        <MoonPaySettings
+          fiatKeyInput={fiatKeyInput}
+          setFiatKeyInput={setFiatKeyInput}
           colors={colors}
         />
         <EnvironmentSettings colors={colors} admins={admins} />

@@ -155,6 +155,10 @@ export async function fetchSettings(): Promise<TonSettings> {
   for (const { key, value } of entries) {
     map[key] = value;
   }
+  const envFiat = process.env.EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY;
+  if (envFiat) {
+    map['fiatKey'] = envFiat;
+  }
   let feeBps = 0;
   if (map['feeBps'] !== undefined) {
     const parsed = Number(map['feeBps']);

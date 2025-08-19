@@ -81,7 +81,6 @@ for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
 | `EXPO_PUBLIC_WAKU_BOOTSTRAP` | no | Comma-separated list of Waku peers for network bootstrap. |
 | `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
 | `ENABLE_UNSAFE_TON_PRIVATE_KEY` | no | Exposes wallet private key for testing. Never use in production. |
-| `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` | no | MoonPay public API key enabling credit card purchases. |
 | `PINATA_JWT` | no | JWT for pinning assets to Pinata via `scripts/pinata-upload.ts`. |
 - `ADMIN_WALLET_ADDRESS` – wallet granted admin rights if no on-chain list
   exists (required)
@@ -94,8 +93,6 @@ for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
 - `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional)
 - `ENABLE_UNSAFE_TON_PRIVATE_KEY` – expose wallet private key for testing
   (`true`/`false`, default `false`; ignored in production builds)
-- `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` – MoonPay public API key (optional;
-  enables credit card purchases)
 - `PINATA_JWT` – JWT used by `scripts/pinata-upload.ts` to pin assets to
   Pinata (optional)
 
@@ -159,10 +156,11 @@ The script derives the contract address, logs it, and writes it to
 
 ### Credit Card Checkout
 
-Providing `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` populates `config.fiatKey`
-and enables the `MoonPayModal` component for credit card purchases. Without
-this key the MoonPay UI is hidden. Pass the wallet address, coin and USD amount
-to display the widget in a modal and pre-fill the fiat amount.
+Storing a MoonPay publishable key in settings populates
+`useAppInfo().fiatKey` and enables the `MoonPayModal` component for credit card
+purchases. Without this key the MoonPay UI is hidden. Pass the wallet address,
+coin and USD amount to display the widget in a modal and pre-fill the fiat
+amount.
 
 
 Some dependencies rely on Node.js globals like `Buffer`, `process`, and
@@ -349,7 +347,7 @@ Run `yarn install` before executing `yarn test` so Jest and other dependencies a
 
 ## Apple Pay Integration
 
-The project uses MoonPay for purchasing crypto with a credit card. Set `EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY` to enable it. To accept Apple Pay directly in the app, install the Expo Stripe payments package and configure your merchant identifier.
+The project uses MoonPay for purchasing crypto with a credit card. Configure the key via **Admin → Settings** or the `SettingsAgent` CLI. To accept Apple Pay directly in the app, install the Expo Stripe payments package and configure your merchant identifier.
 
 1. Install the library:
 ```sh
