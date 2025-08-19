@@ -162,7 +162,6 @@ class OrderService {
     await ordersAgent.add(order);
     await this.decrementProductStock(items);
     this.notifyListeners();
-    this.simulateOrderProgress(orderId);
     return order;
   }
 
@@ -254,7 +253,6 @@ class OrderService {
       }, delays[i]);
     }
   }
-
   async getOrder(id: string): Promise<Order | null> {
     return ordersAgent.get(id) || null;
   }
