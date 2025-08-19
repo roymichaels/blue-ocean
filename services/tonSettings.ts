@@ -42,6 +42,8 @@ export interface TonSettings {
   feeAddress?: string;
   feeBps?: number;
   admins: string[];
+  rpcUrl: string;
+  rpcFallbackUrls?: string[];
 }
 
 export async function getSetting(key: string): Promise<string | null> {
@@ -173,6 +175,10 @@ export async function fetchSettings(): Promise<TonSettings> {
     feeAddress: map['feeAddress'] ?? '',
     feeBps,
     admins: map['admins'] ? JSON.parse(map['admins']) : [],
+    rpcUrl: map['rpcUrl'] ?? '',
+    rpcFallbackUrls: map['rpcFallbackUrls']
+      ? JSON.parse(map['rpcFallbackUrls'])
+      : [],
   };
 }
 

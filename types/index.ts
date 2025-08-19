@@ -300,6 +300,11 @@ export interface TenantSettings {
   theme?: { primary?: string | null };
   brand?: { logoCid?: string | null };
   fiatKey?: string | null;
+  rpcUrl?: string | null;
+  rpcFallbackUrls?: string[] | null;
+  feeAddress?: string | null;
+  feeBps?: number | null;
+  admins?: string[] | null;
 }
 
 export interface RoadmapTask {

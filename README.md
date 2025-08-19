@@ -76,8 +76,8 @@ for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
 | -------- | -------- | ----------- |
 | `ADMIN_WALLET_ADDRESS` | yes | Wallet granted admin rights if no on-chain list exists. |
 | `ORDER_PAYMENT_FACTORY_ADDRESS` | yes | Address of the deployed OrderPayment factory contract. |
-| `TON_RPC_URL` | yes | Primary TON RPC endpoint used for blockchain calls. |
-| `TON_RPC_FALLBACK_URLS` | no | Comma-separated backup RPC endpoints. |
+| `TON_RPC_URL` | no | Primary TON RPC endpoint used for blockchain calls. Overrides tenant setting. |
+| `TON_RPC_FALLBACK_URLS` | no | Comma-separated backup RPC endpoints. Overrides tenant setting. |
 | `EXPO_PUBLIC_WAKU_BOOTSTRAP` | no | Comma-separated list of Waku peers for network bootstrap. |
 | `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
 | `ENABLE_UNSAFE_TON_PRIVATE_KEY` | no | Exposes wallet private key for testing. Never use in production. |
@@ -87,8 +87,8 @@ for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
   exists (required)
 - `ORDER_PAYMENT_FACTORY_ADDRESS` – address of the deployed OrderPayment
   factory contract (required)
-- `TON_RPC_URL` – primary TON RPC endpoint used for blockchain calls (required)
-- `TON_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional)
+ - `TON_RPC_URL` – primary TON RPC endpoint used for blockchain calls (optional; overrides tenant setting)
+ - `TON_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional; overrides tenant setting)
 - `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default
   `false`)
 - `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional)

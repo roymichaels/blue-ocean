@@ -4,7 +4,6 @@
 const REQUIRED_ENV_KEYS = [
   'ADMIN_WALLET_ADDRESS',
   'ORDER_PAYMENT_FACTORY_ADDRESS',
-  'TON_RPC_URL',
 ];
 
 const ENV_KEYS = [
@@ -12,6 +11,7 @@ const ENV_KEYS = [
   'EXPO_PUBLIC_WAKU_BOOTSTRAP',
   'EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY',
   ...REQUIRED_ENV_KEYS,
+  'TON_RPC_URL',
   'TON_RPC_FALLBACK_URLS',
   'ENABLE_UNSAFE_TON_PRIVATE_KEY',
   'PINATA_JWT',
@@ -66,13 +66,26 @@ export function requireEnv(key: string): string {
 }
 
 export function getTonRpcUrls(): string[] {
-  const primary = requireEnv('TON_RPC_URL');
-  const fallbacks = config.TON_RPC_FALLBACK_URLS || process.env.TON_RPC_FALLBACK_URLS || '';
-  const extra = fallbacks
+  let tenantRpc = '';
+  let tenantFallbacks: string[] = [];
+  try {
+    const tenant = require('../constants/tenant');
+    tenantRpc = tenant.AppConfig?.rpcUrl || '';
+    tenantFallbacks = tenant.AppConfig?.rpcFallbackUrls || [];
+  } catch {}
+  const envPrimary = config.TON_RPC_URL || process.env.TON_RPC_URL || '';
+  const envFallbackRaw =
+    config.TON_RPC_FALLBACK_URLS || process.env.TON_RPC_FALLBACK_URLS || '';
+  const envFallbacks = envFallbackRaw
     .split(',')
     .map((u) => u.trim())
     .filter(Boolean);
-  return [primary, ...extra];
+  const primary = envPrimary || tenantRpc;
+  const fallbacks = envFallbacks.length > 0 ? envFallbacks : tenantFallbacks;
+  if (!primary) {
+    throw new Error('Missing TON RPC URL');
+  }
+  return [primary, ...fallbacks];
 }
 
 export default config;

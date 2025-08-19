@@ -15,7 +15,9 @@ type SettingKey =
   | 'brand.logoCid'
   | 'fiatKey'
   | 'feeAddress'
-  | 'feeBps';
+  | 'feeBps'
+  | 'rpcUrl'
+  | 'rpcFallbackUrls';
 
 class SettingsAgent {
   private static instance: SettingsAgent;
@@ -72,6 +74,25 @@ class SettingsAgent {
     await storeAdmins(admins, actor);
     this.admins = admins;
     this.adminsFetchedAt = Date.now();
+  }
+
+  async getRpcUrls(): Promise<{ rpcUrl: string; rpcFallbackUrls: string[] }> {
+    const rpcUrl = (await this.get('rpcUrl')) || '';
+    const fallbacksRaw = await this.get('rpcFallbackUrls');
+    let rpcFallbackUrls: string[] = [];
+    if (fallbacksRaw) {
+      try {
+        rpcFallbackUrls = JSON.parse(fallbacksRaw);
+      } catch {
+        rpcFallbackUrls = [];
+      }
+    }
+    return { rpcUrl, rpcFallbackUrls };
+  }
+
+  async setRpcUrls(rpcUrl: string, rpcFallbackUrls: string[]): Promise<void> {
+    await this.set('rpcUrl', rpcUrl);
+    await this.set('rpcFallbackUrls', JSON.stringify(rpcFallbackUrls));
   }
 
   static getInstance(): SettingsAgent {

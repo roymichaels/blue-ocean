@@ -26,6 +26,10 @@ export async function fetchSettings() {
     feeAddress: store['feeAddress'] ?? '',
     feeBps: store['feeBps'] ? Number(store['feeBps']) : 0,
     admins: store['admins'] ? JSON.parse(store['admins']) : [],
+    rpcUrl: store['rpcUrl'] ?? '',
+    rpcFallbackUrls: store['rpcFallbackUrls']
+      ? JSON.parse(store['rpcFallbackUrls'])
+      : [],
   };
 }
 
