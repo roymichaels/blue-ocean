@@ -1,4 +1,4 @@
-import { errorLog } from '@/utils/logger';
+import { errorLog, debugLog } from '@/utils/logger';
 import { randomUUID } from 'crypto';
 import ordersAgent from '../agents/orders-agent';
 import eventBus from './eventBus';
@@ -11,11 +11,14 @@ import {
 } from '../types';
 import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from './tonStores';
+import { getProduct, setProduct } from './tonProducts';
 import tonAuth from './tonAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
 import { requireEnv } from '../utils/appConfig';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
+const PRODUCT_TOPIC = '/blue-ocean/products/1';
+const LOW_STOCK_THRESHOLD = 5;
 
 export async function emitOrderEvents(order: Order, storeId: string) {
   const baseEvent = {
@@ -157,6 +160,7 @@ class OrderService {
     };
 
     await ordersAgent.add(order);
+    await this.decrementProductStock(items);
     this.notifyListeners();
     this.simulateOrderProgress(orderId);
     return order;
@@ -200,6 +204,40 @@ class OrderService {
       orders.push(order);
     }
     return orders;
+  }
+
+  private async decrementProductStock(items: CartItem[]): Promise<void> {
+    for (const item of items) {
+      try {
+        const product = await getProduct(item.productId);
+        if (!product) {
+          errorLog('Product not found when decrementing stock', item.productId);
+          continue;
+        }
+        if (product.stock < item.quantity) {
+          errorLog('Insufficient stock for product', {
+            productId: item.productId,
+            requested: item.quantity,
+            available: product.stock,
+          });
+          continue;
+        }
+        product.stock -= item.quantity;
+        await setProduct(product);
+        if (product.stock <= LOW_STOCK_THRESHOLD) {
+          debugLog('Low stock warning', {
+            productId: product.id,
+            stock: product.stock,
+          });
+          await eventBus.publish(PRODUCT_TOPIC, 'product.low_stock', {
+            productId: product.id,
+            stock: product.stock,
+          });
+        }
+      } catch (err) {
+        errorLog('Failed to update product stock', err);
+      }
+    }
   }
 
   private simulateOrderProgress(orderId: string) {
