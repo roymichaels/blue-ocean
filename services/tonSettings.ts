@@ -44,6 +44,7 @@ export interface TonSettings {
   admins: string[];
   rpcUrl: string;
   rpcFallbackUrls?: string[];
+  wakuBootstrap?: string[];
 }
 
 export async function getSetting(key: string): Promise<string | null> {
@@ -182,6 +183,9 @@ export async function fetchSettings(): Promise<TonSettings> {
     rpcUrl: map['rpcUrl'] ?? '',
     rpcFallbackUrls: map['rpcFallbackUrls']
       ? JSON.parse(map['rpcFallbackUrls'])
+      : [],
+    wakuBootstrap: map['wakuBootstrap']
+      ? JSON.parse(map['wakuBootstrap'])
       : [],
   };
 }

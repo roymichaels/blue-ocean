@@ -3,7 +3,8 @@
 Blue Ocean is a decentralized e‑commerce demo built with React Native and the Expo Router.
 Autonomous agents communicate over the Waku peer‑to‑peer network, keep their state in
 memory, and hydrate from message history on boot. Configuration such as debug logging or
-Waku bootstrap peers is supplied through `EXPO_PUBLIC_*` environment variables.
+Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment variables, but
+defaults are provided for a zero‑config experience.
 
 ## Quickstart
 
@@ -22,13 +23,14 @@ yarn test
    yarn install
    ```
 
-2. **Create and populate `.env`**
+2. *(Optional)* **Create a `.env` for customization**
 
    ```sh
    cp .env.example .env
    ```
 
-   Fill in each variable as described in [Environment Variables](#environment-variables).
+   Only needed for advanced overrides such as custom Waku peers. See
+   [Environment Variables](#environment-variables).
 
 3. **Start the Expo project**
 
@@ -68,9 +70,10 @@ yarn husky install
 
 ### Environment Variables
 
-The project reads configuration from a `.env` file using Expo's env support
-for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
-`.env.example` to `.env` and set the following variables:
+The app ships with sensible defaults and runs without a `.env` file. Environment
+variables let you customize behavior or override settings for development and
+deployment. To supply overrides locally, copy `.env.example` to `.env` and set
+the desired values:
 
 | Variable | Required | Description |
 | -------- | -------- | ----------- |
@@ -90,7 +93,7 @@ for `EXPO_PUBLIC_*` keys and `dotenv` for Node scripts and tests. Copy
  - `TON_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional; overrides tenant setting)
 - `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default
   `false`)
-- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional)
+- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional override)
 - `ENABLE_UNSAFE_TON_PRIVATE_KEY` – expose wallet private key for testing
   (`true`/`false`, default `false`; ignored in production builds)
 - `PINATA_JWT` – JWT used by `scripts/pinata-upload.ts` to pin assets to
@@ -115,10 +118,11 @@ on-chain settings contract. Use the **Admin → Settings** screen or
 `SettingsAgent.setAdmins()` to add or remove addresses. Only wallets in this
 allowlist can manage users, products or other system settings.
 
-The app connects to the peer-to-peer network through Waku bootstrap nodes
-provided in `EXPO_PUBLIC_WAKU_BOOTSTRAP`. Supply a comma‑separated list of Waku
-multiaddrs in the `.env` file so agents can discover peers. Leaving the value
-empty runs the app in offline mode with no Waku connectivity.
+The app connects to the peer‑to‑peer network through a built‑in list of Waku
+bootstrap nodes. Developers can override this by setting
+`EXPO_PUBLIC_WAKU_BOOTSTRAP` (for example in a `.env` file) with a
+comma‑separated list of multiaddrs. Providing an empty value disables Waku
+connectivity entirely.
 
 ### TON Smart Contracts
 

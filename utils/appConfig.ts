@@ -46,14 +46,23 @@ export function reloadConfig(): void {
 }
 
 export function getWakuBootstrapNodes(): string[] {
-  const raw =
+  const override =
     config.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
     process.env.EXPO_PUBLIC_WAKU_BOOTSTRAP;
-  if (!raw) return [];
-  return raw
-    .split(',')
-    .map((addr) => addr.trim())
-    .filter(Boolean);
+  if (override) {
+    return override
+      .split(',')
+      .map((addr) => addr.trim())
+      .filter(Boolean);
+  }
+  try {
+    const tenant = require('../constants/tenant');
+    const list = tenant.AppConfig?.wakuBootstrap || [];
+    if (Array.isArray(list) && list.length > 0) {
+      return list;
+    }
+  } catch {}
+  return [];
 }
 
 export function requireEnv(key: string): string {

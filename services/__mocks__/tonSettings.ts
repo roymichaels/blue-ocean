@@ -30,6 +30,9 @@ export async function fetchSettings() {
     rpcFallbackUrls: store['rpcFallbackUrls']
       ? JSON.parse(store['rpcFallbackUrls'])
       : [],
+    wakuBootstrap: store['wakuBootstrap']
+      ? JSON.parse(store['wakuBootstrap'])
+      : [],
   };
 }
 
