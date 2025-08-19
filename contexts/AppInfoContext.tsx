@@ -24,6 +24,7 @@ interface AppInfoContextType {
   setAppName: (name: string) => Promise<void>;
   setLogoCid: (logo: string) => Promise<void>;
   setThemeColor: (color: string) => Promise<void>;
+  setFiatKey: (key: string) => Promise<void>;
 }
 
 const AppInfoContext = createContext<AppInfoContextType>({
@@ -38,6 +39,7 @@ const AppInfoContext = createContext<AppInfoContextType>({
   setAppName: async () => {},
   setLogoCid: async () => {},
   setThemeColor: async () => {},
+  setFiatKey: async () => {},
 });
 
 export const useAppInfo = () => useContext(AppInfoContext);
@@ -210,6 +212,34 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     }
   };
 
+  const setFiatKeyValue = async (key: string) => {
+    try {
+      const FIAT_KEY = `app_fiat_key_${tenantId}`;
+      setFiatKey(key);
+      await AsyncStorage.setItem(FIAT_KEY, key);
+    } catch (e) {
+      Alert.alert('שגיאה', 'שמירת מפתח MoonPay נכשלה');
+      errorLog('Error setting fiat key:', e);
+      throw e;
+    }
+    const tenantSvc = SettingsAgent.getInstance();
+    try {
+      await tenantSvc.whenReady();
+    } catch (e) {
+      Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
+      errorLog('Failed initializing SettingsAgent:', e);
+      throw e;
+    }
+    try {
+      await tenantSvc.updateSettingValue('fiatKey', key);
+      scheduleLoadInfo();
+    } catch (e) {
+      Alert.alert('שגיאה', 'שמירת מפתח MoonPay נכשלה');
+      errorLog('Error setting fiat key:', e);
+      throw e;
+    }
+  };
+
   return (
     <AppInfoContext.Provider
       value={{
@@ -224,6 +254,7 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
         setAppName,
         setLogoCid,
         setThemeColor,
+        setFiatKey: setFiatKeyValue,
       }}
     >
       {children}

@@ -34,7 +34,10 @@ describe('MoonPayButton', () => {
 
   it('computes TON amount and renders modal', async () => {
     const { useAppInfo } = require('../contexts/AppInfoContext');
-    (useAppInfo as jest.Mock).mockReturnValue({ fiatKey: 'key' });
+    (useAppInfo as jest.Mock).mockReturnValue({
+      fiatKey: 'key',
+      setFiatKey: jest.fn(),
+    });
 
     global.fetch = jest.fn(() =>
       Promise.resolve({ json: () => Promise.resolve({ 'the-open-network': { usd: 2 } }) }),
@@ -54,7 +57,10 @@ describe('MoonPayButton', () => {
 
   it('renders nothing without moonpay key', async () => {
     const { useAppInfo } = require('../contexts/AppInfoContext');
-    (useAppInfo as jest.Mock).mockReturnValue({ fiatKey: undefined });
+    (useAppInfo as jest.Mock).mockReturnValue({
+      fiatKey: undefined,
+      setFiatKey: jest.fn(),
+    });
 
     let root: renderer.ReactTestRenderer;
     await act(async () => {
