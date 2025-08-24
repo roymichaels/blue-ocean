@@ -23,7 +23,6 @@ export default function ChatWidget() {
   const { t } = useLanguage();
   const recordingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const messagesEndRef = useRef<FlatList<ChatMessage>>(null);
-  const [unreadTotal, setUnreadTotal] = useState(0);
   const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
   const messageSoundRef = useRef<Audio.AudioPlayer | null>(null);
   const lastTimestampRef = useRef(0);
@@ -42,6 +41,10 @@ export default function ChatWidget() {
   const [chatConfigOk, setChatConfigOk] = useState(true);
   const waku = useWakuClient();
   const [adminKey, setAdminKey] = useState('');
+  const { user, isAdmin, isDriver, isLoggedIn } = useAuth();
+
+  const { chatRooms, setChatRooms, selectedRoom, setSelectedRoom, unreadTotal } =
+    useChatRooms(isOpen);
 
   useEffect(() => {
     SettingsAgent.getInstance()
@@ -99,10 +102,6 @@ export default function ChatWidget() {
 
     init();
   }, [isLoggedIn, isAdmin, isDriver, adminKey]);
-
-  useEffect(() => {
-    setUnreadTotal(chatRooms.reduce((sum, r) => sum + r.unreadCount, 0));
-  }, [chatRooms]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
