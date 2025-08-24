@@ -8,8 +8,6 @@ jest.mock('../services/tonSettings', () => ({
   }),
 }));
 
-import { insertConfig } from './testUtils';
-
 let deployOrderPayment: any;
 let releasePayment: any;
 let refundPayment: any;
