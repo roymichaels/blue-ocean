@@ -28,6 +28,13 @@ export function useChatRooms(isOpen: boolean) {
     [chatRooms],
   );
 
-  return { chatRooms, selectedRoom, setSelectedRoom, loadChatRooms, unreadTotal };
+  return {
+    chatRooms,
+    setChatRooms,
+    selectedRoom,
+    setSelectedRoom,
+    loadChatRooms,
+    unreadTotal,
+  };
 }
 export default useChatRooms;
