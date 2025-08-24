@@ -306,6 +306,7 @@ export interface TenantSettings {
   feeAddress?: string | null;
   feeBps?: number | null;
   admins?: string[] | null;
+  paymentFactoryAddress?: string | null;
 }
 
 export interface RoadmapTask {

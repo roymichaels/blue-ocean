@@ -18,7 +18,8 @@ type SettingKey =
   | 'feeBps'
   | 'paymentFactoryAddress'
   | 'rpcUrl'
-  | 'rpcFallbackUrls';
+  | 'rpcFallbackUrls'
+  | 'paymentFactoryAddress';
 
 class SettingsAgent {
   private static instance: SettingsAgent;

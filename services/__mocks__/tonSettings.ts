@@ -33,6 +33,7 @@ export async function fetchSettings() {
     wakuBootstrap: store['wakuBootstrap']
       ? JSON.parse(store['wakuBootstrap'])
       : [],
+    paymentFactoryAddress: store['paymentFactoryAddress'],
   };
 }
 

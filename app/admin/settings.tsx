@@ -20,6 +20,7 @@ import LanguageSettings from '../../components/settings/LanguageSettings';
 import NotificationSettings from '../../components/settings/NotificationSettings';
 import RpcSettings from '../../components/settings/RpcSettings';
 import MoonPaySettings from '../../components/settings/MoonPaySettings';
+import PaymentFactorySettings from '../../components/settings/PaymentFactorySettings';
 
 export default function SettingsScreen() {
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
@@ -27,6 +28,7 @@ export default function SettingsScreen() {
   const [logoCidInput, setLogoCidInput] = useState('');
   const [themeColor, setThemeColorState] = useState('#B99C5A');
   const [fiatKeyInput, setFiatKeyInput] = useState('');
+  const [paymentFactoryAddress, setPaymentFactoryAddress] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { isAdmin, isDriver } = useAuth();
@@ -83,6 +85,8 @@ export default function SettingsScreen() {
       setThemeColorState(contextThemeColor);
       setLogoCidInput(logoCid || '');
       setFiatKeyInput(fiatKey || '');
+      const pf = await SettingsAgent.getInstance().getSettingValue('paymentFactoryAddress');
+      setPaymentFactoryAddress(pf || '');
     } catch (error) {
       errorLog('Error loading settings:', error);
       setInfoModal({
@@ -105,6 +109,10 @@ export default function SettingsScreen() {
       const logoUri = logoCidInput.trim();
       await setLogoCid(logoUri);
       await setFiatKey(fiatKeyInput.trim());
+      await SettingsAgent.getInstance().updateSettingValue(
+        'paymentFactoryAddress',
+        paymentFactoryAddress.trim(),
+      );
       setInfoModal({
         visible: true,
         title: 'הצלחה',
@@ -176,6 +184,11 @@ export default function SettingsScreen() {
         <MoonPaySettings
           fiatKeyInput={fiatKeyInput}
           setFiatKeyInput={setFiatKeyInput}
+          colors={colors}
+        />
+        <PaymentFactorySettings
+          paymentFactoryAddress={paymentFactoryAddress}
+          setPaymentFactoryAddress={setPaymentFactoryAddress}
           colors={colors}
         />
         <EnvironmentSettings colors={colors} admins={admins} />
