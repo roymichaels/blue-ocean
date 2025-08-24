@@ -55,6 +55,7 @@ module.exports = async function (env, argv) {
       __dirname,
       'node_modules/@waku/sdk/bundle/index.js'
     ),
+    tslib: require.resolve('tslib/tslib.es6.js'),
     multiformats: path.join(multiformatsPath, 'dist/index.min.js'),
   };
 
