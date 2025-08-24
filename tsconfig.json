@@ -12,15 +12,16 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "types": [
-      "expo",
       "react",
-      "react-native",
       "jest",
       "node",
       "bcryptjs",
       "minimatch"
     ],
-    "typeRoots": ["./types", "./node_modules/@types"],
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ],
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
