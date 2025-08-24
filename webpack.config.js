@@ -35,11 +35,6 @@ module.exports = async function (env, argv) {
   );
 
   // Match Metro alias for the custom HMR client
-  const nobleHashesPath = path.resolve(__dirname, 'node_modules/@noble/hashes');
-  const multiformatsPath = path.resolve(
-    __dirname,
-    'node_modules/multiformats'
-  );
   config.resolve.alias = {
     ...(config.resolve.alias || {}),
     '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
@@ -48,15 +43,25 @@ module.exports = async function (env, argv) {
       __dirname,
       'EmptyHMRClient.ts'
     ),
-    '@noble/hashes': path.join(nobleHashesPath, 'index.js'),
-    '@noble/hashes/crypto': path.join(nobleHashesPath, 'crypto.js'),
-    '@noble/hashes/crypto.js': path.join(nobleHashesPath, 'crypto.js'),
-    '@waku/sdk': path.resolve(
+    '@noble/hashes': require.resolve('@noble/hashes'),
+    '@noble/hashes/hkdf': require.resolve('@noble/hashes/hkdf'),
+    '@noble/hashes/sha256': require.resolve('@noble/hashes/sha256'),
+    '@noble/hashes/sha512': require.resolve('@noble/hashes/sha512'),
+    '@noble/hashes/crypto': require.resolve('@noble/hashes/crypto'),
+    '@noble/hashes/crypto.js': require.resolve('@noble/hashes/crypto'),
+    '@waku/utils': path.resolve(
       __dirname,
-      'node_modules/@waku/sdk/bundle/index.js'
+      'node_modules/@waku/utils/dist/index.js'
     ),
-    tslib: require.resolve('tslib/tslib.es6.js'),
-    multiformats: path.join(multiformatsPath, 'dist/index.min.js'),
+    'multiformats/hashes/sha2': path.resolve(
+      __dirname,
+      'node_modules/multiformats/dist/src/hashes/sha2.js'
+    ),
+    multiformats: path.resolve(
+      __dirname,
+      'node_modules/multiformats/dist/src/index.js'
+    ),
+    tslib: require.resolve('tslib'),
   };
 
   return config;
