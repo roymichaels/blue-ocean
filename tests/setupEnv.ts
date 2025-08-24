@@ -3,7 +3,6 @@ import { insertConfig } from './testUtils';
 
 insertConfig({
   TON_RPC_URL: 'https://ton.test',
-  ORDER_PAYMENT_FACTORY_ADDRESS: 'EQtestfactory',
   ADMIN_WALLET_ADDRESS_MAINNET: 'EQtestadmin',
   ADMIN_WALLET_ADDRESS_TESTNET: 'EQtestadmin',
 });
@@ -17,7 +16,6 @@ var __DEV__ = false;
 beforeEach(async () => {
   insertConfig({
     TON_RPC_URL: 'https://ton.test',
-    ORDER_PAYMENT_FACTORY_ADDRESS: 'EQtestfactory',
     ADMIN_WALLET_ADDRESS_MAINNET: 'EQtestadmin',
     ADMIN_WALLET_ADDRESS_TESTNET: 'EQtestadmin',
   });

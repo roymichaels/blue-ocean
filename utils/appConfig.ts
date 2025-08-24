@@ -1,7 +1,7 @@
 // Configuration values are loaded from environment variables.
 // Only a minimal set of keys is supported at runtime.
 
-const REQUIRED_ENV_KEYS = ['ORDER_PAYMENT_FACTORY_ADDRESS'];
+const REQUIRED_ENV_KEYS: string[] = [];
 
 const ENV_KEYS = [
   'EXPO_PUBLIC_DEBUG_LOGS',

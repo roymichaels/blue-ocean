@@ -29,7 +29,6 @@ describe('BulkProductUploader processRecords', () => {
     setProductBatchMock.mockClear();
     estimateSetProductBatchMock.mockClear();
     insertConfig({
-      ORDER_PAYMENT_FACTORY_ADDRESS: 'test',
       TON_RPC_URL: 'http://localhost',
       ADMIN_WALLET_ADDRESS_MAINNET: undefined,
       ADMIN_WALLET_ADDRESS_TESTNET: undefined,

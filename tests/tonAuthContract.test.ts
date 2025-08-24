@@ -8,8 +8,6 @@ jest.mock('../services/tonSettings', () => ({
   }),
 }));
 
-import { insertConfig } from './testUtils';
-
 let deployOrderPayment: any;
 let releasePayment: any;
 let refundPayment: any;
@@ -41,7 +39,6 @@ describe('Ton contract flows', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    insertConfig({ ORDER_PAYMENT_FACTORY_ADDRESS: undefined });
     ({
       deployOrderPayment,
       releasePayment,
@@ -64,7 +61,12 @@ describe('Ton contract flows', () => {
 
   it('uses configured factory address when provided', async () => {
     jest.resetModules();
-    insertConfig({ ORDER_PAYMENT_FACTORY_ADDRESS: 'EQcustomfactory' });
+    const tonSettings = require('../services/tonSettings');
+    tonSettings.fetchSettings.mockResolvedValue({
+      feeAddress: 'feeAddr',
+      feeBps: 500,
+      paymentFactoryAddress: 'EQcustomfactory',
+    });
     ({ getOrderPaymentFactoryAddress } = require('../services/tonContract'));
     const addr = await getOrderPaymentFactoryAddress();
     expect(addr).toBe('EQcustomfactory');
