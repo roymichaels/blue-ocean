@@ -59,6 +59,19 @@ describe('Ton contract flows', () => {
     expect(result.txHash).toBe(expectedHash);
   });
 
+  it('uses configured factory address when provided', async () => {
+    jest.resetModules();
+    const tonSettings = require('../services/tonSettings');
+    tonSettings.fetchSettings.mockResolvedValue({
+      feeAddress: 'feeAddr',
+      feeBps: 500,
+      paymentFactoryAddress: 'EQcustomfactory',
+    });
+    ({ getOrderPaymentFactoryAddress } = require('../services/tonContract'));
+    const addr = await getOrderPaymentFactoryAddress();
+    expect(addr).toBe('EQcustomfactory');
+  });
+
   it('releases payment through TonConnect', async () => {
     const res = await releasePayment('contract1');
     expect(mockTonConnect.sendTransaction).toHaveBeenCalledWith(

@@ -16,8 +16,10 @@ type SettingKey =
   | 'fiatKey'
   | 'feeAddress'
   | 'feeBps'
+  | 'paymentFactoryAddress'
   | 'rpcUrl'
-  | 'rpcFallbackUrls';
+  | 'rpcFallbackUrls'
+  | 'paymentFactoryAddress';
 
 class SettingsAgent {
   private static instance: SettingsAgent;
@@ -93,6 +95,14 @@ class SettingsAgent {
   async setRpcUrls(rpcUrl: string, rpcFallbackUrls: string[]): Promise<void> {
     await this.set('rpcUrl', rpcUrl);
     await this.set('rpcFallbackUrls', JSON.stringify(rpcFallbackUrls));
+  }
+
+  async getPaymentFactoryAddress(): Promise<string | null> {
+    return await this.get('paymentFactoryAddress');
+  }
+
+  async setPaymentFactoryAddress(address: string): Promise<void> {
+    await this.set('paymentFactoryAddress', address);
   }
 
   static getInstance(): SettingsAgent {

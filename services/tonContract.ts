@@ -7,8 +7,7 @@ import { getTonConnect } from './tonAuth';
 import { fetchSettings } from './tonSettings';
 
 const DEFAULT_FACTORY_ADDRESS = 'EQtestfactory';
-export let ORDER_PAYMENT_FACTORY_ADDRESS =
-  process.env.ORDER_PAYMENT_FACTORY_ADDRESS || '';
+export let ORDER_PAYMENT_FACTORY_ADDRESS = '';
 
 async function deployTemporaryFactory(): Promise<string> {
   // Placeholder for actual factory deployment logic
@@ -17,11 +16,12 @@ async function deployTemporaryFactory(): Promise<string> {
 
 export async function getOrderPaymentFactoryAddress(): Promise<string> {
   if (!ORDER_PAYMENT_FACTORY_ADDRESS) {
-    if (process.env.NODE_ENV === 'test') {
-      ORDER_PAYMENT_FACTORY_ADDRESS = DEFAULT_FACTORY_ADDRESS;
-    } else {
-      ORDER_PAYMENT_FACTORY_ADDRESS = await deployTemporaryFactory();
-    }
+    const settings = await fetchSettings();
+    ORDER_PAYMENT_FACTORY_ADDRESS =
+      settings.paymentFactoryAddress ||
+      (process.env.NODE_ENV === 'test'
+        ? DEFAULT_FACTORY_ADDRESS
+        : await deployTemporaryFactory());
   }
   return ORDER_PAYMENT_FACTORY_ADDRESS;
 }

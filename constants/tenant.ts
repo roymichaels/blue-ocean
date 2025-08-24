@@ -16,6 +16,7 @@ export interface TenantSettings {
   rpcUrl: string;
   rpcFallbackUrls?: string[];
   wakuBootstrap?: string[];
+  paymentFactoryAddress?: string;
 }
 
 const initialAdmin =
@@ -46,6 +47,7 @@ export let AppConfig: TenantSettings = {
   rpcUrl: '',
   rpcFallbackUrls: [],
   wakuBootstrap: [],
+  paymentFactoryAddress: '',
 };
 
 export async function loadTenantSettings(): Promise<void> {
@@ -60,6 +62,7 @@ export async function loadTenantSettings(): Promise<void> {
   const RPC_URL_KEY = 'app_rpc_url';
   const RPC_FALLBACK_KEY = 'app_rpc_fallback_urls';
   const WAKU_BOOTSTRAP_KEY = 'app_waku_bootstrap';
+  const PAYMENT_FACTORY_KEY = 'app_payment_factory_address';
 
   try {
     const [
@@ -74,6 +77,7 @@ export async function loadTenantSettings(): Promise<void> {
       rpc,
       rpcFallback,
       waku,
+      paymentFactory,
     ] = await AsyncStorage.multiGet([
       TENANT_KEY,
       NAME_KEY,
@@ -86,6 +90,7 @@ export async function loadTenantSettings(): Promise<void> {
       RPC_URL_KEY,
       RPC_FALLBACK_KEY,
       WAKU_BOOTSTRAP_KEY,
+      PAYMENT_FACTORY_KEY,
     ]);
 
     if (t?.[1]) TENANT = t[1];
@@ -100,6 +105,7 @@ export async function loadTenantSettings(): Promise<void> {
       rpcUrl: rpc?.[1] || '',
       rpcFallbackUrls: rpcFallback?.[1] ? JSON.parse(rpcFallback[1]) : [],
       wakuBootstrap: waku?.[1] ? JSON.parse(waku[1]) : [],
+      paymentFactoryAddress: paymentFactory?.[1] || '',
     };
 
     const remote = await fetchSettings();
@@ -115,6 +121,7 @@ export async function loadTenantSettings(): Promise<void> {
       rpcUrl: remote.rpcUrl,
       rpcFallbackUrls: remote.rpcFallbackUrls ?? [],
       wakuBootstrap: remote.wakuBootstrap ?? [],
+      paymentFactoryAddress: remote.paymentFactoryAddress ?? '',
     };
 
     await AsyncStorage.multiSet([
@@ -129,6 +136,7 @@ export async function loadTenantSettings(): Promise<void> {
       [RPC_URL_KEY, remote.rpcUrl],
       [RPC_FALLBACK_KEY, JSON.stringify(remote.rpcFallbackUrls ?? [])],
       [WAKU_BOOTSTRAP_KEY, JSON.stringify(remote.wakuBootstrap ?? [])],
+      [PAYMENT_FACTORY_KEY, remote.paymentFactoryAddress ?? ''],
     ]);
   } catch (e) {
     errorLog('Error loading tenant settings:', e);
