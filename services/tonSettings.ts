@@ -26,10 +26,22 @@ const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 
 const TEST_ADMIN = 'EQtestadmin';
+const NETWORK =
+  (config.TON_NETWORK || process.env.TON_NETWORK || 'mainnet').toLowerCase();
+const legacyAdmin =
+  config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
+const ADMIN_MAIN =
+  config.ADMIN_WALLET_ADDRESS_MAINNET ||
+  process.env.ADMIN_WALLET_ADDRESS_MAINNET ||
+  legacyAdmin;
+const ADMIN_TEST =
+  config.ADMIN_WALLET_ADDRESS_TESTNET ||
+  process.env.ADMIN_WALLET_ADDRESS_TESTNET ||
+  legacyAdmin;
 const ADMIN_ADDRESS =
-  config.ADMIN_WALLET_ADDRESS ||
-  process.env.ADMIN_WALLET_ADDRESS ||
-  (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '');
+  NETWORK === 'testnet'
+    ? ADMIN_TEST || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '')
+    : ADMIN_MAIN || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '');
 
 function assertAdmin(actor: string): void {
   if (!ADMIN_ADDRESS) return;

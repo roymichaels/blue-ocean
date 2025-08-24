@@ -31,7 +31,9 @@ describe('BulkProductUploader processRecords', () => {
     insertConfig({
       ORDER_PAYMENT_FACTORY_ADDRESS: 'test',
       TON_RPC_URL: 'http://localhost',
-      ADMIN_WALLET_ADDRESS: undefined,
+      ADMIN_WALLET_ADDRESS_MAINNET: undefined,
+      ADMIN_WALLET_ADDRESS_TESTNET: undefined,
+
     });
     await loadTenantSettings();
   });

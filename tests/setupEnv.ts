@@ -4,7 +4,8 @@ import { insertConfig } from './testUtils';
 insertConfig({
   TON_RPC_URL: 'https://ton.test',
   ORDER_PAYMENT_FACTORY_ADDRESS: 'EQtestfactory',
-  ADMIN_WALLET_ADDRESS: 'EQtestadmin',
+  ADMIN_WALLET_ADDRESS_MAINNET: 'EQtestadmin',
+  ADMIN_WALLET_ADDRESS_TESTNET: 'EQtestadmin',
 });
 
 jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
@@ -17,7 +18,8 @@ beforeEach(async () => {
   insertConfig({
     TON_RPC_URL: 'https://ton.test',
     ORDER_PAYMENT_FACTORY_ADDRESS: 'EQtestfactory',
-    ADMIN_WALLET_ADDRESS: 'EQtestadmin',
+    ADMIN_WALLET_ADDRESS_MAINNET: 'EQtestadmin',
+    ADMIN_WALLET_ADDRESS_TESTNET: 'EQtestadmin',
   });
   await loadTenantSettings();
 });
