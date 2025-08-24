@@ -35,6 +35,12 @@ config.resolver.extraNodeModules = {
     'node_modules/multiformats/dist/src/index.js'
   ),
   tslib: require.resolve('tslib'),
+  // Ensure Metro resolves tslib's ESM entry to a CommonJS-compatible module
+  // that includes a default export. Without this, packages that rely on the
+  // default export (e.g. rxjs) will crash at runtime because `tslib`'s
+  // generated `modules/index.js` attempts to destructure from an undefined
+  // default export.
+  'tslib/modules/index.js': path.resolve(__dirname, 'tslib-polyfill.js'),
 };
 
 module.exports = config;
