@@ -412,7 +412,7 @@ const loadOrCreateDefaultRoom = async () => {
     return ok;
   };
 
-  const sendMessage = async () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || isSending) return;
       if (!(await ensureChatConfigured())) return;
       setIsSending(true);
@@ -735,10 +735,10 @@ const loadOrCreateDefaultRoom = async () => {
     messages,
     newMessage,
     setNewMessage,
-    sendMessage,
     loadOlderMessages,
     hasMore,
     loadingMore,
+    setMessages,
   } = useChatMessages(selectedRoom, user, isAdmin);
 
   const toggleOpen = () => {
@@ -792,7 +792,7 @@ const loadOrCreateDefaultRoom = async () => {
               <MessageInput
                 value={newMessage}
                 onChange={setNewMessage}
-                onSend={sendMessage}
+                onSend={handleSendMessage}
                 colors={colors}
               />
             </View>
