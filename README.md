@@ -85,7 +85,9 @@ the desired values:
 | `EXPO_PUBLIC_WAKU_BOOTSTRAP` | no | Comma-separated list of Waku peers for network bootstrap. |
 | `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
 | `ENABLE_UNSAFE_TON_PRIVATE_KEY` | no | Exposes wallet private key for testing. Never use in production. |
-| `PINATA_JWT` | no | JWT for pinning assets to Pinata via `scripts/pinata-upload.ts`. |
+| `EXPO_PUBLIC_PINATA_API_KEY` | no | Pinata API key for authenticated uploads. |
+| `EXPO_PUBLIC_PINATA_SECRET_API_KEY` | no | Pinata API secret for authenticated uploads. |
+| `EXPO_PUBLIC_PINATA_JWT` | no | Pinata JWT used by the app and `scripts/pinata-upload.ts`. |
 
 The OrderPayment factory contract address is configured by admins through the
 **Admin → Settings** dashboard and does not require an environment variable.
@@ -99,8 +101,9 @@ The OrderPayment factory contract address is configured by admins through the
 - `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional override)
 - `ENABLE_UNSAFE_TON_PRIVATE_KEY` – expose wallet private key for testing
   (`true`/`false`, default `false`; ignored in production builds)
-- `PINATA_JWT` – JWT used by `scripts/pinata-upload.ts` to pin assets to
-  Pinata (optional)
+- `EXPO_PUBLIC_PINATA_API_KEY` – Pinata API key for uploads (optional)
+- `EXPO_PUBLIC_PINATA_SECRET_API_KEY` – Pinata secret API key for uploads (optional)
+- `EXPO_PUBLIC_PINATA_JWT` – Pinata JWT used by `scripts/pinata-upload.ts` to pin assets (optional)
 
 These values are read at build time and cannot be changed from the UI.
 

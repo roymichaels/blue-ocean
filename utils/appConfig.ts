@@ -14,7 +14,9 @@ const ENV_KEYS = [
   'TON_RPC_URL',
   'TON_RPC_FALLBACK_URLS',
   'ENABLE_UNSAFE_TON_PRIVATE_KEY',
-  'PINATA_JWT',
+  'EXPO_PUBLIC_PINATA_API_KEY',
+  'EXPO_PUBLIC_PINATA_SECRET_API_KEY',
+  'EXPO_PUBLIC_PINATA_JWT',
 ];
 
 function loadConfig(): Record<string, string> {

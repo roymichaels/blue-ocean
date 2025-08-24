@@ -7,9 +7,10 @@ import FormData from 'form-data';
 import axios from 'axios';
 
 async function upload(filePath: string): Promise<string> {
-  const jwt = process.env.PINATA_JWT;
+  const jwt =
+    process.env.EXPO_PUBLIC_PINATA_JWT || process.env.PINATA_JWT;
   if (!jwt) {
-    throw new Error('PINATA_JWT environment variable is required');
+    throw new Error('EXPO_PUBLIC_PINATA_JWT environment variable is required');
   }
 
   const data = new FormData();
