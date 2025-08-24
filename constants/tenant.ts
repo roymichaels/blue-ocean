@@ -18,13 +18,30 @@ export interface TenantSettings {
   wakuBootstrap?: string[];
 }
 
+const initialAdmin =
+  (() => {
+    const network =
+      (config.TON_NETWORK || process.env.TON_NETWORK || 'mainnet').toLowerCase();
+    const legacy =
+      config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
+    const main =
+      config.ADMIN_WALLET_ADDRESS_MAINNET ||
+      process.env.ADMIN_WALLET_ADDRESS_MAINNET ||
+      legacy;
+    const test =
+      config.ADMIN_WALLET_ADDRESS_TESTNET ||
+      process.env.ADMIN_WALLET_ADDRESS_TESTNET ||
+      legacy;
+    return network === 'testnet' ? test : main;
+  })() || '';
+
 export let AppConfig: TenantSettings = {
   appName: 'Blue Ocean',
   primaryColor: '#B99C5A',
   logoCid: '',
   feeAddress: '',
   feeBps: 0,
-  admins: config.ADMIN_WALLET_ADDRESS ? [config.ADMIN_WALLET_ADDRESS] : [],
+  admins: initialAdmin ? [initialAdmin] : [],
   rpcUrl: '',
   rpcFallbackUrls: [],
   wakuBootstrap: [],

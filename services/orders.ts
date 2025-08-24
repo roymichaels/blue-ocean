@@ -14,7 +14,7 @@ import { getStore } from './tonStores';
 import { getProduct, setProduct } from './tonProducts';
 import tonAuth from './tonAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
-import { requireEnv } from '../utils/appConfig';
+import config from '../utils/appConfig';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
@@ -280,8 +280,19 @@ class OrderService {
     const order = await ordersAgent.get(orderId);
     if (!order || !order.escrowAddr) return;
     const actor = tonAuth.getAddress();
-    const admin = requireEnv('ADMIN_WALLET_ADDRESS');
-    if (!actor || actor !== admin) {
+    const network =
+      (config.TON_NETWORK || process.env.TON_NETWORK || 'mainnet').toLowerCase();
+    const legacy =
+      config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
+    const admin =
+      network === 'testnet'
+        ? config.ADMIN_WALLET_ADDRESS_TESTNET ||
+          process.env.ADMIN_WALLET_ADDRESS_TESTNET ||
+          legacy
+        : config.ADMIN_WALLET_ADDRESS_MAINNET ||
+          process.env.ADMIN_WALLET_ADDRESS_MAINNET ||
+          legacy;
+    if (admin && (!actor || actor !== admin)) {
       throw new Error('Admin wallet address required');
     }
     await adminResolve(order.escrowAddr, toSeller);

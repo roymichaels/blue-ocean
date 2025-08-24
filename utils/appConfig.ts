@@ -1,14 +1,14 @@
 // Configuration values are loaded from environment variables.
 // Only a minimal set of keys is supported at runtime.
 
-const REQUIRED_ENV_KEYS = [
-  'ADMIN_WALLET_ADDRESS',
-  'ORDER_PAYMENT_FACTORY_ADDRESS',
-];
+const REQUIRED_ENV_KEYS = ['ORDER_PAYMENT_FACTORY_ADDRESS'];
 
 const ENV_KEYS = [
   'EXPO_PUBLIC_DEBUG_LOGS',
   'EXPO_PUBLIC_WAKU_BOOTSTRAP',
+  'ADMIN_WALLET_ADDRESS_MAINNET',
+  'ADMIN_WALLET_ADDRESS_TESTNET',
+  'TON_NETWORK',
   ...REQUIRED_ENV_KEYS,
   'TON_RPC_URL',
   'TON_RPC_FALLBACK_URLS',

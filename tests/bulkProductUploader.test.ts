@@ -1,4 +1,6 @@
 import { Product } from '../types';
+import { insertConfig } from './testUtils';
+import { loadTenantSettings, getAdmins } from '../constants/tenant';
 
 jest.mock('expo-document-picker', () => ({}));
 
@@ -22,16 +24,22 @@ jest.mock('../services/tonProducts', () => ({
 }));
 
 describe('BulkProductUploader processRecords', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     uploadMediaMock.mockClear();
     setProductBatchMock.mockClear();
     estimateSetProductBatchMock.mockClear();
+    insertConfig({
+      ORDER_PAYMENT_FACTORY_ADDRESS: 'test',
+      TON_RPC_URL: 'http://localhost',
+      ADMIN_WALLET_ADDRESS_MAINNET: undefined,
+      ADMIN_WALLET_ADDRESS_TESTNET: undefined,
+    });
+    await loadTenantSettings();
   });
 
   it('uploads 100 products in ≤4 batches', async () => {
-    process.env.ADMIN_WALLET_ADDRESS = 'test';
-    process.env.ORDER_PAYMENT_FACTORY_ADDRESS = 'test';
-    process.env.TON_RPC_URL = 'http://localhost';
+    const admins = await getAdmins();
+    expect(admins).toEqual([]);
     const { processRecords } = await import('../components/BulkProductUploader');
     const products: Product[] = Array.from({ length: 100 }, (_, i) => ({
       id: `p${i}`,

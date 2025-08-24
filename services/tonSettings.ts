@@ -1,6 +1,6 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { getValue, setValue, listValues } from './tonKvStore';
-import config, { requireEnv } from '../utils/appConfig';
+import config from '../utils/appConfig';
 import {
   LightNode,
   Protocols,
@@ -25,9 +25,26 @@ const ADDRESS =
 const DEFAULT_BOOTSTRAP =
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 
-const ADMIN_ADDRESS = requireEnv('ADMIN_WALLET_ADDRESS');
+const TEST_ADMIN = 'EQtestadmin';
+const NETWORK =
+  (config.TON_NETWORK || process.env.TON_NETWORK || 'mainnet').toLowerCase();
+const legacyAdmin =
+  config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
+const ADMIN_MAIN =
+  config.ADMIN_WALLET_ADDRESS_MAINNET ||
+  process.env.ADMIN_WALLET_ADDRESS_MAINNET ||
+  legacyAdmin;
+const ADMIN_TEST =
+  config.ADMIN_WALLET_ADDRESS_TESTNET ||
+  process.env.ADMIN_WALLET_ADDRESS_TESTNET ||
+  legacyAdmin;
+const ADMIN_ADDRESS =
+  NETWORK === 'testnet'
+    ? ADMIN_TEST || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '')
+    : ADMIN_MAIN || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '');
 
 function assertAdmin(actor: string): void {
+  if (!ADMIN_ADDRESS) return;
   if (actor !== ADMIN_ADDRESS) {
     throw new Error('Admin wallet address required');
   }

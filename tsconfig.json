@@ -20,6 +20,7 @@
       "bcryptjs",
       "minimatch"
     ],
+    "typeRoots": ["./types", "./node_modules/@types"],
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {

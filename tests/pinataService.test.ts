@@ -1,11 +1,21 @@
-process.env.ADMIN_WALLET_ADDRESS = '0x0';
-process.env.ORDER_PAYMENT_FACTORY_ADDRESS = '0x0';
-process.env.TON_RPC_URL = 'https://ton.example';
-
+import { insertConfig } from './testUtils';
+import { loadTenantSettings, getAdmins } from '../constants/tenant';
 import PinataService from '../services/pinata';
 
 describe('PinataService', () => {
+  beforeEach(async () => {
+    insertConfig({
+      ORDER_PAYMENT_FACTORY_ADDRESS: '0x0',
+      TON_RPC_URL: 'https://ton.example',
+      ADMIN_WALLET_ADDRESS_MAINNET: undefined,
+      ADMIN_WALLET_ADDRESS_TESTNET: undefined,
+    });
+    await loadTenantSettings();
+  });
+
   it('returns URI unchanged when already CID or URL', async () => {
+    const admins = await getAdmins();
+    expect(admins).toEqual([]);
     const svc = PinataService.getInstance();
     const cid = 'ipfs://bafybeigdyrzt5u2r6sxcv5a3dyhv6aipjfiv6t5bygbw4s3z6';
     const url = 'https://example.com/file.png';
