@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  I18nManager,
+} from 'react-native';
 import TonWeb from 'tonweb';
 import { Buffer } from 'buffer';
 import storesAgent from '../agents/stores-agent';
@@ -81,8 +89,17 @@ const StoreCreation: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { gap: 16 },
-  label: { fontSize: 16, fontWeight: '600', textAlign: 'end' },
-  input: { borderWidth: 1, borderRadius: 8, padding: 8, textAlign: 'end' },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
+  },
 });
 
 export default StoreCreation;
