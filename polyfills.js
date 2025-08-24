@@ -26,3 +26,14 @@ if (typeof global.Buffer === 'undefined') {
 if (typeof global.process === 'undefined') {
   global.process = require('process/browser');
 }
+
+// Ensure tslib provides a default export for libraries that import it
+try {
+  const tslib = require('tslib');
+  if (tslib && !('default' in tslib)) {
+    // eslint-disable-next-line no-param-reassign
+    tslib.default = tslib;
+  }
+} catch (err) {
+  debugLog('❌ tslib polyfill failed:', err);
+}
