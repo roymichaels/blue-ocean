@@ -86,6 +86,7 @@ export function useChatMessages(selectedRoom: ChatRoom | null, user: User | null
     loadOlderMessages,
     hasMore,
     loadingMore,
+    setMessages,
   };
 }
 export default useChatMessages;
