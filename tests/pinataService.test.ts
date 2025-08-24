@@ -5,7 +5,6 @@ import PinataService from '../services/pinata';
 describe('PinataService', () => {
   beforeEach(async () => {
     insertConfig({
-      ORDER_PAYMENT_FACTORY_ADDRESS: '0x0',
       TON_RPC_URL: 'https://ton.example',
       ADMIN_WALLET_ADDRESS_MAINNET: undefined,
       ADMIN_WALLET_ADDRESS_TESTNET: undefined,

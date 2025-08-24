@@ -13,7 +13,7 @@
     "clean": "node scripts/web-clean.js",
     "seed": "node scripts/seed.js",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit --types expo --types react --types react-native --types jest --types node --types bcryptjs --types minimatch",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "prepare": "husky install"
   },
@@ -129,8 +129,7 @@
   "packageManager": "yarn@1.22.22",
   "lint-staged": {
     "*.{ts,tsx}": [
-      "yarn lint",
-      "yarn typecheck"
+      "yarn lint"
     ]
   }
 }

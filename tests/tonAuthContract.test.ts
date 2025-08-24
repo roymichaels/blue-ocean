@@ -41,7 +41,6 @@ describe('Ton contract flows', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    insertConfig({ ORDER_PAYMENT_FACTORY_ADDRESS: undefined });
     ({
       deployOrderPayment,
       releasePayment,
@@ -60,14 +59,6 @@ describe('Ton contract flows', () => {
     expect(sent.messages[0].address).toBe(factory);
     expect(result.contractAddress).toBe(factory);
     expect(result.txHash).toBe(expectedHash);
-  });
-
-  it('uses configured factory address when provided', async () => {
-    jest.resetModules();
-    insertConfig({ ORDER_PAYMENT_FACTORY_ADDRESS: 'EQcustomfactory' });
-    ({ getOrderPaymentFactoryAddress } = require('../services/tonContract'));
-    const addr = await getOrderPaymentFactoryAddress();
-    expect(addr).toBe('EQcustomfactory');
   });
 
   it('releases payment through TonConnect', async () => {

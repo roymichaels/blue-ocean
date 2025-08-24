@@ -78,17 +78,18 @@ the desired values:
 | Variable | Required | Description |
 | -------- | -------- | ----------- |
 | `ADMIN_WALLET_ADDRESS` | yes | Wallet granted admin rights if no on-chain list exists. |
-| `ORDER_PAYMENT_FACTORY_ADDRESS` | yes | Address of the deployed OrderPayment factory contract. |
 | `TON_RPC_URL` | no | Primary TON RPC endpoint used for blockchain calls. Overrides tenant setting. |
 | `TON_RPC_FALLBACK_URLS` | no | Comma-separated backup RPC endpoints. Overrides tenant setting. |
 | `EXPO_PUBLIC_WAKU_BOOTSTRAP` | no | Comma-separated list of Waku peers for network bootstrap. |
 | `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
 | `ENABLE_UNSAFE_TON_PRIVATE_KEY` | no | Exposes wallet private key for testing. Never use in production. |
 | `PINATA_JWT` | no | JWT for pinning assets to Pinata via `scripts/pinata-upload.ts`. |
+
+The OrderPayment factory contract address is configured by admins through the
+**Admin → Settings** dashboard and does not require an environment variable.
+
 - `ADMIN_WALLET_ADDRESS` – wallet granted admin rights if no on-chain list
   exists (required)
-- `ORDER_PAYMENT_FACTORY_ADDRESS` – address of the deployed OrderPayment
-  factory contract (required)
  - `TON_RPC_URL` – primary TON RPC endpoint used for blockchain calls (optional; overrides tenant setting)
  - `TON_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional; overrides tenant setting)
 - `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default
@@ -103,10 +104,11 @@ These values are read at build time and cannot be changed from the UI.
 
 ### Secure Key Management
 
-Store sensitive values such as `ADMIN_WALLET_ADDRESS` and
-`ORDER_PAYMENT_FACTORY_ADDRESS` in a dedicated secrets manager (e.g., AWS
-Secrets Manager, Hashicorp Vault). Inject them as environment variables at
-runtime; the app will throw on startup if required keys are missing. Avoid
+Store sensitive values such as `ADMIN_WALLET_ADDRESS` and `TON_RPC_URL` in a
+dedicated secrets manager (e.g., AWS Secrets Manager, Hashicorp Vault). Inject
+them as environment variables at runtime; the app will throw on startup if
+required keys are missing. The OrderPayment factory address is managed via the
+admin dashboard. Avoid
 committing secrets to source control. See
 [`docs/secure-key-management.md`](docs/secure-key-management.md) for
 additional guidance.
