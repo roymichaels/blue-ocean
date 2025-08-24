@@ -731,7 +731,6 @@ const loadOrCreateDefaultRoom = async () => {
     }
   };
 
-  const { chatRooms, selectedRoom, setSelectedRoom } = useChatRooms(isOpen);
   const {
     messages,
     newMessage,
