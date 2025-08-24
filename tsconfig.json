@@ -14,13 +14,7 @@
     "types": [
       "react",
       "jest",
-      "node",
-      "bcryptjs",
-      "minimatch"
-    ],
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
+      "node"
     ],
     "skipLibCheck": true,
     "baseUrl": ".",
