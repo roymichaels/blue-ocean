@@ -1,0 +1,2 @@
+declare module 'minimatch';
+export {};

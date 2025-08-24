@@ -18,13 +18,16 @@ export interface TenantSettings {
   wakuBootstrap?: string[];
 }
 
+const initialAdmin =
+  config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
+
 export let AppConfig: TenantSettings = {
   appName: 'Blue Ocean',
   primaryColor: '#B99C5A',
   logoCid: '',
   feeAddress: '',
   feeBps: 0,
-  admins: config.ADMIN_WALLET_ADDRESS ? [config.ADMIN_WALLET_ADDRESS] : [],
+  admins: initialAdmin ? [initialAdmin] : [],
   rpcUrl: '',
   rpcFallbackUrls: [],
   wakuBootstrap: [],
