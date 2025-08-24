@@ -21,8 +21,7 @@ const EnvironmentSettings: React.FC<Props> = ({ colors, admins }) => {
         <Text style={[styles.title, { color: colors.text.primary }]}>Environment</Text>
       </View>
       <View style={styles.content}>
-        <Text style={[styles.description, { color: colors.text.primary }]}>Admin credentials and Waku details are configured via .env and cannot be edited here.</Text>
-        <Text style={[styles.label, { color: colors.text.primary, marginTop: 8 }]}>Admin Addresses: {admins.join(', ') || 'Not set'}</Text>
+        <Text style={[styles.label, { color: colors.text.primary }]}>Admin Addresses: {admins.join(', ') || 'Not set'}</Text>
       </View>
     </Card>
   );
@@ -49,10 +48,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-  },
-  description: {
-    fontSize: 14,
-    textAlign: 'end',
   },
   label: {
     fontSize: 14,
