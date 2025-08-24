@@ -9,6 +9,7 @@ describe('PinataService', () => {
       TON_RPC_URL: 'https://ton.example',
       ADMIN_WALLET_ADDRESS_MAINNET: undefined,
       ADMIN_WALLET_ADDRESS_TESTNET: undefined,
+
     });
     await loadTenantSettings();
   });

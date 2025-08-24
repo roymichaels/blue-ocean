@@ -35,6 +35,7 @@ const initialAdmin =
     return network === 'testnet' ? test : main;
   })() || '';
 
+
 export let AppConfig: TenantSettings = {
   appName: 'Blue Ocean',
   primaryColor: '#B99C5A',

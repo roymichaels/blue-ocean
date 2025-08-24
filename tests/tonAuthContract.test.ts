@@ -13,7 +13,7 @@ import { insertConfig } from './testUtils';
 let deployOrderPayment: any;
 let releasePayment: any;
 let refundPayment: any;
-let ORDER_PAYMENT_FACTORY_ADDRESS: string;
+let getOrderPaymentFactoryAddress: any;
 
 describe('tonAuth.requestSignature', () => {
   it('uses TonConnect signData', async () => {
@@ -41,26 +41,33 @@ describe('Ton contract flows', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    insertConfig({
-      ORDER_PAYMENT_FACTORY_ADDRESS: 'EQtestfactory',
-    });
+    insertConfig({ ORDER_PAYMENT_FACTORY_ADDRESS: undefined });
     ({
       deployOrderPayment,
       releasePayment,
       refundPayment,
-      ORDER_PAYMENT_FACTORY_ADDRESS,
+      getOrderPaymentFactoryAddress,
     } = require('../services/tonContract'));
     jest.spyOn(tonAuth, 'getTonConnect').mockReturnValue(mockTonConnect);
     jest.clearAllMocks();
   });
 
   it('deploys order payment via TonConnect', async () => {
+    const factory = await getOrderPaymentFactoryAddress();
     const result = await deployOrderPayment(5);
     expect(mockTonConnect.sendTransaction).toHaveBeenCalled();
     const sent = mockTonConnect.sendTransaction.mock.calls[0][0];
-    expect(sent.messages[0].address).toBe(ORDER_PAYMENT_FACTORY_ADDRESS);
-    expect(result.contractAddress).toBe(ORDER_PAYMENT_FACTORY_ADDRESS);
+    expect(sent.messages[0].address).toBe(factory);
+    expect(result.contractAddress).toBe(factory);
     expect(result.txHash).toBe(expectedHash);
+  });
+
+  it('uses configured factory address when provided', async () => {
+    jest.resetModules();
+    insertConfig({ ORDER_PAYMENT_FACTORY_ADDRESS: 'EQcustomfactory' });
+    ({ getOrderPaymentFactoryAddress } = require('../services/tonContract'));
+    const addr = await getOrderPaymentFactoryAddress();
+    expect(addr).toBe('EQcustomfactory');
   });
 
   it('releases payment through TonConnect', async () => {

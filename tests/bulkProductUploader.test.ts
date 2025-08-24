@@ -33,6 +33,7 @@ describe('BulkProductUploader processRecords', () => {
       TON_RPC_URL: 'http://localhost',
       ADMIN_WALLET_ADDRESS_MAINNET: undefined,
       ADMIN_WALLET_ADDRESS_TESTNET: undefined,
+
     });
     await loadTenantSettings();
   });

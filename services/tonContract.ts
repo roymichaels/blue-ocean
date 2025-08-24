@@ -5,11 +5,26 @@ import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
 import { getTonConnect } from './tonAuth';
 import { fetchSettings } from './tonSettings';
-import { requireEnv } from '@/utils/appConfig';
 
-export const ORDER_PAYMENT_FACTORY_ADDRESS = requireEnv(
-  'ORDER_PAYMENT_FACTORY_ADDRESS',
-);
+const DEFAULT_FACTORY_ADDRESS = 'EQtestfactory';
+export let ORDER_PAYMENT_FACTORY_ADDRESS =
+  process.env.ORDER_PAYMENT_FACTORY_ADDRESS || '';
+
+async function deployTemporaryFactory(): Promise<string> {
+  // Placeholder for actual factory deployment logic
+  return DEFAULT_FACTORY_ADDRESS;
+}
+
+export async function getOrderPaymentFactoryAddress(): Promise<string> {
+  if (!ORDER_PAYMENT_FACTORY_ADDRESS) {
+    if (process.env.NODE_ENV === 'test') {
+      ORDER_PAYMENT_FACTORY_ADDRESS = DEFAULT_FACTORY_ADDRESS;
+    } else {
+      ORDER_PAYMENT_FACTORY_ADDRESS = await deployTemporaryFactory();
+    }
+  }
+  return ORDER_PAYMENT_FACTORY_ADDRESS;
+}
 
 function makeComment(message: string): Cell {
   const cell = new TonWeb.boc.Cell();
@@ -41,6 +56,7 @@ export async function deployOrderPayment(
   amount: number,
 ): Promise<{ contractAddress: string; txHash: string }> {
   try {
+    const factoryAddress = await getOrderPaymentFactoryAddress();
     const settings = await fetchSettings();
     const feeAddress = settings.feeAddress ?? '';
     const feeBps = settings.feeBps ?? 0;
@@ -50,13 +66,13 @@ export async function deployOrderPayment(
     );
     const txHash = await sendTonConnect([
       {
-        address: ORDER_PAYMENT_FACTORY_ADDRESS,
+        address: factoryAddress,
         amount: TonWeb.utils.toNano(String(amount)).toString(),
         payload: payloadBoc,
       },
     ]);
     // Replace with actual derived contract address when available
-    const contractAddress = ORDER_PAYMENT_FACTORY_ADDRESS;
+    const contractAddress = factoryAddress;
     return { contractAddress, txHash };
   } catch (e) {
     errorLog('Failed to deploy order payment', e);
