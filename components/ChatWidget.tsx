@@ -730,6 +730,7 @@ const loadOrCreateDefaultRoom = async () => {
 
   const navigateToUserProfile = async (userId: string) => {
     if (!isAdmin && !isDriver) return;
+  };
 
   const { chatRooms, selectedRoom, setSelectedRoom, loadChatRooms, unreadTotal } =
     useChatRooms(isOpen);
