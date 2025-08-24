@@ -58,6 +58,7 @@ export interface TonSettings {
   fiatKey?: string;
   feeAddress?: string;
   feeBps?: number;
+  paymentFactoryAddress?: string;
   admins: string[];
   rpcUrl: string;
   rpcFallbackUrls?: string[];
@@ -196,6 +197,7 @@ export async function fetchSettings(): Promise<TonSettings> {
     fiatKey: map['fiatKey'],
     feeAddress: map['feeAddress'] ?? '',
     feeBps,
+    paymentFactoryAddress: map['paymentFactoryAddress'] ?? '',
     admins: map['admins'] ? JSON.parse(map['admins']) : [],
     rpcUrl: map['rpcUrl'] ?? '',
     rpcFallbackUrls: map['rpcFallbackUrls']
@@ -228,4 +230,15 @@ export async function getAdmins(): Promise<string[]> {
 
 export async function setAdmins(admins: string[], actor: string): Promise<void> {
   await setSetting('admins', JSON.stringify(admins), actor);
+}
+
+export async function getPaymentFactoryAddress(): Promise<string> {
+  return (await getSetting('paymentFactoryAddress')) || '';
+}
+
+export async function setPaymentFactoryAddress(
+  address: string,
+  actor: string,
+): Promise<void> {
+  await setSetting('paymentFactoryAddress', address, actor);
 }
