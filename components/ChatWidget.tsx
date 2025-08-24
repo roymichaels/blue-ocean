@@ -35,8 +35,6 @@ export default function ChatWidget() {
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
-  const [profileModalVisible, setProfileModalVisible] = useState(false);
-  const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [chatConfigOk, setChatConfigOk] = useState(true);
   const waku = useWakuClient();
@@ -731,10 +729,6 @@ const loadOrCreateDefaultRoom = async () => {
         setShowReactions(null);
       }
     }
-  };
-
-  const navigateToUserProfile = async (userId: string) => {
-    if (!isAdmin && !isDriver) return;
   };
 
   const { chatRooms, selectedRoom, setSelectedRoom } = useChatRooms(isOpen);
