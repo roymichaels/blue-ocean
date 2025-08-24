@@ -52,13 +52,13 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (isOpen && isLoggedIn) {
-      if (isAdmin || isDriver) {
-        loadChatRooms();
-      } else if (adminKey) {
-        loadOrCreateDefaultRoom();
+        if (isAdmin || isDriver) {
+          loadRoomsFromDb();
+        } else if (adminKey) {
+          loadOrCreateDefaultRoom();
+        }
       }
-    }
-  }, [isOpen, isAdmin, isDriver, isLoggedIn, adminKey]);
+    }, [isOpen, isAdmin, isDriver, isLoggedIn, adminKey]);
 
   useEffect(() => {
     if (isOpen) {
@@ -84,13 +84,13 @@ export default function ChatWidget() {
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    const init = async () => {
-      await loadChatRooms();
-      if (!isAdmin && !isDriver && adminKey) {
-        const db = DatabaseService.getInstance();
-        const id = await db.getOrCreateChatRoom(
-          user?.id || 'guest_user',
-          user?.displayName || 'Guest User',
+      const init = async () => {
+        await loadRoomsFromDb();
+        if (!isAdmin && !isDriver && adminKey) {
+          const db = DatabaseService.getInstance();
+          const id = await db.getOrCreateChatRoom(
+            user?.id || 'guest_user',
+            user?.displayName || 'Guest User',
           adminKey
         );
         setDefaultRoomId(id);
@@ -158,7 +158,7 @@ export default function ChatWidget() {
     fetchResults();
   }, [searchQuery, isAdmin, isDriver]);
 
-  const loadChatRooms = async () => {
+  const loadRoomsFromDb = async () => {
     try {
       const db = DatabaseService.getInstance();
       let roomsData = await db.getChatRooms();
@@ -738,8 +738,7 @@ const loadOrCreateDefaultRoom = async () => {
     if (!isAdmin && !isDriver) return;
   };
 
-  const { chatRooms, selectedRoom, setSelectedRoom, loadChatRooms, unreadTotal } =
-    useChatRooms(isOpen);
+  const { chatRooms, selectedRoom, setSelectedRoom } = useChatRooms(isOpen);
   const {
     messages,
     newMessage,
@@ -754,7 +753,7 @@ const loadOrCreateDefaultRoom = async () => {
     const next = !isOpen;
     setIsOpen(next);
     if (next) {
-      loadChatRooms();
+      loadRoomsFromDb();
     }
   };
 
