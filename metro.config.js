@@ -2,7 +2,7 @@ const path = require('path');
 const { getDefaultConfig } = require('@expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
-config.resolver.assetExts.push('wasm', 'sql');
+config.resolver.assetExts.push('wasm', 'sql', 'boc');
 
 // Resolve package roots to avoid Node's fallbacks to non-browser builds
 const nobleHashesPath = path.resolve(__dirname, 'node_modules/@noble/hashes');
