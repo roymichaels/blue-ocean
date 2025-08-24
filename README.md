@@ -8,6 +8,8 @@ defaults are provided for a zero‑config experience.
 
 ## Quickstart
 
+Use **Yarn** for dependency management and running scripts.
+
 ```sh
 yarn install
 yarn dev        # mobile
@@ -269,13 +271,13 @@ the app works from any gateway.
 1. **Build**
 
    ```sh
-   npm run web:release
+   yarn web:release
    ```
 
 2. **Preview locally**
 
    ```sh
-   npm run web:preview
+   yarn web:preview
    ```
 
    Then open `http://localhost:4173/` and navigate within the app (no deep links).
@@ -290,7 +292,7 @@ the app works from any gateway.
 
 #### Pin `dist/` Checklist
 
-1. `npm run web:release`
+1. `yarn web:release`
 2. `node scripts/assert-relative-assets.js`
 3. Pin the entire `dist/` folder to your IPFS node or pinning service
 4. Record the returned CID for later reference
