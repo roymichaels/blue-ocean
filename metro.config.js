@@ -20,12 +20,17 @@ config.resolver.extraNodeModules = {
     __dirname,
     'EmptyHMRClient.ts'
   ),
-  '@noble/hashes': require.resolve('@noble/hashes'),
+  '@noble/hashes': path.resolve(__dirname, 'node_modules/@noble/hashes'),
   '@noble/hashes/hkdf': require.resolve('@noble/hashes/hkdf'),
   '@noble/hashes/sha256': require.resolve('@noble/hashes/sha256'),
   '@noble/hashes/sha512': require.resolve('@noble/hashes/sha512'),
   '@noble/hashes/crypto': require.resolve('@noble/hashes/crypto'),
   '@noble/hashes/crypto.js': require.resolve('@noble/hashes/crypto'),
+  'expo-router': path.resolve(__dirname, 'node_modules/expo-router'),
+  'react-native-url-polyfill': path.resolve(
+    __dirname,
+    'node_modules/react-native-url-polyfill'
+  ),
   '@waku/utils': path.resolve(
     __dirname,
     'node_modules/@waku/utils/dist/index.js'
