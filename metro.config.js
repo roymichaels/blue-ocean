@@ -3,6 +3,10 @@ const { getDefaultConfig } = require('@expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('wasm', 'sql', 'boc');
+// Force Metro to resolve all modules from the project root so nested copies
+// of dependencies (e.g., tslib inside rxjs) are ignored. This ensures our
+// custom alias for `tslib` is respected everywhere.
+config.resolver.disableHierarchicalLookup = true;
 
 // Map the Expo HMR client to our local wrapper; polyfills are applied at app entry
 config.resolver.extraNodeModules = {
