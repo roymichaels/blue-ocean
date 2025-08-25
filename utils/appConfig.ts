@@ -91,10 +91,14 @@ export function getTonRpcUrls(): string[] {
     .split(',')
     .map((u) => u.trim())
     .filter(Boolean);
-  const primary = envPrimary || tenantRpc;
+  let primary = envPrimary || tenantRpc;
   const fallbacks = envFallbacks.length > 0 ? envFallbacks : tenantFallbacks;
   if (!primary) {
-    throw new Error('Missing TON RPC URL');
+    primary = 'https://testnet.toncenter.com/api/v2/jsonRPC';
+    // eslint-disable-next-line no-console
+    console.warn(
+      'TON_RPC_URL not set, defaulting to https://testnet.toncenter.com/api/v2/jsonRPC',
+    );
   }
   return [primary, ...fallbacks];
 }
