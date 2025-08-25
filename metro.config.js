@@ -21,6 +21,7 @@ config.resolver.extraNodeModules = {
     'EmptyHMRClient.ts'
   ),
   '@noble/hashes': path.resolve(__dirname, 'node_modules/@noble/hashes'),
+  '@noble/ed25519': path.resolve(__dirname, 'node_modules/@noble/ed25519'),
   '@noble/hashes/hkdf': require.resolve('@noble/hashes/hkdf'),
   '@noble/hashes/sha256': require.resolve('@noble/hashes/sha256'),
   '@noble/hashes/sha512': require.resolve('@noble/hashes/sha512'),
