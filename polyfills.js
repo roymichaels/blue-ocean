@@ -29,7 +29,9 @@ if (typeof global.process === 'undefined') {
 
 // Ensure tslib provides a default export for libraries that import it
 try {
-  const tslib = require('tslib');
+  // Load tslib via its ESM entry to ensure the runtime sees a version with a
+  // default export before any dependency (e.g., rxjs) uses it.
+  const tslib = require('tslib/modules/index.js');
   if (tslib && !('default' in tslib)) {
     // eslint-disable-next-line no-param-reassign
     tslib.default = tslib;
