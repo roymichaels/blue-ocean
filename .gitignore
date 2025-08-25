@@ -7,6 +7,13 @@ expo-env.d.ts
 node_modules/
 .expo/
 dist/
+bun.lockb
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+dist
+dist-ssr
+*.local
 
 
 
