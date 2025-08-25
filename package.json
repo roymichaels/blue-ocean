@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "expo start",
     "web": "expo start --web",
-    "build": "expo export --platform web --output-dir dist",
+    "build": "expo export --platform web --output-dir dist && node scripts/inject-tonconnect-manifest.js",
     "docker:dev": "docker compose up",
     "docker:build:web": "docker compose run --rm app yarn build",
     "docker:preview": "docker compose run --rm -p 4173:4173 app npx serve@14.2.0 dist -l 4173",
