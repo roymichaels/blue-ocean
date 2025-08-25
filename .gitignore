@@ -19,5 +19,4 @@ dist-ssr
 
 # Environment files
 .env*
-!.env.example
 dump.sql
