@@ -5,6 +5,5 @@ module.exports = function (api) {
     // including 'module:metro-react-native-babel-preset' causes plugins like
     // 'transform-react-jsx-self' to run twice and inject duplicate props.
     presets: ['babel-preset-expo'],
-    plugins: ['expo-router/babel'],
   };
 };
