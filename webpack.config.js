@@ -61,6 +61,11 @@ module.exports = async function (env, argv) {
       __dirname,
       'node_modules/multiformats/dist/src/index.js'
     ),
+    'expo-router/entry': require.resolve('expo-router/entry'),
+    'react-native-url-polyfill': path.resolve(
+      __dirname,
+      'node_modules/react-native-url-polyfill'
+    ),
     tslib: require.resolve('tslib'),
   };
 
