@@ -45,10 +45,16 @@ export default function ChatWidget() {
     useChatRooms(isOpen);
 
   useEffect(() => {
+    let mounted = true;
     SettingsAgent.getInstance()
       .getAdmins()
-      .then((a) => setAdminKey(a[0] || ''))
+      .then((a) => {
+        if (mounted) setAdminKey(a[0] || '');
+      })
       .catch((err) => errorLog('Failed to load admin key', err));
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
