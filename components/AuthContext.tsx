@@ -1,4 +1,5 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import {
   useTonConnectUI,
   useTonAddress,
@@ -6,6 +7,7 @@ import {
 } from '@tonconnect/ui-react';
 import DatabaseService from '../services/database';
 import { User } from '../types';
+import { errorLog } from '../utils/logger';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -89,7 +91,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [address, connectionRestored]);
 
   const login = async () => {
-    openModal();
+    try {
+      await openModal();
+    } catch (err: unknown) {
+      errorLog('Wallet connection failed', err);
+      Alert.alert('Error', 'Wallet connection failed. Please try again.');
+    }
   };
 
   const signup = login;
