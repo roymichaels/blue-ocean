@@ -236,7 +236,7 @@ export interface Order {
     cipher: string;
     from: string;
   };
-  paymentMethod: 'cash_on_delivery' | 'ton';
+  paymentMethod: 'cash_on_delivery' | 'ton' | 'card';
   buyerAddress?: string;
   sellerAddress?: string;
   driverAddress?: string;
@@ -248,6 +248,8 @@ export interface Order {
   updatedAt: string;
   trackingSteps: OrderTrackingStep[];
   paymentTxHash?: string;
+  platformFee?: number;
+  sellerPayout?: number;
 }
 
 export type OrderStatus =

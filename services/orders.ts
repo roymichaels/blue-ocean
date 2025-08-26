@@ -15,6 +15,7 @@ import { getProduct, setProduct } from './tonProducts';
 import tonAuth from './tonAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
 import config from '../utils/appConfig';
+import { calculateCardFees } from '@/payments/card';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
@@ -110,7 +111,7 @@ class OrderService {
     items: CartItem[],
     shippingAddress: ShippingAddress,
     payment?: {
-      method?: 'cash_on_delivery' | 'ton';
+      method?: 'cash_on_delivery' | 'ton' | 'card';
       contractAddress?: string;
       txHash?: string;
       buyerAddress?: string;
@@ -140,6 +141,9 @@ class OrderService {
     const itemsHash = Buffer.from(
       sha256(Buffer.from(JSON.stringify(items)))
     ).toString('hex');
+    const feeInfo =
+      pay?.method === 'card' ? await calculateCardFees(total) : undefined;
+
     const order: Order = {
       id: orderId,
       userId,
@@ -157,6 +161,8 @@ class OrderService {
       createdAt: timestamp,
       updatedAt: timestamp,
       trackingSteps: this.getTrackingSteps('order_received'),
+      platformFee: feeInfo?.platformFee,
+      sellerPayout: feeInfo?.sellerPayout,
     };
 
     await ordersAgent.add(order);
@@ -169,7 +175,7 @@ class OrderService {
     userId: string,
     cartItems: CartItem[],
     shippingAddress: ShippingAddress,
-    paymentMethod: 'cash_on_delivery' | 'ton' = 'cash_on_delivery',
+    paymentMethod: 'cash_on_delivery' | 'ton' | 'card' = 'cash_on_delivery',
   ): Promise<Order[]> {
     const grouped: Record<string, CartItem[]> = {};
     for (const item of cartItems) {
@@ -185,6 +191,12 @@ class OrderService {
         paymentMethod === 'ton'
           ? {
               method: 'ton' as const,
+              buyerAddress: tonAuth.getAddress() || undefined,
+              sellerAddress: store?.owner,
+            }
+          : paymentMethod === 'card'
+          ? {
+              method: 'card' as const,
               buyerAddress: tonAuth.getAddress() || undefined,
               sellerAddress: store?.owner,
             }
