@@ -2,7 +2,13 @@ import { randomUUID } from 'crypto';
 import { Order, OrderStatus, Notification, OrderTrackingStep } from '../types';
 import tonAuth from '../services/tonAuth';
 import notificationsAgent from './notifications-agent';
-import { setOrder, getOrder, listOrders, removeOrder, listOrdersBySeller } from '../services/tonOrders';
+import {
+  setOrder,
+  getOrder,
+  listOrders,
+  removeOrder,
+  listOrdersBySeller,
+} from '../services/tonOrders';
 import storesAgent from './stores-agent';
 import SettingsAgent from './settings-agent';
 import {
@@ -29,8 +35,7 @@ import {
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { orderStatusMessageSchema } from '../schemas/waku/order.status';
-
-const ORDER_TOPIC = '/blue-ocean/orders/1';
+import { buildTopic } from '../utils/wakuTopics';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -49,10 +54,9 @@ class OrdersAgent {
   private node: LightNode | null = null;
   private storeMap: Map<string, string> = new Map();
   private knownStores: Set<string> = new Set();
+  private subscribedStores: Set<string> = new Set();
 
-  constructor() {
-    void this.subscribeWaku();
-  }
+  constructor() {}
 
   private buildBaseEvent(order: Order) {
     return {
@@ -105,10 +109,11 @@ class OrdersAgent {
     }
   }
 
-  private async subscribeWaku() {
+  private async subscribeStore(storeId: string) {
+    if (this.subscribedStores.has(storeId)) return;
     const n = await this.ensureNode();
     if (!n) return;
-    const decoder = createDecoder(ORDER_TOPIC);
+    const decoder = createDecoder(buildTopic('orders', storeId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
@@ -122,6 +127,7 @@ class OrdersAgent {
       }
     };
     (n.relay as any).addObserver(handler, [decoder]);
+    this.subscribedStores.add(storeId);
   }
 
   private getTrackingSteps(status: OrderStatus): OrderTrackingStep[] {
@@ -235,6 +241,7 @@ class OrdersAgent {
       this.storeMap.set(toStore.id, sid);
       this.knownStores.add(sid);
       await setOrder(sid, toStore);
+      await this.subscribeStore(sid);
     }
     await logOrderEvent({
       tenant: enriched.items?.[0]?.product?.storeId || '',
@@ -270,6 +277,7 @@ class OrdersAgent {
       this.storeMap.set(order.id, sid);
       this.knownStores.add(sid);
       await setOrder(sid, order);
+      await this.subscribeStore(sid);
     }
     await logOrderEvent({
       tenant: order.items?.[0]?.product?.storeId || '',
@@ -282,7 +290,8 @@ class OrdersAgent {
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
-    await eventBus.publish(ORDER_TOPIC, 'order.updated', {
+    const sid = order.items?.[0]?.product?.storeId || '';
+    await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
       ...this.buildBaseEvent(order),
       prevStatus: current.status,
       newStatus: order.status,
@@ -296,7 +305,7 @@ class OrdersAgent {
         await this.recordSellerMetric(order.sellerAddress, 'refunded');
       }
       if (order.status === 'disputed' || current.status === 'disputed') {
-        await eventBus.publish(ORDER_TOPIC, 'dispute.updated', {
+        await eventBus.publish(buildTopic('orders', sid), 'dispute.updated', {
           ...this.buildBaseEvent(order),
           prevStatus: current.status,
           newStatus: order.status,
@@ -377,6 +386,7 @@ class OrdersAgent {
       this.storeMap.set(updated.id, sid);
       this.knownStores.add(sid);
       await setOrder(sid, updated);
+      await this.subscribeStore(sid);
     }
     await logOrderEvent({
       tenant: updated.items?.[0]?.product?.storeId || '',
@@ -389,12 +399,13 @@ class OrdersAgent {
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
-    await eventBus.publish(ORDER_TOPIC, 'order.updated', {
+    const sid = updated.items?.[0]?.product?.storeId || '';
+    await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
       ...this.buildBaseEvent(updated),
       prevStatus: order.status,
       newStatus: updated.status,
     });
-    await eventBus.publish(ORDER_TOPIC, 'payment.received', {
+    await eventBus.publish(buildTopic('orders', sid), 'payment.received', {
       ...this.buildBaseEvent(updated),
     });
     await Promise.all(
@@ -436,6 +447,7 @@ class OrdersAgent {
       this.storeMap.set(updated.id, sid);
       this.knownStores.add(sid);
       await setOrder(sid, updated);
+      await this.subscribeStore(sid);
     }
     await logOrderEvent({
       tenant: updated.items?.[0]?.product?.storeId || '',
@@ -448,7 +460,8 @@ class OrdersAgent {
       actor: tonAuth.getAddress() || '',
       timestamp: Date.now(),
     });
-    await eventBus.publish(ORDER_TOPIC, 'order.updated', {
+    const sid = updated.items?.[0]?.product?.storeId || '';
+    await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
       ...this.buildBaseEvent(updated),
       prevStatus: order.status,
       newStatus: updated.status,
@@ -478,7 +491,8 @@ class OrdersAgent {
       timestamp: Date.now(),
     };
     try {
-      await notificationsAgent.broadcast('status.updated', notification);
+      const sid = order.items?.[0]?.product?.storeId || '';
+      await notificationsAgent.broadcast('status.updated', notification, sid);
     } catch (err) {
       errorLog('Failed to send notification', err);
     }
@@ -495,7 +509,8 @@ class OrdersAgent {
       timestamp: Date.now(),
     };
     try {
-      await notificationsAgent.broadcast('order.created', notification);
+      const sid = order.items?.[0]?.product?.storeId || '';
+      await notificationsAgent.broadcast('order.created', notification, sid);
     } catch (err) {
       errorLog('Failed to send notification', err);
     }
@@ -512,7 +527,8 @@ class OrdersAgent {
       timestamp: Date.now(),
     };
     try {
-      await notificationsAgent.broadcast('payment.received', notification);
+      const sid = order.items?.[0]?.product?.storeId || '';
+      await notificationsAgent.broadcast('payment.received', notification, sid);
     } catch (err) {
       errorLog('Failed to send notification', err);
     }
@@ -529,7 +545,8 @@ class OrdersAgent {
       timestamp: Date.now(),
     };
     try {
-      await notificationsAgent.broadcast('dispute.updated', notification);
+      const sid = order.items?.[0]?.product?.storeId || '';
+      await notificationsAgent.broadcast('dispute.updated', notification, sid);
     } catch (err) {
       errorLog('Failed to send notification', err);
     }
