@@ -23,12 +23,17 @@ export default function MoonPayModal({
   amountTON,
 }: MoonPayModalProps) {
   const { colors } = useTheme();
-  const { fiatKey } = useAppInfo();
+  const { fiatKey, feeAddress, feeBps } = useAppInfo();
   const [loading, setLoading] = useState(true);
 
   if (!fiatKey) return null;
 
-  const url = `https://buy.moonpay.com?apiKey=${fiatKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd`;
+  const feeParams =
+    feeAddress && typeof feeBps === 'number'
+      ? `&feeAddress=${encodeURIComponent(feeAddress)}&feeBps=${feeBps}`
+      : '';
+  const url =
+    `https://buy.moonpay.com?apiKey=${fiatKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd${feeParams}`;
 
   let injectedJavaScript: string | undefined;
   if (typeof amountTON === 'number') {
