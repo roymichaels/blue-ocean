@@ -7,6 +7,8 @@ Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment varia
 defaults are provided for a zero‑config experience. All data is replicated via Waku topics
 and TON smart contracts; the app does not use a local SQLite database.
 
+See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview and [docs/routes.md](docs/routes.md) for route and role details.
+
 ## Quickstart
 
 Use **Yarn** for dependency management and running scripts.
