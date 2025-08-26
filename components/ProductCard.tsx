@@ -22,7 +22,7 @@ import Card from './Card';
 
 interface ProductCardProps {
   product: Product;
-  isAdmin?: boolean;
+  isOwner?: boolean;
   onEdit?: (product: Product) => void;
   onDelete?: (productId: string) => void;
 
@@ -33,7 +33,7 @@ interface ProductCardProps {
 
 export default function ProductCard({
   product,
-  isAdmin = false,
+  isOwner = false,
   onEdit,
   onDelete,
 
@@ -53,7 +53,7 @@ export default function ProductCard({
   const selectedVariant = variants[selectedVariantIndex];
   const stock = selectedVariant ? selectedVariant.stock : product.stock;
 
-  if (isAdmin && address && product.storeId !== address) {
+  if (isOwner && address && product.storeId !== address) {
     return null;
   }
 
@@ -203,8 +203,8 @@ export default function ProductCard({
           <ShoppingCart size={16} color={colors.text.inverse} />
         </TouchableOpacity>
 
-        {/* Admin Actions */}
-        {isAdmin && (
+        {/* Owner Actions */}
+        {isOwner && (
           <View style={styles.adminActions}>
             <TouchableOpacity style={styles.adminButton} onPress={handleEdit}>
               <Pencil size={12} color="#FFFFFF" />

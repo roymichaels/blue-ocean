@@ -67,7 +67,7 @@ export default function SubcategoryScreen() {
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [showSubcategoryEditModal, setShowSubcategoryEditModal] = useState(false);
   const [editSubcategoryData, setEditSubcategoryData] = useState<Partial<Subcategory>>({name: "", icon: ""});
-  const { isAdmin } = useAuth();
+  const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
 
@@ -454,7 +454,7 @@ export default function SubcategoryScreen() {
         </TouchableOpacity>
 
         {/* Admin Actions */}
-        {isAdmin && (
+        {isStoreOwner && (
           <View style={styles.adminActions}>
             <TouchableOpacity 
               style={styles.adminActionButton}
@@ -540,7 +540,7 @@ export default function SubcategoryScreen() {
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{subcategory.name}</Text>
         <View style={styles.headerActions}>
-          {isAdmin && (
+          {isStoreOwner && (
             <>
               <TouchableOpacity
                 style={[styles.addButton, { backgroundColor: colors.gold }]}
@@ -573,9 +573,9 @@ export default function SubcategoryScreen() {
             <Text style={styles.emptyIcon}>{subcategory.icon}</Text>
             <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין מוצרים עדיין</Text>
             <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
-              {isAdmin ? 'הוסף מוצרים כדי להתחיל' : 'אנחנו עובדים על הוספת מוצרים לקטגוריה זו'}
+              {isStoreOwner ? 'הוסף מוצרים כדי להתחיל' : 'אנחנו עובדים על הוספת מוצרים לקטגוריה זו'}
             </Text>
-            {isAdmin && (
+            {isStoreOwner && (
               <TouchableOpacity style={[styles.emptyButton, { backgroundColor: colors.gold }]} onPress={addProduct}>
                 <Plus size={20} color={colors.text.inverse} />
                 <Text style={[styles.emptyButtonText, { color: colors.text.inverse }]}>הוסף מוצר</Text>

@@ -35,7 +35,7 @@ export default function CategoryScreen() {
     categoryId: id || ''
   });
   const [loading, setLoading] = useState(true);
-  const { isAdmin } = useAuth();
+  const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
 
   // Modal states
@@ -194,7 +194,7 @@ export default function CategoryScreen() {
       </View>
       <Text style={[styles.subcategoryName, { color: colors.text.primary }]}>{item.name}</Text>
       
-      {isAdmin && (
+      {isStoreOwner && (
         <View style={styles.adminActions}>
           <TouchableOpacity 
             style={styles.adminActionButton}
@@ -247,7 +247,7 @@ export default function CategoryScreen() {
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{category.name}</Text>
         <View style={styles.headerActions}>
-          {isAdmin && (
+          {isStoreOwner && (
             <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={addSubcategory}>
               <Plus size={20} color={colors.text.inverse} />
             </TouchableOpacity>
@@ -269,9 +269,9 @@ export default function CategoryScreen() {
             <Text style={styles.emptyIcon}>{category.icon}</Text>
             <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין תת-קטגוריות</Text>
             <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
-              {isAdmin ? 'הוסף תת-קטגוריות כדי להתחיל' : 'תת-קטגוריות יתווספו בקרוב'}
+              {isStoreOwner ? 'הוסף תת-קטגוריות כדי להתחיל' : 'תת-קטגוריות יתווספו בקרוב'}
             </Text>
-            {isAdmin && (
+            {isStoreOwner && (
               <TouchableOpacity style={[styles.emptyButton, { backgroundColor: colors.gold }]} onPress={addSubcategory}>
                 <Plus size={20} color={colors.text.inverse} />
                 <Text style={[styles.emptyButtonText, { color: colors.text.inverse }]}>הוסף תת-קטגוריה</Text>

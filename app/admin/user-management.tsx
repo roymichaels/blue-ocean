@@ -17,7 +17,7 @@ import { ArrowLeft, Search, User, Mail, Calendar, Shield, UserCheck, UserX, Filt
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import DatabaseService from '../../services/database';
-import { User as UserType, CustomerTier } from '../../types';
+import { User as UserType, CustomerTier, UserRole } from '../../types';
 import { useNotifications } from '../../components/NotificationContext';
 import commonStyles from '../../constants/styles';
 
@@ -28,7 +28,7 @@ export default function UserManagementScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
-  const [editedRole, setEditedRole] = useState<'user' | 'driver' | 'admin'>('user');
+  const [editedRole, setEditedRole] = useState<UserRole>('user');
   const [editedTier, setEditedTier] = useState<CustomerTier>('new');
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showTierDropdown, setShowTierDropdown] = useState(false);
@@ -103,7 +103,7 @@ export default function UserManagementScreen() {
 
   const openEditModal = (user: UserType) => {
     setSelectedUser(user);
-    setEditedRole(user.role as 'user' | 'driver' | 'admin' || 'user');
+    setEditedRole((user.role as UserRole) || 'user');
     setEditedTier(user.customerTier || 'new');
     setShowEditModal(true);
   };
@@ -246,17 +246,22 @@ export default function UserManagementScreen() {
         
         <View style={styles.userBadges}>
           {user.role === 'admin' && (
-            <View style={[styles.roleBadge, { backgroundColor: colors.gold }]}>
+            <View style={[styles.roleBadge, { backgroundColor: colors.gold }]}> 
               <Text style={[styles.roleBadgeText, { color: colors.text.inverse }]}>מנהל</Text>
             </View>
           )}
           {user.role === 'driver' && (
-            <View style={[styles.roleBadge, { backgroundColor: colors.status.info }]}>
+            <View style={[styles.roleBadge, { backgroundColor: colors.status.info }]}> 
               <Text style={[styles.roleBadgeText, { color: colors.text.inverse }]}>נהג</Text>
             </View>
           )}
-          
-          <View style={[styles.tierBadge, { backgroundColor: getCustomerTierColor(user.customerTier) }]}>
+          {user.role === 'store-owner' && (
+            <View style={[styles.roleBadge, { backgroundColor: colors.status.warning }]}> 
+              <Text style={[styles.roleBadgeText, { color: colors.text.inverse }]}>בעל חנות</Text>
+            </View>
+          )}
+
+          <View style={[styles.tierBadge, { backgroundColor: getCustomerTierColor(user.customerTier) }]}> 
             <Text style={[styles.tierBadgeText, { color: colors.text.inverse }]}>
               {getCustomerTierLabel(user.customerTier)}
             </Text>
@@ -350,7 +355,13 @@ export default function UserManagementScreen() {
             {filterRole && (
               <View style={[styles.activeFilterChip, { backgroundColor: colors.interactive.secondary }]}>
                 <Text style={[styles.activeFilterText, { color: colors.text.primary }]}>
-                  תפקיד: {filterRole === 'admin' ? 'מנהל' : filterRole === 'driver' ? 'נהג' : 'משתמש'}
+                  תפקיד: {filterRole === 'admin'
+                    ? 'מנהל'
+                    : filterRole === 'driver'
+                    ? 'נהג'
+                    : filterRole === 'store-owner'
+                    ? 'בעל חנות'
+                    : 'משתמש'}
                 </Text>
                 <TouchableOpacity onPress={() => setFilterRole(null)}>
                   <X size={14} color={colors.text.primary} />
@@ -400,11 +411,11 @@ export default function UserManagementScreen() {
             <Text style={[styles.statLabel, { color: colors.text.secondary }]}>סה"כ משתמשים</Text>
           </View>
           
-          <View style={[styles.statCard, { 
+          <View style={[styles.statCard, {
             backgroundColor: colors.surface.primary,
-            borderColor: colors.border.primary 
-          }]}>
-            <Text style={[styles.statNumber, { color: colors.text.primary }]}>
+            borderColor: colors.border.primary
+          }]}> 
+            <Text style={[styles.statNumber, { color: colors.text.primary }]}> 
               {users.filter(u => u.role === 'admin').length}
             </Text>
             <Text style={[styles.statLabel, { color: colors.text.secondary }]}>מנהלים</Text>
@@ -412,11 +423,20 @@ export default function UserManagementScreen() {
           <View style={[styles.statCard, {
             backgroundColor: colors.surface.primary,
             borderColor: colors.border.primary
-          }]}>
-            <Text style={[styles.statNumber, { color: colors.text.primary }]}>
+          }]}> 
+            <Text style={[styles.statNumber, { color: colors.text.primary }]}> 
               {users.filter(u => u.role === 'driver').length}
             </Text>
             <Text style={[styles.statLabel, { color: colors.text.secondary }]}>נהגים</Text>
+          </View>
+          <View style={[styles.statCard, {
+            backgroundColor: colors.surface.primary,
+            borderColor: colors.border.primary
+          }]}> 
+            <Text style={[styles.statNumber, { color: colors.text.primary }]}> 
+              {users.filter(u => u.role === 'store-owner').length}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.text.secondary }]}>בעלי חנויות</Text>
           </View>
 
           <View style={[styles.statCard, {
@@ -527,8 +547,14 @@ export default function UserManagementScreen() {
                     }]}
                     onPress={() => setShowRoleDropdown(!showRoleDropdown)}
                   >
-                    <Text style={[styles.dropdownText, { color: colors.text.primary }]}>
-                      {editedRole === 'admin' ? 'מנהל' : editedRole === 'driver' ? 'נהג' : 'משתמש רגיל'}
+                    <Text style={[styles.dropdownText, { color: colors.text.primary }]}> 
+                      {editedRole === 'admin'
+                        ? 'מנהל'
+                        : editedRole === 'driver'
+                        ? 'נהג'
+                        : editedRole === 'store-owner'
+                        ? 'בעל חנות'
+                        : 'משתמש רגיל'}
                     </Text>
                     <ChevronDown size={20} color={colors.text.secondary} />
                   </TouchableOpacity>
@@ -573,6 +599,18 @@ export default function UserManagementScreen() {
                         }}
                       >
                         <Text style={[styles.dropdownItemText, { color: colors.text.primary }]}>מנהל</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[
+                          styles.dropdownItem,
+                          editedRole === 'store-owner' && { backgroundColor: colors.interactive.secondary }
+                        ]}
+                        onPress={() => {
+                          setEditedRole('store-owner');
+                          setShowRoleDropdown(false);
+                        }}
+                      >
+                        <Text style={[styles.dropdownItemText, { color: colors.text.primary }]}>בעל חנות</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -737,6 +775,17 @@ export default function UserManagementScreen() {
                 >
                   <Text style={[styles.filterOptionText, { color: colors.text.primary }]}>מנהלים</Text>
                   {filterRole === 'admin' && <View style={[styles.filterSelectedDot, { backgroundColor: colors.gold }]} />}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.filterOption,
+                    { borderBottomColor: colors.border.secondary },
+                    filterRole === 'store-owner' && { backgroundColor: colors.interactive.secondary }
+                  ]}
+                  onPress={() => setFilterRole('store-owner')}
+                >
+                  <Text style={[styles.filterOptionText, { color: colors.text.primary }]}>בעלי חנויות</Text>
+                  {filterRole === 'store-owner' && <View style={[styles.filterSelectedDot, { backgroundColor: colors.gold }]} />}
                 </TouchableOpacity>
               </View>
 

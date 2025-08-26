@@ -73,7 +73,7 @@ export default function HomeScreen() {
     type: 'info' as 'success' | 'error' | 'info' | 'warning',
     buttonText: undefined as string | undefined,
   });
-  const { isAdmin } = useAuth();
+  const { isStoreOwner } = useAuth();
   const { t } = useLanguage();
   const { colors } = useTheme();
   const bannerScrollRef = useRef<ScrollView>(null);
@@ -255,7 +255,7 @@ export default function HomeScreen() {
       <Text style={[styles.categoryName, { color: colors.text.primary }]}>
         {item.name}
       </Text>
-      {isAdmin && (
+      {isStoreOwner && (
         <View style={styles.categoryAdminActions}>
           <TouchableOpacity
             style={[
@@ -312,7 +312,7 @@ export default function HomeScreen() {
         </View>
       </TouchableOpacity>
 
-      {isAdmin && (
+      {isStoreOwner && (
         <View style={styles.bannerAdminActions}>
           <TouchableOpacity
             style={styles.bannerAdminButton}
@@ -489,7 +489,7 @@ export default function HomeScreen() {
         {/* Hero Banner Carousel */}
         <View style={styles.bannerContainer}>
           <View style={styles.bannerHeader}>
-            {isAdmin && (
+            {isStoreOwner && (
               <TouchableOpacity
                 style={[
                   styles.addBannerButton,
@@ -548,10 +548,10 @@ export default function HomeScreen() {
               icon={Plus}
               title={t('home.noBanners')}
               message={
-                isAdmin ? t('home.addBanners') : t('home.bannersComingSoon')
+                isStoreOwner ? t('home.addBanners') : t('home.bannersComingSoon')
               }
-              actionText={isAdmin ? t('banner.addBanner') : undefined}
-              onAction={isAdmin ? addBanner : undefined}
+              actionText={isStoreOwner ? t('banner.addBanner') : undefined}
+              onAction={isStoreOwner ? addBanner : undefined}
             />
           )}
         </View>
@@ -614,7 +614,7 @@ export default function HomeScreen() {
                   {getSortLabel()}
                 </Text>
               </TouchableOpacity>
-              {isAdmin && (
+              {isStoreOwner && (
                 <TouchableOpacity
                   style={[
                     styles.addProductButton,
@@ -643,7 +643,7 @@ export default function HomeScreen() {
                 >
                   <ProductCard
                     product={item}
-                    isAdmin={isAdmin}
+                    isOwner={isStoreOwner}
                     onEdit={editProduct}
 
                     subcategoryName={
@@ -665,8 +665,8 @@ export default function HomeScreen() {
                   ? t('home.tryDifferentSearch')
                   : t('home.productsComingSoon')
               }
-              actionText={isAdmin && !searchQuery ? 'הוסף מוצר' : undefined}
-              onAction={isAdmin && !searchQuery ? addProduct : undefined}
+              actionText={isStoreOwner && !searchQuery ? 'הוסף מוצר' : undefined}
+              onAction={isStoreOwner && !searchQuery ? addProduct : undefined}
             />
           )}
         </View>

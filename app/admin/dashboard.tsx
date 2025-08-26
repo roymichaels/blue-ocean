@@ -44,7 +44,7 @@ export default function AdminDashboardScreen() {
     storeReputation: 0
   });
   const { showNotification } = useNotifications();
-  const { isAdmin, isDriver, user } = useAuth();
+  const { isStoreOwner, user } = useAuth();
   const { openAuthModal } = useAuthModal();
   const { colors } = useTheme();
 
@@ -58,14 +58,14 @@ export default function AdminDashboardScreen() {
 
   useEffect(() => {
     // Check if user is logged in as admin
-    if (!isAdmin && !isDriver) {
+    if (!isStoreOwner) {
       openAuthModal('login');
       router.replace('/');
       return;
     }
 
     loadData();
-  }, [isAdmin, isDriver]);
+  }, [isStoreOwner]);
 
   const loadData = async () => {
     try {

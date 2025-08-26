@@ -13,6 +13,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
   isDriver: boolean;
+  isStoreOwner: boolean;
   user: User | null;
   loading: boolean;
   login: () => Promise<void>;
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   isAdmin: false,
   isDriver: false,
+  isStoreOwner: false,
   user: null,
   loading: false,
   login: async () => {},
@@ -108,6 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const role = user?.role;
   const isAdmin = role === 'admin';
   const isDriver = role === 'driver';
+  const isStoreOwner = role === 'store-owner';
 
   if (!connectionRestored) {
     return null;
@@ -119,6 +122,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isLoggedIn: !!address,
         isAdmin,
         isDriver,
+        isStoreOwner,
         user,
         loading: false,
         login,

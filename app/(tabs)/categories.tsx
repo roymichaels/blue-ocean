@@ -31,7 +31,7 @@ export default function CategoriesScreen() {
     icon: '',
   });
   const [loading, setLoading] = useState(true);
-  const { isAdmin } = useAuth();
+  const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
   const NUM_COLUMNS = 2;
   const ITEM_HEIGHT = 176;
@@ -188,7 +188,7 @@ export default function CategoriesScreen() {
         {item.name}
       </Text>
 
-      {isAdmin && (
+      {isStoreOwner && (
         <View style={styles.adminActions}>
           <TouchableOpacity
             style={styles.adminActionButton}
@@ -221,7 +221,7 @@ export default function CategoriesScreen() {
             קטגוריות
           </Text>
           <View style={styles.headerActions}>
-            {isAdmin && (
+      {isStoreOwner && (
               <TouchableOpacity
                 style={[styles.addButton, { backgroundColor: colors.gold }]}
                 onPress={addCategory}
@@ -253,7 +253,7 @@ export default function CategoriesScreen() {
           קטגוריות
         </Text>
         <View style={styles.headerActions}>
-          {isAdmin && (
+          {isStoreOwner && (
             <TouchableOpacity
               style={[styles.addButton, { backgroundColor: colors.gold }]}
               onPress={addCategory}
