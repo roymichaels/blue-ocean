@@ -5,6 +5,7 @@ jest.mock('../services/tonSettings', () => ({
   fetchSettings: jest.fn().mockResolvedValue({
     feeAddress: 'feeAddr',
     feeBps: 500,
+    paymentFactoryAddress: 'EQtestfactory',
   }),
 }));
 

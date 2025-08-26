@@ -1,10 +1,8 @@
 import { setValue, listValues, removeValue } from './tonKvStore';
 import { Report } from '../types';
-import config from '../utils/appConfig';
+import { requireEnv } from '../utils/appConfig';
 
-const ADDRESS =
-  config.TON_REPORTS_ADDRESS ??
-  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS = requireEnv('TON_REPORTS_ADDRESS');
 
 export async function addReport(report: Report) {
   await setValue(ADDRESS, report.id, JSON.stringify(report));

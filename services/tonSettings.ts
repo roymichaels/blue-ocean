@@ -1,6 +1,6 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { getValue, setValue, listValues } from './tonKvStore';
-import config from '../utils/appConfig';
+import config, { getWakuBootstrapNodes, requireEnv } from '../utils/appConfig';
 import {
   LightNode,
   Protocols,
@@ -11,7 +11,6 @@ import {
   utf8ToBytes,
   bytesToUtf8,
 } from '@waku/sdk';
-import { getWakuBootstrapNodes } from '../utils/appConfig';
 import type { SettingsWriteEvent, WakuMessage } from '../types/waku';
 import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
@@ -19,11 +18,7 @@ import { z } from 'zod';
 import { sign } from '@noble/ed25519';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
-const ADDRESS =
-  config.TON_SETTINGS_ADDRESS ??
-  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
-const DEFAULT_BOOTSTRAP =
-  '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
+const ADDRESS = requireEnv('TON_SETTINGS_ADDRESS');
 
 const TEST_ADMIN = 'EQtestadmin';
 const NETWORK =
@@ -76,7 +71,9 @@ async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
     const bootstrap = getWakuBootstrapNodes();
-    if (bootstrap.length === 0) return null;
+    if (bootstrap.length === 0) {
+      throw new Error('No Waku bootstrap nodes configured');
+    }
     node = await createLightNode({ libp2p: { bootstrap } as any });
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
