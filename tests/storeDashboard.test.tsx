@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import StoreDashboardScreen from '../app/stores/[id]/dashboard';
+import StoreDashboardScreen from '../app/store/[storeId]/dashboard';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),
@@ -34,7 +34,7 @@ describe('StoreDashboardScreen', () => {
   const { useAuth } = require('../components/AuthContext');
 
   beforeEach(() => {
-    useLocalSearchParams.mockReturnValue({ id: 's1' });
+    useLocalSearchParams.mockReturnValue({ storeId: 's1' });
     router.replace.mockReset();
     listProducts.mockReset();
     getStore.mockReset();
@@ -70,7 +70,7 @@ describe('StoreDashboardScreen', () => {
       root = renderer.create(<StoreDashboardScreen />);
     });
     await act(async () => {});
-    expect(router.replace).toHaveBeenCalledWith('/stores/s1');
+    expect(router.replace).toHaveBeenCalledWith('/store/s1');
     expect(root!.toJSON()).toBeNull();
   });
 });

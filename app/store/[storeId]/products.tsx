@@ -11,7 +11,7 @@ import { useTonAddress } from '../../../services/tonAuth';
 const ITEM_HEIGHT = 200;
 
 export default function StoreProductsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [formVisible, setFormVisible] = useState(false);
@@ -20,12 +20,12 @@ export default function StoreProductsScreen() {
 
   useEffect(() => {
     const load = async () => {
-      if (!id || address !== id) return;
+      if (!storeId || address !== storeId) return;
       const all = await listProducts();
-      setProducts(all.filter((p) => p.storeId === id));
+      setProducts(all.filter((p) => p.storeId === storeId));
     };
     load();
-  }, [id, address]);
+  }, [storeId, address]);
 
   const openForm = (p?: Product) => {
     setEditingProduct(p || null);
@@ -44,7 +44,7 @@ export default function StoreProductsScreen() {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
   };
 
-  if (address !== id) {
+  if (address !== storeId) {
     return (
       <View
         style={[

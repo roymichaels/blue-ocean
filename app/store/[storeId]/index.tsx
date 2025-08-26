@@ -15,7 +15,7 @@ interface ReviewMap {
 const ITEM_HEIGHT = 150;
 
 export default function StorefrontStoreScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const [store, setStore] = useState<Store | null>(null);
   const [score, setScore] = useState(0);
@@ -34,12 +34,12 @@ export default function StorefrontStoreScreen() {
   useEffect(() => {
     let callback: ((sid: string, s: number) => void) | undefined;
     const load = async () => {
-      if (!id) return;
-      const s = await storesAgent.get(id);
+      if (!storeId) return;
+      const s = await storesAgent.get(storeId);
       setStore(s);
-      setScore(storesAgent.getReputationScore(id));
+      setScore(storesAgent.getReputationScore(storeId));
       const all = await productsAgent.getAll();
-      const filtered = all.filter((p) => p.storeId === id);
+      const filtered = all.filter((p) => p.storeId === storeId);
       setProducts(filtered);
       const entries = await Promise.all(
         filtered.map(async (p) => {
@@ -55,7 +55,7 @@ export default function StorefrontStoreScreen() {
       });
       setReviews(map);
       callback = (sid: string, sc: number) => {
-        if (sid === id) setScore(sc);
+        if (sid === storeId) setScore(sc);
       };
       storesAgent.subscribe(callback);
     };
@@ -63,7 +63,7 @@ export default function StorefrontStoreScreen() {
     return () => {
       if (callback) storesAgent.unsubscribe(callback);
     };
-  }, [id]);
+  }, [storeId]);
 
   if (!store) {
     return (

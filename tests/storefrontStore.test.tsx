@@ -1,9 +1,9 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import StorefrontStoreScreen from '../app/storefront/[id]';
+import StorefrontStoreScreen from '../app/store/[storeId]';
 
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({ id: 's1' }),
+  useLocalSearchParams: () => ({ storeId: 's1' }),
 }));
 
 jest.mock('../contexts/ThemeContext', () => ({

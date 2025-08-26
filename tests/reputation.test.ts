@@ -15,7 +15,7 @@ jest.mock('../services/tonAuth', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({ id: 's1' }),
+  useLocalSearchParams: () => ({ storeId: 's1' }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
 }));
 
@@ -73,7 +73,7 @@ jest.mock('../components/LoadingSpinner', () => () => null);
 jest.mock('../components/ProductCard', () => ({ __esModule: true, default: () => null }));
 
 import storesAgent from '../agents/stores-agent';
-import StorefrontStoreScreen from '../app/storefront/[id]';
+import StorefrontStoreScreen from '../app/store/[storeId]';
 import AdminDashboardScreen from '../app/admin/dashboard';
 
 describe('store reputation', () => {

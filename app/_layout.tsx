@@ -25,7 +25,7 @@ import AgeVerificationModal from '../components/AgeVerificationModal';
 import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
 import { ConfigProvider } from '../contexts/ConfigContext';
-import { loadTenantSettings } from '../constants/tenant';
+import { TenantProvider } from '../contexts/TenantContext';
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
@@ -81,15 +81,6 @@ function AppContent() {
 export default function RootLayout() {
   useFrameworkReady();
 
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      await loadTenantSettings();
-      setReady(true);
-    })();
-  }, []);
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const style = document.createElement('style');
@@ -102,14 +93,6 @@ export default function RootLayout() {
       document.head.appendChild(style);
     }
   }, []);
-
-  if (!ready) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
 
   const manifestUrl =
     Platform.OS === 'web'
@@ -145,17 +128,19 @@ function RootLayoutInner() {
   }, [isLoggedIn, pathname, openAuthModal]);
 
   return (
-    <AppInfoProvider>
-      <ThemeProvider>
-        <LanguageProvider>
-          <CurrencyProvider>
-            <NotificationProvider>
-              <AppContent />
-            </NotificationProvider>
-          </CurrencyProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </AppInfoProvider>
+    <TenantProvider>
+      <AppInfoProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <CurrencyProvider>
+              <NotificationProvider>
+                <AppContent />
+              </NotificationProvider>
+            </CurrencyProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </AppInfoProvider>
+    </TenantProvider>
   );
 }
 
