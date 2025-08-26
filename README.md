@@ -4,7 +4,8 @@ Blue Ocean is a decentralized e‑commerce demo built with React Native and the 
 Autonomous agents communicate over the Waku peer‑to‑peer network, keep their state in
 memory, and hydrate from message history on boot. Configuration such as debug logging or
 Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment variables, but
-defaults are provided for a zero‑config experience.
+defaults are provided for a zero‑config experience. All data is replicated via Waku topics
+and TON smart contracts; the app does not use a local SQLite database.
 
 ## Quickstart
 
@@ -53,7 +54,7 @@ yarn test
 
 Wallet addresses must use the standard TON formatting recognized by `@ton/core`. If an invalid address is provided, the app will display an "Invalid TON address" error and refuse to store it.
 
-All data is ephemeral and synchronized between peers over Waku; no external services are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
+All data is ephemeral and synchronized between peers over Waku and written to TON smart contracts when needed; no external services or local database are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
 
 ### Development
 
@@ -387,7 +388,7 @@ Refer to the Expo Stripe documentation for full setup details.
 ## Legacy
 
 The previous `supabase/` directory and its SQL schema have been removed.
-All data is handled in-memory and synchronized over Waku.
+All data is handled in-memory, synchronized over Waku, and persisted to TON when necessary; no local database is used.
 
 ## License
 
