@@ -6,6 +6,8 @@ memory, and hydrate from message history on boot. Configuration such as debug lo
 Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment variables, but
 defaults are provided for a zero‑config experience.
 
+See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview and [docs/routes.md](docs/routes.md) for route and role details.
+
 ## Quickstart
 
 Use **Yarn** for dependency management and running scripts.
