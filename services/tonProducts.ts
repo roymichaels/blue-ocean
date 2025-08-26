@@ -7,8 +7,8 @@ const ADDRESS =
   config.TON_PRODUCTS_ADDRESS ??
   'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 
-export async function getProduct(id: string): Promise<Product | null> {
-  const res = await getValue(ADDRESS, id);
+export async function getProduct(storeId: string = '', id: string): Promise<Product | null> {
+  const res = await getValue(ADDRESS, `${storeId}:${id}`);
   if (!res) return null;
   const parsed = JSON.parse(res) as Product;
   return {
@@ -19,10 +19,10 @@ export async function getProduct(id: string): Promise<Product | null> {
   };
 }
 
-export async function setProduct(product: Product) {
+export async function setProduct(storeId: string = '', product: Product) {
   await setValue(
     ADDRESS,
-    product.id,
+    `${storeId}:${product.id}`,
     JSON.stringify({
       ...product,
       pricingTier: product.pricingTier,
@@ -32,35 +32,37 @@ export async function setProduct(product: Product) {
   );
 }
 
-export async function removeProduct(id: string) {
-  await removeValue(ADDRESS, id);
+export async function removeProduct(storeId: string = '', id: string) {
+  await removeValue(ADDRESS, `${storeId}:${id}`);
 }
 
-export async function listProducts(): Promise<Product[]> {
+export async function listProducts(storeId: string = ''): Promise<Product[]> {
   const items = await listValues(ADDRESS);
-  return items.map((i) => {
-    const parsed = JSON.parse(i.value) as Product;
-    return {
-      ...parsed,
-      pricingTier: parsed.pricingTier,
-      variants: parsed.variants || [],
-      colors: parsed.colors || [],
-    };
-  });
+  return items
+    .filter((i) => i.key.startsWith(`${storeId}:`))
+    .map((i) => {
+      const parsed = JSON.parse(i.value) as Product;
+      return {
+        ...parsed,
+        pricingTier: parsed.pricingTier,
+        variants: parsed.variants || [],
+        colors: parsed.colors || [],
+      };
+    });
 }
 
-export async function getProducts(ids: string[]): Promise<Product[]> {
+export async function getProducts(storeId: string = '', ids: string[]): Promise<Product[]> {
   const res: Product[] = [];
   for (const id of ids) {
-    const prod = await getProduct(id);
+    const prod = await getProduct(storeId, id);
     if (prod) res.push(prod);
   }
   return res;
 }
 
-export async function setProductBatch(products: Product[]) {
+export async function setProductBatch(storeId: string = '', products: Product[]) {
   for (const p of products) {
-    await setProduct(p);
+    await setProduct(storeId, p);
   }
 }
 
