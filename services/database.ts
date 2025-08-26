@@ -23,6 +23,7 @@ import {
   WishlistItem,
   CustomerTier,
   KycStatus,
+  UserRole,
 } from '../types';
 
 const CHAT_MESSAGE_LIMIT = 50;
@@ -80,7 +81,7 @@ class DatabaseService {
 
   async updateUserRole(
     userId: string,
-    role: 'user' | 'driver' | 'admin',
+    role: UserRole,
   ): Promise<void> {
     const user = await this.getUserProfile(userId);
     if (!user) return;

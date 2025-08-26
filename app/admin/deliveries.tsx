@@ -23,7 +23,7 @@ import commonStyles from '../../constants/styles';
 import SmartImage from '../../components/SmartImage';
 
 export default function AdminDeliveriesScreen() {
-  const { isAdmin } = useAuth();
+  const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
   const [jobs, setJobs] = useState<DeliveryJob[]>([]);
   const [drivers, setDrivers] = useState<User[]>([]);
@@ -39,12 +39,12 @@ export default function AdminDeliveriesScreen() {
   // const matrixService = MatrixService.getInstance(); // TODO: re-enable Matrix later
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isStoreOwner) {
       router.replace('/');
       return;
     }
     loadData();
-  }, [isAdmin]);
+  }, [isStoreOwner]);
 
   const loadData = async () => {
     try {

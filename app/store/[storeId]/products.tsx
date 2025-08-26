@@ -7,6 +7,7 @@ import { Product } from '../../../types';
 import ProductCard from '../../../components/ProductCard';
 import ProductFormModal from '../../../components/ProductFormModal';
 import { useTonAddress } from '../../../services/tonAuth';
+import { useAuth } from '../../../components/AuthContext';
 
 const ITEM_HEIGHT = 200;
 
@@ -17,15 +18,16 @@ export default function StoreProductsScreen() {
   const [formVisible, setFormVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const address = useTonAddress();
+  const { isStoreOwner } = useAuth();
 
   useEffect(() => {
     const load = async () => {
-      if (!storeId || address !== storeId) return;
+      if (!storeId || !isStoreOwner || address !== storeId) return;
       const all = await listProducts();
       setProducts(all.filter((p) => p.storeId === storeId));
     };
     load();
-  }, [storeId, address]);
+  }, [storeId, address, isStoreOwner]);
 
   const openForm = (p?: Product) => {
     setEditingProduct(p || null);
@@ -44,7 +46,7 @@ export default function StoreProductsScreen() {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
   };
 
-  if (address !== storeId) {
+  if (!isStoreOwner || address !== storeId) {
     return (
       <View
         style={[
@@ -76,7 +78,7 @@ export default function StoreProductsScreen() {
           <TouchableOpacity style={{ marginBottom: 12 }}>
             <ProductCard
               product={p}
-              isAdmin
+              isOwner
               onEdit={() => openForm(p)}
               onDelete={(id) => handleDeleted(id)}
             />

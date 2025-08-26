@@ -43,7 +43,7 @@ import DatabaseService from '../../services/database';
 const NOTIFICATIONS_STORAGE_KEY = 'settings_notifications';
 
 export default function ProfileScreen() {
-  const { isLoggedIn, isAdmin, isDriver, user, logout } = useAuth();
+  const { isLoggedIn, isStoreOwner, isDriver, user, logout } = useAuth();
   const { t, currentLanguage, setLanguage } = useLanguage();
   const { theme, toggleTheme, colors } = useTheme();
   const { appName } = useAppInfo();
@@ -180,12 +180,12 @@ export default function ProfileScreen() {
           </Text>
           <Text style={[styles.userEmail, { color: colors.text.secondary }]}>
             {isLoggedIn
-              ? isAdmin
+              ? isStoreOwner
                 ? t('profile.admin')
                 : t('profile.customer')
               : t('profile.guestBrowsing')}
           </Text>
-          {isAdmin && (
+          {isStoreOwner && (
             <View style={[styles.adminBadge, { backgroundColor: colors.gold }]}>
               <Shield size={16} color={colors.text.inverse} />
               <Text
@@ -271,7 +271,7 @@ export default function ProfileScreen() {
         )}
 
         {/* Admin Menu */}
-        {isLoggedIn && isAdmin && (
+        {isLoggedIn && isStoreOwner && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               ניהול
@@ -333,7 +333,7 @@ export default function ProfileScreen() {
         )}
 
         {/* Driver Menu */}
-        {isLoggedIn && (isDriver || isAdmin) && (
+        {isLoggedIn && (isDriver || isStoreOwner) && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               נהג

@@ -73,7 +73,7 @@ export default function ProductDetailScreen() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { isAdmin } = useAuth();
+  const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
@@ -460,7 +460,7 @@ export default function ProductDetailScreen() {
                 fill={isFavorite ? colors.status.error : 'transparent'}
               />
             </TouchableOpacity>
-            {isAdmin && (
+            {isStoreOwner && (
               <TouchableOpacity
                 style={[
                   styles.headerButton,
