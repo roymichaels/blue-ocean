@@ -175,16 +175,15 @@ amount.
 
 
 Some dependencies rely on Node.js globals like `Buffer`, `process`, and
-`crypto.subtle`. The `polyfills.js` file provides these shims for React Native
-and web environments and **must only be imported once** from the app entry
-point (`index.ts`). Importing polyfills elsewhere can lead to inconsistent
-execution environments.
+`crypto.subtle`. Platform-specific polyfills (`polyfills.native.ts` and
+`polyfills.web.ts`) provide these shims and **must only be imported once** from
+the app entry point (`index.ts`). Importing polyfills elsewhere can lead to
+inconsistent execution environments.
 
-The polyfill also pulls in `react-native-get-random-values` and
+The native polyfill also pulls in `react-native-get-random-values` and
 `expo-standard-web-crypto` so `crypto.getRandomValues` and `crypto.subtle` are
-available globally. It additionally exposes a synchronous SHA-512
-implementation for `@noble/ed25519` so key generation works in every
-environment.
+available globally. Both variants expose a synchronous SHA-512 implementation
+for `@noble/ed25519` so key generation works in every environment.
 
 ### Hot Reloading
 
