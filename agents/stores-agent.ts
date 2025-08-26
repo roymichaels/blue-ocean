@@ -37,14 +37,14 @@ class StoresAgent {
     m.reviewSum += rating;
     m.reviewCount += 1;
     this.computeScore(storeId);
-    const store = await getStore(storeId);
+    const store = await getStore(storeId, storeId);
     if (store) {
-      await setStore(this.toRecord({ ...store, reputation: m.score }));
+      await setStore(storeId, this.toRecord({ ...store, reputation: m.score }));
     }
   }
 
   async updateReputationByOwner(owner: string, reliability: number): Promise<void> {
-    const stores = await listStores();
+    const stores = await listStores('default');
     const store = stores.find((s) => s.owner === owner);
     if (store) {
       const id = store.id;
@@ -53,7 +53,7 @@ class StoresAgent {
       }
       this.reputation[id].reliability = reliability;
       this.computeScore(id);
-      await setStore(this.toRecord({ ...store, reputation: this.reputation[id].score }));
+      await setStore('default', this.toRecord({ ...store, reputation: this.reputation[id].score }));
     }
   }
 
@@ -71,25 +71,25 @@ class StoresAgent {
 
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
-    await setStore(this.toRecord(item));
+    await setStore(item.id, this.toRecord(item));
   }
 
   async update(item: Store): Promise<void> {
     await this.ensureWallet();
-    await setStore(this.toRecord(item));
+    await setStore(item.id, this.toRecord(item));
   }
 
   async remove(id: string): Promise<void> {
     await this.ensureWallet();
-    await removeStore(id);
+    await removeStore(id, id);
   }
 
   async get(id: string): Promise<Store | null> {
-    return await getStore(id);
+    return await getStore(id, id);
   }
 
   async getAll(): Promise<Store[]> {
-    return await listStores();
+    return await listStores('default');
   }
 }
 

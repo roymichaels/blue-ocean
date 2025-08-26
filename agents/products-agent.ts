@@ -96,7 +96,7 @@ class ProductsAgent {
   private async loadFromIndex(index: string[]): Promise<void> {
     for (let i = 0; i < index.length; i += PAGE_SIZE) {
       const slice = index.slice(i, i + PAGE_SIZE);
-      const batch = await getProducts(slice);
+      const batch = await getProducts('default', slice);
       batch.forEach((p) => {
         this.cache.set(p.id, p);
         this.summaries.set(p.id, { rating: p.rating, reviews: p.reviews });
@@ -118,7 +118,7 @@ class ProductsAgent {
         this.version = chainVersion;
       } else {
         await this.invalidateCache();
-        const products = await listProducts();
+        const products = await listProducts('default');
         const ids = products.map((p) => p.id);
         await this.loadFromIndex(ids);
         await setProductCache({ version: chainVersion, index: ids });
@@ -164,7 +164,7 @@ class ProductsAgent {
 
   private async assertStoreOwner(storeId: string) {
     const { address } = await this.ensureWallet();
-    const store = await getStore(storeId);
+    const store = await getStore(storeId, storeId);
     if (!store || store.owner !== address) {
       throw new Error('Only the store owner can manage products');
     }
@@ -172,7 +172,7 @@ class ProductsAgent {
 
   async add(item: Product): Promise<void> {
     await this.assertStoreOwner(item.storeId);
-    await setProduct(item);
+    await setProduct(item.storeId, item);
     this.cache.set(item.id, item);
     this.summaries.set(item.id, { rating: item.rating, reviews: item.reviews });
     await this.broadcast(item);
@@ -180,17 +180,17 @@ class ProductsAgent {
 
   async update(item: Product): Promise<void> {
     await this.assertStoreOwner(item.storeId);
-    await setProduct(item);
+    await setProduct(item.storeId, item);
     this.cache.set(item.id, item);
     this.summaries.set(item.id, { rating: item.rating, reviews: item.reviews });
     await this.broadcast(item);
   }
 
   async remove(id: string): Promise<void> {
-    const prod = await getProduct(id);
+    const prod = this.cache.get(id);
     if (!prod) return;
     await this.assertStoreOwner(prod.storeId);
-    await removeProduct(id);
+    await removeProduct(prod.storeId, id);
     this.cache.delete(id);
     this.summaries.delete(id);
   }
@@ -199,7 +199,7 @@ class ProductsAgent {
     await this.ensureCache();
     const cached = this.cache.get(id);
     if (cached) return cached;
-    const prod = await getProduct(id);
+    const prod = await getProduct('default', id);
     if (prod) {
       this.cache.set(id, prod);
       this.summaries.set(id, { rating: prod.rating, reviews: prod.reviews });
@@ -220,11 +220,11 @@ class ProductsAgent {
   }
 
   async decrementStock(productId: string, quantity: number): Promise<void> {
-    const prod = await getProduct(productId);
+    const prod = this.cache.get(productId) || (await getProduct('default', productId));
     if (!prod) return;
     await this.assertStoreOwner(prod.storeId);
     const newStock = Math.max((prod.stock || 0) - quantity, 0);
-    await setProduct({ ...prod, stock: newStock });
+    await setProduct(prod.storeId, { ...prod, stock: newStock });
   }
 }
 

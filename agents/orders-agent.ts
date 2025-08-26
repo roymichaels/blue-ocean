@@ -47,6 +47,8 @@ class OrdersAgent {
   private subscribers: Set<(o: Order) => void> = new Set();
   private sellerMetrics: Record<string, { completed: number; refunds: number }> = {};
   private node: LightNode | null = null;
+  private storeMap: Map<string, string> = new Map();
+  private knownStores: Set<string> = new Set();
 
   constructor() {
     void this.subscribeWaku();
@@ -161,7 +163,10 @@ class OrdersAgent {
       trackingSteps: this.getTrackingSteps(status),
       updatedAt: new Date().toISOString(),
     };
-    await setOrder(updated);
+    const sid = updated.items?.[0]?.product?.storeId || '';
+    this.storeMap.set(updated.id, sid);
+    this.knownStores.add(sid);
+    await setOrder(sid, updated);
     this.subscribers.forEach((cb) => cb(updated));
     await this.notifyStatusChange(updated);
   }
@@ -225,7 +230,12 @@ class OrdersAgent {
         warnLog('Failed to encrypt shipping address', err);
       }
     }
-    await setOrder(toStore);
+    {
+      const sid = toStore.items?.[0]?.product?.storeId || '';
+      this.storeMap.set(toStore.id, sid);
+      this.knownStores.add(sid);
+      await setOrder(sid, toStore);
+    }
     await logOrderEvent({
       tenant: enriched.items?.[0]?.product?.storeId || '',
       type: 'order.created',
@@ -255,7 +265,12 @@ class OrdersAgent {
       }
       statusChanged = true;
     }
-    await setOrder(order);
+    {
+      const sid = order.items?.[0]?.product?.storeId || '';
+      this.storeMap.set(order.id, sid);
+      this.knownStores.add(sid);
+      await setOrder(sid, order);
+    }
     await logOrderEvent({
       tenant: order.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
@@ -297,7 +312,9 @@ class OrdersAgent {
       throw new Error('Order not found');
     }
     await this.ensureAuthorized(order);
-    await removeOrder(id);
+    const sid = order.items?.[0]?.product?.storeId || '';
+    await removeOrder(sid, id);
+    this.storeMap.delete(id);
     await logOrderEvent({
       tenant: order.items?.[0]?.product?.storeId || '',
       type: 'order.deleted',
@@ -312,15 +329,28 @@ class OrdersAgent {
   }
 
   async get(id: string): Promise<Order | null> {
-    return await getOrder(id);
+    const sid = this.storeMap.get(id) || '';
+    return await getOrder(sid, id);
   }
 
   async getAll(): Promise<Order[]> {
-    return await listOrders();
+    const all: Order[] = [];
+    for (const sid of this.knownStores) {
+      const list = await listOrders(sid);
+      list.forEach((o) => this.storeMap.set(o.id, sid));
+      all.push(...list);
+    }
+    return all;
   }
 
   async getBySeller(address: string): Promise<Order[]> {
-    return await listOrdersBySeller(address);
+    const all: Order[] = [];
+    for (const sid of this.knownStores) {
+      const list = await listOrdersBySeller(sid, address);
+      list.forEach((o) => this.storeMap.set(o.id, sid));
+      all.push(...list);
+    }
+    return all;
   }
 
   async releasePayment(orderId: string): Promise<string> {
@@ -342,7 +372,12 @@ class OrdersAgent {
       status: 'released',
       updatedAt: new Date().toISOString(),
     };
-    await setOrder(updated);
+    {
+      const sid = updated.items?.[0]?.product?.storeId || '';
+      this.storeMap.set(updated.id, sid);
+      this.knownStores.add(sid);
+      await setOrder(sid, updated);
+    }
     await logOrderEvent({
       tenant: updated.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
@@ -396,7 +431,12 @@ class OrdersAgent {
       status: 'refunded',
       updatedAt: new Date().toISOString(),
     };
-    await setOrder(updated);
+    {
+      const sid = updated.items?.[0]?.product?.storeId || '';
+      this.storeMap.set(updated.id, sid);
+      this.knownStores.add(sid);
+      await setOrder(sid, updated);
+    }
     await logOrderEvent({
       tenant: updated.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
