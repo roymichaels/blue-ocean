@@ -17,38 +17,7 @@ import {
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import ensureTonWallet from '../utils/ensureTonWallet';
 import { errorLog } from '../utils/logger';
-
-const ORDER_TOPIC = '/blue-ocean/orders/1';
-
-type NotificationTemplate = (
-  item: Notification,
-) => {
-  contentTopic: string;
-  payload: any;
-};
-
-export const notificationTemplates: Record<NotificationEvent, NotificationTemplate> = {
-  'order.created': (item) => ({
-    contentTopic: ORDER_TOPIC,
-    payload: { type: 'order.created', notification: item },
-  }),
-  'payment.received': (item) => ({
-    contentTopic: ORDER_TOPIC,
-    payload: { type: 'payment.received', notification: item },
-  }),
-  'status.updated': (item) => ({
-    contentTopic: ORDER_TOPIC,
-    payload: { type: 'status.updated', notification: item },
-  }),
-  'dispute.updated': (item) => ({
-    contentTopic: ORDER_TOPIC,
-    payload: { type: 'dispute.updated', notification: item },
-  }),
-  'escrow.deployed': (item) => ({
-    contentTopic: ORDER_TOPIC,
-    payload: { type: 'escrow.deployed', notification: item },
-  }),
-};
+import { buildTopic } from '../utils/wakuTopics';
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
@@ -58,18 +27,18 @@ class NotificationsAgent {
     await ensureTonWallet('Please connect your TON wallet to send notifications.');
   }
 
-  async add(item: Notification): Promise<void> {
+  async add(item: Notification, storeId = 'default'): Promise<void> {
     await this.ensureWallet();
     await setNotification(item);
     this.subscribers.forEach((cb) => cb(item));
-    await this.broadcastWaku(item);
+    await this.broadcastWaku(item, undefined, storeId);
   }
 
-  async update(item: Notification): Promise<void> {
+  async update(item: Notification, storeId = 'default'): Promise<void> {
     await this.ensureWallet();
     await setNotification(item);
     this.subscribers.forEach((cb) => cb(item));
-    await this.broadcastWaku(item);
+    await this.broadcastWaku(item, undefined, storeId);
   }
 
   async remove(id: string): Promise<void> {
@@ -85,11 +54,11 @@ class NotificationsAgent {
     return await listNotifications();
   }
 
-  async broadcast(event: NotificationEvent, item: Notification): Promise<void> {
+  async broadcast(event: NotificationEvent, item: Notification, storeId: string): Promise<void> {
     await this.ensureWallet();
     await setNotification(item);
     this.subscribers.forEach((cb) => cb(item));
-    await this.broadcastWaku(item, event);
+    await this.broadcastWaku(item, event, storeId);
   }
 
   subscribe(cb: (n: Notification) => void) {
@@ -118,24 +87,22 @@ class NotificationsAgent {
     }
   }
 
-  private async broadcastWaku(item: Notification, event?: NotificationEvent) {
+  private async broadcastWaku(
+    item: Notification,
+    event?: NotificationEvent,
+    storeId = 'default',
+  ) {
     const node = await this.ensureNode();
     if (!node) return;
     try {
-      if (event) {
-        const template = notificationTemplates[event];
-        if (!template) return;
-        const { contentTopic, payload } = template(item);
-        const encoder = createEncoder({ contentTopic });
-        await node.lightPush.send(encoder, {
-          payload: utf8ToBytes(JSON.stringify(payload)),
-        });
-      } else {
-        const encoder = createEncoder({ contentTopic: ORDER_TOPIC });
-        await node.lightPush.send(encoder, {
-          payload: utf8ToBytes(JSON.stringify(item)),
-        });
-      }
+      const topic = buildTopic('orders', storeId);
+      const encoder = createEncoder({ contentTopic: topic });
+      const payload = event
+        ? { type: event, notification: item }
+        : item;
+      await node.lightPush.send(encoder, {
+        payload: utf8ToBytes(JSON.stringify(payload)),
+      });
     } catch (err) {
       errorLog('Failed to broadcast notification', err);
     }

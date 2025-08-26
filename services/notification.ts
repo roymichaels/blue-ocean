@@ -1,10 +1,7 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { randomUUID } from 'crypto';
 import { Notification } from '../types';
-import notificationsAgent, {
-  notificationTemplates,
-  NotificationEvent,
-} from '../agents/notifications-agent';
+import notificationsAgent, { NotificationEvent } from '../agents/notifications-agent';
 
 class NotificationService {
   private static instance: NotificationService;
@@ -129,4 +126,4 @@ class NotificationService {
 
 export default NotificationService;
 
-export { notificationTemplates, NotificationEvent };
+export { NotificationEvent };

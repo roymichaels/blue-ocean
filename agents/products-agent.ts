@@ -26,6 +26,7 @@ import { getPrivateKey, getPublicKeyHex } from '../services/localIdentity';
 import { sign } from '@noble/ed25519';
 import type { WakuMessage } from '../types/waku';
 import { errorLog } from '../utils/logger';
+import { buildTopic } from '../utils/wakuTopics';
 
 import {
   getProductCache,
@@ -33,7 +34,7 @@ import {
   clearProductCache,
 } from '../services/productCache';
 
-const PRODUCT_TOPIC = '/blue-ocean/products/1';
+const buildProductTopic = (storeId: string) => buildTopic('products', storeId);
 const PAGE_SIZE = 50;
 
 interface ProductSummary {
@@ -47,10 +48,9 @@ class ProductsAgent {
   private node: LightNode | null = null;
   private version = 0;
   private loading: Promise<void> | null = null;
+  private subscribedStores: Set<string> = new Set();
 
-  constructor() {
-    void this.subscribe();
-  }
+  constructor() {}
 
   private async ensureNode(): Promise<LightNode | null> {
     if (this.node) return this.node;
@@ -68,10 +68,11 @@ class ProductsAgent {
     }
   }
 
-  private async subscribe() {
+  private async subscribeStore(storeId: string) {
+    if (this.subscribedStores.has(storeId)) return;
     const n = await this.ensureNode();
     if (!n) return;
-    const decoder = createDecoder(PRODUCT_TOPIC);
+    const decoder = createDecoder(buildProductTopic(storeId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
@@ -84,6 +85,7 @@ class ProductsAgent {
       }
     };
     (n.relay as any).addObserver(handler, [decoder]);
+    this.subscribedStores.add(storeId);
   }
 
   private async invalidateCache() {
@@ -146,7 +148,7 @@ class ProductsAgent {
       );
       const sig = await sign(msgBytes, priv);
       msg.signature = Buffer.from(sig).toString('hex');
-      const encoder = createEncoder({ contentTopic: PRODUCT_TOPIC });
+      const encoder = createEncoder({ contentTopic: buildProductTopic(product.storeId) });
       await n.lightPush.send(encoder, {
         payload: utf8ToBytes(JSON.stringify(msg)),
       });
@@ -175,6 +177,7 @@ class ProductsAgent {
     await setProduct(item.storeId, item);
     this.cache.set(item.id, item);
     this.summaries.set(item.id, { rating: item.rating, reviews: item.reviews });
+    await this.subscribeStore(item.storeId);
     await this.broadcast(item);
   }
 
@@ -183,6 +186,7 @@ class ProductsAgent {
     await setProduct(item.storeId, item);
     this.cache.set(item.id, item);
     this.summaries.set(item.id, { rating: item.rating, reviews: item.reviews });
+    await this.subscribeStore(item.storeId);
     await this.broadcast(item);
   }
 

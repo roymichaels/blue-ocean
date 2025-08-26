@@ -29,9 +29,7 @@ jest.mock(
   { virtual: true },
 );
 
-const agentModule = require('../agents/notifications-agent');
-const notificationsAgent = agentModule.default;
-const { notificationTemplates } = agentModule;
+const notificationsAgent = require('../agents/notifications-agent').default;
 
 describe('notificationsAgent.broadcast', () => {
   beforeEach(() => {
@@ -39,9 +37,7 @@ describe('notificationsAgent.broadcast', () => {
     (notificationsAgent as any).node = null;
   });
 
-  const events = Object.keys(notificationTemplates) as Array<keyof typeof notificationTemplates>;
-
-  test.each(events)('encodes %s with correct topic and payload', async (event) => {
+  it('encodes event with tenant topic and payload', async () => {
     const item = {
       id: 'id1',
       userId: 'u1',
@@ -52,15 +48,14 @@ describe('notificationsAgent.broadcast', () => {
       timestamp: 1,
     };
 
-    await notificationsAgent.broadcast(event, item);
+    await notificationsAgent.broadcast('order.created', item, 's1');
 
-    const template = notificationTemplates[event](item);
-    expect(createEncoderMock).toHaveBeenCalledWith({ contentTopic: template.contentTopic });
+    expect(createEncoderMock).toHaveBeenCalledWith({ contentTopic: '/blue-ocean/orders/s1' });
     expect(sendMock).toHaveBeenCalledTimes(1);
     const [encoderArg, { payload }] = sendMock.mock.calls[0];
-    expect(encoderArg).toEqual({ contentTopic: template.contentTopic });
+    expect(encoderArg).toEqual({ contentTopic: '/blue-ocean/orders/s1' });
     const decoded = JSON.parse(Buffer.from(payload).toString());
-    expect(decoded).toEqual(template.payload);
+    expect(decoded).toEqual({ type: 'order.created', notification: item });
   });
 
   it('generates unique IDs and timestamps under concurrent broadcasts', async () => {
@@ -76,7 +71,9 @@ describe('notificationsAgent.broadcast', () => {
 
     const count = 5;
     await Promise.all(
-      Array.from({ length: count }, (_, i) => notificationsAgent.broadcast('order.created', makeNotification(i))),
+      Array.from({ length: count }, (_, i) =>
+        notificationsAgent.broadcast('order.created', makeNotification(i), 's1'),
+      ),
     );
 
     const ids = setNotificationMock.mock.calls.map((c) => c[0].id);
