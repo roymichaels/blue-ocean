@@ -24,12 +24,12 @@ module.exports = async function (env, argv) {
     stream: require.resolve('stream-browserify'),
     assert: require.resolve('assert'),
     util: require.resolve('util'),
-    process: require.resolve('process/browser'),
+    process: require.resolve('process'),
   };
 
   config.plugins.push(
     new webpack.ProvidePlugin({
-      process: 'process/browser',
+      process: 'process',
       Buffer: ['buffer', 'Buffer'],
     })
   );

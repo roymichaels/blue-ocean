@@ -13,7 +13,7 @@ try {
     (globalThis as any).Buffer = require('buffer').Buffer;
   }
   if (typeof (globalThis as any).process === 'undefined') {
-    (globalThis as any).process = require('process/browser');
+    (globalThis as any).process = require('process');
   }
 } catch (err) {
   debugLog('ℹ️ web Buffer/process polyfill skipped:', err);
