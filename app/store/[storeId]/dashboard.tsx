@@ -8,7 +8,7 @@ import OrderRevenueMetrics from '../../../components/OrderRevenueMetrics';
 import { useAuth } from '../../../components/AuthContext';
 
 export default function StoreDashboardScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const { user } = useAuth();
   const [productCount, setProductCount] = useState(0);
@@ -16,19 +16,19 @@ export default function StoreDashboardScreen() {
 
   useEffect(() => {
     const loadStats = async () => {
-      if (!id) return;
-      const store = await getStore(id);
+      if (!storeId) return;
+      const store = await getStore(storeId);
       if (!store || store.owner !== user?.address) {
-        router.replace(`/stores/${id}`);
+        router.replace(`/store/${storeId}`);
         return;
       }
       setAuthorized(true);
       const products = await listProducts();
-      setProductCount(products.filter((p) => p.storeId === id).length);
+      setProductCount(products.filter((p) => p.storeId === storeId).length);
     };
 
     loadStats();
-  }, [id, user?.address]);
+  }, [storeId, user?.address]);
   
 
   if (!authorized) {
@@ -40,18 +40,18 @@ export default function StoreDashboardScreen() {
       <Text style={[styles.title, { color: colors.text.primary }]}>לוח חנות</Text>
       <View style={styles.stats}>
         <Text style={[styles.statText, { color: colors.text.primary }]}>מוצרים: {productCount}</Text>
-        {id && <OrderRevenueMetrics sellerId={id} />}
+        {storeId && <OrderRevenueMetrics sellerId={storeId} />}
       </View>
       <View style={styles.nav}>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => router.push(`/stores/${id}/products`)}
+          onPress={() => router.push(`/store/${storeId}/products`)}
         >
           <Text style={{ color: colors.text.primary }}>ניהול מוצרים</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => router.push(`/stores/${id}/orders`)}
+          onPress={() => router.push(`/store/${storeId}/orders`)}
         >
           <Text style={{ color: colors.text.primary }}>צפייה בהזמנות</Text>
         </TouchableOpacity>

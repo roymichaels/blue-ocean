@@ -8,7 +8,7 @@ import { Order } from '../../../types';
 import { useTonAddress } from '../../../services/tonAuth';
 
 export default function StoreOrdersScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
   const address = useTonAddress();
@@ -23,14 +23,14 @@ export default function StoreOrdersScreen() {
 
   useEffect(() => {
     const load = async () => {
-      if (!id || address !== id) return;
-      const all = await listOrdersBySeller(id);
+      if (!storeId || address !== storeId) return;
+      const all = await listOrdersBySeller(storeId);
       setOrders(all);
     };
     load();
-  }, [id, address]);
+  }, [storeId, address]);
 
-  if (address !== id) {
+  if (address !== storeId) {
     return (
       <View
         style={[
