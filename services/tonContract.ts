@@ -5,23 +5,16 @@ import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
 import { getTonConnect } from './tonAuth';
 import { fetchSettings } from './tonSettings';
+import { requireEnv } from '../utils/appConfig';
 
-const DEFAULT_FACTORY_ADDRESS = 'EQtestfactory';
 export let ORDER_PAYMENT_FACTORY_ADDRESS = '';
-
-async function deployTemporaryFactory(): Promise<string> {
-  // Placeholder for actual factory deployment logic
-  return DEFAULT_FACTORY_ADDRESS;
-}
 
 export async function getOrderPaymentFactoryAddress(): Promise<string> {
   if (!ORDER_PAYMENT_FACTORY_ADDRESS) {
     const settings = await fetchSettings();
     ORDER_PAYMENT_FACTORY_ADDRESS =
       settings.paymentFactoryAddress ||
-      (process.env.NODE_ENV === 'test'
-        ? DEFAULT_FACTORY_ADDRESS
-        : await deployTemporaryFactory());
+      requireEnv('TON_PAYMENT_FACTORY_ADDRESS');
   }
   return ORDER_PAYMENT_FACTORY_ADDRESS;
 }

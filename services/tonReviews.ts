@@ -1,10 +1,8 @@
 import { getValue, setValue, listValues } from './tonKvStore';
 import { Review } from '../types';
-import config from '../utils/appConfig';
+import { requireEnv } from '../utils/appConfig';
 
-const ADDRESS =
-  config.TON_REVIEWS_ADDRESS ??
-  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS = requireEnv('TON_REVIEWS_ADDRESS');
 
 export async function getReviews(productId: string): Promise<Review[]> {
   const res = await getValue(ADDRESS, productId);

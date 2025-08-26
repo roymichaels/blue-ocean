@@ -1,11 +1,9 @@
 import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { Product } from '../types';
-import config from '../utils/appConfig';
+import { requireEnv } from '../utils/appConfig';
 import { withTonWeb } from './tonProvider';
 
-const ADDRESS =
-  config.TON_PRODUCTS_ADDRESS ??
-  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS = requireEnv('TON_PRODUCTS_ADDRESS');
 
 export async function getProduct(storeId: string = '', id: string): Promise<Product | null> {
   const res = await getValue(ADDRESS, `${storeId}:${id}`);

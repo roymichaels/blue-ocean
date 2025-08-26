@@ -1,7 +1,19 @@
 // Configuration values are loaded from environment variables.
 // Only a minimal set of keys is supported at runtime.
 
-const REQUIRED_ENV_KEYS: string[] = [];
+const REQUIRED_ENV_KEYS: string[] = [
+  'TON_SETTINGS_ADDRESS',
+  'TON_ORDERS_ADDRESS',
+  'TON_PRODUCT_INDEX_ADDRESS',
+  'TON_NOTIFICATIONS_ADDRESS',
+  'TON_STORES_ADDRESS',
+  'TON_REPORTS_ADDRESS',
+  'TON_REVIEWS_ADDRESS',
+  'TON_CATEGORIES_ADDRESS',
+  'TON_CART_ADDRESS',
+  'TON_PRODUCTS_ADDRESS',
+  'TON_USERS_ADDRESS',
+];
 
 const ENV_KEYS = [
   'EXPO_PUBLIC_DEBUG_LOGS',
@@ -9,6 +21,7 @@ const ENV_KEYS = [
   'ADMIN_WALLET_ADDRESS_MAINNET',
   'ADMIN_WALLET_ADDRESS_TESTNET',
   'TON_NETWORK',
+  'TON_PAYMENT_FACTORY_ADDRESS',
 
   ...REQUIRED_ENV_KEYS,
   'TON_RPC_URL',

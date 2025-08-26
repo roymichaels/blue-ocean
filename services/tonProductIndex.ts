@@ -1,11 +1,9 @@
 import { beginCell, Cell, Dictionary } from '@ton/core';
 import { ProductIndexItem } from '../types';
-import config from '../utils/appConfig';
+import { requireEnv } from '../utils/appConfig';
 import { getTonConnect } from './tonAuth';
 
-const ADDRESS =
-  config.TON_PRODUCT_INDEX_ADDRESS ??
-  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
+const ADDRESS = requireEnv('TON_PRODUCT_INDEX_ADDRESS');
 
 export function encodeProductIndexItem(item: ProductIndexItem): Cell {
   return beginCell()

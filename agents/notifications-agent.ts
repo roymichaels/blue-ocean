@@ -18,8 +18,6 @@ import { getWakuBootstrapNodes } from '../utils/appConfig';
 import ensureTonWallet from '../utils/ensureTonWallet';
 import { errorLog } from '../utils/logger';
 
-const DEFAULT_BOOTSTRAP =
-  '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 
 type NotificationTemplate = (
@@ -106,7 +104,9 @@ class NotificationsAgent {
     if (this.node) return this.node;
     try {
       const bootstrap = getWakuBootstrapNodes();
-      if (bootstrap.length === 0) bootstrap.push(DEFAULT_BOOTSTRAP);
+      if (bootstrap.length === 0) {
+        throw new Error('No Waku bootstrap nodes configured');
+      }
       this.node = await createLightNode({ libp2p: { bootstrap } } as any);
       await this.node.start();
       await waitForRemotePeer(this.node, [Protocols.Relay]);

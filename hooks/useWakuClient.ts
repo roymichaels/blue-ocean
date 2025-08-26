@@ -18,9 +18,6 @@ import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { wakuMessageSchema } from '../schemas/waku';
 import { z } from 'zod';
 
-const DEFAULT_BOOTSTRAP =
-  '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP';
-
 export interface WakuClient {
   send: (
     roomId: string,
@@ -61,7 +58,9 @@ export function useWakuClient(): WakuClient {
       let node: LightNode | undefined;
       try {
         const bootstrap = getWakuBootstrapNodes();
-        if (bootstrap.length === 0) bootstrap.push(DEFAULT_BOOTSTRAP);
+        if (bootstrap.length === 0) {
+          throw new Error('No Waku bootstrap nodes configured');
+        }
         node = await createLightNode({
           libp2p: { bootstrap },
         });
