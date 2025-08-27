@@ -26,6 +26,10 @@ import CartModal from '../components/CartModal';
 import ChatWidget from '../components/ChatWidget';
 import { ConfigProvider } from '../contexts/ConfigContext';
 import { TenantProvider } from '../contexts/TenantContext';
+import { requireEnv } from '../utils/appConfig';
+import '../services/chain';
+
+requireEnv('EXPO_PUBLIC_CHAIN');
 
 function AppContent() {
   const [showCartModal, setShowCartModal] = useState(false);
