@@ -9,7 +9,7 @@ import InfoModal from '../../components/InfoModal';
 import OrderService from '../../services/orders';
 import { Order, OrderStatus, ShippingAddress } from '../../types';
 import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
-import tonAuth from '../../services/tonAuth';
+import nearAuth from '../../services/nearAuth';
 import { decryptOrderShipping } from '../../services/sellerTools';
 
 export default function OrderDetailScreen() {
@@ -32,7 +32,7 @@ export default function OrderDetailScreen() {
       let decrypted = raw as Order | null;
       if (raw && raw.shipAddrEnc && isSeller) {
         try {
-          const sig = await tonAuth.requestSignature(Buffer.from(raw.id));
+          const sig = await nearAuth.signMessage(Buffer.from(raw.id));
           if (sig) {
             const addr = await decryptOrderShipping(raw);
             if (addr) {

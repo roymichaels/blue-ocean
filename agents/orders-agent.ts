@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Order, OrderStatus, Notification, OrderTrackingStep } from '../types';
-import tonAuth from '../services/tonAuth';
+import nearAuth from '../services/nearAuth';
 import notificationsAgent from './notifications-agent';
 import {
   setOrder,
@@ -183,7 +183,7 @@ class OrdersAgent {
 
   private async ensureAuthorized(order: Order) {
     await this.ensureWallet();
-    const address = tonAuth.getAddress();
+    const address = nearAuth.getAccountId();
     let allowed = [
       order.buyerAddress,
       order.sellerAddress,
@@ -251,7 +251,7 @@ class OrdersAgent {
         prevStatus: null,
         newStatus: enriched.status,
       },
-      actor: tonAuth.getAddress() || '',
+      actor: nearAuth.getAccountId() || '',
       timestamp: Date.now(),
     });
     this.subscribers.forEach((cb) => cb(enriched));
@@ -287,7 +287,7 @@ class OrdersAgent {
         prevStatus: current.status,
         newStatus: order.status,
       },
-      actor: tonAuth.getAddress() || '',
+      actor: nearAuth.getAccountId() || '',
       timestamp: Date.now(),
     });
     const sid = order.items?.[0]?.product?.storeId || '';
@@ -332,7 +332,7 @@ class OrdersAgent {
         prevStatus: order.status,
         newStatus: 'deleted',
       },
-      actor: tonAuth.getAddress() || '',
+      actor: nearAuth.getAccountId() || '',
       timestamp: Date.now(),
     });
   }
@@ -396,7 +396,7 @@ class OrdersAgent {
         prevStatus: order.status,
         newStatus: updated.status,
       },
-      actor: tonAuth.getAddress() || '',
+      actor: nearAuth.getAccountId() || '',
       timestamp: Date.now(),
     });
     const sid = updated.items?.[0]?.product?.storeId || '';
@@ -457,7 +457,7 @@ class OrdersAgent {
         prevStatus: order.status,
         newStatus: updated.status,
       },
-      actor: tonAuth.getAddress() || '',
+      actor: nearAuth.getAccountId() || '',
       timestamp: Date.now(),
     });
     const sid = updated.items?.[0]?.product?.storeId || '';

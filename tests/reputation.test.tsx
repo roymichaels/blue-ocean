@@ -8,10 +8,9 @@ jest.mock('../services/tonStores', () => ({
   removeStore: jest.fn(),
 }));
 
-jest.mock('../services/tonAuth', () => ({
-  getAddress: jest.fn().mockReturnValue('addr'),
-  getTonPublicKey: jest.fn().mockReturnValue('pub'),
-  openModal: jest.fn(),
+jest.mock('../services/nearAuth', () => ({
+  getAccountId: jest.fn().mockReturnValue('addr'),
+  signIn: jest.fn(),
 }));
 
 jest.mock('expo-router', () => ({

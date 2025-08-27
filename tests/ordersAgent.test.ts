@@ -37,10 +37,9 @@ jest.mock('../services/localIdentity');
 jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
 jest.mock('../services/eventBus', () => ({ publish: jest.fn() }));
 
-jest.mock('../services/tonAuth', () => ({
-  getAddress: jest.fn().mockReturnValue('seller'),
-  getTonPublicKey: jest.fn().mockReturnValue('pub'),
-  openModal: jest.fn(),
+jest.mock('../services/nearAuth', () => ({
+  getAccountId: jest.fn().mockReturnValue('seller'),
+  signIn: jest.fn(),
 }));
 
 const sellerKey = nacl.sign.keyPair();
@@ -53,12 +52,12 @@ const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
 
 const ordersAgent = require('../agents/orders-agent').default;
 const notificationsAgent = require('../agents/notifications-agent');
-const tonAuth = require('../services/tonAuth');
+const nearAuth = require('../services/nearAuth');
 const eventBus = require('../services/eventBus');
 
 describe('ordersAgent.add', () => {
   it('encrypts shipping address and persists new fields', async () => {
-    tonAuth.getAddress.mockReturnValue('seller');
+    nearAuth.getAccountId.mockReturnValue('seller');
     const items = [{
       id: 'i1',
       productId: 'p1',
@@ -119,7 +118,7 @@ describe('ordersAgent.add', () => {
 
 describe('ordersAgent notification IDs', () => {
   it('generates unique IDs under rapid calls', async () => {
-    tonAuth.getAddress.mockReturnValue('seller');
+    nearAuth.getAccountId.mockReturnValue('seller');
     notificationsAgent.broadcast.mockClear();
     const order = { id: 'o1', userId: 'u1' } as any;
     const notify = (ordersAgent as any).notifyOrderCreated.bind(ordersAgent);
@@ -139,7 +138,7 @@ describe('ordersAgent notification IDs', () => {
 
 describe('ordersAgent admin authorization', () => {
   it('allows admin to update orders', async () => {
-    tonAuth.getAddress.mockReturnValue('admin');
+    nearAuth.getAccountId.mockReturnValue('admin');
     const order: Order = {
       id: 'order-admin',
       userId: 'u1',
@@ -165,7 +164,7 @@ describe('ordersAgent admin authorization', () => {
 describe('ordersAgent event emission', () => {
   beforeEach(() => {
     eventBus.publish.mockClear();
-    tonAuth.getAddress.mockReturnValue('seller');
+    nearAuth.getAccountId.mockReturnValue('seller');
   });
 
   it('emits order.updated on status change', async () => {

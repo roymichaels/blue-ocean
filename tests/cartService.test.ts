@@ -1,7 +1,7 @@
 import CartService from '../services/cart';
 import cartAgent from '../agents/cart-agent';
 import DatabaseService from '../services/database';
-import tonAuth from '../services/tonAuth';
+import nearAuth from '../services/nearAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product } from '../types';
 
@@ -21,9 +21,9 @@ jest.mock('../services/database', () => ({
   default: { getInstance: jest.fn() },
 }));
 
-jest.mock('../services/tonAuth', () => ({
+jest.mock('../services/nearAuth', () => ({
   __esModule: true,
-  default: { getAddress: jest.fn() },
+  default: { getAccountId: jest.fn() },
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -74,11 +74,11 @@ describe('CartService storage', () => {
     (AsyncStorage.setItem as jest.Mock).mockReset();
     (cartAgent.getAll as jest.Mock).mockReset();
     (DatabaseService.getInstance as jest.Mock).mockReset();
-    (tonAuth.getAddress as jest.Mock).mockReset();
+    (nearAuth.getAccountId as jest.Mock).mockReset();
   });
 
   it('loads user cart and wishlist when logged in', async () => {
-    (tonAuth.getAddress as jest.Mock).mockReturnValue('user1');
+    (nearAuth.getAccountId as jest.Mock).mockReturnValue('user1');
     (cartAgent.getAll as jest.Mock).mockResolvedValue([userCartItem]);
     (DatabaseService.getInstance as jest.Mock).mockReturnValue({
       getWishlistItems: jest.fn().mockResolvedValue([wishItem]),
@@ -93,7 +93,7 @@ describe('CartService storage', () => {
   });
 
   it('falls back to anonymous storage when no user', async () => {
-    (tonAuth.getAddress as jest.Mock).mockReturnValue(null);
+    (nearAuth.getAccountId as jest.Mock).mockReturnValue(null);
     (AsyncStorage.getItem as jest.Mock).mockImplementation((key: string) => {
       if (key === 'cart_items') return Promise.resolve(JSON.stringify([anonCartItem]));
       if (key === 'wishlist_items') return Promise.resolve(JSON.stringify([wishItem]));

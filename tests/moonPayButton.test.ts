@@ -10,10 +10,10 @@ jest.mock('../contexts/AppInfoContext', () => ({
   useAppInfo: jest.fn(),
 }));
 
-jest.mock('../services/tonAuth', () => ({
+jest.mock('../services/nearAuth', () => ({
   __esModule: true,
-  default: { openModal: jest.fn() },
-  useTonAddress: jest.fn(() => 'addr'),
+  default: { signIn: jest.fn() },
+  useAccountId: jest.fn(() => 'addr'),
 }));
 
 const modalMock = jest.fn(({ visible, amountTON, amountUSD }: any) =>

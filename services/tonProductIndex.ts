@@ -1,7 +1,7 @@
 import { beginCell, Cell, Dictionary } from '@ton/core';
 import { ProductIndexItem } from '../types';
 import { requireEnv } from '../utils/appConfig';
-import { getTonConnect } from './tonAuth';
+import nearAuth from './nearAuth';
 
 const ADDRESS = requireEnv('TON_PRODUCT_INDEX_ADDRESS');
 
@@ -38,21 +38,14 @@ function buildBatch(items: ProductIndexItem[]): Cell {
 }
 
 export async function setProductBatch(
-  items: ProductIndexItem[]
+  items: ProductIndexItem[],
 ): Promise<void> {
-  const tonConnect = getTonConnect();
-  if (!tonConnect) {
-    throw new Error('TonConnect not initialized');
-  }
   const body = beginCell()
     .storeUint(0, 32) // opcode placeholder for "set_batch"
     .storeRef(buildBatch(items))
     .endCell();
   const payload = body.toBoc().toString('base64');
-  await tonConnect.sendTransaction({
-    validUntil: Math.floor(Date.now() / 1000) + 60,
-    messages: [{ address: ADDRESS, amount: '0', payload }],
-  });
+  await nearAuth.signMessage(Buffer.from(payload));
 }
 
 export function estimateSetProductBatch(items: ProductIndexItem[]): number {

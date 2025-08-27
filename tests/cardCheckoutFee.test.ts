@@ -41,10 +41,9 @@ jest.mock('../agents/orders-agent', () => ({
   update: jest.fn(),
 }));
 
-jest.mock('../services/tonAuth', () => ({
-  getAddress: jest.fn().mockReturnValue('buyer_address'),
-  getTonPublicKey: jest.fn(),
-  openModal: jest.fn(),
+jest.mock('../services/nearAuth', () => ({
+  getAccountId: jest.fn().mockReturnValue('buyer_address'),
+  signIn: jest.fn(),
 }));
 
 jest.mock('../constants/tenant', () => ({

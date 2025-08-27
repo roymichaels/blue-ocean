@@ -6,7 +6,7 @@ import { listProducts } from '../../../../services/tonProducts';
 import { Product } from '../../../../types';
 import ProductCard from '../../../../components/ProductCard';
 import ProductFormModal from '../../../../components/ProductFormModal';
-import { useTonAddress } from '../../../../services/tonAuth';
+import { useAccountId } from '../../../../services/nearAuth';
 import { useAuth } from '../../../../components/AuthContext';
 
 const ITEM_HEIGHT = 200;
@@ -17,7 +17,7 @@ export default function StoreProductsScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [formVisible, setFormVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const address = useTonAddress();
+  const address = useAccountId();
   const { isStoreOwner } = useAuth();
 
   useEffect(() => {
