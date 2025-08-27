@@ -36,7 +36,12 @@ import { useAuthModal } from '../../components/AuthModalContext';
 import OrderService from '../../services/orders';
 import CartService from '../../services/cart';
 import DatabaseService from '../../services/database';
-import { listStores } from '../../services/tonStores';
+import chain from '../../services/chain';
+
+let listStores: (() => Promise<any[]>) | undefined;
+if (chain === 'ton') {
+  ({ listStores } = require('../../services/tonStores'));
+}
 
 
 
@@ -98,7 +103,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     const loadStore = async () => {
-      if (!user?.address) return;
+      if (!user?.address || !listStores) return;
       try {
         const stores = await listStores();
         const store = stores.find((s) => s.owner === user.address);

@@ -2,10 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { listProducts } from '../../../../services/tonProducts';
-import { getStore } from '../../../../services/tonStores';
+import chain from '../../../../services/chain';
 import OrderRevenueMetrics from '../../../../components/OrderRevenueMetrics';
 import { useAuth } from '../../../../components/AuthContext';
+
+let listProducts: (() => Promise<any[]>) | undefined;
+let getStore: ((tenant: string, id: string) => Promise<any>) | undefined;
+if (chain === 'ton') {
+  ({ listProducts } = require('../../../../services/tonProducts'));
+  ({ getStore } = require('../../../../services/tonStores'));
+}
 
 export default function StoreDashboardScreen() {
   const { storeId, impersonate } = useLocalSearchParams<{ storeId: string; impersonate?: string }>();
@@ -16,8 +22,8 @@ export default function StoreDashboardScreen() {
 
   useEffect(() => {
     const loadStats = async () => {
-      if (!storeId) return;
-      const store = await getStore(storeId);
+      if (!storeId || !getStore || !listProducts) return;
+      const store = await getStore('', storeId);
       const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
       if (!store || (store.owner !== user?.address && !isAdmin)) {
         router.replace(`/store/${storeId}`);

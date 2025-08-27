@@ -25,8 +25,15 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import CartService from '../services/cart';
-import { getStore } from '../services/tonStores';
+import chain from '../services/chain';
 import { CartItem, ShippingAddress, Store } from '../types';
+
+let getStore:
+  | ((storeId: string, id: string) => Promise<Store | null>)
+  | undefined;
+if (chain === 'ton') {
+  ({ getStore } = require('../services/tonStores'));
+}
 import OrderService from '../services/orders';
 import eventBus from '../services/eventBus';
 import { useAuth } from './AuthContext';
@@ -113,7 +120,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       const ids = Array.from(new Set(cartItems.map((i) => i.product.storeId)));
       const entries = await Promise.all(
         ids.map(async (id) => {
-          const store = await getStore(id);
+          const store = getStore ? await getStore('', id) : null;
           return store ? ([id, store] as const) : null;
         })
       );

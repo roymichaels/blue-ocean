@@ -3,8 +3,15 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
 import useRequirePlatformAdmin from '../../../hooks/useRequirePlatformAdmin';
-import { getStore } from '../../../services/tonStores';
+import chain from '../../../services/chain';
 import { Store } from '../../../types';
+
+let getStore:
+  | ((tenantId: string, id: string) => Promise<Store | null>)
+  | undefined;
+if (chain === 'ton') {
+  ({ getStore } = require('../../../services/tonStores'));
+}
 
 export default function StoreDetail() {
   useRequirePlatformAdmin();
@@ -13,7 +20,7 @@ export default function StoreDetail() {
   const [store, setStore] = useState<Store | null>(null);
 
   useEffect(() => {
-    if (storeId) {
+    if (storeId && getStore) {
       getStore('', storeId).then(setStore).catch(() => {});
     }
   }, [storeId]);

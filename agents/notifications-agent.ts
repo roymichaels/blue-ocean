@@ -1,11 +1,14 @@
 import { Notification } from '../types';
 import { NotificationEvent } from '../types/waku';
+import { assertTonChain } from '../services/chain';
 import {
   setNotification,
   getNotification,
   listNotifications,
   removeNotification,
 } from '../services/tonNotifications';
+
+assertTonChain();
 import {
   LightNode,
   createLightNode,

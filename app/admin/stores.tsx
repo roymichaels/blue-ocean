@@ -3,8 +3,13 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
-import { listStores } from '../../services/tonStores';
+import chain from '../../services/chain';
 import { Store } from '../../types';
+
+let listStores: (() => Promise<Store[]>) | undefined;
+if (chain === 'ton') {
+  ({ listStores } = require('../../services/tonStores'));
+}
 
 export default function AdminStores() {
   useRequirePlatformAdmin();
@@ -12,7 +17,9 @@ export default function AdminStores() {
   const [stores, setStores] = useState<Store[]>([]);
 
   useEffect(() => {
-    listStores().then(setStores).catch(() => {});
+    if (listStores) {
+      listStores().then(setStores).catch(() => {});
+    }
   }, []);
 
   return (

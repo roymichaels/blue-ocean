@@ -2,8 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { listProducts } from '../../../../services/tonProducts';
+import chain from '../../../../services/chain';
 import { Product } from '../../../../types';
+
+let listProducts: (() => Promise<Product[]>) | undefined;
+if (chain === 'ton') {
+  ({ listProducts } = require('../../../../services/tonProducts'));
+}
 import ProductCard from '../../../../components/ProductCard';
 import ProductFormModal from '../../../../components/ProductFormModal';
 import { useAccountId } from '../../../../services/nearAuth';
@@ -22,7 +27,7 @@ export default function StoreProductsScreen() {
 
   useEffect(() => {
     const load = async () => {
-      if (!storeId || !isStoreOwner || address !== storeId) return;
+      if (!storeId || !isStoreOwner || address !== storeId || !listProducts) return;
       const all = await listProducts();
       setProducts(all.filter((p) => p.storeId === storeId));
     };

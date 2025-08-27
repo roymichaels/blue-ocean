@@ -2,6 +2,9 @@ import { errorLog } from '@/utils/logger';
 import nearAuth from './nearAuth';
 import { fetchSettings } from './tonSettings';
 import { requireEnv } from '../utils/appConfig';
+import { assertTonChain } from './chain';
+
+assertTonChain();
 
 export let ORDER_PAYMENT_FACTORY_ADDRESS = '';
 

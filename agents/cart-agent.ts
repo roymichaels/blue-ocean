@@ -1,6 +1,9 @@
 import { CartItem } from '../types';
+import { assertTonChain } from '../services/chain';
 import { setCartItem, getCartItem, listCartItems, removeCartItem } from '../services/tonCart';
 import ensureTonWallet from '../utils/ensureTonWallet';
+
+assertTonChain();
 
 class CartAgent {
   private async ensureWallet() {

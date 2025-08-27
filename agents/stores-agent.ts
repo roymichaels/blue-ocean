@@ -1,6 +1,9 @@
 import { Store } from '../types';
+import { assertTonChain } from '../services/chain';
 import { setStore, getStore, listStores, removeStore } from '../services/tonStores';
 import ensureTonWallet from '../utils/ensureTonWallet';
+
+assertTonChain();
 
 interface Metrics {
   reviewSum: number;

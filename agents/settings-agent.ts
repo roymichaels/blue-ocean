@@ -1,4 +1,5 @@
 import nearAuth from '../services/nearAuth';
+import { assertTonChain } from '../services/chain';
 import {
   getSetting,
   setSetting,
@@ -7,6 +8,8 @@ import {
   subscribeToSettingsWrites,
 } from '../services/tonSettings';
 import ensureTonWallet from '../utils/ensureTonWallet';
+
+assertTonChain();
 
 type SettingKey =
   | 'tenantId'

@@ -1,4 +1,5 @@
 import { Product } from '../types';
+import { assertTonChain } from '../services/chain';
 import {
   setProduct,
   getProduct,
@@ -9,6 +10,8 @@ import {
 } from '../services/tonProducts';
 import { getStore } from '../services/tonStores';
 import ensureTonWallet from '../utils/ensureTonWallet';
+
+assertTonChain();
 import {
   LightNode,
   createLightNode,

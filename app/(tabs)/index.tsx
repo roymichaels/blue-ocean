@@ -25,7 +25,12 @@ import {
 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import { Product, Category, HeroBanner } from '../../types';
-import { listCategories } from '../../services/tonCategories';
+import chain from '../../services/chain';
+
+let listCategories: (() => Promise<Category[]>) | undefined;
+if (chain === 'ton') {
+  ({ listCategories } = require('../../services/tonCategories'));
+}
 import { useAuth } from '../../components/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -117,7 +122,7 @@ export default function HomeScreen() {
       const db = DatabaseService.getInstance();
       const [productsData, categoriesData, bannersData] = await Promise.all([
         db.getProducts(),
-        listCategories(),
+        listCategories ? listCategories() : Promise.resolve([]),
         db.getHeroBanners(),
       ]);
       setProducts(productsData);

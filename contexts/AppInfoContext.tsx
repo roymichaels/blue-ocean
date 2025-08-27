@@ -10,7 +10,12 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import SettingsAgent from '../agents/settings-agent';
-import { fetchSettings } from '../services/tonSettings';
+import chain from '../services/chain';
+
+let fetchSettings: (() => Promise<any>) | undefined;
+if (chain === 'ton') {
+  ({ fetchSettings } = require('../services/tonSettings'));
+}
 
 interface AppInfoContextType {
   tenantId: string;
@@ -81,37 +86,42 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       if (storedFiat) setFiatKey(storedFiat || undefined);
 
       try {
-        const remote = await fetchSettings();
-        setTenantId(remote.tenantId);
-        await AsyncStorage.setItem(TENANT_KEY, remote.tenantId);
-        if (remote.appName) {
-          setAppNameState(remote.appName);
-          await AsyncStorage.setItem(`app_name_${remote.tenantId}`, remote.appName);
+        if (fetchSettings) {
+          const remote = await fetchSettings();
+          setTenantId(remote.tenantId);
+          await AsyncStorage.setItem(TENANT_KEY, remote.tenantId);
+          if (remote.appName) {
+            setAppNameState(remote.appName);
+            await AsyncStorage.setItem(
+              `app_name_${remote.tenantId}`,
+              remote.appName,
+            );
+          }
+          if (remote.brand.logoCid) {
+            setLogoCidState(remote.brand.logoCid);
+            await AsyncStorage.setItem(
+              `app_logo_${remote.tenantId}`,
+              remote.brand.logoCid,
+            );
+          }
+          if (remote.theme.primary) {
+            setThemeColorState(remote.theme.primary);
+            await AsyncStorage.setItem(
+              `app_theme_primary_${remote.tenantId}`,
+              remote.theme.primary,
+            );
+          }
+          if (remote.fiatKey) {
+            setFiatKey(remote.fiatKey);
+            await AsyncStorage.setItem(
+              `app_fiat_key_${remote.tenantId}`,
+              remote.fiatKey,
+            );
+          }
+          if (remote.feeAddress) setFeeAddress(remote.feeAddress);
+          if (remote.feeBps !== undefined) setFeeBps(remote.feeBps);
+          if (remote.admins) setAdmins(remote.admins);
         }
-        if (remote.brand.logoCid) {
-          setLogoCidState(remote.brand.logoCid);
-          await AsyncStorage.setItem(
-            `app_logo_${remote.tenantId}`,
-            remote.brand.logoCid,
-          );
-        }
-        if (remote.theme.primary) {
-          setThemeColorState(remote.theme.primary);
-          await AsyncStorage.setItem(
-            `app_theme_primary_${remote.tenantId}`,
-            remote.theme.primary,
-          );
-        }
-        if (remote.fiatKey) {
-          setFiatKey(remote.fiatKey);
-          await AsyncStorage.setItem(
-            `app_fiat_key_${remote.tenantId}`,
-            remote.fiatKey,
-          );
-        }
-        if (remote.feeAddress) setFeeAddress(remote.feeAddress);
-        if (remote.feeBps !== undefined) setFeeBps(remote.feeBps);
-        if (remote.admins) setAdmins(remote.admins);
       } catch (err) {
         Alert.alert('שגיאה', 'טעינת הגדרות מהשרת נכשלה');
         errorLog('Failed fetching branding from server:', err);
