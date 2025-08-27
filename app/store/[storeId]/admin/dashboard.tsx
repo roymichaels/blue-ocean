@@ -23,7 +23,7 @@ export default function StoreDashboardScreen() {
   useEffect(() => {
     const loadStats = async () => {
       if (!storeId || !getStore || !listProducts) return;
-      const store = await getStore('', storeId);
+      const store = await getStore(storeId, storeId);
       const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
       if (!store || (store.owner !== user?.address && !isAdmin)) {
         router.replace(`/store/${storeId}`);
@@ -47,7 +47,7 @@ export default function StoreDashboardScreen() {
       <Text style={[styles.title, { color: colors.text.primary }]}>לוח חנות</Text>
       <View style={styles.stats}>
         <Text style={[styles.statText, { color: colors.text.primary }]}>מוצרים: {productCount}</Text>
-        {storeId && <OrderRevenueMetrics sellerId={storeId} />}
+        {storeId && <OrderRevenueMetrics storeId={storeId} />}
       </View>
       <View style={styles.nav}>
         <TouchableOpacity

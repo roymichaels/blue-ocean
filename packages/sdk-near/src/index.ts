@@ -31,9 +31,12 @@ function requireEnv(name: 'EXPO_PUBLIC_RELAYER_URL' | 'EXPO_PUBLIC_INDEXER_URL')
 }
 
 /** Fetch all listings from the indexer service. */
-export async function getListings(): Promise<Listing[]> {
+import { requireStoreId } from '@blue-ocean/utils';
+
+export async function getListings(storeId: string): Promise<Listing[]> {
+  const sid = requireStoreId(storeId);
   const indexerUrl = requireEnv('EXPO_PUBLIC_INDEXER_URL');
-  const res = await fetch(`${indexerUrl}/listings`);
+  const res = await fetch(`${indexerUrl}/listings?storeId=${sid}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch listings: ${res.status} ${res.statusText}`);
   }
@@ -45,12 +48,13 @@ export async function getListings(): Promise<Listing[]> {
 }
 
 /** Submit a request to add a new listing through the relayer. */
-export async function addListing(args: AddListingArgs): Promise<any> {
+export async function addListing(storeId: string, args: AddListingArgs): Promise<any> {
+  const sid = requireStoreId(storeId);
   const relayerUrl = requireEnv('EXPO_PUBLIC_RELAYER_URL');
   const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'add_listing', args }),
+    body: JSON.stringify({ storeId: sid, action: 'add_listing', args }),
   });
   if (!res.ok) {
     throw new Error(`Failed to add listing: ${res.status} ${res.statusText}`);
@@ -63,12 +67,13 @@ export async function addListing(args: AddListingArgs): Promise<any> {
 }
 
 /** Submit a purchase request for a listing through the relayer. */
-export async function buyListing(args: BuyListingArgs): Promise<any> {
+export async function buyListing(storeId: string, args: BuyListingArgs): Promise<any> {
+  const sid = requireStoreId(storeId);
   const relayerUrl = requireEnv('EXPO_PUBLIC_RELAYER_URL');
   const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'buy_listing', args }),
+    body: JSON.stringify({ storeId: sid, action: 'buy_listing', args }),
   });
   if (!res.ok) {
     throw new Error(`Failed to buy listing: ${res.status} ${res.statusText}`);

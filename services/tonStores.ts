@@ -2,27 +2,31 @@ import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { Store } from '../types';
 import { requireEnv } from '../utils/appConfig';
 import { assertTonChain } from './chain';
+import { requireStoreId } from '@blue-ocean/utils';
 
 assertTonChain();
 
 const ADDRESS = requireEnv('TON_STORES_ADDRESS');
 
-export async function getStore(storeId: string = '', id: string): Promise<Store | null> {
-  const res = await getValue(ADDRESS, `${storeId}:${id}`);
+export async function getStore(storeId: string, id: string): Promise<Store | null> {
+  const sid = requireStoreId(storeId);
+  const res = await getValue(ADDRESS, `${sid}:${id}`);
   return res ? (JSON.parse(res) as Store) : null;
 }
 
-export async function setStore(storeId: string = '', store: Store) {
-  await setValue(ADDRESS, `${storeId}:${store.id}`, JSON.stringify(store));
+export async function setStore(storeId: string, store: Store) {
+  const sid = requireStoreId(storeId);
+  await setValue(ADDRESS, `${sid}:${store.id}`, JSON.stringify(store));
 }
 
-export async function removeStore(storeId: string = '', id: string) {
-  await removeValue(ADDRESS, `${storeId}:${id}`);
+export async function removeStore(storeId: string, id: string) {
+  const sid = requireStoreId(storeId);
+  await removeValue(ADDRESS, `${sid}:${id}`);
 }
-
-export async function listStores(storeId: string = ''): Promise<Store[]> {
+export async function listStores(storeId: string): Promise<Store[]> {
+  const sid = requireStoreId(storeId);
   const items = await listValues(ADDRESS);
   return items
-    .filter((i) => i.key.startsWith(`${storeId}:`))
+    .filter((i) => i.key.startsWith(`${sid}:`))
     .map((i) => JSON.parse(i.value) as Store);
 }

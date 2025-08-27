@@ -8,7 +8,7 @@ import { Order } from '../../../../types';
 import { useAccountId } from '../../../../services/nearAuth';
 
 let listOrdersBySeller:
-  | ((sellerId: string) => Promise<Order[]>)
+  | ((storeId: string, sellerId: string) => Promise<Order[]>)
   | undefined;
 if (chain === 'ton') {
   ({ listOrdersBySeller } = require('../../../../services/tonOrders'));
@@ -31,7 +31,7 @@ export default function StoreOrdersScreen() {
   useEffect(() => {
     const load = async () => {
       if (!storeId || address !== storeId || !listOrdersBySeller) return;
-      const all = await listOrdersBySeller(storeId);
+      const all = await listOrdersBySeller(storeId, storeId);
       setOrders(all);
     };
     load();

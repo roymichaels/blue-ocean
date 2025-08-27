@@ -21,7 +21,7 @@ export default function StoreDetail() {
 
   useEffect(() => {
     if (storeId && getStore) {
-      getStore('', storeId).then(setStore).catch(() => {});
+      getStore(storeId, storeId).then(setStore).catch(() => {});
     }
   }, [storeId]);
 

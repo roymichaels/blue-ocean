@@ -15,11 +15,11 @@ jest.mock('../services/media', () => ({
   },
 }));
 
-const setProductBatchMock = jest.fn(async (_products: Product[]) => {});
+const setProductBatchMock = jest.fn(async (_storeId: string, _products: Product[]) => {});
 const estimateSetProductBatchMock = jest.fn(async (_products: Product[]) => 1);
 
 jest.mock('../services/tonProducts', () => ({
-  setProductBatch: (products: Product[]) => setProductBatchMock(products),
+  setProductBatch: (storeId: string, products: Product[]) => setProductBatchMock(storeId, products),
   estimateSetProductBatch: (products: Product[]) => estimateSetProductBatchMock(products),
 }));
 
