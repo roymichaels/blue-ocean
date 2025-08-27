@@ -66,8 +66,7 @@ export async function addListing(listing: Listing): Promise<any> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contractId,
-      methodName: 'create_listing',
+      action: 'add_listing',
       args: listing,
     }),
   });
@@ -77,7 +76,11 @@ export async function addListing(listing: Listing): Promise<any> {
   return res.json();
 }
 
-export async function buyListing(id: number, buyer: string, amount: number): Promise<any> {
+export async function buyListing(
+  id: number,
+  buyer: string,
+  amountYocto: string
+): Promise<any> {
   if (!relayerUrl) {
     throw new Error('Relayer URL not configured');
   }
@@ -85,9 +88,8 @@ export async function buyListing(id: number, buyer: string, amount: number): Pro
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contractId,
-      methodName: 'buy_listing',
-      args: { id, buyer, amount },
+      action: 'buy_listing',
+      args: { id, buyer, amountYocto },
     }),
   });
   if (!res.ok) {
