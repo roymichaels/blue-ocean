@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { debugLog } from '@/utils/logger';
 import { useLocalSearchParams } from 'expo-router';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { listOrdersBySeller } from '../../../services/tonOrders';
-import { Order } from '../../../types';
-import { useTonAddress } from '../../../services/tonAuth';
+import { useTheme } from '../../../../contexts/ThemeContext';
+import { listOrdersBySeller } from '../../../../services/tonOrders';
+import { Order } from '../../../../types';
+import { useTonAddress } from '../../../../services/tonAuth';
 
 export default function StoreOrdersScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
