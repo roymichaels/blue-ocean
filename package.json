@@ -17,7 +17,8 @@
     "test": "jest",
     "prepare": "husky install",
     "contract:build": "cargo build --manifest-path contracts/marketplace/Cargo.toml --release",
-    "contract:deploy": "bash scripts/deploy-marketplace.sh"
+    "contract:deploy": "bash scripts/deploy-marketplace.sh",
+    "relayer:dev": "yarn --cwd relayer dev"
   },
   "dependencies": {
     "@babel/plugin-transform-template-literals": "^7.27.1",
