@@ -1,0 +1,21 @@
+{
+  "name": "lake-indexer",
+  "version": "1.0.0",
+  "main": "src/main.ts",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "near-lake-framework": "^2.0.0",
+    "pg": "^8.11.3",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "@types/node": "^24.0.10",
+    "@types/pg": "^8.10.0"
+  }
+}
