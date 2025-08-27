@@ -1,54 +1,31 @@
-import { beginCell, Cell, Dictionary } from '@ton/core';
+import { Buffer } from 'buffer';
 import { ProductIndexItem } from '../types';
-import { requireEnv } from '../utils/appConfig';
 import nearAuth from './nearAuth';
 
-const ADDRESS = requireEnv('TON_PRODUCT_INDEX_ADDRESS');
-
-export function encodeProductIndexItem(item: ProductIndexItem): Cell {
-  return beginCell()
-    .storeUint(item.price, 64)
-    .storeStringRefTail(item.storeId)
-    .storeStringRefTail(item.metadataUri)
-    .storeStringRefTail(item.image)
-    .endCell();
+export function encodeProductIndexItem(item: ProductIndexItem): string {
+  return JSON.stringify(item);
 }
 
 export function decodeProductIndexItem(
   id: string,
-  cell: Cell
+  data: string,
 ): ProductIndexItem {
-  const s = cell.beginParse();
-  const price = Number(s.loadUint(64));
-  const storeId = s.loadStringRefTail();
-  const metadataUri = s.loadStringRefTail();
-  const image = s.loadStringRefTail();
-  return { id, storeId, price, metadataUri, image };
+  const parsed = JSON.parse(data);
+  return { id, ...parsed };
 }
 
-function buildBatch(items: ProductIndexItem[]): Cell {
-  const dict = Dictionary.empty(
-    Dictionary.Keys.Uint(32),
-    Dictionary.Values.Cell()
-  );
-  for (const item of items) {
-    dict.set(BigInt(item.id), encodeProductIndexItem(item));
-  }
-  return beginCell().storeDict(dict).endCell();
+function buildBatch(items: ProductIndexItem[]): string {
+  return JSON.stringify(items);
 }
 
 export async function setProductBatch(
   items: ProductIndexItem[],
 ): Promise<void> {
-  const body = beginCell()
-    .storeUint(0, 32) // opcode placeholder for "set_batch"
-    .storeRef(buildBatch(items))
-    .endCell();
-  const payload = body.toBoc().toString('base64');
+  const payload = buildBatch(items);
   await nearAuth.signMessage(Buffer.from(payload));
 }
 
 export function estimateSetProductBatch(items: ProductIndexItem[]): number {
-  return buildBatch(items).toBoc().length;
+  return buildBatch(items).length;
 }
 

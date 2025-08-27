@@ -1,10 +1,10 @@
 import usersAgent from '../agents/users-agent';
 
-jest.mock('../utils/validateTonAddress', () => ({
+jest.mock('../utils/validateNearAddress', () => ({
   __esModule: true,
   default: jest.fn().mockReturnValue(true),
 }));
-import validateTonAddress from '../utils/validateTonAddress';
+import validateNearAddress from '../utils/validateNearAddress';
 
 jest.mock('../services/nearAuth', () => ({
   getAccountId: () => 'addr_admin',
@@ -63,8 +63,8 @@ describe('UsersAgent TON integration', () => {
     expect(verified?.kycApprovedBy).toBe('admin1');
   });
 
-  it('rejects invalid TON addresses', async () => {
-    (validateTonAddress as jest.Mock).mockReturnValueOnce(false);
+  it('rejects invalid NEAR addresses', async () => {
+    (validateNearAddress as jest.Mock).mockReturnValueOnce(false);
     const user: any = {
       id: 'u3',
       username: 'charlie',
@@ -73,6 +73,6 @@ describe('UsersAgent TON integration', () => {
       address: '',
       publicKey: '',
     };
-    await expect(usersAgent.add(user)).rejects.toThrow('Invalid TON address');
+    await expect(usersAgent.add(user)).rejects.toThrow('Invalid NEAR address');
   });
 });

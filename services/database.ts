@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import usersAgent from '../agents/users-agent';

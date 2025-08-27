@@ -39,7 +39,9 @@ export async function getRoomKey(
     roomKeys.set(roomId, key);
     if (roomKeys.size > MAX_ROOM_KEYS) {
       const oldest = roomKeys.keys().next().value;
-      roomKeys.delete(oldest);
+      if (oldest) {
+        roomKeys.delete(oldest);
+      }
     }
     failedDerivations.delete(roomId);
     return key;

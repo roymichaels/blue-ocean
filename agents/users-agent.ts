@@ -3,7 +3,7 @@ import { getUser, setUser, listUsers, removeUser } from '../services/tonUsers';
 import { getPublicKeyHex } from '../services/localIdentity';
 import SettingsAgent from './settings-agent';
 import ensureTonWallet from '../utils/ensureTonWallet';
-import validateTonAddress from '../utils/validateTonAddress';
+import validateNearAddress from '../utils/validateNearAddress';
 import { verifyMessageSignature } from '../utils/verifyMessageSignature';
 import type { WakuMessage } from '../types/waku';
 
@@ -30,8 +30,8 @@ class UsersAgent {
     }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = { ...user, publicKey, address, chatPublicKey };
-    if (!validateTonAddress(address)) {
-      throw new Error('Invalid TON address');
+    if (!validateNearAddress(address)) {
+      throw new Error('Invalid NEAR address');
     }
     await setUser(enriched);
   }
@@ -44,8 +44,8 @@ class UsersAgent {
     }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = { ...user, publicKey, address, chatPublicKey };
-    if (!validateTonAddress(address)) {
-      throw new Error('Invalid TON address');
+    if (!validateNearAddress(address)) {
+      throw new Error('Invalid NEAR address');
     }
     await setUser(enriched);
   }

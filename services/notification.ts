@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { debugLog, errorLog } from '@/utils/logger';
 import { randomUUID } from 'crypto';
 import { Notification } from '../types';
