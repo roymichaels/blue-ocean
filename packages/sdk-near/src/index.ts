@@ -80,5 +80,13 @@ export async function buyListing(args: BuyListingArgs): Promise<any> {
   return json;
 }
 
-export default { getListings, addListing, buyListing };
+/**
+ * Pay for a listing while attempting to preserve privacy.
+ * TODO: integrate with mixer for on-chain privacy once available.
+ */
+export async function payPrivately(args: BuyListingArgs): Promise<any> {
+  return buyListing(args);
+}
+
+export default { getListings, addListing, buyListing, payPrivately };
 

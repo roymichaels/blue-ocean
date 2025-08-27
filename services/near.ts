@@ -3,7 +3,7 @@ import { setupWalletSelector, WalletSelector } from '@near-wallet-selector/core'
 import { setupModal, WalletSelectorModal } from '@near-wallet-selector/modal-ui';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import { useEffect, useState } from 'react';
-import { getListings, addListing, buyListing } from '@blue-ocean/sdk-near';
+import { getListings, addListing, buyListing, payPrivately } from '@blue-ocean/sdk-near';
 
 let selector: WalletSelector | null = null;
 let modal: WalletSelectorModal | null = null;
@@ -58,7 +58,7 @@ export function getModal() {
   return modal;
 }
 
-export { getListings, addListing, buyListing };
+export { getListings, addListing, buyListing, payPrivately };
 
 export default {
   initNear,
@@ -68,4 +68,5 @@ export default {
   getListings,
   addListing,
   buyListing,
+  payPrivately,
 };
