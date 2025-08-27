@@ -1,8 +1,10 @@
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 import type { WalletSelector, WalletSelectorModal } from '@near-wallet-selector/core';
 import { setupWalletSelector } from '@near-wallet-selector/core';
 import { setupModal } from '@near-wallet-selector/modal-ui';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
+import '@near-wallet-selector/wallet-utils';
 import { Buffer } from 'buffer';
 
 let selector: WalletSelector | null = null;

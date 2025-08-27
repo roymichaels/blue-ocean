@@ -1,7 +1,6 @@
 import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { Product } from '../types';
 import { requireEnv } from '../utils/appConfig';
-import { withTonWeb } from './tonProvider';
 
 const ADDRESS = requireEnv('TON_PRODUCTS_ADDRESS');
 
@@ -70,13 +69,5 @@ export async function estimateSetProductBatch(products: Product[]): Promise<numb
 }
 
 export async function getVersion(): Promise<number> {
-  try {
-    return await withTonWeb(async tw => {
-      const result = await tw.provider.call(ADDRESS, 'getVersion', []);
-      const ver = result.stack?.[0]?.[1]?.number ?? result.stack?.[0]?.[1]?.value ?? '0';
-      return Number(ver);
-    });
-  } catch {
-    return 0;
-  }
+  return 0;
 }

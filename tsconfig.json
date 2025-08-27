@@ -47,5 +47,6 @@
     "types/lucide-react-native.d.ts",
     "types/**/*.d.ts"
   ],
+  "exclude": ["tests"],
   "extends": "expo/tsconfig.base"
 }

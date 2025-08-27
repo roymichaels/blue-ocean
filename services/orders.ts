@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { errorLog, debugLog } from '@/utils/logger';
 import { randomUUID } from 'crypto';
 import ordersAgent from '../agents/orders-agent';

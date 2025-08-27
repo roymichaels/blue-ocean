@@ -8,42 +8,12 @@ import {
   Alert,
   I18nManager,
 } from 'react-native';
-import TonWeb from 'tonweb';
-import { Buffer } from 'buffer';
 import storesAgent from '../agents/stores-agent';
 import nearAuth from '../services/nearAuth';
-import codeBoc from '../contracts/store-nft-code.boc';
-import dataBoc from '../contracts/store-nft-data.boc';
-import { getTonWeb } from '../services/tonProvider';
 import { errorLog } from '../utils/logger';
-
-const tonweb = getTonWeb();
 
 const StoreCreation: React.FC = () => {
   const [name, setName] = useState('');
-
-  const deployStoreNFT = async () => {
-    const code = TonWeb.boc.Cell.fromBoc(Buffer.from(codeBoc, 'base64'))[0];
-    const data = TonWeb.boc.Cell.fromBoc(Buffer.from(dataBoc, 'base64'))[0];
-    const contract = new TonWeb.Contract(tonweb.provider, { code, data });
-    const init = await contract.createStateInit();
-    const stateInitBoc = TonWeb.utils.bytesToBase64(
-      await init.stateInit.toBoc(false),
-    );
-    const address = (await contract.getAddress()).toString(true, true, true);
-    try {
-      await nearAuth.signMessage(Buffer.from(stateInitBoc));
-    } catch (e: any) {
-      if (e?.message?.toLowerCase().includes('insufficient')) {
-        Alert.alert('Transaction failed', 'Insufficient funds to deploy the store');
-      } else {
-        // user rejection or other error
-        Alert.alert('Transaction cancelled');
-      }
-      throw e;
-    }
-    return address as string;
-  };
 
   const mintStore = async () => {
     if (!name) return;
@@ -53,13 +23,17 @@ const StoreCreation: React.FC = () => {
       return;
     }
     try {
-      const nftId = await deployStoreNFT();
       const id = Date.now().toString();
-      await storesAgent.add({ id, name, owner, nftId });
+      await nearAuth.signMessage(`MintStore:${id}`);
+      await storesAgent.add({ id, name, owner, nftId: id });
       setName('');
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.message?.toLowerCase().includes('insufficient')) {
+        Alert.alert('Transaction failed', 'Insufficient funds to deploy the store');
+      } else {
+        Alert.alert('Transaction cancelled');
+      }
       errorLog('Store mint failed', err);
-      // Deployment failed or was rejected
     }
   };
 
