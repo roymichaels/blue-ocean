@@ -1,73 +1,84 @@
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
-use serde_json::json;
+use near_sdk::collections::UnorderedMap;
+use near_sdk::json_types::U128;
+use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault, BorshStorageKey};
+use near_sdk::serde::{Deserialize, Serialize};
+use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 
 /// A marketplace listing.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Listing {
-    pub id: u64,
-    pub seller: String,
-    pub item: String,
-    pub price: u64,
+    pub seller: AccountId,
+    pub price: U128,
+}
+
+#[derive(BorshStorageKey, BorshSerialize)]
+enum StorageKey {
+    Listings,
 }
 
 /// Multi-tenant marketplace contract.
-/// `fee` is in basis points (1/10000).
+#[near_bindgen]
+#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Marketplace {
-    fee: u64,
-    treasury: String,
-    listings: HashMap<u64, Listing>,
+    pub fee_bps: u16,
+    pub treasury: AccountId,
+    pub listings: UnorderedMap<(String, String), Listing>,
 }
 
+#[near_bindgen]
 impl Marketplace {
-    /// Create a new marketplace instance.
-    pub fn new(fee: u64, treasury: String) -> Self {
-        Self { fee, treasury, listings: HashMap::new() }
-    }
-
-    /// Create a listing. Returns `true` if the listing did not exist before.
-    pub fn create_listing(&mut self, listing: Listing) -> bool {
-        self.listings.insert(listing.id, listing).is_none()
-    }
-
-    /// Update an existing listing. Returns `true` if the listing existed.
-    pub fn update_listing(&mut self, listing: Listing) -> bool {
-        self.listings.insert(listing.id, listing).is_some()
-    }
-
-    /// Delete a listing. Returns `true` if the listing existed.
-    pub fn delete_listing(&mut self, id: u64) -> bool {
-        self.listings.remove(&id).is_some()
-    }
-
-    /// Buy a listing, emitting JSON logs about the sale.
-    pub fn buy_listing(&mut self, id: u64, buyer: String, amount: u64) -> Result<(), String> {
-        let listing = self
-            .listings
-            .remove(&id)
-            .ok_or_else(|| "listing not found".to_string())?;
-        if amount < listing.price {
-            return Err("insufficient payment".into());
+    /// Initialize the marketplace with a fee (in basis points) and treasury account.
+    #[init]
+    pub fn init(fee_bps: u16, treasury: AccountId) -> Self {
+        Self {
+            fee_bps,
+            treasury,
+            listings: UnorderedMap::new(StorageKey::Listings),
         }
-        let fee_amount = listing.price * self.fee / 10_000;
-        let seller_amount = listing.price - fee_amount;
-        let log = json!({
+    }
+
+    /// Add a listing for a given contract and token id.
+    pub fn add_listing(&mut self, contract_id: String, token_id: String, seller: AccountId, price: U128) {
+        let listing = Listing { seller: seller.clone(), price };
+        let key = (contract_id.clone(), token_id.clone());
+        self.listings.insert(&key, &listing);
+        env::log_str(&near_sdk::serde_json::json!({
+            "event": "add_listing",
+            "contract_id": contract_id,
+            "token_id": token_id,
+            "seller": seller,
+            "price": listing.price
+        }).to_string());
+    }
+
+    /// Buy a listing. Removes the listing and logs the purchase event.
+    pub fn buy_listing(&mut self, contract_id: String, token_id: String, buyer: AccountId, amount: U128) {
+        let key = (contract_id.clone(), token_id.clone());
+        let listing = self.listings.remove(&key).expect("listing not found");
+        assert!(amount.0 >= listing.price.0, "insufficient payment");
+        let fee = listing.price.0 * self.fee_bps as u128 / 10_000u128;
+        let seller_amount = listing.price.0 - fee;
+        env::log_str(&near_sdk::serde_json::json!({
             "event": "buy_listing",
-            "listing_id": id,
+            "contract_id": contract_id,
+            "token_id": token_id,
             "buyer": buyer,
             "seller": listing.seller,
             "price": listing.price,
-            "fee": fee_amount,
-            "treasury": self.treasury,
-            "seller_amount": seller_amount
-        });
-        println!("{}", log.to_string());
-        Ok(())
+            "fee": U128(fee),
+            "seller_amount": U128(seller_amount),
+            "treasury": self.treasury
+        }).to_string());
     }
-}
 
-impl Default for Marketplace {
-    fn default() -> Self {
-        Self::new(0, String::new())
+    /// Retrieve a single listing.
+    pub fn get_listing(&self, contract_id: String, token_id: String) -> Option<Listing> {
+        self.listings.get(&(contract_id, token_id))
+    }
+
+    /// Retrieve all listings.
+    pub fn get_listings(&self) -> Vec<((String, String), Listing)> {
+        self.listings.iter().collect()
     }
 }
