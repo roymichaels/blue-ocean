@@ -4,7 +4,7 @@ This app records anonymized funnel events over Waku for basic analytics.
 
 ## Event Schema
 
-Events published on `/blue-ocean/analytics/1` follow this structure:
+Events published on `/blue-ocean/{tenantId}/analytics/1` follow this structure:
 
 ```json
 {
