@@ -15,7 +15,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "contract:build": "cargo build --manifest-path contracts/marketplace/Cargo.toml --release",
+    "contract:deploy": "bash scripts/deploy-marketplace.sh"
   },
   "dependencies": {
     "@babel/plugin-transform-template-literals": "^7.27.1",
