@@ -7,7 +7,7 @@ import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
-import { TonConnectUIProvider } from '@tonconnect/ui-react';
+import { initNear } from '../services/near';
 import commonStyles from '../constants/styles';
 
 import AdminNotificationBanner from '../components/AdminNotificationBanner';
@@ -82,35 +82,17 @@ export default function RootLayout() {
   useFrameworkReady();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const style = document.createElement('style');
-      style.innerHTML = `
-        #ton-connect-ui-container {
-          z-index: 9999 !important;
-          position: fixed !important;
-        }
-      `;
-      document.head.appendChild(style);
-    }
+    initNear();
   }, []);
 
-  const manifestUrl =
-    Platform.OS === 'web'
-      ? typeof window !== 'undefined'
-        ? new URL('/tonconnect-manifest.json', window.location.origin).href
-        : '/tonconnect-manifest.json'
-      : 'https://blue-ocean.vercel.app/tonconnect-manifest.json';
-
   return (
-    <TonConnectUIProvider manifestUrl={manifestUrl}>
-      <ConfigProvider>
-        <AuthProvider>
-          <AuthModalProvider>
-            <RootLayoutInner />
-          </AuthModalProvider>
-        </AuthProvider>
-      </ConfigProvider>
-    </TonConnectUIProvider>
+    <ConfigProvider>
+      <AuthProvider>
+        <AuthModalProvider>
+          <RootLayoutInner />
+        </AuthModalProvider>
+      </AuthProvider>
+    </ConfigProvider>
   );
 }
 

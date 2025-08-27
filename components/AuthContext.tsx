@@ -1,13 +1,9 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import {
-  useTonConnectUI,
-  useTonAddress,
-  useIsConnectionRestored,
-} from '@tonconnect/ui-react';
 import DatabaseService from '../services/database';
 import { User } from '../types';
 import { errorLog } from '../utils/logger';
+import { initNear, openModal, useNearAccount, getSelector } from '../services/near';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -44,13 +40,12 @@ export const useAuth = () => useContext(AuthContext);
 interface AuthProviderProps { children: ReactNode }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { openModal, tonConnectUI } = useTonConnectUI();
-  const address = useTonAddress();
-  const connectionRestored = useIsConnectionRestored();
+  const address = useNearAccount();
   const [user, setUser] = useState<User | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   const checkAuthState = async () => {
-    const walletAddress = tonConnectUI.account?.address || address;
+    const walletAddress = address;
 
     if (!walletAddress) {
       // Wallet not connected – ensure we clear any stale user data
@@ -81,7 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshSession = async () => {
     // Re-check the authentication state when recovering from a lost
     // connection or after the wallet reconnects.
-    if (!tonConnectUI.account?.address && !address) {
+    if (!address) {
       setUser(null);
       return;
     }
@@ -90,9 +85,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   useEffect(() => {
-    if (!connectionRestored) return;
-    checkAuthState();
-  }, [address, connectionRestored]);
+    initNear().then(() => {
+      checkAuthState().finally(() => setInitialized(true));
+    });
+  }, [address]);
 
   const login = async () => {
     try {
@@ -106,7 +102,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signup = login;
 
   const logout = async () => {
-    await tonConnectUI.disconnect();
+    try {
+      const selector = getSelector();
+      const wallet = await selector?.wallet();
+      await wallet?.signOut();
+    } catch (err) {
+      errorLog('Logout failed', err);
+    }
   };
 
   const role = user?.role;
@@ -115,7 +117,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isStoreOwner = role === 'store-owner';
   const isPlatformAdmin = role === 'platform-admin';
 
-  if (!connectionRestored) {
+  if (!initialized) {
     return null;
   }
 
