@@ -12,7 +12,7 @@
     "docker:preview": "docker compose run --rm -p 4173:4173 app npx serve@14.2.0 dist -l 4173",
     "clean": "node scripts/web-clean.js",
     "seed": "node scripts/seed.js",
-    "lint": "expo lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "prepare": "husky install"

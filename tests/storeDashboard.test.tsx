@@ -73,4 +73,37 @@ describe('StoreDashboardScreen', () => {
     expect(router.replace).toHaveBeenCalledWith('/store/s1');
     expect(root!.toJSON()).toBeNull();
   });
+
+  it('redirects platform admin without impersonation', async () => {
+    getStore.mockResolvedValue({ id: 's1', owner: 'owner1', name: 'Store' });
+    useAuth.mockReturnValue({ user: { address: 'admin', role: 'platform-admin' } });
+    listProducts.mockResolvedValue([]);
+
+    let root: renderer.ReactTestRenderer;
+    await act(async () => {
+      root = renderer.create(<StoreDashboardScreen />);
+    });
+    await act(async () => {});
+    expect(router.replace).toHaveBeenCalledWith('/store/s1');
+    expect(root!.toJSON()).toBeNull();
+  });
+
+  it('allows platform admin with impersonation', async () => {
+    useLocalSearchParams.mockReturnValue({ storeId: 's1', impersonate: 'true' });
+    getStore.mockResolvedValue({ id: 's1', owner: 'owner1', name: 'Store' });
+    listProducts.mockResolvedValue([
+      { id: 'p1', storeId: 's1' },
+      { id: 'p2', storeId: 's1' },
+    ]);
+    useAuth.mockReturnValue({ user: { address: 'admin', role: 'platform-admin' } });
+
+    let root: renderer.ReactTestRenderer;
+    await act(async () => {
+      root = renderer.create(<StoreDashboardScreen />);
+    });
+    await act(async () => {});
+    const str = JSON.stringify(root!.toJSON());
+    expect(str).toContain('מוצרים: 2');
+    expect(router.replace).not.toHaveBeenCalled();
+  });
 });

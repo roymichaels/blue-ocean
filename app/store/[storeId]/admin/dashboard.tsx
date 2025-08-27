@@ -8,7 +8,7 @@ import OrderRevenueMetrics from '../../../../components/OrderRevenueMetrics';
 import { useAuth } from '../../../../components/AuthContext';
 
 export default function StoreDashboardScreen() {
-  const { storeId } = useLocalSearchParams<{ storeId: string }>();
+  const { storeId, impersonate } = useLocalSearchParams<{ storeId: string; impersonate?: string }>();
   const { colors } = useTheme();
   const { user } = useAuth();
   const [productCount, setProductCount] = useState(0);
@@ -18,7 +18,8 @@ export default function StoreDashboardScreen() {
     const loadStats = async () => {
       if (!storeId) return;
       const store = await getStore(storeId);
-      if (!store || store.owner !== user?.address) {
+      const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
+      if (!store || (store.owner !== user?.address && !isAdmin)) {
         router.replace(`/store/${storeId}`);
         return;
       }
