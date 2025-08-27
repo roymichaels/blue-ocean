@@ -19,7 +19,7 @@
     "prepare": "husky install",
     "contract:build": "cargo build --manifest-path contracts/marketplace/Cargo.toml --release",
     "contract:deploy": "bash scripts/deploy-marketplace.sh",
-    "indexer:dev": "yarn --cwd indexers/lake dev"
+    "indexer:dev": "yarn --cwd indexers/lake dev",
     "relayer:dev": "yarn --cwd relayer dev"
   },
   "dependencies": {
