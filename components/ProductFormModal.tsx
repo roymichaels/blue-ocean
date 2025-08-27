@@ -26,7 +26,7 @@ import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
-import { useTonAddress } from '../services/tonAuth';
+import { useAccountId } from '../services/nearAuth';
 
 interface ProductFormModalProps {
   visible: boolean;
@@ -45,7 +45,7 @@ export default function ProductFormModal({
 }: ProductFormModalProps) {
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const address = useTonAddress();
+  const address = useAccountId();
   const [editingProduct, setEditingProduct] = useState<Partial<Product>>({});
   const [imageUrls, setImageUrls] = useState('');
   const [videoUrls, setVideoUrls] = useState('');

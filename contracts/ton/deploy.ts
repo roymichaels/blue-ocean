@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 import path from 'path';
-import { getTonConnect } from '../../services/tonAuth';
+import nearAuth from '../../services/nearAuth';
 import { getTonWeb } from '../../services/tonProvider';
 
 export async function compile(contract: string) {
@@ -11,15 +11,5 @@ export async function compile(contract: string) {
 export async function deploy(contract: string, init: string) {
   await compile(contract);
   getTonWeb();
-  const tonConnect = getTonConnect();
-  if (!tonConnect) throw new Error('TonConnect not initialized');
-  await tonConnect.sendTransaction({
-    validUntil: Math.floor(Date.now() / 1000) + 60,
-    messages: [
-      {
-        address: init,
-        amount: '0',
-      },
-    ],
-  });
+  await nearAuth.signMessage(Buffer.from(init));
 }

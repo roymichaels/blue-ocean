@@ -1,10 +1,6 @@
-jest.mock('../services/tonAuth', () => ({
-  getAddress: () => 'addr_admin',
-  getTonPublicKey: () => 'pub_admin',
-  openModal: jest.fn(),
-  getTonConnect: () => ({
-    sendTransaction: jest.fn().mockResolvedValue({}),
-  }),
+jest.mock('../services/nearAuth', () => ({
+  getAccountId: () => 'addr_admin',
+  signIn: jest.fn(),
 }));
 jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
 jest.mock('../services/tonSettings');

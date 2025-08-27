@@ -32,10 +32,9 @@ jest.mock('../agents/stores-agent', () => ({
   recordReview: jest.fn(async () => {}),
 }));
 
-jest.mock('../services/tonAuth', () => ({
-  getAddress: jest.fn().mockReturnValue('user1'),
-  getTonPublicKey: jest.fn().mockReturnValue('pub'),
-  openModal: jest.fn(),
+jest.mock('../services/nearAuth', () => ({
+  getAccountId: jest.fn().mockReturnValue('user1'),
+  signIn: jest.fn(),
 }));
 
 import reviewAgent from '../agents/review-agent';

@@ -40,7 +40,7 @@ import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '../../components/ProductFormModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import MediaService from '../../services/media';
-import { useTonAddress } from '../../services/tonAuth';
+import { useAccountId } from '../../services/nearAuth';
 import chatAgent from '../../agents/chat-agent';
 import moderationAgent from '../../agents/moderation-agent';
 import reviewAgent from '../../agents/review-agent';
@@ -77,7 +77,7 @@ export default function ProductDetailScreen() {
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
-  const address = useTonAddress();
+  const address = useAccountId();
   const [reviews, setReviews] = useState<Review[]>([]);
 
   // Modal states

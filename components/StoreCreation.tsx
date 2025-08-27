@@ -11,11 +11,10 @@ import {
 import TonWeb from 'tonweb';
 import { Buffer } from 'buffer';
 import storesAgent from '../agents/stores-agent';
-import tonAuth from '../services/tonAuth';
+import nearAuth from '../services/nearAuth';
 import codeBoc from '../contracts/store-nft-code.boc';
 import dataBoc from '../contracts/store-nft-data.boc';
 import { getTonWeb } from '../services/tonProvider';
-import validateTonAddress from '../utils/validateTonAddress';
 import { errorLog } from '../utils/logger';
 
 const tonweb = getTonWeb();
@@ -33,16 +32,7 @@ const StoreCreation: React.FC = () => {
     );
     const address = (await contract.getAddress()).toString(true, true, true);
     try {
-      await (tonAuth as any).tonConnectUI?.sendTransaction({
-        validUntil: Math.floor(Date.now() / 1000) + 60,
-        messages: [
-          {
-            address,
-            amount: TonWeb.utils.toNano('0.05').toString(),
-            stateInit: stateInitBoc,
-          },
-        ],
-      });
+      await nearAuth.signMessage(Buffer.from(stateInitBoc));
     } catch (e: any) {
       if (e?.message?.toLowerCase().includes('insufficient')) {
         Alert.alert('Transaction failed', 'Insufficient funds to deploy the store');
@@ -57,14 +47,9 @@ const StoreCreation: React.FC = () => {
 
   const mintStore = async () => {
     if (!name) return;
-    const owner = tonAuth.getAddress();
+    const owner = nearAuth.getAccountId();
     if (!owner) {
-      await tonAuth.openModal();
-      return;
-    }
-    if (!validateTonAddress(owner)) {
-      errorLog('Invalid TON address');
-      Alert.alert('Invalid address', 'Please connect a valid TON wallet.');
+      await nearAuth.signIn();
       return;
     }
     try {

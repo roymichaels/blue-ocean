@@ -3,7 +3,7 @@ import TonWeb from 'tonweb';
 import type { Cell } from 'tonweb/dist/types/boc/cell';
 import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
-import { getTonConnect } from './tonAuth';
+import nearAuth from './nearAuth';
 import { fetchSettings } from './tonSettings';
 import { requireEnv } from '../utils/appConfig';
 
@@ -32,17 +32,10 @@ async function sendTonConnect(messages: {
   payload?: string;
   stateInit?: string;
 }[]): Promise<string> {
-  const tonConnect = getTonConnect();
-  if (!tonConnect) throw new Error('TonConnect not initialized');
-
-  const result = await tonConnect.sendTransaction({
-    validUntil: Math.floor(Date.now() / 1000) + 60,
-    messages,
-  });
-
-  return TonWeb.utils.bytesToHex(
-    createHash('sha256').update(Buffer.from(result.boc, 'base64')).digest(),
+  const sig = await nearAuth.signMessage(
+    Buffer.from(JSON.stringify(messages)),
   );
+  return sig;
 }
 
 export async function deployOrderPayment(

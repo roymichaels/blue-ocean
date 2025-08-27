@@ -12,7 +12,7 @@ import {
 import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from './tonStores';
 import { getProduct, setProduct } from './tonProducts';
-import tonAuth from './tonAuth';
+import nearAuth from './nearAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
 import config from '../utils/appConfig';
 import { calculateCardFees } from '@/payments/card';
@@ -125,15 +125,15 @@ class OrderService {
 
     let pay = payment;
     if (pay?.method === 'ton' && (!pay.contractAddress || !pay.txHash)) {
-      if (!tonAuth.getAddress() || !tonAuth.getTonPublicKey()) {
-        await tonAuth.openModal();
+      if (!nearAuth.getAccountId()) {
+        await nearAuth.signIn();
       }
       const { contractAddress, txHash } = await deployOrderPayment(total);
       pay = { ...pay, contractAddress, txHash };
     }
 
     if (!pay?.buyerAddress) {
-      pay = { ...pay, buyerAddress: tonAuth.getAddress() || undefined };
+      pay = { ...pay, buyerAddress: nearAuth.getAccountId() || undefined };
     }
 
     const orderId = randomUUID();
@@ -191,18 +191,18 @@ class OrderService {
         paymentMethod === 'ton'
           ? {
               method: 'ton' as const,
-              buyerAddress: tonAuth.getAddress() || undefined,
+              buyerAddress: nearAuth.getAccountId() || undefined,
               sellerAddress: store?.owner,
             }
           : paymentMethod === 'card'
           ? {
               method: 'card' as const,
-              buyerAddress: tonAuth.getAddress() || undefined,
+              buyerAddress: nearAuth.getAccountId() || undefined,
               sellerAddress: store?.owner,
             }
           : {
               method: 'cash_on_delivery' as const,
-              buyerAddress: tonAuth.getAddress() || undefined,
+              buyerAddress: nearAuth.getAccountId() || undefined,
               sellerAddress: store?.owner,
             };
       const order = await this.createOrder(
@@ -291,7 +291,7 @@ class OrderService {
   async resolveDispute(orderId: string, toSeller: boolean): Promise<void> {
     const order = await ordersAgent.get(orderId);
     if (!order || !order.escrowAddr) return;
-    const actor = tonAuth.getAddress();
+    const actor = nearAuth.getAccountId();
     const network =
       (config.TON_NETWORK || process.env.TON_NETWORK || 'mainnet').toLowerCase();
     const legacy =

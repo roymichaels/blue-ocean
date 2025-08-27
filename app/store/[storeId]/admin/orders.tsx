@@ -5,13 +5,13 @@ import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { listOrdersBySeller } from '../../../../services/tonOrders';
 import { Order } from '../../../../types';
-import { useTonAddress } from '../../../../services/tonAuth';
+import { useAccountId } from '../../../../services/nearAuth';
 
 export default function StoreOrdersScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
-  const address = useTonAddress();
+  const address = useAccountId();
 
   const handlePress = (order: Order) => {
     debugLog('Pressed order', order.id);
