@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import StoreDashboardScreen from '../app/store/[storeId]/dashboard';
+import StoreDashboardScreen from '../app/store/[storeId]/admin/dashboard';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),

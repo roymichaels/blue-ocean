@@ -15,9 +15,16 @@
 | Path | Role requirement |
 |------|------------------|
 | `/t/[tenantId]/stores/create` | wallet connection required |
-| `/t/[tenantId]/store/[storeId]/dashboard` | store owner of `[storeId]` |
-| `/t/[tenantId]/store/[storeId]/products` | store owner of `[storeId]` |
-| `/t/[tenantId]/store/[storeId]/orders` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/dashboard` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/products` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/orders` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/kyc-approvals` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/user-management` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/pricing-tiers` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/deliveries` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/bulk-upload` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/disputes` | store owner of `[storeId]` |
+| `/t/[tenantId]/store/[storeId]/admin/settings` | store owner of `[storeId]` |
 
 ## Admin
 | Path | Role requirement |

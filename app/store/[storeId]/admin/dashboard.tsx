@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { listProducts } from '../../../services/tonProducts';
-import { getStore } from '../../../services/tonStores';
-import OrderRevenueMetrics from '../../../components/OrderRevenueMetrics';
-import { useAuth } from '../../../components/AuthContext';
+import { useTheme } from '../../../../contexts/ThemeContext';
+import { listProducts } from '../../../../services/tonProducts';
+import { getStore } from '../../../../services/tonStores';
+import OrderRevenueMetrics from '../../../../components/OrderRevenueMetrics';
+import { useAuth } from '../../../../components/AuthContext';
 
 export default function StoreDashboardScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
@@ -45,13 +45,13 @@ export default function StoreDashboardScreen() {
       <View style={styles.nav}>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => router.push(`/store/${storeId}/products`)}
+          onPress={() => router.push(`/store/${storeId}/admin/products`)}
         >
           <Text style={{ color: colors.text.primary }}>ניהול מוצרים</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => router.push(`/store/${storeId}/orders`)}
+          onPress={() => router.push(`/store/${storeId}/admin/orders`)}
         >
           <Text style={{ color: colors.text.primary }}>צפייה בהזמנות</Text>
         </TouchableOpacity>
