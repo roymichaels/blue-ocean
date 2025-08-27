@@ -1,37 +1,46 @@
 import 'dotenv/config';
-import { Pool } from 'pg';
+import Database from 'better-sqlite3';
 
-const connectionString = process.env.DATABASE_URL || '';
-export const pool = new Pool({ connectionString });
+const dbPath = process.env.DB_PATH || './lake.db';
 
-export async function init() {
-  await pool.query(`CREATE TABLE IF NOT EXISTS listing_events (
+export const db = new Database(dbPath);
+
+export function init() {
+  db.exec(`CREATE TABLE IF NOT EXISTS listings (
     receipt_id TEXT PRIMARY KEY,
-    block_height BIGINT,
-    data JSONB
+    block_height INTEGER,
+    data TEXT
   );`);
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS order_events (
+  db.exec(`CREATE TABLE IF NOT EXISTS orders (
     receipt_id TEXT PRIMARY KEY,
-    block_height BIGINT,
-    data JSONB
+    block_height INTEGER,
+    data TEXT
   );`);
 }
 
-export async function upsertListing(receiptId: string, blockHeight: number, data: unknown) {
-  await pool.query(
-    `INSERT INTO listing_events (receipt_id, block_height, data)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (receipt_id) DO UPDATE SET block_height = EXCLUDED.block_height, data = EXCLUDED.data`,
-    [receiptId, blockHeight, data]
+export function upsertEvent(
+  event: string,
+  receiptId: string,
+  blockHeight: number,
+  data: unknown
+) {
+  let table: 'listings' | 'orders' | undefined;
+  if (event === 'listing_added') {
+    table = 'listings';
+  } else if (event === 'order_paid') {
+    table = 'orders';
+  }
+
+  if (!table) return;
+
+  const stmt = db.prepare(
+    `INSERT INTO ${table} (receipt_id, block_height, data)
+     VALUES (?, ?, ?)
+     ON CONFLICT(receipt_id) DO UPDATE SET
+       block_height = excluded.block_height,
+       data = excluded.data`
   );
+  stmt.run(receiptId, blockHeight, JSON.stringify(data));
 }
 
-export async function upsertOrder(receiptId: string, blockHeight: number, data: unknown) {
-  await pool.query(
-    `INSERT INTO order_events (receipt_id, block_height, data)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (receipt_id) DO UPDATE SET block_height = EXCLUDED.block_height, data = EXCLUDED.data`,
-    [receiptId, blockHeight, data]
-  );
-}

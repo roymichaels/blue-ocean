@@ -8,14 +8,15 @@
     "dev": "ts-node src/main.ts"
   },
   "dependencies": {
-    "near-lake-framework": "^2.0.0",
-    "pg": "^8.11.3",
-    "dotenv": "^16.4.5"
+    "better-sqlite3": "^12.2.0",
+    "dotenv": "^16.4.5",
+    "near-lake-framework": "^2.0.0"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.0.10",
-    "@types/pg": "^8.10.0"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }

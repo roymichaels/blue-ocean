@@ -1,18 +1,19 @@
 import { startStream, types } from 'near-lake-framework';
 import dotenv from 'dotenv';
-import { init, upsertListing, upsertOrder, pool } from './store';
+import { init, upsertEvent, db } from './store';
 
 dotenv.config();
 
 const CONTRACT_ID = process.env.CONTRACT_ID as string;
-const START_BLOCK_HEIGHT = parseInt(process.env.START_BLOCK_HEIGHT || '0');
+const LAKE_BUCKET = process.env.LAKE_BUCKET as string;
+const START_BLOCK = parseInt(process.env.START_BLOCK || '0', 10);
 
 async function handleMessage(streamerMessage: types.StreamerMessage) {
   const blockHeight = streamerMessage.block.header.height;
   for (const shard of streamerMessage.shards) {
     for (const outcome of shard.receiptExecutionOutcomes) {
-      const receiverId = outcome.receipt?.receiverId;
-      if (receiverId !== CONTRACT_ID) continue;
+      if (outcome.receipt?.receiverId !== CONTRACT_ID) continue;
+      const receiptId = outcome.executionOutcome.id;
       for (const log of outcome.executionOutcome.outcome.logs) {
         let parsed;
         try {
@@ -20,23 +21,18 @@ async function handleMessage(streamerMessage: types.StreamerMessage) {
         } catch {
           continue;
         }
-        const receiptId = outcome.executionOutcome.id;
-        if (parsed.event === 'listing_added') {
-          await upsertListing(receiptId, blockHeight, parsed);
-        } else if (parsed.event === 'order_paid') {
-          await upsertOrder(receiptId, blockHeight, parsed);
-        }
+        upsertEvent(parsed.event, receiptId, blockHeight, parsed);
       }
     }
   }
 }
 
 async function main() {
-  await init();
+  init();
   const lakeConfig: types.LakeConfig = {
-    s3BucketName: 'near-lake-data-testnet',
+    s3BucketName: LAKE_BUCKET,
     s3RegionName: 'eu-central-1',
-    startBlockHeight: START_BLOCK_HEIGHT
+    startBlockHeight: START_BLOCK,
   };
   await startStream(lakeConfig, handleMessage);
 }
@@ -45,6 +41,7 @@ main()
   .catch(err => {
     console.error(err);
   })
-  .finally(async () => {
-    await pool.end();
+  .finally(() => {
+    db.close();
   });
+
