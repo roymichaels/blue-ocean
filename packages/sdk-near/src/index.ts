@@ -1,103 +1,84 @@
-import { Buffer } from 'buffer';
-import config, { relayerUrl, indexerUrl, contractId } from './config';
+// SDK functions for interacting with the Blue Ocean Near marketplace
+// Uses relayer and indexer services defined by EXPO_PUBLIC_* env variables.
 
+/** Represents a listing returned from the indexer. */
 export interface Listing {
   id: number;
   seller: string;
   price: number;
 }
 
-async function fetchFromIndexer(): Promise<Listing[]> {
-  if (!indexerUrl) {
-    throw new Error('Indexer URL not configured');
-  }
-  const res = await fetch(`${indexerUrl}/listings`);
-  if (!res.ok) {
-    throw new Error(`Indexer error: ${res.status}`);
-  }
-  return (await res.json()) as Listing[];
+/** Arguments required to add a new listing via the relayer. */
+export interface AddListingArgs {
+  id: number;
+  seller: string;
+  price: number;
 }
 
-async function fetchFromContract(): Promise<Listing[]> {
-  if (!contractId) {
-    throw new Error('Contract ID not configured');
+/** Arguments required to purchase a listing via the relayer. */
+export interface BuyListingArgs {
+  id: number;
+  buyer: string;
+  amountYocto: string;
+}
+
+function requireEnv(name: 'EXPO_PUBLIC_RELAYER_URL' | 'EXPO_PUBLIC_INDEXER_URL'): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`${name} is not configured`);
   }
-  const body = {
-    jsonrpc: '2.0',
-    id: 'dontcare',
-    method: 'query',
-    params: {
-      request_type: 'call_function',
-      finality: 'final',
-      account_id: contractId,
-      method_name: 'get_listings',
-      args_base64: Buffer.from('{}').toString('base64'),
-    },
-  };
-  const res = await fetch('https://rpc.testnet.near.org', {
+  return value;
+}
+
+/** Fetch all listings from the indexer service. */
+export async function getListings(): Promise<Listing[]> {
+  const indexerUrl = requireEnv('EXPO_PUBLIC_INDEXER_URL');
+  const res = await fetch(`${indexerUrl}/listings`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch listings: ${res.status} ${res.statusText}`);
+  }
+  const json = await res.json();
+  if (!Array.isArray(json)) {
+    throw new Error('Invalid listings response');
+  }
+  return json as Listing[];
+}
+
+/** Submit a request to add a new listing through the relayer. */
+export async function addListing(args: AddListingArgs): Promise<any> {
+  const relayerUrl = requireEnv('EXPO_PUBLIC_RELAYER_URL');
+  const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ action: 'add_listing', args }),
   });
   if (!res.ok) {
-    throw new Error(`RPC error: ${res.status}`);
+    throw new Error(`Failed to add listing: ${res.status} ${res.statusText}`);
   }
   const json = await res.json();
   if (json.error) {
-    throw new Error(json.error.message || 'RPC error');
+    throw new Error(json.error.message || 'Relayer error');
   }
-  const result = Buffer.from(json.result.result).toString();
-  return JSON.parse(result) as Listing[];
+  return json;
 }
 
-export async function getListings(): Promise<Listing[]> {
-  try {
-    return await fetchFromIndexer();
-  } catch {
-    return fetchFromContract();
-  }
-}
-
-export async function addListing(listing: Listing): Promise<any> {
-  if (!relayerUrl) {
-    throw new Error('Relayer URL not configured');
-  }
+/** Submit a purchase request for a listing through the relayer. */
+export async function buyListing(args: BuyListingArgs): Promise<any> {
+  const relayerUrl = requireEnv('EXPO_PUBLIC_RELAYER_URL');
   const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'add_listing',
-      args: listing,
-    }),
+    body: JSON.stringify({ action: 'buy_listing', args }),
   });
   if (!res.ok) {
-    throw new Error(`Relayer error: ${res.status}`);
+    throw new Error(`Failed to buy listing: ${res.status} ${res.statusText}`);
   }
-  return res.json();
+  const json = await res.json();
+  if (json.error) {
+    throw new Error(json.error.message || 'Relayer error');
+  }
+  return json;
 }
 
-export async function buyListing(
-  id: number,
-  buyer: string,
-  amountYocto: string
-): Promise<any> {
-  if (!relayerUrl) {
-    throw new Error('Relayer URL not configured');
-  }
-  const res = await fetch(`${relayerUrl}/meta-tx`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'buy_listing',
-      args: { id, buyer, amountYocto },
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`Relayer error: ${res.status}`);
-  }
-  return res.json();
-}
+export default { getListings, addListing, buyListing };
 
-export { config };
-
-export default { getListings, addListing, buyListing, config };
