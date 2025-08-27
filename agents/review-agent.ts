@@ -1,9 +1,12 @@
 import { Review } from '../types';
+import { assertTonChain } from '../services/chain';
 import { addReview, getReviews } from '../services/tonReviews';
 import ordersAgent from './orders-agent';
 import productsAgent from './products-agent';
 import storesAgent from './stores-agent';
 import ensureTonWallet from '../utils/ensureTonWallet';
+
+assertTonChain();
 
 const TOPIC = '/blue-ocean/reviews/1';
 

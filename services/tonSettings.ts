@@ -1,5 +1,8 @@
 import { debugLog, errorLog } from '@/utils/logger';
+import { assertTonChain } from './chain';
 import { getValue, setValue, listValues } from './tonKvStore';
+
+assertTonChain();
 import config, { getWakuBootstrapNodes, requireEnv } from '../utils/appConfig';
 import {
   LightNode,

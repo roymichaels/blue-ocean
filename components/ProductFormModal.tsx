@@ -20,7 +20,14 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import DatabaseService from '../services/database';
 import PinataService from '../services/pinata';
 import ipfsService from '../services/ipfsService';
-import { setProductBatch } from '../services/tonProductIndex';
+import chain from '../services/chain';
+
+let setProductBatch:
+  | ((items: ProductIndexItem[]) => Promise<void>)
+  | undefined;
+if (chain === 'ton') {
+  ({ setProductBatch } = require('../services/tonProductIndex'));
+}
 import { Video } from 'expo-video';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
@@ -253,7 +260,9 @@ export default function ProductFormModal({
         metadataUri: metadataCid,
         image: pinnedImages[0] || '',
       };
-      await setProductBatch([indexItem]);
+      if (setProductBatch) {
+        await setProductBatch([indexItem]);
+      }
 
       setInfoModal({
         visible: true,

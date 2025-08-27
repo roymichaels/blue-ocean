@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { listOrdersBySeller } from '../services/tonOrders';
+import chain from '../services/chain';
 import { Order } from '../types';
+
+let listOrdersBySeller:
+  | ((sellerId: string) => Promise<Order[]>)
+  | undefined;
+if (chain === 'ton') {
+  ({ listOrdersBySeller } = require('../services/tonOrders'));
+}
 
 interface Props {
   sellerId: string;
@@ -14,7 +21,7 @@ export default function OrderRevenueMetrics({ sellerId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      if (!sellerId) return;
+      if (!sellerId || !listOrdersBySeller) return;
       const list = await listOrdersBySeller(sellerId);
       setOrders(list);
     };

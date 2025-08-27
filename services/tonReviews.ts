@@ -1,6 +1,9 @@
 import { getValue, setValue, listValues } from './tonKvStore';
 import { Review } from '../types';
 import { requireEnv } from '../utils/appConfig';
+import { assertTonChain } from './chain';
+
+assertTonChain();
 
 const ADDRESS = requireEnv('TON_REVIEWS_ADDRESS');
 

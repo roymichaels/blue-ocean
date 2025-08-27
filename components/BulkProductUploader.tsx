@@ -5,7 +5,13 @@ import pLimit from 'p-limit';
 import { useTheme } from '../contexts/ThemeContext';
 import MediaService from '../services/media';
 import { Product } from '../types';
-import { setProductBatch, estimateSetProductBatch } from '../services/tonProducts';
+import chain from '../services/chain';
+
+let setProductBatch: ((items: Product[]) => Promise<void>) | undefined;
+let estimateSetProductBatch: ((items: Product[]) => number) | undefined;
+if (chain === 'ton') {
+  ({ setProductBatch, estimateSetProductBatch } = require('../services/tonProducts'));
+}
 
 interface Summary {
   success: number;
@@ -38,6 +44,9 @@ export async function processRecords(
 
   const BATCH_SIZE = 25;
   const gasEstimates: number[] = [];
+  if (!estimateSetProductBatch || !setProductBatch) {
+    return { success, failed, gas: gasEstimates };
+  }
   for (let i = 0; i < records.length; i += BATCH_SIZE) {
     const batch = records.slice(i, i + BATCH_SIZE);
     const g = await estimateSetProductBatch(batch);

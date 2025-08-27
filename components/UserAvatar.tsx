@@ -17,7 +17,12 @@ import { useTheme } from '../contexts/ThemeContext';
 import { router } from 'expo-router';
 import { useAuthModal } from './AuthModalContext';
 import ConfirmationModal from './ConfirmationModal';
-import { listStores } from '../services/tonStores';
+import chain from '../services/chain';
+
+let listStores: (() => Promise<any[]>) | undefined;
+if (chain === 'ton') {
+  ({ listStores } = require('../services/tonStores'));
+}
 
 const { width } = Dimensions.get('window');
 
@@ -91,7 +96,7 @@ export default function UserAvatar() {
 
   useEffect(() => {
     const loadStore = async () => {
-      if (!user?.address) return;
+      if (!user?.address || !listStores) return;
       try {
         const stores = await listStores();
         const store = stores.find((s) => s.owner === user.address);

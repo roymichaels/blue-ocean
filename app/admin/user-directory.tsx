@@ -2,8 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
-import { listUsers } from '../../services/tonUsers';
+import chain from '../../services/chain';
 import { User } from '../../types';
+
+let listUsers: (() => Promise<User[]>) | undefined;
+if (chain === 'ton') {
+  ({ listUsers } = require('../../services/tonUsers'));
+}
 
 export default function UserDirectory() {
   useRequirePlatformAdmin();
@@ -11,7 +16,9 @@ export default function UserDirectory() {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    listUsers().then(setUsers).catch(() => {});
+    if (listUsers) {
+      listUsers().then(setUsers).catch(() => {});
+    }
   }, []);
 
   return (

@@ -3,9 +3,16 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import { debugLog } from '@/utils/logger';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { listOrdersBySeller } from '../../../../services/tonOrders';
+import chain from '../../../../services/chain';
 import { Order } from '../../../../types';
 import { useAccountId } from '../../../../services/nearAuth';
+
+let listOrdersBySeller:
+  | ((sellerId: string) => Promise<Order[]>)
+  | undefined;
+if (chain === 'ton') {
+  ({ listOrdersBySeller } = require('../../../../services/tonOrders'));
+}
 
 export default function StoreOrdersScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
@@ -23,7 +30,7 @@ export default function StoreOrdersScreen() {
 
   useEffect(() => {
     const load = async () => {
-      if (!storeId || address !== storeId) return;
+      if (!storeId || address !== storeId || !listOrdersBySeller) return;
       const all = await listOrdersBySeller(storeId);
       setOrders(all);
     };

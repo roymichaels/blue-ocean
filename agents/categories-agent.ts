@@ -1,6 +1,9 @@
 import { Category } from '../types';
+import { assertTonChain } from '../services/chain';
 import { setCategory, getCategory, listCategories, removeCategory } from '../services/tonCategories';
 import ensureTonWallet from '../utils/ensureTonWallet';
+
+assertTonChain();
 
 class CategoriesAgent {
   private async ensureWallet() {

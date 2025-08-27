@@ -15,8 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, Heart } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
-import { listStores } from '../../services/tonStores';
-import { Product, Subcategory, Category, PricingTier } from '../../types';
+import chain from '../../services/chain';
+import { Product, Subcategory, Category, PricingTier, Store } from '../../types';
+
+let listStores: (() => Promise<Store[]>) | undefined;
+if (chain === 'ton') {
+  ({ listStores } = require('../../services/tonStores'));
+}
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -88,7 +93,7 @@ export default function SubcategoryScreen() {
 
   useEffect(() => {
     const loadStore = async () => {
-      if (!user?.address) return;
+      if (!user?.address || !listStores) return;
       try {
         const stores = await listStores();
         const store = stores.find((s) => s.owner === user.address);

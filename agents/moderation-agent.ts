@@ -1,7 +1,10 @@
 import { randomUUID } from 'crypto';
 import { Report } from '../types';
+import { assertTonChain } from '../services/chain';
 import { addReport, listReports, removeReport } from '../services/tonReports';
 import ensureTonWallet from '../utils/ensureTonWallet';
+
+assertTonChain();
 
 class ModerationAgent {
   private async ensureWallet() {

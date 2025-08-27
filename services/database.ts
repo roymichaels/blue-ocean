@@ -7,7 +7,12 @@ import productsAgent from '../agents/products-agent';
 import ordersAgent from '../agents/orders-agent';
 import SettingsAgent from '../agents/settings-agent';
 import reviewAgent from '../agents/review-agent';
-import { listAllReviews } from '../services/tonReviews';
+import chain from '../services/chain';
+
+let listAllReviews: (() => Promise<Review[]>) | undefined;
+if (chain === 'ton') {
+  ({ listAllReviews } = require('../services/tonReviews'));
+}
 import {
   User,
   Category,
@@ -245,7 +250,7 @@ class DatabaseService {
 
   // Reviews
   async getReviews(): Promise<Review[]> {
-    if (this.reviews.size === 0) {
+    if (this.reviews.size === 0 && listAllReviews) {
       const all = await listAllReviews();
       all.forEach((r) => this.reviews.set(r.id, r));
     }

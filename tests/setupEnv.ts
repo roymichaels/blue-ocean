@@ -18,6 +18,7 @@ insertConfig({
   TON_PRODUCTS_ADDRESS: 'EQtestproducts',
   TON_USERS_ADDRESS: 'EQtestusers',
   TON_PAYMENT_FACTORY_ADDRESS: 'EQtestfactory',
+  EXPO_PUBLIC_CHAIN: 'ton',
 });
 
 jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
@@ -31,6 +32,7 @@ beforeEach(async () => {
     TON_RPC_URL: 'https://ton.test',
     ADMIN_WALLET_ADDRESS_MAINNET: 'EQtestadmin',
     ADMIN_WALLET_ADDRESS_TESTNET: 'EQtestadmin',
+    EXPO_PUBLIC_CHAIN: 'ton',
   });
   await loadTenantSettings();
 });

@@ -1,3 +1,7 @@
+import { assertTonChain } from './chain';
+
+assertTonChain();
+
 const store: Map<string, Map<string, string>> = new Map();
 
 export async function setValue(address: string, key: string, value: string) {
