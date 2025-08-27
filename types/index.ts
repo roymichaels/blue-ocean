@@ -123,7 +123,7 @@ export interface ChatRoom {
 
 export type KycStatus = 'none' | 'pending' | 'verified' | 'rejected';
 export type CustomerTier = 'new' | 'regular' | 'vip' | 'banned';
-export type UserRole = 'user' | 'driver' | 'admin' | 'store-owner';
+export type UserRole = 'user' | 'driver' | 'admin' | 'store-owner' | 'platform-admin';
 
 export interface User {
   id: string;
