@@ -9,7 +9,7 @@ import {
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { randomUUID, createHash } from 'crypto';
-import tonAuth from './tonAuth';
+import nearAuth from './nearAuth';
 
 const STABLE_BOOTSTRAP = [
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP',
@@ -51,7 +51,7 @@ export async function publish(
   if (!n) return;
   try {
     const encoder = createEncoder({ contentTopic });
-    const addr = tonAuth.getAddress();
+    const addr = nearAuth.getAccountId();
     const event = {
       id: randomUUID(),
       timestamp: Date.now(),

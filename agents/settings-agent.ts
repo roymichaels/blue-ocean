@@ -1,4 +1,4 @@
-import tonAuth from '../services/tonAuth';
+import nearAuth from '../services/nearAuth';
 import {
   getSetting,
   setSetting,
@@ -42,7 +42,7 @@ class SettingsAgent {
 
   async set(key: string, value: string): Promise<void> {
     await this.ensureWallet();
-    const actor = tonAuth.getAddress()!;
+    const actor = nearAuth.getAccountId()!;
     await setSetting(key, value, actor);
   }
 
@@ -72,7 +72,7 @@ class SettingsAgent {
 
   async setAdmins(admins: string[]): Promise<void> {
     await this.ensureWallet();
-    const actor = tonAuth.getAddress()!;
+    const actor = nearAuth.getAccountId()!;
     await storeAdmins(admins, actor);
     this.admins = admins;
     this.adminsFetchedAt = Date.now();

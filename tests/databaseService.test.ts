@@ -2,14 +2,13 @@ import DatabaseService from '../services/database';
 import productsAgent from '../agents/products-agent';
 import categoriesAgent from '../agents/categories-agent';
 import storesAgent from '../agents/stores-agent';
-import tonAuth from '../services/tonAuth';
+import nearAuth from '../services/nearAuth';
 
 beforeEach(() => {
   (DatabaseService as any).instance = undefined;
   (productsAgent as any).store.clear();
   (categoriesAgent as any).store.clear();
-  (tonAuth as any).getAddress = () => 'owner1';
-  (tonAuth as any).getTonPublicKey = () => 'pub';
+  (nearAuth as any).getAccountId = () => 'owner1';
   (productsAgent as any).sendFn = async () => {};
   (productsAgent as any).clearHashCache();
 });

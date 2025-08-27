@@ -6,10 +6,9 @@ jest.mock('../utils/validateTonAddress', () => ({
 }));
 import validateTonAddress from '../utils/validateTonAddress';
 
-jest.mock('../services/tonAuth', () => ({
-  getAddress: () => 'addr_admin',
-  getTonPublicKey: () => 'pub_admin',
-  openModal: jest.fn(),
+jest.mock('../services/nearAuth', () => ({
+  getAccountId: () => 'addr_admin',
+  signIn: jest.fn(),
 }));
 
 jest.mock('../services/localIdentity', () => ({

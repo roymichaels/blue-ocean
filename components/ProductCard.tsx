@@ -16,7 +16,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import CartService from '../services/cart';
 import DatabaseService from '../services/database';
 import MediaService from '../services/media';
-import { useTonAddress } from '../services/tonAuth';
+import { useAccountId } from '../services/nearAuth';
 import productsAgent from '../agents/products-agent';
 import Card from './Card';
 
@@ -48,7 +48,7 @@ export default function ProductCard({
   const [summary, setSummary] = useState({ rating: product.rating, reviews: product.reviews });
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const address = useTonAddress();
+  const address = useAccountId();
   const variants = product.variants || [];
   const selectedVariant = variants[selectedVariantIndex];
   const stock = selectedVariant ? selectedVariant.stock : product.stock;

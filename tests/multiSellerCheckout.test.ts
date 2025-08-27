@@ -51,10 +51,9 @@ jest.mock('../agents/orders-agent', () => ({
   update: jest.fn(),
 }));
 
-jest.mock('../services/tonAuth', () => ({
-  getAddress: jest.fn().mockReturnValue('buyer_address'),
-  getTonPublicKey: jest.fn().mockReturnValue('buyer_pub'),
-  openModal: jest.fn(),
+jest.mock('../services/nearAuth', () => ({
+  getAccountId: jest.fn().mockReturnValue('buyer_address'),
+  signIn: jest.fn(),
 }));
 
 describe('multi-seller checkout flow', () => {

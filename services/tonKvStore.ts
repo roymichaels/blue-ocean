@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import TonWeb from 'tonweb';
 import type { Cell } from 'tonweb/dist/types/boc/cell';
 import { Buffer } from 'buffer';
-import { getTonConnect } from './tonAuth';
+import nearAuth from './nearAuth';
 import { withTonWeb } from './tonProvider';
 
 interface Slice {
@@ -21,16 +21,9 @@ function makeSetPayload(key: string, value: string): Cell {
 }
 
 export async function setValue(address: string, key: string, value: string) {
-  const tonConnect = getTonConnect();
-  if (!tonConnect) throw new Error('TonConnect not initialized');
   const cell = makeSetPayload(key, value);
   const payload = TonWeb.utils.bytesToBase64(await cell.toBoc(false));
-  return await tonConnect.sendTransaction({
-    validUntil: Math.floor(Date.now() / 1000) + 60,
-    messages: [
-      { address, amount: '0', payload },
-    ],
-  });
+  await nearAuth.signMessage(Buffer.from(payload));
 }
 
 export async function removeValue(address: string, key: string) {
