@@ -15,7 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
 import FullScreenMediaViewer from '../../../../components/FullScreenMediaViewer';
-import { useAuth } from '../../../../components/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { DeliveryJob, User } from '../../../../types';
@@ -23,7 +22,6 @@ import commonStyles from '../../../../constants/styles';
 import SmartImage from '../../../../components/SmartImage';
 
 export default function AdminDeliveriesScreen() {
-  const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
   const [jobs, setJobs] = useState<DeliveryJob[]>([]);
   const [drivers, setDrivers] = useState<User[]>([]);
@@ -39,12 +37,8 @@ export default function AdminDeliveriesScreen() {
   // const matrixService = MatrixService.getInstance(); // TODO: re-enable Matrix later
 
   useEffect(() => {
-    if (!isStoreOwner) {
-      router.replace('/');
-      return;
-    }
     loadData();
-  }, [isStoreOwner]);
+  }, []);
 
   const loadData = async () => {
     try {

@@ -6,8 +6,6 @@ import { listProducts } from '../../../../services/tonProducts';
 import { Product } from '../../../../types';
 import ProductCard from '../../../../components/ProductCard';
 import ProductFormModal from '../../../../components/ProductFormModal';
-import { useTonAddress } from '../../../../services/tonAuth';
-import { useAuth } from '../../../../components/AuthContext';
 
 const ITEM_HEIGHT = 200;
 
@@ -17,17 +15,15 @@ export default function StoreProductsScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [formVisible, setFormVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const address = useTonAddress();
-  const { isStoreOwner } = useAuth();
 
   useEffect(() => {
     const load = async () => {
-      if (!storeId || !isStoreOwner || address !== storeId) return;
+      if (!storeId) return;
       const all = await listProducts();
       setProducts(all.filter((p) => p.storeId === storeId));
     };
     load();
-  }, [storeId, address, isStoreOwner]);
+  }, [storeId]);
 
   const openForm = (p?: Product) => {
     setEditingProduct(p || null);
@@ -45,23 +41,6 @@ export default function StoreProductsScreen() {
   const handleDeleted = (productId: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
   };
-
-  if (!isStoreOwner || address !== storeId) {
-    return (
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: colors.background,
-            justifyContent: 'center',
-            alignItems: 'center',
-          },
-        ]}
-      >
-        <Text style={{ color: colors.text.primary }}>יש להתחבר לארנק המתאים</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}> 

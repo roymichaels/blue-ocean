@@ -1,6 +1,22 @@
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { isPlatformAdmin } from '../../utils/authRoles';
 
 export default function AdminLayout() {
+  const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      if (!(await isPlatformAdmin())) {
+        router.replace('/');
+        return;
+      }
+      setAuthorized(true);
+    })();
+  }, []);
+
+  if (!authorized) return null;
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />

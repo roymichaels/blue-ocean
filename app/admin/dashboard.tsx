@@ -16,6 +16,7 @@ import { Product, ChatRoom, Notification, Review, Report } from '../../types';
 import { useNotifications } from '../../components/NotificationContext';
 import { useAuth } from '../../components/AuthContext';
 import { useAuthModal } from '../../components/AuthModalContext';
+import { isPlatformAdmin } from '../../utils/authRoles';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -44,7 +45,7 @@ export default function AdminDashboardScreen() {
     storeReputation: 0
   });
   const { showNotification } = useNotifications();
-  const { isStoreOwner, user } = useAuth();
+  const { user } = useAuth();
   const { openAuthModal } = useAuthModal();
   const { colors } = useTheme();
 
@@ -57,15 +58,15 @@ export default function AdminDashboardScreen() {
   });
 
   useEffect(() => {
-    // Check if user is logged in as admin
-    if (!isStoreOwner) {
-      openAuthModal('login');
-      router.replace('/');
-      return;
-    }
-
-    loadData();
-  }, [isStoreOwner]);
+    (async () => {
+      if (!(await isPlatformAdmin())) {
+        openAuthModal('login');
+        router.replace('/');
+        return;
+      }
+      loadData();
+    })();
+  }, []);
 
   const loadData = async () => {
     try {

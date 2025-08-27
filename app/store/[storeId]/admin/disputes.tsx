@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { useAuth } from '../../../../components/AuthContext';
 import { router } from 'expo-router';
 import ordersAgent from '../../../../agents/orders-agent';
 import { Order } from '../../../../types';
@@ -13,14 +12,9 @@ import commonStyles from '../../../../constants/styles';
 
 export default function AdminDisputesScreen() {
   const { colors } = useTheme();
-  const { isAdmin } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    if (!isAdmin) {
-      router.replace('/');
-      return;
-    }
     const load = async () => {
       const all = await ordersAgent.getAll();
       setOrders(all.filter(o => o.status === 'disputed'));
@@ -35,7 +29,7 @@ export default function AdminDisputesScreen() {
     };
     ordersAgent.subscribe(sub);
     return () => ordersAgent.unsubscribe(sub);
-  }, [isAdmin]);
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>

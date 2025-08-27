@@ -3,37 +3,22 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { listProducts } from '../../../../services/tonProducts';
-import { getStore } from '../../../../services/tonStores';
 import OrderRevenueMetrics from '../../../../components/OrderRevenueMetrics';
-import { useAuth } from '../../../../components/AuthContext';
 
 export default function StoreDashboardScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
-  const { user } = useAuth();
   const [productCount, setProductCount] = useState(0);
-  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
       if (!storeId) return;
-      const store = await getStore(storeId);
-      if (!store || store.owner !== user?.address) {
-        router.replace(`/store/${storeId}`);
-        return;
-      }
-      setAuthorized(true);
       const products = await listProducts();
       setProductCount(products.filter((p) => p.storeId === storeId).length);
     };
 
     loadStats();
-  }, [storeId, user?.address]);
-  
-
-  if (!authorized) {
-    return null;
-  }
+  }, [storeId]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

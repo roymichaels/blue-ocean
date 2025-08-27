@@ -14,7 +14,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Search, User, Mail, Calendar, Shield, UserCheck, UserX, Filter, X, Save, ChevronDown } from 'lucide-react-native';
-import { useAuth } from '../../../../components/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { User as UserType, CustomerTier, UserRole } from '../../../../types';
@@ -37,20 +36,13 @@ export default function UserManagementScreen() {
   const [filterKyc, setFilterKyc] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
   
-  const { isAdmin, isDriver, user } = useAuth();
+  const { user } = useAuth();
   const { colors } = useTheme();
   const { showNotification } = useNotifications();
 
   useEffect(() => {
-    if (!isAdmin && !isDriver) {
-      Alert.alert('גישה מוגבלת', 'רק מנהלים יכולים לגשת לדף זה', [
-        { text: 'אישור', onPress: () => router.replace('/') }
-      ]);
-      return;
-    }
-
     loadUsers();
-  }, [isAdmin, isDriver]);
+  }, []);
 
   useEffect(() => {
     applyFilters();

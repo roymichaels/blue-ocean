@@ -18,7 +18,6 @@ import {
   Percent,
   Package,
 } from 'lucide-react-native';
-import { useAuth } from '../../../../components/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import DatabaseService from '../../../../services/database';
@@ -29,7 +28,6 @@ import PricingTierFormModal from '../../../../components/PricingTierFormModal';
 import Card from '../../../../components/Card';
 
 export default function PricingTiersScreen() {
-  const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
 
@@ -45,12 +43,8 @@ export default function PricingTiersScreen() {
   });
 
   useEffect(() => {
-    if (!isAdmin && !isDriver) {
-      router.replace('/');
-      return;
-    }
     loadPricingTiers();
-  }, [isAdmin, isDriver]);
+  }, []);
 
   const loadPricingTiers = async () => {
     setLoading(true);

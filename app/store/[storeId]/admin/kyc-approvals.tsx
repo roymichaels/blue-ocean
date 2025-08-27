@@ -11,32 +11,25 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, CircleCheck as CheckCircle, Circle as XCircle, Clock, User, Mail, FileText, Calendar } from 'lucide-react-native';
-import { useAuth } from '../../../../components/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { User as UserType } from '../../../../types';
 import LoadingSpinner from '../../../../components/LoadingSpinner';
 import commonStyles from '../../../../constants/styles';
 import SmartImage from '../../../../components/SmartImage';
+import { useAuth } from '../../../../components/AuthContext';
 
 
 
 export default function KycApprovalsScreen() {
   const [pendingRequests, setPendingRequests] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isAdmin, isDriver, user } = useAuth();
+  const { user } = useAuth();
   const { colors } = useTheme();
 
   useEffect(() => {
-    if (!isAdmin && !isDriver) {
-      Alert.alert('גישה מוגבלת', 'רק מנהלים יכולים לגשת לדף זה', [
-        { text: 'אישור', onPress: () => router.replace('/') }
-      ]);
-      return;
-    }
-
     loadPendingRequests();
-  }, [isAdmin, isDriver]);
+  }, []);
 
   const loadPendingRequests = async () => {
     setLoading(true);

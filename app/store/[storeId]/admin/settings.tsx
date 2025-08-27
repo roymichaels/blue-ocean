@@ -4,7 +4,6 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Save, Settings as SettingsIcon } from 'lucide-react-native';
-import { useAuth } from '../../../../components/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { useLanguage } from '../../../../contexts/LanguageContext';
@@ -31,7 +30,6 @@ export default function SettingsScreen() {
   const [paymentFactoryAddress, setPaymentFactoryAddress] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
   const { currentLanguage, t } = useLanguage();
@@ -55,12 +53,8 @@ export default function SettingsScreen() {
   });
 
   useEffect(() => {
-    if (!isAdmin && !isDriver) {
-      router.replace('/');
-      return;
-    }
     loadSettings();
-  }, [isAdmin, isDriver]);
+  }, []);
 
   useEffect(() => {
     SettingsAgent.getInstance()

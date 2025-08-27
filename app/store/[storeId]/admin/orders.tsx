@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { debugLog } from '@/utils/logger';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { listOrdersBySeller } from '../../../../services/tonOrders';
 import { Order } from '../../../../types';
-import { useTonAddress } from '../../../../services/tonAuth';
 
 export default function StoreOrdersScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
-  const address = useTonAddress();
 
   const handlePress = (order: Order) => {
     debugLog('Pressed order', order.id);
@@ -23,26 +21,12 @@ export default function StoreOrdersScreen() {
 
   useEffect(() => {
     const load = async () => {
-      if (!storeId || address !== storeId) return;
+      if (!storeId) return;
       const all = await listOrdersBySeller(storeId);
       setOrders(all);
     };
     load();
-  }, [storeId, address]);
-
-  if (address !== storeId) {
-    return (
-      <View
-        style={[
-          styles.container,
-          styles.content,
-          { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' },
-        ]}
-      >
-        <Text style={{ color: colors.text.primary }}>יש להתחבר לארנק המתאים</Text>
-      </View>
-    );
-  }
+  }, [storeId]);
 
   return (
     <FlatList
