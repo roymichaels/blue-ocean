@@ -187,7 +187,7 @@ class OrderService {
 
     const orders: Order[] = [];
     for (const [storeId, items] of Object.entries(grouped)) {
-      const store = await getStore(storeId);
+      const store = await getStore(storeId, storeId);
       const payment =
         paymentMethod === 'ton'
           ? {
@@ -221,7 +221,7 @@ class OrderService {
   private async decrementProductStock(items: CartItem[]): Promise<void> {
     for (const item of items) {
       try {
-        const product = await getProduct(item.productId);
+        const product = await getProduct(item.product.storeId, item.productId);
         if (!product) {
           errorLog('Product not found when decrementing stock', item.productId);
           continue;
@@ -235,7 +235,7 @@ class OrderService {
           continue;
         }
         product.stock -= item.quantity;
-        await setProduct(product);
+        await setProduct(product.storeId, product);
         if (product.stock <= LOW_STOCK_THRESHOLD) {
           debugLog('Low stock warning', {
             productId: product.id,

@@ -5,28 +5,28 @@ import chain from '../services/chain';
 import { Order } from '../types';
 
 let listOrdersBySeller:
-  | ((sellerId: string) => Promise<Order[]>)
+  | ((storeId: string, sellerId: string) => Promise<Order[]>)
   | undefined;
 if (chain === 'ton') {
   ({ listOrdersBySeller } = require('../services/tonOrders'));
 }
 
 interface Props {
-  sellerId: string;
+  storeId: string;
 }
 
-export default function OrderRevenueMetrics({ sellerId }: Props) {
+export default function OrderRevenueMetrics({ storeId }: Props) {
   const { colors } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      if (!sellerId || !listOrdersBySeller) return;
-      const list = await listOrdersBySeller(sellerId);
+      if (!storeId || !listOrdersBySeller) return;
+      const list = await listOrdersBySeller(storeId, storeId);
       setOrders(list);
     };
     load();
-  }, [sellerId]);
+  }, [storeId]);
 
   const totalOrders = orders.length;
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);

@@ -120,7 +120,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       const ids = Array.from(new Set(cartItems.map((i) => i.product.storeId)));
       const entries = await Promise.all(
         ids.map(async (id) => {
-          const store = getStore ? await getStore('', id) : null;
+          const store = getStore ? await getStore(id, id) : null;
           return store ? ([id, store] as const) : null;
         })
       );

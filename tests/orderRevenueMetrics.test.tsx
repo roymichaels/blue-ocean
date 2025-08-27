@@ -17,7 +17,7 @@ describe('OrderRevenueMetrics', () => {
   it('renders totals for orders and revenue', async () => {
     let root: renderer.ReactTestRenderer;
     await act(async () => {
-      root = renderer.create(<OrderRevenueMetrics sellerId="s1" />);
+      root = renderer.create(<OrderRevenueMetrics storeId="s1" />);
     });
     const tree = root!.toJSON();
     expect(JSON.stringify(tree)).toContain('Orders: 2');

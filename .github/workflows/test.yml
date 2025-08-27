@@ -18,4 +18,5 @@ jobs:
         with:
           cache: 'yarn'
       - run: yarn install --frozen-lockfile
+      - run: yarn typecheck && yarn lint && yarn doctor && yarn build:web
       - run: yarn test

@@ -2,13 +2,15 @@ import { getValue, setValue, listValues, removeValue } from './tonKvStore';
 import { Product } from '../types';
 import { requireEnv } from '../utils/appConfig';
 import { assertTonChain } from './chain';
+import { requireStoreId } from '@blue-ocean/utils';
 
 assertTonChain();
 
 const ADDRESS = requireEnv('TON_PRODUCTS_ADDRESS');
 
-export async function getProduct(storeId: string = '', id: string): Promise<Product | null> {
-  const res = await getValue(ADDRESS, `${storeId}:${id}`);
+export async function getProduct(storeId: string, id: string): Promise<Product | null> {
+  const sid = requireStoreId(storeId);
+  const res = await getValue(ADDRESS, `${sid}:${id}`);
   if (!res) return null;
   const parsed = JSON.parse(res) as Product;
   return {
@@ -19,10 +21,11 @@ export async function getProduct(storeId: string = '', id: string): Promise<Prod
   };
 }
 
-export async function setProduct(storeId: string = '', product: Product) {
+export async function setProduct(storeId: string, product: Product) {
+  const sid = requireStoreId(storeId);
   await setValue(
     ADDRESS,
-    `${storeId}:${product.id}`,
+    `${sid}:${product.id}`,
     JSON.stringify({
       ...product,
       pricingTier: product.pricingTier,
@@ -32,14 +35,15 @@ export async function setProduct(storeId: string = '', product: Product) {
   );
 }
 
-export async function removeProduct(storeId: string = '', id: string) {
-  await removeValue(ADDRESS, `${storeId}:${id}`);
+export async function removeProduct(storeId: string, id: string) {
+  const sid = requireStoreId(storeId);
+  await removeValue(ADDRESS, `${sid}:${id}`);
 }
-
-export async function listProducts(storeId: string = ''): Promise<Product[]> {
+export async function listProducts(storeId: string): Promise<Product[]> {
+  const sid = requireStoreId(storeId);
   const items = await listValues(ADDRESS);
   return items
-    .filter((i) => i.key.startsWith(`${storeId}:`))
+    .filter((i) => i.key.startsWith(`${sid}:`))
     .map((i) => {
       const parsed = JSON.parse(i.value) as Product;
       return {
@@ -51,18 +55,20 @@ export async function listProducts(storeId: string = ''): Promise<Product[]> {
     });
 }
 
-export async function getProducts(storeId: string = '', ids: string[]): Promise<Product[]> {
+export async function getProducts(storeId: string, ids: string[]): Promise<Product[]> {
+  const sid = requireStoreId(storeId);
   const res: Product[] = [];
   for (const id of ids) {
-    const prod = await getProduct(storeId, id);
+    const prod = await getProduct(sid, id);
     if (prod) res.push(prod);
   }
   return res;
 }
 
-export async function setProductBatch(storeId: string = '', products: Product[]) {
+export async function setProductBatch(storeId: string, products: Product[]) {
+  const sid = requireStoreId(storeId);
   for (const p of products) {
-    await setProduct(storeId, p);
+    await setProduct(sid, p);
   }
 }
 

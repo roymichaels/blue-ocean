@@ -7,7 +7,7 @@ import MediaService from '../services/media';
 import { Product } from '../types';
 import chain from '../services/chain';
 
-let setProductBatch: ((items: Product[]) => Promise<void>) | undefined;
+let setProductBatch: ((storeId: string, items: Product[]) => Promise<void>) | undefined;
 let estimateSetProductBatch: ((items: Product[]) => number) | undefined;
 if (chain === 'ton') {
   ({ setProductBatch, estimateSetProductBatch } = require('../services/tonProducts'));
@@ -51,7 +51,9 @@ export async function processRecords(
     const batch = records.slice(i, i + BATCH_SIZE);
     const g = await estimateSetProductBatch(batch);
     gasEstimates.push(g);
-    await setProductBatch(batch);
+    if (batch[0]?.storeId) {
+      await setProductBatch(batch[0].storeId, batch);
+    }
   }
   return { success, failed, gas: gasEstimates };
 }
