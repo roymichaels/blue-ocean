@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, Heart } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
+import { listStores } from '../../services/tonStores';
 import { Product, Subcategory, Category, PricingTier } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -67,7 +68,8 @@ export default function SubcategoryScreen() {
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [showSubcategoryEditModal, setShowSubcategoryEditModal] = useState(false);
   const [editSubcategoryData, setEditSubcategoryData] = useState<Partial<Subcategory>>({name: "", icon: ""});
-  const { isStoreOwner } = useAuth();
+  const { isStoreOwner, user } = useAuth();
+  const [storeId, setStoreId] = useState<string | null>(null);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
 
@@ -83,6 +85,20 @@ export default function SubcategoryScreen() {
     loadSubcategoryData();
     loadPricingTiers();
   }, [id]);
+
+  useEffect(() => {
+    const loadStore = async () => {
+      if (!user?.address) return;
+      try {
+        const stores = await listStores();
+        const store = stores.find((s) => s.owner === user.address);
+        if (store) setStoreId(store.id);
+      } catch (err) {
+        errorLog('Failed to load store for user', err);
+      }
+    };
+    loadStore();
+  }, [user?.address]);
 
   useEffect(() => {
     // When category changes, update available subcategories
@@ -1054,7 +1070,9 @@ export default function SubcategoryScreen() {
                 }]}
                 onPress={() => {
                   setShowPricingTierSelector(false);
-                  router.push('/admin/pricing-tiers');
+                  if (storeId) {
+                    router.push(`/store/${storeId}/admin/pricing-tiers`);
+                  }
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>

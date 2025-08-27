@@ -36,6 +36,7 @@ import { useAuthModal } from '../../components/AuthModalContext';
 import OrderService from '../../services/orders';
 import CartService from '../../services/cart';
 import DatabaseService from '../../services/database';
+import { listStores } from '../../services/tonStores';
 
 
 
@@ -56,6 +57,7 @@ export default function ProfileScreen() {
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const { openAuthModal } = useAuthModal();
+  const [storeId, setStoreId] = useState<string | null>(null);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -93,6 +95,20 @@ export default function ProfileScreen() {
     };
     fetchData();
   }, [isLoggedIn, user]);
+
+  useEffect(() => {
+    const loadStore = async () => {
+      if (!user?.address) return;
+      try {
+        const stores = await listStores();
+        const store = stores.find((s) => s.owner === user.address);
+        if (store) setStoreId(store.id);
+      } catch (err) {
+        errorLog('Failed to load store for user', err);
+      }
+    };
+    loadStore();
+  }, [user?.address]);
 
   const loadSettings = async () => {
     try {
@@ -284,7 +300,9 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => router.push('/admin/dashboard')}
+              onPress={() =>
+                storeId && router.push(`/store/${storeId}/admin/dashboard`)
+              }
             >
               <View style={styles.menuItemContent}>
                 <Shield size={24} color={colors.gold} />
@@ -301,7 +319,9 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => router.push('/admin/deliveries')}
+              onPress={() =>
+                storeId && router.push(`/store/${storeId}/admin/deliveries`)
+              }
             >
               <View style={styles.menuItemContent}>
                 <Package size={24} color={colors.gold} />
