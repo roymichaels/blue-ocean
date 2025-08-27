@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { router } from 'expo-router';
 import { useAuthModal } from './AuthModalContext';
 import ConfirmationModal from './ConfirmationModal';
+import { listStores } from '../services/tonStores';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +29,7 @@ export default function UserAvatar() {
   const { currentLanguage, setLanguage, t } = useLanguage();
   const { theme, toggleTheme, colors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [storeId, setStoreId] = useState<string | null>(null);
 
   const getInitials = () => {
     if (!user?.displayName && !user?.username) return 'G';
@@ -87,14 +89,32 @@ export default function UserAvatar() {
     }
   };
 
+  useEffect(() => {
+    const loadStore = async () => {
+      if (!user?.address) return;
+      try {
+        const stores = await listStores();
+        const store = stores.find((s) => s.owner === user.address);
+        if (store) setStoreId(store.id);
+      } catch (err) {
+        errorLog('Failed to load store for user', err);
+      }
+    };
+    loadStore();
+  }, [user?.address]);
+
   const handleAdminDashboard = () => {
     hideDropdown();
-    router.push('/admin/dashboard');
+    if (storeId) {
+      router.push(`/store/${storeId}/admin/dashboard`);
+    }
   };
 
   const handleUserManagement = () => {
     hideDropdown();
-    router.push('/admin/user-management');
+    if (storeId) {
+      router.push(`/store/${storeId}/admin/user-management`);
+    }
   };
 
   const handleProfile = () => {
