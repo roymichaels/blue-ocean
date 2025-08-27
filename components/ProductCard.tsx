@@ -52,10 +52,7 @@ export default function ProductCard({
   const variants = product.variants || [];
   const selectedVariant = variants[selectedVariantIndex];
   const stock = selectedVariant ? selectedVariant.stock : product.stock;
-
-  if (isOwner && address && product.storeId !== address) {
-    return null;
-  }
+  const hideCard = isOwner && address && product.storeId !== address;
 
   useEffect(() => {
     const cartService = CartService.getInstance();
@@ -148,6 +145,10 @@ export default function ProductCard({
 
   // Check if product has tiered pricing with price per unit
   const hasTieredPricing = pricingTier && pricingTier.pricePerUnit !== undefined;
+
+  if (hideCard) {
+    return null;
+  }
 
   return (
     <Card Component={TouchableOpacity} style={[

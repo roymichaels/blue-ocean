@@ -1,49 +1,29 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { TonConnectButton } from '@tonconnect/ui-react';
-import {
-  useTonWallet,
-  useTonAddress,
-  useTonConnect,
-} from '../services/tonAuth';
-import validateTonAddress from '../utils/validateTonAddress';
-import { errorLog } from '../utils/logger';
+import { openModal, useNearAccount, initNear } from '../services/near';
 
 interface WalletConnectButtonProps {
   onConnect?: () => void;
 }
 
 export default function WalletConnectButton({ onConnect }: WalletConnectButtonProps) {
-  const wallet = useTonWallet();
-  const address = useTonAddress();
-  const tonConnectUI = useTonConnect();
-  const validAddress = useMemo(() => validateTonAddress(address), [address]);
+  const account = useNearAccount();
 
   useEffect(() => {
-    if (wallet) {
-      if (!validAddress) {
-        errorLog('Invalid TON address received');
-      } else {
-        onConnect?.();
-      }
+    if (account) {
+      onConnect?.();
     }
-  }, [wallet, validAddress, onConnect]);
+  }, [account, onConnect]);
 
-  const handleTonConnect = () => {
-    tonConnectUI?.openModal();
-  };
-
-  const handleMetaMaskConnect = () => {
-    onConnect?.();
-    alert('MetaMaskConnect coming soon.');
+  const handleConnect = async () => {
+    await initNear();
+    openModal();
   };
 
   return (
     <View style={styles.container}>
-      <TonConnectButton onClick={handleTonConnect} />
-      {wallet && validAddress && <Text>{address}</Text>}
-      {wallet && !validAddress && <Text style={{ color: 'red' }}>Invalid address</Text>}
-      <Button title="Connect with MetaMask" onPress={handleMetaMaskConnect} />
+      <Button title="Connect NEAR Wallet" onPress={handleConnect} />
+      {account && <Text>{account}</Text>}
     </View>
   );
 }

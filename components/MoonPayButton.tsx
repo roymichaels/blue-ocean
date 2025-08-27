@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
-import tonAuth, { useTonAddress } from '../services/tonAuth';
+import near, { useNearAccount } from '../services/near';
 import MoonPayModal from './MoonPayModal';
 
 interface MoonPayButtonProps {
@@ -13,7 +13,7 @@ interface MoonPayButtonProps {
 export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
   const { colors } = useTheme();
   const { fiatKey } = useAppInfo();
-  const walletAddress = useTonAddress();
+  const walletAddress = useNearAccount();
   const [visible, setVisible] = useState(false);
   const [amountTON, setAmountTON] = useState<number | undefined>(undefined);
 
@@ -21,7 +21,7 @@ export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
 
   const handlePress = async () => {
     if (!walletAddress) {
-      await tonAuth.openModal();
+      await near.openModal();
       return;
     }
     try {
