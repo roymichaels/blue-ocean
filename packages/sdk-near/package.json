@@ -1,0 +1,9 @@
+{
+  "name": "@blue-ocean/sdk-near",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "buffer": "^6.0.3"
+  }
+}
