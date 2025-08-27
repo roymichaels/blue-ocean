@@ -1,0 +1,9 @@
+{
+  "name": "@blue-ocean/utils",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "near-api-js": "^6.2.6"
+  }
+}

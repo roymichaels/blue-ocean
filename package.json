@@ -26,6 +26,7 @@
     "@babel/plugin-transform-template-literals": "^7.27.1",
     "@babel/runtime": "^7.27.6",
     "@blue-ocean/sdk-near": "file:packages/sdk-near",
+    "@blue-ocean/utils": "file:packages/utils",
     "@expo/metro-runtime": "^5",
     "@expo/vector-icons": "^14.1.0",
     "@expo/webpack-config": "^19.0.1",
