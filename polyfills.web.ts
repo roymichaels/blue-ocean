@@ -1,8 +1,21 @@
 import { debugLog } from './utils/logger';
-import 'react-native-url-polyfill/auto';
+// Ensure Expo Modules web shims are loaded so globalThis.expo is defined
+try {
+  // Side-effect import to setup globalThis.expo (SharedObject, etc.)
+  require('expo-modules-core');
+} catch {}
+// Minimal fallback if the shim didn't set it for some reason
+try {
+  const g: any = globalThis as any;
+  if (!g.expo) g.expo = {};
+  if (!g.expo.SharedObject) {
+    g.expo.SharedObject = class {};
+  }
+} catch {}
 import { sha512 } from '@noble/hashes/sha512';
 import { etc as edUtils } from '@noble/ed25519';
 
+// On web, URL is natively supported; skip react-native-url-polyfill.
 // On web, browser already has crypto.subtle. Do NOT import expo-standard-web-crypto here.
 // Noble needs sync sha512
 if (!edUtils.sha512Sync) edUtils.sha512Sync = sha512;

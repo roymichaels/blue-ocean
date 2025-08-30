@@ -1,6 +1,6 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { Audio } from 'expo-audio';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, X } from 'lucide-react-native';
@@ -10,14 +10,21 @@ import { useAuth } from './AuthContext';
 import useChatRooms from '../hooks/useChatRooms';
 import useChatMessages from '../hooks/useChatMessages';
 import { useWakuClient } from '../hooks/useWakuClient';
-import { ChatMessage } from '../types';
+import { ChatMessage, ChatRoom } from '../types';
 import SettingsAgent from '../agents/settings-agent';
 import DatabaseService from '../services/database';
 import RoomList from './chat/RoomList';
 import MessageList from './chat/MessageList';
 import MessageInput from './chat/MessageInput';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import MediaService from '../services/media';
+import PinataService from '../services/pinata';
+import { decryptMessage } from '../utils/chatCrypto';
+import chatAgent from '../agents/chat-agent';
+import { isChatConfigured } from '../services/chatConfig';
 
 export default function ChatWidget() {
+  const CHAT_ONBOARDED_KEY = 'chat_onboarded';
   const [isOpen, setIsOpen] = useState(false);
   const { colors } = useTheme();
   const { t } = useLanguage();
@@ -28,6 +35,20 @@ export default function ChatWidget() {
   const lastTimestampRef = useRef(0);
   const isMounted = useRef(true);
   const [pinataConfigured, setPinataConfigured] = useState(true);
+  const [recording, setRecording] = useState<Audio.AudioRecorder | null>(null);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [isRecording, setIsRecording] = useState(false);
+  const [showReactions, setShowReactions] = useState<string | null>(null);
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<{
+    id: string;
+    displayName: string;
+    chatPublicKey?: string;
+  }[]>([]);
+  const playingAudioRef = useRef<Record<string, Audio.AudioPlayer>>({});
+  const playingAudio = playingAudioRef.current;
   // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,

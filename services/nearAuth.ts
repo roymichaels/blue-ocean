@@ -1,40 +1,42 @@
 // @ts-nocheck
 import { useEffect, useState } from 'react';
-import type { WalletSelector, WalletSelectorModal } from '@near-wallet-selector/core';
+import type { WalletSelector } from '@near-wallet-selector/core';
 import { setupWalletSelector } from '@near-wallet-selector/core';
-import { setupModal } from '@near-wallet-selector/modal-ui';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import '@near-wallet-selector/wallet-utils';
 import { Buffer } from 'buffer';
 
-let selector: WalletSelector | null = null;
-let modal: WalletSelectorModal | null = null;
+// Expose for test injection where needed
+export let selector: WalletSelector | null = null;
+// Kept for backward-compatibility in tests; no longer used
+export let modal: null = null;
 
 async function init() {
-  if (!selector || !modal) {
+  if (!selector) {
     selector = await setupWalletSelector({
       network: 'testnet',
       modules: [setupNearWallet()],
     });
-    modal = setupModal(selector, { contractId: 'example.testnet' });
   }
-  return { selector: selector!, modal: modal! };
+  return selector!;
 }
 
 export async function signIn(): Promise<void> {
-  const { modal } = await init();
-  modal.show();
+  const sel = await init();
+  const wallet = await sel.wallet('near-wallet');
+  const contractId = process.env.EXPO_PUBLIC_CONTRACT_ID || 'example.testnet';
+  await wallet.signIn({ contractId, methodNames: [] });
 }
 
 export async function signOut(): Promise<void> {
-  const { selector } = await init();
-  const wallet = await selector.wallet();
+  const sel = await init();
+  const wallet = await sel.wallet();
   await wallet.signOut();
 }
 
 export async function signMessage(message: Uint8Array | string): Promise<string> {
-  const { selector } = await init();
-  const wallet = await selector.wallet();
+  const sel = await init();
+  const wallet = await sel.wallet();
   const res = await wallet.signMessage({
     message: typeof message === 'string' ? Buffer.from(message) : message,
   });
@@ -46,12 +48,12 @@ export function useAccountId(): string | null {
 
   useEffect(() => {
     let sub: { unsubscribe: () => void } | undefined;
-    init().then(({ selector }) => {
+    init().then((sel) => {
       const update = (state: any) => {
         setAccountId(state.accounts[0]?.accountId || null);
       };
-      update(selector.store.getState());
-      sub = selector.store.observable.subscribe(update);
+      update(sel.store.getState());
+      sub = sel.store.observable.subscribe(update);
     });
     return () => sub?.unsubscribe();
   }, []);

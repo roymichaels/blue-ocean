@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import storesAgent from '../../agents/stores-agent';
-import productsAgent from '../../agents/products-agent';
-import reviewAgent from '../../agents/review-agent';
-import ProductCard from '../../components/ProductCard';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Store, Product } from '../../types';
+import storesAgent from '../../../agents/stores-agent';
+import productsAgent from '../../../agents/products-agent';
+import reviewAgent from '../../../agents/review-agent';
+import ProductCard from '../../../components/ProductCard';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { Store, Product } from '../../../types';
 
 interface ReviewMap {
   [productId: string]: { rating: number; count: number };

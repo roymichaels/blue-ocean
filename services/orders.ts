@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { errorLog, debugLog } from '@/utils/logger';
-import { randomUUID } from 'crypto';
+import { uuid } from '../utils/uuid';
 import ordersAgent from '../agents/orders-agent';
 import eventBus from './eventBus';
 import {
@@ -137,7 +137,7 @@ class OrderService {
       pay = { ...pay, buyerAddress: nearAuth.getAccountId() || undefined };
     }
 
-    const orderId = randomUUID();
+    const orderId = uuid();
     const timestamp = new Date().toISOString();
     const itemsHash = Buffer.from(
       sha256(Buffer.from(JSON.stringify(items)))

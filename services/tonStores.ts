@@ -6,7 +6,8 @@ import { requireStoreId } from '@blue-ocean/utils';
 
 assertTonChain();
 
-const ADDRESS = requireEnv('TON_STORES_ADDRESS');
+const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
+const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_STORES_ADDRESS') : 'ton:disabled';
 
 export async function getStore(storeId: string, id: string): Promise<Store | null> {
   const sid = requireStoreId(storeId);

@@ -1,7 +1,10 @@
 // Configuration values are loaded from environment variables.
 // Only a minimal set of keys is supported at runtime.
 
-const REQUIRED_ENV_KEYS: string[] = [
+// Only enforce TON addresses when running in TON mode. When using NEAR,
+// these are not required and should not crash the app if missing.
+const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
+const TON_REQUIRED_ENV_KEYS: string[] = [
   'TON_SETTINGS_ADDRESS',
   'TON_ORDERS_ADDRESS',
   'TON_PRODUCT_INDEX_ADDRESS',
@@ -14,6 +17,7 @@ const REQUIRED_ENV_KEYS: string[] = [
   'TON_PRODUCTS_ADDRESS',
   'TON_USERS_ADDRESS',
 ];
+const REQUIRED_ENV_KEYS: string[] = CHAIN === 'ton' ? TON_REQUIRED_ENV_KEYS : [];
 
 const ENV_KEYS = [
   'EXPO_PUBLIC_DEBUG_LOGS',

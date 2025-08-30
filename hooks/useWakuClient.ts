@@ -58,8 +58,10 @@ export function useWakuClient(): WakuClient {
       let node: LightNode | undefined;
       try {
         const bootstrap = getWakuBootstrapNodes();
+        // If no bootstrap nodes configured, stay in no-op mode silently for dev.
         if (bootstrap.length === 0) {
-          throw new Error('No Waku bootstrap nodes configured');
+          if (!cancelled) nodeRef.current = undefined;
+          return;
         }
         node = await createLightNode({
           libp2p: { bootstrap },

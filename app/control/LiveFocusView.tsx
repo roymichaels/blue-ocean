@@ -21,7 +21,7 @@ function LiveFocusInner() {
   const handleComplete = async () => {
     if (!activeRoadmap || !currentTask) return;
     await completeTask(currentTask.id);
-    // simulate Supabase query for next pending task
+    // query the next pending task (NEAR Lake-backed)
     const next = RoadmapService.getNextPendingTask(activeRoadmap.id);
     setCurrentTask(next);
   };

@@ -21,7 +21,8 @@ import { z } from 'zod';
 import { sign } from '@noble/ed25519';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
-const ADDRESS = requireEnv('TON_SETTINGS_ADDRESS');
+const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
+const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_SETTINGS_ADDRESS') : 'ton:disabled';
 
 const TEST_ADMIN = 'EQtestadmin';
 const NETWORK =

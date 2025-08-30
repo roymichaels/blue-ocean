@@ -8,7 +8,7 @@ import {
   Protocols,
   utf8ToBytes,
 } from '@waku/sdk';
-import { randomUUID } from 'crypto';
+import { uuid } from '../utils/uuid';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { OrderStatus } from '../types';
 
@@ -36,10 +36,11 @@ let node: LightNode | null = null;
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
-    const bootstrap = getWakuBootstrapNodes();
-    if (bootstrap.length === 0) {
-      throw new Error('No Waku bootstrap nodes configured');
+    if ((process.env.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
+      return null;
     }
+    const bootstrap = getWakuBootstrapNodes();
+    if (bootstrap.length === 0) return null;
     node = await createLightNode({ libp2p: { bootstrap } });
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
@@ -57,7 +58,7 @@ export async function logOrderEvent(
   const n = await ensureNode();
   if (!n) return;
   try {
-    const eventWithId: OrderEvent = { id: randomUUID(), ...event };
+    const eventWithId: OrderEvent = { id: uuid(), ...event };
     const encoder = createEncoder({ contentTopic: ORDER_TOPIC });
     await n.lightPush.send(encoder, {
       payload: utf8ToBytes(JSON.stringify(eventWithId)),

@@ -8,9 +8,9 @@
     "dev": "ts-node src/main.ts"
   },
   "dependencies": {
-    "better-sqlite3": "^12.2.0",
     "dotenv": "^16.4.5",
-    "near-lake-framework": "^2.0.0"
+    "near-lake-framework": "^2.0.0",
+    "@waku/sdk": "0.0.33"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { uuid } from '../utils/uuid';
 import { Report } from '../types';
 import { assertTonChain } from '../services/chain';
 import { addReport, listReports, removeReport } from '../services/tonReports';
@@ -17,7 +17,7 @@ class ModerationAgent {
   async reportProduct(productId: string, reason: string): Promise<void> {
     const { address } = await this.ensureWallet();
     const report: Report = {
-      id: randomUUID(),
+      id: uuid(),
       type: 'product',
       targetId: productId,
       reason,
@@ -30,7 +30,7 @@ class ModerationAgent {
   async reportStore(storeId: string, reason: string): Promise<void> {
     const { address } = await this.ensureWallet();
     const report: Report = {
-      id: randomUUID(),
+      id: uuid(),
       type: 'store',
       targetId: storeId,
       reason,

@@ -10,8 +10,6 @@ import {
 } from '../services/tonProducts';
 import { getStore } from '../services/tonStores';
 import ensureTonWallet from '../utils/ensureTonWallet';
-
-assertTonChain();
 import {
   LightNode,
   createLightNode,

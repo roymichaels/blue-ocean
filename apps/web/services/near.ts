@@ -1,22 +1,24 @@
 import { setupWalletSelector, WalletSelector } from '@near-wallet-selector/core';
-import { setupModal, WalletSelectorModal } from '@near-wallet-selector/modal-ui';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 
 let selector: WalletSelector | null = null;
-let modal: WalletSelectorModal | null = null;
+let initError: Error | null = null;
 
 export async function initNear() {
-  if (selector && modal) {
-    return { selector, modal };
+  if (selector || initError) {
+    return { selector, error: initError } as const;
   }
 
-  selector = await setupWalletSelector({
-    network: 'testnet',
-    modules: [setupNearWallet()],
-  });
+  try {
+    selector = await setupWalletSelector({
+      network: 'testnet',
+      modules: [setupNearWallet()],
+    });
+  } catch (e: any) {
+    initError = e instanceof Error ? e : new Error(String(e));
+  }
 
-  modal = setupModal(selector, { contractId: 'example.testnet' });
-  return { selector, modal };
+  return { selector, error: initError } as const;
 }
 
 export async function getAccountId(): Promise<string | null> {

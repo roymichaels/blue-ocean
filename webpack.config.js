@@ -37,6 +37,12 @@ module.exports = async function (env, argv) {
   // Match Metro alias for the custom HMR client
   config.resolve.alias = {
     ...(config.resolve.alias || {}),
+    // Ensure Expo Router's web entry can resolve the runtime side-effects
+    '@expo/metro-runtime': require.resolve('@expo/metro-runtime'),
+    '@babel/runtime': require.resolve('@babel/runtime'),
+    react: require.resolve('react'),
+    'react-dom': require.resolve('react-dom'),
+    // NOTE: Let Expo's webpack config alias 'react-native' to 'react-native-web' for web
     '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
     '@expo/metro-runtime/src/HMRClient.ts': path.resolve(__dirname, 'HMRClient.ts'),
     'react-native/Libraries/Utilities/HMRClient': path.resolve(

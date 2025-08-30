@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { sha256 } from '@noble/hashes/sha256';
 
 class IpfsService {
   private static instance: IpfsService;
@@ -17,7 +17,7 @@ class IpfsService {
   }
 
   async pinJson(data: any): Promise<string> {
-    const hash = createHash('sha256').update(JSON.stringify(data)).digest('hex');
+    const hash = Buffer.from(sha256(Buffer.from(JSON.stringify(data)))).toString('hex');
     return `ipfs://${hash}`;
   }
 }

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { useTheme } from '../../contexts/ThemeContext';
-import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
-import chain from '../../services/chain';
-import { Store } from '../../types';
+import { useTheme } from '../../../contexts/ThemeContext';
+import useRequirePlatformAdmin from '../../../hooks/useRequirePlatformAdmin';
+import chain from '../../../services/chain';
+import { Store } from '../../../types';
 
 let listStores: (() => Promise<Store[]>) | undefined;
 if (chain === 'ton') {
-  ({ listStores } = require('../../services/tonStores'));
+  ({ listStores } = require('../../../services/tonStores'));
 }
 
 export default function AdminStores() {

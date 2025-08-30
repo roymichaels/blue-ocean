@@ -5,7 +5,8 @@ import { assertTonChain } from './chain';
 
 assertTonChain();
 
-const ADDRESS = requireEnv('TON_REPORTS_ADDRESS');
+const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
+const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_REPORTS_ADDRESS') : 'ton:disabled';
 
 export async function addReport(report: Report) {
   await setValue(ADDRESS, report.id, JSON.stringify(report));

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { debugLog, errorLog } from '@/utils/logger';
-import { randomUUID } from 'crypto';
+import { uuid } from '../utils/uuid';
 import { Notification } from '../types';
 import notificationsAgent, { NotificationEvent } from '../agents/notifications-agent';
 
@@ -79,7 +79,7 @@ class NotificationService {
   }): Promise<Notification | null> {
     try {
       const newNotification: Notification = {
-        id: randomUUID(),
+        id: uuid(),
         userId: notification.userId,
         title: notification.title,
         message: notification.message,

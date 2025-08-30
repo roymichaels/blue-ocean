@@ -85,9 +85,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   useEffect(() => {
-    initNear().then(() => {
-      checkAuthState().finally(() => setInitialized(true));
-    });
+    initNear()
+      .catch(() => null)
+      .finally(() => {
+        checkAuthState().finally(() => setInitialized(true));
+      });
   }, [address]);
 
   const login = async () => {

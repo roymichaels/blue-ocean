@@ -4,6 +4,6 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "dependencies": {
-    "near-api-js": "^6.2.6"
+    "near-api-js": "2.1.4"
   }
 }

@@ -16,7 +16,11 @@ export default function WalletConnectButton({ onConnect }: WalletConnectButtonPr
   }, [account, onConnect]);
 
   const handleConnect = async () => {
-    await initNear();
+    const { error } = await initNear();
+    if (error) {
+      console.error('Wallet initialization failed:', error);
+      return;
+    }
     openModal();
   };
 

@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { View, Button } from 'react-native';
+import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import { initNear } from '../services/near';
+import '../services/chainGuard';
+import WalletButton from '../components/WalletButton';
 
 export default function RootLayout() {
-  const [near, setNear] = useState<Awaited<ReturnType<typeof initNear>> | null>(null);
+  const walletEnabled = process.env.EXPO_PUBLIC_FEATURE_WALLET === '1';
 
   useEffect(() => {
-    initNear().then(setNear);
+    if (walletEnabled) {
+      initNear().catch((e) => {
+        console.error('Wallet init failed', e);
+      });
+    }
   }, []);
 
   return (
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }} />
-      {near && (
-        <Button title="Connect NEAR Wallet" onPress={() => near.modal.show()} />
-      )}
+      {walletEnabled && <WalletButton />}
     </View>
   );
 }

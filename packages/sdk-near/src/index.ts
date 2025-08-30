@@ -1,4 +1,4 @@
-// SDK functions for interacting with the Blue Ocean Near marketplace
+// SDK functions for interacting with the Blue Ocean NEAR marketplace
 // Uses relayer and indexer services defined by EXPO_PUBLIC_* env variables.
 
 /** Represents a listing returned from the indexer. */
@@ -10,19 +10,20 @@ export interface Listing {
 
 /** Arguments required to add a new listing via the relayer. */
 export interface AddListingArgs {
-  id: number;
-  seller: string;
-  price: number;
+  storeId: string;
+  itemId: number;
+  priceYocto: string;
+  metadata: string;
 }
 
 /** Arguments required to purchase a listing via the relayer. */
 export interface BuyListingArgs {
-  id: number;
-  buyer: string;
+  storeId: string;
+  itemId: number;
   amountYocto: string;
 }
 
-function requireEnv(name: 'EXPO_PUBLIC_RELAYER_URL' | 'EXPO_PUBLIC_INDEXER_URL'): string {
+function requireEnv(name: 'EXPO_PUBLIC_RELAYER_URL' | 'EXPO_PUBLIC_INDEXER_URL' | 'EXPO_PUBLIC_TRANSPORT'): string {
   const value = process.env[name];
   if (!value) {
     throw new Error(`${name} is not configured`);
@@ -35,8 +36,14 @@ import { requireStoreId } from '@blue-ocean/utils';
 
 export async function getListings(storeId: string): Promise<Listing[]> {
   const sid = requireStoreId(storeId);
+  const transport = process.env.EXPO_PUBLIC_TRANSPORT || 'http';
+  if (transport === 'waku') {
+    // dynamic import to keep SDK usable without Waku
+    const mod = await import('./waku/index').catch(() => null as any);
+    if (mod?.getListingsFromWaku) return mod.getListingsFromWaku(sid);
+  }
   const indexerUrl = requireEnv('EXPO_PUBLIC_INDEXER_URL');
-  const res = await fetch(`${indexerUrl}/listings?storeId=${sid}`);
+  const res = await fetch(`${indexerUrl}/listings?storeId=${encodeURIComponent(sid)}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch listings: ${res.status} ${res.statusText}`);
   }
@@ -48,13 +55,17 @@ export async function getListings(storeId: string): Promise<Listing[]> {
 }
 
 /** Submit a request to add a new listing through the relayer. */
-export async function addListing(storeId: string, args: AddListingArgs): Promise<any> {
-  const sid = requireStoreId(storeId);
+export async function addListing(args: AddListingArgs): Promise<any> {
+  const sid = requireStoreId(args.storeId);
   const relayerUrl = requireEnv('EXPO_PUBLIC_RELAYER_URL');
   const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ storeId: sid, action: 'add_listing', args }),
+    body: JSON.stringify({
+      storeId: sid,
+      action: 'add_listing',
+      args: { id: args.itemId, seller: '', price: 0, metadata: args.metadata, priceYocto: args.priceYocto },
+    }),
   });
   if (!res.ok) {
     throw new Error(`Failed to add listing: ${res.status} ${res.statusText}`);
@@ -67,8 +78,8 @@ export async function addListing(storeId: string, args: AddListingArgs): Promise
 }
 
 /** Submit a purchase request for a listing through the relayer. */
-export async function buyListing(storeId: string, args: BuyListingArgs): Promise<any> {
-  const sid = requireStoreId(storeId);
+export async function buyListing(args: BuyListingArgs): Promise<any> {
+  const sid = requireStoreId(args.storeId);
   const relayerUrl = requireEnv('EXPO_PUBLIC_RELAYER_URL');
   const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
@@ -90,6 +101,7 @@ export async function buyListing(storeId: string, args: BuyListingArgs): Promise
  * TODO: integrate with mixer for on-chain privacy once available.
  */
 export async function payPrivately(args: BuyListingArgs): Promise<any> {
+  // For MVP, private payment falls back to the same relayer path.
   return buyListing(args);
 }
 
