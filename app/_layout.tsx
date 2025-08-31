@@ -5,7 +5,6 @@ import { AuthProvider } from "../components/AuthContext";
 import { AuthModalProvider } from "../components/AuthModalContext";
 import { TenantProvider } from "../contexts/TenantContext";
 import { AppInfoProvider } from "../contexts/AppInfoContext";
-import { ThemeProvider } from "../contexts/ThemeContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
 import { CurrencyProvider } from "../contexts/CurrencyContext";
 import { NotificationProvider } from "../components/NotificationContext";
@@ -15,9 +14,8 @@ export default function RootLayout() {
     <ConfigProvider>
       <AuthProvider>
         <AuthModalProvider>
-          <TenantProvider>
-            <AppInfoProvider>
-              <ThemeProvider>
+            <TenantProvider>
+              <AppInfoProvider>
                 <LanguageProvider>
                   <CurrencyProvider>
                     <NotificationProvider>
@@ -31,9 +29,8 @@ export default function RootLayout() {
                     </NotificationProvider>
                   </CurrencyProvider>
                 </LanguageProvider>
-              </ThemeProvider>
-            </AppInfoProvider>
-          </TenantProvider>
+              </AppInfoProvider>
+            </TenantProvider>
         </AuthModalProvider>
       </AuthProvider>
     </ConfigProvider>
