@@ -7,7 +7,7 @@ const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
 try {
   if (typeof document !== 'undefined') {
     const style = document.createElement('style');
-    style.innerHTML = `html, body, #root, #app-root { height: 100% !important; margin: 0; padding: 0; } body { background: #0b0b0b; }`;
+    style.innerHTML = `html, body, #root, #app-root { height: 100% !important; margin: 0; padding: 0; } body { background: #fff; }`;
     document.head.appendChild(style);
     let root = document.getElementById('root') || document.getElementById('app-root');
     if (!root) {
