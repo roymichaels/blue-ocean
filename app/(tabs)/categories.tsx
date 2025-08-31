@@ -19,9 +19,8 @@ import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import Spinner from '../../components/ui/Spinner';
 import AppShell from '../../components/layout/AppShell';
-import LoadingView from '../../components/ui/LoadingView';
 
 export default function CategoriesScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -227,7 +226,9 @@ export default function CategoriesScreen() {
             )}
           </View>
         </View>
-        <LoadingView />
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+          <Spinner label="Loading categories" />
+        </View>
       </AppShell>
     );
   }
@@ -381,7 +382,7 @@ export default function CategoriesScreen() {
                 disabled={loading}
               >
                 {loading ? (
-                  <LoadingSpinner
+                  <Spinner
                     size="small"
                     color={colors.text.inverse}
                     style={styles.buttonSpinner}

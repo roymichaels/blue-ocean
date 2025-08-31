@@ -17,7 +17,7 @@ import { Category, Subcategory } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import Spinner from '../../components/ui/Spinner';
 import commonStyles from '../../constants/styles';
 
 
@@ -220,7 +220,7 @@ export default function CategoryScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
           <View style={commonStyles.spacer24} />
         </View>
-        <LoadingSpinner />
+        <Spinner label="Loading category" />
       </SafeAreaView>
     );
   }
@@ -352,7 +352,7 @@ export default function CategoryScreen() {
                 disabled={loading}
               >
                 {loading ? (
-                  <LoadingSpinner size="small" color={colors.text.inverse} style={styles.buttonSpinner} />
+                  <Spinner size="small" color={colors.text.inverse} style={styles.buttonSpinner} />
                 ) : (
                   <>
                     <Save size={20} color={colors.text.inverse} />

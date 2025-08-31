@@ -38,7 +38,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '../../components/ProductFormModal';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import Spinner from '../../components/ui/Spinner';
 import MediaService from '../../services/media';
 import { useAccountId } from '../../services/nearAuth';
 import chatAgent from '../../agents/chat-agent';
@@ -404,7 +404,7 @@ export default function ProductDetailScreen() {
           </Text>
           <View style={commonStyles.spacer24} />
         </View>
-        <LoadingSpinner />
+        <Spinner label="Loading product" />
       </SafeAreaView>
     );
   }

@@ -14,7 +14,7 @@ import { X, Save, Trash2 } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { HeroBanner, Category } from '../types';
 import DatabaseService from '../services/database';
-import LoadingSpinner from './LoadingSpinner';
+import Spinner from './ui/Spinner';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -293,7 +293,7 @@ export default function BannerFormModal({
                 disabled={loading}
               >
                 {loading ? (
-                  <LoadingSpinner
+                  <Spinner
                     size="small"
                     color={colors.text.inverse}
                     style={styles.buttonSpinner}

@@ -36,7 +36,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import ProductCard from '../../components/ProductCard';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/EmptyState';
 import BannerFormModal from '../../components/BannerFormModal';
 import CartModal from '../../components/CartModal';
@@ -387,7 +387,7 @@ export default function HomeScreen() {
           onSearchChange={setSearchQuery}
           showSearch={true}
         />
-        <LoadingSpinner />
+        <Spinner label="Loading home" />
       </SafeAreaView>
     );
   }
