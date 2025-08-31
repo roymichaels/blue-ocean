@@ -37,7 +37,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import GlobalHeader from '../components/GlobalHeader';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import EmptyState from '../components/EmptyState';
+import EmptyState from '../components/ui/EmptyState';
 import BannerFormModal from '../components/BannerFormModal';
 import CartModal from '../components/CartModal';
 import ProductFormModal from '../components/ProductFormModal';
