@@ -199,7 +199,10 @@ export default function FullScreenMediaViewer({
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
             <SafeAreaView
-              style={[styles.container, { backgroundColor: '#000000', paddingBottom: insets.bottom }]}
+              style={[
+                styles.container,
+                { backgroundColor: 'rgba(0, 0, 0, 0.8)', paddingBottom: insets.bottom }
+              ]}
             >
               <TouchableOpacity
                 style={[
