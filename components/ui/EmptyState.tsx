@@ -1,23 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Video as LucideIcon } from 'lucide-react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface EmptyStateProps {
-  icon: typeof LucideIcon;
+  icon: LucideIcon;
   title: string;
   message: string;
-  actionText?: string;
-  onAction?: () => void;
+  action?: { label: string; onPress: () => void };
 }
 
-export default function EmptyState({ 
-  icon: Icon, 
-  title, 
-  message, 
-  actionText, 
-  onAction 
-}: EmptyStateProps) {
+export default function EmptyState({ icon: Icon, title, message, action }: EmptyStateProps) {
   const { colors } = useTheme();
 
   return (
@@ -25,11 +18,11 @@ export default function EmptyState({
       <Icon size={80} color={colors.interactive.disabled} />
       <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
       <Text style={[styles.message, { color: colors.text.secondary }]}>{message}</Text>
-      {actionText && onAction && (
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.gold }]} onPress={onAction}>
-          <Text style={[styles.actionButtonText, { color: colors.text.inverse }]}>{actionText}</Text>
+      {action ? (
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.gold }]} onPress={action.onPress}>
+          <Text style={[styles.actionButtonText, { color: colors.text.inverse }]}>{action.label}</Text>
         </TouchableOpacity>
-      )}
+      ) : null}
     </View>
   );
 }
