@@ -9,6 +9,7 @@ import { Product, Category, HeroBanner } from '../types';
 import ProductCard from '../components/ProductCard';
 import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
+import Button from '../components/ui/Button';
 
 export default function Landing() {
   const { colors } = useTheme();
@@ -51,14 +52,14 @@ export default function Landing() {
           </View>
           <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
             <Link href="/store/alpha" asChild>
-              <Pressable style={{ backgroundColor: colors.gold, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 }}>
-                <Text style={{ color: colors.text.inverse, fontWeight: '700' }}>Open Alpha Store</Text>
-              </Pressable>
+              <Button title="Open Alpha Store" style={{ borderRadius: 10 }} />
             </Link>
             <Link href="/(tabs)" asChild>
-              <Pressable style={{ borderColor: colors.gold, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 }}>
-                <Text style={{ color: colors.text.primary, fontWeight: '700' }}>Browse App</Text>
-              </Pressable>
+              <Button
+                title="Browse App"
+                variant="secondary"
+                style={{ borderRadius: 10, borderColor: colors.gold, backgroundColor: 'transparent' }}
+              />
             </Link>
           </View>
         </View>

@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Video as LucideIcon } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import Button from './Button';
 
 interface EmptyStateProps {
   icon: typeof LucideIcon;
@@ -26,14 +27,7 @@ export default function EmptyState({
       <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
       <Text style={[styles.message, { color: colors.text.secondary }]}>{message}</Text>
       {actionText && onAction && (
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: colors.gold }]}
-          onPress={onAction}
-        >
-          <Text style={[styles.actionButtonText, { color: colors.text.inverse }]}>
-            {actionText}
-          </Text>
-        </TouchableOpacity>
+        <Button title={actionText} onPress={onAction} style={styles.actionButton} />
       )}
     </View>
   );
@@ -61,13 +55,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   actionButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     borderRadius: 25,
-  },
-  actionButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    paddingHorizontal: 24,
   },
 });
 
