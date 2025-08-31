@@ -387,7 +387,7 @@ export default function HomeScreen() {
           onSearchChange={setSearchQuery}
           showSearch={true}
         />
-        <LoadingSpinner />
+        <Spinner label="Loading home" />
       </SafeAreaView>
     );
   }

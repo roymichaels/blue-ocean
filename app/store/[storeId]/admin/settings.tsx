@@ -8,7 +8,7 @@ import { useAuth } from '../../../../components/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { useLanguage } from '../../../../contexts/LanguageContext';
-import LoadingSpinner from '../../../../components/LoadingSpinner';
+import Spinner from '../../../../components/ui/Spinner';
 import InfoModal from '../../../../components/InfoModal';
 import { useAppInfo } from '../../../../contexts/AppInfoContext';
 import commonStyles from '../../../../constants/styles';
@@ -142,7 +142,7 @@ export default function SettingsScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text> 
           <View style={commonStyles.spacer24} /> 
         </View> 
-        <LoadingSpinner /> 
+        <Spinner label="Loading settings" />
       </SafeAreaView>
     );
   }
@@ -202,7 +202,7 @@ export default function SettingsScreen() {
           disabled={saving}
         >
           {saving ? (
-            <LoadingSpinner size="small" color={colors.text.inverse} />
+            <Spinner size="small" color={colors.text.inverse} />
           ) : (
             <>
               <Save size={20} color={colors.text.inverse} />

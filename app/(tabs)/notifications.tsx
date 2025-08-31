@@ -1,13 +1,6 @@
 import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Package, Tag, MessageCircle, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info } from 'lucide-react-native';
 import NotificationService from '../../services/notification';
@@ -290,7 +283,9 @@ export default function NotificationsScreen() {
       </View>
 
       {loading ? (
-        <LoadingView message={t('notifications.loadingNotifications') as string} />
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+          <Spinner label={t('notifications.loadingNotifications') as string} />
+        </View>
       ) : !isLoggedIn ? (
         <EmptyState
           icon={Bell}

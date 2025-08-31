@@ -23,7 +23,7 @@ import { useTheme } from '../../../../contexts/ThemeContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import DatabaseService from '../../../../services/database';
 import { PricingTier } from '../../../../types';
-import LoadingSpinner from '../../../../components/LoadingSpinner';
+import Spinner from '../../../../components/ui/Spinner';
 import InfoModal from '../../../../components/InfoModal';
 import PricingTierFormModal from '../../../../components/PricingTierFormModal';
 import Card from '../../../../components/Card';
@@ -180,7 +180,7 @@ export default function PricingTiersScreen() {
           </View>
         </View>
 
-        <LoadingSpinner />
+        <Spinner label="Loading pricing tiers" />
       </SafeAreaView>
     );
   }

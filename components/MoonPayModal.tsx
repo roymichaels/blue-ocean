@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
-import LoadingSpinner from './LoadingSpinner';
+import Spinner from './ui/Spinner';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
 
@@ -80,7 +80,7 @@ export default function MoonPayModal({
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {loading && (
           <View style={[styles.loading, { pointerEvents: 'none' }]}>
-            <LoadingSpinner />
+            <Spinner />
           </View>
         )}
         <WebView
