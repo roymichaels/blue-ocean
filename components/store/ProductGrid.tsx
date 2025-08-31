@@ -1,14 +1,21 @@
 import React from 'react';
 import { FlatList, View } from 'react-native';
-import EmptyState from './EmptyState';
+import EmptyState from '../ui/EmptyState';
 import ProductCard from '../ProductCard';
 import { Product } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
+import { Package } from 'lucide-react-native';
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   const { colors } = useTheme();
   if (!products || products.length === 0) {
-    return <EmptyState />;
+    return (
+      <EmptyState
+        icon={Package}
+        title="No products yet"
+        message="When the owner adds items, they will appear here."
+      />
+    );
   }
 
   return (
