@@ -10,7 +10,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import AppShell from '../../components/layout/AppShell';
 import Spinner from '../../components/ui/Spinner';
-import EmptyView from '../../components/ui/EmptyView';
+import EmptyState from '../../components/ui/EmptyState';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
 
@@ -287,10 +287,12 @@ export default function NotificationsScreen() {
           <Spinner label={t('notifications.loadingNotifications') as string} />
         </View>
       ) : !isLoggedIn ? (
-        <EmptyView
+        <EmptyState
+          icon={Bell}
           title={t('auth.loginRequired') as string}
-          subtitle={t('auth.loginToView') as string}
-          cta={{ label: t('auth.login') as string, onPress: handleLogin }}
+          message={t('auth.loginToView') as string}
+          actionText={t('auth.login') as string}
+          onAction={handleLogin}
         />
       ) : filteredNotifications.length > 0 ? (
         <ScrollView
@@ -300,9 +302,10 @@ export default function NotificationsScreen() {
           {filteredNotifications.map(renderNotification)}
         </ScrollView>
       ) : (
-        <EmptyView
+        <EmptyState
+          icon={Bell}
           title={t('notifications.noNotifications') as string}
-          subtitle={(activeTab === 'all' ? t('notifications.noNotificationsYet') : t('notifications.noUnreadNotifications')) as string}
+          message={(activeTab === 'all' ? t('notifications.noNotificationsYet') : t('notifications.noUnreadNotifications')) as string}
         />
       )}
 

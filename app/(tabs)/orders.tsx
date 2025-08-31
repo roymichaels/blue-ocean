@@ -15,7 +15,7 @@ import OrderService from '../../services/orders';
 import { Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import AppShell from '../../components/layout/AppShell';
-import EmptyView from '../../components/ui/EmptyView';
+import EmptyState from '../../components/ui/EmptyState';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
@@ -184,16 +184,20 @@ export default function OrdersScreen() {
 
   const renderEmpty = () => (
     isLoggedIn ? (
-      <EmptyView
+      <EmptyState
+        icon={Package}
         title={t('orders.emptyTitle') as string}
-        subtitle={t('orders.emptyMessage') as string}
-        cta={{ label: t('orders.shopNow') as string, onPress: () => router.push('/(tabs)') }}
+        message={t('orders.emptyMessage') as string}
+        actionText={t('orders.shopNow') as string}
+        onAction={() => router.push('/(tabs)')}
       />
     ) : (
-      <EmptyView
+      <EmptyState
+        icon={Package}
         title={t('orders.loginRequiredTitle') as string}
-        subtitle={t('orders.loginRequiredMessage') as string}
-        cta={{ label: t('auth.login') as string, onPress: handleLogin }}
+        message={t('orders.loginRequiredMessage') as string}
+        actionText={t('auth.login') as string}
+        onAction={handleLogin}
       />
     )
   );
