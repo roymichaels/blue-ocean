@@ -1,16 +1,22 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Router } from 'expo-router';
+
+const queryClient = new QueryClient();
 
 export default function App() {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0b0b' }}>
-      <Text style={{ color: '#fff', fontSize: 24, fontWeight: '700' }}>
-        Blue Ocean — App Mounted ✅
-      </Text>
-      <Text style={{ color: '#9ca3af', marginTop: 8 }}>Router temporarily bypassed for debugging.</Text>
-      <View style={{ position: 'absolute', top: 8, right: 8, backgroundColor: '#059669', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
-        <Text style={{ color: '#fff', fontFamily: 'monospace', fontSize: 12 }}>APP OK</Text>
-      </View>
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <Router />
+          </QueryClientProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
