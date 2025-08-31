@@ -17,7 +17,7 @@ import DatabaseService from '../../services/database';
 import { Product, Review, Order } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import Spinner from '../../components/ui/Spinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { useAuthModal } from '../../components/AuthModalContext';
@@ -472,7 +472,7 @@ export default function ReviewsScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ביקורות</Text>
           <View style={commonStyles.spacer40} />
         </View>
-        <LoadingSpinner />
+        <Spinner label="Loading reviews" />
       </SafeAreaView>
     );
   }
@@ -775,7 +775,7 @@ export default function ReviewsScreen() {
                 disabled={!newReview.rating || !newReview.title.trim() || loading}
               >
                 {loading ? (
-                  <LoadingSpinner size="small" color={colors.text.inverse} />
+                  <Spinner size="small" color={colors.text.inverse} />
                 ) : (
                   <>
                     <Send size={20} color={colors.text.inverse} />

@@ -1,13 +1,6 @@
 import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Package, Tag, MessageCircle, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info } from 'lucide-react-native';
 import NotificationService from '../../services/notification';
@@ -16,7 +9,7 @@ import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import AppShell from '../../components/layout/AppShell';
-import LoadingView from '../../components/ui/LoadingView';
+import Spinner from '../../components/ui/Spinner';
 import EmptyView from '../../components/ui/EmptyView';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
@@ -290,7 +283,9 @@ export default function NotificationsScreen() {
       </View>
 
       {loading ? (
-        <LoadingView message={t('notifications.loadingNotifications') as string} />
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+          <Spinner label={t('notifications.loadingNotifications') as string} />
+        </View>
       ) : !isLoggedIn ? (
         <EmptyView
           title={t('auth.loginRequired') as string}

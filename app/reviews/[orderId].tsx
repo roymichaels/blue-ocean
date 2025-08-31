@@ -5,7 +5,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Star, ArrowLeft } from 'lucide-react-native';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import Spinner from '../../components/ui/Spinner';
 import ordersAgent from '../../agents/orders-agent';
 import reviewAgent from '../../agents/review-agent';
 import { Order, Review } from '../../types';
@@ -76,7 +76,7 @@ export default function SubmitReviewScreen() {
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
-        <LoadingSpinner />
+        <Spinner label="Loading review" />
       </SafeAreaView>
     );
   }
