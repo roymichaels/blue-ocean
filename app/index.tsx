@@ -23,26 +23,26 @@ import {
   Filter,
   ArrowUpDown,
 } from 'lucide-react-native';
-import DatabaseService from '../../services/database';
-import { Product, Category, HeroBanner } from '../../types';
-import chain from '../../services/chain';
+import DatabaseService from '../services/database';
+import { Product, Category, HeroBanner } from '../types';
+import chain from '../services/chain';
 
 let listCategories: (() => Promise<Category[]>) | undefined;
 if (chain === 'ton') {
-  ({ listCategories } = require('../../services/tonCategories'));
+  ({ listCategories } = require('../services/tonCategories'));
 }
-import { useAuth } from '../../components/AuthContext';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import GlobalHeader from '../../components/GlobalHeader';
-import ProductCard from '../../components/ProductCard';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import EmptyState from '../../components/EmptyState';
-import BannerFormModal from '../../components/BannerFormModal';
-import CartModal from '../../components/CartModal';
-import ProductFormModal from '../../components/ProductFormModal';
-import SmartImage from '../../components/SmartImage';
-import InfoModal from '../../components/InfoModal';
+import { useAuth } from '../components/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
+import GlobalHeader from '../components/GlobalHeader';
+import ProductCard from '../components/ProductCard';
+import LoadingSpinner from '../components/LoadingSpinner';
+import EmptyState from '../components/EmptyState';
+import BannerFormModal from '../components/BannerFormModal';
+import CartModal from '../components/CartModal';
+import ProductFormModal from '../components/ProductFormModal';
+import SmartImage from '../components/SmartImage';
+import InfoModal from '../components/InfoModal';
 
 const { width } = Dimensions.get('window');
 const BANNER_WIDTH = width - 32;
