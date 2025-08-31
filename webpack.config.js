@@ -25,6 +25,11 @@ module.exports = async function (env, argv) {
     assert: require.resolve('assert'),
     util: require.resolve('util'),
     process: require.resolve('process'),
+    crypto: require.resolve('crypto-browserify'),
+    vm: false,
+    http: false,
+    https: false,
+    fs: false,
   };
 
   config.plugins.push(
@@ -34,46 +39,37 @@ module.exports = async function (env, argv) {
     })
   );
 
-  // Match Metro alias for the custom HMR client
+  // Minimal, safe aliases for web
   config.resolve.alias = {
     ...(config.resolve.alias || {}),
-    // Ensure Expo Router's web entry can resolve the runtime side-effects
-    '@expo/metro-runtime': require.resolve('@expo/metro-runtime'),
-    '@babel/runtime': require.resolve('@babel/runtime'),
-    react: require.resolve('react'),
-    'react-dom': require.resolve('react-dom'),
-    // NOTE: Let Expo's webpack config alias 'react-native' to 'react-native-web' for web
-    '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
-    '@expo/metro-runtime/src/HMRClient.ts': path.resolve(__dirname, 'HMRClient.ts'),
-    'react-native/Libraries/Utilities/HMRClient': path.resolve(
+    '@': path.resolve(__dirname),
+    'expo-router/_ctx': path.resolve(__dirname, 'router-ctx.web.js'),
+    'expo-router/_ctx.web': path.resolve(__dirname, 'router-ctx.web.js'),
+    'expo-router/_ctx.web.js': path.resolve(__dirname, 'router-ctx.web.js'),
+    // Map @waku/utils/bytes subpath directly to avoid deep import issues
+    '@waku/utils/bytes': path.resolve(
       __dirname,
-      'EmptyHMRClient.ts'
+      'node_modules/@waku/utils/dist/bytes/index.js'
     ),
-    '@noble/hashes': require.resolve('@noble/hashes'),
-    '@noble/hashes/hkdf': require.resolve('@noble/hashes/hkdf'),
-    '@noble/hashes/sha256': require.resolve('@noble/hashes/sha256'),
-    '@noble/hashes/sha512': require.resolve('@noble/hashes/sha512'),
-    '@noble/hashes/crypto': require.resolve('@noble/hashes/crypto'),
-    '@noble/hashes/crypto.js': require.resolve('@noble/hashes/crypto'),
-    '@waku/utils': path.resolve(
-      __dirname,
-      'node_modules/@waku/utils/dist/index.js'
-    ),
-    'multiformats/hashes/sha2': path.resolve(
-      __dirname,
-      'node_modules/multiformats/dist/src/hashes/sha2.js'
-    ),
-    multiformats: path.resolve(
-      __dirname,
-      'node_modules/multiformats/dist/src/index.js'
-    ),
-    'expo-router/entry': require.resolve('expo-router/entry'),
+    '@blue-ocean/utils': path.resolve(__dirname, 'shims/bo-utils.js'),
+    'fs/promises': false,
+    // Avoid bundling Node-only NEAR provider in web builds
+    '@near-js/providers': false,
+    'node-fetch': false,
     'react-native-url-polyfill': path.resolve(
       __dirname,
       'node_modules/react-native-url-polyfill'
     ),
     tslib: require.resolve('tslib'),
+    'tslib/modules/index.js': path.resolve(__dirname, 'tslib-polyfill.js'),
   };
+
+  // Ensure Expo Router's Babel plugin sees the app root
+  config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.EXPO_ROUTER_APP_ROOT': JSON.stringify('app'),
+    })
+  );
 
   return config;
 };

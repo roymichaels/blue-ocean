@@ -1,5 +1,7 @@
 {
   "expo": {
+    "entryPoint": "./index.js",
+    "platforms": ["ios", "android", "web"],
     "name": "blue-ocean",
     "slug": "blue-ocean",
     "version": "1.0.0",
@@ -17,6 +19,11 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": ["expo-router", "expo-font"],
+    "extra": {
+      "router": {
+        "appRoot": "app"
+      }
+    },
     "experiments": {
       "typedRoutes": true
     }

@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, I18nManager } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import storesAgent from '../../../agents/stores-agent';
 import productsAgent from '../../../agents/products-agent';
 import reviewAgent from '../../../agents/review-agent';
-import ProductCard from '../../../components/ProductCard';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { Store, Product } from '../../../types';
+import StoreHeader from '../../../components/store/StoreHeader';
+import StoreTabs from '../../../components/store/StoreTabs';
+import ProductGrid from '../../../components/store/ProductGrid';
 
 interface ReviewMap {
   [productId: string]: { rating: number; count: number };
 }
-
-const ITEM_HEIGHT = 150;
 
 export default function StorefrontStoreScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
@@ -21,15 +21,7 @@ export default function StorefrontStoreScreen() {
   const [score, setScore] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<ReviewMap>({});
-
-  const renderItem = ({ item }: { item: Product }) => (
-    <View style={styles.product}>
-      <ProductCard product={item} style={{ marginBottom: 4 }} />
-      <Text style={{ color: colors.text.secondary, textAlign: 'end' }}>
-        ⭐ {reviews[item.id]?.rating?.toFixed(1) || '0'} ({reviews[item.id]?.count || 0})
-      </Text>
-    </View>
-  );
+  const [tab, setTab] = useState<'products' | 'about' | 'reviews'>('products');
 
   useEffect(() => {
     let callback: ((sid: string, s: number) => void) | undefined;
@@ -67,43 +59,38 @@ export default function StorefrontStoreScreen() {
 
   if (!store) {
     return (
-      <View
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}
-      >
-        <Text style={{ color: colors.text.primary }}>Store not found</Text>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <StoreHeader name="Store not found" reputation={0} />
       </View>
     );
   }
 
   return (
-    <FlatList
-      data={products}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      ListHeaderComponent={
-        <View>
-          <Text style={[styles.name, { color: colors.text.primary }]}>{store.name}</Text>
-          <Text style={{ color: colors.text.secondary, marginBottom: 16 }}>
-            Reputation: {score.toFixed(1)}
+    <View style={[styles.container, { backgroundColor: colors.background }]}> 
+      <StoreHeader name={store.name} reputation={score} />
+      <StoreTabs active={tab} onChange={setTab} />
+      {tab === 'products' && <ProductGrid products={products} />}
+      {tab === 'about' && (
+        <View style={{ padding: 16 }}>
+          <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
+            About this store
+          </Text>
+          <Text style={{ color: colors.text.secondary }}>
+            Decentralized storefront on NEAR. Owner-managed with P2P updates via Waku.
           </Text>
         </View>
-      }
-      ListEmptyComponent={
-        <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
-          אין מוצרים זמינים
-        </Text>
-      }
-      contentContainerStyle={styles.content}
-      style={[styles.container, { backgroundColor: colors.background }]}
-      getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
-    />
+      )}
+      {tab === 'reviews' && (
+        <View style={{ padding: 16 }}>
+          <Text style={{ color: colors.text.secondary }}>Reviews coming soon.</Text>
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16 },
-  name: { fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
-  product: { marginBottom: 12 },
 });
 

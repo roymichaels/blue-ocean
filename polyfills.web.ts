@@ -34,11 +34,12 @@ try {
 
 // Keep the tslib shim to be safe on web too
 try {
-  const tslib = require('tslib/modules/index.js');
+  // Prefer the standard entry; webpack alias maps modules/index.js to a CJS shim
+  const tslib = require('tslib');
   if (tslib && !('default' in tslib)) {
     // @ts-ignore
     tslib.default = tslib;
   }
-} catch (err) {
-  debugLog('❌ tslib polyfill failed (web):', err);
+} catch {
+  // Quietly ignore; modern builds usually don't require this
 }

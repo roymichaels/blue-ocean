@@ -8,8 +8,30 @@ assertTonChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
 const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_PRODUCTS_ADDRESS') : 'ton:disabled';
+const DISABLED = ADDRESS === 'ton:disabled';
+let SEEDED = false;
+
+function ensureSeed() {
+  if (!DISABLED || SEEDED) return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const data = require('../assets/seed/seed-data.json');
+    if (data?.products) {
+      for (const p of data.products as Product[]) {
+        void setValue(ADDRESS, `${p.storeId}:${p.id}`, JSON.stringify({
+          ...p,
+          pricingTier: p.pricingTier,
+          variants: p.variants || [],
+          colors: p.colors || [],
+        }));
+      }
+    }
+  } catch {}
+  SEEDED = true;
+}
 
 export async function getProduct(storeId: string, id: string): Promise<Product | null> {
+  ensureSeed();
   const sid = requireStoreId(storeId);
   const res = await getValue(ADDRESS, `${sid}:${id}`);
   if (!res) return null;
@@ -41,6 +63,7 @@ export async function removeProduct(storeId: string, id: string) {
   await removeValue(ADDRESS, `${sid}:${id}`);
 }
 export async function listProducts(storeId: string): Promise<Product[]> {
+  ensureSeed();
   const sid = requireStoreId(storeId);
   const items = await listValues(ADDRESS);
   return items

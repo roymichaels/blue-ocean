@@ -126,7 +126,7 @@ async function main() {
       process.on('exit', cleanup);
 
       const code = await run(bin('expo'), ['start', ...process.argv.slice(3)], {
-        env: { ...process.env, EXPO_WEB_BUNDLER: 'webpack' },
+        env: { ...process.env, EXPO_WEB_BUNDLER: 'webpack', EXPO_ROUTER_APP_ROOT: 'app', EXPO_PROJECT_ROOT: root },
       });
       cleanup();
       return process.exit(code);
@@ -142,17 +142,17 @@ async function main() {
     case 'web':
       return process.exit(
         await run(bin('expo'), ['start', '--web', ...process.argv.slice(3)], {
-          env: { ...process.env, EXPO_WEB_BUNDLER: 'webpack' },
+          env: { ...process.env, EXPO_WEB_BUNDLER: 'webpack', EXPO_ROUTER_APP_ROOT: 'app', EXPO_PROJECT_ROOT: root },
         })
       );
 
     case 'build':
-      // Static web export to ./dist
+      // Static web export to ./dist (Expo SDK 50 prefers Metro for export)
       return process.exit(
         await run(
           bin('expo'),
           ['export', '--platform', 'web', '--output-dir', 'dist', ...process.argv.slice(3)],
-          { env: { ...process.env, EXPO_WEB_BUNDLER: 'webpack' } }
+          { env: { ...process.env, EXPO_WEB_BUNDLER: 'metro', EXPO_ROUTER_APP_ROOT: 'app', EXPO_PROJECT_ROOT: root } }
         )
       );
 

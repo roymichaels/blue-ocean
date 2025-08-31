@@ -1,7 +1,7 @@
 import config from './appConfig';
 
 let DEBUG_LOGS = false;
-DEBUG_LOGS = config.EXPO_PUBLIC_DEBUG_LOGS === 'true';
+DEBUG_LOGS = config.EXPO_PUBLIC_DEBUG_LOGS === 'true' || config.EXPO_PUBLIC_DEBUG_LOGS === '1';
 
 function redact(value: unknown): unknown {
   if (typeof value === 'string') {

@@ -20,6 +20,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import AppShell from '../../components/layout/AppShell';
+import LoadingView from '../../components/ui/LoadingView';
 
 export default function CategoriesScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -206,22 +208,16 @@ export default function CategoriesScreen() {
 
   if (loading && categories.length === 0) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-        <GlobalHeader showSearch={false} />
-
+      <AppShell showSearch={false}>
         <View
           style={[styles.header, { borderBottomColor: colors.border.primary }]}
         >
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
-            קטגוריות
-          </Text>
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>קטגוריות</Text>
           <View style={styles.headerActions}>
-      {isStoreOwner && (
+            {isStoreOwner && (
               <TouchableOpacity
                 style={[styles.addButton, { backgroundColor: colors.gold }]}
                 onPress={addCategory}
@@ -231,17 +227,22 @@ export default function CategoriesScreen() {
             )}
           </View>
         </View>
-
-        <LoadingSpinner />
-      </SafeAreaView>
+        <LoadingView />
+      </AppShell>
     );
   }
 
+  const fallbackCategories: Category[] = [
+    { id: 'electronics', name: 'Electronics', icon: '📱' } as any,
+    { id: 'fashion', name: 'Fashion', icon: '👗' } as any,
+    { id: 'home', name: 'Home', icon: '🏠' } as any,
+    { id: 'beauty', name: 'Beauty', icon: '💄' } as any,
+    { id: 'sports', name: 'Sports', icon: '🏀' } as any,
+    { id: 'books', name: 'Books', icon: '📚' } as any,
+  ];
+
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <GlobalHeader showSearch={false} />
+    <AppShell showSearch={false}>
 
       <View
         style={[styles.header, { borderBottomColor: colors.border.primary }]}
@@ -265,7 +266,7 @@ export default function CategoriesScreen() {
       </View>
 
       <FlatList
-        data={categories}
+        data={categories.length ? categories : fallbackCategories}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.categoryWrapper}>{renderCategory({ item })}</View>
@@ -433,7 +434,7 @@ export default function CategoriesScreen() {
         type={infoModal.type}
         onClose={() => setInfoModal({ ...infoModal, visible: false })}
       />
-    </SafeAreaView>
+    </AppShell>
   );
 }
 

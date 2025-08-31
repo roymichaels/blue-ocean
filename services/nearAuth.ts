@@ -13,9 +13,26 @@ export let modal: null = null;
 
 async function init() {
   if (!selector) {
+    // Resolve wallet URL: prefer env override, then infer from contract/network
+    const resolveNetwork = () => {
+      const explicit = process.env.EXPO_PUBLIC_NETWORK;
+      if (explicit === 'mainnet' || explicit === 'testnet') return explicit;
+      const cid = process.env.EXPO_PUBLIC_CONTRACT_ID || '';
+      return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
+    };
+
+    const getWalletUrl = () => {
+      const override = process.env.EXPO_PUBLIC_WALLET_URL;
+      if (override) return override;
+      const net = resolveNetwork();
+      return net === 'mainnet'
+        ? 'https://app.mynearwallet.com'
+        : 'https://testnet.mynearwallet.com';
+    };
+
     selector = await setupWalletSelector({
       network: 'testnet',
-      modules: [setupNearWallet()],
+      modules: [setupNearWallet({ walletUrl: getWalletUrl() })],
     });
   }
   return selector!;
@@ -25,7 +42,14 @@ export async function signIn(): Promise<void> {
   const sel = await init();
   const wallet = await sel.wallet('near-wallet');
   const contractId = process.env.EXPO_PUBLIC_CONTRACT_ID || 'example.testnet';
-  await wallet.signIn({ contractId, methodNames: [] });
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin + (window.location.pathname || '/')
+    : undefined;
+  await wallet.signIn({
+    contractId,
+    methodNames: [],
+    ...(baseUrl ? { successUrl: baseUrl, failureUrl: baseUrl } : {}),
+  });
 }
 
 export async function signOut(): Promise<void> {

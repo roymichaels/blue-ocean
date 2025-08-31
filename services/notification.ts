@@ -2,7 +2,8 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { uuid } from '../utils/uuid';
 import { Notification } from '../types';
-import notificationsAgent, { NotificationEvent } from '../agents/notifications-agent';
+import notificationsAgent from '../agents/notifications-agent';
+import type { NotificationEvent } from '../types/waku';
 
 class NotificationService {
   private static instance: NotificationService;
@@ -126,5 +127,4 @@ class NotificationService {
 }
 
 export default NotificationService;
-
-export { NotificationEvent };
+export type { NotificationEvent };

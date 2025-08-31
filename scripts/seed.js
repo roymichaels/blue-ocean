@@ -29,21 +29,25 @@ async function seed() {
   store.users.push(...users);
 
   // Stores (sellers)
-  const stores = Array.from({ length: 10 }).map(() => ({
+  const stores = Array.from({ length: 9 }).map(() => ({
     id: `store_${Date.now()}_${faker.number.int()}`,
     name: faker.company.name(),
     owner: faker.person.fullName(),
     nftId: faker.string.uuid(),
     reputation: faker.number.float({ min: 0, max: 5, precision: 0.1 }),
   }));
+  // Ensure a stable demo store for the app
+  const alpha = { id: 'alpha', name: 'Alpha Store', owner: 'demo', nftId: '', reputation: 0 };
+  stores.unshift(alpha);
   store.stores.push(...stores);
 
   // Products
   const categories = ['general', 'misc'];
-  const products = Array.from({ length: 100 }).map(() => ({
+  const products = Array.from({ length: 100 }).map((_, i) => ({
     id: `prod_${Date.now()}_${faker.number.int()}`,
     tenant_id: faker.helpers.arrayElement(tenants),
-    storeId: faker.helpers.arrayElement(stores).id,
+    // Bias first 16 products to Alpha so the demo store has visible inventory
+    storeId: i < 16 ? 'alpha' : faker.helpers.arrayElement(stores).id,
     name: faker.commerce.productName(),
     price: Number(faker.commerce.price({ min: 5, max: 100 })),
     description: faker.commerce.productDescription(),

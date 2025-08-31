@@ -1,4 +1,5 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { Alert } from 'react-native';
 import DatabaseService from '../services/database';
 import { User } from '../types';
@@ -120,7 +121,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isPlatformAdmin = role === 'platform-admin';
 
   if (!initialized) {
-    return null;
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator />
+      </View>
+    );
   }
 
   return (

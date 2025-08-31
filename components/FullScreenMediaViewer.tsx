@@ -23,12 +23,7 @@ import Animated, {
   runOnJS,
   withTiming,
 } from 'react-native-reanimated';
-import {
-  VideoView,
-  createVideoPlayer,
-  VideoContentFit,
-  type VideoPlayer,
-} from 'expo-video';
+import { VideoView, createVideoPlayer } from '../utils/video';
 import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
@@ -59,7 +54,7 @@ export default function FullScreenMediaViewer({
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  const [player, setPlayer] = useState<VideoPlayer | null>(null);
+  const [player, setPlayer] = useState<any>(null);
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 

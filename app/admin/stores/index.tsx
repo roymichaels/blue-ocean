@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '../../../contexts/ThemeContext';
 import useRequirePlatformAdmin from '../../../hooks/useRequirePlatformAdmin';
 import chain from '../../../services/chain';
 import { Store } from '../../../types';
+import AdminShell from '../../../components/admin/AdminShell';
+import AdminList, { AdminListItem } from '../../../components/admin/AdminList';
 
 let listStores: (() => Promise<Store[]>) | undefined;
 if (chain === 'ton') {
@@ -22,25 +24,17 @@ export default function AdminStores() {
     }
   }, []);
 
+  const items: AdminListItem[] = stores.map((s) => ({
+    id: s.id,
+    title: s.name || s.id,
+    onPress: () => router.push(`/admin/stores/${s.id}`),
+  }));
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}> 
-      {stores.map((s) => (
-        <TouchableOpacity
-          key={s.id}
-          style={[styles.item, { borderColor: colors.border.primary }]}
-          onPress={() => router.push(`/admin/stores/${s.id}`)}
-        >
-          <Text style={{ color: colors.text.primary }}>{s.name || s.id}</Text>
-        </TouchableOpacity>
-      ))}
-      {stores.length === 0 && (
-        <Text style={{ color: colors.text.secondary }}>No stores found.</Text>
-      )}
-    </View>
+    <AdminShell title="Stores">
+      <AdminList items={items} emptyText="No stores found." />
+    </AdminShell>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  item: { padding: 12, borderWidth: 1, borderRadius: 8, marginBottom: 8 },
-});
+// Styles removed: superseded by AdminShell/AdminList reusable components

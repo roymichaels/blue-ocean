@@ -1,139 +1,41 @@
-// app/_layout.tsx
-
-// normal imports:
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, Platform, StyleSheet } from 'react-native';
-import { Stack, router, usePathname } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useFrameworkReady } from '../hooks/useFrameworkReady';
-import { initNear } from '../services/near';
-import commonStyles from '../constants/styles';
-
-import AdminNotificationBanner from '../components/AdminNotificationBanner';
-import { NotificationProvider } from '../components/NotificationContext';
-import { AuthProvider, useAuth } from '../components/AuthContext';
-import {
-  AuthModalProvider,
-  useAuthModal,
-} from '../components/AuthModalContext';
-import { LanguageProvider } from '../contexts/LanguageContext';
-import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
-import { CurrencyProvider } from '../contexts/CurrencyContext';
-import { AppInfoProvider } from '../contexts/AppInfoContext';
-import AgeVerificationModal from '../components/AgeVerificationModal';
-import CartModal from '../components/CartModal';
-import ChatWidget from '../components/ChatWidget';
-import { ConfigProvider } from '../contexts/ConfigContext';
-import { TenantProvider } from '../contexts/TenantContext';
-import { requireEnv } from '../utils/appConfig';
-import '../services/chain';
-
-requireEnv('EXPO_PUBLIC_CHAIN');
-
-function AppContent() {
-  const [showCartModal, setShowCartModal] = useState(false);
-  const { colors, theme } = useTheme();
-  const { isAdmin, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <View
-        style={[styles.centered, { backgroundColor: colors.background }]}
-      >
-        <ActivityIndicator size="large" color={colors.gold} />
-      </View>
-    );
-  }
-
-  return (
-    <GestureHandlerRootView style={commonStyles.flex1}>
-      <AgeVerificationModal />
-      {isAdmin && <AdminNotificationBanner />}
-
-      <Stack style={{ flex: 1 }} screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="product/[id]" />
-        <Stack.Screen name="category/[id]" />
-        <Stack.Screen name="subcategory/[id]" />
-        <Stack.Screen name="user/[id]" />
-        <Stack.Screen name="driver-dashboard" />
-        <Stack.Screen name="reviews/index" options={{ title: 'Reviews' }} />
-        <Stack.Screen name="admin" />
-        <Stack.Screen
-          name="kyc/index"
-          options={{ title: 'KYC Verification' }}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-
-      <ChatWidget />
-
-      <CartModal
-        visible={showCartModal}
-        onClose={() => setShowCartModal(false)}
-      />
-
-      <StatusBar
-        style={theme === 'dark' ? 'light' : 'dark'}
-        backgroundColor={colors.background}
-      />
-    </GestureHandlerRootView>
-  );
-}
+import { Tabs } from "expo-router";
+import * as Lucide from 'lucide-react-native';
+import { ConfigProvider } from "../contexts/ConfigContext";
+import { AuthProvider } from "../components/AuthContext";
+import { AuthModalProvider } from "../components/AuthModalContext";
+import { TenantProvider } from "../contexts/TenantContext";
+import { AppInfoProvider } from "../contexts/AppInfoContext";
+import { ThemeProvider } from "../contexts/ThemeContext";
+import { LanguageProvider } from "../contexts/LanguageContext";
+import { CurrencyProvider } from "../contexts/CurrencyContext";
+import { NotificationProvider } from "../components/NotificationContext";
 
 export default function RootLayout() {
-  useFrameworkReady();
-
-  useEffect(() => {
-    initNear();
-  }, []);
-
   return (
     <ConfigProvider>
       <AuthProvider>
         <AuthModalProvider>
-          <RootLayoutInner />
+          <TenantProvider>
+            <AppInfoProvider>
+              <ThemeProvider>
+                <LanguageProvider>
+                  <CurrencyProvider>
+                    <NotificationProvider>
+                      <Tabs screenOptions={{ headerShown: false }}>
+                        <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ size, color }) => <Lucide.Home size={size} color={color} /> }} />
+                        <Tabs.Screen name="categories" options={{ title: 'Categories', tabBarIcon: ({ size, color }) => <Lucide.Grid3x3 size={size} color={color} /> }} />
+                        <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarIcon: ({ size, color }) => <Lucide.Package size={size} color={color} /> }} />
+                        <Tabs.Screen name="notifications" options={{ title: 'Notifications', tabBarIcon: ({ size, color }) => <Lucide.Bell size={size} color={color} /> }} />
+                        <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({ size, color }) => <Lucide.User size={size} color={color} /> }} />
+                      </Tabs>
+                    </NotificationProvider>
+                  </CurrencyProvider>
+                </LanguageProvider>
+              </ThemeProvider>
+            </AppInfoProvider>
+          </TenantProvider>
         </AuthModalProvider>
       </AuthProvider>
     </ConfigProvider>
   );
 }
-
-function RootLayoutInner() {
-  const { isLoggedIn } = useAuth();
-  const { openAuthModal } = useAuthModal();
-  const pathname = usePathname();
-  useEffect(() => {
-    if (!isLoggedIn) {
-      openAuthModal('signup');
-      if (pathname !== '/') {
-        router.replace('/');
-      }
-    }
-  }, [isLoggedIn, pathname, openAuthModal]);
-
-  return (
-    <TenantProvider>
-      <AppInfoProvider>
-        <ThemeProvider>
-          <LanguageProvider>
-            <CurrencyProvider>
-              <NotificationProvider>
-                <AppContent />
-              </NotificationProvider>
-            </CurrencyProvider>
-          </LanguageProvider>
-        </ThemeProvider>
-      </AppInfoProvider>
-    </TenantProvider>
-  );
-}
-
-const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

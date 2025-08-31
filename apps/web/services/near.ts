@@ -10,9 +10,25 @@ export async function initNear() {
   }
 
   try {
+    const resolveNetwork = () => {
+      const explicit = process.env.EXPO_PUBLIC_NETWORK;
+      if (explicit === 'mainnet' || explicit === 'testnet') return explicit;
+      const cid = process.env.EXPO_PUBLIC_CONTRACT_ID || '';
+      return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
+    };
+
+    const getWalletUrl = () => {
+      const override = process.env.EXPO_PUBLIC_WALLET_URL;
+      if (override) return override;
+      const net = resolveNetwork();
+      return net === 'mainnet'
+        ? 'https://app.mynearwallet.com'
+        : 'https://testnet.mynearwallet.com';
+    };
+
     selector = await setupWalletSelector({
       network: 'testnet',
-      modules: [setupNearWallet()],
+      modules: [setupNearWallet({ walletUrl: getWalletUrl() })],
     });
   } catch (e: any) {
     initError = e instanceof Error ? e : new Error(String(e));

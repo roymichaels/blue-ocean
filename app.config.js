@@ -4,5 +4,6 @@ module.exports = {
   experiments: { web: { fastRefresh: false } },
   router: {
     history: 'hash',
+    appRoot: 'app',
   },
 };

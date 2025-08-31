@@ -83,6 +83,20 @@ export default function HomeScreen() {
   const { colors } = useTheme();
   const bannerScrollRef = useRef<ScrollView>(null);
 
+  // Fallback content to guarantee a rich homepage even with empty services
+  const fallbackCategories: Category[] = [
+    { id: 'electronics', name: 'Electronics', icon: '📱' } as any,
+    { id: 'fashion', name: 'Fashion', icon: '👗' } as any,
+    { id: 'home', name: 'Home', icon: '🏠' } as any,
+    { id: 'beauty', name: 'Beauty', icon: '💄' } as any,
+    { id: 'sports', name: 'Sports', icon: '🏀' } as any,
+    { id: 'books', name: 'Books', icon: '📚' } as any,
+  ];
+  const fallbackBanners: Partial<HeroBanner & { id: string }>[] = [
+    { id: 'b1', image: '', title: 'Welcome to Blue Ocean', subtitle: 'Own your store on NEAR' },
+    { id: 'b2', image: '', title: 'Decentralized by design', subtitle: 'Fast, P2P and secure' },
+  ];
+
   useEffect(() => {
     loadData();
   }, []);

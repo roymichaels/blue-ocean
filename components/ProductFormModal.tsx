@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Image,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
@@ -28,7 +29,8 @@ let setProductBatch:
 if (chain === 'ton') {
   ({ setProductBatch } = require('../services/tonProductIndex'));
 }
-import { Video } from 'expo-video';
+// Note: Avoid importing expo-video on web — it can break bundling if APIs differ.
+// We'll lazily require react-native-video on native platforms for preview.
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
@@ -381,12 +383,42 @@ export default function ProductFormModal({
                 textAlign="end"
               />
               {videoPreview ? (
-                <Video
-                  source={{ uri: toHttpUrl(videoPreview) }}
-                  style={styles.mediaPreview}
-                  useNativeControls
-                  isLooping
-                />
+                Platform.OS === 'web' ? (
+                  <View
+                    style={[
+                      styles.mediaPreview,
+                      {
+                        backgroundColor: colors.surface.secondary,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      },
+                    ]}
+                  >
+                    <Text style={{ color: colors.text.tertiary }}>
+                      Video preview not supported on web
+                    </Text>
+                  </View>
+                ) : (
+                  (() => {
+                    try {
+                      const RNVideo = require('react-native-video').default;
+                      return (
+                        <RNVideo
+                          source={{ uri: toHttpUrl(videoPreview) }}
+                          style={styles.mediaPreview}
+                          controls
+                          repeat
+                          muted
+                          resizeMode="contain"
+                        />
+                      );
+                    } catch (e) {
+                      return (
+                        <View style={[styles.mediaPreview, { backgroundColor: colors.surface.secondary }]} />
+                      );
+                    }
+                  })()
+                )
               ) : (
                 <View style={[styles.mediaPreview, { backgroundColor: colors.surface.secondary }]} />
               )}

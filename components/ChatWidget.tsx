@@ -1,7 +1,15 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
-import { Audio } from 'expo-audio';
+// Use a platform-specific audio wrapper to avoid bundling expo-audio on web
+import {
+  createAudioPlayer,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+  RecordingPresets,
+  PLAYBACK_STATUS_UPDATE,
+  AudioRecorderConstructor,
+} from '../utils/audio';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, X } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -23,7 +31,7 @@ import { decryptMessage } from '../utils/chatCrypto';
 import chatAgent from '../agents/chat-agent';
 import { isChatConfigured } from '../services/chatConfig';
 
-export default function ChatWidget() {
+function ChatWidgetInner() {
   const CHAT_ONBOARDED_KEY = 'chat_onboarded';
   const [isOpen, setIsOpen] = useState(false);
   const { colors } = useTheme();
@@ -31,11 +39,11 @@ export default function ChatWidget() {
   const recordingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const messagesEndRef = useRef<FlatList<ChatMessage>>(null);
   const [defaultRoomId, setDefaultRoomId] = useState<string | null>(null);
-  const messageSoundRef = useRef<Audio.AudioPlayer | null>(null);
+  const messageSoundRef = useRef<any>(null);
   const lastTimestampRef = useRef(0);
   const isMounted = useRef(true);
   const [pinataConfigured, setPinataConfigured] = useState(true);
-  const [recording, setRecording] = useState<Audio.AudioRecorder | null>(null);
+  const [recording, setRecording] = useState<any>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [showReactions, setShowReactions] = useState<string | null>(null);
@@ -47,8 +55,13 @@ export default function ChatWidget() {
     displayName: string;
     chatPublicKey?: string;
   }[]>([]);
-  const playingAudioRef = useRef<Record<string, Audio.AudioPlayer>>({});
+  const playingAudioRef = useRef<Record<string, any>>({});
   const playingAudio = playingAudioRef.current;
+  const setPlayingAudio = (
+    updater: (prev: Record<string, any>) => Record<string, any>,
+  ) => {
+    playingAudioRef.current = updater(playingAudioRef.current);
+  };
   // Modal states
   const [infoModal, setInfoModal] = useState({
     visible: false,
@@ -136,14 +149,18 @@ export default function ChatWidget() {
   }, [isLoggedIn, isAdmin, isDriver, defaultRoomId, isOpen, selectedRoom]);
 
   useEffect(() => {
+    // Skip loading sound on web; Audio API and bundling can fail or be blocked
+    if (Platform.OS === 'web') {
+      return () => {
+        isMounted.current = false;
+      };
+    }
     const loadSound = async () => {
       try {
-        const player = Audio.createAudioPlayer(
-          require('../assets/sounds/message.mp3')
-        );
+        const player = createAudioPlayer(require('../assets/sounds/message.mp3'));
         messageSoundRef.current = player;
       } catch (err) {
-        errorLog('Failed to load message sound', err);
+        console.warn('Message sound unavailable:', err);
       }
     };
     loadSound();
@@ -521,7 +538,7 @@ const loadOrCreateDefaultRoom = async () => {
         return;
       }
 
-      const permission = await Audio.requestRecordingPermissionsAsync();
+      const permission = await requestRecordingPermissionsAsync();
       if (permission.status !== 'granted') {
         if (isMounted.current) {
           setInfoModal({
@@ -534,13 +551,13 @@ const loadOrCreateDefaultRoom = async () => {
         return;
       }
 
-      await Audio.setAudioModeAsync({
+      await setAudioModeAsync({
         allowsRecording: true,
         playsInSilentMode: true,
       });
 
-      const newRecording = new Audio.AudioRecorder(
-        Audio.RecordingPresets.HIGH_QUALITY
+      const newRecording = new AudioRecorderConstructor(
+        RecordingPresets.HIGH_QUALITY
       );
       newRecording.record();
 
@@ -679,7 +696,7 @@ const loadOrCreateDefaultRoom = async () => {
         return;
       }
 
-      const sound = Audio.createAudioPlayer({ uri: audioUri });
+      const sound = createAudioPlayer({ uri: audioUri });
 
       if (isMounted.current) {
         setPlayingAudio((prev) => ({ ...prev, [messageId]: sound }));
@@ -687,7 +704,7 @@ const loadOrCreateDefaultRoom = async () => {
 
       sound.play();
 
-      sound.addListener(Audio.PLAYBACK_STATUS_UPDATE, (status: any) => {
+      sound.addListener(PLAYBACK_STATUS_UPDATE, (status: any) => {
         if (status.isLoaded && status.didJustFinish) {
           if (isMounted.current) {
             setPlayingAudio((prev) => {
@@ -828,6 +845,13 @@ const loadOrCreateDefaultRoom = async () => {
       </Modal>
     </>
   );
+}
+
+export default function ChatWidget() {
+  if (Platform.OS === 'web') {
+    return null;
+  }
+  return <ChatWidgetInner />;
 }
 
 const styles = StyleSheet.create({

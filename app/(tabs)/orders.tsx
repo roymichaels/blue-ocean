@@ -14,7 +14,8 @@ import { useAuth } from '../../components/AuthContext';
 import OrderService from '../../services/orders';
 import { Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
-import GlobalHeader from '../../components/GlobalHeader';
+import AppShell from '../../components/layout/AppShell';
+import EmptyView from '../../components/ui/EmptyView';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
@@ -183,47 +184,22 @@ export default function OrdersScreen() {
 
   const renderEmpty = () => (
     isLoggedIn ? (
-      <View style={styles.emptyState}>
-        <Package size={80} color={colors.interactive.disabled} />
-        <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
-          {t('orders.emptyTitle')}
-        </Text>
-        <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}> 
-          {t('orders.emptyMessage')}
-        </Text>
-        <TouchableOpacity
-          style={[styles.shopButton, { backgroundColor: colors.gold }]}
-          onPress={() => router.push('/(tabs)')}
-        >
-          <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}> 
-            {t('orders.shopNow')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <EmptyView
+        title={t('orders.emptyTitle') as string}
+        subtitle={t('orders.emptyMessage') as string}
+        cta={{ label: t('orders.shopNow') as string, onPress: () => router.push('/(tabs)') }}
+      />
     ) : (
-      <View style={styles.emptyState}>
-        <Package size={80} color={colors.interactive.disabled} />
-        <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
-          {t('orders.loginRequiredTitle')}
-        </Text>
-        <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}> 
-          {t('orders.loginRequiredMessage')}
-        </Text>
-        <TouchableOpacity
-          style={[styles.shopButton, { backgroundColor: colors.gold }]}
-          onPress={handleLogin}
-        >
-          <Text style={[styles.shopButtonText, { color: colors.text.inverse }]}> 
-            {t('auth.login')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <EmptyView
+        title={t('orders.loginRequiredTitle') as string}
+        subtitle={t('orders.loginRequiredMessage') as string}
+        cta={{ label: t('auth.login') as string, onPress: handleLogin }}
+      />
     )
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <GlobalHeader showSearch={false} />
+    <AppShell showSearch={false}>
       
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -262,7 +238,7 @@ export default function OrdersScreen() {
         type={infoModal.type}
         onClose={() => setInfoModal({...infoModal, visible: false})}
       />
-    </SafeAreaView>
+    </AppShell>
   );
 }
 

@@ -15,7 +15,9 @@ import { Notification } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import GlobalHeader from '../../components/GlobalHeader';
+import AppShell from '../../components/layout/AppShell';
+import LoadingView from '../../components/ui/LoadingView';
+import EmptyView from '../../components/ui/EmptyView';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
 
@@ -229,8 +231,7 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <GlobalHeader showSearch={false} />
+    <AppShell showSearch={false}>
       
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{t('notifications.notifications')}</Text>
@@ -289,24 +290,13 @@ export default function NotificationsScreen() {
       </View>
 
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.gold} />
-          <Text style={[styles.loadingText, { color: colors.text.primary }]}>{t('notifications.loadingNotifications')}</Text>
-        </View>
+        <LoadingView message={t('notifications.loadingNotifications') as string} />
       ) : !isLoggedIn ? (
-        <View style={styles.emptyContainer}>
-          <Bell size={80} color={colors.interactive.disabled} />
-          <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>{t('auth.loginRequired')}</Text>
-          <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
-            {t('auth.loginToView')}
-          </Text>
-          <TouchableOpacity 
-            style={[styles.loginButton, { backgroundColor: colors.gold }]} 
-            onPress={handleLogin}
-          >
-            <Text style={[styles.loginButtonText, { color: colors.text.inverse }]}>{t('auth.login')}</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyView
+          title={t('auth.loginRequired') as string}
+          subtitle={t('auth.loginToView') as string}
+          cta={{ label: t('auth.login') as string, onPress: handleLogin }}
+        />
       ) : filteredNotifications.length > 0 ? (
         <ScrollView
           style={styles.notificationsList}
@@ -315,15 +305,10 @@ export default function NotificationsScreen() {
           {filteredNotifications.map(renderNotification)}
         </ScrollView>
       ) : (
-        <View style={styles.emptyContainer}>
-          <Bell size={80} color={colors.interactive.disabled} />
-          <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>{t('notifications.noNotifications')}</Text>
-          <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
-            {activeTab === 'all' 
-              ? t('notifications.noNotificationsYet')
-              : t('notifications.noUnreadNotifications')}
-          </Text>
-        </View>
+        <EmptyView
+          title={t('notifications.noNotifications') as string}
+          subtitle={(activeTab === 'all' ? t('notifications.noNotificationsYet') : t('notifications.noUnreadNotifications')) as string}
+        />
       )}
 
       {/* Info Modal */}
@@ -334,7 +319,7 @@ export default function NotificationsScreen() {
         type={infoModal.type}
         onClose={() => setInfoModal({...infoModal, visible: false})}
       />
-    </SafeAreaView>
+    </AppShell>
   );
 }
 

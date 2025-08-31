@@ -73,9 +73,12 @@ let node: LightNode | null = null;
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
+    if ((process.env.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
+      return null;
+    }
     const bootstrap = getWakuBootstrapNodes();
     if (bootstrap.length === 0) {
-      throw new Error('No Waku bootstrap nodes configured');
+      return null;
     }
     node = await createLightNode({ libp2p: { bootstrap } as any });
     await node.start();
