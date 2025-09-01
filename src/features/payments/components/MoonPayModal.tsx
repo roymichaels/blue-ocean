@@ -9,9 +9,9 @@ interface MoonPayModalProps {
   visible: boolean;
   onClose: () => void;
   walletAddress: string;
-  coin: 'eth' | 'usdt' | 'usdc' | 'ton';
+  coin: 'eth' | 'usdt' | 'usdc' | 'near';
   amountUSD?: number;
-  amountTON?: number;
+  amountNEAR?: number;
 }
 
 export default function MoonPayModal({
@@ -20,7 +20,7 @@ export default function MoonPayModal({
   walletAddress,
   coin,
   amountUSD,
-  amountTON,
+  amountNEAR,
 }: MoonPayModalProps) {
   const { colors } = useTheme();
   const { fiatKey, feeAddress, feeBps } = useAppInfo();
@@ -36,13 +36,13 @@ export default function MoonPayModal({
     `https://buy.moonpay.com?apiKey=${fiatKey}&currencyCode=${coin}&walletAddress=${walletAddress}&baseCurrencyCode=usd${feeParams}`;
 
   let injectedJavaScript: string | undefined;
-  if (typeof amountTON === 'number') {
+  if (typeof amountNEAR === 'number') {
     injectedJavaScript = `
     setTimeout(function() {
       var input = document.querySelector('input[name="quote-amount-input"], input[name="quoteAmount"], input[name="digital-amount-input"]');
       if (input) {
         var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-        nativeInputValueSetter.call(input, '${amountTON}');
+        nativeInputValueSetter.call(input, '${amountNEAR}');
         var ev = new Event('input', { bubbles: true });
         input.dispatchEvent(ev);
       }

@@ -15,17 +15,17 @@ jest.mock('../services/localIdentity', () => ({
   getPublicKeyHex: () => 'chat_pub',
 }));
 
-jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
-import { __clear } from './tonKvMock';
+jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
+import { __clear } from './nearKvMock';
 import { setAdmins } from '../services/nearSettings';
 
-describe('UsersAgent TON integration', () => {
+describe('UsersAgent NEAR integration', () => {
   beforeEach(() => {
     __clear();
     void setAdmins(['addr_admin'], 'addr_admin');
   });
 
-  it('adds and retrieves users via TON service', async () => {
+  it('adds and retrieves users via NEAR service', async () => {
     const user: any = {
       id: 'u1',
       username: 'alice',

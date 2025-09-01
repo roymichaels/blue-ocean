@@ -6,13 +6,13 @@ import {
   listReports,
   removeReport,
 } from '@/features/reviews/services/nearReports';
-import ensureTonWallet from '@/utils/ensureTonWallet';
+import ensureNearWallet from '@/utils/ensureNearWallet';
 
 assertNearChain();
 
 class ModerationAgent {
   private async ensureWallet() {
-    const { address } = await ensureTonWallet(
+    const { address } = await ensureNearWallet(
       'Please connect your NEAR wallet to report items.',
     );
     return { address };

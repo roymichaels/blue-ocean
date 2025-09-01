@@ -7,7 +7,7 @@ import {
   setAdmins as storeAdmins,
   subscribeToSettingsWrites,
 } from '../services/nearSettings';
-import ensureTonWallet from '../utils/ensureTonWallet';
+import ensureNearWallet from '../utils/ensureNearWallet';
 
 assertNearChain();
 
@@ -40,7 +40,7 @@ class SettingsAgent {
   }
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your NEAR wallet to manage settings.');
+    await ensureNearWallet('Please connect your NEAR wallet to manage settings.');
   }
 
   async set(key: string, value: string): Promise<void> {

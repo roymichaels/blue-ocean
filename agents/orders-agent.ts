@@ -24,7 +24,7 @@ assertNearChain();
 import { encryptShippingInfo } from '../utils/shippingCrypto';
 import { sha256 } from '@noble/hashes/sha256';
 import { logOrderEvent } from '../services/eventLog';
-import ensureTonWallet from '../utils/ensureTonWallet';
+import ensureNearWallet from '../utils/ensureNearWallet';
 import eventBus from '../services/eventBus';
 import { errorLog, warnLog } from '../utils/logger';
 import {
@@ -181,7 +181,7 @@ class OrdersAgent {
   }
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your NEAR wallet to manage orders.');
+    await ensureNearWallet('Please connect your NEAR wallet to manage orders.');
   }
 
   private async ensureAuthorized(order: Order) {

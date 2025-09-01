@@ -24,7 +24,7 @@ import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
 const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_SETTINGS_CONTRACT') : 'near:disabled';
 
-const TEST_ADMIN = 'EQtestadmin';
+const TEST_ADMIN = 'testadmin.near';
 const NETWORK =
   (config.NEAR_NETWORK || process.env.NEAR_NETWORK || 'mainnet').toLowerCase();
 const legacyAdmin =
@@ -49,7 +49,7 @@ function assertAdmin(actor: string): void {
   }
 }
 
-export interface TonSettings {
+export interface NearSettings {
   tenantId: string;
   appName: string;
   theme: { primary: string };
@@ -172,7 +172,7 @@ export async function listSettings(): Promise<{ key: string; value: string }[]> 
   return await listValues(ADDRESS);
 }
 
-export async function fetchSettings(): Promise<TonSettings> {
+export async function fetchSettings(): Promise<NearSettings> {
   const entries = await listSettings();
   const map: Record<string, string> = {};
   for (const { key, value } of entries) {

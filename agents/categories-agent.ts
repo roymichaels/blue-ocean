@@ -6,13 +6,13 @@ import {
   listCategories,
   removeCategory,
 } from '@/features/products/services/nearCategories';
-import ensureTonWallet from '@/utils/ensureTonWallet';
+import ensureNearWallet from '@/utils/ensureNearWallet';
 
 assertNearChain();
 
 class CategoriesAgent {
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your NEAR wallet to manage categories.');
+    await ensureNearWallet('Please connect your NEAR wallet to manage categories.');
   }
 
   async add(item: Category): Promise<void> {

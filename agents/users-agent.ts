@@ -8,7 +8,7 @@ import {
 } from '@/features/auth/services/nearUsers';
 import { getPublicKeyHex } from '@/services/localIdentity';
 import SettingsAgent from './settings-agent';
-import ensureTonWallet from '@/utils/ensureTonWallet';
+import ensureNearWallet from '@/utils/ensureNearWallet';
 import validateNearAddress from '@/utils/validateNearAddress';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 import type { WakuMessage } from '@/types/waku';
@@ -27,7 +27,7 @@ export type UsersAgentMessage =
 
 class UsersAgent {
   private async ensureWallet() {
-    return ensureTonWallet('Please connect your NEAR wallet to manage users.');
+    return ensureNearWallet('Please connect your NEAR wallet to manage users.');
   }
 
   async add(user: User): Promise<void> {

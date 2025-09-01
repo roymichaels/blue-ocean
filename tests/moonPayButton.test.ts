@@ -16,8 +16,8 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   useAccountId: jest.fn(() => 'addr'),
 }));
 
-const modalMock = jest.fn(({ visible, amountTON, amountUSD }: any) =>
-  visible ? React.createElement('MoonPayModal', { amountTON, amountUSD }) : null,
+const modalMock = jest.fn(({ visible, amountNEAR, amountUSD }: any) =>
+  visible ? React.createElement('MoonPayModal', { amountNEAR, amountUSD }) : null,
 );
 
 jest.mock('@/features/payments/components/MoonPayModal', () => ({
@@ -32,7 +32,7 @@ describe('MoonPayButton', () => {
     }
   });
 
-  it('computes TON amount and renders modal', async () => {
+  it('computes NEAR amount and renders modal', async () => {
     const { useAppInfo } = require('../contexts/AppInfoContext');
     (useAppInfo as jest.Mock).mockReturnValue({
       fiatKey: 'key',
@@ -40,7 +40,7 @@ describe('MoonPayButton', () => {
     });
 
     global.fetch = jest.fn(() =>
-      Promise.resolve({ json: () => Promise.resolve({ 'the-open-network': { usd: 2 } }) }),
+      Promise.resolve({ json: () => Promise.resolve({ near: { usd: 2 } }) }),
     ) as any;
 
     let root: renderer.ReactTestRenderer;
@@ -52,7 +52,7 @@ describe('MoonPayButton', () => {
       await button.props.onPress();
     });
     const call = modalMock.mock.calls.find((c) => c[0].visible);
-    expect(call && call[0].amountTON).toBe(3);
+    expect(call && call[0].amountNEAR).toBe(3);
   });
 
   it('renders nothing without moonpay key', async () => {

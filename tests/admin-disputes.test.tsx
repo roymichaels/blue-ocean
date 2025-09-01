@@ -14,7 +14,7 @@ jest.mock('../services/nearContract', () => ({
 
 jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
 jest.mock('@/features/auth/services/nearAuth', () => ({
-  getAccountId: jest.fn().mockReturnValue('EQtestadmin'),
+  getAccountId: jest.fn().mockReturnValue('testadmin.near'),
   signIn: jest.fn(),
 }));
 
@@ -35,7 +35,7 @@ describe('OrderService.resolveDispute', () => {
       trackingSteps: [],
       items: [],
       total: 0,
-      paymentMethod: 'ton',
+      paymentMethod: 'near',
       itemsHash: '',
       createdAt: '',
       updatedAt: '',
@@ -56,7 +56,7 @@ describe('OrderService.resolveDispute', () => {
       trackingSteps: [],
       items: [],
       total: 0,
-      paymentMethod: 'ton',
+      paymentMethod: 'near',
       itemsHash: '',
       createdAt: '',
       updatedAt: '',

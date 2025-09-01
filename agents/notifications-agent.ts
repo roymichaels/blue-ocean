@@ -18,7 +18,7 @@ import {
   utf8ToBytes,
 } from '@waku/sdk';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
-import ensureTonWallet from '../utils/ensureTonWallet';
+import ensureNearWallet from '../utils/ensureNearWallet';
 import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';
 
@@ -27,7 +27,7 @@ class NotificationsAgent {
   private node: LightNode | null = null;
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your NEAR wallet to send notifications.');
+    await ensureNearWallet('Please connect your NEAR wallet to send notifications.');
   }
 
   async add(item: Notification, storeId = 'default'): Promise<void> {
