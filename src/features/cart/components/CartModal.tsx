@@ -39,12 +39,12 @@ const MoonPayButton = require('@/features/payments/components/MoonPayButton').de
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import commonStyles from '@/constants/styles';
-import { useCurrency } from '../contexts/CurrencyContext';
-import { useNotifications } from './NotificationContext';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useNotifications } from '@/components/NotificationContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { router } from 'expo-router';
-import InfoModal from './InfoModal';
-import ConfirmationModal from './ConfirmationModal';
+import InfoModal from '@/components/InfoModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 interface CartModalProps {
   visible: boolean;
