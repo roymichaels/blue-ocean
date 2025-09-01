@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
@@ -15,6 +15,23 @@ import { useAccountId } from '@/features/auth/services/nearAuth';
 import { useAuth } from '@/features/auth/AuthContext';
 
 const ITEM_HEIGHT = 200;
+
+interface ProductItemProps {
+  product: Product;
+  onEdit: (p: Product) => void;
+  onDelete: (id: string) => void;
+}
+
+const ProductItem = React.memo(({ product, onEdit, onDelete }: ProductItemProps) => (
+  <TouchableOpacity style={{ marginBottom: 12 }}>
+    <ProductCard
+      product={product}
+      isOwner
+      onEdit={() => onEdit(product)}
+      onDelete={onDelete}
+    />
+  </TouchableOpacity>
+));
 
 export default function StoreProductsScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
@@ -34,22 +51,29 @@ export default function StoreProductsScreen() {
     load();
   }, [storeId, address, isStoreOwner]);
 
-  const openForm = (p?: Product) => {
+  const openForm = useCallback((p?: Product) => {
     setEditingProduct(p || null);
     setFormVisible(true);
-  };
+  }, []);
 
-  const handleSaved = (p: Product, isNew: boolean) => {
+  const handleSaved = useCallback((p: Product, isNew: boolean) => {
     if (isNew) {
       setProducts((prev) => [...prev, p]);
     } else {
       setProducts((prev) => prev.map((prod) => (prod.id === p.id ? p : prod)));
     }
-  };
+  }, []);
 
-  const handleDeleted = (productId: string) => {
+  const handleDeleted = useCallback((productId: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
-  };
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Product }) => (
+      <ProductItem product={item} onEdit={openForm} onDelete={handleDeleted} />
+    ),
+    [openForm, handleDeleted]
+  );
 
   if (!isStoreOwner || address !== storeId) {
     return (
@@ -79,21 +103,13 @@ export default function StoreProductsScreen() {
       <FlatList
         data={products}
         keyExtractor={(p) => p.id}
-        renderItem={({ item: p }) => (
-          <TouchableOpacity style={{ marginBottom: 12 }}>
-            <ProductCard
-              product={p}
-              isOwner
-              onEdit={() => openForm(p)}
-              onDelete={(id) => handleDeleted(id)}
-            />
-          </TouchableOpacity>
-        )}
+        renderItem={renderItem}
         ListEmptyComponent={
           <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>אין מוצרים</Text>
         }
         contentContainerStyle={styles.list}
         getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+        removeClippedSubviews
       />
       <ProductFormModal
         visible={formVisible}

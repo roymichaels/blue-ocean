@@ -1,10 +1,11 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   TouchableOpacity,
   Modal,
   TextInput,
@@ -42,6 +43,7 @@ const validateParams = createValidateParams(z.object({ id: z.string() }));
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 32 - 8) / 2;
 const IMAGE_HEIGHT = 140;
+const ITEM_HEIGHT = IMAGE_HEIGHT + 160;
 
 
 interface MediaItem {
@@ -51,10 +53,117 @@ interface MediaItem {
   name?: string;
 }
 
+interface ProductItemProps {
+  product: Product;
+  currencySymbol: string;
+  pricingTiers: PricingTier[];
+  isStoreOwner: boolean;
+  onPress: () => void;
+  onEdit: (p: Product) => void;
+}
+
+const ProductItem = React.memo(
+  ({ product, currencySymbol, pricingTiers, isStoreOwner, onPress, onEdit }: ProductItemProps) => {
+    const { colors } = useTheme();
+
+    return (
+      <Card
+        Component={TouchableOpacity}
+        style={[
+          styles.productCard,
+          { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+        ]}
+        onPress={onPress}
+      >
+        <View style={styles.productImageContainer}>
+          {product.images && product.images.length > 0 ? (
+            <SmartImage
+              uri={product.images[0]}
+              width={CARD_WIDTH}
+              height={IMAGE_HEIGHT}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={styles.noImageContainer}>
+              <Text style={styles.noImageText}>אין תמונה</Text>
+            </View>
+          )}
+
+          {/* Favorite Button */}
+          <TouchableOpacity style={styles.favoriteButton}>
+            <Heart size={16} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          {/* Admin Actions */}
+          {isStoreOwner && (
+            <View style={styles.adminActions}>
+              <TouchableOpacity
+                style={styles.adminActionButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onEdit(product);
+                }}
+              >
+                <Pencil size={12} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.productInfo}>
+          <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={2}>
+            {product.name}
+          </Text>
+
+          <View style={styles.priceContainer}>
+            <Text style={[styles.currentPrice, { color: colors.gold }]}>
+              {currencySymbol}
+              {product.price.toFixed(2)}
+            </Text>
+            {product.originalPrice && (
+              <Text style={[styles.originalPrice, { color: colors.text.tertiary }]}>
+                {currencySymbol}
+                {product.originalPrice.toFixed(2)}
+              </Text>
+            )}
+          </View>
+
+          {product.pricingTier && (
+            <View style={styles.pricingTierContainer}>
+              <Text style={[styles.pricingTierText, { color: colors.text.secondary }]}>
+                {
+                  pricingTiers.find((tier) => tier.id === product.pricingTier)?.name ||
+                  product.pricingTier
+                }
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.stockContainer}>
+            <View
+              style={[
+                styles.stockIndicator,
+                {
+                  backgroundColor:
+                    product.stock > 0 ? colors.status.success : colors.status.error,
+                },
+              ]}
+            />
+            <Text style={[styles.stockText, { color: colors.text.secondary }]}>
+              {product.stock > 0 ? `במלאי (${product.stock})` : 'אזל מהמלאי'}
+            </Text>
+          </View>
+        </View>
+      </Card>
+    );
+  }
+);
+
 export default function SubcategoryScreen() {
   const { push, back } = useAppRouter();
   const params = validateParams(useLocalSearchParams());
   const id = params.success ? params.data.id : undefined;
+  const invalidParams = !params.success;
   const [subcategory, setSubcategory] = useState<Subcategory | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -131,13 +240,6 @@ export default function SubcategoryScreen() {
     }
   }, [newProduct.category, categories]);
 
-  if (!params.success) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
-        <Text style={{ color: colors.text.primary }}>Invalid subcategory</Text>
-      </SafeAreaView>
-    );
-  }
 
   const loadSubcategoryData = async () => {
     if (!id) return;
@@ -258,33 +360,33 @@ export default function SubcategoryScreen() {
     }
   };
 
-  const editProduct = (product: Product) => {
+  const editProduct = useCallback((product: Product) => {
     setEditingProduct(product);
-    setNewProduct({...product});
+    setNewProduct({ ...product });
     // Convert existing images and videos to media format
     const media: MediaItem[] = [];
-    
+
     product.images?.forEach((uri, index) => {
       media.push({
         id: `image_${index}`,
         uri,
         type: 'image',
-        name: `Image ${index + 1}`
+        name: `Image ${index + 1}`,
       });
     });
-    
+
     product.videos?.forEach((uri, index) => {
       media.push({
         id: `video_${index}`,
         uri,
         type: 'video',
-        name: `Video ${index + 1}`
+        name: `Video ${index + 1}`,
       });
     });
-    
+
     setProductMedia(media);
     setShowProductModal(true);
-  };
+  }, []);
 
   const confirmSaveProduct = () => {
     // Validate product ID
@@ -466,81 +568,27 @@ export default function SubcategoryScreen() {
     setShowPricingTierSelector(false);
   };
 
-  const renderProduct = (item: Product) => (
-    <Card
-      Component={TouchableOpacity}
-      key={item.id}
-      style={[styles.productCard, {
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary,
-      }]}
-      onPress={() => push(`/product/${item.id}`)}
-    >
-      <View style={styles.productImageContainer}>
-        {item.images && item.images.length > 0 ? (
-          <SmartImage
-            uri={item.images[0]}
-            width={CARD_WIDTH}
-            height={IMAGE_HEIGHT}
-            contentFit="cover"
-          />
-        ) : (
-          <View style={styles.noImageContainer}>
-            <Text style={styles.noImageText}>אין תמונה</Text>
-          </View>
-        )}
-        
-        {/* Favorite Button */}
-        <TouchableOpacity style={styles.favoriteButton}>
-          <Heart size={16} color="#FFFFFF" />
-        </TouchableOpacity>
-
-        {/* Admin Actions */}
-        {isStoreOwner && (
-          <View style={styles.adminActions}>
-            <TouchableOpacity 
-              style={styles.adminActionButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                editProduct(item);
-              }}
-            >
-              <Pencil size={12} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.productInfo}>
-        <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={2}>{item.name}</Text>
-        
-        <View style={styles.priceContainer}>
-          <Text style={[styles.currentPrice, { color: colors.gold }]}>{currencySymbol}{item.price.toFixed(2)}</Text>
-          {item.originalPrice && (
-            <Text style={[styles.originalPrice, { color: colors.text.tertiary }]}>{currencySymbol}{item.originalPrice.toFixed(2)}</Text>
-          )}
-        </View>
-
-        {item.pricingTier && (
-          <View style={styles.pricingTierContainer}>
-            <Text style={[styles.pricingTierText, { color: colors.text.secondary }]}>
-              {pricingTiers.find(tier => tier.id === item.pricingTier)?.name || item.pricingTier}
-            </Text>
-          </View>
-        )}
-        
-        <View style={styles.stockContainer}>
-          <View style={[
-            styles.stockIndicator,
-            { backgroundColor: item.stock > 0 ? colors.status.success : colors.status.error }
-          ]} />
-          <Text style={[styles.stockText, { color: colors.text.secondary }]}>
-            {item.stock > 0 ? `במלאי (${item.stock})` : 'אזל מהמלאי'}
-          </Text>
-        </View>
-      </View>
-    </Card>
+  const renderProduct = useCallback(
+    ({ item }: { item: Product }) => (
+      <ProductItem
+        product={item}
+        currencySymbol={currencySymbol}
+        pricingTiers={pricingTiers}
+        isStoreOwner={isStoreOwner}
+        onPress={() => push(`/product/${item.id}`)}
+        onEdit={editProduct}
+      />
+    ),
+    [currencySymbol, pricingTiers, isStoreOwner, push, editProduct]
   );
+
+  if (invalidParams) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+        <Text style={{ color: colors.text.primary }}>Invalid subcategory</Text>
+      </SafeAreaView>
+    );
+  }
 
   if (loading && !subcategory) {
     return (
@@ -601,31 +649,37 @@ export default function SubcategoryScreen() {
         </View>
       </View>
 
-      <ScrollView 
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.productsContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {products.length > 0 ? (
-          <View style={styles.productsGrid}>
-            {products.map(renderProduct)}
-          </View>
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>{subcategory.icon}</Text>
-            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין מוצרים עדיין</Text>
-            <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
-              {isStoreOwner ? 'הוסף מוצרים כדי להתחיל' : 'אנחנו עובדים על הוספת מוצרים לקטגוריה זו'}
-            </Text>
-            {isStoreOwner && (
-              <TouchableOpacity style={[styles.emptyButton, { backgroundColor: colors.gold }]} onPress={addProduct}>
-                <Plus size={20} color={colors.text.inverse} />
-                <Text style={[styles.emptyButtonText, { color: colors.text.inverse }]}>הוסף מוצר</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-      </ScrollView>
+      {products.length > 0 ? (
+        <FlatList
+          data={products}
+          renderItem={renderProduct}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.productsContainer}
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * Math.floor(index / 2), index })}
+        />
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>{subcategory.icon}</Text>
+          <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין מוצרים עדיין</Text>
+          <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
+            {isStoreOwner ? 'הוסף מוצרים כדי להתחיל' : 'אנחנו עובדים על הוספת מוצרים לקטגוריה זו'}
+          </Text>
+          {isStoreOwner && (
+            <TouchableOpacity
+              style={[styles.emptyButton, { backgroundColor: colors.gold }]}
+              onPress={addProduct}
+            >
+              <Plus size={20} color={colors.text.inverse} />
+              <Text style={[styles.emptyButtonText, { color: colors.text.inverse }]}>הוסף מוצר</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {/* Product Edit/Add Modal */}
       <Modal
@@ -1185,11 +1239,6 @@ const styles = StyleSheet.create({
   productsContainer: {
     padding: 16,
     minHeight: '100%',
-  },
-  productsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
   },
   productCard: {
     width: CARD_WIDTH,
