@@ -1,4 +1,4 @@
-import { setProduct, listProducts } from '../services/tonProducts';
+import { setProduct, listProducts } from '@/features/products/services/tonProducts';
 import { setOrder, listOrders } from '../services/tonOrders';
 import { setStore, listStores } from '../services/tonStores';
 import { Product, Order, Store, ShippingAddress } from '../types';

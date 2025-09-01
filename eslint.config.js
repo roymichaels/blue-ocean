@@ -3,7 +3,7 @@ const tsPlugin = require('@typescript-eslint/eslint-plugin');
 const reactHooks = require('eslint-plugin-react-hooks');
 
 module.exports = [
-  // Type-aware rules for app code (exclude tests)
+  // Base rules for app code (exclude tests)
   {
     files: ['**/*.ts', '**/*.tsx'],
     ignores: ['tests/**'],
@@ -23,7 +23,30 @@ module.exports = [
       ...reactHooks.configs.recommended.rules,
     },
   },
-  // Non type-aware rules for tests to avoid parserOptions.project errors
+  // Feature boundaries
+  {
+    files: ['src/features/**/*.ts', 'src/features/**/*.tsx'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        project: './tsconfig.json',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['@/features/*/components/*', '@/features/*/hooks/*'],
+        },
+      ],
+    },
+  },
+  // Non type-aware rules for tests
   {
     files: ['tests/**/*.ts', 'tests/**/*.tsx'],
     languageOptions: {

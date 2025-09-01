@@ -22,7 +22,7 @@ let listStores: (() => Promise<Store[]>) | undefined;
 if (chain === 'ton') {
   ({ listStores } = require('../../services/tonStores'));
 }
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import MediaUploader from '../../components/MediaUploader';

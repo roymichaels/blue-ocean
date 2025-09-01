@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Bell, Package, Tag, MessageCircle, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info } from 'lucide-react-native';
 import { Notification } from '../../types';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import AppShell from '../../components/layout/AppShell';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 import InfoModal from '../../components/InfoModal';
-import { useAuthModal } from '../../components/AuthModalContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useNotifications } from '../../src/features/notifications/hooks/useNotifications';
 
 

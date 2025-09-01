@@ -3,14 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
 import OrderService from '../../services/orders';
 import { Order, OrderStatus, ShippingAddress } from '../../types';
 import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
-import nearAuth from '../../services/nearAuth';
-import { decryptOrderShipping } from '../../services/sellerTools';
+import nearAuth from '@/features/auth/services/nearAuth';
+import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -8,7 +8,7 @@ jest.mock('../services/tonStores', () => ({
   removeStore: jest.fn(),
 }));
 
-jest.mock('../services/nearAuth', () => ({
+jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('addr'),
   signIn: jest.fn(),
 }));
@@ -36,11 +36,11 @@ jest.mock('../components/NotificationContext', () => ({
   useNotifications: () => ({ showNotification: jest.fn() }),
 }));
 
-jest.mock('../components/AuthContext', () => ({
+jest.mock('@/features/auth/AuthContext', () => ({
   useAuth: () => ({ isAdmin: true, isDriver: false, user: { id: 'u1' } }),
 }));
 
-jest.mock('../components/AuthModalContext', () => ({
+jest.mock('@/features/auth/AuthModalContext', () => ({
   useAuthModal: () => ({ openAuthModal: jest.fn() }),
 }));
 
@@ -69,7 +69,7 @@ jest.mock('../components/InfoModal', () => () => null);
 jest.mock('../components/ui/Spinner', () => () => null);
 
 // minimal mocks for unused components
-jest.mock('../components/ProductCard', () => ({ __esModule: true, default: () => null }));
+jest.mock('@/features/products/components/ProductCard', () => ({ __esModule: true, default: () => null }));
 
 import storesAgent from '../agents/stores-agent';
 import StorefrontStoreScreen from '../app/store/[storeId]';

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Bell, X } from 'lucide-react-native';
 import NotificationService from '../services/notification';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export default function AdminNotificationBanner() {
   const [visible, setVisible] = useState(false);

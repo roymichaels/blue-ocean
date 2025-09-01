@@ -31,16 +31,16 @@ let listCategories: (() => Promise<Category[]>) | undefined;
 if (chain === 'ton') {
   ({ listCategories } = require('../../services/tonCategories'));
 }
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
-import ProductCard from '../../components/ProductCard';
+import ProductCard from '@/features/products/components/ProductCard';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 import BannerFormModal from '../../components/BannerFormModal';
-import CartModal from '../../components/CartModal';
-import ProductFormModal from '../../components/ProductFormModal';
+import CartModal from '@/features/cart/components/CartModal';
+import ProductFormModal from '@/features/products/components/ProductFormModal';
 import SmartImage from '../../components/SmartImage';
 import InfoModal from '../../components/InfoModal';
 

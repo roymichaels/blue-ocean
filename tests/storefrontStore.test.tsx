@@ -56,7 +56,7 @@ jest.mock('../agents/review-agent', () => ({
   }),
 }));
 
-jest.mock('../components/ProductCard', () => ({
+jest.mock('@/features/products/components/ProductCard', () => ({
   __esModule: true,
   default: ({ product }: any) => React.createElement('ProductCard', null, product.name),
 }));

@@ -13,7 +13,7 @@ jest.mock('../services/tonContract', () => ({
 }));
 
 jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
-jest.mock('../services/nearAuth', () => ({
+jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('EQtestadmin'),
   signIn: jest.fn(),
 }));

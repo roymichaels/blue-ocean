@@ -30,23 +30,23 @@ import {
   Shield,
 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
-import CartService from '../../services/cart';
+import CartService from '@/features/cart/services/cart';
 import { Product, Category, PricingTier, Review } from '../../types';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
-import ProductFormModal from '../../components/ProductFormModal';
+import ProductFormModal from '@/features/products/components/ProductFormModal';
 import Spinner from '../../components/ui/Spinner';
 import MediaService from '../../services/media';
-import { useAccountId } from '../../services/nearAuth';
+import { useAccountId } from '@/features/auth/services/nearAuth';
 import chatAgent from '../../agents/chat-agent';
 import moderationAgent from '../../agents/moderation-agent';
 import reviewAgent from '../../agents/review-agent';
 import commonStyles from '../../constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
-import FloatingCartWidget from '../../components/FloatingCartWidget';
+import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import SmartImage from '../../components/SmartImage';
 import eventBus from '../../services/eventBus';
 

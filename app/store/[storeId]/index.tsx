@@ -6,9 +6,9 @@ import productsAgent from '../../../agents/products-agent';
 import reviewAgent from '../../../agents/review-agent';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { Store, Product } from '../../../types';
-import StoreHeader from '../../../components/store/StoreHeader';
-import StoreTabs from '../../../components/store/StoreTabs';
-import ProductGrid from '../../../components/store/ProductGrid';
+import StoreHeader from '@/features/stores/components/store/StoreHeader';
+import StoreTabs from '@/features/stores/components/store/StoreTabs';
+import ProductGrid from '@/features/products/components/ProductGrid';
 
 interface ReviewMap {
   [productId: string]: { rating: number; count: number };

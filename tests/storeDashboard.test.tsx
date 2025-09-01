@@ -18,9 +18,9 @@ jest.mock('../contexts/ThemeContext', () => ({
 }));
 
 jest.mock('../services/tonStores', () => ({ getStore: jest.fn() }));
-jest.mock('../services/tonProducts', () => ({ listProducts: jest.fn() }));
+jest.mock('@/features/products/services/tonProducts', () => ({ listProducts: jest.fn() }));
 
-jest.mock('../components/AuthContext', () => ({ useAuth: jest.fn() }));
+jest.mock('@/features/auth/AuthContext', () => ({ useAuth: jest.fn() }));
 
 jest.mock('../components/OrderRevenueMetrics', () => ({
   __esModule: true,
@@ -30,8 +30,8 @@ jest.mock('../components/OrderRevenueMetrics', () => ({
 describe('StoreDashboardScreen', () => {
   const { useLocalSearchParams, router } = require('expo-router');
   const { getStore } = require('../services/tonStores');
-  const { listProducts } = require('../services/tonProducts');
-  const { useAuth } = require('../components/AuthContext');
+  const { listProducts } = require('@/features/products/services/tonProducts');
+  const { useAuth } = require('@/features/auth/AuthContext');
 
   beforeEach(() => {
     useLocalSearchParams.mockReturnValue({ storeId: 's1' });

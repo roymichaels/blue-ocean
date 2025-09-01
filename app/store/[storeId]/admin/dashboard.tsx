@@ -4,12 +4,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import chain from '../../../../services/chain';
 import OrderRevenueMetrics from '../../../../components/OrderRevenueMetrics';
-import { useAuth } from '../../../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 let listProducts: (() => Promise<any[]>) | undefined;
 let getStore: ((tenant: string, id: string) => Promise<any>) | undefined;
 if (chain === 'ton') {
-  ({ listProducts } = require('../../../../services/tonProducts'));
+  ({ listProducts } = require('@/features/products/services/tonProducts'));
   ({ getStore } = require('../../../../services/tonStores'));
 }
 

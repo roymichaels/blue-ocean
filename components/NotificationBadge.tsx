@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import NotificationService from '../services/notification';
 import { useTheme } from '../contexts/ThemeContext';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 interface NotificationBadgeProps {
   size?: number;

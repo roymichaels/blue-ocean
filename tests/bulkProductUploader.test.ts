@@ -18,7 +18,7 @@ jest.mock('../services/media', () => ({
 const setProductBatchMock = jest.fn(async (_storeId: string, _products: Product[]) => {});
 const estimateSetProductBatchMock = jest.fn(async (_products: Product[]) => 1);
 
-jest.mock('../services/tonProducts', () => ({
+jest.mock('@/features/products/services/tonProducts', () => ({
   setProductBatch: (storeId: string, products: Product[]) => setProductBatchMock(storeId, products),
   estimateSetProductBatch: (products: Product[]) => estimateSetProductBatchMock(products),
 }));
@@ -40,7 +40,7 @@ describe('BulkProductUploader processRecords', () => {
   it('uploads 100 products in ≤4 batches', async () => {
     const admins = await getAdmins();
     expect(admins).toEqual([]);
-    const { processRecords } = await import('../components/BulkProductUploader');
+    const { processRecords } = await import('@/features/products/components/BulkProductUploader');
     const products: Product[] = Array.from({ length: 100 }, (_, i) => ({
       id: `p${i}`,
       name: `prod${i}`,

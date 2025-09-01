@@ -13,7 +13,7 @@ import {
 import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from './tonStores';
 import { getProduct, setProduct } from './tonProducts';
-import nearAuth from './nearAuth';
+import nearAuth from '@/features/auth/services/nearAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
 import config from '../utils/appConfig';
 import { calculateCardFees } from '@/payments/card';

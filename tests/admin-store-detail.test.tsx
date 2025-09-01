@@ -19,12 +19,12 @@ jest.mock('../contexts/ThemeContext', () => ({
 
 jest.mock('../services/tonStores', () => ({ getStore: jest.fn() }));
 
-jest.mock('../components/AuthContext', () => ({ useAuth: jest.fn() }));
+jest.mock('@/features/auth/AuthContext', () => ({ useAuth: jest.fn() }));
 
 describe('Admin store detail access control', () => {
   const { useLocalSearchParams, router } = require('expo-router');
   const { getStore } = require('../services/tonStores');
-  const { useAuth } = require('../components/AuthContext');
+  const { useAuth } = require('@/features/auth/AuthContext');
 
   beforeEach(() => {
     useLocalSearchParams.mockReturnValue({ storeId: 's1' });

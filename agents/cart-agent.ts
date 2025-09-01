@@ -1,6 +1,6 @@
 import { CartItem } from '../types';
 import { assertTonChain } from '../services/chain';
-import { setCartItem, getCartItem, listCartItems, removeCartItem } from '../services/tonCart';
+import { setCartItem, getCartItem, listCartItems, removeCartItem } from '@/features/cart/services/tonCart';
 import ensureTonWallet from '../utils/ensureTonWallet';
 
 assertTonChain();

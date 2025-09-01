@@ -1,5 +1,5 @@
 import React from 'react';
-import nearAuth from '../../../services/nearAuth';
+import nearAuth from '@/features/auth/services/nearAuth';
 
 export default function WalletButton() {
   const [acct, setAcct] = React.useState<string | null>(null);

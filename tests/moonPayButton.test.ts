@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import MoonPayButton from '../components/MoonPayButton';
+import MoonPayButton from '@/features/payments/components/MoonPayButton';
 
 jest.mock('../contexts/ThemeContext', () => ({
   useTheme: () => ({ colors: { gold: 'gold', text: { inverse: '#fff' } } }),
@@ -10,7 +10,7 @@ jest.mock('../contexts/AppInfoContext', () => ({
   useAppInfo: jest.fn(),
 }));
 
-jest.mock('../services/nearAuth', () => ({
+jest.mock('@/features/auth/services/nearAuth', () => ({
   __esModule: true,
   default: { signIn: jest.fn() },
   useAccountId: jest.fn(() => 'addr'),
@@ -20,7 +20,7 @@ const modalMock = jest.fn(({ visible, amountTON, amountUSD }: any) =>
   visible ? React.createElement('MoonPayModal', { amountTON, amountUSD }) : null,
 );
 
-jest.mock('../components/MoonPayModal', () => ({
+jest.mock('@/features/payments/components/MoonPayModal', () => ({
   __esModule: true,
   default: (props: any) => modalMock(props),
 }));

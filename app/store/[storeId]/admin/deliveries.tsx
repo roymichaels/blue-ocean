@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
 import FullScreenMediaViewer from '../../../../components/FullScreenMediaViewer';
-import { useAuth } from '../../../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { DeliveryJob, User } from '../../../../types';

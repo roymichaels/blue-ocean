@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, X } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import useChatRooms from '../hooks/useChatRooms';
 import useChatMessages from '../hooks/useChatMessages';
 import { useWakuClient } from '../hooks/useWakuClient';

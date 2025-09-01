@@ -15,12 +15,12 @@ import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft } from 'lucide
 import { router } from 'expo-router';
 import DatabaseService from '../../services/database';
 import { Product, Review, Order } from '../../types';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import Spinner from '../../components/ui/Spinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
-import { useAuthModal } from '../../components/AuthModalContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
 import commonStyles from '../../constants/styles';
 import Card from '../../components/Card';
 import SmartImage from '../../components/SmartImage';

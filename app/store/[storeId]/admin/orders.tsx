@@ -5,7 +5,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import chain from '../../../../services/chain';
 import { Order } from '../../../../types';
-import { useAccountId } from '../../../../services/nearAuth';
+import { useAccountId } from '@/features/auth/services/nearAuth';
 
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)

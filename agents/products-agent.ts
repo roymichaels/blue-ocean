@@ -7,7 +7,7 @@ import {
   removeProduct,
   getProducts,
   getVersion,
-} from '../services/tonProducts';
+} from '@/features/products/services/tonProducts';
 import { getStore } from '../services/tonStores';
 import ensureTonWallet from '../utils/ensureTonWallet';
 import {
@@ -33,7 +33,7 @@ import {
   getProductCache,
   setProductCache,
   clearProductCache,
-} from '../services/productCache';
+} from '@/features/products/services/productCache';
 
 const buildProductTopic = (storeId: string) => buildTopic('products', storeId);
 const PAGE_SIZE = 50;

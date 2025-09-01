@@ -34,7 +34,7 @@ jest.mock('../services/tonStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
 }));
 
-jest.mock('../services/tonProducts', () => ({
+jest.mock('@/features/products/services/tonProducts', () => ({
   getProduct: jest.fn(async (id: string) => mockProducts[id] || null),
   setProduct: jest.fn(async (p: any) => {
     mockProducts[p.id] = p;
@@ -51,7 +51,7 @@ jest.mock('../agents/orders-agent', () => ({
   update: jest.fn(),
 }));
 
-jest.mock('../services/nearAuth', () => ({
+jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('buyer_address'),
   signIn: jest.fn(),
 }));

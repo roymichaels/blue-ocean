@@ -7,12 +7,12 @@ import { Product } from '../../../../types';
 
 let listProducts: (() => Promise<Product[]>) | undefined;
 if (chain === 'ton') {
-  ({ listProducts } = require('../../../../services/tonProducts'));
+  ({ listProducts } = require('@/features/products/services/tonProducts'));
 }
-import ProductCard from '../../../../components/ProductCard';
-import ProductFormModal from '../../../../components/ProductFormModal';
-import { useAccountId } from '../../../../services/nearAuth';
-import { useAuth } from '../../../../components/AuthContext';
+import ProductCard from '@/features/products/components/ProductCard';
+import ProductFormModal from '@/features/products/components/ProductFormModal';
+import { useAccountId } from '@/features/auth/services/nearAuth';
+import { useAuth } from '@/features/auth/AuthContext';
 
 const ITEM_HEIGHT = 200;
 

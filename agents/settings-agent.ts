@@ -1,4 +1,4 @@
-import nearAuth from '../services/nearAuth';
+import nearAuth from '@/features/auth/services/nearAuth';
 import { assertTonChain } from '../services/chain';
 import {
   getSetting,
