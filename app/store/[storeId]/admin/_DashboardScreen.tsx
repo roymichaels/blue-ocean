@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { useTheme } from '@/contexts/ThemeContext';
 import chain from '@/services/chain';
 import OrderRevenueMetrics from '@/components/OrderRevenueMetrics';
@@ -14,6 +15,7 @@ if (chain === 'near') {
 }
 
 export default function StoreDashboardScreen() {
+  const { replace, push } = useAppRouter();
   const { storeId, impersonate } = useLocalSearchParams<{ storeId: string; impersonate?: string }>();
   const { colors } = useTheme();
   const { user } = useAuth();
@@ -26,7 +28,7 @@ export default function StoreDashboardScreen() {
       const store = await getStore(storeId, storeId);
       const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
       if (!store || (store.owner !== user?.address && !isAdmin)) {
-        router.replace(`/store/${storeId}`);
+        replace(`/store/${storeId}`);
         return;
       }
       setAuthorized(true);
@@ -52,13 +54,13 @@ export default function StoreDashboardScreen() {
       <View style={styles.nav}>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => router.push(`/store/${storeId}/admin/products`)}
+          onPress={() => push(`/store/${storeId}/admin/products`)}
         >
           <Text style={{ color: colors.text.primary }}>ניהול מוצרים</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => router.push(`/store/${storeId}/admin/orders`)}
+          onPress={() => push(`/store/${storeId}/admin/orders`)}
         >
           <Text style={{ color: colors.text.primary }}>צפייה בהזמנות</Text>
         </TouchableOpacity>

@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, Save, Settings as SettingsIcon } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
@@ -23,6 +23,7 @@ import MoonPaySettings from '../../../../components/settings/MoonPaySettings';
 import PaymentFactorySettings from '../../../../components/settings/PaymentFactorySettings';
 
 export default function SettingsScreen() {
+  const { replace, back } = useAppRouter();
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
   const [name, setName] = useState('');
   const [logoCidInput, setLogoCidInput] = useState('');
@@ -56,7 +57,7 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     if (!isAdmin && !isDriver) {
-      router.replace('/');
+      replace('/');
       return;
     }
     loadSettings();
@@ -136,7 +137,7 @@ export default function SettingsScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
-          <TouchableOpacity onPress={() => router.back()}> 
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} /> 
           </TouchableOpacity> 
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text> 
@@ -150,7 +151,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
-        <TouchableOpacity onPress={() => router.back()}> 
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} /> 
         </TouchableOpacity> 
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text> 

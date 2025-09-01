@@ -7,7 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Calendar, Truck } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import OrderService from '../../services/orders';
@@ -33,6 +33,7 @@ export default function OrdersScreen() {
   const { colors } = useTheme();
   const { t, currentLanguage } = useLanguage();
   const { currencySymbol } = useCurrency();
+  const { push, back } = useAppRouter();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -188,7 +189,7 @@ export default function OrdersScreen() {
         title={t('orders.emptyTitle') as string}
         message={t('orders.emptyMessage') as string}
         actionText={t('orders.shopNow') as string}
-        onAction={() => router.push('/(tabs)')}
+        onAction={() => push('/(tabs)')}
       />
     ) : (
       <EmptyState
@@ -205,7 +206,7 @@ export default function OrdersScreen() {
     <AppShell showSearch={false}>
       
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}> 

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useAuth } from '@/features/auth/AuthContext';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import ordersAgent from '../../../../agents/orders-agent';
 import { Order } from '../../../../types';
 import DisputeEvidence from '../../../../components/DisputeEvidence';
@@ -15,10 +15,11 @@ export default function AdminDisputesScreen() {
   const { colors } = useTheme();
   const { isAdmin } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
+  const { replace, back } = useAppRouter();
 
   useEffect(() => {
     if (!isAdmin) {
-      router.replace('/');
+      replace('/');
       return;
     }
     const load = async () => {
@@ -48,7 +49,7 @@ export default function AdminDisputesScreen() {
           borderBottomColor: colors.border.primary,
         }}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={{ flex: 1, textAlign: 'center', fontSize: 18, color: colors.text.primary }}>

@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, Save, Settings as SettingsIcon } from 'lucide-react-native';
 import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -33,6 +33,7 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   useRequirePlatformAdmin();
+  const { back } = useAppRouter();
   const { colors } = useTheme();
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
   const { currentLanguage, t } = useLanguage();
@@ -134,7 +135,7 @@ export default function SettingsScreen() {
       <RequireWallet>
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
           <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => back()}>
               <ArrowLeft size={24} color={colors.text.primary} />
             </TouchableOpacity>
             <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
@@ -150,7 +151,7 @@ export default function SettingsScreen() {
     <RequireWallet>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
