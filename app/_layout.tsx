@@ -1,13 +1,13 @@
 import React from 'react';
 import { Slot } from 'expo-router';
-import { TenantProvider } from '../contexts/TenantContext';
+import AppProviders from '../providers/AppProviders';
 
 export default function RootLayout() {
   return (
-    <TenantProvider>
+    <AppProviders>
       <React.Suspense fallback={null}>
         <Slot />
       </React.Suspense>
-    </TenantProvider>
+    </AppProviders>
   );
 }
