@@ -224,10 +224,10 @@ export default function MediaUploader({
         {item.type === 'video' ? (
           <View style={styles.videoContainer}>
             <SmartImage uri={thumbnailMap[item.id] || item.uri} style={styles.mediaThumbnail} contentFit="cover" cachePolicy="disk" />
-            <View style={styles.playOverlay}>
+            <View pointerEvents="none" style={styles.playOverlay}>
               <Play size={24} color={colors.text.inverse} fill={colors.text.inverse} />
             </View>
-            <View style={styles.videoIndicator}>
+            <View pointerEvents="none" style={styles.videoIndicator}>
               <Video size={12} color={colors.text.inverse} />
             </View>
           </View>
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     end: 4,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 4,
     padding: 2,
   },
