@@ -224,6 +224,8 @@ export interface WishlistItem {
   addedAt: string;
 }
 
+export type PaymentMethod = 'cash_on_delivery' | 'near' | 'card';
+
 export interface Order {
   id: string;
   tenant_id?: string;
@@ -236,7 +238,7 @@ export interface Order {
     cipher: string;
     from: string;
   };
-  paymentMethod: 'cash_on_delivery' | 'near' | 'card';
+  paymentMethod: PaymentMethod;
   buyerAddress?: string;
   sellerAddress?: string;
   driverAddress?: string;
