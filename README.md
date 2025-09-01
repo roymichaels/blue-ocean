@@ -73,6 +73,10 @@ Install the Git hooks after cloning:
 yarn husky install
 ```
 
+### Design Tokens
+
+Shared spacing, radius, z-index and shadow values along with color palettes are defined in `constants/tokens.ts`. Components should import these tokens rather than hard-coding numbers so the UI stays consistent. `ThemeContext` merges the active theme with these tokens and exposes them via `useTheme()`.
+
 ### Environment Variables
 
 The app ships with sensible defaults and runs without a `.env` file. Environment

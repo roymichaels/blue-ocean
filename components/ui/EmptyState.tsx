@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Video as LucideIcon } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { spacing, radius } from '../../constants/tokens';
 
 interface EmptyStateProps {
   icon: typeof LucideIcon;
@@ -44,26 +45,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 60,
+    paddingHorizontal: spacing.xxxl,
+    paddingVertical: spacing.giant,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   message: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
+    marginBottom: spacing.xxl,
+    lineHeight: spacing.xxl,
   },
   actionButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
+    borderRadius: radius.pill,
   },
   actionButtonText: {
     fontSize: 16,

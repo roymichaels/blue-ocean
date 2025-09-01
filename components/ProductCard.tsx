@@ -19,6 +19,7 @@ import MediaService from '../services/media';
 import { useAccountId } from '../services/nearAuth';
 import productsAgent from '../agents/products-agent';
 import Card from './Card';
+import { spacing, radius } from '../constants/tokens';
 
 interface ProductCardProps {
   product: Product;
@@ -306,7 +307,7 @@ export default function ProductCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: radius.lg,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -331,8 +332,8 @@ const styles = StyleSheet.create({
   },
   favoriteButton: {
     position: 'absolute',
-    top: 8,
-    start: 8,
+    top: spacing.sm,
+    start: spacing.sm,
     width: 28,
     height: 28,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -342,33 +343,33 @@ const styles = StyleSheet.create({
   },
   cartButton: {
     position: 'absolute',
-    bottom: 8,
-    end: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    bottom: spacing.sm,
+    end: spacing.sm,
+    width: spacing.xxxl,
+    height: spacing.xxxl,
+    borderRadius: radius.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
   adminActions: {
     position: 'absolute',
-    top: 8,
-    end: 8,
+    top: spacing.sm,
+    end: spacing.sm,
     flexDirection: 'row',
   },
   adminButton: {
     backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
+    borderRadius: radius.lg,
+    width: spacing.xxl,
+    height: spacing.xxl,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 4,
+    marginLeft: spacing.xs,
   },
   badgesContainer: {
     position: 'absolute',
-    bottom: 8,
-    start: 8,
+    bottom: spacing.sm,
+    start: spacing.sm,
     flexDirection: 'row',
     flexWrap: 'wrap',
     maxWidth: '70%',
@@ -376,21 +377,21 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 8,
-    marginRight: 4,
-    marginBottom: 4,
+    borderRadius: radius.md,
+    marginRight: spacing.xs,
+    marginBottom: spacing.xs,
   },
   badgeText: {
     fontSize: 10,
     fontWeight: '600',
   },
   content: {
-    padding: 12,
+    padding: spacing.md,
   },
   name: {
     fontSize: 14,
     fontWeight: '500',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     lineHeight: 18,
     textAlign: 'end',
   },
@@ -398,12 +399,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   currentPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   originalPrice: {
     fontSize: 12,
@@ -418,7 +419,7 @@ const styles = StyleSheet.create({
   tieredPricingText: {
     fontSize: 12,
     fontWeight: '500',
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -432,7 +433,7 @@ const styles = StyleSheet.create({
   },
   reviews: {
     fontSize: 12,
-    marginLeft: 4,
+    marginLeft: spacing.xs,
   },
   variantContainer: {
     flexDirection: 'row',
@@ -441,15 +442,15 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   variantDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: spacing.lg,
+    height: spacing.lg,
+    borderRadius: radius.md,
     marginLeft: 6,
     borderWidth: 1,
   },
   selectedVariantText: {
     fontSize: 12,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
     textAlign: 'end',
   },
   stockContainer: {

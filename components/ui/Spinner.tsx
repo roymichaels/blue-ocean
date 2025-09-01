@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { spacing } from '../../constants/tokens';
 
 interface SpinnerProps {
   size?: 'small' | 'large';
@@ -32,9 +33,9 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: spacing.xl,
   },
   label: {
-    marginTop: 12,
+    marginTop: spacing.md,
   },
 });
