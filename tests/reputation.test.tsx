@@ -1,7 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 
-jest.mock('../services/tonStores', () => ({
+jest.mock('@/features/stores/services/tonStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: 'Store', owner: 'owner1', nftId: 'n1', reputation: 0 })),
   setStore: jest.fn(async () => {}),
   listStores: jest.fn(async () => [{ id: 's1', name: 'Store', owner: 'owner1', nftId: 'n1', reputation: 0 }]),

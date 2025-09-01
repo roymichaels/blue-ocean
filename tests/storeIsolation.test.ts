@@ -1,6 +1,6 @@
 import { setProduct, listProducts } from '@/features/products/services/tonProducts';
 import { setOrder, listOrders } from '../services/tonOrders';
-import { setStore, listStores } from '../services/tonStores';
+import { setStore, listStores } from '@/features/stores/services/tonStores';
 import { Product, Order, Store, ShippingAddress } from '../types';
 
 jest.mock('../services/tonKvStore', () => {

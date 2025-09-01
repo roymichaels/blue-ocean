@@ -1,7 +1,12 @@
-import { Store } from '../types';
-import { assertTonChain } from '../services/chain';
-import { setStore, getStore, listStores, removeStore } from '../services/tonStores';
-import ensureTonWallet from '../utils/ensureTonWallet';
+import { Store } from '@/types';
+import { assertTonChain } from '@/services/chain';
+import {
+  setStore,
+  getStore,
+  listStores,
+  removeStore,
+} from '@/features/stores/services/tonStores';
+import ensureTonWallet from '@/utils/ensureTonWallet';
 
 assertTonChain();
 

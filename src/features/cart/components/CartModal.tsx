@@ -25,8 +25,14 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { CartItem, ShippingAddress, Store } from '@/types';
-import useCart from '../hooks/useCart';
-import useCartStores from '../hooks/useCartStores';
+
+let getStore:
+  | ((storeId: string, id: string) => Promise<Store | null>)
+  | undefined;
+if (chain === 'ton') {
+  ({ getStore } = require('@/features/stores/services/tonStores'));
+}
+
 import OrderService from '@/services/orders';
 import eventBus from '@/services/eventBus';
 const MoonPayButton = require('@/features/payments/components/MoonPayButton').default;

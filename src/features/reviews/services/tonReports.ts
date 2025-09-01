@@ -1,7 +1,7 @@
-import { setValue, listValues, removeValue } from './tonKvStore';
-import { Report } from '../types';
-import { requireEnv } from '../utils/appConfig';
-import { assertTonChain } from './chain';
+import { setValue, listValues, removeValue } from '@/services/tonKvStore';
+import { Report } from '@/types';
+import { requireEnv } from '@/utils/appConfig';
+import { assertTonChain } from '@/services/chain';
 
 assertTonChain();
 

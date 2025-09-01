@@ -11,7 +11,7 @@ import {
   OrderTrackingStep,
 } from '../types';
 import { sha256 } from '@noble/hashes/sha256';
-import { getStore } from './tonStores';
+import { getStore } from '@/features/stores/services/tonStores';
 import { getProduct, setProduct } from '@/features/products/services/tonProducts';
 import nearAuth from '@/features/auth/services/nearAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';

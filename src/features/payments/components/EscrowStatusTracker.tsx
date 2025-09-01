@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import ordersAgent from '../agents/orders-agent';
-import { Order, OrderStatus } from '../types';
+import ordersAgent from '@/agents/orders-agent';
+import { Order, OrderStatus } from '@/types';
 
 const LABELS: Record<OrderStatus | 'unknown', string> = {
   order_received: 'Escrow funded',

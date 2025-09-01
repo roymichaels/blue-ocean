@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { useTheme } from '../../../../contexts/ThemeContext';
-import useRequirePlatformAdmin from '../../../../hooks/useRequirePlatformAdmin';
-import chain from '../../../../services/chain';
-import { Store } from '../../../../types';
+import { useTheme } from '@/contexts/ThemeContext';
+import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
+import chain from '@/services/chain';
+import { Store } from '@/types';
 
 let getStore:
   | ((tenantId: string, id: string) => Promise<Store | null>)
   | undefined;
 if (chain === 'ton') {
-  ({ getStore } = require('../../../../services/tonStores'));
+  ({ getStore } = require('@/features/stores/services/tonStores'));
 }
 
 export default function StoreDetail() {

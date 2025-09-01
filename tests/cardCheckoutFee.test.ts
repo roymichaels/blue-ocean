@@ -20,7 +20,7 @@ jest.mock('../services/tonContract', () => ({
   refundPayment: jest.fn(),
 }));
 
-jest.mock('../services/tonStores', () => ({
+jest.mock('@/features/stores/services/tonStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
 }));
 

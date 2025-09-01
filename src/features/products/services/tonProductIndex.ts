@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 import { ProductIndexItem } from '@/types';
-import nearAuth from '@/features/auth/services/nearAuth';
+import nearAuth from '../../auth/services/nearAuth';
 import { assertTonChain } from '@/services/chain';
 
 assertTonChain();

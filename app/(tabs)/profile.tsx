@@ -25,22 +25,22 @@ import {
   Clock,
 } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import GlobalHeader from '../../components/GlobalHeader';
+import { useTheme } from '@/contexts/ThemeContext';
+import GlobalHeader from '@/components/GlobalHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useAppInfo } from '../../contexts/AppInfoContext';
-import InfoModal from '../../components/InfoModal';
-import ConfirmationModal from '../../components/ConfirmationModal';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppInfo } from '@/contexts/AppInfoContext';
+import InfoModal from '@/components/InfoModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
-import OrderService from '../../services/orders';
+import OrderService from '@/services/orders';
 import CartService from '@/features/cart/services/cart';
-import DatabaseService from '../../services/database';
-import chain from '../../services/chain';
+import DatabaseService from '@/services/database';
+import chain from '@/services/chain';
 
 let listStores: (() => Promise<any[]>) | undefined;
 if (chain === 'ton') {
-  ({ listStores } = require('../../services/tonStores'));
+  ({ listStores } = require('@/features/stores/services/tonStores'));
 }
 
 

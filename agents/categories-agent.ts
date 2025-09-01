@@ -1,7 +1,12 @@
-import { Category } from '../types';
-import { assertTonChain } from '../services/chain';
-import { setCategory, getCategory, listCategories, removeCategory } from '../services/tonCategories';
-import ensureTonWallet from '../utils/ensureTonWallet';
+import { Category } from '@/types';
+import { assertTonChain } from '@/services/chain';
+import {
+  setCategory,
+  getCategory,
+  listCategories,
+  removeCategory,
+} from '@/features/products/services/tonCategories';
+import ensureTonWallet from '@/utils/ensureTonWallet';
 
 assertTonChain();
 

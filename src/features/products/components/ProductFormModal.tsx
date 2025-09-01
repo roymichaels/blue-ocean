@@ -35,7 +35,7 @@ import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { useAccountId } from '../../auth/services/nearAuth';
 
 interface ProductFormModalProps {
   visible: boolean;

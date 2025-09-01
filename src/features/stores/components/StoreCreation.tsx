@@ -9,7 +9,7 @@ import {
   I18nManager,
 } from 'react-native';
 import storesAgent from '@/agents/stores-agent';
-import nearAuth from '@/features/auth/services/nearAuth';
+import nearAuth from '../../auth/services/nearAuth';
 import { errorLog } from '@/utils/logger';
 
 const StoreCreation: React.FC = () => {

@@ -41,7 +41,11 @@ module.exports = [
       'no-restricted-imports': [
         'error',
         {
-          patterns: ['@/features/*/components/*', '@/features/*/hooks/*'],
+          patterns: [
+            '@/features/*/components/*',
+            '@/features/*/hooks/*',
+            '@/features/*/services/*',
+          ],
         },
       ],
     },
