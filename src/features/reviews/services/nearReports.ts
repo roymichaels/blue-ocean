@@ -1,12 +1,12 @@
-import { setValue, listValues, removeValue } from '@/services/tonKvStore';
+import { setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { Report } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_REPORTS_ADDRESS') : 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('TON_REPORTS_ADDRESS') : 'near:disabled';
 
 export async function addReport(report: Report) {
   await setValue(ADDRESS, report.id, JSON.stringify(report));
@@ -20,3 +20,4 @@ export async function listReports(): Promise<Report[]> {
 export async function removeReport(id: string) {
   await removeValue(ADDRESS, id);
 }
+

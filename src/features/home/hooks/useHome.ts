@@ -4,8 +4,8 @@ import chain from '@/services/chain';
 import { Product, Category, HeroBanner } from '@/types';
 
 let listCategories: (() => Promise<Category[]>) | undefined;
-if (chain === 'ton') {
-  ({ listCategories } = require('@/features/products/services/tonCategories'));
+if (chain === 'near') {
+  ({ listCategories } = require('@/features/products/services/nearCategories'));
 }
 
 export function useHome() {

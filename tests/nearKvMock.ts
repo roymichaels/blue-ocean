@@ -20,3 +20,4 @@ export async function removeValue(_addr: string, key: string) {
 export function __clear() {
   store.clear();
 }
+

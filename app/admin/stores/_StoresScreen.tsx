@@ -9,8 +9,8 @@ import AdminShell from '@/components/admin/AdminShell';
 import AdminList, { AdminListItem } from '@/components/admin/AdminList';
 
 let listStores: (() => Promise<Store[]>) | undefined;
-if (chain === 'ton') {
-  ({ listStores } = require('@/features/stores/services/tonStores'));
+if (chain === 'near') {
+  ({ listStores } = require('@/features/stores/services/nearStores'));
 }
 
 export default function AdminStores() {

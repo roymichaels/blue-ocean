@@ -1,12 +1,12 @@
-import { getValue, setValue, listValues, removeValue } from '@/services/tonKvStore';
+import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { CartItem } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_CART_ADDRESS') : 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('TON_CART_ADDRESS') : 'near:disabled';
 
 export async function getCartItem(id: string): Promise<CartItem | null> {
   const res = await getValue(ADDRESS, id);
@@ -25,3 +25,4 @@ export async function listCartItems(): Promise<CartItem[]> {
   const items = await listValues(ADDRESS);
   return items.map((i) => JSON.parse(i.value) as CartItem);
 }
+

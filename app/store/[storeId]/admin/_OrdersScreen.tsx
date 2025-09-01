@@ -10,7 +10,7 @@ import { useAccountId } from '@/features/auth/services/nearAuth';
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)
   | undefined;
-if (chain === 'ton') {
+if (chain === 'near') {
   ({ listOrdersBySeller } = require('../../../../services/tonOrders'));
 }
 

@@ -1,9 +1,9 @@
-import { setProduct, listProducts } from '@/features/products/services/tonProducts';
+import { setProduct, listProducts } from '@/features/products/services/nearProducts';
 import { setOrder, listOrders } from '../services/tonOrders';
-import { setStore, listStores } from '@/features/stores/services/tonStores';
+import { setStore, listStores } from '@/features/stores/services/nearStores';
 import { Product, Order, Store, ShippingAddress } from '../types';
 
-jest.mock('../services/tonKvStore', () => {
+jest.mock('../services/nearKvStore', () => {
   const store = new Map<string, string>();
   return {
     setValue: async (_addr: string, key: string, value: string) => {

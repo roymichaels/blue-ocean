@@ -20,11 +20,11 @@ jest.mock('../services/tonContract', () => ({
   refundPayment: jest.fn(),
 }));
 
-jest.mock('@/features/stores/services/tonStores', () => ({
+jest.mock('@/features/stores/services/nearStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
 }));
 
-jest.mock('@/features/products/services/tonProducts', () => ({
+jest.mock('@/features/products/services/nearProducts', () => ({
   getProduct: jest.fn(async (id: string) => mockProducts[id] || null),
   setProduct: jest.fn(async (p: any) => {
     mockProducts[p.id] = p;

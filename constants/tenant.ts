@@ -4,7 +4,7 @@ import chain from '../services/chain';
 import config from '../utils/appConfig';
 
 let fetchSettings: (() => Promise<any>) | undefined;
-if (chain === 'ton') {
+if (chain === 'near') {
   ({ fetchSettings } = require('../services/tonSettings'));
 }
 

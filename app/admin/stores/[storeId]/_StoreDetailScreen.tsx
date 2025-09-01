@@ -10,8 +10,8 @@ import { Store } from '@/types';
 let getStore:
   | ((tenantId: string, id: string) => Promise<Store | null>)
   | undefined;
-if (chain === 'ton') {
-  ({ getStore } = require('@/features/stores/services/tonStores'));
+if (chain === 'near') {
+  ({ getStore } = require('@/features/stores/services/nearStores'));
 }
 
 export default function StoreDetail() {

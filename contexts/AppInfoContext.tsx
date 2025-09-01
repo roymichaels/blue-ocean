@@ -13,7 +13,7 @@ import SettingsAgent from '../agents/settings-agent';
 import chain from '../services/chain';
 
 let fetchSettings: (() => Promise<any>) | undefined;
-if (chain === 'ton') {
+if (chain === 'near') {
   ({ fetchSettings } = require('../services/tonSettings'));
 }
 

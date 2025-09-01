@@ -3,15 +3,15 @@ import {
   setValue,
   listValues,
   removeValue,
-} from '@/services/tonKvStore';
+} from '@/services/nearKvStore';
 import { Category } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_CATEGORIES_ADDRESS') : 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('TON_CATEGORIES_ADDRESS') : 'near:disabled';
 
 export async function getCategory(id: string): Promise<Category | null> {
   const res = await getValue(ADDRESS, id);
@@ -30,3 +30,4 @@ export async function listCategories(): Promise<Category[]> {
   const items = await listValues(ADDRESS);
   return items.map((i) => JSON.parse(i.value) as Category);
 }
+

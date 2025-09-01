@@ -1,18 +1,18 @@
 import { Category } from '@/types';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   setCategory,
   getCategory,
   listCategories,
   removeCategory,
-} from '@/features/products/services/tonCategories';
+} from '@/features/products/services/nearCategories';
 import ensureTonWallet from '@/utils/ensureTonWallet';
 
-assertTonChain();
+assertNearChain();
 
 class CategoriesAgent {
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your TON wallet to manage categories.');
+    await ensureTonWallet('Please connect your NEAR wallet to manage categories.');
   }
 
   async add(item: Category): Promise<void> {

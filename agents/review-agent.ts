@@ -1,12 +1,12 @@
 import { Review } from '../types';
-import { assertTonChain } from '../services/chain';
-import { addReview, getReviews } from '@/features/reviews/services/tonReviews';
+import { assertNearChain } from '../services/chain';
+import { addReview, getReviews } from '@/features/reviews/services/nearReviews';
 import ordersAgent from './orders-agent';
 import productsAgent from './products-agent';
 import storesAgent from './stores-agent';
 import ensureTonWallet from '../utils/ensureTonWallet';
 
-assertTonChain();
+assertNearChain();
 
 const TOPIC = '/blue-ocean/reviews/1';
 
@@ -14,7 +14,7 @@ class ReviewAgent {
   private subscribers: Set<(r: Review) => void> = new Set();
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your TON wallet to manage reviews.');
+    await ensureTonWallet('Please connect your NEAR wallet to manage reviews.');
   }
 
   async add(review: Review): Promise<void> {

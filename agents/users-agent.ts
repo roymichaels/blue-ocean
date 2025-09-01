@@ -1,11 +1,11 @@
 import { User } from '@/types';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   getUser,
   setUser,
   listUsers,
   removeUser,
-} from '@/features/auth/services/tonUsers';
+} from '@/features/auth/services/nearUsers';
 import { getPublicKeyHex } from '@/services/localIdentity';
 import SettingsAgent from './settings-agent';
 import ensureTonWallet from '@/utils/ensureTonWallet';
@@ -13,7 +13,7 @@ import validateNearAddress from '@/utils/validateNearAddress';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 import type { WakuMessage } from '@/types/waku';
 
-assertTonChain();
+assertNearChain();
 
 export type UsersAgentMessage =
   | { type: 'user.add'; payload: User }

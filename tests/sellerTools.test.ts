@@ -35,7 +35,7 @@ describe('sellerTools.decryptOrderShipping', () => {
       status: 'order_received',
       shippingAddress: addr,
       shipAddrEnc,
-      paymentMethod: 'ton',
+      paymentMethod: 'near',
       buyerAddress: 'b',
       sellerAddress: 's',
       itemsHash: '',

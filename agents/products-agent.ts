@@ -1,5 +1,5 @@
 import { Product } from '@/types';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   setProduct,
   getProduct,
@@ -7,8 +7,8 @@ import {
   removeProduct,
   getProducts,
   getVersion,
-} from '@/features/products/services/tonProducts';
-import { getStore } from '@/features/stores/services/tonStores';
+} from '@/features/products/services/nearProducts';
+import { getStore } from '@/features/stores/services/nearStores';
 import ensureTonWallet from '@/utils/ensureTonWallet';
 import {
   LightNode,

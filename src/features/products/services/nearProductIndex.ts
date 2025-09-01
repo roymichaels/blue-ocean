@@ -1,9 +1,9 @@
 import { Buffer } from 'buffer';
 import { ProductIndexItem } from '@/types';
 import nearAuth from '../../auth/services/nearAuth';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 
-assertTonChain();
+assertNearChain();
 
 export function encodeProductIndexItem(item: ProductIndexItem): string {
   return JSON.stringify(item);

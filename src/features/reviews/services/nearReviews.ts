@@ -1,12 +1,12 @@
-import { getValue, setValue, listValues } from './tonKvStore';
-import { Review } from '../types';
-import { requireEnv } from '../utils/appConfig';
-import { assertTonChain } from './chain';
+import { getValue, setValue, listValues } from '@/services/nearKvStore';
+import { Review } from '@/types';
+import { requireEnv } from '@/utils/appConfig';
+import { assertNearChain } from '@/services/chain';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_REVIEWS_ADDRESS') : 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('TON_REVIEWS_ADDRESS') : 'near:disabled';
 
 export async function getReviews(productId: string): Promise<Review[]> {
   const res = await getValue(ADDRESS, productId);

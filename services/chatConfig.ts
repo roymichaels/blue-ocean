@@ -2,7 +2,7 @@ import chain from './chain';
 
 let getAdmins: (() => Promise<string[]>) | undefined;
 
-if (chain === 'ton') {
+if (chain === 'near') {
   ({ getAdmins } = require('./tonSettings'));
 }
 

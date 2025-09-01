@@ -2,17 +2,17 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: () => 'addr_admin',
   signIn: jest.fn(),
 }));
-jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
+jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
 jest.mock('../services/tonSettings');
 
 import SettingsAgent from '../agents/settings-agent';
-import { __clear } from './tonKvMock';
+import { __clear } from './nearKvMock';
 import * as tonSettings from '../services/tonSettings';
 const directSetAdmins = tonSettings.setAdmins;
 const __store = (tonSettings as any).__store;
 let subscribed: (evt: any) => void;
 
-describe('SettingsAgent TON integration', () => {
+describe('SettingsAgent NEAR integration', () => {
   beforeEach(() => {
     __clear();
     (SettingsAgent as any).instance = undefined;

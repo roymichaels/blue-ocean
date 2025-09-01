@@ -18,7 +18,7 @@ jest.mock('../services/media', () => ({
 const setProductBatchMock = jest.fn(async (_storeId: string, _products: Product[]) => {});
 const estimateSetProductBatchMock = jest.fn(async (_products: Product[]) => 1);
 
-jest.mock('@/features/products/services/tonProducts', () => ({
+jest.mock('@/features/products/services/nearProducts', () => ({
   setProductBatch: (storeId: string, products: Product[]) => setProductBatchMock(storeId, products),
   estimateSetProductBatch: (products: Product[]) => estimateSetProductBatchMock(products),
 }));

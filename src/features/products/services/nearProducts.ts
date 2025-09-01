@@ -1,16 +1,16 @@
-import { getValue, setValue, listValues, removeValue } from '@/services/tonKvStore';
+import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { Product } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 import { errorLog } from '@/utils/logger';
 import { productSchema } from '@/schemas/waku';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_PRODUCTS_ADDRESS') : 'ton:disabled';
-const DISABLED = ADDRESS === 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('TON_PRODUCTS_ADDRESS') : 'near:disabled';
+const DISABLED = ADDRESS === 'near:disabled';
 let SEEDED = false;
 
 function ensureSeed() {
@@ -118,3 +118,4 @@ export async function estimateSetProductBatch(products: Product[]): Promise<numb
 export async function getVersion(): Promise<number> {
   return 0;
 }
+

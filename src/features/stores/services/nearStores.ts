@@ -3,23 +3,23 @@ import {
   setValue,
   listValues,
   removeValue,
-} from '@/services/tonKvStore';
+} from '@/services/nearKvStore';
 import { Store } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_STORES_ADDRESS') : 'ton:disabled';
-const DISABLED = ADDRESS === 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('TON_STORES_ADDRESS') : 'near:disabled';
+const DISABLED = ADDRESS === 'near:disabled';
 let SEEDED = false;
 
 function ensureSeed() {
   if (!DISABLED || SEEDED) return;
   try {
-    // Attempt to load seed data when running without TON. JSON imports are supported by Metro/Web.
+    // Attempt to load seed data when running without NEAR. JSON imports are supported by Metro/Web.
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const data = require('@/assets/seed/seed-data.json');
     if (data?.stores) {
@@ -47,7 +47,7 @@ export async function getStore(storeId: string, id: string): Promise<Store | nul
   const res = await getValue(ADDRESS, `${sid}:${id}`);
   if (res) return JSON.parse(res) as Store;
   if (DISABLED) {
-    // Provide a sensible fallback in non-TON environments
+    // Provide a sensible fallback in non-chain environments
     const fallback: Store = {
       id,
       name: `Store ${id}`,
@@ -77,3 +77,4 @@ export async function listStores(storeId: string): Promise<Store[]> {
     .filter((i) => i.key.startsWith(`${sid}:`))
     .map((i) => JSON.parse(i.value) as Store);
 }
+

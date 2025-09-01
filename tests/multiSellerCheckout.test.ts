@@ -26,15 +26,15 @@ jest.mock('../services/tonContract', () => ({
   refundPayment: jest.fn(),
 }));
 
-jest.mock('@/features/auth/services/tonUsers', () => ({
+jest.mock('@/features/auth/services/nearUsers', () => ({
   getUser: jest.fn().mockResolvedValue({ publicKey: 'a'.repeat(64) }),
 }));
 
-jest.mock('@/features/stores/services/tonStores', () => ({
+jest.mock('@/features/stores/services/nearStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
 }));
 
-jest.mock('@/features/products/services/tonProducts', () => ({
+jest.mock('@/features/products/services/nearProducts', () => ({
   getProduct: jest.fn(async (id: string) => mockProducts[id] || null),
   setProduct: jest.fn(async (p: any) => {
     mockProducts[p.id] = p;
@@ -57,7 +57,7 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
 }));
 
 describe('multi-seller checkout flow', () => {
-  it('creates separate orders per seller with ton payment', async () => {
+  it('creates separate orders per seller with near payment', async () => {
     jest
       .spyOn<any, any>(OrderService.prototype as any, 'simulateOrderProgress')
       .mockImplementation(() => {});
@@ -114,12 +114,12 @@ describe('multi-seller checkout flow', () => {
       postalCode: 'p',
     };
 
-    const orders = await svc.createOrdersFromCart('user1', items, shipping, 'ton');
+    const orders = await svc.createOrdersFromCart('user1', items, shipping, 'near');
     expect(orders).toHaveLength(2);
     expect(deployOrderPayment).toHaveBeenCalledTimes(2);
     const totals = orders.map((o) => o.total).sort();
     expect(totals).toEqual([5, 6]);
-    expect(orders.every((o) => o.paymentMethod === 'ton')).toBe(true);
+    expect(orders.every((o) => o.paymentMethod === 'near')).toBe(true);
     const escrows = orders.map((o) => o.escrowAddr).sort();
     expect(escrows).toEqual(['escrow_5', 'escrow_6']);
     expect(orders.every((o) => o.paymentTxHash && o.paymentContractAddress)).toBe(
@@ -141,7 +141,7 @@ describe('multi-seller checkout flow', () => {
     expect(firstPayload.storeId).toBe('s1');
     expect(firstPayload.buyerAddress).toBe('buyer_address');
     expect(firstPayload.sellerAddress).toBe('seller_s1');
-    expect(firstPayload.payment.method).toBe('ton');
+    expect(firstPayload.payment.method).toBe('near');
     expect(firstPayload.payment.contractAddress).toBe('escrow_5');
   });
 });

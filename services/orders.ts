@@ -11,8 +11,8 @@ import {
   OrderTrackingStep,
 } from '../types';
 import { sha256 } from '@noble/hashes/sha256';
-import { getStore } from '@/features/stores/services/tonStores';
-import { getProduct, setProduct } from '@/features/products/services/tonProducts';
+import { getStore } from '@/features/stores/services/nearStores';
+import { getProduct, setProduct } from '@/features/products/services/nearProducts';
 import nearAuth from '@/features/auth/services/nearAuth';
 import { adminResolve, deployOrderPayment } from './tonContract';
 import config from '../utils/appConfig';
@@ -40,7 +40,7 @@ export async function emitOrderEvents(order: Order, storeId: string) {
     await eventBus.publish(ORDER_TOPIC, 'order.created', {
       ...baseEvent,
     });
-    if (order.paymentMethod === 'ton') {
+    if (order.paymentMethod === 'near') {
       await eventBus.publish(ORDER_TOPIC, 'escrow.deployed', {
         ...baseEvent,
       });
@@ -112,7 +112,7 @@ class OrderService {
     items: CartItem[],
     shippingAddress: ShippingAddress,
     payment?: {
-      method?: 'cash_on_delivery' | 'ton' | 'card';
+      method?: 'cash_on_delivery' | 'near' | 'card';
       contractAddress?: string;
       txHash?: string;
       buyerAddress?: string;
