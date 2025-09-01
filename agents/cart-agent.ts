@@ -1,7 +1,13 @@
 import { CartItem } from '../types';
 import { assertNearChain } from '../services/chain';
-import { setCartItem, getCartItem, listCartItems, removeCartItem } from '@/features/cart/services/nearCart';
+import {
+  setCartItem,
+  getCartItem,
+  listCartItems,
+  removeCartItem,
+} from '@/features/cart/services/nearCart';
 import ensureNearWallet from '../utils/ensureNearWallet';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 
@@ -12,12 +18,14 @@ class CartAgent {
 
   async add(item: CartItem): Promise<void> {
     await this.ensureWallet();
-    await setCartItem(item);
+    const normalized = normalizeMessage<CartItem>('CartItem', item);
+    await setCartItem(normalized);
   }
 
   async update(item: CartItem): Promise<void> {
     await this.ensureWallet();
-    await setCartItem(item);
+    const normalized = normalizeMessage<CartItem>('CartItem', item);
+    await setCartItem(normalized);
   }
 
   async remove(id: string): Promise<void> {

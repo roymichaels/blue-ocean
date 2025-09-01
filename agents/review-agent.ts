@@ -5,6 +5,7 @@ import ordersAgent from './orders-agent';
 import productsAgent from './products-agent';
 import storesAgent from './stores-agent';
 import ensureNearWallet from '../utils/ensureNearWallet';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 
@@ -19,31 +20,32 @@ class ReviewAgent {
 
   async add(review: Review): Promise<void> {
     await this.ensureWallet();
+    const normalized = normalizeMessage<Review>('Review', review);
 
-    if (!review.orderId) {
+    if (!normalized.orderId) {
       throw new Error('Order reference required');
     }
 
-    const order = await ordersAgent.get(review.orderId);
+    const order = await ordersAgent.get(normalized.orderId);
     const validOrder =
       order &&
-      order.userId === review.userId &&
+      order.userId === normalized.userId &&
       order.status === 'delivered' &&
-      order.items.some((i) => i.productId === review.productId);
+      order.items.some((i) => i.productId === normalized.productId);
     if (!validOrder) {
       throw new Error('Only completed orders can be reviewed');
     }
 
-    const existing = await getReviews(review.productId);
-    if (existing.some((r) => r.userId === review.userId)) {
+    const existing = await getReviews(normalized.productId);
+    if (existing.some((r) => r.userId === normalized.userId)) {
       throw new Error('Duplicate review');
     }
 
-    await addReview(review);
-    this.subscribers.forEach((cb) => cb(review));
-    const product = await productsAgent.get(review.productId);
+    await addReview(normalized);
+    this.subscribers.forEach((cb) => cb(normalized));
+    const product = await productsAgent.get(normalized.productId);
     if (product) {
-      await storesAgent.recordReview(product.storeId, review.rating);
+      await storesAgent.recordReview(product.storeId, normalized.rating);
     }
   }
 
