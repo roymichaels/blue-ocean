@@ -2,7 +2,12 @@ import React, { Suspense } from 'react';
 import Spinner from '../../../../components/ui/Spinner';
 import RequireWallet from '../../../../components/RequireWallet';
 
-const KycApprovalsScreen = React.lazy(() => import('./_KycApprovalsScreen'));
+// Lazy-load the heavy KYC approvals screen to keep the initial bundle slim
+const KycApprovalsScreen = React.lazy(() =>
+  import(
+    /* webpackChunkName: "admin-kyc-approvals" */ './_KycApprovalsScreen'
+  )
+);
 
 export default function KycApprovalsRoute(props: any) {
   return (
