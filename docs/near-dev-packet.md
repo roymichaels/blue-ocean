@@ -325,6 +325,12 @@ start({
 });
 ```
 
+### Run
+
+```bash
+yarn indexer:dev
+```
+
 ---
 
 ## 6) Frontend SDK Wrapper
@@ -422,7 +428,7 @@ START_BLOCK=0
 - Fee math single source of truth (bps → yocto): reuse one helper.
 - Relayer safety: allowlist methods, cap gas/deposit, rate-limit.
 - Emit JSON logs from contract (strict schema) for Lake to parse.
-- No TON imports anywhere; run depcheck, knip, ts-prune.
+- Keep dependencies clean: run depcheck, knip, ts-prune.
 - CI gates: yarn typecheck && yarn lint && yarn doctor && yarn build:web.
 
 ---
