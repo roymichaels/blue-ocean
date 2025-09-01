@@ -1216,7 +1216,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   adminActionButton: {
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 12,
     width: 24,
     height: 24,
