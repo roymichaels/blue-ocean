@@ -2,14 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
+import RequireWallet from '../../components/RequireWallet';
 
 export default function AdminOverview() {
   useRequirePlatformAdmin();
   const { colors } = useTheme();
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text.primary }]}>Platform Overview</Text>
-    </View>
+    <RequireWallet>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.title, { color: colors.text.primary }]}>Platform Overview</Text>
+      </View>
+    </RequireWallet>
   );
 }
 

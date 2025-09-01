@@ -13,6 +13,7 @@ import InfoModal from '../../components/InfoModal';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import commonStyles from '@/constants/styles';
 import SettingsAgent from '../../agents/settings-agent';
+import RequireWallet from '../../components/RequireWallet';
 import BrandingSettings from '../../components/settings/BrandingSettings';
 import CurrencySettings from '../../components/settings/CurrencySettings';
 import EnvironmentSettings from '../../components/settings/EnvironmentSettings';
@@ -130,33 +131,36 @@ export default function SettingsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
-        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
-          <TouchableOpacity onPress={() => router.back()}> 
-            <ArrowLeft size={24} color={colors.text.primary} /> 
-          </TouchableOpacity> 
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text> 
-          <View style={commonStyles.spacer24} /> 
-        </View> 
-        <Spinner label="Loading settings" />
-      </SafeAreaView>
+      <RequireWallet>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <ArrowLeft size={24} color={colors.text.primary} />
+            </TouchableOpacity>
+            <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
+            <View style={commonStyles.spacer24} />
+          </View>
+          <Spinner label="Loading settings" />
+        </SafeAreaView>
+      </RequireWallet>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
-      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
-        <TouchableOpacity onPress={() => router.back()}> 
-          <ArrowLeft size={24} color={colors.text.primary} /> 
-        </TouchableOpacity> 
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text> 
-        <View style={commonStyles.spacer24} /> 
-      </View> 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
+    <RequireWallet>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <ArrowLeft size={24} color={colors.text.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
+          <View style={commonStyles.spacer24} />
+        </View>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
         <View style={styles.sectionHeader}>
           <SettingsIcon size={24} color={colors.gold} />
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>הגדרות כלליות</Text>
@@ -216,6 +220,7 @@ export default function SettingsScreen() {
         onClose={() => setInfoModal({ ...infoModal, visible: false })}
       />
     </SafeAreaView>
+  </RequireWallet>
   );
 }
 

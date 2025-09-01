@@ -1,12 +1,15 @@
 import React, { Suspense } from 'react';
 import Spinner from '../../../../components/ui/Spinner';
+import RequireWallet from '../../../../components/RequireWallet';
 
 const OrdersScreen = React.lazy(() => import('./_OrdersScreen'));
 
 export default function OrdersRoute(props: any) {
   return (
-    <Suspense fallback={<Spinner label="Orders" />}>
-      <OrdersScreen {...props} />
-    </Suspense>
+    <RequireWallet>
+      <Suspense fallback={<Spinner label="Orders" />}>
+        <OrdersScreen {...props} />
+      </Suspense>
+    </RequireWallet>
   );
 }

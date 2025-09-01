@@ -1,12 +1,15 @@
 import React, { Suspense } from 'react';
 import Spinner from '../../../../components/ui/Spinner';
+import RequireWallet from '../../../../components/RequireWallet';
 
 const DashboardScreen = React.lazy(() => import('./_DashboardScreen'));
 
 export default function DashboardRoute(props: any) {
   return (
-    <Suspense fallback={<Spinner label="Dashboard" />}>
-      <DashboardScreen {...props} />
-    </Suspense>
+    <RequireWallet>
+      <Suspense fallback={<Spinner label="Dashboard" />}>
+        <DashboardScreen {...props} />
+      </Suspense>
+    </RequireWallet>
   );
 }
