@@ -6,14 +6,14 @@ import {
 } from '@/services/nearKvStore';
 import { Store } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_STORES_ADDRESS') : 'ton:disabled';
-const DISABLED = ADDRESS === 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_STORES_CONTRACT') : 'near:disabled';
+const DISABLED = ADDRESS === 'near:disabled';
 let SEEDED = false;
 
 function ensureSeed() {

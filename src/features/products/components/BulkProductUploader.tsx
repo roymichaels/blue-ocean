@@ -9,8 +9,8 @@ import chain from '@/services/chain';
 
 let setProductBatch: ((storeId: string, items: Product[]) => Promise<void>) | undefined;
 let estimateSetProductBatch: ((items: Product[]) => number) | undefined;
-if (chain === 'ton') {
-  ({ setProductBatch, estimateSetProductBatch } = require('@/features/products/services/tonProducts'));
+if (chain === 'near') {
+  ({ setProductBatch, estimateSetProductBatch } = require('@/features/products/services/nearProducts'));
 }
 
 interface Summary {

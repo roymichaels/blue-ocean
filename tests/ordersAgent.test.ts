@@ -7,7 +7,7 @@ import { getEd25519KeyPair } from '../services/localIdentity';
 
 const mockStore: Record<string, any> = {};
 
-jest.mock('../services/tonOrders', () => ({
+jest.mock('../services/nearOrders', () => ({
   setOrder: jest.fn(async (o: any) => {
     mockStore[o.id] = o;
   }),
@@ -26,7 +26,7 @@ jest.mock('../agents/settings-agent', () => ({
   default: { getInstance: () => ({ getAdmins: getAdminsMock }) },
 }));
 
-jest.mock('../services/tonContract', () => ({
+jest.mock('../services/nearContract', () => ({
   deployOrderPayment: jest.fn().mockResolvedValue({ contractAddress: 'escrow1', txHash: 'tx1' }),
   releasePayment: jest.fn().mockResolvedValue('hash-release'),
   refundPayment: jest.fn().mockResolvedValue('hash-refund'),

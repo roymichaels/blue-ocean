@@ -1,23 +1,22 @@
 // Configuration values are loaded from environment variables.
 // Only a minimal set of keys is supported at runtime.
 
-// Only enforce TON addresses when running in TON mode. When using NEAR,
-// these are not required and should not crash the app if missing.
+// Only enforce NEAR contracts when running in NEAR mode.
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const TON_REQUIRED_ENV_KEYS: string[] = [
-  'TON_SETTINGS_ADDRESS',
-  'TON_ORDERS_ADDRESS',
-  'TON_PRODUCT_INDEX_ADDRESS',
-  'TON_NOTIFICATIONS_ADDRESS',
-  'TON_STORES_ADDRESS',
-  'TON_REPORTS_ADDRESS',
-  'TON_REVIEWS_ADDRESS',
-  'TON_CATEGORIES_ADDRESS',
-  'TON_CART_ADDRESS',
-  'TON_PRODUCTS_ADDRESS',
-  'TON_USERS_ADDRESS',
+const NEAR_REQUIRED_ENV_KEYS: string[] = [
+  'NEAR_SETTINGS_CONTRACT',
+  'NEAR_ORDERS_CONTRACT',
+  'NEAR_PRODUCT_INDEX_CONTRACT',
+  'NEAR_NOTIFICATIONS_CONTRACT',
+  'NEAR_STORES_CONTRACT',
+  'NEAR_REPORTS_CONTRACT',
+  'NEAR_REVIEWS_CONTRACT',
+  'NEAR_CATEGORIES_CONTRACT',
+  'NEAR_CART_CONTRACT',
+  'NEAR_PRODUCTS_CONTRACT',
+  'NEAR_USERS_CONTRACT',
 ];
-const REQUIRED_ENV_KEYS: string[] = CHAIN === 'ton' ? TON_REQUIRED_ENV_KEYS : [];
+const REQUIRED_ENV_KEYS: string[] = CHAIN === 'near' ? NEAR_REQUIRED_ENV_KEYS : [];
 
 const ENV_KEYS = [
   'EXPO_PUBLIC_DEBUG_LOGS',
@@ -25,13 +24,13 @@ const ENV_KEYS = [
   'EXPO_PUBLIC_CHAIN',
   'ADMIN_WALLET_ADDRESS_MAINNET',
   'ADMIN_WALLET_ADDRESS_TESTNET',
-  'TON_NETWORK',
-  'TON_PAYMENT_FACTORY_ADDRESS',
+  'NEAR_NETWORK',
+  'NEAR_PAYMENT_FACTORY_CONTRACT',
 
   ...REQUIRED_ENV_KEYS,
-  'TON_RPC_URL',
-  'TON_RPC_FALLBACK_URLS',
-  'ENABLE_UNSAFE_TON_PRIVATE_KEY',
+  'NEAR_RPC_URL',
+  'NEAR_RPC_FALLBACK_URLS',
+  'ENABLE_UNSAFE_NEAR_PRIVATE_KEY',
   'EXPO_PUBLIC_PINATA_API_KEY',
   'EXPO_PUBLIC_PINATA_SECRET_API_KEY',
   'EXPO_PUBLIC_PINATA_JWT',
@@ -43,7 +42,7 @@ function loadConfig(): Record<string, string> {
     const value = process.env[key];
     if (value !== undefined) {
       if (
-        key === 'ENABLE_UNSAFE_TON_PRIVATE_KEY' &&
+        key === 'ENABLE_UNSAFE_NEAR_PRIVATE_KEY' &&
         process.env.NODE_ENV === 'production'
       ) {
         continue;
@@ -94,7 +93,7 @@ export function requireEnv(key: string): string {
   return value;
 }
 
-export function getTonRpcUrls(): string[] {
+export function getNearRpcUrls(): string[] {
   let tenantRpc = '';
   let tenantFallbacks: string[] = [];
   try {
@@ -102,9 +101,9 @@ export function getTonRpcUrls(): string[] {
     tenantRpc = tenant.AppConfig?.rpcUrl || '';
     tenantFallbacks = tenant.AppConfig?.rpcFallbackUrls || [];
   } catch {}
-  const envPrimary = config.TON_RPC_URL || process.env.TON_RPC_URL || '';
+  const envPrimary = config.NEAR_RPC_URL || process.env.NEAR_RPC_URL || '';
   const envFallbackRaw =
-    config.TON_RPC_FALLBACK_URLS || process.env.TON_RPC_FALLBACK_URLS || '';
+    config.NEAR_RPC_FALLBACK_URLS || process.env.NEAR_RPC_FALLBACK_URLS || '';
   const envFallbacks = envFallbackRaw
     .split(',')
     .map((u) => u.trim())
@@ -112,10 +111,10 @@ export function getTonRpcUrls(): string[] {
   let primary = envPrimary || tenantRpc;
   const fallbacks = envFallbacks.length > 0 ? envFallbacks : tenantFallbacks;
   if (!primary) {
-    primary = 'https://testnet.toncenter.com/api/v2/jsonRPC';
+    primary = 'https://rpc.testnet.near.org';
     // eslint-disable-next-line no-console
     console.warn(
-      'TON_RPC_URL not set, defaulting to https://testnet.toncenter.com/api/v2/jsonRPC',
+      'NEAR_RPC_URL not set, defaulting to https://rpc.testnet.near.org',
     );
   }
   return [primary, ...fallbacks];

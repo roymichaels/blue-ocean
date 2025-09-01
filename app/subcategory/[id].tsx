@@ -19,8 +19,8 @@ import chain from '@/services/chain';
 import { Product, Subcategory, Category, PricingTier, Store } from '@/types';
 
 let listStores: (() => Promise<Store[]>) | undefined;
-if (chain === 'ton') {
-  ({ listStores } = require('@/features/stores/services/tonStores'));
+if (chain === 'near') {
+  ({ listStores } = require('@/features/stores/services/nearStores'));
 }
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';

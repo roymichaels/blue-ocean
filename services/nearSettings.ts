@@ -1,8 +1,8 @@
 import { debugLog, errorLog } from '@/utils/logger';
-import { assertTonChain } from './chain';
+import { assertNearChain } from './chain';
 import { getValue, setValue, listValues } from './nearKvStore';
 
-assertTonChain();
+assertNearChain();
 import config, { getWakuBootstrapNodes, requireEnv } from '../utils/appConfig';
 import {
   LightNode,
@@ -22,11 +22,11 @@ import { sign } from '@noble/ed25519';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_SETTINGS_ADDRESS') : 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_SETTINGS_CONTRACT') : 'near:disabled';
 
 const TEST_ADMIN = 'EQtestadmin';
 const NETWORK =
-  (config.TON_NETWORK || process.env.TON_NETWORK || 'mainnet').toLowerCase();
+  (config.NEAR_NETWORK || process.env.NEAR_NETWORK || 'mainnet').toLowerCase();
 const legacyAdmin =
   config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
 const ADMIN_MAIN =

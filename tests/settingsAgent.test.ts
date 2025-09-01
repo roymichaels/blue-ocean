@@ -3,13 +3,13 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   signIn: jest.fn(),
 }));
 jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
-jest.mock('../services/tonSettings');
+jest.mock('../services/nearSettings');
 
 import SettingsAgent from '../agents/settings-agent';
 import { __clear } from './tonKvMock';
-import * as tonSettings from '../services/tonSettings';
-const directSetAdmins = tonSettings.setAdmins;
-const __store = (tonSettings as any).__store;
+import * as nearSettings from '../services/nearSettings';
+const directSetAdmins = nearSettings.setAdmins;
+const __store = (nearSettings as any).__store;
 let subscribed: (evt: any) => void;
 
 describe('SettingsAgent TON integration', () => {
@@ -19,7 +19,7 @@ describe('SettingsAgent TON integration', () => {
     (SettingsAgent as any).ADMIN_CACHE_TTL = 10; // short TTL for tests
     for (const k of Object.keys(__store)) delete __store[k];
     subscribed = () => {};
-    (tonSettings.subscribeToSettingsWrites as jest.Mock).mockImplementation(
+    (nearSettings.subscribeToSettingsWrites as jest.Mock).mockImplementation(
       async (cb) => {
         subscribed = cb;
         return () => {};
@@ -48,7 +48,7 @@ describe('SettingsAgent TON integration', () => {
   });
 
   it('refreshes admin list on settings write event', async () => {
-    const getSpy = jest.spyOn(tonSettings, 'getAdmins');
+    const getSpy = jest.spyOn(nearSettings, 'getAdmins');
     const agent = SettingsAgent.getInstance();
     await agent.setAdmins(['addr_admin']);
 
@@ -87,7 +87,7 @@ describe('SettingsAgent TON integration', () => {
   });
 
   it('resets admin cache TTL after setAdmins', async () => {
-    const getSpy = jest.spyOn(tonSettings, 'getAdmins');
+    const getSpy = jest.spyOn(nearSettings, 'getAdmins');
     const agent = SettingsAgent.getInstance();
     await agent.setAdmins(['addr_admin']);
     await new Promise((r) => setTimeout(r, 20));

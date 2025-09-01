@@ -4,8 +4,8 @@ import chain from '../services/chain';
 import config from '../utils/appConfig';
 
 let fetchSettings: (() => Promise<any>) | undefined;
-if (chain === 'ton') {
-  ({ fetchSettings } = require('../services/tonSettings'));
+if (chain === 'near') {
+  ({ fetchSettings } = require('../services/nearSettings'));
 }
 
 export let TENANT = 'blue-ocean';
@@ -27,7 +27,7 @@ export interface TenantSettings {
 const initialAdmin =
   (() => {
     const network =
-      (config.TON_NETWORK || process.env.TON_NETWORK || 'mainnet').toLowerCase();
+      (config.NEAR_NETWORK || process.env.NEAR_NETWORK || 'mainnet').toLowerCase();
     const legacy =
       config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
     const main =

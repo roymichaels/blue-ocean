@@ -11,10 +11,10 @@ import {
   OrderTrackingStep,
 } from '../types';
 import { sha256 } from '@noble/hashes/sha256';
-import { getStore } from '@/features/stores/services/tonStores';
-import { getProduct, setProduct } from '@/features/products/services/tonProducts';
+import { getStore } from '@/features/stores/services/nearStores';
+import { getProduct, setProduct } from '@/features/products/services/nearProducts';
 import nearAuth from '@/features/auth/services/nearAuth';
-import { adminResolve, deployOrderPayment } from './tonContract';
+import { adminResolve, deployOrderPayment } from './nearContract';
 import config from '../utils/appConfig';
 import { calculateCardFees } from '@/payments/card';
 
@@ -294,7 +294,7 @@ class OrderService {
     if (!order || !order.escrowAddr) return;
     const actor = nearAuth.getAccountId();
     const network =
-      (config.TON_NETWORK || process.env.TON_NETWORK || 'mainnet').toLowerCase();
+      (config.NEAR_NETWORK || process.env.NEAR_NETWORK || 'mainnet').toLowerCase();
     const legacy =
       config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
     const admin =

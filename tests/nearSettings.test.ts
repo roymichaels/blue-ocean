@@ -1,4 +1,4 @@
-import { fetchSettings } from '../services/tonSettings';
+import { fetchSettings } from '../services/nearSettings';
 
 jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
 

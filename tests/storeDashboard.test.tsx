@@ -17,8 +17,8 @@ jest.mock('../contexts/ThemeContext', () => ({
   }),
 }));
 
-jest.mock('@/features/stores/services/tonStores', () => ({ getStore: jest.fn() }));
-jest.mock('@/features/products/services/tonProducts', () => ({ listProducts: jest.fn() }));
+jest.mock('@/features/stores/services/nearStores', () => ({ getStore: jest.fn() }));
+jest.mock('@/features/products/services/nearProducts', () => ({ listProducts: jest.fn() }));
 
 jest.mock('@/features/auth/AuthContext', () => ({ useAuth: jest.fn() }));
 
@@ -29,8 +29,8 @@ jest.mock('../components/OrderRevenueMetrics', () => ({
 
 describe('StoreDashboardScreen', () => {
   const { useLocalSearchParams, router } = require('expo-router');
-  const { getStore } = require('@/features/stores/services/tonStores');
-  const { listProducts } = require('@/features/products/services/tonProducts');
+  const { getStore } = require('@/features/stores/services/nearStores');
+  const { listProducts } = require('@/features/products/services/nearProducts');
   const { useAuth } = require('@/features/auth/AuthContext');
 
   beforeEach(() => {

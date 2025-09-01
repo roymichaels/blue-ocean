@@ -8,9 +8,9 @@ import { useAuth } from '@/features/auth/AuthContext';
 
 let listProducts: (() => Promise<any[]>) | undefined;
 let getStore: ((tenant: string, id: string) => Promise<any>) | undefined;
-if (chain === 'ton') {
-  ({ listProducts } = require('@/features/products/services/tonProducts'));
-  ({ getStore } = require('@/features/stores/services/tonStores'));
+if (chain === 'near') {
+  ({ listProducts } = require('@/features/products/services/nearProducts'));
+  ({ getStore } = require('@/features/stores/services/nearStores'));
 }
 
 export default function StoreDashboardScreen() {

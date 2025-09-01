@@ -1,14 +1,14 @@
 import { Notification } from '../types';
 import { NotificationEvent } from '../types/waku';
-import { assertTonChain } from '../services/chain';
+import { assertNearChain } from '../services/chain';
 import {
   setNotification,
   getNotification,
   listNotifications,
   removeNotification,
-} from '../services/tonNotifications';
+} from '../services/nearNotifications';
 
-assertTonChain();
+assertNearChain();
 import {
   LightNode,
   createLightNode,
@@ -27,7 +27,7 @@ class NotificationsAgent {
   private node: LightNode | null = null;
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your TON wallet to send notifications.');
+    await ensureTonWallet('Please connect your NEAR wallet to send notifications.');
   }
 
   async add(item: Notification, storeId = 'default'): Promise<void> {

@@ -18,7 +18,7 @@ jest.mock('../services/media', () => ({
 const setProductBatchMock = jest.fn(async (_storeId: string, _products: Product[]) => {});
 const estimateSetProductBatchMock = jest.fn(async (_products: Product[]) => 1);
 
-jest.mock('@/features/products/services/tonProducts', () => ({
+jest.mock('@/features/products/services/nearProducts', () => ({
   setProductBatch: (storeId: string, products: Product[]) => setProductBatchMock(storeId, products),
   estimateSetProductBatch: (products: Product[]) => estimateSetProductBatchMock(products),
 }));
@@ -29,7 +29,7 @@ describe('BulkProductUploader processRecords', () => {
     setProductBatchMock.mockClear();
     estimateSetProductBatchMock.mockClear();
     insertConfig({
-      TON_RPC_URL: 'http://localhost',
+      NEAR_RPC_URL: 'http://localhost',
       ADMIN_WALLET_ADDRESS_MAINNET: undefined,
       ADMIN_WALLET_ADDRESS_TESTNET: undefined,
 

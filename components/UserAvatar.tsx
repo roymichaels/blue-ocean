@@ -20,8 +20,8 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import chain from '@/services/chain';
 
 let listStores: (() => Promise<any[]>) | undefined;
-if (chain === 'ton') {
-  ({ listStores } = require('@/features/stores/services/tonStores'));
+if (chain === 'near') {
+  ({ listStores } = require('@/features/stores/services/nearStores'));
 }
 
 const { width } = Dimensions.get('window');

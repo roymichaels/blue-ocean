@@ -1,7 +1,7 @@
 import { isChatConfigured } from '../services/chatConfig';
-import { getAdmins } from '../services/tonSettings';
+import { getAdmins } from '../services/nearSettings';
 
-jest.mock('../services/tonSettings', () => ({
+jest.mock('../services/nearSettings', () => ({
   getAdmins: jest.fn(),
 }));
 

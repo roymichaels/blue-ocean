@@ -1,6 +1,6 @@
-import { setProduct, listProducts } from '@/features/products/services/tonProducts';
-import { setOrder, listOrders } from '../services/tonOrders';
-import { setStore, listStores } from '@/features/stores/services/tonStores';
+import { setProduct, listProducts } from '@/features/products/services/nearProducts';
+import { setOrder, listOrders } from '../services/nearOrders';
+import { setStore, listStores } from '@/features/stores/services/nearStores';
 import { Product, Order, Store, ShippingAddress } from '../types';
 
 jest.mock('../services/nearKvStore', () => {

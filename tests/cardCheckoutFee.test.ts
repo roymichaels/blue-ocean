@@ -4,7 +4,7 @@ import { CartItem, ShippingAddress } from '../types';
 const mockStore: Record<string, any> = {};
 const mockProducts: Record<string, any> = {};
 
-jest.mock('../services/tonOrders', () => ({
+jest.mock('../services/nearOrders', () => ({
   setOrder: jest.fn(async (o: any) => { mockStore[o.id] = o; }),
   getOrder: jest.fn(async (id: string) => mockStore[id] || null),
   listOrders: jest.fn().mockResolvedValue([]),
@@ -14,17 +14,17 @@ jest.mock('../services/tonOrders', () => ({
 
 jest.mock('../services/eventBus', () => ({ publish: jest.fn() }));
 
-jest.mock('../services/tonContract', () => ({
+jest.mock('../services/nearContract', () => ({
   deployOrderPayment: jest.fn(),
   releasePayment: jest.fn(),
   refundPayment: jest.fn(),
 }));
 
-jest.mock('@/features/stores/services/tonStores', () => ({
+jest.mock('@/features/stores/services/nearStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
 }));
 
-jest.mock('@/features/products/services/tonProducts', () => ({
+jest.mock('@/features/products/services/nearProducts', () => ({
   getProduct: jest.fn(async (id: string) => mockProducts[id] || null),
   setProduct: jest.fn(async (p: any) => {
     mockProducts[p.id] = p;

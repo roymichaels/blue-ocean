@@ -2,8 +2,8 @@ import chain from './chain';
 
 let getAdmins: (() => Promise<string[]>) | undefined;
 
-if (chain === 'ton') {
-  ({ getAdmins } = require('./tonSettings'));
+if (chain === 'near') {
+  ({ getAdmins } = require('./nearSettings'));
 }
 
 export async function isChatConfigured(): Promise<boolean> {

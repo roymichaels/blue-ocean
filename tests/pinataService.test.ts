@@ -7,7 +7,7 @@ import path from 'path';
 describe('PinataService', () => {
   beforeEach(async () => {
     insertConfig({
-      TON_RPC_URL: 'https://ton.example',
+      NEAR_RPC_URL: 'https://near.example',
       ADMIN_WALLET_ADDRESS_MAINNET: undefined,
       ADMIN_WALLET_ADDRESS_TESTNET: undefined,
       EXPO_PUBLIC_PINATA_API_KEY: undefined,
