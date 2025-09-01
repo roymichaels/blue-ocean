@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { debugLog, errorLog } from '@/utils/logger';
+import { errorLog } from '@/utils/logger';
 import {
   LightNode,
   createLightNode,
@@ -31,6 +30,7 @@ async function ensureNode(): Promise<LightNode | null> {
       return null;
     }
     let bootstrap = getWakuBootstrapNodes();
+    if (bootstrap.length === 0) bootstrap = STABLE_BOOTSTRAP;
     if (bootstrap.length === 0) return null;
     node = await createLightNode({ libp2p: { bootstrap } });
     await node.start();
@@ -46,7 +46,7 @@ async function ensureNode(): Promise<LightNode | null> {
 export async function publish(
   contentTopic: string,
   type: string,
-  payload: Record<string, any> = {},
+  payload: Record<string, unknown> = {},
 ): Promise<void> {
   const n = await ensureNode();
   if (!n) return;
@@ -71,7 +71,7 @@ export async function publish(
 
 export async function track(
   type: string,
-  payload: Record<string, any> = {},
+  payload: Record<string, unknown> = {},
 ): Promise<void> {
   await publish(ANALYTICS_TOPIC, type, payload);
 }
