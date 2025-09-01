@@ -7,6 +7,7 @@ import {
   removeCategory,
 } from '@/features/products/services/nearCategories';
 import ensureNearWallet from '@/utils/ensureNearWallet';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 
@@ -17,12 +18,14 @@ class CategoriesAgent {
 
   async add(item: Category): Promise<void> {
     await this.ensureWallet();
-    await setCategory(item);
+    const normalized = normalizeMessage<Category>('Category', item);
+    await setCategory(normalized);
   }
 
   async update(item: Category): Promise<void> {
     await this.ensureWallet();
-    await setCategory(item);
+    const normalized = normalizeMessage<Category>('Category', item);
+    await setCategory(normalized);
   }
 
   async remove(id: string): Promise<void> {

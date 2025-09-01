@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import DatabaseService from '../services/database';
 import { ChatRoom } from '../types';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 class ChatAgent {
   private emitter = new EventEmitter();
@@ -23,7 +24,7 @@ class ChatAgent {
       sellerPublicKey,
       roomId,
     );
-    const room: ChatRoom = {
+    const room = normalizeMessage<ChatRoom>('ChatRoom', {
       id: roomId,
       userId: sellerAddress,
       userName: sellerName,
@@ -31,7 +32,7 @@ class ChatAgent {
       lastMessage: '',
       lastMessageTime: Date.now(),
       unreadCount: 0,
-    };
+    });
     this.emitter.emit('open', room);
   }
 

@@ -8,6 +8,7 @@ import {
   subscribeToSettingsWrites,
 } from '../services/nearSettings';
 import ensureNearWallet from '../utils/ensureNearWallet';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 
@@ -76,8 +77,9 @@ class SettingsAgent {
   async setAdmins(admins: string[]): Promise<void> {
     await this.ensureWallet();
     const actor = nearAuth.getAccountId()!;
-    await storeAdmins(admins, actor);
-    this.admins = admins;
+    const normalized = normalizeMessage<string[]>('Admins', admins as any);
+    await storeAdmins(normalized, actor);
+    this.admins = normalized;
     this.adminsFetchedAt = Date.now();
   }
 

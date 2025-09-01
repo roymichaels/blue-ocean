@@ -28,6 +28,7 @@ import { sign } from '@noble/ed25519';
 import type { WakuMessage } from '@/types/waku';
 import { errorLog } from '@/utils/logger';
 import { buildTopic } from '@/utils/wakuTopics';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 import {
   getProductCache,
@@ -176,21 +177,29 @@ class ProductsAgent {
   }
 
   async add(item: Product): Promise<void> {
-    await this.assertStoreOwner(item.storeId);
-    await setProduct(item.storeId, item);
-    this.cache.set(item.id, item);
-    this.summaries.set(item.id, { rating: item.rating, reviews: item.reviews });
-    await this.subscribeStore(item.storeId);
-    await this.broadcast(item);
+    const normalized = normalizeMessage<Product>('Product', item);
+    await this.assertStoreOwner(normalized.storeId);
+    await setProduct(normalized.storeId, normalized);
+    this.cache.set(normalized.id, normalized);
+    this.summaries.set(normalized.id, {
+      rating: normalized.rating,
+      reviews: normalized.reviews,
+    });
+    await this.subscribeStore(normalized.storeId);
+    await this.broadcast(normalized);
   }
 
   async update(item: Product): Promise<void> {
-    await this.assertStoreOwner(item.storeId);
-    await setProduct(item.storeId, item);
-    this.cache.set(item.id, item);
-    this.summaries.set(item.id, { rating: item.rating, reviews: item.reviews });
-    await this.subscribeStore(item.storeId);
-    await this.broadcast(item);
+    const normalized = normalizeMessage<Product>('Product', item);
+    await this.assertStoreOwner(normalized.storeId);
+    await setProduct(normalized.storeId, normalized);
+    this.cache.set(normalized.id, normalized);
+    this.summaries.set(normalized.id, {
+      rating: normalized.rating,
+      reviews: normalized.reviews,
+    });
+    await this.subscribeStore(normalized.storeId);
+    await this.broadcast(normalized);
   }
 
   async remove(id: string): Promise<void> {

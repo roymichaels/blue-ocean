@@ -7,6 +7,7 @@ import {
   removeStore,
 } from '@/features/stores/services/nearStores';
 import ensureNearWallet from '@/utils/ensureNearWallet';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 
@@ -79,12 +80,14 @@ class StoresAgent {
 
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
-    await setStore(item.id, this.toRecord(item));
+    const normalized = normalizeMessage<Store>('Store', item);
+    await setStore(normalized.id, this.toRecord(normalized));
   }
 
   async update(item: Store): Promise<void> {
     await this.ensureWallet();
-    await setStore(item.id, this.toRecord(item));
+    const normalized = normalizeMessage<Store>('Store', item);
+    await setStore(normalized.id, this.toRecord(normalized));
   }
 
   async remove(id: string): Promise<void> {

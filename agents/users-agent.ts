@@ -1,17 +1,13 @@
 import { User } from '@/types';
 import { assertNearChain } from '@/services/chain';
-import {
-  getUser,
-  setUser,
-  listUsers,
-  removeUser,
-} from '@/features/auth/services/nearUsers';
+import { getUser, setUser, listUsers, removeUser } from '@/features/auth/services/nearUsers';
 import { getPublicKeyHex } from '@/services/localIdentity';
 import SettingsAgent from './settings-agent';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import validateNearAddress from '@/utils/validateNearAddress';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 import type { WakuMessage } from '@/types/waku';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 
@@ -31,13 +27,19 @@ class UsersAgent {
   }
 
   async add(user: User): Promise<void> {
+    const normalized = normalizeMessage<User>('User', user);
     const { address, publicKey } = await this.ensureWallet();
     const admins = await SettingsAgent.getInstance().getAdmins();
-    if (address !== user.address && !admins.includes(address)) {
+    if (address !== normalized.address && !admins.includes(address)) {
       throw new Error('Only the user or an admin can add this user');
     }
     const chatPublicKey = await getPublicKeyHex();
-    const enriched: User = { ...user, publicKey, address, chatPublicKey };
+    const enriched: User = {
+      ...normalized,
+      publicKey,
+      address,
+      chatPublicKey,
+    };
     if (!validateNearAddress(address)) {
       throw new Error('Invalid NEAR address');
     }
@@ -45,13 +47,19 @@ class UsersAgent {
   }
 
   async update(user: User): Promise<void> {
+    const normalized = normalizeMessage<User>('User', user);
     const { address, publicKey } = await this.ensureWallet();
     const admins = await SettingsAgent.getInstance().getAdmins();
-    if (address !== user.address && !admins.includes(address)) {
+    if (address !== normalized.address && !admins.includes(address)) {
       throw new Error('Only the user or an admin can update this user');
     }
     const chatPublicKey = await getPublicKeyHex();
-    const enriched: User = { ...user, publicKey, address, chatPublicKey };
+    const enriched: User = {
+      ...normalized,
+      publicKey,
+      address,
+      chatPublicKey,
+    };
     if (!validateNearAddress(address)) {
       throw new Error('Invalid NEAR address');
     }
@@ -78,14 +86,14 @@ class UsersAgent {
     if (address !== user.address && !admins.includes(address)) {
       throw new Error('Only the user or an admin can request KYC');
     }
-    const enriched: User = {
+    const enriched: User = normalizeMessage<User>('User', {
       ...user,
       publicKey,
       address,
       kycStatus: 'pending',
       kycRequestedAt: new Date().toISOString(),
       kycDocumentUri: documentUri,
-    };
+    });
     await setUser(enriched);
   }
 
@@ -102,14 +110,14 @@ class UsersAgent {
     }
     const user = await getUser(userId);
     if (!user) throw new Error('User not found');
-    const enriched: User = {
+    const enriched: User = normalizeMessage<User>('User', {
       ...user,
       publicKey,
       address,
       kycStatus: status,
       kycApprovedBy: adminId ?? address,
       kycApprovedAt: new Date().toISOString(),
-    };
+    });
     await setUser(enriched);
   }
 
@@ -126,10 +134,10 @@ class UsersAgent {
     const msg = signed.payload;
     switch (msg.type) {
       case 'user.add':
-        await this.add(msg.payload);
+        await this.add(normalizeMessage<User>('User', msg.payload));
         break;
       case 'user.update':
-        await this.update(msg.payload);
+        await this.update(normalizeMessage<User>('User', msg.payload));
         break;
       case 'user.remove':
         await this.remove(msg.payload.id);
