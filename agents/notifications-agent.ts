@@ -72,6 +72,23 @@ class NotificationsAgent {
     this.subscribers.delete(cb);
   }
 
+  async trackAnalytics(
+    event: string,
+    payload: Record<string, unknown> = {},
+  ): Promise<void> {
+    const node = await this.ensureNode();
+    if (!node) return;
+    try {
+      const topic = buildTopic('analytics', '1');
+      const encoder = createEncoder({ contentTopic: topic });
+      await node.lightPush.send(encoder, {
+        payload: utf8ToBytes(JSON.stringify({ type: event, ...payload })),
+      });
+    } catch (err) {
+      errorLog('Failed to broadcast analytics event', err);
+    }
+  }
+
   private async ensureNode(): Promise<LightNode | null> {
     if (this.node) return this.node;
     try {
