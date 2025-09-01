@@ -1,6 +1,6 @@
 import { fetchSettings } from '../services/tonSettings';
 
-jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
+jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
 
 const { setValue, __clear } = require('./tonKvMock');
 

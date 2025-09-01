@@ -21,7 +21,7 @@ insertConfig({
   EXPO_PUBLIC_CHAIN: 'ton',
 });
 
-jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
+jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
 jest.mock('../services/tonSettings');
 const { loadTenantSettings } = require('../constants/tenant');
 
