@@ -12,17 +12,15 @@ import {
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { ShoppingCart, X, Plus, Minus } from 'lucide-react-native';
-import CartService from '../services/cart';
-import { CartItem } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { router } from 'expo-router';
+import useCart from '../hooks/useCart';
 
 const { width } = Dimensions.get('window');
 
 export default function FloatingCartWidget() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [animatedHeight] = useState(new Animated.Value(60));
   const [animatedOpacity] = useState(new Animated.Value(0));
@@ -30,36 +28,24 @@ export default function FloatingCartWidget() {
   const { currencySymbol } = useCurrency();
   const { t } = useLanguage();
   const isRTL = I18nManager.isRTL;
+  const { cartItems, updateQuantity, removeItem, getTotal, getTotalItems } = useCart();
 
   useEffect(() => {
-    const cartService = CartService.getInstance();
-    
-    const updateCart = () => {
-      const items = cartService.getCartItems();
-      setCartItems(items);
-      
-      // Show/hide widget based on cart content
-      if (items.length > 0) {
-        Animated.timing(animatedOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: false,
-        }).start();
-      } else {
-        Animated.timing(animatedOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: false,
-        }).start();
-        setIsExpanded(false);
-      }
-    };
-
-    updateCart();
-    cartService.addListener(updateCart);
-    
-    return () => cartService.removeListener(updateCart);
-  }, []);
+    if (cartItems.length > 0) {
+      Animated.timing(animatedOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.timing(animatedOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+      setIsExpanded(false);
+    }
+  }, [cartItems.length, animatedOpacity]);
 
   const toggleExpanded = () => {
     const newExpanded = !isExpanded;
@@ -70,27 +56,6 @@ export default function FloatingCartWidget() {
       duration: 300,
       useNativeDriver: false,
     }).start();
-  };
-
-  const updateQuantity = async (itemId: string, newQuantity: number) => {
-    const cartService = CartService.getInstance();
-    await cartService.updateCartItemQuantity(itemId, newQuantity);
-  };
-
-  const removeItem = async (itemId: string) => {
-    const cartService = CartService.getInstance();
-    await cartService.removeFromCart(itemId);
-  };
-
-  const getTotal = () => {
-    return cartItems.reduce((total, item) => {
-      const price = item.unitPrice ?? item.product.price;
-      return total + price * item.quantity;
-    }, 0);
-  };
-
-  const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
     const goToCheckout = () => {
