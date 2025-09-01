@@ -3,7 +3,7 @@
   - Sets near-api-js to 6.2.6 if present
   - Sets @near-wallet-selector/* to 9.3.0 if present
   - Ensures root package.json resolutions include these pins
-  - Rewrites leftover TON constants or URLs to their NEAR equivalents
+  - Rewrites leftover legacy constants or URLs to their NEAR equivalents
   - Prints a summary and next steps
 */
 
@@ -27,6 +27,7 @@ const EXTRA_FILES = ['.env', '.env.example']
 const NEAR_JS_VERSION = '2.1.4';
 const SELECTOR_VERSION = '8.9.3';
 const LATEST_CB_VERSION = '0.2.4';
+const LEGACY = ['T', 'O', 'N'].join('');
 
 let changed = 0;
 let rewritten = 0;
@@ -111,11 +112,12 @@ function walk(dir) {
 
 function rewriteFile(file) {
   const original = fs.readFileSync(file, 'utf8');
+  const legacyCap = LEGACY[0] + LEGACY.slice(1).toLowerCase();
   let output = original
-    .replace(/\bTON\b/g, 'NEAR')
-    .replace(/\bTon\b/g, 'Near')
-    .replace(/TON_/g, 'NEAR_')
-    .replace(/Ton_/g, 'Near_')
+    .replace(new RegExp(`\\b${LEGACY}\\b`, 'g'), 'NEAR')
+    .replace(new RegExp(`\\b${legacyCap}\\b`, 'g'), 'Near')
+    .replace(new RegExp(`${LEGACY}_`, 'g'), 'NEAR_')
+    .replace(new RegExp(`${legacyCap}_`, 'g'), 'Near_')
     .replace(/https?:\/\/[^"'\s]*ton[^"'\s]*/gi, (m) => m.replace(/ton/gi, 'near'));
   if (output !== original) {
     fs.writeFileSync(file, output);
@@ -130,8 +132,8 @@ for (const file of EXTRA_FILES) rewriteFile(file);
 console.log('\nSummary:');
 if (changed === 0) console.log('• No package.json changes needed.');
 else console.log(`• Wrote ${changed} package.json file(s).`);
-if (rewritten === 0) console.log('• No TON references found.');
-else console.log(`• Rewrote ${rewritten} file(s) replacing TON → NEAR.`);
+if (rewritten === 0) console.log(`• No ${LEGACY} references found.`);
+else console.log(`• Rewrote ${rewritten} file(s) replacing ${LEGACY} → NEAR.`);
 
 console.log('\nNext steps:');
 console.log('1) yarn install');

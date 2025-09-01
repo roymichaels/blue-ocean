@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native
 import { Package, Tag, MessageCircle, Info, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { Notification } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
-import { spacing, radius, shadows } from '../constants/tokens';
-import { typography } from '../constants/styles';
+import { spacing, radius, shadows } from '@/constants/tokens';
+import { typography } from '@/constants/styles';
 
 interface NotificationItemProps {
   notification: Notification;

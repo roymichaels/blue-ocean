@@ -15,7 +15,7 @@ import DatabaseService from '../../services/database';
 import { User } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import commonStyles from '../../constants/styles';
+import commonStyles from '@/constants/styles';
 import SmartImage from '../../components/SmartImage';
 
 

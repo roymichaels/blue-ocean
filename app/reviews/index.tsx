@@ -21,7 +21,7 @@ import Spinner from '../../components/ui/Spinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
-import commonStyles from '../../constants/styles';
+import commonStyles from '@/constants/styles';
 import Card from '../../components/Card';
 import SmartImage from '../../components/SmartImage';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';

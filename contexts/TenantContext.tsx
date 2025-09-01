@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'expo-router';
-import { loadTenantSettings } from '../constants/tenant';
+import { loadTenantSettings } from '@/constants/tenant';
 
 interface TenantContextType {
   storeId: string | null;

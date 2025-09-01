@@ -1,5 +1,5 @@
 import { insertConfig } from './testUtils';
-import { loadTenantSettings, getAdmins } from '../constants/tenant';
+import { loadTenantSettings, getAdmins } from '@/constants/tenant';
 import PinataService from '../services/pinata';
 import fs from 'fs';
 import path from 'path';

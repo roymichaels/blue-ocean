@@ -9,7 +9,7 @@ import ordersAgent from '../../../../agents/orders-agent';
 import { Order } from '../../../../types';
 import DisputeEvidence from '../../../../components/DisputeEvidence';
 import DisputeResolver from '../../../../components/DisputeResolver';
-import commonStyles from '../../../../constants/styles';
+import commonStyles from '@/constants/styles';
 
 export default function AdminDisputesScreen() {
   const { colors } = useTheme();
