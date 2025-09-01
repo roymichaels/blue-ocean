@@ -6,12 +6,11 @@ import { useTheme } from '@/contexts/ThemeContext';
 import chain from '@/services/chain';
 import OrderRevenueMetrics from '@/components/OrderRevenueMetrics';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useStore } from '@/features/products/hooks';
 
 let listProducts: (() => Promise<any[]>) | undefined;
-let getStore: ((tenant: string, id: string) => Promise<any>) | undefined;
 if (chain === 'near') {
   ({ listProducts } = require('@/features/products/services/nearProducts'));
-  ({ getStore } = require('@/features/stores/services/nearStores'));
 }
 
 export default function StoreDashboardScreen() {
@@ -21,14 +20,14 @@ export default function StoreDashboardScreen() {
   const { user } = useAuth();
   const [productCount, setProductCount] = useState(0);
   const [authorized, setAuthorized] = useState(false);
+  const { data: store } = useStore(storeId);
 
   useEffect(() => {
     const loadStats = async () => {
-      if (!storeId || !getStore || !listProducts) return;
-      const store = await getStore(storeId, storeId);
+      if (!storeId || !store || !listProducts) return;
       const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
-      if (!store || (store.owner !== user?.address && !isAdmin)) {
-        replace(`/store/${storeId}`);
+      if (store.owner !== user?.address && !isAdmin) {
+        router.replace(`/store/${storeId}`);
         return;
       }
       setAuthorized(true);
@@ -37,7 +36,7 @@ export default function StoreDashboardScreen() {
     };
 
     loadStats();
-  }, [storeId, user?.address]);
+  }, [storeId, store, user?.address]);
   
 
   if (!authorized) {
