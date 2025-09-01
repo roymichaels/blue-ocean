@@ -32,7 +32,7 @@ export default function UserAvatar() {
   const { isLoggedIn, isAdmin, user, logout } = useAuth();
   const { openAuthModal } = useAuthModal();
   const { currentLanguage, setLanguage, t } = useLanguage();
-  const { theme, toggleTheme, colors } = useTheme();
+  const { theme, toggleTheme, getColor } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [storeId, setStoreId] = useState<string | null>(null);
 
@@ -43,10 +43,10 @@ export default function UserAvatar() {
   };
 
   const getRandomColor = () => {
-    const colors = ['#B99C5A', '#20B2AA', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
+    const palette = getColor('avatarPalette') as string[];
     const initials = getInitials();
-    const index = initials.charCodeAt(0) % colors.length;
-    return colors[index];
+    const index = initials.charCodeAt(0) % palette.length;
+    return palette[index];
   };
 
   const showDropdown = () => {
@@ -146,10 +146,22 @@ export default function UserAvatar() {
   return (
     <>
       <TouchableOpacity style={styles.avatarContainer} onPress={showDropdown}>
-        <View style={[styles.avatar, { backgroundColor: getRandomColor() }]}>
-          <Text style={styles.avatarText}>{getInitials()}</Text>
+        <View
+          style={[
+            styles.avatar,
+            { backgroundColor: getRandomColor(), borderColor: getColor('adminBanner.buttonBackground') },
+          ]}
+        >
+          <Text style={[styles.avatarText, { color: getColor('text.inverse') }]}>{getInitials()}</Text>
         </View>
-        {isAdmin && <View style={[styles.adminIndicator, { backgroundColor: colors.gold, borderColor: colors.background }]} />}
+        {isAdmin && (
+          <View
+            style={[
+              styles.adminIndicator,
+              { backgroundColor: getColor('gold'), borderColor: getColor('background') },
+            ]}
+          />
+        )}
       </TouchableOpacity>
 
       <Modal
@@ -170,63 +182,65 @@ export default function UserAvatar() {
             style={[
               styles.dropdown,
               {
-                backgroundColor: colors.surface.elevated,
-                borderColor: colors.border.primary,
+                backgroundColor: getColor('surface.elevated'),
+                borderColor: getColor('border.primary'),
                 opacity: fadeAnim,
-                transform: [{
-                  translateY: fadeAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-10, 0],
-                  }),
-                }],
+                transform: [
+                  {
+                    translateY: fadeAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [-10, 0],
+                    }),
+                  },
+                ],
               }
             ]}
           >
             {/* User Info - Now Clickable */}
             <TouchableOpacity style={styles.userInfo} onPress={handleProfile}>
               <View style={[styles.dropdownAvatar, { backgroundColor: getRandomColor() }]}>
-                <Text style={[styles.dropdownAvatarText, { color: colors.text.inverse }]}>
+                <Text style={[styles.dropdownAvatarText, { color: getColor('text.inverse') }]}>
                   {getInitials()}
                 </Text>
               </View>
               <View style={styles.userDetails}>
-                <Text style={[styles.userName, { color: colors.text.primary }]}>
+                <Text style={[styles.userName, { color: getColor('text.primary') }]}> 
                   {isLoggedIn ? user?.displayName || user?.username : t('profile.guest')}
                 </Text>
-                <Text style={[styles.userRole, { color: colors.gold }]}>
+                <Text style={[styles.userRole, { color: getColor('gold') }]}> 
                   {isLoggedIn ? (isAdmin ? t('profile.admin') : t('profile.customer')) : t('profile.guestBrowsing')}
                 </Text>
               </View>
             </TouchableOpacity>
 
             {/* Divider */}
-            <View style={[styles.divider, { backgroundColor: colors.border.primary }]} />
+            <View style={[styles.divider, { backgroundColor: getColor('border.primary') }]} />
 
             {/* Menu Items */}
             <View style={styles.menuItems}>
               {!isLoggedIn ? (
                 <TouchableOpacity style={styles.menuItem} onPress={handleLogin}>
-                  <Text style={[styles.menuText, { color: colors.text.primary }]}>{t('auth.login')}</Text>
+                  <Text style={[styles.menuText, { color: getColor('text.primary') }]}>{t('auth.login')}</Text>
                 </TouchableOpacity>
               ) : (
                 <>
                   {isAdmin && (
                     <>
                       <TouchableOpacity style={styles.menuItem} onPress={handleAdminDashboard}>
-                        <Shield size={20} color={colors.gold} />
-                        <Text style={[styles.menuText, { color: colors.text.primary }]}>{t('profile.dashboard')}</Text>
+                        <Shield size={20} color={getColor('gold')} />
+                        <Text style={[styles.menuText, { color: getColor('text.primary') }]}>{t('profile.dashboard')}</Text>
                       </TouchableOpacity>
                       
                       <TouchableOpacity style={styles.menuItem} onPress={handleUserManagement}>
-                        <User size={20} color={colors.gold} />
-                        <Text style={[styles.menuText, { color: colors.text.primary }]}>ניהול משתמשים</Text>
+                        <User size={20} color={getColor('gold')} />
+                        <Text style={[styles.menuText, { color: getColor('text.primary') }]}>ניהול משתמשים</Text>
                       </TouchableOpacity>
                     </>
                   )}
                   
                   <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
-                    <Settings size={20} color={colors.gold} />
-                    <Text style={[styles.menuText, { color: colors.text.primary }]}>{t('profile.settings')}</Text>
+                    <Settings size={20} color={getColor('gold')} />
+                    <Text style={[styles.menuText, { color: getColor('text.primary') }]}>{t('profile.settings')}</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -235,29 +249,29 @@ export default function UserAvatar() {
               <TouchableOpacity style={styles.menuItem} onPress={handleThemeToggle}>
                 {theme === 'dark' ? (
                   <>
-                    <Sun size={20} color={colors.gold} />
-                    <Text style={[styles.menuText, { color: colors.text.primary }]}>{t('profile.lightMode')}</Text>
+                    <Sun size={20} color={getColor('gold')} />
+                    <Text style={[styles.menuText, { color: getColor('text.primary') }]}>{t('profile.lightMode')}</Text>
                   </>
                 ) : (
                   <>
-                    <Moon size={20} color={colors.gold} />
-                    <Text style={[styles.menuText, { color: colors.text.primary }]}>{t('profile.darkMode')}</Text>
+                    <Moon size={20} color={getColor('gold')} />
+                    <Text style={[styles.menuText, { color: getColor('text.primary') }]}>{t('profile.darkMode')}</Text>
                   </>
                 )}
               </TouchableOpacity>
 
               {/* Language Switcher */}
               <TouchableOpacity style={styles.menuItem} onPress={handleLanguageSwitch}>
-                <Globe size={20} color={colors.gold} />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                <Globe size={20} color={getColor('gold')} />
+                <Text style={[styles.menuText, { color: getColor('text.primary') }]}>
                   {currentLanguage === 'en' ? t('profile.hebrew') : t('profile.english')}
                 </Text>
               </TouchableOpacity>
 
               {isLoggedIn && (
                 <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-                  <LogOut size={20} color={colors.status.error} />
-                  <Text style={[styles.menuText, { color: colors.status.error }]}>{t('auth.logout')}</Text>
+                  <LogOut size={20} color={getColor('status.error')} />
+                  <Text style={[styles.menuText, { color: getColor('status.error') }]}>{t('auth.logout')}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -291,10 +305,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   avatarText: {
-    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: 'bold',
   },

@@ -48,4 +48,14 @@ export const LightColors = {
     inactive: 'rgba(26, 26, 26, 0.6)',
     border: 'rgba(185, 156, 90, 0.3)',
   },
+
+  // Admin Notification Banner Colors
+  adminBanner: {
+    background: '#20B2AA',
+    text: '#FFFFFF',
+    buttonBackground: 'rgba(255, 255, 255, 0.2)',
+  },
+
+  // Avatar Color Palette
+  avatarPalette: ['#B99C5A', '#20B2AA', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'],
 };

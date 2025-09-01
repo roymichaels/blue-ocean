@@ -7,6 +7,7 @@ import {
   PressableProps,
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { spacing, radius } from '@/constants/tokens';
 
 interface ButtonProps extends PressableProps {
   title?: string;
@@ -24,28 +25,27 @@ export default function Button({
   accessibilityRole = 'button',
   ...rest
 }: ButtonProps) {
-  const { tokens } = useTheme();
-  const { colors, spacing, radius } = tokens;
+  const { getColor } = useTheme();
 
   const isDisabled = disabled || loading;
 
   const backgroundColor = isDisabled
-    ? colors.interactive.disabled
+    ? getColor('interactive.disabled')
     : variant === 'primary'
-      ? colors.interactive.primary
-      : colors.interactive.secondary;
+      ? getColor('interactive.primary')
+      : getColor('interactive.secondary');
 
   const textColor = isDisabled
-    ? colors.text.secondary
+    ? getColor('text.secondary')
     : variant === 'primary'
-      ? colors.text.inverse
-      : colors.text.primary;
+      ? getColor('text.inverse')
+      : getColor('text.primary');
 
   const borderStyle =
     variant === 'secondary'
       ? {
           borderWidth: 1,
-          borderColor: isDisabled ? colors.interactive.disabled : colors.border.primary,
+          borderColor: isDisabled ? getColor('interactive.disabled') : getColor('border.primary'),
         }
       : null;
 

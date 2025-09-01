@@ -13,7 +13,7 @@ interface NotificationBadgeProps {
 
 export default function NotificationBadge({ size = spacing.spacer20, style }: NotificationBadgeProps) {
   const [unreadCount, setUnreadCount] = useState(0);
-  const { colors } = useTheme();
+  const { getColor } = useTheme();
   const { isLoggedIn, user } = useAuth();
 
   useEffect(() => {
@@ -51,13 +51,13 @@ export default function NotificationBadge({ size = spacing.spacer20, style }: No
         width: size, 
         height: size, 
         borderRadius: size / 2,
-        backgroundColor: colors.status.error
+        backgroundColor: getColor('status.error')
       },
       style
     ]}>
       <Text style={[styles.badgeText, { 
         fontSize: size * 0.5,
-        color: colors.text.primary
+        color: getColor('text.primary')
       }]}>
         {unreadCount > 99 ? '99+' : unreadCount}
       </Text>

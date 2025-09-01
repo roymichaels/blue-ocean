@@ -21,13 +21,13 @@ export default function EmptyState({
   actionText,
   onAction,
 }: EmptyStateProps) {
-  const { colors } = useTheme();
+  const { getColor } = useTheme();
 
   return (
     <View style={styles.container}>
-      <Icon size={80} color={colors.interactive.disabled} />
-      <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
-      <Text style={[styles.message, { color: colors.text.secondary }]}>{message}</Text>
+      <Icon size={80} color={getColor('interactive.disabled')} />
+      <Text style={[styles.title, { color: getColor('text.primary') }]}>{title}</Text>
+      <Text style={[styles.message, { color: getColor('text.secondary') }]}>{message}</Text>
       {actionText && onAction && (
         <Button title={actionText} onPress={onAction} style={styles.actionButton} />
       )}

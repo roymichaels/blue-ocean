@@ -3,13 +3,13 @@ import { View } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
 export default function GoldDivider({ width = 120 }: { width?: number }) {
-  const { colors } = useTheme();
+  const { getColor } = useTheme();
   return (
     <View
       style={{
         height: 2,
         width,
-        backgroundColor: colors.gold,
+        backgroundColor: getColor('gold'),
         borderRadius: 1,
       }}
     />
