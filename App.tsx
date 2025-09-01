@@ -1,21 +1,45 @@
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppInfoProvider } from '@/contexts/AppInfoContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ConfigProvider } from '@/contexts/ConfigContext';
+import { AuthProvider } from '@/features/auth/AuthContext';
+import { AuthModalProvider } from '@/features/auth/AuthModalContext';
+import { CurrencyProvider } from '@/contexts/CurrencyContext';
+import { NotificationProvider } from '@/components/NotificationContext';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Router } from 'expo-router';
 
-const queryClient = new QueryClient();
-
 export default function App() {
+  const [queryClient] = React.useState(() => new QueryClient());
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <Router />
-          </QueryClientProvider>
-        </ThemeProvider>
+        <AppInfoProvider>
+          <LanguageProvider>
+            <ThemeProvider>
+              <ConfigProvider>
+                <AuthProvider>
+                  <AuthModalProvider>
+                    <CurrencyProvider>
+                      <NotificationProvider>
+                        <ErrorBoundary>
+                          <QueryClientProvider client={queryClient}>
+                            <Router />
+                          </QueryClientProvider>
+                        </ErrorBoundary>
+                      </NotificationProvider>
+                    </CurrencyProvider>
+                  </AuthModalProvider>
+                </AuthProvider>
+              </ConfigProvider>
+            </ThemeProvider>
+          </LanguageProvider>
+        </AppInfoProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
