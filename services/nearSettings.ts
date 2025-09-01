@@ -1,9 +1,8 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { assertNearChain } from './chain';
 import { getValue, setValue, listValues } from './nearKvStore';
-
-assertNearChain();
-import config, { getWakuBootstrapNodes, requireEnv } from '../utils/appConfig';
+import config, { getWakuBootstrapNodes } from '../utils/appConfig';
+import { getNearContract } from '@/utils/nearEnv';
 import {
   LightNode,
   Protocols,
@@ -21,8 +20,9 @@ import { z } from 'zod';
 import { sign } from '@noble/ed25519';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
-const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_SETTINGS_CONTRACT') : 'near:disabled';
+assertNearChain();
+
+const ADDRESS = getNearContract('SETTINGS');
 
 const TEST_ADMIN = 'testadmin.near';
 const NETWORK =

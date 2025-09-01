@@ -5,15 +5,14 @@ import {
   removeValue,
 } from '@/services/nearKvStore';
 import { Store } from '@/types';
-import { requireEnv } from '@/utils/appConfig';
 import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
+import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_STORES_CONTRACT') : 'near:disabled';
-const DISABLED = ADDRESS === 'near:disabled';
+const ADDRESS = getNearContract('STORES');
+const DISABLED = !ADDRESS;
 let SEEDED = false;
 
 function ensureSeed() {

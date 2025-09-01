@@ -1,13 +1,12 @@
 import { getValue, setValue, listValues, removeValue } from './nearKvStore';
 import { Order } from '../types';
-import { requireEnv } from '../utils/appConfig';
 import { assertNearChain } from './chain';
 import { requireStoreId } from '@blue-ocean/utils';
+import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_ORDERS_CONTRACT') : 'near:disabled';
+const ADDRESS = getNearContract('ORDERS');
 
 export async function getOrder(storeId: string, id: string): Promise<Order | null> {
   const sid = requireStoreId(storeId);

@@ -1,12 +1,11 @@
 import { getValue, setValue, listValues, removeValue } from './nearKvStore';
 import { Notification } from '../types';
-import { requireEnv } from '../utils/appConfig';
 import { assertNearChain } from './chain';
+import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_NOTIFICATIONS_CONTRACT') : 'near:disabled';
+const ADDRESS = getNearContract('NOTIFICATIONS');
 
 export async function getNotification(id: string): Promise<Notification | null> {
   const res = await getValue(ADDRESS, id);

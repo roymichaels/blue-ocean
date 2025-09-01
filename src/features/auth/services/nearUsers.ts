@@ -5,13 +5,12 @@ import {
   removeValue,
 } from '@/services/nearKvStore';
 import { User } from '@/types';
-import { requireEnv } from '@/utils/appConfig';
 import { assertNearChain } from '@/services/chain';
+import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_USERS_CONTRACT') : 'near:disabled';
+const ADDRESS = getNearContract('USERS');
 
 export async function getUser(id: string): Promise<User | null> {
   const res = await getValue(ADDRESS, id);

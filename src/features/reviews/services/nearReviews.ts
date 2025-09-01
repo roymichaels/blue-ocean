@@ -1,11 +1,11 @@
 import { getValue, setValue, listValues } from '@/services/nearKvStore';
 import { Review } from '@/types';
-import { requireEnv } from '@/utils/appConfig';
 import { assertNearChain } from '@/services/chain';
+import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const ADDRESS = requireEnv('NEAR_REVIEWS_CONTRACT');
+const ADDRESS = getNearContract('REVIEWS');
 
 export async function getReviews(productId: string): Promise<Review[]> {
   const res = await getValue(ADDRESS, productId);
