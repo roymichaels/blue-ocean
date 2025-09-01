@@ -88,7 +88,7 @@ export default function AgeVerificationModal() {
                 ]}
               >
                 {logoCid ? (
-                  <SmartImage uri={logoCid} style={styles.logoImage} contentFit="contain" cachePolicy="disk" />
+                  <SmartImage uri={logoCid} width={60} height={60} style={styles.logoImage} contentFit="contain" />
                 ) : (
                   <Shield size={60} color={colors.gold} />
                 )}
@@ -220,8 +220,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   logoImage: {
-    width: 60,
-    height: 60,
     borderRadius: Platform.OS === 'web' ? 8 : 30,
   },
   platformName: {

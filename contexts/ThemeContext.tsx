@@ -1,5 +1,13 @@
 import { errorLog } from '@/utils/logger';
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { tokens as darkTokens, lightTokens, Tokens } from '@/constants/tokens';
 import { useAppInfo } from './AppInfoContext';
@@ -75,7 +83,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }));
   };
 
-  const setTheme = async (newTheme: ThemeMode) => {
+  const setTheme = useCallback(async (newTheme: ThemeMode) => {
     try {
       setThemeState(newTheme);
       applyTheme(newTheme, themeColor);
@@ -83,24 +91,22 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     } catch (error) {
       errorLog('Error setting theme:', error);
     }
-  };
+  }, [themeColor]);
 
-  const toggleTheme = async () => {
+  const toggleTheme = useCallback(async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     await setTheme(newTheme);
-  };
-
-  return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        colors: currentTokens.colors,
-        tokens: currentTokens,
-        setTheme,
-        toggleTheme,
-      }}
-    >
-      {children}
-    </ThemeContext.Provider>
+  }, [theme, setTheme]);
+  const value = useMemo(
+    () => ({
+      theme,
+      colors: currentTokens.colors,
+      tokens: currentTokens,
+      setTheme,
+      toggleTheme,
+    }),
+    [theme, currentTokens, setTheme, toggleTheme],
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

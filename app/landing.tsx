@@ -76,7 +76,7 @@ export default function Landing() {
               ] as any[]).map((b) => (
                 <View key={b.id} style={{ width: 280, height: 140, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border.primary, backgroundColor: colors.surface.primary }}>
                   {b.image ? (
-                    <SmartImage uri={b.image} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="disk" />
+                    <SmartImage uri={b.image} width={280} height={140} contentFit="cover" />
                   ) : (
                     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                       <Text style={{ color: colors.gold, fontWeight: '800' }}>{b.title}</Text>

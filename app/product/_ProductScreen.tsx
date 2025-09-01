@@ -60,6 +60,7 @@ interface MediaItem {
 }
 
 const { width } = Dimensions.get('window');
+const COVER_SIZE = Math.min(width, 540);
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -484,9 +485,9 @@ export default function ProductDetailScreen() {
           {mainImageUri ? (
             <SmartImage
               uri={mainImageUri}
-              style={styles.coverImage}
+              width={COVER_SIZE}
+              height={COVER_SIZE}
               contentFit="cover"
-              cachePolicy="disk"
             />
           ) : (
             <View style={styles.noImageContainer}>
@@ -517,9 +518,9 @@ export default function ProductDetailScreen() {
                 >
                   <SmartImage
                     uri={media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri}
-                    style={styles.galleryImage}
+                    width={80}
+                    height={80}
                     contentFit="cover"
-                    cachePolicy="disk"
                   />
                   {media.type === 'video' && (
                     <View style={styles.videoIndicator}>
@@ -692,9 +693,9 @@ export default function ProductDetailScreen() {
                   >
                     <SmartImage
                       uri={media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri}
-                      style={styles.galleryImage}
+                      width={80}
+                      height={80}
                       contentFit="cover"
-                      cachePolicy="disk"
                     />
                     {media.type === 'video' && (
                       <View style={styles.videoIndicator}>
@@ -965,10 +966,6 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     marginBottom: 16,
   },
-  coverImage: {
-    width: '100%',
-    height: '100%',
-  },
   noImageContainer: {
     width: '100%',
     height: '100%',
@@ -999,10 +996,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderWidth: 1,
     overflow: 'hidden',
-  },
-  galleryImage: {
-    width: '100%',
-    height: '100%',
   },
   videoIndicator: {
     position: 'absolute',

@@ -12,11 +12,10 @@ import { NotificationProvider } from '@/components/NotificationContext';
 import { WakuProvider } from '@/contexts/WakuContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import AppProviders from './providers/AppProviders';
 import { Router } from 'expo-router';
 
 export default function App() {
-  const [queryClient] = React.useState(() => new QueryClient());
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

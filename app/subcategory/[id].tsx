@@ -10,6 +10,7 @@ import {
   TextInput,
   Platform,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -33,6 +34,9 @@ import commonStyles from '@/constants/styles';
 import Card from '@/components/Card';
 import SmartImage from '@/components/SmartImage';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = (SCREEN_WIDTH - 32 - 8) / 2;
+const IMAGE_HEIGHT = 140;
 
 
 interface MediaItem {
@@ -459,9 +463,9 @@ export default function SubcategoryScreen() {
         {item.images && item.images.length > 0 ? (
           <SmartImage
             uri={item.images[0]}
-            style={styles.productImage}
+            width={CARD_WIDTH}
+            height={IMAGE_HEIGHT}
             contentFit="cover"
-            cachePolicy="disk"
           />
         ) : (
           <View style={styles.noImageContainer}>
@@ -1171,21 +1175,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   productCard: {
-    width: '48%',
+    width: CARD_WIDTH,
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
   },
   productImageContainer: {
     position: 'relative',
-    height: 140,
+    height: IMAGE_HEIGHT,
+    width: CARD_WIDTH,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     overflow: 'hidden',
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
   },
   noImageContainer: {
     width: '100%',

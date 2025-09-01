@@ -3,6 +3,7 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import SmartImage from './SmartImage';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +16,9 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
+
+const { width, height } = Dimensions.get('window');
+const VIEWER_HEIGHT = height * 0.7;
 
 interface MediaItem {
   type: 'image' | 'video';
@@ -94,11 +98,11 @@ export default function MediaViewer({ media, initialIndex, onClose }: Props) {
             <PanGestureHandler onGestureEvent={panHandler}>
               <Animated.View style={[styles.mediaWrapper, animatedStyle]}>
                 {currentMedia?.type === 'image' ? (
-                  <SmartImage uri={currentMedia.url} style={styles.media} contentFit="contain" cachePolicy="disk" />
+                  <SmartImage uri={currentMedia.url} width={width} height={VIEWER_HEIGHT} contentFit="contain" />
                 ) : (
                   <View style={styles.videoPlaceholder}>
                     {/* In a real app, you'd use react-native-video here */}
-                    <SmartImage uri={currentMedia?.url || ''} style={styles.media} contentFit="contain" cachePolicy="disk" />
+                    <SmartImage uri={currentMedia?.url || ''} width={width} height={VIEWER_HEIGHT} contentFit="contain" />
                   </View>
                 )}
               </Animated.View>
@@ -156,10 +160,6 @@ const styles = StyleSheet.create({
     height: '70%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  media: {
-    width: '100%',
-    height: '100%',
   },
   videoPlaceholder: {
     width: '100%',

@@ -106,7 +106,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
     <View style={styles.container}>
       {uri ? (
         uri.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-          <SmartImage uri={uri} style={styles.preview} contentFit="cover" cachePolicy="disk" />
+          <SmartImage uri={uri} width={100} height={100} style={styles.preview} contentFit="cover" />
         ) : (
           <View style={[styles.filePreview, { borderColor: colors.border.primary }]}>
             <FileIcon size={24} color={colors.text.primary} />
@@ -176,9 +176,7 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   },
   preview: {
-    width: 100,
-    height: 100,
-    borderRadius: 8
+    borderRadius: 8,
   },
   filePreview: {
     width: 100,

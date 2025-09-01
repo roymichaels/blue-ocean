@@ -302,9 +302,9 @@ export default function HomeScreen() {
       >
         <SmartImage
           uri={item.image}
-          style={styles.heroImage}
+          width={BANNER_WIDTH}
+          height={BANNER_HEIGHT}
           contentFit="cover"
-          cachePolicy="disk"
         />
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>
@@ -856,10 +856,6 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   bannerTouchable: {
-    width: '100%',
-    height: '100%',
-  },
-  heroImage: {
     width: '100%',
     height: '100%',
   },
