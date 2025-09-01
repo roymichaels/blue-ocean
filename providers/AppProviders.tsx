@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { WalletProvider } from './WalletProvider';
-import { WakuProvider } from './WakuProvider';
+import { WakuProvider } from '@/contexts/WakuContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 interface Props {
