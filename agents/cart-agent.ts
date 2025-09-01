@@ -1,13 +1,13 @@
 import { CartItem } from '../types';
-import { assertTonChain } from '../services/chain';
-import { setCartItem, getCartItem, listCartItems, removeCartItem } from '@/features/cart/services/tonCart';
+import { assertNearChain } from '../services/chain';
+import { setCartItem, getCartItem, listCartItems, removeCartItem } from '@/features/cart/services/nearCart';
 import ensureTonWallet from '../utils/ensureTonWallet';
 
-assertTonChain();
+assertNearChain();
 
 class CartAgent {
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your TON wallet to manage your cart.');
+    await ensureTonWallet('Please connect your NEAR wallet to manage your cart.');
   }
 
   async add(item: CartItem): Promise<void> {

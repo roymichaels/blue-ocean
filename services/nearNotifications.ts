@@ -1,12 +1,12 @@
 import { getValue, setValue, listValues, removeValue } from './nearKvStore';
 import { Notification } from '../types';
 import { requireEnv } from '../utils/appConfig';
-import { assertTonChain } from './chain';
+import { assertNearChain } from './chain';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_NOTIFICATIONS_ADDRESS') : 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_NOTIFICATIONS_CONTRACT') : 'near:disabled';
 
 export async function getNotification(id: string): Promise<Notification | null> {
   const res = await getValue(ADDRESS, id);

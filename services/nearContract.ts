@@ -1,10 +1,10 @@
 import { errorLog } from '@/utils/logger';
 import nearAuth from '@/features/auth/services/nearAuth';
-import { fetchSettings } from './tonSettings';
+import { fetchSettings } from './nearSettings';
 import { requireEnv } from '../utils/appConfig';
-import { assertTonChain } from './chain';
+import { assertNearChain } from './chain';
 
-assertTonChain();
+assertNearChain();
 
 export let ORDER_PAYMENT_FACTORY_ADDRESS = '';
 
@@ -13,7 +13,7 @@ export async function getOrderPaymentFactoryAddress(): Promise<string> {
     const settings = await fetchSettings();
     ORDER_PAYMENT_FACTORY_ADDRESS =
       settings.paymentFactoryAddress ||
-      requireEnv('TON_PAYMENT_FACTORY_ADDRESS');
+      requireEnv('NEAR_PAYMENT_FACTORY_CONTRACT');
   }
   return ORDER_PAYMENT_FACTORY_ADDRESS;
 }

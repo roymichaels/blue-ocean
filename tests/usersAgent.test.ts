@@ -17,7 +17,7 @@ jest.mock('../services/localIdentity', () => ({
 
 jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
 import { __clear } from './tonKvMock';
-import { setAdmins } from '../services/tonSettings';
+import { setAdmins } from '../services/nearSettings';
 
 describe('UsersAgent TON integration', () => {
   beforeEach(() => {

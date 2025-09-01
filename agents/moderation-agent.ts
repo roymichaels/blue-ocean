@@ -1,19 +1,19 @@
 import { uuid } from '@/utils/uuid';
 import { Report } from '@/types';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   addReport,
   listReports,
   removeReport,
-} from '@/features/reviews/services/tonReports';
+} from '@/features/reviews/services/nearReports';
 import ensureTonWallet from '@/utils/ensureTonWallet';
 
-assertTonChain();
+assertNearChain();
 
 class ModerationAgent {
   private async ensureWallet() {
     const { address } = await ensureTonWallet(
-      'Please connect your TON wallet to report items.',
+      'Please connect your NEAR wallet to report items.',
     );
     return { address };
   }

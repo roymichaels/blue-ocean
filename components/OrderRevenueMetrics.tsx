@@ -7,8 +7,8 @@ import { Order } from '../types';
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)
   | undefined;
-if (chain === 'ton') {
-  ({ listOrdersBySeller } = require('../services/tonOrders'));
+if (chain === 'near') {
+  ({ listOrdersBySeller } = require('../services/nearOrders'));
 }
 
 interface Props {

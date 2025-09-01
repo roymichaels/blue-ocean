@@ -10,8 +10,8 @@ import { useAccountId } from '@/features/auth/services/nearAuth';
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)
   | undefined;
-if (chain === 'ton') {
-  ({ listOrdersBySeller } = require('../../../../services/tonOrders'));
+if (chain === 'near') {
+  ({ listOrdersBySeller } = require('../../../../services/nearOrders'));
 }
 
 export default function StoreOrdersScreen() {

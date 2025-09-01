@@ -6,12 +6,12 @@ import {
 } from '@/services/nearKvStore';
 import { Category } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 
-assertTonChain();
+assertNearChain();
 
 const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'ton' ? requireEnv('TON_CATEGORIES_ADDRESS') : 'ton:disabled';
+const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_CATEGORIES_CONTRACT') : 'near:disabled';
 
 export async function getCategory(id: string): Promise<Category | null> {
   const res = await getValue(ADDRESS, id);

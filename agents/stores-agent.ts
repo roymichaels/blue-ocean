@@ -1,14 +1,14 @@
 import { Store } from '@/types';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   setStore,
   getStore,
   listStores,
   removeStore,
-} from '@/features/stores/services/tonStores';
+} from '@/features/stores/services/nearStores';
 import ensureTonWallet from '@/utils/ensureTonWallet';
 
-assertTonChain();
+assertNearChain();
 
 interface Metrics {
   reviewSum: number;
@@ -22,7 +22,7 @@ class StoresAgent {
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your TON wallet to manage stores.');
+    await ensureTonWallet('Please connect your NEAR wallet to manage stores.');
   }
 
   private toRecord(item: Store) {

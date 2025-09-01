@@ -6,8 +6,8 @@ import chain from '@/services/chain';
 import { User } from '@/types';
 
 let listUsers: (() => Promise<User[]>) | undefined;
-if (chain === 'ton') {
-  ({ listUsers } = require('@/features/auth/services/tonUsers'));
+if (chain === 'near') {
+  ({ listUsers } = require('@/features/auth/services/nearUsers'));
 }
 
 export default function UserDirectory() {

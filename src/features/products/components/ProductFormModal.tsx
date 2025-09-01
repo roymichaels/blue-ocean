@@ -26,8 +26,8 @@ import chain from '@/services/chain';
 let setProductBatch:
   | ((items: ProductIndexItem[]) => Promise<void>)
   | undefined;
-if (chain === 'ton') {
-  ({ setProductBatch } = require('../services/tonProductIndex'));
+if (chain === 'near') {
+  ({ setProductBatch } = require('../services/nearProductIndex'));
 }
 // Note: Avoid importing expo-video on web — it can break bundling if APIs differ.
 // We'll lazily require react-native-video on native platforms for preview.

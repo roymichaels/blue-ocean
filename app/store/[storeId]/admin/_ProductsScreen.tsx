@@ -6,8 +6,8 @@ import chain from '../../../../services/chain';
 import { Product } from '../../../../types';
 
 let listProducts: (() => Promise<Product[]>) | undefined;
-if (chain === 'ton') {
-  ({ listProducts } = require('@/features/products/services/tonProducts'));
+if (chain === 'near') {
+  ({ listProducts } = require('@/features/products/services/nearProducts'));
 }
 import ProductCard from '@/features/products/components/ProductCard';
 import ProductFormModal from '@/features/products/components/ProductFormModal';

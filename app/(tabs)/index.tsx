@@ -28,8 +28,8 @@ import { Product, Category, HeroBanner } from '@/types';
 import chain from '@/services/chain';
 
 let listCategories: (() => Promise<Category[]>) | undefined;
-if (chain === 'ton') {
-  ({ listCategories } = require('@/features/products/services/tonCategories'));
+if (chain === 'near') {
+  ({ listCategories } = require('@/features/products/services/nearCategories'));
 }
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';

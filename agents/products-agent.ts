@@ -1,5 +1,5 @@
 import { Product } from '@/types';
-import { assertTonChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   setProduct,
   getProduct,
@@ -7,8 +7,8 @@ import {
   removeProduct,
   getProducts,
   getVersion,
-} from '@/features/products/services/tonProducts';
-import { getStore } from '@/features/stores/services/tonStores';
+} from '@/features/products/services/nearProducts';
+import { getStore } from '@/features/stores/services/nearStores';
 import ensureTonWallet from '@/utils/ensureTonWallet';
 import {
   LightNode,
@@ -37,6 +37,8 @@ import {
 
 const buildProductTopic = (storeId: string) => buildTopic('products', storeId);
 const PAGE_SIZE = 50;
+
+assertNearChain();
 
 interface ProductSummary {
   rating: number;
@@ -160,7 +162,7 @@ class ProductsAgent {
 
   private async ensureWallet() {
     const { address } = await ensureTonWallet(
-      'Please connect your TON wallet to manage products.',
+      'Please connect your NEAR wallet to manage products.',
     );
     return { address };
   }

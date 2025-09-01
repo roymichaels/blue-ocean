@@ -2,25 +2,25 @@ import { uuid } from '../utils/uuid';
 import { Order, OrderStatus, Notification, OrderTrackingStep } from '../types';
 import nearAuth from '@/features/auth/services/nearAuth';
 import notificationsAgent from './notifications-agent';
-import { assertTonChain } from '../services/chain';
+import { assertNearChain } from '../services/chain';
 import {
   setOrder,
   getOrder,
   listOrders,
   removeOrder,
   listOrdersBySeller,
-} from '../services/tonOrders';
+} from '../services/nearOrders';
 import storesAgent from './stores-agent';
 import SettingsAgent from './settings-agent';
 import {
   deployOrderPayment,
   releasePayment,
   refundPayment,
-} from '../services/tonContract';
+} from '../services/nearContract';
 import productsAgent from './products-agent';
 import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
 
-assertTonChain();
+assertNearChain();
 import { encryptShippingInfo } from '../utils/shippingCrypto';
 import { sha256 } from '@noble/hashes/sha256';
 import { logOrderEvent } from '../services/eventLog';
@@ -181,7 +181,7 @@ class OrdersAgent {
   }
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your TON wallet to manage orders.');
+    await ensureTonWallet('Please connect your NEAR wallet to manage orders.');
   }
 
   private async ensureAuthorized(order: Order) {

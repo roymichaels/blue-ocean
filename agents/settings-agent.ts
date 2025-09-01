@@ -1,15 +1,15 @@
 import nearAuth from '@/features/auth/services/nearAuth';
-import { assertTonChain } from '../services/chain';
+import { assertNearChain } from '../services/chain';
 import {
   getSetting,
   setSetting,
   getAdmins as fetchAdmins,
   setAdmins as storeAdmins,
   subscribeToSettingsWrites,
-} from '../services/tonSettings';
+} from '../services/nearSettings';
 import ensureTonWallet from '../utils/ensureTonWallet';
 
-assertTonChain();
+assertNearChain();
 
 type SettingKey =
   | 'tenantId'
@@ -40,7 +40,7 @@ class SettingsAgent {
   }
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your TON wallet to manage settings.');
+    await ensureTonWallet('Please connect your NEAR wallet to manage settings.');
   }
 
   async set(key: string, value: string): Promise<void> {

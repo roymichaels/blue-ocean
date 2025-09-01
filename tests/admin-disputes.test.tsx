@@ -1,6 +1,6 @@
 import OrderService from '../services/orders';
 import ordersAgent from '../agents/orders-agent';
-import { adminResolve } from '../services/tonContract';
+import { adminResolve } from '../services/nearContract';
 
 jest.mock('../agents/orders-agent', () => ({
   get: jest.fn(),
@@ -8,7 +8,7 @@ jest.mock('../agents/orders-agent', () => ({
   subscribe: jest.fn(),
 }));
 
-jest.mock('../services/tonContract', () => ({
+jest.mock('../services/nearContract', () => ({
   adminResolve: jest.fn().mockResolvedValue('tx'),
 }));
 
