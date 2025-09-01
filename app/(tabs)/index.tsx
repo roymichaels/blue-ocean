@@ -1166,14 +1166,6 @@ const styles = StyleSheet.create({
   categorySelectorItemId: {
     fontSize: 12,
   },
-  emptySubcategories: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  emptySubcategoriesText: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
   buttonSpinner: {
     marginRight: 8,
   },

@@ -354,22 +354,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 4,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyMessage: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
   loginButton: {
     marginTop: 20,
     paddingHorizontal: 24,
