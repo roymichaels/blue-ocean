@@ -302,8 +302,9 @@ export default function ReviewsScreen() {
         >
           <SmartImage
             uri={item.productImage}
+            width={40}
+            height={40}
             style={styles.productThumbnail}
-            cachePolicy="disk"
           />
           <View style={styles.productDetails}>
             <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={1}>
@@ -321,8 +322,9 @@ export default function ReviewsScreen() {
         <View style={styles.userInfo}>
           <SmartImage
             uri={item.userAvatar}
+            width={32}
+            height={32}
             style={styles.userAvatar}
-            cachePolicy="disk"
           />
           <View>
             <Text style={[styles.userName, { color: colors.text.primary }]}>{item.userName}</Text>
@@ -408,8 +410,9 @@ export default function ReviewsScreen() {
               <View key={index} style={styles.orderSelectorItemRow}>
                 <SmartImage
                   uri={orderItem.product.images[0]}
+                  width={40}
+                  height={40}
                   style={styles.orderSelectorItemImage}
-                  cachePolicy="disk"
                 />
                 <Text style={[styles.orderSelectorItemName, { color: colors.text.primary }]} numberOfLines={1}>
                   {orderItem.product.name} x{orderItem.quantity}
@@ -710,8 +713,9 @@ export default function ReviewsScreen() {
                     <View key={index} style={styles.selectedOrderItem}>
                       <SmartImage
                         uri={item.product.images[0]}
+                        width={50}
+                        height={50}
                         style={styles.selectedOrderItemImage}
-                        cachePolicy="disk"
                       />
                       <View style={styles.selectedOrderItemDetails}>
                         <Text style={[styles.selectedOrderItemName, { color: colors.text.primary }]}>
@@ -1000,8 +1004,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   productThumbnail: {
-    width: 40,
-    height: 40,
     borderRadius: 8,
     marginRight: 12,
   },
@@ -1029,8 +1031,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   userAvatar: {
-    width: 32,
-    height: 32,
     borderRadius: 16,
     marginRight: 12,
   },
@@ -1168,8 +1168,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   orderSelectorItemImage: {
-    width: 40,
-    height: 40,
     borderRadius: 8,
     marginLeft: 12,
   },
@@ -1226,8 +1224,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   selectedOrderItemImage: {
-    width: 50,
-    height: 50,
     borderRadius: 8,
     marginLeft: 12,
   },

@@ -62,7 +62,7 @@ export default function GlobalHeader({
             onPress={() => router.push('/(tabs)')}
           >
             {logoCid ? (
-              <SmartImage uri={logoCid} style={styles.logoImage} contentFit="contain" cachePolicy="disk" />
+              <SmartImage uri={logoCid} width={50} height={50} style={styles.logoImage} contentFit="contain" />
             ) : (
               <View
                 style={[styles.logoIcon, { backgroundColor: colors.gold }]}
@@ -171,8 +171,6 @@ const styles = StyleSheet.create({
     marginLeft: spacing.spacer8,
   },
   logoImage: {
-    width: 50,
-    height: 50,
     borderRadius: radius.lg,
     marginLeft: spacing.spacer8,
   },

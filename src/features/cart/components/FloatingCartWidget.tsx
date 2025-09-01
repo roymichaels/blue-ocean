@@ -114,6 +114,8 @@ export default function FloatingCartWidget() {
               <SmartImage
                 key={item.id}
                 uri={item.product.images[0]}
+                width={32}
+                height={32}
                 style={[
                   styles.previewImage,
                   {
@@ -123,7 +125,6 @@ export default function FloatingCartWidget() {
                   }
                 ]}
                 contentFit="cover"
-                cachePolicy="disk"
               />
             ))}
             {cartItems.length > 3 && (
@@ -157,9 +158,10 @@ export default function FloatingCartWidget() {
               }]}>
                 <SmartImage
                   uri={item.product.images[0]}
+                  width={40}
+                  height={40}
                   style={styles.itemImage}
                   contentFit="cover"
-                  cachePolicy="disk"
                 />
                 
                 <View style={styles.itemInfo}>
@@ -296,8 +298,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   previewImage: {
-    width: 32,
-    height: 32,
     borderRadius: 16,
     borderWidth: 2,
   },
@@ -328,8 +328,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   itemImage: {
-    width: 40,
-    height: 40,
     borderRadius: 8,
     marginEnd: 12,
   },

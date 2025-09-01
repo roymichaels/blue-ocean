@@ -311,9 +311,10 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     >
       <SmartImage
         uri={item.product.images?.[0] || ''}
+        width={60}
+        height={60}
         style={styles.productImage}
         contentFit="cover"
-        cachePolicy="disk"
       />
 
       <View style={styles.productInfo}>
@@ -1298,7 +1299,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
   },
-  productImage: { width: 60, height: 60, borderRadius: 8, marginRight: 12 },
+  productImage: { borderRadius: 8, marginRight: 12 },
   productInfo: { flex: 1, marginRight: 12 },
   productName: { fontSize: 14, fontWeight: '600', marginBottom: 4, textAlign: 'end' },
   productPrice: { fontSize: 16, fontWeight: 'bold', textAlign: 'end' },

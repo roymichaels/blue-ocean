@@ -158,8 +158,9 @@ export default function UserProfileScreen() {
             {user.avatar ? (
               <SmartImage
                 uri={user.avatar}
+                width={100}
+                height={100}
                 style={[styles.avatar, { borderColor: colors.gold }]}
-                cachePolicy="disk"
               />
             ) : (
               <View style={[styles.avatarPlaceholder, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}>
@@ -286,8 +287,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   avatar: {
-    width: 100,
-    height: 100,
     borderRadius: 50,
     borderWidth: 3,
   },

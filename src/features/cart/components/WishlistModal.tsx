@@ -49,7 +49,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
       ]}
       onPress={() => viewProduct(item.productId)}
     >
-      <SmartImage uri={item.product.images[0]} style={styles.productImage} contentFit="cover" cachePolicy="disk" />
+      <SmartImage uri={item.product.images[0]} width={80} height={80} style={styles.productImage} contentFit="cover" />
 
       <View style={styles.productInfo}>
         <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={2}>
@@ -167,8 +167,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   productImage: {
-    width: 80,
-    height: 80,
     borderRadius: 8,
     marginRight: 12,
   },
