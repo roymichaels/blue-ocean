@@ -1,5 +1,12 @@
-import { errorLog } from '@/utils/logger';
-import { useEffect, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
 import {
   LightNode,
   createLightNode,
@@ -10,13 +17,14 @@ import {
   bytesToUtf8,
   utf8ToBytes,
 } from '@waku/sdk';
-import { encryptMessage, decryptMessage } from '../utils/chatCrypto';
-import DatabaseService from '../services/database';
-import { ChatMessage } from '../types';
-import { getWakuBootstrapNodes } from '../utils/appConfig';
-import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
-import { wakuMessageSchema } from '../schemas/waku';
+import { encryptMessage, decryptMessage } from '@/utils/chatCrypto';
+import DatabaseService from '@/services/database';
+import { ChatMessage } from '@/types';
+import { getWakuBootstrapNodes } from '@/utils/appConfig';
+import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';
+import { wakuMessageSchema } from '@/schemas/waku';
 import { z } from 'zod';
+import { errorLog } from '@/utils/logger';
 
 export interface WakuClient {
   send: (
@@ -42,6 +50,24 @@ export interface WakuClient {
   subscribeOrders: (cb: (msg: string) => void) => Promise<() => void>;
 }
 
+interface WakuContextValue extends WakuClient {
+  status: 'connecting' | 'connected' | 'disconnected';
+}
+
+const noop = async () => {};
+const defaultValue: WakuContextValue = {
+  status: 'disconnected',
+  send: async (_r, _p, msg) => ({ ...msg, id: '', timestamp: Date.now(), message: msg.message }),
+  subscribe: async () => () => {},
+  fetchHistory: async () => 0,
+  broadcastSystem: noop,
+  subscribeSystem: async () => () => {},
+  broadcastOrder: noop,
+  subscribeOrders: async () => () => {},
+};
+
+const WakuContext = createContext<WakuContextValue>(defaultValue);
+
 function chatTopic(roomId: string) {
   return `/blue-ocean/chat/1/${roomId}`;
 }
@@ -49,44 +75,50 @@ function chatTopic(roomId: string) {
 const SYSTEM_TOPIC = '/blue-ocean/notifications/1';
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 
-export function useWakuClient(): WakuClient {
+export function WakuProvider({ children }: { children: React.ReactNode }) {
   const nodeRef = useRef<LightNode>();
+  const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      let node: LightNode | undefined;
-      try {
-        const bootstrap = getWakuBootstrapNodes();
-        // If no bootstrap nodes configured, stay in no-op mode silently for dev.
-        if (bootstrap.length === 0) {
-          if (!cancelled) nodeRef.current = undefined;
-          return;
-        }
-        node = await createLightNode({
-          libp2p: { bootstrap },
-        });
-        await node.start();
-        await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
-        if (!cancelled) nodeRef.current = node;
-      } catch (err) {
-        errorLog('Failed to start Waku node', err);
-        if (node) {
-          try {
-            await node.stop();
-          } catch (_) {
-            // ignore
-          }
-        }
+  const connect = useCallback(async () => {
+    try {
+      setStatus('connecting');
+      const bootstrap = getWakuBootstrapNodes();
+      if (bootstrap.length === 0) {
+        nodeRef.current = undefined;
+        setStatus('disconnected');
+        return;
       }
-    })();
-    return () => {
-      cancelled = true;
-      nodeRef.current?.stop();
-    };
+      const node = await createLightNode({ libp2p: { bootstrap } });
+      node.libp2p.addEventListener('peer:disconnect', () => {
+        setStatus('disconnected');
+      });
+      await node.start();
+      await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
+      nodeRef.current = node;
+      setStatus('connected');
+    } catch (err) {
+      errorLog('Failed to start Waku node', err);
+      nodeRef.current = undefined;
+      setStatus('disconnected');
+    }
   }, []);
 
-  const send = async (
+  useEffect(() => {
+    void connect();
+    return () => {
+      nodeRef.current?.stop();
+    };
+  }, [connect]);
+
+  useEffect(() => {
+    if (status !== 'disconnected') return;
+    const t = setTimeout(() => {
+      void connect();
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [status, connect]);
+
+  const send = useCallback(async (
     roomId: string,
     peerPublicKey: string,
     msg: Omit<ChatMessage, 'id' | 'timestamp'>,
@@ -108,9 +140,9 @@ export function useWakuClient(): WakuClient {
       });
     }
     return full;
-  };
+  }, []);
 
-  const subscribe = async (
+  const subscribe = useCallback(async (
     roomId: string,
     peerPublicKey: string,
     cb: (msg: ChatMessage) => void,
@@ -124,11 +156,7 @@ export function useWakuClient(): WakuClient {
         const schema = wakuMessageSchema.extend({ payload: z.string() });
         const signed = await verifyBeforeWrite(raw, schema);
         if (!signed) return;
-        const text = await decryptMessage(
-          signed.payload,
-          roomId,
-          peerPublicKey,
-        );
+        const text = await decryptMessage(signed.payload, roomId, peerPublicKey);
         const chat: ChatMessage = {
           id: Date.now().toString(),
           senderId: signed.sender.publicKey,
@@ -144,11 +172,9 @@ export function useWakuClient(): WakuClient {
         /* ignore malformed messages */
       }
     };
-    const maybeUnsub = (nodeRef.current.relay as any).addObserver(
-      handler,
-      [decoder],
-    ) as (() => void) | void;
-
+    const maybeUnsub = (nodeRef.current.relay as any).addObserver(handler, [decoder]) as
+      | (() => void)
+      | void;
     return () => {
       if (typeof maybeUnsub === 'function') {
         maybeUnsub();
@@ -156,18 +182,18 @@ export function useWakuClient(): WakuClient {
         (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
       }
     };
-  };
+  }, []);
 
-  const fetchHistory = async (
+  const fetchHistory = useCallback(async (
     roomId: string,
     peerPublicKey: string,
     cb: (msg: ChatMessage) => void,
     after?: number,
     before?: number,
-  ) => {
+  ): Promise<number> => {
     if (!nodeRef.current) return 0;
     const decoder = createDecoder(chatTopic(roomId));
-    const options: any = { contentTopics: [chatTopic(roomId)] };
+    const options: any = { decoder };
     if (after || before) {
       options.timeFilter = {};
       if (after) options.timeFilter.startTime = new Date(after + 1);
@@ -182,19 +208,13 @@ export function useWakuClient(): WakuClient {
           const schema = wakuMessageSchema.extend({ payload: z.string() });
           const signed = await verifyBeforeWrite(raw, schema);
           if (!signed) continue;
-          const text = await decryptMessage(
-            signed.payload,
-            roomId,
-            peerPublicKey,
-          );
+          const text = await decryptMessage(signed.payload, roomId, peerPublicKey);
           const chat: ChatMessage = {
             id: Date.now().toString(),
             senderId: signed.sender.publicKey,
             senderName: signed.sender.publicKey,
             message: text,
-            timestamp: wakuMsg.timestamp
-              ? Number(wakuMsg.timestamp)
-              : Date.now(),
+            timestamp: wakuMsg.timestamp ? Number(wakuMsg.timestamp) : Date.now(),
             isAdmin: false,
           };
           const db = DatabaseService.getInstance();
@@ -207,21 +227,21 @@ export function useWakuClient(): WakuClient {
       }
     }
     return count;
-  };
+  }, []);
 
-  const broadcastSystem = async (message: string) => {
+  const broadcastSystem = useCallback(async (message: string) => {
     if (!nodeRef.current) return;
     const encoder = createEncoder({ contentTopic: SYSTEM_TOPIC });
     await nodeRef.current.lightPush.send(encoder, { payload: utf8ToBytes(message) });
-  };
+  }, []);
 
-  const broadcastOrder = async (message: string) => {
+  const broadcastOrder = useCallback(async (message: string) => {
     if (!nodeRef.current) return;
     const encoder = createEncoder({ contentTopic: ORDER_TOPIC });
     await nodeRef.current.lightPush.send(encoder, { payload: utf8ToBytes(message) });
-  };
+  }, []);
 
-  const subscribeSystem = async (cb: (msg: string) => void) => {
+  const subscribeSystem = useCallback(async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
     const decoder = createDecoder(SYSTEM_TOPIC);
     const handler = async (wakuMsg: any) => {
@@ -239,10 +259,9 @@ export function useWakuClient(): WakuClient {
         errorLog('Malformed system message', err);
       }
     };
-    const maybeUnsub = (nodeRef.current.relay as any).addObserver(
-      handler,
-      [decoder],
-    ) as (() => void) | void;
+    const maybeUnsub = (nodeRef.current.relay as any).addObserver(handler, [decoder]) as
+      | (() => void)
+      | void;
     return () => {
       if (typeof maybeUnsub === 'function') {
         maybeUnsub();
@@ -250,9 +269,9 @@ export function useWakuClient(): WakuClient {
         (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
       }
     };
-  };
+  }, []);
 
-  const subscribeOrders = async (cb: (msg: string) => void) => {
+  const subscribeOrders = useCallback(async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
     const decoder = createDecoder(ORDER_TOPIC);
     const handler = async (wakuMsg: any) => {
@@ -270,10 +289,9 @@ export function useWakuClient(): WakuClient {
         errorLog('Malformed order message', err);
       }
     };
-    const maybeUnsub = (nodeRef.current.relay as any).addObserver(
-      handler,
-      [decoder],
-    ) as (() => void) | void;
+    const maybeUnsub = (nodeRef.current.relay as any).addObserver(handler, [decoder]) as
+      | (() => void)
+      | void;
     return () => {
       if (typeof maybeUnsub === 'function') {
         maybeUnsub();
@@ -281,15 +299,27 @@ export function useWakuClient(): WakuClient {
         (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
       }
     };
-  };
+  }, []);
 
-  return {
-    send,
-    subscribe,
-    fetchHistory,
-    broadcastSystem,
-    subscribeSystem,
-    broadcastOrder,
-    subscribeOrders,
-  };
+  const value = useMemo(
+    () => ({
+      status,
+      send,
+      subscribe,
+      fetchHistory,
+      broadcastSystem,
+      subscribeSystem,
+      broadcastOrder,
+      subscribeOrders,
+    }),
+    [status, send, subscribe, fetchHistory, broadcastSystem, subscribeSystem, broadcastOrder, subscribeOrders],
+  );
+
+  return <WakuContext.Provider value={value}>{children}</WakuContext.Provider>;
 }
+
+export function useWaku() {
+  return useContext(WakuContext);
+}
+
+export default WakuContext;

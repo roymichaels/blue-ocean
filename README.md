@@ -234,7 +234,7 @@ cannot be derived instead of returning plaintext.
 Fast Refresh can cause issues with Expo Router when running in the browser.
 Disable it by setting `fastRefresh: false` in your web configuration.
 The Waku chat integration is also not available on the web; the
-`useWakuClient.web.ts` file provides a stub so the rest of the app can build
+`WakuContext.web.tsx` file provides a stub so the rest of the app can build
 without the Waku SDK.
 
 

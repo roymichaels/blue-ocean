@@ -12,7 +12,7 @@ import NotificationService from '../services/notification';
 import { Notification } from '../types';
 import NotificationPopup from './NotificationPopup';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useWakuClient } from '../hooks/useWakuClient';
+import { useWaku } from '@/contexts/WakuContext';
 import { parseNotificationWakuPayload } from '../schemas/waku';
 
 interface NotificationState {
@@ -95,7 +95,7 @@ function NotificationCountProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const { isLoggedIn, user } = useAuth();
   const notificationSubscription = useRef<any>(null);
-  const waku = useWakuClient();
+  const waku = useWaku();
   const wakuUnsub = useRef<(() => void) | null>(null);
   const { showNotification } = useNotificationActions();
 
