@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import Button from '@/components/ui/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import ProofUploader from '../../components/ProofUploader';
@@ -29,13 +30,12 @@ export default function KycScreen() {
           <Text style={[styles.title, { color: colors.text.primary }]}>KYC Verification</Text>
           <Text style={[styles.description, { color: colors.text.secondary }]}>Upload a document for verification.</Text>
           <ProofUploader jobId={`kyc_${user?.id || 'unknown'}`} onUploaded={setDocUri} />
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: colors.gold }]}
+          <Button
+            title="Submit"
             onPress={submit}
             disabled={!docUri}
-          >
-            <Text style={[styles.buttonText, { color: colors.text.inverse }]}>Submit</Text>
-          </TouchableOpacity>
+            style={{ marginTop: 24, paddingHorizontal: 24 }}
+          />
         </View>
       </SafeAreaView>
     </ErrorBoundary>
@@ -61,15 +61,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 16,
     textAlign: 'center',
-  },
-  button: {
-    marginTop: 24,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

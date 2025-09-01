@@ -13,6 +13,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { spacing, radius, zIndex, shadows } from '../constants/tokens';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import Button from '@/components/ui/Button';
 
 type InfoType = 'success' | 'error' | 'info' | 'warning';
 
@@ -135,14 +136,16 @@ export default function InfoModal({
                 {message}
               </Text>
 
-              <TouchableOpacity
-                style={[styles.button, { backgroundColor: color }]}
+              <Button
+                title={buttonLabel}
                 onPress={onClose}
-              >
-                <Text style={[styles.buttonText, { color: colors.text.inverse }]}> 
-                  {buttonLabel}
-                </Text>
-              </TouchableOpacity>
+                style={{
+                  minWidth: 120,
+                  paddingHorizontal: spacing.spacer24,
+                  borderRadius: radius.lg,
+                  backgroundColor: color,
+                }}
+              />
             </Animated.View>
           </TouchableWithoutFeedback>
         </View>
@@ -188,16 +191,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.spacer24,
     lineHeight: 24,
-  },
-  button: {
-    paddingVertical: spacing.spacer12,
-    paddingHorizontal: spacing.spacer24,
-    borderRadius: radius.lg,
-    minWidth: 120,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

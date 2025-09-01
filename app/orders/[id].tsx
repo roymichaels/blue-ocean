@@ -1,6 +1,7 @@
 import { debugLog } from '@/utils/logger';
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import Button from '@/components/ui/Button';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -119,13 +120,12 @@ export default function OrderDetailScreen() {
           {canUpdate && nextStatuses.length > 0 && (
             <View style={styles.actions}>
               {nextStatuses.map((s) => (
-                <TouchableOpacity
+                <Button
                   key={s}
-                  style={[styles.button, { backgroundColor: colors.interactive.primary }]}
+                  title={statusLabel(s)}
                   onPress={() => handleUpdate(s)}
-                >
-                  <Text style={[styles.buttonText, { color: colors.text.contrast }]}>{statusLabel(s)}</Text>
-                </TouchableOpacity>
+                  accessibilityRole="button"
+                />
               ))}
             </View>
           )}
@@ -150,7 +150,5 @@ const styles = StyleSheet.create({
   content: { padding: 16 },
   status: { fontSize: 18, fontWeight: '600', textAlign: 'end', marginBottom: 24 },
   actions: { gap: 12 },
-  button: { paddingVertical: 12, borderRadius: 8 },
-  buttonText: { fontSize: 16, textAlign: 'center', fontWeight: '600' },
 });
 
