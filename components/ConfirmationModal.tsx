@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { X } from 'lucide-react-native';
+import Button from './ui/Button';
 
 interface ConfirmationModalProps {
   visible: boolean;
@@ -49,7 +50,11 @@ export default function ConfirmationModal({
             <View style={[styles.modalContainer, { backgroundColor: colors.surface.elevated }]}>
               <View style={styles.header}>
                 <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
-                <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
+                <TouchableOpacity
+                  onPress={onCancel}
+                  style={styles.closeButton}
+                  accessibilityRole="button"
+                >
                   <X size={20} color={colors.text.secondary} />
                 </TouchableOpacity>
               </View>
@@ -61,33 +66,25 @@ export default function ConfirmationModal({
               </View>
               
               <View style={styles.actions}>
-                <TouchableOpacity
-                  style={[
-                    styles.button,
-                    styles.cancelButton,
-                    { borderColor: colors.border.primary }
-                  ]}
+                <Button
+                  title={cancelText}
+                  variant="secondary"
                   onPress={onCancel}
-                >
-                  <Text style={[styles.buttonText, { color: colors.text.primary }]}>
-                    {cancelText}
-                  </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={[
-                    styles.button,
-                    styles.confirmButton,
-                    { backgroundColor: destructive ? colors.status.error : colors.gold }
-                  ]}
-                  onPress={() => {
-                    onConfirm();
+                  style={{ flex: 1 }}
+                  accessibilityRole="button"
+                />
+
+                <Button
+                  title={confirmText}
+                  onPress={onConfirm}
+                  style={{
+                    flex: 1,
+                    backgroundColor: destructive
+                      ? colors.status.error
+                      : colors.interactive.primary,
                   }}
-                >
-                  <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
-                    {confirmText}
-                  </Text>
-                </TouchableOpacity>
+                  accessibilityRole="button"
+                />
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -146,21 +143,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     gap: 12,
-  },
-  button: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-  },
-  confirmButton: {},
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   Modal,
-  TouchableOpacity,
   ScrollView,
   Platform,
 } from 'react-native';
@@ -17,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { spacing, typography } from '../constants/styles';
+import Button from './ui/Button';
 
 const AGE_VERIFICATION_KEY = 'age_verified';
 
@@ -159,36 +159,19 @@ export default function AgeVerificationModal() {
 
             {/* Action Buttons */}
             <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[styles.confirmButton, { backgroundColor: colors.gold }]}
+              <Button
+                title={t('ageVerification.yes18Plus')}
                 onPress={handleConfirm}
-              >
-                <Text
-                  style={[
-                    styles.confirmButtonText,
-                    { color: colors.text.inverse },
-                  ]}
-                >
-                   {t('ageVerification.yes18Plus')}
-                </Text>
-              </TouchableOpacity>
+                accessibilityRole="button"
+              />
 
-              <TouchableOpacity
-                style={[
-                  styles.denyButton,
-                  { borderColor: colors.interactive.disabled },
-                ]}
+              <Button
+                title={t('ageVerification.noUnder18')}
+                variant="secondary"
                 onPress={handleDeny}
-              >
-                <Text
-                  style={[
-                    styles.denyButtonText,
-                    { color: colors.text.primary },
-                  ]}
-                >
-                   {t('ageVerification.noUnder18')}
-                </Text>
-              </TouchableOpacity>
+                style={{ borderColor: colors.interactive.disabled }}
+                accessibilityRole="button"
+              />
             </View>
 
             {/* Footer */}
@@ -305,28 +288,6 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     alignSelf: 'center',
-  },
-  confirmButton: {
-    borderRadius: 16,
-    paddingVertical: spacing.spacer16,
-    paddingHorizontal: spacing.spacer24,
-    alignItems: 'center',
-  },
-  confirmButtonText: {
-    ...typography.bodyText,
-    fontWeight: 'bold',
-  },
-  denyButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderRadius: 16,
-    paddingVertical: spacing.spacer16,
-    paddingHorizontal: spacing.spacer24,
-    alignItems: 'center',
-  },
-  denyButtonText: {
-    ...typography.bodyText,
-    fontWeight: '600',
   },
   footer: {
     alignItems: 'center',

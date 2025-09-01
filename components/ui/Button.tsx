@@ -1,9 +1,14 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, TouchableOpacityProps } from 'react-native';
+import {
+  Pressable,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  PressableProps,
+} from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { spacing, radius } from '../../constants/tokens';
 
-interface ButtonProps extends TouchableOpacityProps {
+interface ButtonProps extends PressableProps {
   title?: string;
   variant?: 'primary' | 'secondary';
   loading?: boolean;
@@ -19,7 +24,8 @@ export default function Button({
   accessibilityRole = 'button',
   ...rest
 }: ButtonProps) {
-  const { colors } = useTheme();
+  const { tokens } = useTheme();
+  const { colors, spacing, radius } = tokens;
 
   const backgroundColor =
     variant === 'primary' ? colors.interactive.primary : colors.interactive.secondary;
@@ -29,10 +35,18 @@ export default function Button({
       ? { borderWidth: 1, borderColor: colors.border.primary }
       : null;
 
+  const buttonStyle = {
+    paddingVertical: spacing.spacer12,
+    paddingHorizontal: spacing.spacer16,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as const;
+
   return (
-    <TouchableOpacity
+    <Pressable
       accessibilityRole={accessibilityRole}
-      style={[styles.button, { backgroundColor }, borderStyle, style]}
+      style={[buttonStyle, { backgroundColor }, borderStyle, style]}
       disabled={disabled || loading}
       {...rest}
     >
@@ -43,17 +57,11 @@ export default function Button({
       ) : (
         <Text style={[styles.text, { color: textColor }]}>{title}</Text>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    paddingVertical: spacing.spacer12,
-    paddingHorizontal: spacing.spacer16,
-    borderRadius: radius.md,
-    alignItems: 'center',
-  },
   text: {
     fontSize: 16,
     fontWeight: '600',

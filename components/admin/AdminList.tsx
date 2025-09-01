@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import Button from '../ui/Button';
 
 export type AdminListItem = {
   id: string;
@@ -21,16 +22,22 @@ export default function AdminList({ items, emptyText = 'Nothing yet.' }: { items
   return (
     <View style={{ padding: 16 }}>
       {items.map((it) => (
-        <Pressable
+        <Button
           key={it.id}
           onPress={it.onPress}
-          style={{ padding: 12, borderWidth: 1, borderColor: colors.border.primary, borderRadius: 10, marginBottom: 10, backgroundColor: colors.surface.primary }}
+          variant="secondary"
+          style={{
+            marginBottom: 10,
+            alignItems: 'flex-start',
+            backgroundColor: colors.surface.primary,
+          }}
+          accessibilityRole="button"
         >
           <Text style={{ color: colors.text.primary, fontWeight: '600' }}>{it.title}</Text>
           {it.subtitle ? (
             <Text style={{ color: colors.text.secondary, marginTop: 4 }}>{it.subtitle}</Text>
           ) : null}
-        </Pressable>
+        </Button>
       ))}
     </View>
   );
