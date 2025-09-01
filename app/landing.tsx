@@ -10,6 +10,7 @@ import ProductCard from '@/features/products/components/ProductCard';
 import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
 import Button from '../components/ui/Button';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function Landing() {
   const { colors } = useTheme();
@@ -37,9 +38,10 @@ export default function Landing() {
   }, []);
 
   return (
-    <AppShell>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Hero */}
+    <ErrorBoundary>
+      <AppShell>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Hero */}
         <View style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 12, alignItems: 'center' }}>
           <Text style={{ color: colors.text.primary, fontSize: 28, fontWeight: '800', textAlign: 'center' }}>
             Blue Ocean Marketplace
@@ -134,6 +136,7 @@ export default function Landing() {
           )}
         </Section>
       </ScrollView>
-    </AppShell>
+      </AppShell>
+    </ErrorBoundary>
   );
 }

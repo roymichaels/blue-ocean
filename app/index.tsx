@@ -36,6 +36,7 @@ import CartModal from '@/features/cart/components/CartModal';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
 import SmartImage from '../components/SmartImage';
 import InfoModal from '../components/InfoModal';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 const { width } = Dimensions.get('window');
 const BANNER_WIDTH = width - 32;
@@ -349,6 +350,23 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
+      <ErrorBoundary>
+        <SafeAreaView
+          style={[styles.container, { backgroundColor: colors.background }]}
+        >
+          <GlobalHeader
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            showSearch={true}
+          />
+          <Spinner label="Loading home" />
+        </SafeAreaView>
+      </ErrorBoundary>
+    );
+  }
+
+  return (
+    <ErrorBoundary>
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
       >
@@ -357,20 +375,6 @@ export default function HomeScreen() {
           onSearchChange={setSearchQuery}
           showSearch={true}
         />
-        <Spinner label="Loading home" />
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <GlobalHeader
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        showSearch={true}
-      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -770,6 +774,7 @@ export default function HomeScreen() {
         onClose={() => setShowCartModal(false)}
       />
     </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 

@@ -12,6 +12,7 @@ import { AppInfoProvider } from "../contexts/AppInfoContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
 import { CurrencyProvider } from "../contexts/CurrencyContext";
 import { NotificationProvider } from "../components/NotificationContext";
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 const queryClient = new QueryClient();
 
@@ -29,13 +30,15 @@ export default function RootLayout() {
                       <LanguageProvider>
                         <CurrencyProvider>
                           <NotificationProvider>
-                            <Tabs screenOptions={{ headerShown: false }}>
-                              <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ size, color }) => <Lucide.Home size={size} color={color} /> }} />
-                              <Tabs.Screen name="categories" options={{ title: 'Categories', tabBarIcon: ({ size, color }) => <Lucide.Grid3x3 size={size} color={color} /> }} />
-                              <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarIcon: ({ size, color }) => <Lucide.Package size={size} color={color} /> }} />
-                              <Tabs.Screen name="notifications" options={{ title: 'Notifications', tabBarIcon: ({ size, color }) => <Lucide.Bell size={size} color={color} /> }} />
-                              <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({ size, color }) => <Lucide.User size={size} color={color} /> }} />
-                            </Tabs>
+                            <ErrorBoundary>
+                              <Tabs screenOptions={{ headerShown: false }}>
+                                <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ size, color }) => <Lucide.Home size={size} color={color} /> }} />
+                                <Tabs.Screen name="categories" options={{ title: 'Categories', tabBarIcon: ({ size, color }) => <Lucide.Grid3x3 size={size} color={color} /> }} />
+                                <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarIcon: ({ size, color }) => <Lucide.Package size={size} color={color} /> }} />
+                                <Tabs.Screen name="notifications" options={{ title: 'Notifications', tabBarIcon: ({ size, color }) => <Lucide.Bell size={size} color={color} /> }} />
+                                <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({ size, color }) => <Lucide.User size={size} color={color} /> }} />
+                              </Tabs>
+                            </ErrorBoundary>
                           </NotificationProvider>
                         </CurrencyProvider>
                       </LanguageProvider>
