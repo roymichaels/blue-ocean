@@ -19,6 +19,9 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@/features/*": [
+        "src/features/*"
+      ],
       "@/*": [
         "./*"
       ],
