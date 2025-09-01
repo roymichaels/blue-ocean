@@ -8,6 +8,7 @@ import validateNearAddress from '@/utils/validateNearAddress';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 import type { WakuMessage } from '@/types/waku';
 import { normalizeMessage } from '../lib/normalizeMessage';
+import AgentError from '@/types/AgentError';
 
 assertNearChain();
 
@@ -31,7 +32,7 @@ class UsersAgent {
     const { address, publicKey } = await this.ensureWallet();
     const admins = await SettingsAgent.getInstance().getAdmins();
     if (address !== normalized.address && !admins.includes(address)) {
-      throw new Error('Only the user or an admin can add this user');
+      throw new AgentError('UNAUTHORIZED', 'Only the user or an admin can add this user', 'users-agent');
     }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = {
@@ -41,7 +42,7 @@ class UsersAgent {
       chatPublicKey,
     };
     if (!validateNearAddress(address)) {
-      throw new Error('Invalid NEAR address');
+      throw new AgentError('INVALID_NEAR_ADDRESS', 'Invalid NEAR address', 'users-agent');
     }
     await setUser(enriched);
   }
@@ -51,7 +52,7 @@ class UsersAgent {
     const { address, publicKey } = await this.ensureWallet();
     const admins = await SettingsAgent.getInstance().getAdmins();
     if (address !== normalized.address && !admins.includes(address)) {
-      throw new Error('Only the user or an admin can update this user');
+      throw new AgentError('UNAUTHORIZED', 'Only the user or an admin can update this user', 'users-agent');
     }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = {
@@ -61,7 +62,7 @@ class UsersAgent {
       chatPublicKey,
     };
     if (!validateNearAddress(address)) {
-      throw new Error('Invalid NEAR address');
+      throw new AgentError('INVALID_NEAR_ADDRESS', 'Invalid NEAR address', 'users-agent');
     }
     await setUser(enriched);
   }
@@ -69,10 +70,10 @@ class UsersAgent {
   async remove(id: string): Promise<void> {
     const { address } = await this.ensureWallet();
     const user = await getUser(id);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
     const admins = await SettingsAgent.getInstance().getAdmins();
     if (address !== user.address && !admins.includes(address)) {
-      throw new Error('Only the user or an admin can remove this user');
+      throw new AgentError('UNAUTHORIZED', 'Only the user or an admin can remove this user', 'users-agent');
     }
     await removeUser(id);
   }
@@ -81,10 +82,10 @@ class UsersAgent {
   async requestKyc(userId: string, documentUri: string): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
     const user = await getUser(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
     const admins = await SettingsAgent.getInstance().getAdmins();
     if (address !== user.address && !admins.includes(address)) {
-      throw new Error('Only the user or an admin can request KYC');
+      throw new AgentError('UNAUTHORIZED', 'Only the user or an admin can request KYC', 'users-agent');
     }
     const enriched: User = normalizeMessage<User>('User', {
       ...user,
@@ -106,10 +107,10 @@ class UsersAgent {
     const { address, publicKey } = await this.ensureWallet();
     const admins = await SettingsAgent.getInstance().getAdmins();
     if (!admins.includes(address)) {
-      throw new Error('Only admins can update KYC');
+      throw new AgentError('UNAUTHORIZED', 'Only admins can update KYC', 'users-agent');
     }
     const user = await getUser(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
     const enriched: User = normalizeMessage<User>('User', {
       ...user,
       publicKey,

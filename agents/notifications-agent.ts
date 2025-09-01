@@ -22,6 +22,7 @@ import { getWakuBootstrapNodes } from '../utils/appConfig';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';
+import AgentError from '@/types/AgentError';
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
@@ -102,7 +103,7 @@ class NotificationsAgent {
     try {
       const bootstrap = getWakuBootstrapNodes();
       if (bootstrap.length === 0) {
-        throw new Error('No Waku bootstrap nodes configured');
+        throw new AgentError('WAKU_BOOTSTRAP_UNCONFIGURED', 'No Waku bootstrap nodes configured', 'notifications-agent');
       }
       this.node = await createLightNode({ libp2p: { bootstrap } } as any);
       await this.node.start();

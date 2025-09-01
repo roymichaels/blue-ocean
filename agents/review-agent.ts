@@ -6,6 +6,7 @@ import { selectProduct } from './products-agent';
 import storesAgent from './stores-agent';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
+import AgentError from '@/types/AgentError';
 
 assertNearChain();
 
@@ -23,7 +24,7 @@ class ReviewAgent {
     const normalized = normalizeMessage<Review>('Review', review);
 
     if (!normalized.orderId) {
-      throw new Error('Order reference required');
+      throw new AgentError('ORDER_REFERENCE_REQUIRED', 'Order reference required', 'review-agent');
     }
 
     const order = await ordersAgent.get(normalized.orderId);
@@ -33,12 +34,12 @@ class ReviewAgent {
       order.status === 'delivered' &&
       order.items.some((i) => i.productId === normalized.productId);
     if (!validOrder) {
-      throw new Error('Only completed orders can be reviewed');
+      throw new AgentError('INVALID_ORDER_STATE', 'Only completed orders can be reviewed', 'review-agent');
     }
 
     const existing = await getReviews(normalized.productId);
     if (existing.some((r) => r.userId === normalized.userId)) {
-      throw new Error('Duplicate review');
+      throw new AgentError('DUPLICATE_REVIEW', 'Duplicate review', 'review-agent');
     }
 
     await addReview(review);

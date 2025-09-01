@@ -40,6 +40,7 @@ import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { orderStatusMessageSchema } from '../schemas/waku/order.status';
 import { buildTopic } from '../utils/wakuTopics';
 import { normalizeMessage } from '../lib/normalizeMessage';
+import AgentError from '@/types/AgentError';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -198,7 +199,7 @@ class OrdersAgent {
       const admins = await SettingsAgent.getInstance().getAdmins();
       allowed = allowed.concat(admins);
       if (!address || !allowed.includes(address)) {
-        throw new Error('Unauthorized order update');
+        throw new AgentError('UNAUTHORIZED', 'Unauthorized order update', 'orders-agent');
       }
     }
   }
@@ -269,15 +270,17 @@ class OrdersAgent {
     const normalized = normalizeMessage<Order>('Order', order);
     const current = await this.get(normalized.id);
     if (!current) {
-      throw new Error('Order not found');
+      throw new AgentError('ORDER_NOT_FOUND', 'Order not found', 'orders-agent');
     }
     await this.ensureAuthorized(current);
     let statusChanged = false;
     if (normalized.status !== current.status) {
       const allowed = ALLOWED_STATUS_TRANSITIONS[current.status] || [];
       if (!allowed.includes(normalized.status)) {
-        throw new Error(
+        throw new AgentError(
+          'INVALID_STATUS_TRANSITION',
           `Invalid status transition from ${current.status} to ${normalized.status}`,
+          'orders-agent',
         );
       }
       statusChanged = true;
@@ -328,7 +331,7 @@ class OrdersAgent {
   async remove(id: string): Promise<void> {
     const order = await this.get(id);
     if (!order) {
-      throw new Error('Order not found');
+      throw new AgentError('ORDER_NOT_FOUND', 'Order not found', 'orders-agent');
     }
     await this.ensureAuthorized(order);
     const sid = order.items?.[0]?.product?.storeId || '';
@@ -375,15 +378,19 @@ class OrdersAgent {
   async releasePayment(orderId: string): Promise<string> {
     const order = await this.get(orderId);
     if (!order) {
-      throw new Error('Order not found');
+      throw new AgentError('ORDER_NOT_FOUND', 'Order not found', 'orders-agent');
     }
     await this.ensureAuthorized(order);
     if (!order.escrowAddr) {
-      throw new Error('Order escrow address not found');
+      throw new AgentError('ESCROW_NOT_FOUND', 'Order escrow address not found', 'orders-agent');
     }
     const allowed = ALLOWED_STATUS_TRANSITIONS[order.status] || [];
     if (!allowed.includes('released')) {
-      throw new Error(`Invalid status transition from ${order.status} to released`);
+      throw new AgentError(
+        'INVALID_STATUS_TRANSITION',
+        `Invalid status transition from ${order.status} to released`,
+        'orders-agent',
+      );
     }
     const hash = await releasePayment(order.escrowAddr);
     const updated: Order = {
@@ -437,15 +444,19 @@ class OrdersAgent {
   async refundPayment(orderId: string): Promise<string> {
     const order = await this.get(orderId);
     if (!order) {
-      throw new Error('Order not found');
+      throw new AgentError('ORDER_NOT_FOUND', 'Order not found', 'orders-agent');
     }
     await this.ensureAuthorized(order);
     if (!order.escrowAddr) {
-      throw new Error('Order escrow address not found');
+      throw new AgentError('ESCROW_NOT_FOUND', 'Order escrow address not found', 'orders-agent');
     }
     const allowed = ALLOWED_STATUS_TRANSITIONS[order.status] || [];
     if (!allowed.includes('refunded')) {
-      throw new Error(`Invalid status transition from ${order.status} to refunded`);
+      throw new AgentError(
+        'INVALID_STATUS_TRANSITION',
+        `Invalid status transition from ${order.status} to refunded`,
+        'orders-agent',
+      );
     }
     const hash = await refundPayment(order.escrowAddr);
     const updated: Order = {
