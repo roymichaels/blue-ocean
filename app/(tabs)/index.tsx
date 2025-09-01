@@ -38,6 +38,7 @@ import GlobalHeader from '@/components/GlobalHeader';
 import ProductCard from '@/features/products/components/ProductCard';
 import Spinner from '@/components/ui/Spinner';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import BannerFormModal from '@/components/BannerFormModal';
 import CartModal from '@/features/cart/components/CartModal';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
@@ -393,9 +394,10 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <ErrorBoundary>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
       <GlobalHeader
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -799,7 +801,8 @@ export default function HomeScreen() {
         visible={showCartModal}
         onClose={() => setShowCartModal(false)}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 
