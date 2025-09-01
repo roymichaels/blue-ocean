@@ -1,12 +1,15 @@
 import React, { Suspense } from 'react';
 import Spinner from '../../../components/ui/Spinner';
+import RequireWallet from '../../../components/RequireWallet';
 
 const StoresScreen = React.lazy(() => import('./_StoresScreen'));
 
 export default function AdminStoresRoute(props: any) {
   return (
-    <Suspense fallback={<Spinner label="Stores" />}>
-      <StoresScreen {...props} />
-    </Suspense>
+    <RequireWallet>
+      <Suspense fallback={<Spinner label="Stores" />}>
+        <StoresScreen {...props} />
+      </Suspense>
+    </RequireWallet>
   );
 }
