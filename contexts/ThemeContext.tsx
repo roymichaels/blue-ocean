@@ -32,7 +32,23 @@ const ThemeContext = createContext<ThemeContextType>({
   toggleTheme: async () => {},
 });
 
-export const useTheme = () => useContext(ThemeContext);
+export const useTheme = () => {
+  const { theme, tokens, colors, setTheme, toggleTheme } = useContext(ThemeContext);
+
+  const getColor = useCallback(
+    (path: string): any => {
+      return path.split('.').reduce((acc: any, key) => (acc ? acc[key] : undefined), colors);
+    },
+    [colors],
+  );
+
+  const getTokens = useCallback(() => tokens, [tokens]);
+
+  return useMemo(
+    () => ({ theme, colors, getTokens, getColor, setTheme, toggleTheme }),
+    [theme, colors, getTokens, getColor, setTheme, toggleTheme],
+  );
+};
 
 interface ThemeProviderProps {
   children: ReactNode;

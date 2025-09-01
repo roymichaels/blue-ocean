@@ -13,12 +13,12 @@ export default function Section({
   children: React.ReactNode;
   center?: boolean;
 }) {
-  const { colors } = useTheme();
+  const { getColor } = useTheme();
   return (
     <View style={{ paddingHorizontal: spacing.spacer16, paddingVertical: spacing.spacer16 }}>
       <Text
         style={{
-          color: colors.text.primary,
+          color: getColor('text.primary'),
           fontSize: 18,
           fontWeight: '700',
           textAlign: center ? 'center' : 'left',

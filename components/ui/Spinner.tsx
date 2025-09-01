@@ -23,14 +23,14 @@ export default function Spinner({
   label,
   style,
 }: SpinnerProps) {
-  const { colors } = useTheme();
-  const spinnerColor = color || colors.gold;
+  const { getColor } = useTheme();
+  const spinnerColor = color || getColor('gold');
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }, style]}>
+    <View style={[styles.container, { backgroundColor: getColor('background') }, style]}>
       <ActivityIndicator size={size} color={spinnerColor} />
       {label ? (
-        <Text style={[styles.label, { color: colors.text.primary }]}>{label}</Text>
+        <Text style={[styles.label, { color: getColor('text.primary') }]}>{label}</Text>
       ) : null}
     </View>
   );

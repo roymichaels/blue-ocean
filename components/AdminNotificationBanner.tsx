@@ -1,22 +1,24 @@
 import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Animated, 
-  Easing 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  Easing
 } from 'react-native';
 import { Bell, X } from 'lucide-react-native';
 import NotificationService from '../services/notification';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AdminNotificationBanner() {
   const [visible, setVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const translateY = new Animated.Value(-60);
   const { user } = useAuth();
+  const { getColor } = useTheme();
 
   useEffect(() => {
     if (!user) {
@@ -80,23 +82,26 @@ export default function AdminNotificationBanner() {
   }
 
   return (
-    <Animated.View 
+    <Animated.View
       style={[
         styles.container,
-        { transform: [{ translateY }] }
+        { backgroundColor: getColor('adminBanner.background'), transform: [{ translateY }] }
       ]}
     >
       <View style={styles.content}>
-        <Bell size={20} color="#FFFFFF" />
-        <Text style={styles.message}>
+        <Bell size={20} color={getColor('adminBanner.text')} />
+        <Text style={[styles.message, { color: getColor('adminBanner.text') }] }>
           You have {unreadCount} unread {unreadCount === 1 ? 'notification' : 'notifications'}
         </Text>
-        <TouchableOpacity style={styles.viewButton} onPress={handleViewAll}>
-          <Text style={styles.viewButtonText}>View</Text>
+        <TouchableOpacity
+          style={[styles.viewButton, { backgroundColor: getColor('adminBanner.buttonBackground') }]}
+          onPress={handleViewAll}
+        >
+          <Text style={[styles.viewButtonText, { color: getColor('adminBanner.text') }]}>View</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity style={styles.closeButton} onPress={hideBanner}>
-        <X size={16} color="#FFFFFF" />
+        <X size={16} color={getColor('adminBanner.text')} />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -108,7 +113,6 @@ const styles = StyleSheet.create({
     top: 0,
     start: 0,
     end: 0,
-    backgroundColor: '#20B2AA',
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -121,21 +125,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   message: {
-    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 8,
     flex: 1,
   },
   viewButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     marginLeft: 8,
   },
   viewButtonText: {
-    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '600',
   },
