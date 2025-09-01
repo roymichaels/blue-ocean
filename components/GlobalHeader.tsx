@@ -14,8 +14,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
-import WishlistModal from './WishlistModal';
-import CartService from '../services/cart';
+import WishlistModal from '@/features/cart/components/WishlistModal';
+import CartService from '@/features/cart/services/cart';
 
 interface GlobalHeaderProps {
   searchQuery?: string;

@@ -11,7 +11,7 @@ import {
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { uuid } from '../utils/uuid';
 import { sha256 } from '@noble/hashes/sha256';
-import nearAuth from './nearAuth';
+import nearAuth from '@/features/auth/services/nearAuth';
 
 const STABLE_BOOTSTRAP = [
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP',

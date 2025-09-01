@@ -15,7 +15,7 @@ import { router } from 'expo-router';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import { Category } from '../../types';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';

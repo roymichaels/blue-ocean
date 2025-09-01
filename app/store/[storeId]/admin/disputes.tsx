@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { useAuth } from '../../../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { router } from 'expo-router';
 import ordersAgent from '../../../../agents/orders-agent';
 import { Order } from '../../../../types';

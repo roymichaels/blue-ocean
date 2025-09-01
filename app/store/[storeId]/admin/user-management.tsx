@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Search, User, Mail, Calendar, Shield, UserCheck, UserX, Filter, X, Save, ChevronDown } from 'lucide-react-native';
-import { useAuth } from '../../../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { User as UserType, CustomerTier, UserRole } from '../../../../types';

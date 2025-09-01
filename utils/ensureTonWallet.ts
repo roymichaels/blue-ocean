@@ -1,4 +1,4 @@
-import nearAuth from '../services/nearAuth';
+import nearAuth from '@/features/auth/services/nearAuth';
 
 // Legacy name kept for compatibility. Ensures a NEAR wallet session.
 export default async function ensureTonWallet(errorMessage: string) {

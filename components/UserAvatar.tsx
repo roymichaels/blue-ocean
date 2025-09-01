@@ -11,11 +11,11 @@ import {
   Platform,
 } from 'react-native';
 import { User, LogOut, Settings, Shield, Globe, Moon, Sun } from 'lucide-react-native';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { router } from 'expo-router';
-import { useAuthModal } from './AuthModalContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
 import ConfirmationModal from './ConfirmationModal';
 import chain from '../services/chain';
 

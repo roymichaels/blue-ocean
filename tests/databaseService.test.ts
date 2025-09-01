@@ -2,7 +2,7 @@ import DatabaseService from '../services/database';
 import productsAgent from '../agents/products-agent';
 import categoriesAgent from '../agents/categories-agent';
 import storesAgent from '../agents/stores-agent';
-import nearAuth from '../services/nearAuth';
+import nearAuth from '@/features/auth/services/nearAuth';
 
 beforeEach(() => {
   (DatabaseService as any).instance = undefined;

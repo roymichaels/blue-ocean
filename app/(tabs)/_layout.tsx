@@ -4,9 +4,9 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'expo-router';
-import FloatingCartWidget from '../../components/FloatingCartWidget';
+import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import { getTabsForAuth } from '../../config/navigation/tabs';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export default function TabLayout() {
   const { t } = useLanguage();

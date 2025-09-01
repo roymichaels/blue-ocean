@@ -2,7 +2,7 @@ import { Review } from '../types';
 
 const store: Record<string, Review[]> = {};
 
-jest.mock('../services/tonReviews', () => ({
+jest.mock('@/features/reviews/services/tonReviews', () => ({
   getReviews: jest.fn(async (productId: string) => store[productId] || []),
   addReview: jest.fn(async (review: Review) => {
     const arr = store[review.productId] || [];
@@ -32,7 +32,7 @@ jest.mock('../agents/stores-agent', () => ({
   recordReview: jest.fn(async () => {}),
 }));
 
-jest.mock('../services/nearAuth', () => ({
+jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('user1'),
   signIn: jest.fn(),
 }));

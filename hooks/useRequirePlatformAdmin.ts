@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { router } from 'expo-router';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export default function useRequirePlatformAdmin() {
   const { user } = useAuth();

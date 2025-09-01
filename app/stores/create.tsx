@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import StoreCreation from '../../components/StoreCreation';
+import StoreCreation from '@/features/stores/components/StoreCreation';
 
 export default function StoreCreateScreen() {
   return (

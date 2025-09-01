@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Save, Settings as SettingsIcon } from 'lucide-react-native';
-import { useAuth } from '../../../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { useLanguage } from '../../../../contexts/LanguageContext';

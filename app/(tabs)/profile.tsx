@@ -24,7 +24,7 @@ import {
   TriangleAlert as AlertTriangle,
   Clock,
 } from 'lucide-react-native';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -32,9 +32,9 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
-import { useAuthModal } from '../../components/AuthModalContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
 import OrderService from '../../services/orders';
-import CartService from '../../services/cart';
+import CartService from '@/features/cart/services/cart';
 import DatabaseService from '../../services/database';
 import chain from '../../services/chain';
 

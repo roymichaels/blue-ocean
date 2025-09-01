@@ -1,6 +1,6 @@
 import { uuid } from '../utils/uuid';
 import { Order, OrderStatus, Notification, OrderTrackingStep } from '../types';
-import nearAuth from '../services/nearAuth';
+import nearAuth from '@/features/auth/services/nearAuth';
 import notificationsAgent from './notifications-agent';
 import { assertTonChain } from '../services/chain';
 import {
@@ -18,7 +18,7 @@ import {
   refundPayment,
 } from '../services/tonContract';
 import productsAgent from './products-agent';
-import { getSellerPublicKey } from '../services/sellerRegistry';
+import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
 
 assertTonChain();
 import { encryptShippingInfo } from '../utils/shippingCrypto';

@@ -6,7 +6,7 @@ import Section from '../components/ui/Section';
 import GoldDivider from '../components/ui/GoldDivider';
 import DatabaseService from '../services/database';
 import { Product, Category, HeroBanner } from '../types';
-import ProductCard from '../components/ProductCard';
+import ProductCard from '@/features/products/components/ProductCard';
 import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
 import Button from '../components/ui/Button';

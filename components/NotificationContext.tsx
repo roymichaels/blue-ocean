@@ -11,7 +11,7 @@ import React, {
 import NotificationService from '../services/notification';
 import { Notification } from '../types';
 import NotificationPopup from './NotificationPopup';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useWakuClient } from '../hooks/useWakuClient';
 import { parseNotificationWakuPayload } from '../schemas/waku';
 

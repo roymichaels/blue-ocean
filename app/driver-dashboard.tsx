@@ -20,7 +20,7 @@ import {
   Circle as XCircle,
 } from 'lucide-react-native';
 import ProofUploader from '../components/ProofUploader';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
 import { DeliveryJob } from '../types';

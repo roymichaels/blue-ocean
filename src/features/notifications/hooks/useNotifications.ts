@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import NotificationService from '@/services/notification';
 import { Notification } from '@/types';
-import { useAuth } from '@/components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export function useNotifications() {
   const { isLoggedIn, user } = useAuth();

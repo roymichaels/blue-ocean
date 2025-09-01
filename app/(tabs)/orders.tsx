@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Calendar, Truck } from 'lucide-react-native';
-import { useAuth } from '../../components/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import OrderService from '../../services/orders';
 import { Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -18,7 +18,7 @@ import AppShell from '../../components/layout/AppShell';
 import EmptyState from '../../components/ui/EmptyState';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
-import { useAuthModal } from '../../components/AuthModalContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
 import commonStyles from '../../constants/styles';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';

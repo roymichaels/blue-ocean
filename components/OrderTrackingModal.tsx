@@ -19,7 +19,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import OrderService from '../services/orders';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 
