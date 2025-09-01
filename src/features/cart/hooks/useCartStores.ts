@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import chain from '@/services/chain';
 import { CartItem, Store } from '@/types';
 
@@ -8,25 +9,28 @@ if (chain === 'near') {
 }
 
 export default function useCartStores(cartItems: CartItem[]) {
-  const [stores, setStores] = useState<Record<string, Store>>({});
+  const ids = React.useMemo(
+    () => Array.from(new Set(cartItems.map((i) => i.product.storeId))),
+    [cartItems],
+  );
 
-  useEffect(() => {
-    const fetchStores = async () => {
-      const ids = Array.from(new Set(cartItems.map((i) => i.product.storeId)));
+  const { data: stores = {} } = useQuery({
+    queryKey: ['cart-stores', ids],
+    queryFn: async () => {
       const entries = await Promise.all(
         ids.map(async (id) => {
           const store = getStore ? await getStore(id, id) : null;
           return store ? ([id, store] as const) : null;
-        })
+        }),
       );
       const map: Record<string, Store> = {};
       entries.forEach((entry) => {
         if (entry) map[entry[0]] = entry[1];
       });
-      setStores(map);
-    };
-    fetchStores();
-  }, [cartItems]);
+      return map;
+    },
+    suspense: true,
+  });
 
   return stores;
 }
