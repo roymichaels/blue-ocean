@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { z } from 'zod';
+import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import { Category, Subcategory } from '../../types';
@@ -20,10 +22,13 @@ import InfoModal from '../../components/InfoModal';
 import Spinner from '../../components/ui/Spinner';
 import commonStyles from '@/constants/styles';
 
+const validateParams = createValidateParams(z.object({ id: z.string() }));
+
 
 
 export default function CategoryScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = validateParams(useLocalSearchParams());
+  const id = params.success ? params.data.id : undefined;
   const [category, setCategory] = useState<Category | null>(null);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
@@ -47,10 +52,12 @@ export default function CategoryScreen() {
   });
 
   useEffect(() => {
+    if (!id) return;
     loadCategory();
   }, [id]);
 
   const loadCategory = async () => {
+    if (!id) return;
     setLoading(true);
     try {
       const db = DatabaseService.getInstance();
@@ -73,6 +80,14 @@ export default function CategoryScreen() {
       setLoading(false);
     }
   };
+
+  if (!params.success) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text.primary }}>Invalid category</Text>
+      </SafeAreaView>
+    );
+  }
 
   const addSubcategory = () => {
     setEditingSubcategory(null);
