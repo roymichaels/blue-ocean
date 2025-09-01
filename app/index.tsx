@@ -1,4 +1,3 @@
-import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -23,14 +22,8 @@ import {
   Filter,
   ArrowUpDown,
 } from 'lucide-react-native';
-import DatabaseService from '../services/database';
 import { Product, Category, HeroBanner } from '../types';
-import chain from '../services/chain';
-
-let listCategories: (() => Promise<Category[]>) | undefined;
-if (chain === 'ton') {
-  ({ listCategories } = require('../services/tonCategories'));
-}
+import { useHome } from '../src/features/home/hooks/useHome';
 import { useAuth } from '../components/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -51,10 +44,21 @@ const BANNER_HEIGHT = (BANNER_WIDTH * 9) / 16;
 export default function HomeScreen() {
   const params = useLocalSearchParams<{ showCart?: string }>();
   const { width: windowWidth } = useWindowDimensions();
-  const [products, setProducts] = useState<Product[]>([]);
+  const {
+    products,
+    categories,
+    heroBanners,
+    loading,
+    refreshing,
+    error,
+    reload,
+    refresh,
+    upsertBanner,
+    removeBanner,
+    upsertProduct,
+    removeProduct,
+  } = useHome();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [minPrice, setMinPrice] = useState('');
@@ -62,8 +66,6 @@ export default function HomeScreen() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [bannerFormVisible, setBannerFormVisible] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [sortBy, setSortBy] = useState<
     'newest' | 'price-low' | 'price-high' | 'rating'
   >('newest');
@@ -98,10 +100,6 @@ export default function HomeScreen() {
   ];
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
     // Check if we should show the cart modal from URL params
     if (params.showCart === 'true') {
       setShowCartModal(true);
@@ -130,20 +128,8 @@ export default function HomeScreen() {
     filterAndSortProducts();
   }, [products, searchQuery, sortBy, selectedCategory, minPrice, maxPrice]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const db = DatabaseService.getInstance();
-      const [productsData, categoriesData, bannersData] = await Promise.all([
-        db.getProducts(),
-        listCategories ? listCategories() : Promise.resolve([]),
-        db.getHeroBanners(),
-      ]);
-      setProducts(productsData);
-      setCategories(categoriesData);
-      setHeroBanners(bannersData);
-    } catch (error) {
-      errorLog('HomeScreen loadData error:', error);
+  useEffect(() => {
+    if (error) {
       setInfoModal({
         visible: true,
         title: t('common.error'),
@@ -151,16 +137,8 @@ export default function HomeScreen() {
         type: 'error',
         buttonText: t('common.reload'),
       });
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
-  };
+  }, [error, t]);
 
   const filterAndSortProducts = () => {
     let filtered = products;
@@ -222,15 +200,11 @@ export default function HomeScreen() {
   };
 
   const handleBannerSaved = (b: HeroBanner, isNew: boolean) => {
-    if (isNew) {
-      setHeroBanners((prev) => [...prev, b]);
-    } else {
-      setHeroBanners((prev) => prev.map((h) => (h.id === b.id ? b : h)));
-    }
+    upsertBanner(b, isNew);
   };
 
   const handleBannerDeleted = (id: string) => {
-    setHeroBanners((prev) => prev.filter((b) => b.id !== id));
+    removeBanner(id);
   };
 
   const addProduct = () => {
@@ -244,15 +218,11 @@ export default function HomeScreen() {
   };
 
   const handleProductSaved = (p: Product, isNew: boolean) => {
-    if (isNew) {
-      setProducts((prev) => [...prev, p]);
-    } else {
-      setProducts((prev) => prev.map((prod) => (prod.id === p.id ? p : prod)));
-    }
+    upsertProduct(p, isNew);
   };
 
   const handleProductDeleted = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    removeProduct(id);
   };
 
   const renderCategory = ({ item }: { item: Category }) => (
@@ -374,7 +344,7 @@ export default function HomeScreen() {
 
   const handleReload = () => {
     setInfoModal((prev) => ({ ...prev, visible: false }));
-    loadData();
+    reload();
   };
 
   if (loading) {
@@ -405,7 +375,7 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }
       >
         <View style={styles.filtersContainer}>
