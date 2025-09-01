@@ -9,6 +9,7 @@ import { AuthProvider } from '@/features/auth/AuthContext';
 import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
+import { WakuProvider } from '@/contexts/WakuContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Router } from 'expo-router';
@@ -26,15 +27,17 @@ export default function App() {
                 <AuthProvider>
                   <AuthModalProvider>
                     <CurrencyProvider>
-                      <NotificationProvider>
-                        <ErrorBoundary>
-                          <QueryClientProvider client={queryClient}>
-                            <React.Suspense fallback={null}>
-                              <Router />
-                            </React.Suspense>
-                          </QueryClientProvider>
-                        </ErrorBoundary>
-                      </NotificationProvider>
+                      <WakuProvider>
+                        <NotificationProvider>
+                          <ErrorBoundary>
+                            <QueryClientProvider client={queryClient}>
+                              <React.Suspense fallback={null}>
+                                <Router />
+                              </React.Suspense>
+                            </QueryClientProvider>
+                          </ErrorBoundary>
+                        </NotificationProvider>
+                      </WakuProvider>
                     </CurrencyProvider>
                   </AuthModalProvider>
                 </AuthProvider>

@@ -17,7 +17,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '@/features/auth/AuthContext';
 import useChatRooms from '../hooks/useChatRooms';
 import useChatMessages from '../hooks/useChatMessages';
-import { useWakuClient } from '../hooks/useWakuClient';
+import { useWaku } from '@/contexts/WakuContext';
 import { ChatMessage, ChatRoom } from '../types';
 import SettingsAgent from '../agents/settings-agent';
 import DatabaseService from '../services/database';
@@ -71,7 +71,7 @@ function ChatWidgetInner() {
   });
   const [isSending, setIsSending] = useState(false);
   const [chatConfigOk, setChatConfigOk] = useState(true);
-  const waku = useWakuClient();
+  const waku = useWaku();
   const [adminKey, setAdminKey] = useState('');
   const { user, isAdmin, isDriver, isLoggedIn } = useAuth();
 

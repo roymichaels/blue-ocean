@@ -2,14 +2,14 @@ import { errorLog } from '@/utils/logger';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import DatabaseService from '../services/database';
 import { ChatMessage, ChatRoom, User } from '../types';
-import { useWakuClient } from './useWakuClient';
+import { useWaku } from '@/contexts/WakuContext';
 
 export function useChatMessages(selectedRoom: ChatRoom | null, user: User | null | undefined, isAdmin: boolean) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const waku = useWakuClient();
+  const waku = useWaku();
 
   const loadMessages = useCallback(async (roomId: string) => {
     try {
