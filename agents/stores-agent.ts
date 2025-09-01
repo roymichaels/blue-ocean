@@ -95,13 +95,27 @@ class StoresAgent {
     await removeStore(id, id);
   }
 
-  async get(id: string): Promise<Store | null> {
-    return await getStore(id, id);
+  /**
+   * Returns a defensive copy of a store by id.
+   */
+  async selectStore(id: string): Promise<Store | null> {
+    const store = await getStore(id, id);
+    return store ? JSON.parse(JSON.stringify(store)) : null;
   }
 
-  async getAll(): Promise<Store[]> {
-    return await listStores('default');
+  /**
+   * Returns defensive copies of all stores.
+   */
+  async getStores(): Promise<Store[]> {
+    const list = await listStores('default');
+    return list.map((s) => JSON.parse(JSON.stringify(s)));
   }
 }
 
-export default new StoresAgent();
+const storesAgent = new StoresAgent();
+
+export const getStores = (): Promise<Store[]> => storesAgent.getStores();
+export const selectStore = (id: string): Promise<Store | null> =>
+  storesAgent.selectStore(id);
+
+export default storesAgent;

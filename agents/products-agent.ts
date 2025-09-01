@@ -5,7 +5,7 @@ import {
   getProduct,
   listProducts,
   removeProduct,
-  getProducts,
+  getProducts as fetchProducts,
   getVersion,
 } from '@/features/products/services/nearProducts';
 import { getStore } from '@/features/stores/services/nearStores';
@@ -102,7 +102,7 @@ class ProductsAgent {
   private async loadFromIndex(index: string[]): Promise<void> {
     for (let i = 0; i < index.length; i += PAGE_SIZE) {
       const slice = index.slice(i, i + PAGE_SIZE);
-      const batch = await getProducts('default', slice);
+      const batch = await fetchProducts('default', slice);
       batch.forEach((p) => {
         this.cache.set(p.id, p);
         this.summaries.set(p.id, { rating: p.rating, reviews: p.reviews });
@@ -211,27 +211,40 @@ class ProductsAgent {
     this.summaries.delete(id);
   }
 
-  async get(id: string): Promise<Product | null> {
+  /**
+   * Returns a defensive copy of the requested product.
+   * Mutating the result will not affect the internal cache.
+   */
+  async selectProduct(id: string): Promise<Product | null> {
     await this.ensureCache();
     const cached = this.cache.get(id);
-    if (cached) return cached;
+    if (cached) return JSON.parse(JSON.stringify(cached));
     const prod = await getProduct('default', id);
     if (prod) {
       this.cache.set(id, prod);
       this.summaries.set(id, { rating: prod.rating, reviews: prod.reviews });
+      return JSON.parse(JSON.stringify(prod));
     }
-    return prod;
+    return null;
   }
 
-  async getAll(): Promise<Product[]> {
+  /**
+   * Returns a new array containing defensive copies of all cached products.
+   */
+  async getProducts(): Promise<Product[]> {
     await this.ensureCache();
-    return Array.from(this.cache.values());
+    return Array.from(this.cache.values()).map((p) =>
+      JSON.parse(JSON.stringify(p)),
+    );
   }
 
+  /**
+   * Returns an immutable summary object for the given product id.
+   */
   async getSummary(id: string): Promise<ProductSummary> {
     const cached = this.summaries.get(id);
-    if (cached) return cached;
-    const prod = await this.get(id);
+    if (cached) return { ...cached };
+    const prod = await this.selectProduct(id);
     return prod ? { rating: prod.rating, reviews: prod.reviews } : { rating: 0, reviews: 0 };
   }
 
@@ -244,4 +257,17 @@ class ProductsAgent {
   }
 }
 
-export default new ProductsAgent();
+const productsAgent = new ProductsAgent();
+
+/**
+ * Selector returning a defensive copy of all products.
+ */
+export const getProducts = (): Promise<Product[]> => productsAgent.getProducts();
+
+/**
+ * Selector returning a defensive copy of a product by id.
+ */
+export const selectProduct = (id: string): Promise<Product | null> =>
+  productsAgent.selectProduct(id);
+
+export default productsAgent;

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, I18nManager } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import storesAgent from '../../../agents/stores-agent';
-import productsAgent from '../../../agents/products-agent';
+import storesAgent, { selectStore } from '../../../agents/stores-agent';
+import { getProducts } from '../../../agents/products-agent';
 import reviewAgent from '../../../agents/review-agent';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { Store, Product } from '../../../types';
@@ -27,10 +27,10 @@ export default function StorefrontStoreScreen() {
     let callback: ((sid: string, s: number) => void) | undefined;
     const load = async () => {
       if (!storeId) return;
-      const s = await storesAgent.get(storeId);
+      const s = await selectStore(storeId);
       setStore(s);
       setScore(storesAgent.getReputationScore(storeId));
-      const all = await productsAgent.getAll();
+      const all = await getProducts();
       const filtered = all.filter((p) => p.storeId === storeId);
       setProducts(filtered);
       const entries = await Promise.all(

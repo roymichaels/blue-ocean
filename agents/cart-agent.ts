@@ -33,13 +33,27 @@ class CartAgent {
     await removeCartItem(id);
   }
 
-  async get(id: string): Promise<CartItem | null> {
-    return await getCartItem(id);
+  /**
+   * Returns a defensive copy of a cart item by id.
+   */
+  async selectCartItem(id: string): Promise<CartItem | null> {
+    const item = await getCartItem(id);
+    return item ? JSON.parse(JSON.stringify(item)) : null;
   }
 
-  async getAll(): Promise<CartItem[]> {
-    return await listCartItems();
+  /**
+   * Returns defensive copies of all cart items.
+   */
+  async getCartItems(): Promise<CartItem[]> {
+    const list = await listCartItems();
+    return list.map((c) => JSON.parse(JSON.stringify(c)));
   }
 }
 
-export default new CartAgent();
+const cartAgent = new CartAgent();
+
+export const getCartItems = (): Promise<CartItem[]> => cartAgent.getCartItems();
+export const selectCartItem = (id: string): Promise<CartItem | null> =>
+  cartAgent.selectCartItem(id);
+
+export default cartAgent;

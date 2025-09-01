@@ -9,7 +9,7 @@ import {
   I18nManager,
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import productsAgent from '../../agents/products-agent';
+import { getProducts } from '../../agents/products-agent';
 import reviewAgent from '../../agents/review-agent';
 import ProductCard from '@/features/products/components/ProductCard';
 import { Product } from '../../types';
@@ -43,7 +43,7 @@ export default function StorefrontScreen({ initialCategory }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      const all = await productsAgent.getAll();
+      const all = await getProducts();
       setProducts(all);
       const entries = await Promise.all(
         all.map(async (p) => {

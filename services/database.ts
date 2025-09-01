@@ -2,8 +2,14 @@
 import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import usersAgent from '../agents/users-agent';
-import categoriesAgent from '../agents/categories-agent';
-import productsAgent from '../agents/products-agent';
+import categoriesAgent, {
+  getCategories as fetchCategories,
+  selectCategory as fetchCategory,
+} from '../agents/categories-agent';
+import productsAgent, {
+  getProducts as fetchProducts,
+  selectProduct as fetchProduct,
+} from '../agents/products-agent';
 import ordersAgent from '../agents/orders-agent';
 import SettingsAgent from '../agents/settings-agent';
 import reviewAgent from '../agents/review-agent';
@@ -96,7 +102,7 @@ class DatabaseService {
   }
 
   async getCategories(): Promise<Category[]> {
-    return categoriesAgent.getAll();
+    return fetchCategories();
   }
 
   async addCategory(
@@ -111,7 +117,7 @@ class DatabaseService {
   }
 
   async updateCategory(id: string, data: Partial<Category>): Promise<void> {
-    const existing = categoriesAgent.get(id);
+    const existing = await fetchCategory(id);
     if (!existing) return;
     await categoriesAgent.update({ ...existing, ...data });
   }
@@ -131,11 +137,11 @@ class DatabaseService {
 
   // Products
   async getProducts(): Promise<Product[]> {
-    return productsAgent.getAll();
+    return fetchProducts();
   }
 
   async getProduct(id: string): Promise<Product | null> {
-    return productsAgent.get(id) || null;
+    return fetchProduct(id);
   }
 
   async addProduct(product: Omit<Product, 'id'>): Promise<string> {
@@ -146,7 +152,7 @@ class DatabaseService {
   }
 
   async updateProduct(id: string, data: Partial<Product>): Promise<void> {
-    const existing = productsAgent.get(id);
+    const existing = await fetchProduct(id);
     if (!existing) return;
     await productsAgent.update({ ...existing, ...data });
   }
@@ -157,7 +163,7 @@ class DatabaseService {
 
   // Subcategories
   async addSubcategory(sub: Subcategory): Promise<void> {
-    const cat = categoriesAgent.get(sub.categoryId);
+    const cat = await fetchCategory(sub.categoryId);
     if (!cat) return;
     cat.subcategories = cat.subcategories || [];
     cat.subcategories.push(sub);
@@ -168,7 +174,8 @@ class DatabaseService {
     id: string,
     data: Partial<Subcategory>,
   ): Promise<void> {
-    for (const cat of categoriesAgent.getAll()) {
+    const cats = await fetchCategories();
+    for (const cat of cats) {
       const idx = cat.subcategories?.findIndex((s) => s.id === id) ?? -1;
       if (idx >= 0 && cat.subcategories) {
         cat.subcategories[idx] = { ...cat.subcategories[idx], ...data };
@@ -179,7 +186,8 @@ class DatabaseService {
   }
 
   async deleteSubcategory(id: string): Promise<void> {
-    for (const cat of categoriesAgent.getAll()) {
+    const cats = await fetchCategories();
+    for (const cat of cats) {
       const before = cat.subcategories?.length || 0;
       cat.subcategories = cat.subcategories?.filter((s) => s.id !== id);
       if ((cat.subcategories?.length || 0) !== before) {
@@ -416,7 +424,7 @@ class DatabaseService {
   async addWishlistItem(userId: string, productId: string): Promise<void> {
     const list = this.wishlist[userId] || [];
     if (list.some((w) => w.productId === productId)) return;
-    const product = productsAgent.get(productId);
+    const product = await fetchProduct(productId);
     if (!product) return;
     list.push({
       id: `${productId}_${Date.now()}`,

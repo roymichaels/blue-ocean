@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '@/types';
 import DatabaseService from '@/services/database';
-import cartAgent from '@/agents/cart-agent';
+import cartAgent, { getCartItems } from '@/agents/cart-agent';
 import eventBus from '@/services/eventBus';
 import nearAuth from '../../auth/services/nearAuth';
  
@@ -45,7 +45,7 @@ class CartService {
 
       if (uid) {
         try {
-          const all = await cartAgent.getAll();
+          const all = await getCartItems();
           this.cartItems = all.filter((it) => it.id.startsWith(`${uid}_`));
         } catch (err) {
           errorLog('Error fetching cart from storage:', err);
@@ -227,7 +227,7 @@ class CartService {
   public async clearCart(): Promise<void> {
     const uid = await this.getCurrentUserId();
     this.cartItems = [];
-    const allItems = await cartAgent.getAll();
+    const allItems = await getCartItems();
     for (const item of allItems) {
       if (!uid || item.id.startsWith(`${uid}_`)) {
         await cartAgent.remove(item.id);

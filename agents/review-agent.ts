@@ -2,7 +2,7 @@ import { Review } from '../types';
 import { assertNearChain } from '../services/chain';
 import { addReview, getReviews } from '@/features/reviews/services/nearReviews';
 import ordersAgent from './orders-agent';
-import productsAgent from './products-agent';
+import { selectProduct } from './products-agent';
 import storesAgent from './stores-agent';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
@@ -41,9 +41,10 @@ class ReviewAgent {
       throw new Error('Duplicate review');
     }
 
-    await addReview(normalized);
-    this.subscribers.forEach((cb) => cb(normalized));
-    const product = await productsAgent.get(normalized.productId);
+    await addReview(review);
+    this.subscribers.forEach((cb) => cb(review));
+    const product = await selectProduct(review.productId);
+
     if (product) {
       await storesAgent.recordReview(product.storeId, normalized.rating);
     }
