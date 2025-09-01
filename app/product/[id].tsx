@@ -5,7 +5,7 @@ const ProductScreen = React.lazy(() => import('./_ProductScreen'));
 
 export default function ProductScreenRoute(props: any) {
   return (
-    <Suspense fallback={<Spinner />}>
+    <Suspense fallback={<Spinner label="Product" />}>
       <ProductScreen {...props} />
     </Suspense>
   );

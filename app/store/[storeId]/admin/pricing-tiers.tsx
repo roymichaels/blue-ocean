@@ -5,7 +5,7 @@ const PricingTiersScreen = React.lazy(() => import('./_PricingTiersScreen'));
 
 export default function PricingTiersRoute(props: any) {
   return (
-    <Suspense fallback={<Spinner />}>
+    <Suspense fallback={<Spinner label="Pricing Tiers" />}>
       <PricingTiersScreen {...props} />
     </Suspense>
   );
