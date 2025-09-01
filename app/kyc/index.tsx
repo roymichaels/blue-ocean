@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Button from '@/components/ui/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import ProofUploader from '../../components/ProofUploader';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -13,6 +13,7 @@ export default function KycScreen() {
   const { user } = useAuth();
   const { colors } = useTheme();
   const [docUri, setDocUri] = useState('');
+  const { back } = useAppRouter();
 
   const submit = async () => {
     if (!user || !docUri) return;
@@ -20,7 +21,7 @@ export default function KycScreen() {
       type: 'kyc.request',
       payload: { userId: user.id, documentUri: docUri },
     });
-    router.back();
+    back();
   };
 
   return (

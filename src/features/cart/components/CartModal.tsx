@@ -25,6 +25,9 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { CartItem, ShippingAddress, Store } from '@/types';
+import chain from '@/services/chain';
+import useCart from '../hooks/useCart';
+import useCartStores from '../hooks/useCartStores';
 
 let getStore:
   | ((storeId: string, id: string) => Promise<Store | null>)

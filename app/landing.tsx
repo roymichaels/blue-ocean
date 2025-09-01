@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { Link, router } from 'expo-router';
+import { Link } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import AppShell from '../components/layout/AppShell';
 import Section from '../components/ui/Section';
 import GoldDivider from '../components/ui/GoldDivider';
@@ -13,6 +14,7 @@ import Button from '../components/ui/Button';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function Landing() {
+  const { push } = useAppRouter();
   const { colors } = useTheme();
   const [featured, setFeatured] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -105,7 +107,7 @@ export default function Landing() {
               ] as any[]).map((c) => (
                 <Pressable
                   key={c.id}
-                  onPress={() => router.push(`/category/${c.id}`)}
+                  onPress={() => push(`/category/${c.id}`)}
                   style={{
                     paddingHorizontal: 12,
                     paddingVertical: 8,

@@ -11,7 +11,7 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import { Category } from '../../types';
@@ -34,6 +34,7 @@ export default function CategoriesScreen() {
   const [loading, setLoading] = useState(true);
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
+  const { push, back } = useAppRouter();
   const NUM_COLUMNS = 2;
   const ITEM_HEIGHT = 176;
   const getItemLayout = (_: Category[] | null | undefined, index: number) => ({
@@ -180,7 +181,7 @@ export default function CategoriesScreen() {
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
       style={[styles.categoryCard]}
-      onPress={() => router.push(`/category/${item.id}`)}
+      onPress={() => push(`/category/${item.id}`)}
     >
       <View style={[styles.categoryIcon]}>
         <Text style={styles.categoryEmoji}>{item.icon}</Text>
@@ -211,7 +212,7 @@ export default function CategoriesScreen() {
         <View
           style={[styles.header, { borderBottomColor: colors.border.primary }]}
         >
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>קטגוריות</Text>
@@ -248,7 +249,7 @@ export default function CategoriesScreen() {
       <View
         style={[styles.header, { borderBottomColor: colors.border.primary }]}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { Star, ArrowLeft } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -12,6 +13,7 @@ import { Order, Review } from '../../types';
 import SmartImage from '../../components/SmartImage';
 
 export default function SubmitReviewScreen() {
+  const { replace, back } = useAppRouter();
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const { isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
@@ -56,7 +58,7 @@ export default function SubmitReviewScreen() {
       verified: true,
     };
     await reviewAgent.add(review);
-    router.replace('/reviews');
+    replace('/reviews');
   };
 
   const renderStars = () => (
@@ -96,7 +98,7 @@ export default function SubmitReviewScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
-        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}> 
+        <TouchableOpacity onPress={() => back()} style={[styles.backButton, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}> 
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>כתיבת ביקורת</Text>

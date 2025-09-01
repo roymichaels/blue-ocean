@@ -1,13 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Button from '@/components/ui/Button';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { useTheme } from '@/contexts/ThemeContext';
 import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
 import { useStore } from '@/features/products/hooks';
 
 export default function StoreDetail() {
   useRequirePlatformAdmin();
+  const { push } = useAppRouter();
   const { colors } = useTheme();
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { data: store } = useStore(storeId);
@@ -21,7 +23,7 @@ export default function StoreDetail() {
       <Text style={[styles.value, { color: colors.text.primary }]}>{store.owner}</Text>
       <Button
         title="Impersonate"
-        onPress={() => router.push(`/store/${store.id}/admin/dashboard?impersonate=true`)}
+        onPress={() => push(`/store/${store.id}/admin/dashboard?impersonate=true`)}
         style={{ marginTop: 24 }}
       />
     </View>

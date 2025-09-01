@@ -14,7 +14,8 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import {
   Heart,
   Plus,
@@ -50,6 +51,7 @@ const BANNER_WIDTH = width - 32;
 const BANNER_HEIGHT = (BANNER_WIDTH * 9) / 16;
 
 export default function HomeScreen() {
+  const { push } = useAppRouter();
   const params = useLocalSearchParams<{ showCart?: string }>();
   const { width: windowWidth } = useWindowDimensions();
   const [products, setProducts] = useState<Product[]>([]);
@@ -259,7 +261,7 @@ export default function HomeScreen() {
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
       style={[styles.categoryCard]}
-      onPress={() => router.push(`/category/${item.id}`)}
+      onPress={() => push(`/category/${item.id}`)}
     >
       <View
         style={[
@@ -285,7 +287,7 @@ export default function HomeScreen() {
                 borderColor: colors.gold,
               },
             ]}
-            onPress={() => router.push(`/category/${item.id}`)}
+            onPress={() => push(`/category/${item.id}`)}
           >
             <Pencil size={10} color={colors.gold} />
           </TouchableOpacity>
@@ -298,7 +300,7 @@ export default function HomeScreen() {
     <View key={item.id} style={styles.heroBanner}>
       <TouchableOpacity
         style={styles.bannerTouchable}
-        onPress={() => router.push(`/category/${item.category}`)}
+        onPress={() => push(`/category/${item.category}`)}
       >
         <SmartImage
           uri={item.image}
@@ -502,7 +504,7 @@ export default function HomeScreen() {
         </View>
         <TouchableOpacity
           style={[styles.becomeSellerButton, { backgroundColor: colors.gold }]}
-          onPress={() => router.push('/stores/create')}
+          onPress={() => push('/stores/create')}
           accessibilityRole="link"
         >
           <Text style={[styles.becomeSellerText, { color: colors.text.inverse }]}>Become a Seller</Text>
@@ -583,7 +585,7 @@ export default function HomeScreen() {
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               {t('home.categories')}
             </Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/categories')}>
+            <TouchableOpacity onPress={() => push('/(tabs)/categories')}>
               <Text style={[styles.seeAll, { color: colors.gold }]}>
                 {t('common.viewAll')}
               </Text>

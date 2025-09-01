@@ -13,7 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import {
   ArrowLeft,
   Heart,
@@ -64,6 +64,7 @@ const { width } = Dimensions.get('window');
 const COVER_SIZE = Math.min(width, 540);
 
 export default function ProductDetailScreen({ id }: { id: string }) {
+  const { push, back } = useAppRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
@@ -294,7 +295,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const buyNow = async () => {
     await addToCart();
     // Navigate to cart or checkout
-    router.push({
+    push({
       pathname: '/(tabs)',
       params: { showCart: 'true' },
     });
@@ -336,7 +337,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   };
 
   const handleProductDeleted = (id: string) => {
-    router.back();
+    back();
   };
 
   // Calculate effective price based on pricing tier and quantity
@@ -386,7 +387,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
         <View
           style={[styles.header, { borderBottomColor: colors.border.primary }]}
         >
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
@@ -417,7 +418,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <View style={styles.headerActions}>

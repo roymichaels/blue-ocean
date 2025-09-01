@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
 import FullScreenMediaViewer from '../../../../components/FullScreenMediaViewer';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -35,12 +35,13 @@ export default function AdminDeliveriesScreen() {
     { id: string; uri: string; type: 'image' | 'video' }[]
   >([]);
   const [viewerVisible, setViewerVisible] = useState(false);
+  const { replace, back } = useAppRouter();
   // Matrix integration is currently disabled and tracked separately.
   // const matrixService = MatrixService.getInstance(); // TODO: re-enable Matrix later
 
   useEffect(() => {
     if (!isStoreOwner) {
-      router.replace('/');
+      replace('/');
       return;
     }
     loadData();
@@ -125,7 +126,7 @@ export default function AdminDeliveriesScreen() {
       <View
         style={[styles.header, { borderBottomColor: colors.border.primary }]}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>

@@ -13,7 +13,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, Heart } from 'lucide-react-native';
@@ -51,6 +52,7 @@ interface MediaItem {
 }
 
 export default function SubcategoryScreen() {
+  const { push, back } = useAppRouter();
   const params = validateParams(useLocalSearchParams());
   const id = params.success ? params.data.id : undefined;
   const [subcategory, setSubcategory] = useState<Subcategory | null>(null);
@@ -247,7 +249,7 @@ export default function SubcategoryScreen() {
       await db.deleteSubcategory(subcategory.id);
       setShowSubcategoryEditModal(false);
       setInfoModal({ visible: true, title: "הצלחה", message: "תת-הקטגוריה נמחקה בהצלחה", type: "success" });
-      router.back();
+      back();
     } catch (error) {
       errorLog("Error deleting subcategory:", error);
       setInfoModal({ visible: true, title: "שגיאה", message: "מחיקת תת-הקטגוריה נכשלה", type: "error" });
@@ -472,7 +474,7 @@ export default function SubcategoryScreen() {
         backgroundColor: colors.surface.primary,
         borderColor: colors.border.primary,
       }]}
-      onPress={() => router.push(`/product/${item.id}`)}
+      onPress={() => push(`/product/${item.id}`)}
     >
       <View style={styles.productImageContainer}>
         {item.images && item.images.length > 0 ? (
@@ -544,7 +546,7 @@ export default function SubcategoryScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
@@ -559,7 +561,7 @@ export default function SubcategoryScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>לא נמצא</Text>
@@ -575,7 +577,7 @@ export default function SubcategoryScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{subcategory.name}</Text>
@@ -974,7 +976,7 @@ export default function SubcategoryScreen() {
                 }]}
                 onPress={() => {
                   setShowCategorySelector(false);
-                  router.push('/(tabs)/categories');
+                  push('/(tabs)/categories');
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>
@@ -1034,7 +1036,7 @@ export default function SubcategoryScreen() {
                 }]}
                 onPress={() => {
                   setShowSubcategorySelector(false);
-                  router.push(`/category/${newProduct.category}`);
+                  push(`/category/${newProduct.category}`);
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>
@@ -1095,7 +1097,7 @@ export default function SubcategoryScreen() {
                 onPress={() => {
                   setShowPricingTierSelector(false);
                   if (storeId) {
-                    router.push(`/store/${storeId}/admin/pricing-tiers`);
+                    push(`/store/${storeId}/admin/pricing-tiers`);
                   }
                 }}
               >
