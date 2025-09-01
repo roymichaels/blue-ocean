@@ -1,8 +1,8 @@
 import { errorLog } from '@/utils/logger';
 import nearAuth from '@/features/auth/services/nearAuth';
 import { fetchSettings } from './nearSettings';
-import { requireEnv } from '../utils/appConfig';
 import { assertNearChain } from './chain';
+import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
@@ -13,7 +13,7 @@ export async function getOrderPaymentFactoryAddress(): Promise<string> {
     const settings = await fetchSettings();
     ORDER_PAYMENT_FACTORY_ADDRESS =
       settings.paymentFactoryAddress ||
-      requireEnv('NEAR_PAYMENT_FACTORY_CONTRACT');
+      getNearContract('PAYMENT_FACTORY');
   }
   return ORDER_PAYMENT_FACTORY_ADDRESS;
 }

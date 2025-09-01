@@ -1,16 +1,15 @@
 import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { Product } from '@/types';
-import { requireEnv } from '@/utils/appConfig';
 import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 import { errorLog } from '@/utils/logger';
 import { productSchema } from '@/schemas/waku';
+import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_PRODUCTS_CONTRACT') : 'near:disabled';
-const DISABLED = ADDRESS === 'near:disabled';
+const ADDRESS = getNearContract('PRODUCTS');
+const DISABLED = !ADDRESS;
 let SEEDED = false;
 
 function ensureSeed() {

@@ -5,13 +5,12 @@ import {
   removeValue,
 } from '@/services/nearKvStore';
 import { Category } from '@/types';
-import { requireEnv } from '@/utils/appConfig';
 import { assertNearChain } from '@/services/chain';
+import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const ADDRESS = CHAIN === 'near' ? requireEnv('NEAR_CATEGORIES_CONTRACT') : 'near:disabled';
+const ADDRESS = getNearContract('CATEGORIES');
 
 export async function getCategory(id: string): Promise<Category | null> {
   const res = await getValue(ADDRESS, id);
