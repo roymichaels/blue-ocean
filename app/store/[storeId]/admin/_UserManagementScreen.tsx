@@ -20,6 +20,7 @@ import DatabaseService from '../../../../services/database';
 import { User as UserType, CustomerTier, UserRole } from '../../../../types';
 import { useNotifications } from '../../../../components/NotificationContext';
 import commonStyles from '../../../../constants/styles';
+import Spinner from '../../../../components/ui/Spinner';
 
 export default function UserManagementScreen() {
   const [users, setUsers] = useState<UserType[]>([]);
@@ -302,10 +303,7 @@ export default function UserManagementScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ניהול משתמשים</Text>
           <View style={commonStyles.spacer24} />
         </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.gold} />
-          <Text style={[styles.loadingText, { color: colors.text.primary }]}>טוען משתמשים...</Text>
-        </View>
+        <Spinner label="טוען משתמשים..." />
       </SafeAreaView>
     );
   }
@@ -1103,15 +1101,6 @@ const styles = StyleSheet.create({
   userDetailText: {
     fontSize: 12,
     textAlign: 'end',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
   },
   emptyContainer: {
     alignItems: 'center',

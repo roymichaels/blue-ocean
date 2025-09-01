@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
 import { Alert } from 'react-native';
+import Spinner from '@/components/ui/Spinner';
 import DatabaseService from '@/services/database';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
@@ -121,11 +121,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isPlatformAdmin = role === 'platform-admin';
 
   if (!initialized) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
-      </View>
-    );
+    return <Spinner />;
   }
 
   return (
