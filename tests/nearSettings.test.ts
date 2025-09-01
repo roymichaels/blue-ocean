@@ -1,8 +1,8 @@
 import { fetchSettings } from '../services/nearSettings';
 
-jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
+jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
 
-const { setValue, __clear } = require('./tonKvMock');
+const { setValue, __clear } = require('./nearKvMock');
 
 describe('fetchSettings feeBps parsing', () => {
   beforeEach(() => {

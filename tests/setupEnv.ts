@@ -21,7 +21,7 @@ insertConfig({
   EXPO_PUBLIC_CHAIN: 'near',
 });
 
-jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
+jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
 jest.mock('../services/nearSettings');
 const { loadTenantSettings } = require('../constants/tenant');
 

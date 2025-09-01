@@ -1,7 +1,7 @@
 import nearAuth from '@/features/auth/services/nearAuth';
 
-// Legacy name kept for compatibility. Ensures a NEAR wallet session.
-export default async function ensureTonWallet(errorMessage: string) {
+// Ensures a NEAR wallet session, prompting sign-in if necessary.
+export default async function ensureNearWallet(errorMessage: string) {
   let address = nearAuth.getAccountId();
   if (!address) {
     await nearAuth.signIn();

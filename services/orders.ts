@@ -40,7 +40,7 @@ export async function emitOrderEvents(order: Order, storeId: string) {
     await eventBus.publish(ORDER_TOPIC, 'order.created', {
       ...baseEvent,
     });
-    if (order.paymentMethod === 'ton') {
+    if (order.paymentMethod === 'near') {
       await eventBus.publish(ORDER_TOPIC, 'escrow.deployed', {
         ...baseEvent,
       });
@@ -112,7 +112,7 @@ class OrderService {
     items: CartItem[],
     shippingAddress: ShippingAddress,
     payment?: {
-      method?: 'cash_on_delivery' | 'ton' | 'card';
+      method?: 'cash_on_delivery' | 'near' | 'card';
       contractAddress?: string;
       txHash?: string;
       buyerAddress?: string;
@@ -125,7 +125,7 @@ class OrderService {
     }, 0);
 
     let pay = payment;
-    if (pay?.method === 'ton' && (!pay.contractAddress || !pay.txHash)) {
+    if (pay?.method === 'near' && (!pay.contractAddress || !pay.txHash)) {
       if (!nearAuth.getAccountId()) {
         await nearAuth.signIn();
       }
@@ -176,7 +176,7 @@ class OrderService {
     userId: string,
     cartItems: CartItem[],
     shippingAddress: ShippingAddress,
-    paymentMethod: 'cash_on_delivery' | 'ton' | 'card' = 'cash_on_delivery',
+    paymentMethod: 'cash_on_delivery' | 'near' | 'card' = 'cash_on_delivery',
   ): Promise<Order[]> {
     const grouped: Record<string, CartItem[]> = {};
     for (const item of cartItems) {
@@ -189,9 +189,9 @@ class OrderService {
     for (const [storeId, items] of Object.entries(grouped)) {
       const store = await getStore(storeId, storeId);
       const payment =
-        paymentMethod === 'ton'
+        paymentMethod === 'near'
           ? {
-              method: 'ton' as const,
+              method: 'near' as const,
               buyerAddress: nearAuth.getAccountId() || undefined,
               sellerAddress: store?.owner,
             }

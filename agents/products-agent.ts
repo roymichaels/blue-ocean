@@ -9,7 +9,7 @@ import {
   getVersion,
 } from '@/features/products/services/nearProducts';
 import { getStore } from '@/features/stores/services/nearStores';
-import ensureTonWallet from '@/utils/ensureTonWallet';
+import ensureNearWallet from '@/utils/ensureNearWallet';
 import {
   LightNode,
   createLightNode,
@@ -161,7 +161,7 @@ class ProductsAgent {
   }
 
   private async ensureWallet() {
-    const { address } = await ensureTonWallet(
+    const { address } = await ensureNearWallet(
       'Please connect your NEAR wallet to manage products.',
     );
     return { address };

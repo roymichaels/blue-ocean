@@ -28,7 +28,7 @@ describe('store data isolation', () => {
 
   it('separates orders by storeId', async () => {
     const addr: ShippingAddress = { name: 'n', phone: 'p', street: 's', city: 'c', postalCode: 'z' };
-    const o1: Order = { id: 'o1', userId: 'u', items: [], total: 0, status: 'order_received', shippingAddress: addr, itemsHash: '', createdAt: '', updatedAt: '', trackingSteps: [] } as Order;
+    const o1: Order = { id: 'o1', userId: 'u', items: [], total: 0, status: 'order_received', shippingAddress: addr, itemsHash: '', paymentMethod: 'near', buyerAddress: '', sellerAddress: '', createdAt: '', updatedAt: '', trackingSteps: [] } as Order;
     const o2: Order = { ...o1, id: 'o2' };
     await setOrder('s1', o1);
     await setOrder('s2', o2);

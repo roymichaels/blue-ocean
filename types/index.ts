@@ -236,7 +236,7 @@ export interface Order {
     cipher: string;
     from: string;
   };
-  paymentMethod: 'cash_on_delivery' | 'ton' | 'card';
+  paymentMethod: 'cash_on_delivery' | 'near' | 'card';
   buyerAddress?: string;
   sellerAddress?: string;
   driverAddress?: string;

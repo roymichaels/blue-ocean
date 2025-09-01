@@ -4,7 +4,7 @@ import { addReview, getReviews } from '@/features/reviews/services/nearReviews';
 import ordersAgent from './orders-agent';
 import productsAgent from './products-agent';
 import storesAgent from './stores-agent';
-import ensureTonWallet from '../utils/ensureTonWallet';
+import ensureNearWallet from '../utils/ensureNearWallet';
 
 assertNearChain();
 
@@ -14,7 +14,7 @@ class ReviewAgent {
   private subscribers: Set<(r: Review) => void> = new Set();
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your NEAR wallet to manage reviews.');
+    await ensureNearWallet('Please connect your NEAR wallet to manage reviews.');
   }
 
   async add(review: Review): Promise<void> {

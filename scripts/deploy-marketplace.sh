@@ -5,7 +5,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONTRACT_DIR="$ROOT_DIR/contracts/marketplace"
 
-cargo build --manifest-path "$CONTRACT_DIR/Cargo.toml" --release
+cargo build --target wasm32-unknown-unknown --manifest-path "$CONTRACT_DIR/Cargo.toml" --release
+WASM="$CONTRACT_DIR/target/wasm32-unknown-unknown/release/marketplace.wasm"
 
 echo "Deploying marketplace contract to testnet..."
-# TODO: Add actual deployment commands using your preferred TON toolchain
+near deploy --wasmFile "$WASM" --accountId "${1:-example.testnet}"

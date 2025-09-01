@@ -1,4 +1,4 @@
-jest.mock('../utils/ensureTonWallet', () => jest.fn().mockResolvedValue(undefined));
+jest.mock('../utils/ensureNearWallet', () => jest.fn().mockResolvedValue(undefined));
 
 const setNotificationMock = jest.fn();
 jest.mock('../services/nearNotifications', () => ({

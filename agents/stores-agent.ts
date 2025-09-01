@@ -6,7 +6,7 @@ import {
   listStores,
   removeStore,
 } from '@/features/stores/services/nearStores';
-import ensureTonWallet from '@/utils/ensureTonWallet';
+import ensureNearWallet from '@/utils/ensureNearWallet';
 
 assertNearChain();
 
@@ -22,7 +22,7 @@ class StoresAgent {
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
   private async ensureWallet() {
-    await ensureTonWallet('Please connect your NEAR wallet to manage stores.');
+    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
   }
 
   private toRecord(item: Store) {
