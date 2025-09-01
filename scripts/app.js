@@ -9,6 +9,10 @@ const path = require('path');
 const isWin = process.platform === 'win32';
 const root = path.resolve(__dirname, '..');
 
+if (!process.env.EXPO_PUBLIC_CHAIN) {
+  process.env.EXPO_PUBLIC_CHAIN = 'near';
+}
+
 function bin(name) {
   const file = isWin ? `${name}.cmd` : name;
   return path.join(root, 'node_modules', '.bin', file);

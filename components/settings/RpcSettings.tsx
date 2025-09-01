@@ -66,7 +66,7 @@ const RpcSettings: React.FC<Props> = ({ colors }) => {
             ]}
             value={rpcUrl}
             onChangeText={setRpcUrl}
-            placeholder="https://ton.example"
+            placeholder="https://near.example"
             textAlign="left"
             placeholderTextColor={colors.text.tertiary}
           />
@@ -84,7 +84,7 @@ const RpcSettings: React.FC<Props> = ({ colors }) => {
             ]}
             value={fallbacks}
             onChangeText={setFallbacks}
-            placeholder="https://ton1.example, https://ton2.example"
+            placeholder="https://near1.example, https://near2.example"
             textAlign="left"
             placeholderTextColor={colors.text.tertiary}
           />
