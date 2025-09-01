@@ -48,6 +48,7 @@ import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import SmartImage from '../../components/SmartImage';
 import eventBus from '../../services/eventBus';
+import { useProduct } from '@/features/products/hooks';
 
 
 
@@ -71,13 +72,13 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
   const address = useAccountId();
   const [reviews, setReviews] = useState<Review[]>([]);
+  const { data: fetchedProduct, isLoading: productLoading } = useProduct(id);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -93,11 +94,28 @@ export default function ProductDetailScreen({ id }: { id: string }) {
       : 0;
 
   useEffect(() => {
-    loadProduct();
+    if (productLoading) return;
+    if (address && fetchedProduct && fetchedProduct.storeId !== address) {
+      setInfoModal({
+        visible: true,
+        title: 'שגיאה',
+        message: 'מוצר לא נמצא',
+        type: 'error',
+      });
+      setProduct(null);
+      return;
+    }
+    if (fetchedProduct) {
+      setProduct(fetchedProduct);
+      eventBus.track('catalog.product_view', { productId: fetchedProduct.id });
+    }
+  }, [fetchedProduct, productLoading, address]);
+
+  useEffect(() => {
     loadCategories();
     loadPricingTiers();
     loadReviews();
-  }, [id, address]);
+  }, [id]);
 
   useEffect(() => {
     const sub = (rev: Review) => {
@@ -145,33 +163,6 @@ export default function ProductDetailScreen({ id }: { id: string }) {
     loadThumbs();
   }, [product]);
 
-  const loadProduct = async () => {
-    try {
-      const db = DatabaseService.getInstance();
-      const fetched = await db.getProduct(id);
-      if (address && fetched && fetched.storeId !== address) {
-        setInfoModal({
-          visible: true,
-          title: 'שגיאה',
-          message: 'מוצר לא נמצא',
-          type: 'error',
-        });
-        return;
-      }
-      if (fetched) {
-        setProduct(fetched);
-        eventBus.track('catalog.product_view', { productId: fetched.id });
-      }
-    } catch (error) {
-      errorLog('Error loading product:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'טעינת המוצר נכשלה',
-        type: 'error',
-      });
-    }
-  };
 
   const loadCategories = async () => {
     try {
