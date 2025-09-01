@@ -1,7 +1,6 @@
 import { errorLog } from '@/utils/logger';
 import React, { useState } from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import Button from './ui/Button';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import near, { useNearAccount } from '../services/near';
 import MoonPayModal from './MoonPayModal';
@@ -11,7 +10,6 @@ interface MoonPayButtonProps {
 }
 
 export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
-  const { colors } = useTheme();
   const { fiatKey } = useAppInfo();
   const walletAddress = useNearAccount();
   const [visible, setVisible] = useState(false);
@@ -45,13 +43,12 @@ export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
 
   return (
     <>
-      <TouchableOpacity
+      <Button
         testID="moonpay-button"
-        style={[styles.button, { backgroundColor: colors.gold }]}
+        title="Buy TON"
         onPress={handlePress}
-      >
-        <Text style={[styles.text, { color: colors.text.inverse }]}>Buy TON</Text>
-      </TouchableOpacity>
+        style={{ marginTop: 16 }}
+      />
       <MoonPayModal
         visible={visible}
         onClose={() => setVisible(false)}
@@ -63,17 +60,4 @@ export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
 
