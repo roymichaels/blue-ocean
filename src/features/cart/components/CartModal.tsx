@@ -24,8 +24,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react-native';
-import CartService from '../services/cart';
-import chain from '@/services/chain';
 import { CartItem, ShippingAddress, Store } from '@/types';
 
 let getStore:
@@ -34,6 +32,7 @@ let getStore:
 if (chain === 'ton') {
   ({ getStore } = require('@/features/stores/services/tonStores'));
 }
+
 import OrderService from '@/services/orders';
 import eventBus from '@/services/eventBus';
 const MoonPayButton = require('@/features/payments/components/MoonPayButton').default;
@@ -53,7 +52,8 @@ interface CartModalProps {
 }
 
 export default function CartModal({ visible, onClose }: CartModalProps) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { cartItems, updateQuantity, removeItem, clearCart, getTotal } = useCart();
+  const stores = useCartStores(cartItems);
   const [checkoutStep, setCheckoutStep] = useState<
     'cart' | 'shipping' | 'payment' | 'confirmation'
   >('cart');
@@ -68,7 +68,6 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderIds, setOrderIds] = useState<string[]>([]);
-  const [stores, setStores] = useState<Record<string, Store>>({});
   const { isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
@@ -95,60 +94,20 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
   useEffect(() => {
     if (visible) {
-      loadCartItems();
       // reset flow
       setCheckoutStep('cart');
       setOrderPlaced(false);
       setOrderIds([]);
+      if (isLoggedIn && user) {
+        setShippingAddress((prev) => ({ ...prev, name: user.displayName || '' }));
+      }
     }
-  }, [visible]);
-
-  useEffect(() => {
-    const cartService = CartService.getInstance();
-    const handleCartUpdate = () => setCartItems(cartService.getCartItems());
-    cartService.addListener(handleCartUpdate);
-    return () => cartService.removeListener(handleCartUpdate);
-  }, []);
+  }, [visible, isLoggedIn, user]);
 
   useEffect(() => {
     // Scroll to top when changing steps
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   }, [checkoutStep]);
-
-  useEffect(() => {
-    const fetchStores = async () => {
-      const ids = Array.from(new Set(cartItems.map((i) => i.product.storeId)));
-      const entries = await Promise.all(
-        ids.map(async (id) => {
-          const store = getStore ? await getStore(id, id) : null;
-          return store ? ([id, store] as const) : null;
-        })
-      );
-      const map: Record<string, Store> = {};
-      entries.forEach((entry) => {
-        if (entry) map[entry[0]] = entry[1];
-      });
-      setStores(map);
-    };
-    fetchStores();
-  }, [cartItems]);
-
-  const loadCartItems = () => {
-    const cartService = CartService.getInstance();
-    setCartItems(cartService.getCartItems());
-    // Pre-fill shipping name if logged in
-    if (isLoggedIn && user) {
-      setShippingAddress((prev) => ({ ...prev, name: user.displayName || '' }));
-    }
-  };
-
-  const updateQuantity = async (itemId: string, newQuantity: number) => {
-    await CartService.getInstance().updateCartItemQuantity(itemId, newQuantity);
-  };
-
-  const removeItem = async (itemId: string) => {
-    await CartService.getInstance().removeFromCart(itemId);
-  };
 
   const groupedItems = useMemo(() => {
     return cartItems.reduce<Record<string, CartItem[]>>((acc, item) => {
@@ -157,13 +116,6 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return acc;
     }, {});
   }, [cartItems]);
-
-  const getTotal = () =>
-    cartItems.reduce(
-      (total, item) =>
-        total + (item.unitPrice ?? item.product.price) * item.quantity,
-      0
-    );
 
   const getGroupTotal = (items: CartItem[]) =>
     items.reduce(
@@ -316,7 +268,6 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
     setLoading(true);
     try {
-      const cartService = CartService.getInstance();
       const orders = await OrderService.getInstance().createOrdersFromCart(
         user?.id || 'guest',
         cartItems,
@@ -329,7 +280,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       });
       setOrderIds(orders.map((o) => o.id));
       setOrderPlaced(true);
-      await cartService.clearCart();
+      await clearCart();
 
       showNotification(
         t('cart.orderReceived'),

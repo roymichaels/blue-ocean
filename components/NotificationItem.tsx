@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native
 import { Package, Tag, MessageCircle, Info, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { Notification } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
-import { spacing, typography } from '../constants/styles';
+import { spacing, radius, shadows } from '../constants/tokens';
+import { typography } from '../constants/styles';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -16,14 +17,14 @@ export default function NotificationItem({ notification, onPress }: Notification
   const getNotificationIcon = () => {
     switch (notification.type) {
       case 'order':
-        return <Package size={24} color="#20B2AA" />;
+        return <Package size={24} color={colors.status.success} />;
       case 'promo':
-        return <Tag size={24} color="#FF6B6B" />;
+        return <Tag size={24} color={colors.status.error} />;
       case 'message':
-        return <MessageCircle size={24} color="#4D96FF" />;
+        return <MessageCircle size={24} color={colors.status.info} />;
       case 'system':
       default:
-        return <Info size={24} color="#FFB347" />;
+        return <Info size={24} color={colors.status.warning} />;
     }
   };
 
@@ -53,8 +54,8 @@ export default function NotificationItem({ notification, onPress }: Notification
           borderColor: colors.border.primary 
         },
         !notification.read && {
-          backgroundColor: '#F0FFFF',
-          borderLeftColor: '#20B2AA'
+          backgroundColor: colors.interactive.secondary,
+          borderLeftColor: colors.status.success
         }
       ]}
       onPress={() => onPress(notification.id)}
@@ -71,9 +72,9 @@ export default function NotificationItem({ notification, onPress }: Notification
       </View>
       <View style={styles.statusContainer}>
         {notification.read ? (
-          <CheckCircle size={20} color="#20B2AA" />
+          <CheckCircle size={20} color={colors.status.success} />
         ) : (
-          <AlertCircle size={20} color="#FFB347" />
+          <AlertCircle size={20} color={colors.status.warning} />
         )}
       </View>
     </TouchableOpacity>
@@ -83,21 +84,17 @@ export default function NotificationItem({ notification, onPress }: Notification
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: radius.lg,
     padding: spacing.spacer16,
     marginBottom: spacing.spacer12,
     borderWidth: 1,
     borderLeftWidth: 4,
-    ...Platform.select({
-      ios: { elevation: 2 },
-      android: { elevation: 2 },
-      web: { boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)' }
-    }),
+    ...Platform.select(shadows.sm),
   },
   iconContainer: {
     width: spacing.spacer40,
     height: spacing.spacer40,
-    borderRadius: 20,
+    borderRadius: radius.full,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.spacer12,

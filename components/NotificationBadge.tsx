@@ -4,13 +4,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import NotificationService from '../services/notification';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '@/features/auth/AuthContext';
+import { spacing } from '../constants/tokens';
 
 interface NotificationBadgeProps {
   size?: number;
   style?: any;
 }
 
-export default function NotificationBadge({ size = 20, style }: NotificationBadgeProps) {
+export default function NotificationBadge({ size = spacing.spacer20, style }: NotificationBadgeProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const { colors } = useTheme();
   const { isLoggedIn, user } = useAuth();
@@ -69,10 +70,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    top: -5,
-    end: -5,
-    minWidth: 20,
-    paddingHorizontal: 2,
+    top: -spacing.spacer4,
+    end: -spacing.spacer4,
+    minWidth: spacing.spacer20,
+    paddingHorizontal: spacing.spacer4 / 2,
   },
   badgeText: {
     fontWeight: 'bold',

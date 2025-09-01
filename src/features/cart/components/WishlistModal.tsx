@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,10 @@ import {
 import SmartImage from '@/components/SmartImage';
 import { X, Heart, ShoppingCart, Trash2 } from 'lucide-react-native';
 import { router } from 'expo-router';
-import CartService from '../services/cart';
 import { WishlistItem } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import useWishlist from '../hooks/useWishlist';
 
 interface WishlistModalProps {
   visible: boolean;
@@ -22,39 +22,12 @@ interface WishlistModalProps {
 }
 
 export default function WishlistModal({ visible, onClose }: WishlistModalProps) {
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const { wishlistItems, removeFromWishlist, addToCart } = useWishlist(visible);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
 
-  useEffect(() => {
-    if (visible) {
-      loadWishlistItems();
-    }
-  }, [visible]);
-
-  useEffect(() => {
-    const cartService = CartService.getInstance();
-    const handleWishlistUpdate = () => {
-      setWishlistItems(cartService.getWishlistItems());
-    };
-
-    cartService.addListener(handleWishlistUpdate);
-    return () => cartService.removeListener(handleWishlistUpdate);
-  }, []);
-
-  const loadWishlistItems = () => {
-    const cartService = CartService.getInstance();
-    setWishlistItems(cartService.getWishlistItems());
-  };
-
-  const removeFromWishlist = async (productId: string) => {
-    const cartService = CartService.getInstance();
-    await cartService.removeFromWishlist(productId);
-  };
-
-  const addToCart = async (item: WishlistItem) => {
-    const cartService = CartService.getInstance();
-    await cartService.addToCart(item.product, 1);
+  const handleAddToCart = async (item: WishlistItem) => {
+    await addToCart(item);
     Alert.alert('נוסף לעגלה', `${item.product.name} נוסף לעגלה`);
   };
 
@@ -113,7 +86,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
       <View style={styles.actions}>
         <TouchableOpacity
           style={[styles.actionButton, styles.addToCartButton, { backgroundColor: colors.gold }]}
-          onPress={() => addToCart(item)}
+          onPress={() => handleAddToCart(item)}
           disabled={item.product.stock === 0}
         >
           <ShoppingCart size={16} color={colors.text.inverse} />
