@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { z } from 'zod';
+import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, Heart } from 'lucide-react-native';
 import DatabaseService from '@/services/database';
 import chain from '@/services/chain';
@@ -34,6 +36,8 @@ import commonStyles from '@/constants/styles';
 import Card from '@/components/Card';
 import SmartImage from '@/components/SmartImage';
 
+const validateParams = createValidateParams(z.object({ id: z.string() }));
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 32 - 8) / 2;
 const IMAGE_HEIGHT = 140;
@@ -47,7 +51,8 @@ interface MediaItem {
 }
 
 export default function SubcategoryScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = validateParams(useLocalSearchParams());
+  const id = params.success ? params.data.id : undefined;
   const [subcategory, setSubcategory] = useState<Subcategory | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -91,6 +96,7 @@ export default function SubcategoryScreen() {
   });
 
   useEffect(() => {
+    if (!id) return;
     loadSubcategoryData();
     loadPricingTiers();
   }, [id]);
@@ -123,7 +129,16 @@ export default function SubcategoryScreen() {
     }
   }, [newProduct.category, categories]);
 
+  if (!params.success) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+        <Text style={{ color: colors.text.primary }}>Invalid subcategory</Text>
+      </SafeAreaView>
+    );
+  }
+
   const loadSubcategoryData = async () => {
+    if (!id) return;
     try {
       setLoading(true);
       const db = DatabaseService.getInstance();

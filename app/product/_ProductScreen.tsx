@@ -13,7 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import {
   ArrowLeft,
   Heart,
@@ -62,8 +62,7 @@ interface MediaItem {
 const { width } = Dimensions.get('window');
 const COVER_SIZE = Math.min(width, 540);
 
-export default function ProductDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+export default function ProductDetailScreen({ id }: { id: string }) {
   const [product, setProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);

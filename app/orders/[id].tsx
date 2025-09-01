@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import Button from '@/components/ui/Button';
 import { useLocalSearchParams } from 'expo-router';
+import { z } from 'zod';
+import { createValidateParams } from '@/lib/validateParams';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '@/features/auth/AuthContext';
 import GlobalHeader from '../../components/GlobalHeader';
@@ -13,8 +15,11 @@ import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
 import nearAuth from '@/features/auth/services/nearAuth';
 import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
 
+const validateParams = createValidateParams(z.object({ id: z.string() }));
+
 export default function OrderDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = validateParams(useLocalSearchParams());
+  const id = params.success ? params.data.id : undefined;
   const { colors } = useTheme();
   const { user, isDriver } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
@@ -54,6 +59,10 @@ export default function OrderDetailScreen() {
   const isSeller = !!address && order?.sellerAddress === address;
   const canUpdate = !!order && (isSeller || isDriver);
   const nextStatuses: OrderStatus[] = order ? ALLOWED_STATUS_TRANSITIONS[order.status] || [] : [];
+
+  if (!params.success) {
+    return <Text>Invalid order</Text>;
+  }
 
   const statusLabel = (status: OrderStatus) => {
     switch (status) {

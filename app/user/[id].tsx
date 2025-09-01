@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { z } from 'zod';
+import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, User as UserIcon, Mail, Calendar, Shield, MessageCircle } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import { User } from '../../types';
@@ -18,10 +20,13 @@ import { useTheme } from '../../contexts/ThemeContext';
 import commonStyles from '@/constants/styles';
 import SmartImage from '../../components/SmartImage';
 
+const validateParams = createValidateParams(z.object({ id: z.string() }));
+
 
 
 export default function UserProfileScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = validateParams(useLocalSearchParams());
+  const id = params.success ? params.data.id : undefined;
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { isAdmin, isDriver } = useAuth();
@@ -32,7 +37,7 @@ export default function UserProfileScreen() {
       router.back();
       return;
     }
-
+    if (!id) return;
     loadUserProfile();
   }, [id, isAdmin, isDriver]);
 
@@ -49,6 +54,14 @@ export default function UserProfileScreen() {
       setLoading(false);
     }
   };
+
+  if (!params.success) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+        <Text style={{ color: colors.text.primary }}>Invalid user</Text>
+      </SafeAreaView>
+    );
+  }
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'לא זמין';
