@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -31,7 +31,7 @@ interface ProductCardProps {
   style?: any;
 }
 
-export default function ProductCard({
+function ProductCard({
   product,
   isOwner = false,
   onEdit,
@@ -49,10 +49,13 @@ export default function ProductCard({
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const address = useAccountId();
-  const variants = product.variants || [];
-  const selectedVariant = variants[selectedVariantIndex];
-  const stock = selectedVariant ? selectedVariant.stock : product.stock;
-  const hideCard = isOwner && address && product.storeId !== address;
+  const variants = useMemo(() => product.variants || [], [product.variants]);
+  const selectedVariant = useMemo(() => variants[selectedVariantIndex], [variants, selectedVariantIndex]);
+  const stock = useMemo(() => (selectedVariant ? selectedVariant.stock : product.stock), [selectedVariant, product.stock]);
+  const hideCard = useMemo(
+    () => isOwner && address && product.storeId !== address,
+    [isOwner, address, product.storeId]
+  );
 
   useEffect(() => {
     const cartService = CartService.getInstance();
@@ -109,14 +112,17 @@ export default function ProductCard({
     }
   };
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     router.push(`/product/${product.id}`);
-  };
+  }, [product.id]);
 
-  const handleEdit = (e: any) => {
-    e.stopPropagation();
-    onEdit?.(product);
-  };
+  const handleEdit = useCallback(
+    (e: any) => {
+      e.stopPropagation();
+      onEdit?.(product);
+    },
+    [onEdit, product]
+  );
 
   const handleDelete = (e: any) => {
     e.stopPropagation();
@@ -468,3 +474,5 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+export default React.memo(ProductCard);
