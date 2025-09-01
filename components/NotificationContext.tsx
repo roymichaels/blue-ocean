@@ -14,6 +14,7 @@ import NotificationPopup from './NotificationPopup';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useWaku } from '@/contexts/WakuContext';
 import { parseNotificationWakuPayload } from '../schemas/waku';
+import AgentError from '@/types/AgentError';
 
 interface NotificationState {
   unreadCount: number;
@@ -26,6 +27,7 @@ interface NotificationActions {
     message: string,
     type?: 'success' | 'info' | 'warning' | 'error',
   ) => void;
+  showAgentError: (error: AgentError) => void;
 }
 
 const NotificationStateContext = createContext<NotificationState>({
@@ -35,6 +37,7 @@ const NotificationStateContext = createContext<NotificationState>({
 
 const NotificationActionsContext = createContext<NotificationActions>({
   showNotification: () => {},
+  showAgentError: () => {},
 });
 
 export const useNotificationState = () => useContext(NotificationStateContext);
@@ -74,10 +77,21 @@ function NotificationPopupProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const showAgentError = useCallback(
+    (error: AgentError) => {
+      setActiveNotification({
+        title: error.source,
+        message: `[${error.code}] ${error.message}`,
+        type: 'error',
+      });
+    },
+    [],
+  );
+
   const handleClose = () => setActiveNotification(null);
 
   return (
-    <NotificationActionsContext.Provider value={{ showNotification }}>
+    <NotificationActionsContext.Provider value={{ showNotification, showAgentError }}>
       {children}
       {activeNotification && (
         <NotificationPopup

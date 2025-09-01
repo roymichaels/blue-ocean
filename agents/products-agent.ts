@@ -29,6 +29,7 @@ import type { WakuMessage } from '@/types/waku';
 import { errorLog } from '@/utils/logger';
 import { buildTopic } from '@/utils/wakuTopics';
 import { normalizeMessage } from '../lib/normalizeMessage';
+import AgentError from '@/types/AgentError';
 
 import {
   getProductCache,
@@ -172,7 +173,7 @@ class ProductsAgent {
     const { address } = await this.ensureWallet();
     const store = await getStore(storeId, storeId);
     if (!store || store.owner !== address) {
-      throw new Error('Only the store owner can manage products');
+      throw new AgentError('UNAUTHORIZED', 'Only the store owner can manage products', 'products-agent');
     }
   }
 
