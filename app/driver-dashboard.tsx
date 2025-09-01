@@ -23,6 +23,7 @@ import ProofUploader from '../components/ProofUploader';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { DeliveryJob } from '../types';
 import commonStyles from '../constants/styles';
 
@@ -83,9 +84,10 @@ export default function DriverDashboardScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <ErrorBoundary>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
         <TouchableOpacity onPress={goBack}>
           <ArrowLeft size={24} color={colors.text.primary} />
@@ -93,7 +95,7 @@ export default function DriverDashboardScreen() {
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>לוח נהג</Text>
         <View style={commonStyles.spacer24} />
       </View>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {jobs.map((job) => (
           <View
             key={job.id}
@@ -182,8 +184,9 @@ export default function DriverDashboardScreen() {
             </Text>
           </View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 

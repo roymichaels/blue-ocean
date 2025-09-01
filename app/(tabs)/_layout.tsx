@@ -7,6 +7,7 @@ import { usePathname } from 'expo-router';
 import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import { getTabsForAuth } from '../../config/navigation/tabs';
 import { useAuth } from '@/features/auth/AuthContext';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -28,11 +29,12 @@ export default function TabLayout() {
   }, [pathname]);
 
   return (
-    <>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: colors.tabBar.active,
+    <ErrorBoundary>
+      <>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: colors.tabBar.active,
           tabBarInactiveTintColor: colors.tabBar.inactive,
           tabBarStyle: {
             position: 'absolute',
@@ -66,10 +68,11 @@ export default function TabLayout() {
             />
           );
         })}
-      </Tabs>
+        </Tabs>
 
-      {showCartWidget && <FloatingCartWidget />}
-    </>
+        {showCartWidget && <FloatingCartWidget />}
+      </>
+    </ErrorBoundary>
   );
 }
 

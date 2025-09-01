@@ -6,6 +6,7 @@ import ProofUploader from '../../components/ProofUploader';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import usersAgent from '../../agents/users-agent';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function KycScreen() {
   const { user } = useAuth();
@@ -22,20 +23,22 @@ export default function KycScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text.primary }]}>KYC Verification</Text>
-        <Text style={[styles.description, { color: colors.text.secondary }]}>Upload a document for verification.</Text>
-        <ProofUploader jobId={`kyc_${user?.id || 'unknown'}`} onUploaded={setDocUri} />
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: colors.gold }]}
-          onPress={submit}
-          disabled={!docUri}
-        >
-          <Text style={[styles.buttonText, { color: colors.text.inverse }]}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    <ErrorBoundary>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.content}>
+          <Text style={[styles.title, { color: colors.text.primary }]}>KYC Verification</Text>
+          <Text style={[styles.description, { color: colors.text.secondary }]}>Upload a document for verification.</Text>
+          <ProofUploader jobId={`kyc_${user?.id || 'unknown'}`} onUploaded={setDocUri} />
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: colors.gold }]}
+            onPress={submit}
+            disabled={!docUri}
+          >
+            <Text style={[styles.buttonText, { color: colors.text.inverse }]}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 
