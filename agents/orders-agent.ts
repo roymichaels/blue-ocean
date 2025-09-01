@@ -39,6 +39,7 @@ import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { orderStatusMessageSchema } from '../schemas/waku/order.status';
 import { buildTopic } from '../utils/wakuTopics';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -172,12 +173,13 @@ class OrdersAgent {
       trackingSteps: this.getTrackingSteps(status),
       updatedAt: new Date().toISOString(),
     };
-    const sid = updated.items?.[0]?.product?.storeId || '';
-    this.storeMap.set(updated.id, sid);
+    const normalized = normalizeMessage<Order>('Order', updated);
+    const sid = normalized.items?.[0]?.product?.storeId || '';
+    this.storeMap.set(normalized.id, sid);
     this.knownStores.add(sid);
-    await setOrder(sid, updated);
-    this.subscribers.forEach((cb) => cb(updated));
-    await this.notifyStatusChange(updated);
+    await setOrder(sid, normalized);
+    this.subscribers.forEach((cb) => cb(normalized));
+    await this.notifyStatusChange(normalized);
   }
 
   private async ensureWallet() {
@@ -202,18 +204,19 @@ class OrdersAgent {
   }
 
   async add(order: Order): Promise<void> {
-    await this.ensureAuthorized(order);
-    let enriched = order;
-    if (!order.paymentContractAddress || !order.paymentTxHash) {
-      const { contractAddress, txHash } = await deployOrderPayment(order.total);
+    const normalized = normalizeMessage<Order>('Order', order);
+    await this.ensureAuthorized(normalized);
+    let enriched = normalized;
+    if (!normalized.paymentContractAddress || !normalized.paymentTxHash) {
+      const { contractAddress, txHash } = await deployOrderPayment(normalized.total);
       enriched = {
-        ...order,
+        ...normalized,
         paymentContractAddress: contractAddress,
         escrowAddr: contractAddress,
         paymentTxHash: txHash,
       };
-    } else if (!order.escrowAddr && order.paymentContractAddress) {
-      enriched = { ...order, escrowAddr: order.paymentContractAddress };
+    } else if (!normalized.escrowAddr && normalized.paymentContractAddress) {
+      enriched = { ...normalized, escrowAddr: normalized.paymentContractAddress };
     }
     let toStore: any = { ...enriched };
     // ensure integrity of items by hashing their serialized form
@@ -243,7 +246,8 @@ class OrdersAgent {
       const sid = toStore.items?.[0]?.product?.storeId || '';
       this.storeMap.set(toStore.id, sid);
       this.knownStores.add(sid);
-      await setOrder(sid, toStore);
+      const normalizedStore = normalizeMessage<Order>('Order', toStore);
+      await setOrder(sid, normalizedStore);
       await this.subscribeStore(sid);
     }
     await logOrderEvent({
@@ -262,58 +266,61 @@ class OrdersAgent {
   }
 
   async update(order: Order): Promise<void> {
-    const current = await this.get(order.id);
+    const normalized = normalizeMessage<Order>('Order', order);
+    const current = await this.get(normalized.id);
     if (!current) {
       throw new Error('Order not found');
     }
     await this.ensureAuthorized(current);
     let statusChanged = false;
-    if (order.status !== current.status) {
+    if (normalized.status !== current.status) {
       const allowed = ALLOWED_STATUS_TRANSITIONS[current.status] || [];
-      if (!allowed.includes(order.status)) {
-        throw new Error(`Invalid status transition from ${current.status} to ${order.status}`);
+      if (!allowed.includes(normalized.status)) {
+        throw new Error(
+          `Invalid status transition from ${current.status} to ${normalized.status}`,
+        );
       }
       statusChanged = true;
     }
     {
-      const sid = order.items?.[0]?.product?.storeId || '';
-      this.storeMap.set(order.id, sid);
+      const sid = normalized.items?.[0]?.product?.storeId || '';
+      this.storeMap.set(normalized.id, sid);
       this.knownStores.add(sid);
-      await setOrder(sid, order);
+      await setOrder(sid, normalized);
       await this.subscribeStore(sid);
     }
     await logOrderEvent({
-      tenant: order.items?.[0]?.product?.storeId || '',
+      tenant: normalized.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
       payload: {
-        orderId: order.id,
+        orderId: normalized.id,
         prevStatus: current.status,
-        newStatus: order.status,
+        newStatus: normalized.status,
       },
       actor: nearAuth.getAccountId() || '',
       timestamp: Date.now(),
     });
-    const sid = order.items?.[0]?.product?.storeId || '';
+    const sid = normalized.items?.[0]?.product?.storeId || '';
     await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
-      ...this.buildBaseEvent(order),
+      ...this.buildBaseEvent(normalized),
       prevStatus: current.status,
-      newStatus: order.status,
+      newStatus: normalized.status,
     });
-    this.subscribers.forEach((cb) => cb(order));
+    this.subscribers.forEach((cb) => cb(normalized));
     if (statusChanged) {
-      await this.notifyStatusChange(order);
-      if (order.status === 'released') {
-        await this.recordSellerMetric(order.sellerAddress, 'completed');
-      } else if (order.status === 'refunded') {
-        await this.recordSellerMetric(order.sellerAddress, 'refunded');
+      await this.notifyStatusChange(normalized);
+      if (normalized.status === 'released') {
+        await this.recordSellerMetric(normalized.sellerAddress, 'completed');
+      } else if (normalized.status === 'refunded') {
+        await this.recordSellerMetric(normalized.sellerAddress, 'refunded');
       }
-      if (order.status === 'disputed' || current.status === 'disputed') {
+      if (normalized.status === 'disputed' || current.status === 'disputed') {
         await eventBus.publish(buildTopic('orders', sid), 'dispute.updated', {
-          ...this.buildBaseEvent(order),
+          ...this.buildBaseEvent(normalized),
           prevStatus: current.status,
-          newStatus: order.status,
+          newStatus: normalized.status,
         });
-        await this.notifyDisputeUpdate(order);
+        await this.notifyDisputeUpdate(normalized);
       }
     }
   }
@@ -384,32 +391,33 @@ class OrdersAgent {
       status: 'released',
       updatedAt: new Date().toISOString(),
     };
+    const normalized = normalizeMessage<Order>('Order', updated);
     {
-      const sid = updated.items?.[0]?.product?.storeId || '';
-      this.storeMap.set(updated.id, sid);
+      const sid = normalized.items?.[0]?.product?.storeId || '';
+      this.storeMap.set(normalized.id, sid);
       this.knownStores.add(sid);
-      await setOrder(sid, updated);
+      await setOrder(sid, normalized);
       await this.subscribeStore(sid);
     }
     await logOrderEvent({
-      tenant: updated.items?.[0]?.product?.storeId || '',
+      tenant: normalized.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
       payload: {
-        orderId: updated.id,
+        orderId: normalized.id,
         prevStatus: order.status,
-        newStatus: updated.status,
+        newStatus: normalized.status,
       },
       actor: nearAuth.getAccountId() || '',
       timestamp: Date.now(),
     });
-    const sid = updated.items?.[0]?.product?.storeId || '';
+    const sid = normalized.items?.[0]?.product?.storeId || '';
     await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
-      ...this.buildBaseEvent(updated),
+      ...this.buildBaseEvent(normalized),
       prevStatus: order.status,
-      newStatus: updated.status,
+      newStatus: normalized.status,
     });
     await eventBus.publish(buildTopic('orders', sid), 'payment.received', {
-      ...this.buildBaseEvent(updated),
+      ...this.buildBaseEvent(normalized),
     });
     await Promise.all(
       order.items.map((item) =>
@@ -419,9 +427,9 @@ class OrdersAgent {
         )
       )
     );
-    this.subscribers.forEach((cb) => cb(updated));
-    await this.notifyStatusChange(updated);
-    await this.notifyPaymentReceived(updated);
+    this.subscribers.forEach((cb) => cb(normalized));
+    await this.notifyStatusChange(normalized);
+    await this.notifyPaymentReceived(normalized);
     await this.recordSellerMetric(order.sellerAddress, 'completed');
     return hash;
   }
@@ -445,32 +453,33 @@ class OrdersAgent {
       status: 'refunded',
       updatedAt: new Date().toISOString(),
     };
+    const normalized = normalizeMessage<Order>('Order', updated);
     {
-      const sid = updated.items?.[0]?.product?.storeId || '';
-      this.storeMap.set(updated.id, sid);
+      const sid = normalized.items?.[0]?.product?.storeId || '';
+      this.storeMap.set(normalized.id, sid);
       this.knownStores.add(sid);
-      await setOrder(sid, updated);
+      await setOrder(sid, normalized);
       await this.subscribeStore(sid);
     }
     await logOrderEvent({
-      tenant: updated.items?.[0]?.product?.storeId || '',
+      tenant: normalized.items?.[0]?.product?.storeId || '',
       type: 'order.updated',
       payload: {
-        orderId: updated.id,
+        orderId: normalized.id,
         prevStatus: order.status,
-        newStatus: updated.status,
+        newStatus: normalized.status,
       },
       actor: nearAuth.getAccountId() || '',
       timestamp: Date.now(),
     });
-    const sid = updated.items?.[0]?.product?.storeId || '';
+    const sid = normalized.items?.[0]?.product?.storeId || '';
     await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
-      ...this.buildBaseEvent(updated),
+      ...this.buildBaseEvent(normalized),
       prevStatus: order.status,
-      newStatus: updated.status,
+      newStatus: normalized.status,
     });
-    this.subscribers.forEach((cb) => cb(updated));
-    await this.notifyStatusChange(updated);
+    this.subscribers.forEach((cb) => cb(normalized));
+    await this.notifyStatusChange(normalized);
     await this.recordSellerMetric(order.sellerAddress, 'refunded');
     return hash;
   }

@@ -7,6 +7,7 @@ import {
   listNotifications,
   removeNotification,
 } from '../services/nearNotifications';
+import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 import {
@@ -32,16 +33,18 @@ class NotificationsAgent {
 
   async add(item: Notification, storeId = 'default'): Promise<void> {
     await this.ensureWallet();
-    await setNotification(item);
-    this.subscribers.forEach((cb) => cb(item));
-    await this.broadcastWaku(item, undefined, storeId);
+    const normalized = normalizeMessage<Notification>('Notification', item);
+    await setNotification(normalized);
+    this.subscribers.forEach((cb) => cb(normalized));
+    await this.broadcastWaku(normalized, undefined, storeId);
   }
 
   async update(item: Notification, storeId = 'default'): Promise<void> {
     await this.ensureWallet();
-    await setNotification(item);
-    this.subscribers.forEach((cb) => cb(item));
-    await this.broadcastWaku(item, undefined, storeId);
+    const normalized = normalizeMessage<Notification>('Notification', item);
+    await setNotification(normalized);
+    this.subscribers.forEach((cb) => cb(normalized));
+    await this.broadcastWaku(normalized, undefined, storeId);
   }
 
   async remove(id: string): Promise<void> {
@@ -57,11 +60,16 @@ class NotificationsAgent {
     return await listNotifications();
   }
 
-  async broadcast(event: NotificationEvent, item: Notification, storeId: string): Promise<void> {
+  async broadcast(
+    event: NotificationEvent,
+    item: Notification,
+    storeId: string,
+  ): Promise<void> {
     await this.ensureWallet();
-    await setNotification(item);
-    this.subscribers.forEach((cb) => cb(item));
-    await this.broadcastWaku(item, event, storeId);
+    const normalized = normalizeMessage<Notification>('Notification', item);
+    await setNotification(normalized);
+    this.subscribers.forEach((cb) => cb(normalized));
+    await this.broadcastWaku(normalized, event, storeId);
   }
 
   subscribe(cb: (n: Notification) => void) {
