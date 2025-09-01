@@ -1,8 +1,8 @@
-export const CHAIN = (process.env.EXPO_PUBLIC_CHAIN ?? 'near') as 'near';
+const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || 'near').toLowerCase();
 
 if (CHAIN !== 'near') {
-  throw new Error('BlueOcean is NEAR-only for MVP');
+  throw new Error('BlueOcean is NEAR-only. Set EXPO_PUBLIC_CHAIN=near');
 }
 
-export default CHAIN;
+export default CHAIN as 'near';
 

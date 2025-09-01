@@ -19,7 +19,7 @@ let SEEDED = false;
 function ensureSeed() {
   if (!DISABLED || SEEDED) return;
   try {
-    // Attempt to load seed data when running without NEAR. JSON imports are supported by Metro/Web.
+
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const data = require('@/assets/seed/seed-data.json');
     if (data?.stores) {
@@ -47,7 +47,7 @@ export async function getStore(storeId: string, id: string): Promise<Store | nul
   const res = await getValue(ADDRESS, `${sid}:${id}`);
   if (res) return JSON.parse(res) as Store;
   if (DISABLED) {
-    // Provide a sensible fallback in non-NEAR environments
+
     const fallback: Store = {
       id,
       name: `Store ${id}`,
