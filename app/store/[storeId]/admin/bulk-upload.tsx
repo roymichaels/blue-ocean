@@ -1,21 +1,12 @@
-import React, { useEffect } from 'react';
-import { Alert } from 'react-native';
-import { router } from 'expo-router';
-import AdminBulkUploader from '@/features/products/components/AdminBulkUploader';
-import { useAuth } from '@/features/auth/AuthContext';
+import React, { Suspense } from 'react';
+import Spinner from '../../../../components/ui/Spinner';
 
-export default function BulkUploadScreen() {
-  const { isAdmin } = useAuth();
+const BulkUploadScreen = React.lazy(() => import('./_BulkUploadScreen'));
 
-  useEffect(() => {
-    if (!isAdmin) {
-      Alert.alert('Access denied', 'Admins only', [
-        { text: 'OK', onPress: () => router.replace('/') },
-      ]);
-    }
-  }, [isAdmin]);
-
-  if (!isAdmin) return null;
-
-  return <AdminBulkUploader />;
+export default function BulkUploadRoute(props: any) {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <BulkUploadScreen {...props} />
+    </Suspense>
+  );
 }
