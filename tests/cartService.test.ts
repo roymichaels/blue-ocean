@@ -5,15 +5,18 @@ import nearAuth from '@/features/auth/services/nearAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product } from '../types';
 
+const mockGetCartItems = jest.fn();
 jest.mock('../agents/cart-agent', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
+    getCartItems: mockGetCartItems,
     add: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
-    get: jest.fn(),
+    selectCartItem: jest.fn(),
   },
+  getCartItems: mockGetCartItems,
+  selectCartItem: jest.fn(),
 }));
 
 jest.mock('../services/database', () => ({
@@ -72,14 +75,14 @@ describe('CartService storage', () => {
     (CartService as any).instance = undefined;
     (AsyncStorage.getItem as jest.Mock).mockReset();
     (AsyncStorage.setItem as jest.Mock).mockReset();
-    (cartAgent.getAll as jest.Mock).mockReset();
+    (cartAgent.getCartItems as jest.Mock).mockReset();
     (DatabaseService.getInstance as jest.Mock).mockReset();
     (nearAuth.getAccountId as jest.Mock).mockReset();
   });
 
   it('loads user cart and wishlist when logged in', async () => {
     (nearAuth.getAccountId as jest.Mock).mockReturnValue('user1');
-    (cartAgent.getAll as jest.Mock).mockResolvedValue([userCartItem]);
+    (cartAgent.getCartItems as jest.Mock).mockResolvedValue([userCartItem]);
     (DatabaseService.getInstance as jest.Mock).mockReturnValue({
       getWishlistItems: jest.fn().mockResolvedValue([wishItem]),
     });
@@ -105,7 +108,7 @@ describe('CartService storage', () => {
 
     expect(svc.getCartItems()).toEqual([anonCartItem]);
     expect(svc.getWishlistItems()).toEqual([wishItem]);
-    expect(cartAgent.getAll).not.toHaveBeenCalled();
+    expect(cartAgent.getCartItems).not.toHaveBeenCalled();
     expect(DatabaseService.getInstance).not.toHaveBeenCalled();
   });
 });

@@ -30,13 +30,28 @@ class CategoriesAgent {
     await removeCategory(id);
   }
 
-  async get(id: string): Promise<Category | null> {
-    return await getCategory(id);
+  /**
+   * Returns a defensive copy of a category by id.
+   */
+  async selectCategory(id: string): Promise<Category | null> {
+    const cat = await getCategory(id);
+    return cat ? JSON.parse(JSON.stringify(cat)) : null;
   }
 
-  async getAll(): Promise<Category[]> {
-    return await listCategories();
+  /**
+   * Returns defensive copies of all categories.
+   */
+  async getCategories(): Promise<Category[]> {
+    const list = await listCategories();
+    return list.map((c) => JSON.parse(JSON.stringify(c)));
   }
 }
 
-export default new CategoriesAgent();
+const categoriesAgent = new CategoriesAgent();
+
+export const getCategories = (): Promise<Category[]> =>
+  categoriesAgent.getCategories();
+export const selectCategory = (id: string): Promise<Category | null> =>
+  categoriesAgent.selectCategory(id);
+
+export default categoriesAgent;

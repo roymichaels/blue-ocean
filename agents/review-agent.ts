@@ -2,7 +2,7 @@ import { Review } from '../types';
 import { assertNearChain } from '../services/chain';
 import { addReview, getReviews } from '@/features/reviews/services/nearReviews';
 import ordersAgent from './orders-agent';
-import productsAgent from './products-agent';
+import { selectProduct } from './products-agent';
 import storesAgent from './stores-agent';
 import ensureNearWallet from '../utils/ensureNearWallet';
 
@@ -41,7 +41,7 @@ class ReviewAgent {
 
     await addReview(review);
     this.subscribers.forEach((cb) => cb(review));
-    const product = await productsAgent.get(review.productId);
+    const product = await selectProduct(review.productId);
     if (product) {
       await storesAgent.recordReview(product.storeId, review.rating);
     }
