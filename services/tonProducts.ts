@@ -3,6 +3,8 @@ import { Product } from '../types';
 import { requireEnv } from '../utils/appConfig';
 import { assertTonChain } from './chain';
 import { requireStoreId } from '@blue-ocean/utils';
+import { errorLog } from '@/utils/logger';
+import { productSchema } from '../schemas/waku';
 
 assertTonChain();
 
@@ -35,25 +37,31 @@ export async function getProduct(storeId: string, id: string): Promise<Product |
   const sid = requireStoreId(storeId);
   const res = await getValue(ADDRESS, `${sid}:${id}`);
   if (!res) return null;
-  const parsed = JSON.parse(res) as Product;
-  return {
-    ...parsed,
-    pricingTier: parsed.pricingTier,
-    variants: parsed.variants || [],
-    colors: parsed.colors || [],
-  };
+  try {
+    const parsed = productSchema.parse(JSON.parse(res));
+    return {
+      ...parsed,
+      pricingTier: parsed.pricingTier,
+      variants: parsed.variants || [],
+      colors: parsed.colors || [],
+    };
+  } catch (err) {
+    errorLog('Invalid product data', err);
+    return null;
+  }
 }
 
 export async function setProduct(storeId: string, product: Product) {
   const sid = requireStoreId(storeId);
+  const validated = productSchema.parse(product);
   await setValue(
     ADDRESS,
-    `${sid}:${product.id}`,
+    `${sid}:${validated.id}`,
     JSON.stringify({
-      ...product,
-      pricingTier: product.pricingTier,
-      variants: product.variants || [],
-      colors: product.colors || [],
+      ...validated,
+      pricingTier: validated.pricingTier,
+      variants: validated.variants || [],
+      colors: validated.colors || [],
     })
   );
 }
@@ -66,17 +74,22 @@ export async function listProducts(storeId: string): Promise<Product[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
   const items = await listValues(ADDRESS);
-  return items
-    .filter((i) => i.key.startsWith(`${sid}:`))
-    .map((i) => {
-      const parsed = JSON.parse(i.value) as Product;
-      return {
+  const res: Product[] = [];
+  for (const i of items) {
+    if (!i.key.startsWith(`${sid}:`)) continue;
+    try {
+      const parsed = productSchema.parse(JSON.parse(i.value));
+      res.push({
         ...parsed,
         pricingTier: parsed.pricingTier,
         variants: parsed.variants || [],
         colors: parsed.colors || [],
-      };
-    });
+      });
+    } catch (err) {
+      errorLog('Invalid product in list', err);
+    }
+  }
+  return res;
 }
 
 export async function getProducts(storeId: string, ids: string[]): Promise<Product[]> {
@@ -92,7 +105,8 @@ export async function getProducts(storeId: string, ids: string[]): Promise<Produ
 export async function setProductBatch(storeId: string, products: Product[]) {
   const sid = requireStoreId(storeId);
   for (const p of products) {
-    await setProduct(sid, p);
+    const validated = productSchema.parse(p);
+    await setProduct(sid, validated);
   }
 }
 

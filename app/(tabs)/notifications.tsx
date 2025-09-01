@@ -1,9 +1,6 @@
-import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Package, Tag, MessageCircle, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info } from 'lucide-react-native';
-import NotificationService from '../../services/notification';
 import { Notification } from '../../types';
 import { useAuth } from '../../components/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -13,17 +10,23 @@ import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '../../components/AuthModalContext';
+import { useNotifications } from '../../src/features/notifications/hooks/useNotifications';
 
 
 
 export default function NotificationsScreen() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const { openAuthModal } = useAuthModal();
-  const { isLoggedIn, isAdmin, user } = useAuth();
+  const { isLoggedIn, isAdmin } = useAuth();
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const {
+    notifications,
+    loading,
+    error,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -34,108 +37,24 @@ export default function NotificationsScreen() {
   });
 
   useEffect(() => {
-    if (isLoggedIn && user) {
-      loadNotifications();
-    } else {
-      setLoading(false);
-      setNotifications([]);
-    }
-  }, [isLoggedIn, user]);
-
-  const loadNotifications = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      const notificationService = NotificationService.getInstance();
-      const data = await notificationService.getNotifications(user.id);
-      setNotifications(data);
-    } catch (error) {
-      errorLog('Error loading notifications:', error);
+    if (error) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'טעינת ההתראות נכשלה',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markAsRead = async (id: string) => {
-    try {
-      const notificationService = NotificationService.getInstance();
-      const success = await notificationService.markAsRead(id);
-      
-      if (success) {
-        // Update local state
-        setNotifications(prev => 
-          prev.map(notification => 
-            notification.id === id 
-              ? { ...notification, read: true } 
-              : notification
-          )
-        );
-      }
-    } catch (error) {
-      errorLog('Error marking notification as read:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'סימון ההתראה כנקראה נכשל',
-        type: 'error'
+        title: t('common.error'),
+        message: t('notifications.loadError'),
+        type: 'error',
       });
     }
-  };
+  }, [error, t]);
 
-  const markAllAsRead = async () => {
-    if (!user) return;
-    
-    try {
-      const notificationService = NotificationService.getInstance();
-      const success = await notificationService.markAllAsRead(user.id);
-      
-      if (success) {
-        // Update local state
-        setNotifications(prev => 
-          prev.map(notification => ({ ...notification, read: true }))
-        );
-        
-        setInfoModal({
-          visible: true,
-          title: 'הצלחה',
-          message: 'כל ההתראות סומנו כנקראו',
-          type: 'success'
-        });
-      }
-    } catch (error) {
-      errorLog('Error marking all notifications as read:', error);
+  const handleMarkAllAsRead = async () => {
+    const success = await markAllAsRead();
+    if (success) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'סימון כל ההתראות כנקראו נכשל',
-        type: 'error'
-      });
-    }
-  };
-
-  const deleteNotification = async (id: string) => {
-    try {
-      const notificationService = NotificationService.getInstance();
-      const success = await notificationService.deleteNotification(id);
-      
-      if (success) {
-        // Update local state
-        setNotifications(prev => prev.filter(notification => notification.id !== id));
-      }
-    } catch (error) {
-      errorLog('Error deleting notification:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'מחיקת ההתראה נכשלה',
-        type: 'error'
+        title: 'הצלחה',
+        message: 'כל ההתראות סומנו כנקראו',
+        type: 'success',
       });
     }
   };
@@ -229,7 +148,7 @@ export default function NotificationsScreen() {
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{t('notifications.notifications')}</Text>
         {notifications.length > 0 && (
-          <TouchableOpacity onPress={markAllAsRead}>
+          <TouchableOpacity onPress={handleMarkAllAsRead}>
             <Text style={[styles.markAllRead, { color: colors.gold }]}>{t('notifications.markAllRead')}</Text>
           </TouchableOpacity>
         )}
