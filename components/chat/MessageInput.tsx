@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet } from 'react-native';
+import Button from '@/components/ui/Button';
 
 interface Props {
   value: string;
@@ -19,9 +20,11 @@ const MessageInput: React.FC<Props> = ({ value, onChange, onSend, colors }) => {
         placeholderTextColor={colors.text.tertiary}
         textAlign="end"
       />
-      <TouchableOpacity onPress={onSend} style={[styles.button, { backgroundColor: colors.gold }]}> 
-        <Text style={[styles.buttonText, { color: colors.text.inverse }]}>Send</Text>
-      </TouchableOpacity>
+      <Button
+        title="Send"
+        onPress={onSend}
+        style={{ marginLeft: 8 }}
+      />
     </View>
   );
 };
@@ -39,16 +42,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
-  },
-  button: {
-    marginLeft: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
 });
 
