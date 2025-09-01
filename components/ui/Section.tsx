@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import GoldDivider from './GoldDivider';
 import { useTheme } from '../../contexts/ThemeContext';
+import { spacing } from '../../constants/tokens';
 
 export default function Section({
   title,
@@ -14,7 +15,7 @@ export default function Section({
 }) {
   const { colors } = useTheme();
   return (
-    <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+    <View style={{ paddingHorizontal: spacing.spacer16, paddingVertical: spacing.spacer16 }}>
       <Text
         style={{
           color: colors.text.primary,
@@ -25,10 +26,10 @@ export default function Section({
       >
         {title}
       </Text>
-      <View style={{ alignItems: center ? 'center' : 'flex-start', marginTop: 8 }}>
+      <View style={{ alignItems: center ? 'center' : 'flex-start', marginTop: spacing.spacer8 }}>
         <GoldDivider width={center ? 160 : 120} />
       </View>
-      <View style={{ marginTop: 12 }}>{children}</View>
+      <View style={{ marginTop: spacing.spacer12 }}>{children}</View>
     </View>
   );
 }

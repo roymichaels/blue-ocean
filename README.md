@@ -25,18 +25,19 @@ yarn test
 Shared design tokens live in `constants/tokens.ts`. Import `spacing`, `radius`, `colors`, `zIndex`, and `shadows` to keep styles consistent across components.
 
 ```ts
-import { spacing, radius } from '../constants/tokens';
+import { spacing, radius, zIndex, shadows } from '../constants/tokens';
 
 const styles = StyleSheet.create({
   button: {
     padding: spacing.spacer16,
     borderRadius: radius.md,
+    zIndex: zIndex.dropdown,
+    ...shadows.sm.web,
   },
 });
 ```
 
-Tokens are also available at runtime through the `useTheme()` hook, which merges the current
-light/dark mode with any overrides:
+Tokens are also available at runtime through the `useTheme()` hook, which merges the current light/dark mode with any overrides:
 
 ```ts
 const { tokens, colors } = useTheme();

@@ -8,6 +8,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { spacing } from '../../constants/tokens';
 
 interface SpinnerProps {
   size?: 'small' | 'large';
@@ -40,9 +41,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: spacing.spacer20,
   },
   label: {
-    marginTop: 12,
+    marginTop: spacing.spacer12,
   },
 });
