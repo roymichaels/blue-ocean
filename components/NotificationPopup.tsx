@@ -9,6 +9,8 @@ import {
   Platform
 } from 'react-native';
 import { X } from 'lucide-react-native';
+import { useTheme } from '../contexts/ThemeContext';
+import { spacing, zIndex } from '../constants/tokens';
 
 interface NotificationPopupProps {
   title: string;
@@ -29,6 +31,7 @@ export default function NotificationPopup({
 }: NotificationPopupProps) {
   const translateY = useRef(new Animated.Value(-100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     // Slide in
@@ -73,14 +76,14 @@ export default function NotificationPopup({
   const getBackgroundColor = () => {
     switch (type) {
       case 'success':
-        return '#4CAF50';
+        return colors.status.success;
       case 'warning':
-        return '#FF9800';
+        return colors.status.warning;
       case 'error':
-        return '#F44336';
+        return colors.status.error;
       case 'info':
       default:
-        return '#20B2AA';
+        return colors.status.info;
     }
   };
 
@@ -97,11 +100,11 @@ export default function NotificationPopup({
     >
       <View style={styles.content}>
         <View style={styles.textContainer}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message} numberOfLines={2}>{message}</Text>
+          <Text style={[styles.title, { color: colors.text.inverse }]}>{title}</Text>
+          <Text style={[styles.message, { color: colors.text.inverse }]} numberOfLines={2}>{message}</Text>
         </View>
         <TouchableOpacity style={styles.closeButton} onPress={dismiss}>
-          <X size={20} color="#FFFFFF" />
+          <X size={20} color={colors.text.inverse} />
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -114,8 +117,8 @@ const styles = StyleSheet.create({
     top: 0,
     start: 0,
     end: 0,
-    padding: 16,
-    zIndex: 1000,
+    padding: spacing.spacer16,
+    zIndex: zIndex.modal,
     width: width,
   },
   content: {
@@ -125,19 +128,17 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-    marginRight: 8,
+    marginRight: spacing.spacer8,
   },
   title: {
-    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
-    marginBottom: 4,
+    marginBottom: spacing.spacer4,
   },
   message: {
-    color: '#FFFFFF',
     fontSize: 14,
   },
   closeButton: {
-    padding: 4,
+    padding: spacing.spacer4,
   },
 });

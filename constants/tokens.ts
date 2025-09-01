@@ -1,4 +1,4 @@
-import { Colors as DarkColors } from './Colors';
+import { Colors as darkColors } from './Colors';
 import { LightColors } from './LightColors';
 
 export const spacing = {
@@ -38,8 +38,7 @@ export const shadows = {
   },
 };
 
-export const colors = DarkColors;
-export const lightColors = LightColors;
+export const colors = darkColors;
 
 export const tokens = { spacing, radius, colors, zIndex, shadows };
 export const lightTokens = { ...tokens, colors: LightColors };

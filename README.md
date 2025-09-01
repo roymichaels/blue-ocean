@@ -35,6 +35,14 @@ const styles = StyleSheet.create({
 });
 ```
 
+Tokens are also available at runtime through the `useTheme()` hook, which merges the current
+light/dark mode with any overrides:
+
+```ts
+const { tokens, colors } = useTheme();
+// tokens.spacing.spacer16, colors.text.primary, ...
+```
+
 
 ## Setup Guide
 
