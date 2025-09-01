@@ -16,7 +16,7 @@ import { getProduct, setProduct } from '@/features/products/services/nearProduct
 import nearAuth from '@/features/auth/services/nearAuth';
 import { adminResolve, deployOrderPayment } from './nearContract';
 import config from '../utils/appConfig';
-import { calculateCardFees } from '@/payments/card';
+import { calculateCardFees } from '@/features/payments/services/card';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
