@@ -5,7 +5,7 @@ const OrdersScreen = React.lazy(() => import('./_OrdersScreen'));
 
 export default function OrdersRoute(props: any) {
   return (
-    <Suspense fallback={<Spinner />}>
+    <Suspense fallback={<Spinner label="Orders" />}>
       <OrdersScreen {...props} />
     </Suspense>
   );
