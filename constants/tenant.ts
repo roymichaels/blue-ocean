@@ -1,12 +1,7 @@
 import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import chain from '../services/chain';
 import config from '../utils/appConfig';
-
-let fetchSettings: (() => Promise<any>) | undefined;
-if (chain === 'near') {
-  ({ fetchSettings } = require('../services/nearSettings'));
-}
+import { fetchSettings } from '../services/nearSettings';
 
 export let TENANT = 'blue-ocean';
 
@@ -113,38 +108,36 @@ export async function loadTenantSettings(): Promise<void> {
       paymentFactoryAddress: paymentFactory?.[1] || '',
     };
 
-    if (fetchSettings) {
-      const remote = await fetchSettings();
-      TENANT = remote.tenantId;
-      AppConfig = {
-        appName: remote.appName,
-        primaryColor: remote.theme.primary,
-        logoCid: remote.brand.logoCid,
-        fiatKey: remote.fiatKey,
-        feeAddress: remote.feeAddress ?? '',
-        feeBps: remote.feeBps ?? 0,
-        admins: remote.admins ?? [],
-        rpcUrl: remote.rpcUrl,
-        rpcFallbackUrls: remote.rpcFallbackUrls ?? [],
-        wakuBootstrap: remote.wakuBootstrap ?? [],
-        paymentFactoryAddress: remote.paymentFactoryAddress ?? '',
-      };
+    const remote = await fetchSettings();
+    TENANT = remote.tenantId;
+    AppConfig = {
+      appName: remote.appName,
+      primaryColor: remote.theme.primary,
+      logoCid: remote.brand.logoCid,
+      fiatKey: remote.fiatKey,
+      feeAddress: remote.feeAddress ?? '',
+      feeBps: remote.feeBps ?? 0,
+      admins: remote.admins ?? [],
+      rpcUrl: remote.rpcUrl,
+      rpcFallbackUrls: remote.rpcFallbackUrls ?? [],
+      wakuBootstrap: remote.wakuBootstrap ?? [],
+      paymentFactoryAddress: remote.paymentFactoryAddress ?? '',
+    };
 
-      await AsyncStorage.multiSet([
-        [TENANT_KEY, remote.tenantId],
-        [NAME_KEY, remote.appName],
-        [COLOR_KEY, remote.theme.primary],
-        [LOGO_KEY, remote.brand.logoCid],
-        [FIAT_KEY, remote.fiatKey ?? ''],
-        [FEE_ADDR_KEY, remote.feeAddress ?? ''],
-        [FEE_BPS_KEY, String(remote.feeBps ?? 0)],
-        [ADMINS_KEY, JSON.stringify(remote.admins ?? [])],
-        [RPC_URL_KEY, remote.rpcUrl],
-        [RPC_FALLBACK_KEY, JSON.stringify(remote.rpcFallbackUrls ?? [])],
-        [WAKU_BOOTSTRAP_KEY, JSON.stringify(remote.wakuBootstrap ?? [])],
-        [PAYMENT_FACTORY_KEY, remote.paymentFactoryAddress ?? ''],
-      ]);
-    }
+    await AsyncStorage.multiSet([
+      [TENANT_KEY, remote.tenantId],
+      [NAME_KEY, remote.appName],
+      [COLOR_KEY, remote.theme.primary],
+      [LOGO_KEY, remote.brand.logoCid],
+      [FIAT_KEY, remote.fiatKey ?? ''],
+      [FEE_ADDR_KEY, remote.feeAddress ?? ''],
+      [FEE_BPS_KEY, String(remote.feeBps ?? 0)],
+      [ADMINS_KEY, JSON.stringify(remote.admins ?? [])],
+      [RPC_URL_KEY, remote.rpcUrl],
+      [RPC_FALLBACK_KEY, JSON.stringify(remote.rpcFallbackUrls ?? [])],
+      [WAKU_BOOTSTRAP_KEY, JSON.stringify(remote.wakuBootstrap ?? [])],
+      [PAYMENT_FACTORY_KEY, remote.paymentFactoryAddress ?? ''],
+    ]);
   } catch (e) {
     errorLog('Error loading tenant settings:', e);
   }

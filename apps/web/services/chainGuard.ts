@@ -1,6 +1,5 @@
 // Enforce chain guardrails at app startup.
 // - CHAIN must be 'near'
-// - Any TON path should fail fast
 
 const chain = process.env.EXPO_PUBLIC_CHAIN;
 if (chain !== 'near') {
