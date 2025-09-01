@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Platform, ViewStyle, StyleProp } from 'react-native';
+import { radius, shadows } from '../constants/tokens';
 
 interface CardProps {
   children?: React.ReactNode;
@@ -29,11 +30,14 @@ export default function Card({
   Component = View,
   ...rest
 }: CardProps) {
-  const shadowStyle = Platform.select({
-    ios: { elevation },
-    android: { elevation },
-    web: { boxShadow: getBoxShadow(elevation) },
-  });
+  const shadowStyle =
+    elevation === 5
+      ? Platform.select(shadows.md)
+      : Platform.select({
+          ios: { elevation },
+          android: { elevation },
+          web: { boxShadow: getBoxShadow(elevation) },
+        });
 
   return (
     <Component style={[styles.card, shadowStyle, style]} {...rest}>
@@ -44,7 +48,7 @@ export default function Card({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: radius.lg,
   },
 });
 

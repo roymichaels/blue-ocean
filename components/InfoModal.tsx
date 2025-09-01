@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { spacing, radius, zIndex, shadows } from '../constants/tokens';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 
 type InfoType = 'success' | 'error' | 'info' | 'warning';
@@ -73,23 +74,23 @@ export default function InfoModal({
   const getIconAndColor = () => {
     switch (type) {
       case 'success':
-        return { 
+        return {
           icon: <CheckCircle size={32} color={colors.status.success} />,
           color: colors.status.success
         };
       case 'error':
-        return { 
+        return {
           icon: <AlertCircle size={32} color={colors.status.error} />,
           color: colors.status.error
         };
       case 'warning':
-        return { 
+        return {
           icon: <AlertTriangle size={32} color={colors.status.warning} />,
           color: colors.status.warning
         };
       case 'info':
       default:
-        return { 
+        return {
           icon: <Info size={32} color={colors.status.info} />,
           color: colors.status.info
         };
@@ -108,10 +109,10 @@ export default function InfoModal({
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
-            <Animated.View 
+            <Animated.View
               style={[
-                styles.modalContainer, 
-                { 
+                styles.modalContainer,
+                {
                   backgroundColor: colors.surface.elevated,
                   transform: [{ scale: scaleAnim }],
                   opacity: opacityAnim,
@@ -121,19 +122,19 @@ export default function InfoModal({
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <X size={20} color={colors.text.secondary} />
               </TouchableOpacity>
-              
+
               <View style={styles.iconContainer}>
                 {icon}
               </View>
-              
+
               <Text style={[styles.title, { color: colors.text.primary }]}>
                 {title}
               </Text>
-              
-              <Text style={[styles.message, { color: colors.text.secondary }]}>
+
+              <Text style={[styles.message, { color: colors.text.secondary }]}> 
                 {message}
               </Text>
-              
+
               <TouchableOpacity
                 style={[styles.button, { backgroundColor: color }]}
                 onPress={onClose}
@@ -156,46 +157,42 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: spacing.spacer20,
   },
   modalContainer: {
     width: '100%',
     maxWidth: 340,
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: radius.xl,
+    padding: spacing.spacer24,
     alignItems: 'center',
-    ...Platform.select({
-      ios: { elevation: 5 },
-      android: { elevation: 5 },
-      web: { boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)' },
-    }),
+    ...Platform.select(shadows.md),
   },
   closeButton: {
     position: 'absolute',
-    top: 12,
-    end: 12,
-    padding: 4,
-    zIndex: 1,
+    top: spacing.spacer12,
+    end: spacing.spacer12,
+    padding: spacing.spacer4,
+    zIndex: zIndex.dropdown,
   },
   iconContainer: {
-    marginBottom: 16,
+    marginBottom: spacing.spacer16,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.spacer8,
   },
   message: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.spacer24,
     lineHeight: 24,
   },
   button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingVertical: spacing.spacer12,
+    paddingHorizontal: spacing.spacer24,
+    borderRadius: radius.lg,
     minWidth: 120,
     alignItems: 'center',
   },

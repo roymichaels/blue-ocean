@@ -1,14 +1,7 @@
 import { StyleSheet } from 'react-native';
+import { spacing } from './tokens';
 
-export const spacing = {
-  spacer4: 4,
-  spacer8: 8,
-  spacer12: 12,
-  spacer16: 16,
-  spacer20: 20,
-  spacer24: 24,
-  spacer40: 40,
-};
+export { spacing };
 
 export const typography = StyleSheet.create({
   heading1: {

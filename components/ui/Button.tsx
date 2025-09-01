@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, TouchableOpacityProps } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { spacing, radius } from '../../constants/tokens';
 
 interface ButtonProps extends TouchableOpacityProps {
   title?: string;
@@ -48,9 +49,9 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: spacing.spacer12,
+    paddingHorizontal: spacing.spacer16,
+    borderRadius: radius.md,
     alignItems: 'center',
   },
   text: {

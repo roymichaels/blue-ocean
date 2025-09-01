@@ -1,8 +1,7 @@
 import { errorLog } from '@/utils/logger';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors as DarkColors } from '../constants/Colors';
-import { LightColors } from '../constants/LightColors';
+import { tokens as darkTokens, lightTokens, Tokens } from '../constants/tokens';
 import { useAppInfo } from './AppInfoContext';
 
 const THEME_STORAGE_KEY = 'app_theme';
@@ -11,14 +10,16 @@ type ThemeMode = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: ThemeMode;
-  colors: typeof DarkColors;
+  colors: Tokens['colors'];
+  tokens: Tokens;
   setTheme: (theme: ThemeMode) => Promise<void>;
   toggleTheme: () => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: 'dark',
-  colors: DarkColors,
+  colors: darkTokens.colors,
+  tokens: darkTokens,
   setTheme: async () => {},
   toggleTheme: async () => {},
 });
@@ -31,7 +32,7 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<ThemeMode>('dark');
-  const [colors, setColors] = useState(DarkColors);
+  const [currentTokens, setCurrentTokens] = useState<Tokens>(darkTokens);
   const { themeColor } = useAppInfo();
 
   useEffect(() => {
@@ -54,17 +55,20 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   };
 
   const applyTheme = (mode: ThemeMode, color: string) => {
-    const base = mode === 'light' ? LightColors : DarkColors;
-    setColors({
+    const base = mode === 'light' ? lightTokens : darkTokens;
+    setCurrentTokens({
       ...base,
-      gold: color,
-      interactive: {
-        ...base.interactive,
-        primary: color,
-        primaryHover: color,
+      colors: {
+        ...base.colors,
+        gold: color,
+        interactive: {
+          ...base.colors.interactive,
+          primary: color,
+          primaryHover: color,
+        },
+        tabBar: { ...base.colors.tabBar, active: color },
+        border: { ...base.colors.border, focus: color },
       },
-      tabBar: { ...base.tabBar, active: color },
-      border: { ...base.border, focus: color },
     });
   };
 
@@ -84,12 +88,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   };
 
   return (
-    <ThemeContext.Provider 
-      value={{ 
-        theme, 
-        colors,
-        setTheme, 
-        toggleTheme
+    <ThemeContext.Provider
+      value={{
+        theme,
+        colors: currentTokens.colors,
+        tokens: currentTokens,
+        setTheme,
+        toggleTheme,
       }}
     >
       {children}
