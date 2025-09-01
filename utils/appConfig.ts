@@ -76,7 +76,7 @@ export function getWakuBootstrapNodes(): string[] {
       .filter(Boolean);
   }
   try {
-    const tenant = require('../constants/tenant');
+    const tenant = require('@/constants/tenant');
     const list = tenant.AppConfig?.wakuBootstrap || [];
     if (Array.isArray(list) && list.length > 0) {
       return list;
@@ -97,7 +97,7 @@ export function getNearRpcUrls(): string[] {
   let tenantRpc = '';
   let tenantFallbacks: string[] = [];
   try {
-    const tenant = require('../constants/tenant');
+    const tenant = require('@/constants/tenant');
     tenantRpc = tenant.AppConfig?.rpcUrl || '';
     tenantFallbacks = tenant.AppConfig?.rpcFallbackUrls || [];
   } catch {}

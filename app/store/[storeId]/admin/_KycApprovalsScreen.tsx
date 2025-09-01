@@ -16,7 +16,7 @@ import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { User as UserType } from '../../../../types';
 import Spinner from '../../../../components/ui/Spinner';
-import commonStyles from '../../../../constants/styles';
+import commonStyles from '@/constants/styles';
 import SmartImage from '../../../../components/SmartImage';
 
 

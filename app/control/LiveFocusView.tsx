@@ -3,7 +3,7 @@ import { View, Text, Button, FlatList } from 'react-native';
 import { RoadmapProvider, useRoadmap } from '../../contexts/RoadmapContext';
 import RoadmapService from '../../services/roadmap';
 import type { RoadmapTask } from '../../types';
-import { spacing, typography } from '../../constants/styles';
+import { spacing, typography } from '@/constants/styles';
 
 function LiveFocusInner() {
   const { activeRoadmap, tasks, completeTask, progress } = useRoadmap();

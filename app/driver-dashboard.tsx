@@ -25,7 +25,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { DeliveryJob } from '../types';
-import commonStyles from '../constants/styles';
+import commonStyles from '@/constants/styles';
 
 
 

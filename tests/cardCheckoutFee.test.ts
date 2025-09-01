@@ -46,7 +46,7 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   signIn: jest.fn(),
 }));
 
-jest.mock('../constants/tenant', () => ({
+jest.mock('@/constants/tenant', () => ({
   getFeeSettings: jest.fn().mockResolvedValue({ feeAddress: 'fee_addr', feeBps: 250 }),
 }));
 

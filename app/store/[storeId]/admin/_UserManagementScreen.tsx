@@ -19,7 +19,7 @@ import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { User as UserType, CustomerTier, UserRole } from '../../../../types';
 import { useNotifications } from '../../../../components/NotificationContext';
-import commonStyles from '../../../../constants/styles';
+import commonStyles from '@/constants/styles';
 import Spinner from '../../../../components/ui/Spinner';
 
 export default function UserManagementScreen() {

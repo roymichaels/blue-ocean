@@ -43,7 +43,7 @@ import { useAccountId } from '@/features/auth/services/nearAuth';
 import chatAgent from '../../agents/chat-agent';
 import moderationAgent from '../../agents/moderation-agent';
 import reviewAgent from '../../agents/review-agent';
-import commonStyles from '../../constants/styles';
+import commonStyles from '@/constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import SmartImage from '../../components/SmartImage';

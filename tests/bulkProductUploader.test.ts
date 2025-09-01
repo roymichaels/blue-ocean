@@ -1,6 +1,6 @@
 import { Product } from '../types';
 import { insertConfig } from './testUtils';
-import { loadTenantSettings, getAdmins } from '../constants/tenant';
+import { loadTenantSettings, getAdmins } from '@/constants/tenant';
 
 jest.mock('expo-document-picker', () => ({}));
 

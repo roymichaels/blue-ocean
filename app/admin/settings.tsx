@@ -11,7 +11,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import Spinner from '../../components/ui/Spinner';
 import InfoModal from '../../components/InfoModal';
 import { useAppInfo } from '../../contexts/AppInfoContext';
-import commonStyles from '../../constants/styles';
+import commonStyles from '@/constants/styles';
 import SettingsAgent from '../../agents/settings-agent';
 import BrandingSettings from '../../components/settings/BrandingSettings';
 import CurrencySettings from '../../components/settings/CurrencySettings';
