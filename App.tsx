@@ -29,7 +29,9 @@ export default function App() {
                       <NotificationProvider>
                         <ErrorBoundary>
                           <QueryClientProvider client={queryClient}>
-                            <Router />
+                            <React.Suspense fallback={null}>
+                              <Router />
+                            </React.Suspense>
                           </QueryClientProvider>
                         </ErrorBoundary>
                       </NotificationProvider>

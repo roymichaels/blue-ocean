@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import chain from '@/services/chain';
 import { Product, Category, HeroBanner } from '@/types';
@@ -9,38 +10,42 @@ if (chain === 'near') {
 }
 
 export function useHome() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
+  const { data, refetch } = useQuery({
+    queryKey: ['home'],
+    queryFn: async () => {
       const db = DatabaseService.getInstance();
       const [productsData, categoriesData, bannersData] = await Promise.all([
         db.getProducts(),
         listCategories ? listCategories() : Promise.resolve([]),
         db.getHeroBanners(),
       ]);
-      setProducts(productsData);
-      setCategories(categoriesData);
-      setHeroBanners(bannersData);
+      return { productsData, categoriesData, bannersData };
+    },
+    suspense: true,
+  });
+
+  const [products, setProducts] = useState<Product[]>(data.productsData);
+  const [categories, setCategories] = useState<Category[]>(data.categoriesData);
+  const [heroBanners, setHeroBanners] = useState<HeroBanner[]>(data.bannersData);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const refresh = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      const res = await refetch();
+      if (res.data) {
+        setProducts(res.data.productsData);
+        setCategories(res.data.categoriesData);
+        setHeroBanners(res.data.bannersData);
+      }
       setError(null);
     } catch (err) {
       setError(err as Error);
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
-  }, []);
-
-  const refresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
-  }, [loadData]);
+  }, [refetch]);
 
   const upsertBanner = useCallback((b: HeroBanner, isNew: boolean) => {
     setHeroBanners((prev) =>
@@ -62,18 +67,14 @@ export function useHome() {
     setProducts((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
-  useEffect(() => {
-    void loadData();
-  }, [loadData]);
-
   return {
     products,
     categories,
     heroBanners,
-    loading,
+    loading: false,
     refreshing,
     error,
-    reload: loadData,
+    reload: refresh,
     refresh,
     upsertBanner,
     removeBanner,
