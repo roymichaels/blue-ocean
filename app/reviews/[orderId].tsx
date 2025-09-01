@@ -106,8 +106,9 @@ export default function SubmitReviewScreen() {
         <View style={styles.productRow}>
           <SmartImage
             uri={item.product.images[0]}
+            width={60}
+            height={60}
             style={styles.productImage}
-            cachePolicy="disk"
           />
           <Text style={[styles.productName, { color: colors.text.primary }]} numberOfLines={1}>
             {item.product.name}
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: 'bold' },
   content: { padding: 16 },
   productRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
-  productImage: { width: 60, height: 60, borderRadius: 8, marginLeft: 12 },
+  productImage: { borderRadius: 8, marginLeft: 12 },
   productName: { flex: 1, fontSize: 16, fontWeight: '600', textAlign: 'end' },
   ratingSection: { alignItems: 'center', marginBottom: 24 },
   input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 16 },

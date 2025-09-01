@@ -252,8 +252,9 @@ export default function AdminDeliveriesScreen() {
               <TouchableOpacity onPress={() => openProof(job.proofUri!)}>
                 <SmartImage
                   uri={job.proofUri}
+                  width={80}
+                  height={80}
                   style={styles.proofImage}
-                  cachePolicy="disk"
                 />
               </TouchableOpacity>
             )}
@@ -404,8 +405,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   proofImage: {
-    width: 80,
-    height: 80,
     borderRadius: 8,
     marginTop: 8,
   },

@@ -223,7 +223,7 @@ export default function MediaUploader({
       }]}>
         {item.type === 'video' ? (
           <View style={styles.videoContainer}>
-            <SmartImage uri={thumbnailMap[item.id] || item.uri} style={styles.mediaThumbnail} contentFit="cover" cachePolicy="disk" />
+            <SmartImage uri={thumbnailMap[item.id] || item.uri} width={100} height={100} contentFit="cover" />
             <View pointerEvents="none" style={styles.playOverlay}>
               <Play size={24} color={colors.text.inverse} fill={colors.text.inverse} />
             </View>
@@ -232,7 +232,7 @@ export default function MediaUploader({
             </View>
           </View>
         ) : (
-          <SmartImage uri={item.uri} style={styles.mediaThumbnail} contentFit="cover" cachePolicy="disk" />
+          <SmartImage uri={item.uri} width={100} height={100} contentFit="cover" />
         )}
         
         <TouchableOpacity
@@ -349,10 +349,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-  },
-  mediaThumbnail: {
-    width: '100%',
-    height: '100%',
   },
   videoContainer: {
     position: 'relative',

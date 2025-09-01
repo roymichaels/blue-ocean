@@ -318,9 +318,9 @@ export default function FullScreenMediaViewer({
                     <Animated.View style={[styles.imageWrapper, animatedStyle]}>
                       <SmartImage
                         uri={currentMedia.uri}
-                        style={styles.media}
+                        width={width}
+                        height={height}
                         contentFit="contain"
-                        cachePolicy="disk"
                       />
                     </Animated.View>
                   </PanGestureHandler>
@@ -448,10 +448,6 @@ const styles = StyleSheet.create({
     height: height,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  media: {
-    width: '100%',
-    height: '100%',
   },
   overlay: {
     flex: 1,

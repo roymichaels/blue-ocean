@@ -446,9 +446,10 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
               <View key={index} style={[styles.orderItem, { borderBottomColor: colors.border.secondary }]}>
                 <SmartImage
                   uri={item.product.images[0]}
+                  width={50}
+                  height={50}
                   style={styles.itemImage}
                   contentFit="cover"
-                  cachePolicy="disk"
                 />
                 <View style={styles.itemInfo}>
                   <Text style={[styles.itemName, { color: colors.text.primary }]}>{item.product.name}</Text>
@@ -722,8 +723,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   itemImage: {
-    width: 50,
-    height: 50,
     borderRadius: 8,
     marginRight: 12,
   },

@@ -146,8 +146,9 @@ export default function KycApprovalsScreen() {
                     {request.avatar ? (
                       <SmartImage
                         uri={request.avatar}
+                        width={60}
+                        height={60}
                         style={[styles.avatar, { borderColor: colors.gold }]}
-                        cachePolicy="disk"
                       />
                     ) : (
                       <View style={[styles.avatarPlaceholder, { 
@@ -269,8 +270,6 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   avatar: {
-    width: 60,
-    height: 60,
     borderRadius: 30,
     borderWidth: 2,
   },

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Dimensions,
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { Heart, Pencil, ShoppingCart, Tag } from 'lucide-react-native';
@@ -20,6 +21,9 @@ import { useAccountId } from '../../auth/services/nearAuth';
 import productsAgent from '@/agents/products-agent';
 import Card from '@/components/Card';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = (SCREEN_WIDTH - 32 - 12) / 2;
+const IMAGE_HEIGHT = 140;
 interface ProductCardProps {
   product: Product;
   isOwner?: boolean;
@@ -161,10 +165,10 @@ export default function ProductCard({
     ]} onPress={handlePress}>
       <View style={styles.imageContainer}>
         {product.images && product.images.length > 0 ? (
-          <SmartImage uri={product.images[0]} style={styles.image} contentFit="cover" cachePolicy="disk" />
+          <SmartImage uri={product.images[0]} width={CARD_WIDTH} height={IMAGE_HEIGHT} contentFit="cover" />
         ) : product.videos && product.videos.length > 0 ? (
           videoThumbnail ? (
-            <SmartImage uri={videoThumbnail} style={styles.image} contentFit="cover" cachePolicy="disk" />
+            <SmartImage uri={videoThumbnail} width={CARD_WIDTH} height={IMAGE_HEIGHT} contentFit="cover" />
           ) : (
             <View style={styles.noImageContainer}>
               <Text style={styles.noImageText}>אין תמונה</Text>
@@ -312,11 +316,8 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: 140,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
+    height: IMAGE_HEIGHT,
+    width: CARD_WIDTH,
   },
   noImageContainer: {
     width: '100%',
