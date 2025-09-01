@@ -272,7 +272,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         user?.id || 'guest',
         cartItems,
         shippingAddress,
-        'ton'
+        'near'
       );
       eventBus.track('checkout.complete', {
         orderIds: orders.map((o) => o.id),
