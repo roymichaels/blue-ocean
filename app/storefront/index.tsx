@@ -15,6 +15,7 @@ import ProductCard from '@/features/products/components/ProductCard';
 import { Product } from '../../types';
 import Fuse from 'fuse.js';
 import eventBus from '../../services/eventBus';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 interface ReviewMap {
   [productId: string]: { rating: number; count: number };
@@ -162,25 +163,27 @@ export default function StorefrontScreen({ initialCategory }: Props) {
   });
 
   return (
-    <FlatList
-      data={filtered}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={() => (
-        <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
-          אין מוצרים זמינים
-        </Text>
-      )}
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[
-        styles.content,
-        { direction: I18nManager.isRTL ? 'rtl' : 'ltr' },
-      ]}
-      initialNumToRender={8}
-      windowSize={5}
-      getItemLayout={getItemLayout}
-    />
+    <ErrorBoundary>
+      <FlatList
+        data={filtered}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={() => (
+          <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
+            אין מוצרים זמינים
+          </Text>
+        )}
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={[
+          styles.content,
+          { direction: I18nManager.isRTL ? 'rtl' : 'ltr' },
+        ]}
+        initialNumToRender={8}
+        windowSize={5}
+        getItemLayout={getItemLayout}
+      />
+    </ErrorBoundary>
   );
 }
 

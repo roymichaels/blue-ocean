@@ -12,6 +12,7 @@ interface Props {
 
 interface State {
   hasError: boolean;
+  error?: Error;
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
@@ -20,27 +21,28 @@ class ErrorBoundary extends React.Component<Props, State> {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(): State {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     errorLog('ErrorBoundary caught error:', error, info);
+    this.setState({ error });
   }
 
   private reset = () => {
-    this.setState({ hasError: false });
+    this.setState({ hasError: false, error: undefined });
   };
 
   render() {
     if (this.state.hasError) {
-      return <ErrorFallback onRetry={this.reset} />;
+      return <ErrorFallback error={this.state.error} onRetry={this.reset} />;
     }
     return this.props.children;
   }
 }
 
-function ErrorFallback({ onRetry }: { onRetry: () => void }) {
+function ErrorFallback({ error, onRetry }: { error?: Error; onRetry: () => void }) {
   const { colors } = useTheme();
   const pathname = usePathname();
 
@@ -54,6 +56,9 @@ function ErrorFallback({ onRetry }: { onRetry: () => void }) {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}> 
       <Text style={[styles.title, { color: colors.text.primary }]}>Something went wrong</Text>
+      {error?.message && (
+        <Text style={[styles.message, { color: colors.text.secondary }]}>{error.message}</Text>
+      )}
       <Text style={[styles.route, { color: colors.text.secondary }]}>Route: {pathname}</Text>
       <Button title="Retry" onPress={handleRetry} />
     </View>
@@ -75,6 +80,10 @@ const styles = StyleSheet.create({
   },
   route: {
     marginBottom: spacing.spacer16,
+    textAlign: 'center',
+  },
+  message: {
+    marginBottom: spacing.spacer8,
     textAlign: 'center',
   },
 });

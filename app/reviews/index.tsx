@@ -24,6 +24,7 @@ import { useAuthModal } from '@/features/auth/AuthModalContext';
 import commonStyles from '../../constants/styles';
 import Card from '../../components/Card';
 import SmartImage from '../../components/SmartImage';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 
 
@@ -478,7 +479,8 @@ export default function ReviewsScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ErrorBoundary>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
         <TouchableOpacity onPress={goBack} style={[styles.backButton, { 
           backgroundColor: colors.surface.primary, 
@@ -862,7 +864,8 @@ export default function ReviewsScreen() {
         onCancel={() => setDeleteModal({ visible: false, reviewId: '' })}
         destructive
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 

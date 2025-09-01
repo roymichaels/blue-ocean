@@ -1,13 +1,35 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Link } from 'expo-router';
+import { useTheme } from '../contexts/ThemeContext';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function Probe() {
+  const { colors } = useTheme();
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0b0b', gap: 12 }}>
-      <Text style={{ color: '#fff', fontSize: 24, fontWeight: '700' }}>PROBE OK</Text>
-      <Link href="/(tabs)/categories" style={{ color: '#4ade80', fontWeight: '700' }}>Open Tabs → Categories</Link>
-    </View>
+    <ErrorBoundary>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.background,
+          gap: 12,
+        }}
+      >
+        <Text
+          style={{ color: colors.text.primary, fontSize: 24, fontWeight: '700' }}
+        >
+          PROBE OK
+        </Text>
+        <Link
+          href="/(tabs)/categories"
+          style={{ color: colors.gold, fontWeight: '700' }}
+        >
+          Open Tabs → Categories
+        </Link>
+      </View>
+    </ErrorBoundary>
   );
 }
 
