@@ -5,7 +5,7 @@ import { CartItem, Store } from '@/types';
 
 let getStore: ((storeId: string, id: string) => Promise<Store | null>) | undefined;
 if (chain === 'near') {
-  ({ getStore } = require('@/services/nearStores'));
+  ({ getStore } = require('@/features/stores/services/nearStores'));
 }
 
 export default function useCartStores(cartItems: CartItem[]) {
