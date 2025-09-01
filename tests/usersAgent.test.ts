@@ -15,7 +15,7 @@ jest.mock('../services/localIdentity', () => ({
   getPublicKeyHex: () => 'chat_pub',
 }));
 
-jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
+jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
 import { __clear } from './tonKvMock';
 import { setAdmins } from '../services/tonSettings';
 

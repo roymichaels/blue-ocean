@@ -2,7 +2,7 @@ import { Review } from '../types';
 
 const store: Record<string, Review[]> = {};
 
-jest.mock('@/features/reviews/services/tonReviews', () => ({
+jest.mock('@/features/reviews/services/nearReviews', () => ({
   getReviews: jest.fn(async (productId: string) => store[productId] || []),
   addReview: jest.fn(async (review: Review) => {
     const arr = store[review.productId] || [];

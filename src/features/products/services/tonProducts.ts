@@ -1,4 +1,4 @@
-import { getValue, setValue, listValues, removeValue } from '@/services/tonKvStore';
+import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { Product } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
 import { assertTonChain } from '@/services/chain';

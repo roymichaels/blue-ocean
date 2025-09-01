@@ -3,7 +3,7 @@ import {
   setValue,
   listValues,
   removeValue,
-} from '@/services/tonKvStore';
+} from '@/services/nearKvStore';
 import { Category } from '@/types';
 import { requireEnv } from '@/utils/appConfig';
 import { assertTonChain } from '@/services/chain';

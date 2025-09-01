@@ -10,8 +10,8 @@ import reviewAgent from '../agents/review-agent';
 import chain from '../services/chain';
 
 let listAllReviews: (() => Promise<Review[]>) | undefined;
-if (chain === 'ton') {
-  ({ listAllReviews } = require('@/features/reviews/services/tonReviews'));
+if (chain === 'near') {
+  ({ listAllReviews } = require('@/features/reviews/services/nearReviews'));
 }
 import {
   User,

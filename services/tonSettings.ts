@@ -1,6 +1,6 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { assertTonChain } from './chain';
-import { getValue, setValue, listValues } from './tonKvStore';
+import { getValue, setValue, listValues } from './nearKvStore';
 
 assertTonChain();
 import config, { getWakuBootstrapNodes, requireEnv } from '../utils/appConfig';

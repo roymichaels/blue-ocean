@@ -2,7 +2,7 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: () => 'addr_admin',
   signIn: jest.fn(),
 }));
-jest.mock('../services/tonKvStore', () => require('./tonKvMock'));
+jest.mock('../services/nearKvStore', () => require('./tonKvMock'));
 jest.mock('../services/tonSettings');
 
 import SettingsAgent from '../agents/settings-agent';

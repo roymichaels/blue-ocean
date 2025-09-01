@@ -3,7 +3,7 @@ import { setOrder, listOrders } from '../services/tonOrders';
 import { setStore, listStores } from '@/features/stores/services/tonStores';
 import { Product, Order, Store, ShippingAddress } from '../types';
 
-jest.mock('../services/tonKvStore', () => {
+jest.mock('../services/nearKvStore', () => {
   const store = new Map<string, string>();
   return {
     setValue: async (_addr: string, key: string, value: string) => {
