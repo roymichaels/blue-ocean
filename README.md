@@ -20,6 +20,22 @@ yarn start      # web
 yarn test
 ```
 
+## Design Tokens
+
+Shared design tokens live in `constants/tokens.ts`. Import `spacing`, `radius`, `colors`, `zIndex`, and `shadows` to keep styles consistent across components.
+
+```ts
+import { spacing, radius } from '../constants/tokens';
+
+const styles = StyleSheet.create({
+  button: {
+    padding: spacing.spacer16,
+    borderRadius: radius.md,
+  },
+});
+```
+
+
 ## Setup Guide
 
 1. **Install dependencies**
