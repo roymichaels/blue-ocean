@@ -1,3 +1,5 @@
+// Centralized design token definitions.
+// These provide consistent spacing, radius, color, and elevation values.
 import { Colors as darkColors } from './Colors';
 import { LightColors } from './LightColors';
 

@@ -16,6 +16,7 @@ import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
 import WishlistModal from '@/features/cart/components/WishlistModal';
 import CartService from '@/features/cart/services/cart';
+import { spacing, radius } from '../constants/tokens';
 
 interface GlobalHeaderProps {
   searchQuery?: string;
@@ -149,15 +150,15 @@ export default function GlobalHeader({
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 20,
+    paddingHorizontal: spacing.spacer16,
+    paddingTop: spacing.spacer16,
+    paddingBottom: spacing.spacer20,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.spacer16,
   },
   logo: {
     flexDirection: 'row',
@@ -166,14 +167,14 @@ const styles = StyleSheet.create({
   logoIcon: {
     width: 50,
     height: 50,
-    borderRadius: 12,
-    marginLeft: 8,
+    borderRadius: radius.lg,
+    marginLeft: spacing.spacer8,
   },
   logoImage: {
     width: 50,
     height: 50,
-    borderRadius: 12,
-    marginLeft: 8,
+    borderRadius: radius.lg,
+    marginLeft: spacing.spacer8,
   },
   logoText: {
     fontSize: 20,
@@ -182,36 +183,36 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: spacing.spacer16,
   },
   iconButton: {
     position: 'relative',
-    padding: 4,
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    padding: spacing.spacer4,
+    borderRadius: radius.full,
+    width: spacing.spacer40,
+    height: spacing.spacer40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   badge: {
     position: 'absolute',
-    top: -4,
-    start: -4,
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    top: -spacing.spacer4,
+    start: -spacing.spacer4,
+    borderRadius: radius.full,
+    minWidth: spacing.spacer20,
+    height: spacing.spacer20,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: spacing.spacer4,
   },
   badgeText: {
     fontSize: 12,
     fontWeight: 'bold',
   },
   progressContainer: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: spacing.spacer8,
+    paddingVertical: spacing.spacer4,
+    borderRadius: radius.md,
   },
   progressText: {
     fontSize: 12,
@@ -220,14 +221,14 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 25,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.spacer16,
+    paddingVertical: spacing.spacer12,
     borderWidth: 1,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    marginLeft: 12,
+    marginLeft: spacing.spacer12,
   },
 });
