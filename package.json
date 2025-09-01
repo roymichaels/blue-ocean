@@ -11,7 +11,7 @@
     "dev:web": "cross-env EXPO_PUBLIC_USE_ROUTER=0 expo start --web",
     "web:router": "cross-env EXPO_PUBLIC_USE_ROUTER=1 expo start --web",
     "build": "node scripts/app.js build",
-        "build:web": "cross-env EXPO_WEB_BUNDLER=metro EXPO_PUBLIC_USE_ROUTER=1 expo export --platform web --output-dir dist",
+    "build:web": "cross-env EXPO_WEB_BUNDLER=metro EXPO_PUBLIC_USE_ROUTER=1 expo export --platform web --output-dir dist",
     "preview": "node scripts/app.js preview",
     "docker:dev": "node scripts/app.js docker dev",
     "docker:build:web": "node scripts/app.js docker build",
@@ -166,6 +166,9 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "yarn lint"
+    ],
+    "**/*": [
+      "node scripts/check-no-ton.js"
     ]
   }
 }
