@@ -11,7 +11,7 @@ import chain from '../services/chain';
 
 let listAllReviews: (() => Promise<Review[]>) | undefined;
 if (chain === 'ton') {
-  ({ listAllReviews } = require('../services/tonReviews'));
+  ({ listAllReviews } = require('@/features/reviews/services/tonReviews'));
 }
 import {
   User,
