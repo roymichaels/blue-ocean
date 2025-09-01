@@ -38,7 +38,7 @@ import eventBus from '@/services/eventBus';
 const MoonPayButton = require('@/features/payments/components/MoonPayButton').default;
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import commonStyles from '../constants/styles';
+import commonStyles from '@/constants/styles';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useNotifications } from './NotificationContext';
 import { useLanguage } from '../contexts/LanguageContext';
