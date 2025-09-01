@@ -15,8 +15,8 @@ Use this checklist when testing private beta web builds. For each step, record t
 
 ## Wallet Setup
 
-- [ ] Connect a wallet using the TonConnect UI.
-  - Expected: wallet connects and address appears in the header.
+- [ ] Connect a NEAR wallet using the Wallet Selector UI.
+  - Expected: wallet connects and account ID appears in the header.
   - Actual:
   - Issue:
 
