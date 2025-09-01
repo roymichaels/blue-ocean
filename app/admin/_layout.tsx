@@ -12,7 +12,7 @@ export default function AdminLayout() {
         <Stack.Screen name="stores/[storeId]" />
         <Stack.Screen name="user-directory" />
         <Stack.Screen name="fees" />
-        {chain === 'near' && <Stack.Screen name="ton" />}
+        {chain === 'near' && <Stack.Screen name="near" />}
         <Stack.Screen name="compliance" />
         <Stack.Screen name="settings" />
       </Stack>

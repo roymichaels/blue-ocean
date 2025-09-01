@@ -5,7 +5,7 @@ Autonomous agents communicate over the Waku peer‑to‑peer network, keep their
 memory, and hydrate from message history on boot. Configuration such as debug logging or
 Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment variables, but
 defaults are provided for a zero‑config experience. All data is replicated via Waku topics
-and TON smart contracts; the app does not use a local SQLite database.
+and NEAR smart contracts; the app does not use a local SQLite database.
 
 See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview and [docs/routes.md](docs/routes.md) for route and role details.
 
@@ -67,21 +67,21 @@ const { tokens, colors } = useTheme();
    - **Web**: `yarn start`
    - **Mobile**: `yarn dev`
 
-4. **Configure and connect a TON wallet**
+4. **Configure and connect a NEAR wallet**
 
-   - Install a wallet such as Tonkeeper.
-   - When the app loads, tap the wallet button to open the TonConnect modal and scan the QR code or connect via a browser extension.
+   - Install a NEAR wallet such as MyNearWallet.
+   - When the app loads, tap the wallet button to sign in with your NEAR account.
 
 5. **Admin onboarding**
 
    - The wallet specified in `ADMIN_WALLET_ADDRESS` receives admin rights on first run.
    - To add more admins, open **Admin → Settings** and add additional wallet addresses or use `SettingsAgent.setAdmins()`.
 
-### TON Address Format
+### NEAR Account Format
 
-Wallet addresses must use the standard TON formatting recognized by `@ton/core`. If an invalid address is provided, the app will display an "Invalid TON address" error and refuse to store it.
+Account IDs must follow NEAR's standard format. If an invalid account is provided, the app will display an error and refuse to store it.
 
-All data is ephemeral and synchronized between peers over Waku and written to TON smart contracts when needed; no external services or local database are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
+All data is ephemeral and synchronized between peers over Waku and written to NEAR smart contracts when needed; no external services or local database are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
 
 ### Development
 
@@ -108,11 +108,11 @@ the desired values:
 | Variable | Required | Description |
 | -------- | -------- | ----------- |
 | `ADMIN_WALLET_ADDRESS` | yes | Wallet granted admin rights if no on-chain list exists. |
-| `TON_RPC_URL` | no | Primary TON RPC endpoint used for blockchain calls. Overrides tenant setting. |
-| `TON_RPC_FALLBACK_URLS` | no | Comma-separated backup RPC endpoints. Overrides tenant setting. |
+| `NEAR_RPC_URL` | no | Primary NEAR RPC endpoint used for blockchain calls. Overrides tenant setting. |
+| `NEAR_RPC_FALLBACK_URLS` | no | Comma-separated backup RPC endpoints. Overrides tenant setting. |
 | `EXPO_PUBLIC_WAKU_BOOTSTRAP` | no | Comma-separated list of Waku peers for network bootstrap. |
 | `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
-| `ENABLE_UNSAFE_TON_PRIVATE_KEY` | no | Exposes wallet private key for testing. Never use in production. |
+| `ENABLE_UNSAFE_NEAR_PRIVATE_KEY` | no | Exposes wallet private key for testing. Never use in production. |
 | `EXPO_PUBLIC_PINATA_API_KEY` | no | Pinata API key for authenticated uploads. |
 | `EXPO_PUBLIC_PINATA_SECRET_API_KEY` | no | Pinata API secret for authenticated uploads. |
 | `EXPO_PUBLIC_PINATA_JWT` | no | Pinata JWT used by the app and `scripts/pinata-upload.ts`. |
@@ -122,12 +122,12 @@ The OrderPayment factory contract address is configured by admins through the
 
 - `ADMIN_WALLET_ADDRESS` – wallet granted admin rights if no on-chain list
   exists (required)
- - `TON_RPC_URL` – primary TON RPC endpoint used for blockchain calls (optional; overrides tenant setting)
- - `TON_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional; overrides tenant setting)
+ - `NEAR_RPC_URL` – primary NEAR RPC endpoint used for blockchain calls (optional; overrides tenant setting)
+ - `NEAR_RPC_FALLBACK_URLS` – comma-separated backup RPC endpoints (optional; overrides tenant setting)
 - `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default
   `false`)
 - `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional override)
-- `ENABLE_UNSAFE_TON_PRIVATE_KEY` – expose wallet private key for testing
+- `ENABLE_UNSAFE_NEAR_PRIVATE_KEY` – expose wallet private key for testing
   (`true`/`false`, default `false`; ignored in production builds)
 - `EXPO_PUBLIC_PINATA_API_KEY` – Pinata API key for uploads (optional)
 - `EXPO_PUBLIC_PINATA_SECRET_API_KEY` – Pinata secret API key for uploads (optional)
@@ -137,7 +137,7 @@ These values are read at build time and cannot be changed from the UI.
 
 ### Secure Key Management
 
-Store sensitive values such as `ADMIN_WALLET_ADDRESS` and `TON_RPC_URL` in a
+Store sensitive values such as `ADMIN_WALLET_ADDRESS` and `NEAR_RPC_URL` in a
 dedicated secrets manager (e.g., AWS Secrets Manager, Hashicorp Vault). Inject
 them as environment variables at runtime; the app will throw on startup if
 required keys are missing. The OrderPayment factory address is managed via the
@@ -159,39 +159,26 @@ bootstrap nodes. Developers can override this by setting
 comma‑separated list of multiaddrs. Providing an empty value disables Waku
 connectivity entirely.
 
-### TON Smart Contracts
 
-Smart contracts written in Tact live in `contracts/ton`. The helper scripts in
-`scripts/` use `@tact-lang/compiler` for compiling contracts and `ton-core` for
-deployment. No TON-specific environment variables are required; the deploy
-script prompts for credentials or accepts them as CLI arguments.
+### NEAR Smart Contracts
 
-Compile all contracts with:
+Smart contracts for NEAR live in `contracts/marketplace` and are built with `near-sdk`. Deployment scripts prompt for credentials or accept them as CLI arguments.
+
+Compile the contracts with:
 
 ```sh
-yarn build:ton
-# or
-yarn ton:build
+yarn build:contract
 ```
 
-Compiled `.boc` files are written to `contracts/ton/build`.
+The resulting WASM files are output to `contracts/marketplace/res`.
 
-To deploy a contract, pass the wallet mnemonic and (optionally) an RPC API key
-as CLI arguments or via stdin when prompted:
+To deploy a contract, pass the account ID and wallet mnemonic (and optionally an RPC endpoint):
 
 ```sh
-yarn deploy:ton <contract-name> --mnemonic "<seed phrase>" --api-key "<key>"
-# or
-yarn ton:deploy <contract-name> --mnemonic "<seed phrase>" --api-key "<key>"
+yarn deploy:contract <account-id> --mnemonic "<seed phrase>" --endpoint "<rpc-url>"
 ```
 
-The script rotates through a list of public RPC endpoints and falls back on
-the next one if a request fails. Use `--endpoint <url>` to override the RPC
-endpoint manually.
-
-Replace `<contract-name>` with the name of the Tact file (without extension).
-The script derives the contract address, logs it, and writes it to
-`constants/tonAddresses.json`. Start the Expo app normally with `yarn dev`.
+The script derives the contract address, logs it, and updates configuration. Start the Expo app normally with `yarn dev`.
 
 ### Credit Card Checkout
 
@@ -242,9 +229,9 @@ authentication state persists across reloads on every platform.
 
 ### Peer-to-Peer Synchronization
 
-Settings, users, products and orders are now managed through TON-based
-services rather than Waku. Each domain has a small agent that reads and writes
-state via its corresponding TON service, keeping a local in-memory cache for
+Settings, users, products and orders are managed through NEAR-based
+services. Each domain has a small agent that reads and writes
+state via its corresponding NEAR service, keeping a local in-memory cache for
 fast access.
 
 Waku is only used for lightweight messaging such as chat and notification
@@ -283,14 +270,6 @@ Export the web build using Expo:
 
 ```sh
 yarn build:web
-```
-
-The export step copies `public/tonconnect-manifest.json` into the `dist` folder
-so wallets can load it from `/tonconnect-manifest.json` in production. After
-deploying the static build, verify the manifest is accessible:
-
-```sh
-curl https://<your-site>/tonconnect-manifest.json
 ```
 
 ### IPFS Deployment Guide
@@ -415,7 +394,7 @@ Refer to the Expo Stripe documentation for full setup details.
 ## Legacy
 
 The previous `supabase/` directory and its SQL schema have been removed.
-All data is handled in-memory, synchronized over Waku, and persisted to TON when necessary; no local database is used.
+All data is handled in-memory, synchronized over Waku, and persisted to NEAR when necessary; no local database is used.
 
 ## License
 
