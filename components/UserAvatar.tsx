@@ -12,16 +12,16 @@ import {
 } from 'react-native';
 import { User, LogOut, Settings, Shield, Globe, Moon, Sun } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { router } from 'expo-router';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
-import ConfirmationModal from './ConfirmationModal';
-import chain from '../services/chain';
+import ConfirmationModal from '@/components/ConfirmationModal';
+import chain from '@/services/chain';
 
 let listStores: (() => Promise<any[]>) | undefined;
 if (chain === 'ton') {
-  ({ listStores } = require('../services/tonStores'));
+  ({ listStores } = require('@/features/stores/services/tonStores'));
 }
 
 const { width } = Dimensions.get('window');

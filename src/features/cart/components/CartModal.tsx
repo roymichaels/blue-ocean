@@ -32,7 +32,7 @@ let getStore:
   | ((storeId: string, id: string) => Promise<Store | null>)
   | undefined;
 if (chain === 'ton') {
-  ({ getStore } = require('@/services/tonStores'));
+  ({ getStore } = require('@/features/stores/services/tonStores'));
 }
 import OrderService from '@/services/orders';
 import eventBus from '@/services/eventBus';

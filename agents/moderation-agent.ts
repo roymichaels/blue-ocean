@@ -1,8 +1,12 @@
-import { uuid } from '../utils/uuid';
-import { Report } from '../types';
-import { assertTonChain } from '../services/chain';
-import { addReport, listReports, removeReport } from '../services/tonReports';
-import ensureTonWallet from '../utils/ensureTonWallet';
+import { uuid } from '@/utils/uuid';
+import { Report } from '@/types';
+import { assertTonChain } from '@/services/chain';
+import {
+  addReport,
+  listReports,
+  removeReport,
+} from '@/features/reviews/services/tonReports';
+import ensureTonWallet from '@/utils/ensureTonWallet';
 
 assertTonChain();
 

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../contexts/ThemeContext';
-import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
-import chain from '../../services/chain';
-import { User } from '../../types';
+import { useTheme } from '@/contexts/ThemeContext';
+import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
+import chain from '@/services/chain';
+import { User } from '@/types';
 
 let listUsers: (() => Promise<User[]>) | undefined;
 if (chain === 'ton') {
-  ({ listUsers } = require('../../services/tonUsers'));
+  ({ listUsers } = require('@/features/auth/services/tonUsers'));
 }
 
 export default function UserDirectory() {

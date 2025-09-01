@@ -8,15 +8,15 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import SmartImage from './SmartImage';
+import SmartImage from '@/components/SmartImage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '../contexts/ThemeContext';
-import { useAppInfo } from '../contexts/AppInfoContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import { spacing, typography } from '../constants/styles';
-import Button from './ui/Button';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAppInfo } from '@/contexts/AppInfoContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { spacing, typography } from '@/constants/styles';
+import Button from '@/components/ui/Button';
 
 const AGE_VERIFICATION_KEY = 'age_verified';
 

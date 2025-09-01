@@ -14,24 +14,24 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, Heart } from 'lucide-react-native';
-import DatabaseService from '../../services/database';
-import chain from '../../services/chain';
-import { Product, Subcategory, Category, PricingTier, Store } from '../../types';
+import DatabaseService from '@/services/database';
+import chain from '@/services/chain';
+import { Product, Subcategory, Category, PricingTier, Store } from '@/types';
 
 let listStores: (() => Promise<Store[]>) | undefined;
 if (chain === 'ton') {
-  ({ listStores } = require('../../services/tonStores'));
+  ({ listStores } = require('@/features/stores/services/tonStores'));
 }
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useCurrency } from '../../contexts/CurrencyContext';
-import MediaUploader from '../../components/MediaUploader';
-import Spinner from '../../components/ui/Spinner';
-import InfoModal from '../../components/InfoModal';
-import ConfirmationModal from '../../components/ConfirmationModal';
-import commonStyles from '../../constants/styles';
-import Card from '../../components/Card';
-import SmartImage from '../../components/SmartImage';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import MediaUploader from '@/components/MediaUploader';
+import Spinner from '@/components/ui/Spinner';
+import InfoModal from '@/components/InfoModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
+import commonStyles from '@/constants/styles';
+import Card from '@/components/Card';
+import SmartImage from '@/components/SmartImage';
 
 
 

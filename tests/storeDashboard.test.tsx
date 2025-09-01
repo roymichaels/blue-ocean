@@ -17,7 +17,7 @@ jest.mock('../contexts/ThemeContext', () => ({
   }),
 }));
 
-jest.mock('../services/tonStores', () => ({ getStore: jest.fn() }));
+jest.mock('@/features/stores/services/tonStores', () => ({ getStore: jest.fn() }));
 jest.mock('@/features/products/services/tonProducts', () => ({ listProducts: jest.fn() }));
 
 jest.mock('@/features/auth/AuthContext', () => ({ useAuth: jest.fn() }));
@@ -29,7 +29,7 @@ jest.mock('../components/OrderRevenueMetrics', () => ({
 
 describe('StoreDashboardScreen', () => {
   const { useLocalSearchParams, router } = require('expo-router');
-  const { getStore } = require('../services/tonStores');
+  const { getStore } = require('@/features/stores/services/tonStores');
   const { listProducts } = require('@/features/products/services/tonProducts');
   const { useAuth } = require('@/features/auth/AuthContext');
 

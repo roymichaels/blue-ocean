@@ -1,12 +1,17 @@
-import { User } from '../types';
-import { assertTonChain } from '../services/chain';
-import { getUser, setUser, listUsers, removeUser } from '../services/tonUsers';
-import { getPublicKeyHex } from '../services/localIdentity';
+import { User } from '@/types';
+import { assertTonChain } from '@/services/chain';
+import {
+  getUser,
+  setUser,
+  listUsers,
+  removeUser,
+} from '@/features/auth/services/tonUsers';
+import { getPublicKeyHex } from '@/services/localIdentity';
 import SettingsAgent from './settings-agent';
-import ensureTonWallet from '../utils/ensureTonWallet';
-import validateNearAddress from '../utils/validateNearAddress';
-import { verifyMessageSignature } from '../utils/verifyMessageSignature';
-import type { WakuMessage } from '../types/waku';
+import ensureTonWallet from '@/utils/ensureTonWallet';
+import validateNearAddress from '@/utils/validateNearAddress';
+import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
+import type { WakuMessage } from '@/types/waku';
 
 assertTonChain();
 

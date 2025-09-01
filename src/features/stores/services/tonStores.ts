@@ -1,7 +1,12 @@
-import { getValue, setValue, listValues, removeValue } from './tonKvStore';
-import { Store } from '../types';
-import { requireEnv } from '../utils/appConfig';
-import { assertTonChain } from './chain';
+import {
+  getValue,
+  setValue,
+  listValues,
+  removeValue,
+} from '@/services/tonKvStore';
+import { Store } from '@/types';
+import { requireEnv } from '@/utils/appConfig';
+import { assertTonChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 
 assertTonChain();
@@ -16,7 +21,7 @@ function ensureSeed() {
   try {
     // Attempt to load seed data when running without TON. JSON imports are supported by Metro/Web.
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const data = require('../assets/seed/seed-data.json');
+    const data = require('@/assets/seed/seed-data.json');
     if (data?.stores) {
       let hasAlpha = false;
       for (const s of data.stores as Store[]) {

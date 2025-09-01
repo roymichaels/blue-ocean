@@ -23,26 +23,26 @@ import {
   Filter,
   ArrowUpDown,
 } from 'lucide-react-native';
-import DatabaseService from '../../services/database';
-import { Product, Category, HeroBanner } from '../../types';
-import chain from '../../services/chain';
+import DatabaseService from '@/services/database';
+import { Product, Category, HeroBanner } from '@/types';
+import chain from '@/services/chain';
 
 let listCategories: (() => Promise<Category[]>) | undefined;
 if (chain === 'ton') {
-  ({ listCategories } = require('../../services/tonCategories'));
+  ({ listCategories } = require('@/features/products/services/tonCategories'));
 }
 import { useAuth } from '@/features/auth/AuthContext';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import GlobalHeader from '../../components/GlobalHeader';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import GlobalHeader from '@/components/GlobalHeader';
 import ProductCard from '@/features/products/components/ProductCard';
-import Spinner from '../../components/ui/Spinner';
-import EmptyState from '../../components/ui/EmptyState';
-import BannerFormModal from '../../components/BannerFormModal';
+import Spinner from '@/components/ui/Spinner';
+import EmptyState from '@/components/ui/EmptyState';
+import BannerFormModal from '@/components/BannerFormModal';
 import CartModal from '@/features/cart/components/CartModal';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
-import SmartImage from '../../components/SmartImage';
-import InfoModal from '../../components/InfoModal';
+import SmartImage from '@/components/SmartImage';
+import InfoModal from '@/components/InfoModal';
 
 const { width } = Dimensions.get('window');
 const BANNER_WIDTH = width - 32;

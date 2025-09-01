@@ -4,7 +4,7 @@ import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup
 import DatabaseService from '@/services/database';
 import cartAgent from '@/agents/cart-agent';
 import eventBus from '@/services/eventBus';
-import nearAuth from '@/features/auth/services/nearAuth';
+import nearAuth from '../../auth/services/nearAuth';
  
 
 const CART_STORAGE_KEY = 'cart_items';

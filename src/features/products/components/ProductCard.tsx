@@ -13,10 +13,10 @@ import { router } from 'expo-router';
 import { Product, PricingTier } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import CartService from '@/features/cart/services/cart';
+import CartService from '../../cart/services/cart';
 import DatabaseService from '@/services/database';
 import MediaService from '@/services/media';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { useAccountId } from '../../auth/services/nearAuth';
 import productsAgent from '@/agents/products-agent';
 import Card from '@/components/Card';
 

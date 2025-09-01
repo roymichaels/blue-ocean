@@ -1,5 +1,5 @@
-import { Product } from '../types';
-import { assertTonChain } from '../services/chain';
+import { Product } from '@/types';
+import { assertTonChain } from '@/services/chain';
 import {
   setProduct,
   getProduct,
@@ -8,8 +8,8 @@ import {
   getProducts,
   getVersion,
 } from '@/features/products/services/tonProducts';
-import { getStore } from '../services/tonStores';
-import ensureTonWallet from '../utils/ensureTonWallet';
+import { getStore } from '@/features/stores/services/tonStores';
+import ensureTonWallet from '@/utils/ensureTonWallet';
 import {
   LightNode,
   createLightNode,
@@ -20,14 +20,14 @@ import {
   utf8ToBytes,
   bytesToUtf8,
 } from '@waku/sdk';
-import { getWakuBootstrapNodes } from '../utils/appConfig';
-import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
+import { getWakuBootstrapNodes } from '@/utils/appConfig';
+import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
-import { getPrivateKey, getPublicKeyHex } from '../services/localIdentity';
+import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
 import { sign } from '@noble/ed25519';
-import type { WakuMessage } from '../types/waku';
-import { errorLog } from '../utils/logger';
-import { buildTopic } from '../utils/wakuTopics';
+import type { WakuMessage } from '@/types/waku';
+import { errorLog } from '@/utils/logger';
+import { buildTopic } from '@/utils/wakuTopics';
 
 import {
   getProductCache,

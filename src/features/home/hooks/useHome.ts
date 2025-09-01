@@ -5,7 +5,7 @@ import { Product, Category, HeroBanner } from '@/types';
 
 let listCategories: (() => Promise<Category[]>) | undefined;
 if (chain === 'ton') {
-  ({ listCategories } = require('@/services/tonCategories'));
+  ({ listCategories } = require('@/features/products/services/tonCategories'));
 }
 
 export function useHome() {
