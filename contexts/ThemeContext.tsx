@@ -1,7 +1,7 @@
 import { errorLog } from '@/utils/logger';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { tokens as darkTokens, lightTokens, Tokens } from '../constants/tokens';
+import { tokens as darkTokens, lightTokens, Tokens } from '@/constants/tokens';
 import { useAppInfo } from './AppInfoContext';
 
 const THEME_STORAGE_KEY = 'app_theme';

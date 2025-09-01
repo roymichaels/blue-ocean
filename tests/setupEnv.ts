@@ -23,7 +23,7 @@ insertConfig({
 
 jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
 jest.mock('../services/nearSettings');
-const { loadTenantSettings } = require('../constants/tenant');
+const { loadTenantSettings } = require('@/constants/tenant');
 
 var __DEV__ = false;
 

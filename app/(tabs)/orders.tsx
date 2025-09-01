@@ -18,7 +18,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
-import commonStyles from '../../constants/styles';
+import commonStyles from '@/constants/styles';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 

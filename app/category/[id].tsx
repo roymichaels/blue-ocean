@@ -18,7 +18,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
 import Spinner from '../../components/ui/Spinner';
-import commonStyles from '../../constants/styles';
+import commonStyles from '@/constants/styles';
 
 
 

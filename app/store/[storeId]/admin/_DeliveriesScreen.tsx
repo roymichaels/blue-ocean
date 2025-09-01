@@ -19,7 +19,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { DeliveryJob, User } from '../../../../types';
-import commonStyles from '../../../../constants/styles';
+import commonStyles from '@/constants/styles';
 import SmartImage from '../../../../components/SmartImage';
 
 export default function AdminDeliveriesScreen() {
