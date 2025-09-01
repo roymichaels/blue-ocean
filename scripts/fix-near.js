@@ -1,5 +1,5 @@
 /*
-  Ensures consistent NEAR deps across the monorepo and verifies hoisting.
+  Synchronizes NEAR dependencies across the repo and verifies hoisting.
   - Sets near-api-js to 6.2.6 if present
   - Sets @near-wallet-selector/* to 9.3.0 if present
   - Ensures root package.json resolutions include these pins
