@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, CircleCheck as CheckCircle, Circle as XCircle, Clock, User, Mail, FileText, Calendar } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
@@ -26,11 +26,12 @@ export default function KycApprovalsScreen() {
   const [loading, setLoading] = useState(true);
   const { isAdmin, isDriver, user } = useAuth();
   const { colors } = useTheme();
+  const { replace, back } = useAppRouter();
 
   useEffect(() => {
     if (!isAdmin && !isDriver) {
       Alert.alert('גישה מוגבלת', 'רק מנהלים יכולים לגשת לדף זה', [
-        { text: 'אישור', onPress: () => router.replace('/') }
+        { text: 'אישור', onPress: () => replace('/') }
       ]);
       return;
     }
@@ -107,7 +108,7 @@ export default function KycApprovalsScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אישורי KYC</Text>
@@ -121,7 +122,7 @@ export default function KycApprovalsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אישורי KYC</Text>

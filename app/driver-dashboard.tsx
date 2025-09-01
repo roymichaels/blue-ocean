@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import {
   ArrowLeft,
   Truck,
@@ -30,6 +31,7 @@ import commonStyles from '@/constants/styles';
 
 
 export default function DriverDashboardScreen() {
+  const { back, replace } = useAppRouter();
   const { user, isDriver, isAdmin } = useAuth();
   const { colors } = useTheme();
   const [jobs, setJobs] = useState<DeliveryJob[]>([]);
@@ -41,15 +43,15 @@ export default function DriverDashboardScreen() {
       typeof (router as any).canGoBack === 'function' &&
       (router as any).canGoBack();
     if (canGoBack) {
-      router.back();
+      back();
     } else {
-      router.replace('/(tabs)');
+      replace('/(tabs)');
     }
   };
 
   useEffect(() => {
     if (!isDriver && !isAdmin) {
-      router.replace('/');
+      replace('/');
       return;
     }
     loadJobs();

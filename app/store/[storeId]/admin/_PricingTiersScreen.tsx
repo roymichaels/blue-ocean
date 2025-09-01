@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import {
   ArrowLeft,
   Plus,
@@ -29,6 +29,7 @@ import PricingTierFormModal from '@/features/products/components/PricingTierForm
 import Card from '../../../../components/Card';
 
 export default function PricingTiersScreen() {
+  const { replace, back } = useAppRouter();
   const { isAdmin, isDriver } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
@@ -46,7 +47,7 @@ export default function PricingTiersScreen() {
 
   useEffect(() => {
     if (!isAdmin && !isDriver) {
-      router.replace('/');
+      replace('/');
       return;
     }
     loadPricingTiers();
@@ -164,7 +165,7 @@ export default function PricingTiersScreen() {
         <View
           style={[styles.header, { borderBottomColor: colors.border.primary }]}
         >
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
@@ -192,7 +193,7 @@ export default function PricingTiersScreen() {
       <View
         style={[styles.header, { borderBottomColor: colors.border.primary }]}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>

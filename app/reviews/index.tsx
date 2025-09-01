@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import DatabaseService from '../../services/database';
 import { Product, Review, Order } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -47,6 +48,7 @@ export default function ReviewsScreen() {
   const [sortBy, setSortBy] = useState<'newest' | 'highest' | 'lowest'>('newest');
   const { isLoggedIn, isAdmin, user } = useAuth();
   const { colors } = useTheme();
+  const { push, back, replace } = useAppRouter();
 
   const goBack = () => {
     // If there's no history, navigate home
@@ -54,9 +56,9 @@ export default function ReviewsScreen() {
       typeof (router as any).canGoBack === 'function' &&
       (router as any).canGoBack();
     if (canGoBack) {
-      router.back();
+      back();
     } else {
-      router.replace('/(tabs)');
+      replace('/(tabs)');
     }
   };
 
@@ -298,7 +300,7 @@ export default function ReviewsScreen() {
       <View style={styles.reviewHeader}>
         <TouchableOpacity 
           style={styles.productInfo}
-          onPress={() => router.push(`/product/${item.productId}`)}
+          onPress={() => push(`/product/${item.productId}`)}
         >
           <SmartImage
             uri={item.productImage}

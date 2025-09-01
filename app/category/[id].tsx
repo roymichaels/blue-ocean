@@ -10,7 +10,8 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
@@ -27,6 +28,7 @@ const validateParams = createValidateParams(z.object({ id: z.string() }));
 
 
 export default function CategoryScreen() {
+  const { push, back } = useAppRouter();
   const params = validateParams(useLocalSearchParams());
   const id = params.success ? params.data.id : undefined;
   const [category, setCategory] = useState<Category | null>(null);
@@ -199,7 +201,7 @@ export default function CategoryScreen() {
         backgroundColor: colors.surface.primary,
         borderColor: colors.border.primary 
       }]}
-      onPress={() => router.push(`/subcategory/${item.id}`)}
+      onPress={() => push(`/subcategory/${item.id}`)}
     >
       <View style={[styles.subcategoryIcon, { 
         backgroundColor: colors.interactive.secondary,
@@ -229,7 +231,7 @@ export default function CategoryScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
@@ -244,7 +246,7 @@ export default function CategoryScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>קטגוריה לא נמצאה</Text>
@@ -257,7 +259,7 @@ export default function CategoryScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{category.name}</Text>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { useTheme } from '@/contexts/ThemeContext';
 import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
 import chain from '@/services/chain';
@@ -15,6 +15,7 @@ if (chain === 'near') {
 
 export default function AdminStores() {
   useRequirePlatformAdmin();
+  const { push } = useAppRouter();
   const { colors } = useTheme();
   const [stores, setStores] = useState<Store[]>([]);
 
@@ -27,7 +28,7 @@ export default function AdminStores() {
   const items: AdminListItem[] = stores.map((s) => ({
     id: s.id,
     title: s.name || s.id,
-    onPress: () => router.push(`/admin/stores/${s.id}`),
+    onPress: () => push(`/admin/stores/${s.id}`),
   }));
 
   return (

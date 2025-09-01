@@ -9,7 +9,7 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import {
   Settings,
   User,
@@ -63,6 +63,7 @@ export default function ProfileScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const { openAuthModal } = useAuthModal();
   const [storeId, setStoreId] = useState<string | null>(null);
+  const { push, replace } = useAppRouter();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -150,7 +151,7 @@ export default function ProfileScreen() {
     try {
       await logout();
       // Navigate to home page after logout
-      router.replace('/');
+      replace('/');
       setInfoModal({
         visible: true,
         title: 'התנתקות',
@@ -306,7 +307,7 @@ export default function ProfileScreen() {
                 },
               ]}
               onPress={() =>
-                storeId && router.push(`/store/${storeId}/admin/dashboard`)
+                storeId && push(`/store/${storeId}/admin/dashboard`)
               }
             >
               <View style={styles.menuItemContent}>
@@ -325,7 +326,7 @@ export default function ProfileScreen() {
                 },
               ]}
               onPress={() =>
-                storeId && router.push(`/store/${storeId}/admin/deliveries`)
+                storeId && push(`/store/${storeId}/admin/deliveries`)
               }
             >
               <View style={styles.menuItemContent}>
@@ -344,7 +345,7 @@ export default function ProfileScreen() {
                     borderColor: colors.border.primary,
                   },
                 ]}
-                onPress={() => router.push('/kyc')}
+                onPress={() => push('/kyc')}
               >
                 <View style={styles.menuItemContent}>
                   <Shield size={24} color={colors.gold} />
@@ -371,7 +372,7 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => router.push('/driver-dashboard')}
+              onPress={() => push('/driver-dashboard')}
             >
               <View style={styles.menuItemContent}>
                 <Truck size={24} color={colors.gold} />
@@ -397,7 +398,7 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => router.push('/(tabs)/orders')}
+              onPress={() => push('/(tabs)/orders')}
             >
               <View style={styles.menuItemContent}>
                 <Text style={[styles.menuText, { color: colors.text.primary }]}>

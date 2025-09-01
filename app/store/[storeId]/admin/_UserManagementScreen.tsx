@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, Search, User, Mail, Calendar, Shield, UserCheck, UserX, Filter, X, Save, ChevronDown } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
@@ -38,6 +38,7 @@ export default function UserManagementScreen() {
   const [filterKyc, setFilterKyc] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
   
+  const { replace, back } = useAppRouter();
   const { isAdmin, isDriver, user } = useAuth();
   const { colors } = useTheme();
   const { showNotification } = useNotifications();
@@ -45,7 +46,7 @@ export default function UserManagementScreen() {
   useEffect(() => {
     if (!isAdmin && !isDriver) {
       Alert.alert('גישה מוגבלת', 'רק מנהלים יכולים לגשת לדף זה', [
-        { text: 'אישור', onPress: () => router.replace('/') }
+        { text: 'אישור', onPress: () => replace('/') }
       ]);
       return;
     }
@@ -297,7 +298,7 @@ export default function UserManagementScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ניהול משתמשים</Text>
@@ -311,7 +312,7 @@ export default function UserManagementScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ניהול משתמשים</Text>
