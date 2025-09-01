@@ -1,11 +1,16 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function StoresScreen() {
+  const { colors } = useTheme();
   return (
-    <View style={styles.container}>
-      <Text>Stores</Text>
-    </View>
+    <ErrorBoundary>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text.primary }}>Stores</Text>
+      </View>
+    </ErrorBoundary>
   );
 }
 
