@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Video as LucideIcon } from 'lucide-react-native';
+import type { LucideProps } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import Button from './Button';
 
+type IconComponent = React.ComponentType<LucideProps>;
+
 interface EmptyStateProps {
-  icon: typeof LucideIcon;
+  icon: IconComponent;
   title: string;
   message: string;
   actionText?: string;
