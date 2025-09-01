@@ -1,5 +1,4 @@
 import { Stack } from 'expo-router';
-import chain from '../../services/chain';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function AdminLayout() {
@@ -12,7 +11,6 @@ export default function AdminLayout() {
         <Stack.Screen name="stores/[storeId]" />
         <Stack.Screen name="user-directory" />
         <Stack.Screen name="fees" />
-        {chain === 'near' && <Stack.Screen name="ton" />}
         <Stack.Screen name="compliance" />
         <Stack.Screen name="settings" />
       </Stack>
