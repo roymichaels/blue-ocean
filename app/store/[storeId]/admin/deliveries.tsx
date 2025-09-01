@@ -2,7 +2,12 @@ import React, { Suspense } from 'react';
 import Spinner from '../../../../components/ui/Spinner';
 import RequireWallet from '../../../../components/RequireWallet';
 
-const DeliveriesScreen = React.lazy(() => import('./_DeliveriesScreen'));
+// Lazy-load the deliveries management screen to reduce the main bundle
+const DeliveriesScreen = React.lazy(() =>
+  import(
+    /* webpackChunkName: "admin-deliveries" */ './_DeliveriesScreen'
+  )
+);
 
 export default function DeliveriesRoute(props: any) {
   return (
