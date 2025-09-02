@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
 import { Plus, Pencil } from 'lucide-react-native';
 import { HeroBanner } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -7,6 +7,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import useAppRouter from 'hooks/useAppRouter';
 import EmptyState from '@/shared/ui/EmptyState';
 import Spinner from '@/shared/ui/Spinner';
+import Text from '@/shared/ui/Text';
+import Heading from '@/shared/ui/Heading';
 
 const SmartImage = lazy(() => import('@/components/SmartImage'));
 
@@ -65,22 +67,26 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
           <View style={styles.heroContent}>
             {item.discount ? (
               <Text
-                style={[
-                  styles.heroDiscount,
-                  {
-                    color: colors.text.inverse,
-                    backgroundColor: colors.gold,
-                  },
-                ]}
+                variant="xs"
+                weight="600"
+                style={{
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 8,
+                  alignSelf: 'flex-start',
+                  marginBottom: 8,
+                  color: colors.text.inverse,
+                  backgroundColor: colors.gold,
+                }}
               >
                 {item.discount} הנחה
               </Text>
             ) : null}
-            <Text style={[styles.heroTitle, { color: colors.gold }]}>
+            <Heading size="lg" style={{ color: colors.gold }}>
               {item.title}
-            </Text>
+            </Heading>
 
-            <Text style={[styles.heroSubtitle, { color: colors.gold }]}>
+            <Text variant="sm" style={{ marginTop: 4, color: colors.gold }}>
               {item.subtitle}
             </Text>
           </View>
@@ -112,7 +118,11 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
             onPress={onAddBanner}
           >
             <Plus size={20} color={colors.text.inverse} />
-            <Text style={[styles.addBannerText, { color: colors.text.inverse }]}>
+            <Text
+              variant="sm"
+              weight="600"
+              style={{ marginStart: 8, color: colors.text.inverse }}
+            >
               {t('banner.addBanner')}
             </Text>
           </TouchableOpacity>
@@ -184,10 +194,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 12,
   },
-  addBannerText: {
-    marginStart: 8,
-    fontWeight: '600',
-  },
   bannerScrollContent: { paddingHorizontal: 16 },
   heroBanner: { marginRight: 16, position: 'relative' },
   bannerTouchable: { borderRadius: 12, overflow: 'hidden' },
@@ -201,17 +207,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   heroContent: { padding: 16 },
-  heroDiscount: {
-    fontSize: 12,
-    fontWeight: '600',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  heroTitle: { fontSize: 18, fontWeight: '700' },
-  heroSubtitle: { fontSize: 14, marginTop: 4 },
+  heroDiscount: {},
+  heroTitle: {},
+  heroSubtitle: {},
   bannerIndicators: {
     flexDirection: 'row',
     justifyContent: 'center',
