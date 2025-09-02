@@ -57,6 +57,29 @@ module.exports = [
       ],
     },
   },
+  // Prevent tabs from importing services directly
+  {
+    files: ['app/\\(tabs\\)/**/*.ts', 'app/\\(tabs\\)/**/*.tsx'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        project: './tsconfig.json',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['@/services/**'],
+        },
+      ],
+    },
+  },
   // Non type-aware rules for tests
   {
     files: ['tests/**/*.ts', 'tests/**/*.tsx'],
