@@ -585,7 +585,7 @@ export default function HomeScreen() {
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               {t('home.categories')}
             </Text>
-            <TouchableOpacity onPress={() => push('/(tabs)/categories')}>
+            <TouchableOpacity onPress={() => push('/categories')}>
               <Text style={[styles.seeAll, { color: colors.gold }]}>
                 {t('common.viewAll')}
               </Text>

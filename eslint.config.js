@@ -21,6 +21,13 @@ module.exports = [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='href'][value.value=/\\(tabs\\)/]",
+          message: "Use '/' or named routes instead of '/(tabs)/' in hrefs.",
+        },
+      ],
     },
   },
   // Feature boundaries

@@ -189,7 +189,7 @@ export default function OrdersScreen() {
         title={t('orders.emptyTitle') as string}
         message={t('orders.emptyMessage') as string}
         actionText={t('orders.shopNow') as string}
-        onAction={() => push('/(tabs)')}
+        onAction={() => push('/')}
       />
     ) : (
       <EmptyState

@@ -124,12 +124,12 @@ export default function UserAvatar() {
 
   const handleProfile = () => {
     hideDropdown();
-    router.push('/(tabs)/profile');
+    router.push('/profile');
   };
 
   const handleSettings = () => {
     hideDropdown();
-    router.push('/(tabs)/profile');
+    router.push('/profile');
   };
 
   const handleLanguageSwitch = async () => {

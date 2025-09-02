@@ -1030,7 +1030,7 @@ export default function SubcategoryScreen() {
                 }]}
                 onPress={() => {
                   setShowCategorySelector(false);
-                  push('/(tabs)/categories');
+                  push('/categories');
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>

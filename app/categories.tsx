@@ -5,7 +5,7 @@ export default function CategoriesAlias() {
   // Web-safe alias so navigating to '/categories' mounts the Tabs group child
   return (
     <ErrorBoundary>
-      <Redirect href="/(tabs)/categories" />
+      <Redirect href="/categories" />
     </ErrorBoundary>
   );
 }
