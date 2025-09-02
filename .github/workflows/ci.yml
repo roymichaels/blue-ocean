@@ -27,6 +27,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
       - run: yarn install --frozen-lockfile
+      - run: npx playwright install --with-deps chromium
       - run: yarn lint
       - run: yarn typecheck
       - run: yarn test

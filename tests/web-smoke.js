@@ -1,8 +1,9 @@
 const { spawn } = require('child_process');
+const { chromium } = require('playwright');
 
 const PORT = 4173;
 const URL = `http://localhost:${PORT}/`;
-const MARKER = '<div id="root">';
+const MARKER = '[data-testid="home-root"]';
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -13,14 +14,14 @@ async function fetchWithRetry(retries = 20) {
     try {
       const res = await fetch(URL);
       if (res.status === 200) {
-        return res;
+        return;
       }
     } catch (err) {
       // ignore and retry
     }
     await wait(500);
   }
-  throw new Error('Unable to fetch index');
+  throw new Error('Unable to reach server');
 }
 
 async function main() {
@@ -29,12 +30,13 @@ async function main() {
   });
 
   try {
-    const res = await fetchWithRetry();
-    const html = await res.text();
-    if (!html.includes(MARKER)) {
-      throw new Error('DOM marker not found');
-    }
+    await fetchWithRetry();
+    const browser = await chromium.launch();
+    const page = await browser.newPage();
+    await page.goto(URL);
+    await page.waitForSelector(MARKER, { timeout: 5000 });
     console.log('Web smoke test passed');
+    await browser.close();
   } catch (err) {
     console.error(err);
     process.exitCode = 1;

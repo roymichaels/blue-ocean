@@ -237,6 +237,7 @@ function HomeScreenContent() {
 
   return (
     <SafeAreaView
+      testID="home-root"
       style={[styles.container, { backgroundColor: colors.background }]}
     >
     <HomeHeader />
