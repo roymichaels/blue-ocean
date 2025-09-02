@@ -6,7 +6,7 @@ import useAppRouter from 'hooks/useAppRouter';
 import { Star, ArrowLeft } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import Spinner from '../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import ordersAgent from '../../agents/orders-agent';
 import reviewAgent from '../../agents/review-agent';
 import { Order, Review } from '../../types';

@@ -37,7 +37,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
-import Spinner from '../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import MediaService from '../../services/media';
 import { useAccountId } from '@/features/auth/services/nearAuth';
 import chatAgent from '../../agents/chat-agent';

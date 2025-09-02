@@ -19,7 +19,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
-import Spinner from '../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import AppShell from '../../components/layout/AppShell';
 
 export default function CategoriesScreen() {

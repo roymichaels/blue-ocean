@@ -20,7 +20,7 @@ import { Category, Subcategory } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
-import Spinner from '../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import commonStyles from '@/constants/styles';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));

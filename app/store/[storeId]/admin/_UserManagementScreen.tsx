@@ -20,7 +20,7 @@ import DatabaseService from '../../../../services/database';
 import { User as UserType, CustomerTier, UserRole } from '../../../../types';
 import { useNotifications } from '../../../../components/NotificationContext';
 import commonStyles from '@/constants/styles';
-import Spinner from '../../../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 
 export default function UserManagementScreen() {
   const [users, setUsers] = useState<UserType[]>([]);

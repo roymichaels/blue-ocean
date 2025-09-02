@@ -66,7 +66,7 @@ jest.mock('../agents/moderation-agent', () => ({
 jest.mock('../agents/products-agent', () => ({ remove: jest.fn() }));
 
 jest.mock('../components/InfoModal', () => () => null);
-jest.mock('../components/ui/Spinner', () => () => null);
+jest.mock('@/shared/ui/Spinner', () => () => null);
 
 // minimal mocks for unused components
 jest.mock('@/features/products/components/ProductCard', () => ({ __esModule: true, default: () => null }));

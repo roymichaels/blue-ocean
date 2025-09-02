@@ -14,7 +14,7 @@ import OrderService from '../../services/orders';
 import { Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import AppShell from '../../components/layout/AppShell';
-import EmptyState from '../../components/ui/EmptyState';
+import EmptyState from '@/shared/ui/EmptyState';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';

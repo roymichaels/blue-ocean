@@ -1,6 +1,6 @@
 import React from 'react';
 import { FlatList, View } from 'react-native';
-import EmptyState from '@/components/ui/EmptyState';
+import EmptyState from '@/shared/ui/EmptyState';
 import ProductCard from './ProductCard';
 import { Product } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';

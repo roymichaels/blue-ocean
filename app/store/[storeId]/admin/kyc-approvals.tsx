@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import Spinner from '../../../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import RequireWallet from '../../../../components/RequireWallet';
 
 // Lazy-load the heavy KYC approvals screen to keep the initial bundle slim

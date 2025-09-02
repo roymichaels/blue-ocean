@@ -15,6 +15,7 @@ module.exports = {
     '^expo-asset$': '<rootDir>/tests/__mocks__/expo-asset.js',
     '^react-native$': '<rootDir>/tests/__mocks__/react-native.js',
     '^@/features/(.*)$': '<rootDir>/src/features/$1',
+    '^@/shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@/(.*)$': '<rootDir>/$1',
   },
   testMatch: [

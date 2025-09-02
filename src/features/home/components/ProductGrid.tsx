@@ -4,7 +4,7 @@ import { View, StyleSheet } from 'react-native';
 import ProductCard from '@/features/products/components/ProductCard';
 import { Product, Category } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
-import EmptyState from './EmptyState';
+import EmptyState from '@/shared/ui/EmptyState';
 import { Filter, Plus } from 'lucide-react-native';
 
 interface ProductGridProps {

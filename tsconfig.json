@@ -22,6 +22,9 @@
       "@/features/*": [
         "src/features/*"
       ],
+      "@/shared/*": [
+        "src/shared/*"
+      ],
       "@/*": [
         "./*"
       ],

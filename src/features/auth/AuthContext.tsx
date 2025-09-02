@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import Spinner from '@/components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import DatabaseService from '@/services/database';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
