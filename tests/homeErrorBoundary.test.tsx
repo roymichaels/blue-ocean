@@ -44,16 +44,37 @@ jest.mock('../services/chain', () => 'near');
 jest.mock('../features/products/services/nearCategories', () => ({
   listCategories: jest.fn().mockResolvedValue([]),
 }));
-jest.mock('../features/home/hooks/useHomeScreen', () => ({
-  useHomeScreen: () => ({
+jest.mock('../features/home/hooks/useHome', () => ({
+  useHome: () => ({
+    products: [],
+    categories: [],
+    refreshing: false,
+    refresh: jest.fn(),
+    upsertProduct: jest.fn(),
+    removeProduct: jest.fn(),
+    error: null,
+  }),
+}));
+jest.mock('../features/home/hooks/useHomeBanners', () => ({
+  useHomeBanners: () => ({
+    heroBanners: [],
+    refreshing: false,
+    refresh: jest.fn(),
+    upsertBanner: jest.fn(),
+    removeBanner: jest.fn(),
+    error: null,
+  }),
+}));
+jest.mock('../features/home/hooks/useHomeFilters', () => ({
+  useHomeFilters: () => ({
     filteredProducts: [],
     searchQuery: '',
     setSearchQuery: jest.fn(),
     selectedCategory: null,
     setSelectedCategory: jest.fn(),
-    minPrice: null,
+    minPrice: '',
     setMinPrice: jest.fn(),
-    maxPrice: null,
+    maxPrice: '',
     setMaxPrice: jest.fn(),
     sortBy: 'name',
     setSortBy: jest.fn(),

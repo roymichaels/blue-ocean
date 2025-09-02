@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import chain from '@/services/chain';
-import { Product, Category, HeroBanner } from '@/types';
+import { Product, Category } from '@/types';
 
 let listCategories: (() => Promise<Category[]>) | undefined;
 if (chain === 'near') {
@@ -14,19 +14,17 @@ export function useHome() {
     queryKey: ['home'],
     queryFn: async () => {
       const db = DatabaseService.getInstance();
-      const [productsData, categoriesData, bannersData] = await Promise.all([
+      const [productsData, categoriesData] = await Promise.all([
         db.getProducts(),
         listCategories ? listCategories() : Promise.resolve([]),
-        db.getHeroBanners(),
       ]);
-      return { productsData, categoriesData, bannersData };
+      return { productsData, categoriesData };
     },
     suspense: true,
   });
 
   const [products, setProducts] = useState<Product[]>(data.productsData);
   const [categories, setCategories] = useState<Category[]>(data.categoriesData);
-  const [heroBanners, setHeroBanners] = useState<HeroBanner[]>(data.bannersData);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -37,7 +35,6 @@ export function useHome() {
       if (res.data) {
         setProducts(res.data.productsData);
         setCategories(res.data.categoriesData);
-        setHeroBanners(res.data.bannersData);
       }
       setError(null);
     } catch (err) {
@@ -46,16 +43,6 @@ export function useHome() {
       setRefreshing(false);
     }
   }, [refetch]);
-
-  const upsertBanner = useCallback((b: HeroBanner, isNew: boolean) => {
-    setHeroBanners((prev) =>
-      isNew ? [...prev, b] : prev.map((h) => (h.id === b.id ? b : h)),
-    );
-  }, []);
-
-  const removeBanner = useCallback((id: string) => {
-    setHeroBanners((prev) => prev.filter((b) => b.id !== id));
-  }, []);
 
   const upsertProduct = useCallback((p: Product, isNew: boolean) => {
     setProducts((prev) =>
@@ -70,14 +57,11 @@ export function useHome() {
   return {
     products,
     categories,
-    heroBanners,
     loading: false,
     refreshing,
     error,
     reload: refresh,
     refresh,
-    upsertBanner,
-    removeBanner,
     upsertProduct,
     removeProduct,
   };
