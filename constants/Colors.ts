@@ -1,6 +1,7 @@
 export const Colors = {
   // Primary Colors
   background: '#0E0D0A', // Darkest background
+  canvas: '#0E0D0A',
   gold: '#B99C5A', // Gold accent
   
   // Text Colors

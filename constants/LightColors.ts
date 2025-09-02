@@ -1,6 +1,7 @@
 export const LightColors = {
   // Primary Colors
   background: '#FFFFFF',
+  canvas: '#FFFFFF',
   gold: '#B99C5A', // Keep gold accent the same
   
   // Text Colors
