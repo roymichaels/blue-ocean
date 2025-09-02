@@ -1,11 +1,1 @@
-import { Redirect } from 'expo-router';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
-
-export default function Index() {
-  return (
-    <ErrorBoundary>
-      <Redirect href="/" />
-    </ErrorBoundary>
-  );
-}
-
+export { default } from './(tabs)/index';
