@@ -28,54 +28,60 @@ export default function TabLayout() {
     setShowCartWidget(pathname === '/' || pathname === '/index');
   }, [pathname]);
 
+  const tabBarStyle = {
+    position: 'absolute',
+    bottom: 0,
+    start: 0,
+    end: 0,
+    backgroundColor: colors.tabBar.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.tabBar.border,
+    height: 70,
+    paddingBottom: 8,
+    paddingTop: 8,
+  } as const;
+  warnIfTabBarHidden(tabBarStyle, 'TabLayout');
+
+  const screenOptions = {
+    headerShown: false,
+    tabBarHideOnKeyboard: false,
+    tabBarShowLabel: true,
+    tabBarActiveTintColor: colors.tabBar.active,
+    tabBarInactiveTintColor: colors.tabBar.inactive,
+    tabBarStyle,
+    tabBarLabelStyle: {
+      fontSize: 12,
+      fontWeight: '500',
+    },
+  } as const;
+
   return (
     <ErrorBoundary>
       <>
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarHideOnKeyboard: false,
-            tabBarShowLabel: true,
-            tabBarActiveTintColor: colors.tabBar.active,
-            tabBarInactiveTintColor: colors.tabBar.inactive,
-            tabBarStyle: {
-              position: 'absolute',
-              bottom: 0,
-              start: 0,
-              end: 0,
-              backgroundColor: colors.tabBar.background,
-              borderTopWidth: 1,
-              borderTopColor: colors.tabBar.border,
-              height: 70,
-              paddingBottom: 8,
-              paddingTop: 8,
-            },
-            tabBarLabelStyle: {
-              fontSize: 12,
-              fontWeight: '500',
-            },
-          }}
-      >
-        {tabs.map((tab) => {
-          const Icon = (Lucide as any)[tab.icon] as React.ComponentType<{ size: number; color: string }>;
-          const title = mapTitle(t, tab.title);
-          return (
-            <Tabs.Screen
-              key={tab.name}
-              name={tab.name}
-              options={{
-                title,
-                tabBarIcon: ({ size, color }) => (Icon ? <Icon size={size} color={color} /> : null),
-              }}
-            />
-          );
-        })}
+        <Tabs screenOptions={screenOptions}>
+          {tabs.map((tab) => {
+            const Icon = (Lucide as any)[tab.icon] as React.ComponentType<{ size: number; color: string }>;
+            const title = mapTitle(t, tab.title);
+            const options = {
+              title,
+              tabBarIcon: ({ size, color }) => (Icon ? <Icon size={size} color={color} /> : null),
+            } as const;
+            warnIfTabBarHidden(options.tabBarStyle, `tab ${tab.name}`);
+            return <Tabs.Screen key={tab.name} name={tab.name} options={options} />;
+          })}
         </Tabs>
 
         {showCartWidget && <FloatingCartWidget />}
       </>
     </ErrorBoundary>
   );
+}
+
+function warnIfTabBarHidden(style: { display?: string } | undefined, ctx: string) {
+  if (__DEV__ && style?.display === 'none') {
+    // eslint-disable-next-line no-console
+    console.warn(`[nav] tabBarStyle.display 'none' detected in ${ctx}. This will hide the tab bar.`);
+  }
 }
 
 function mapTitle(t: (key: string) => string, raw: string) {

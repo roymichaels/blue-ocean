@@ -31,6 +31,11 @@ module.exports = [
           selector: "TemplateElement[value.raw=/\\(tabs\\)/]",
           message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
         },
+        {
+          selector:
+            "Property[key.name='tabBarStyle'] > ObjectExpression > Property[key.name='display'] > Literal[value='none']",
+          message: "Avoid hiding the tab bar with tabBarStyle.display 'none'.",
+        },
       ],
     },
   },
