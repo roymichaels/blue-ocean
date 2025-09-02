@@ -79,9 +79,11 @@ export default function MoonPayModal({
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {loading && (
-          <View style={[styles.loading, { pointerEvents: 'none' }]}>
-            <Spinner />
-          </View>
+          <Modal transparent visible>
+            <View style={styles.loadingOverlay} pointerEvents="none">
+              <Spinner />
+            </View>
+          </Modal>
         )}
         <WebView
           source={{ uri: url }}
@@ -99,16 +101,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  loading: {
-    position: 'absolute',
-    top: 0,
-    start: 0,
-    end: 0,
-    bottom: 0,
+  loadingOverlay: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.3)',
-    zIndex: 1,
     ...Platform.select({
       web: { backdropFilter: 'blur(2px)' },
     }),
