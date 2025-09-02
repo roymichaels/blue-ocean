@@ -34,25 +34,27 @@ export default function TabLayout() {
         <Tabs
           screenOptions={{
             headerShown: false,
+            tabBarHideOnKeyboard: false,
+            tabBarShowLabel: true,
             tabBarActiveTintColor: colors.tabBar.active,
-          tabBarInactiveTintColor: colors.tabBar.inactive,
-          tabBarStyle: {
-            position: 'absolute',
-            bottom: 0,
-            start: 0,
-            end: 0,
-            backgroundColor: colors.tabBar.background,
-            borderTopWidth: 1,
-            borderTopColor: colors.tabBar.border,
-            height: 70,
-            paddingBottom: 8,
-            paddingTop: 8,
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '500',
-          },
-        }}
+            tabBarInactiveTintColor: colors.tabBar.inactive,
+            tabBarStyle: {
+              position: 'absolute',
+              bottom: 0,
+              start: 0,
+              end: 0,
+              backgroundColor: colors.tabBar.background,
+              borderTopWidth: 1,
+              borderTopColor: colors.tabBar.border,
+              height: 70,
+              paddingBottom: 8,
+              paddingTop: 8,
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '500',
+            },
+          }}
       >
         {tabs.map((tab) => {
           const Icon = (Lucide as any)[tab.icon] as React.ComponentType<{ size: number; color: string }>;
