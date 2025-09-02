@@ -33,15 +33,7 @@ import { useAppInfo } from '@/contexts/AppInfoContext';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
-import OrderService from '@/services/orders';
-import CartService from '@/features/cart/services/cart';
-import DatabaseService from '@/services/database';
-import chain from '@/services/chain';
-
-let listStores: (() => Promise<any[]>) | undefined;
-if (chain === 'near') {
-  ({ listStores } = require('@/features/stores/services/nearStores'));
-}
+import { useProfileData } from 'hooks/useProfileData';
 
 
 
@@ -56,14 +48,11 @@ export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showOrderTracking, setShowOrderTracking] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [userOrders, setUserOrders] = useState([]);
-  const [wishlistCount, setWishlistCount] = useState(0);
-  const [reviewCount, setReviewCount] = useState(0);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const { openAuthModal } = useAuthModal();
-  const [storeId, setStoreId] = useState<string | null>(null);
   const { push, replace } = useAppRouter();
+  const { ordersCount, wishlistCount, reviewCount, storeId } = useProfileData(user);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -79,42 +68,6 @@ export default function ProfileScreen() {
     loadSettings();
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!isLoggedIn || !user) return;
-      const orderService = OrderService.getInstance();
-      const cartService = CartService.getInstance();
-      const db = DatabaseService.getInstance();
-
-      try {
-        const [ordersCount, reviews, wishlist] = await Promise.all([
-          orderService.getUserOrderCount(user.id),
-          db.getReviews(),
-          Promise.resolve(cartService.getWishlistItemsCount()),
-        ]);
-        setUserOrders(new Array(ordersCount).fill(null));
-        setWishlistCount(wishlist);
-        setReviewCount(reviews.filter((r) => r.userId === user.id).length);
-      } catch (err) {
-        errorLog('Error loading profile data', err);
-      }
-    };
-    fetchData();
-  }, [isLoggedIn, user]);
-
-  useEffect(() => {
-    const loadStore = async () => {
-      if (!user?.address || !listStores) return;
-      try {
-        const stores = await listStores();
-        const store = stores.find((s) => s.owner === user.address);
-        if (store) setStoreId(store.id);
-      } catch (err) {
-        errorLog('Failed to load store for user', err);
-      }
-    };
-    loadStore();
-  }, [user?.address]);
 
   const loadSettings = async () => {
     try {
@@ -261,7 +214,7 @@ export default function ProfileScreen() {
           >
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.gold }]}>
-                {userOrders.length}
+                {ordersCount}
               </Text>
               <Text
                 style={[styles.statLabel, { color: colors.text.secondary }]}

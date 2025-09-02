@@ -1,4 +1,3 @@
-import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import {
   View,
@@ -15,14 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import { Plus, Pencil, X, ArrowUpDown } from 'lucide-react-native';
-import DatabaseService from '@/services/database';
 import { Product, Category, HeroBanner } from '@/types';
-import chain from '@/services/chain';
-
-let listCategories: (() => Promise<Category[]>) | undefined;
-if (chain === 'near') {
-  ({ listCategories } = require('@/features/products/services/nearCategories'));
-}
+import { useHome } from '@/features/home/hooks/useHome';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -47,14 +40,21 @@ function HomeScreenContent() {
   const { push } = useAppRouter();
   const params = useLocalSearchParams<{ showCart?: string }>();
   const { width: windowWidth } = useWindowDimensions();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
+  const {
+    products,
+    categories,
+    heroBanners,
+    refreshing,
+    refresh,
+    upsertBanner,
+    removeBanner,
+    upsertProduct,
+    removeProduct,
+    error,
+  } = useHome();
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [bannerFormVisible, setBannerFormVisible] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [productFormVisible, setProductFormVisible] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [showCartModal, setShowCartModal] = useState(false);
@@ -101,10 +101,6 @@ function HomeScreenContent() {
   ];
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
     // Check if we should show the cart modal from URL params
     if (params.showCart === 'true') {
       setShowCartModal(true);
@@ -129,20 +125,8 @@ function HomeScreenContent() {
     }
   }, [heroBanners.length]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const db = DatabaseService.getInstance();
-      const [productsData, categoriesData, bannersData] = await Promise.all([
-        db.getProducts(),
-        listCategories ? listCategories() : Promise.resolve([]),
-        db.getHeroBanners(),
-      ]);
-      setProducts(productsData);
-      setCategories(categoriesData);
-      setHeroBanners(bannersData);
-    } catch (error) {
-      errorLog('HomeScreen loadData error:', error);
+  useEffect(() => {
+    if (error) {
       setInfoModal({
         visible: true,
         title: t('common.error'),
@@ -150,16 +134,9 @@ function HomeScreenContent() {
         type: 'error',
         buttonText: t('common.reload'),
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error, t]);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
-  };
 
   const addBanner = () => {
     setEditingBanner(null);
@@ -172,15 +149,11 @@ function HomeScreenContent() {
   };
 
   const handleBannerSaved = (b: HeroBanner, isNew: boolean) => {
-    if (isNew) {
-      setHeroBanners((prev) => [...prev, b]);
-    } else {
-      setHeroBanners((prev) => prev.map((h) => (h.id === b.id ? b : h)));
-    }
+    upsertBanner(b, isNew);
   };
 
   const handleBannerDeleted = (id: string) => {
-    setHeroBanners((prev) => prev.filter((b) => b.id !== id));
+    removeBanner(id);
   };
 
   const addProduct = () => {
@@ -194,15 +167,11 @@ function HomeScreenContent() {
   };
 
   const handleProductSaved = (p: Product, isNew: boolean) => {
-    if (isNew) {
-      setProducts((prev) => [...prev, p]);
-    } else {
-      setProducts((prev) => prev.map((prod) => (prod.id === p.id ? p : prod)));
-    }
+    upsertProduct(p, isNew);
   };
 
   const handleProductDeleted = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    removeProduct(id);
   };
 
   const renderCategory = ({ item }: { item: Category }) => (
@@ -326,22 +295,8 @@ function HomeScreenContent() {
 
   const handleReload = () => {
     setInfoModal((prev) => ({ ...prev, visible: false }));
-    loadData();
+    refresh();
   };
-
-  if (loading) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-        <HomeHeader
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
-        <Spinner label="Loading home" />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView
@@ -355,7 +310,7 @@ function HomeScreenContent() {
     <ScrollView
       showsVerticalScrollIndicator={false}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl refreshing={refreshing} onRefresh={refresh} />
       }
     >
       <CategoryTabs
@@ -656,7 +611,9 @@ function HomeScreenContent() {
 export default function HomeScreen() {
   return (
     <ErrorBoundary>
-      <HomeScreenContent />
+      <Suspense fallback={<Spinner />}>
+        <HomeScreenContent />
+      </Suspense>
     </ErrorBoundary>
   );
 }
