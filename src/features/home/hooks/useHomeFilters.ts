@@ -3,7 +3,7 @@ import { Product } from '@/types';
 
 export type SortOption = 'newest' | 'price-low' | 'price-high' | 'rating';
 
-export function useHomeScreen(products: Product[]) {
+export function useHomeFilters(products: Product[]) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [minPrice, setMinPrice] = useState('');
@@ -73,4 +73,4 @@ export function useHomeScreen(products: Product[]) {
   } as const;
 }
 
-export type UseHomeScreenReturn = ReturnType<typeof useHomeScreen>;
+export type UseHomeFiltersReturn = ReturnType<typeof useHomeFilters>;

@@ -15,6 +15,7 @@ import useAppRouter from 'hooks/useAppRouter';
 import { Plus, X, ArrowUpDown } from 'lucide-react-native';
 import { Product, Category, HeroBanner } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
+import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -32,7 +33,7 @@ const BannerFormModal = lazy(() => import('@/components/BannerFormModal'));
 const CartModal = lazy(() => import('@/features/cart/components/CartModal'));
 const ProductFormModal = lazy(() => import('@/features/products/components/ProductFormModal'));
 const InfoModal = lazy(() => import('@/components/InfoModal'));
-import { useHomeScreen, SortOption } from '@/features/home/hooks/useHomeScreen';
+import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
 
 
 function HomeScreenContent() {
@@ -42,15 +43,25 @@ function HomeScreenContent() {
   const {
     products,
     categories,
-    heroBanners,
-    refreshing,
-    refresh,
-    upsertBanner,
-    removeBanner,
+    refreshing: dataRefreshing,
+    refresh: refreshData,
     upsertProduct,
     removeProduct,
-    error,
+    error: dataError,
   } = useHome();
+  const {
+    heroBanners,
+    refreshing: bannersRefreshing,
+    refresh: refreshBanners,
+    upsertBanner,
+    removeBanner,
+    error: bannersError,
+  } = useHomeBanners();
+  const refreshing = dataRefreshing || bannersRefreshing;
+  const refresh = async () => {
+    await Promise.all([refreshData(), refreshBanners()]);
+  };
+  const error = dataError || bannersError;
   const [bannerFormVisible, setBannerFormVisible] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
   const [productFormVisible, setProductFormVisible] = useState(false);
@@ -81,7 +92,7 @@ function HomeScreenContent() {
     setSortBy,
     showSortModal,
     setShowSortModal,
-  } = useHomeScreen(products);
+  } = useHomeFilters(products);
 
   // Fallback content to guarantee a rich homepage even with empty services
   const fallbackCategories: Category[] = [
