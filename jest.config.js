@@ -24,6 +24,7 @@ module.exports = {
     '<rootDir>/tests/storeDashboard.test.tsx',
     '<rootDir>/tests/admin-impersonate.test.tsx',
     '<rootDir>/tests/admin-store-detail.test.tsx',
+    '<rootDir>/tests/not-found.test.tsx',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],
