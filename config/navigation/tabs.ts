@@ -8,24 +8,25 @@ export type TabDef = {
 
 export const consumerTabs: TabDef[] = [
   { name: 'index', title: 'Home', icon: 'Home' },
-  { name: 'categories', title: 'Categories', icon: 'Grid3x3' },
+  { name: 'stores', title: 'Stores', icon: 'Store' },
+  { name: 'cart', title: 'Cart', icon: 'ShoppingCart' },
   { name: 'orders', title: 'Orders', icon: 'Package' },
-  { name: 'notifications', title: 'Notifications', icon: 'Bell' },
   { name: 'profile', title: 'Profile', icon: 'User' },
 ];
 
 export const ownerTabs: TabDef[] = [
-  { name: 'index', title: 'Dashboard', icon: 'Home' },
+  { name: 'index', title: 'Home', icon: 'Home' },
+  { name: 'stores', title: 'Stores', icon: 'Store' },
+  { name: 'cart', title: 'Cart', icon: 'ShoppingCart' },
   { name: 'orders', title: 'Orders', icon: 'Package' },
-  { name: 'categories', title: 'Catalog', icon: 'Grid3x3' },
-  { name: 'notifications', title: 'Notifications', icon: 'Bell' },
   { name: 'profile', title: 'Profile', icon: 'User' },
 ];
 
 export const adminTabs: TabDef[] = [
   { name: 'index', title: 'Home', icon: 'Home' },
+  { name: 'stores', title: 'Stores', icon: 'Store' },
+  { name: 'cart', title: 'Cart', icon: 'ShoppingCart' },
   { name: 'orders', title: 'Orders', icon: 'Package' },
-  { name: 'notifications', title: 'Notifications', icon: 'Bell' },
   { name: 'profile', title: 'Profile', icon: 'User' },
 ];
 
