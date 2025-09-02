@@ -226,7 +226,13 @@ function HomeScreenContent() {
             contentFit="cover"
           />
         </Suspense>
-        <View style={styles.heroOverlay}>
+        <View
+          pointerEvents="none"
+          style={[
+            styles.heroOverlay,
+            { backgroundColor: colors.background + '66' },
+          ]}
+        >
           <View style={styles.heroContent}>
             {item.discount ? (
               <Text
@@ -255,7 +261,10 @@ function HomeScreenContent() {
       {isStoreOwner && (
         <View style={styles.bannerAdminActions}>
           <TouchableOpacity
-            style={styles.bannerAdminButton}
+            style={[
+              styles.bannerAdminButton,
+              { backgroundColor: colors.background + 'CC' },
+            ]}
             onPress={() => editBanner(item)}
           >
             <Pencil size={16} color="#FFFFFF" />
@@ -370,7 +379,7 @@ function HomeScreenContent() {
 
               {/* Banner Indicators */}
               {heroBanners.length > 1 && (
-                <View style={styles.bannerIndicators}>
+                <View pointerEvents="none" style={styles.bannerIndicators}>
                   {heroBanners.map((_, index) => (
                     <View
                       key={index}
@@ -518,7 +527,7 @@ function HomeScreenContent() {
         <View
           style={[
             styles.sortModalOverlay,
-            { backgroundColor: 'rgba(0,0,0,0.5)' },
+            { backgroundColor: colors.background + '80' },
           ]}
         >
           <View
@@ -677,8 +686,8 @@ const styles = StyleSheet.create({
     start: 0,
     end: 0,
     bottom: 0,
-    backgroundColor: 'rgba(14, 13, 10, 0.4)',
     justifyContent: 'center',
+    zIndex: 0,
   },
   heroContent: {
     paddingHorizontal: 20,
@@ -711,7 +720,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   bannerAdminButton: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
     borderRadius: 16,
     width: 32,
     height: 32,
@@ -726,6 +734,7 @@ const styles = StyleSheet.create({
     end: 0,
     flexDirection: 'row',
     justifyContent: 'center',
+    zIndex: 0,
   },
   indicator: {
     width: 8,
