@@ -1,16 +1,15 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import useAppRouter from 'hooks/useAppRouter';
+import { router } from 'expo-router';
 
 export default function CTABecomeSeller() {
   const { colors } = useTheme();
-  const { push } = useAppRouter();
 
   return (
     <TouchableOpacity
       style={[styles.button, { backgroundColor: colors.gold }]}
-      onPress={() => push('/stores/create')}
+      onPress={() => router.push('/stores/create')}
       accessibilityRole="link"
     >
       <Text style={[styles.text, { color: colors.text.inverse }]}>Become a Seller</Text>
