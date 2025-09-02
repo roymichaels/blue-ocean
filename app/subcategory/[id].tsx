@@ -31,7 +31,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import MediaUploader from '@/components/MediaUploader';
-import Spinner from '@/components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import commonStyles from '@/constants/styles';

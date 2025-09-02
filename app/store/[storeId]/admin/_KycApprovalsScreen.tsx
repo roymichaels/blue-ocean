@@ -15,7 +15,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { User as UserType } from '../../../../types';
-import Spinner from '../../../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import commonStyles from '@/constants/styles';
 import SmartImage from '../../../../components/SmartImage';
 

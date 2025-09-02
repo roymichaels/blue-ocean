@@ -8,7 +8,7 @@ import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import Spinner from '../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import InfoModal from '../../components/InfoModal';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import commonStyles from '@/constants/styles';

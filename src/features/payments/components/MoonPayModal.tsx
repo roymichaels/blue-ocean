@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
-import Spinner from '@/components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAppInfo } from '@/contexts/AppInfoContext';
 

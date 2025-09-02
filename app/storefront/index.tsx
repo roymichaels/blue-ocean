@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import Spinner from '../../components/ui/Spinner';
+import Spinner from '@/shared/ui/Spinner';
 
 const StorefrontScreen = React.lazy(() => import('./_StorefrontScreen'));
 
