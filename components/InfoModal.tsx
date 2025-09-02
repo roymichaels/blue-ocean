@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { spacing, radius, zIndex, shadows } from '@/constants/tokens';
+import { spacing, radius, zIndex, shadows } from '@/shared/ui/tokens';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 import Button from '@/components/ui/Button';
 

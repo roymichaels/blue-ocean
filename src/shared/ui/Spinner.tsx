@@ -8,7 +8,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { spacing } from '@/constants/tokens';
+import { spacing } from '@/shared/ui/tokens';
 
 interface SpinnerProps {
   size?: 'small' | 'large';

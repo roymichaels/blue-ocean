@@ -24,10 +24,10 @@ Then open `/` to see the Home screen.
 
 ## Design Tokens
 
-Shared design tokens live in `constants/tokens.ts`. Import `spacing`, `radius`, `colors`, `zIndex`, and `shadows` to keep styles consistent across components.
+Shared design tokens are re-exported from `src/shared/ui/tokens.ts`. Import `spacing`, `radius`, `colors`, `zIndex`, and `shadows` to keep styles consistent across components.
 
 ```ts
-import { spacing, radius, zIndex, shadows } from '@/constants/tokens';
+import { spacing, radius, zIndex, shadows } from '@/shared/ui/tokens';
 
 const styles = StyleSheet.create({
   button: {
