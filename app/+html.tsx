@@ -30,7 +30,7 @@ export default function Document({ children }: { children: React.ReactNode }) {
             __html: `
               html, body { height: 100% !important; margin: 0 !important; padding: 0 !important; }
               #root, #app-root { height: 100% !important; min-height: 100vh !important; min-width: 100vw !important; }
-              body { background: #fff; }
+              body { background: transparent; }
             `,
           }}
         />

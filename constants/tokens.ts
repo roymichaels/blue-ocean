@@ -40,9 +40,27 @@ export const shadows = {
   },
 };
 
-export const colors = darkColors;
+const dark = {
+  canvas: darkColors.canvas,
+  surface: darkColors.surface.primary,
+  primary: darkColors.interactive.primary,
+  muted: darkColors.text.secondary,
+  border: darkColors.border.secondary,
+  ...darkColors,
+};
+
+const light = {
+  canvas: LightColors.canvas,
+  surface: LightColors.surface.primary,
+  primary: LightColors.interactive.primary,
+  muted: LightColors.text.secondary,
+  border: LightColors.border.secondary,
+  ...LightColors,
+};
+
+export const colors = dark;
 
 export const tokens = { spacing, radius, colors, zIndex, shadows };
-export const lightTokens = { ...tokens, colors: LightColors };
+export const lightTokens = { ...tokens, colors: light };
 
 export type Tokens = typeof tokens;
