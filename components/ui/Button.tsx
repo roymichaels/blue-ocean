@@ -1,13 +1,8 @@
 import React, { forwardRef } from 'react';
-import {
-  Pressable,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  PressableProps,
-} from 'react-native';
+import { Pressable, ActivityIndicator, PressableProps } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { spacing, radius } from '@/shared/ui/tokens';
+import Text from '@/shared/ui/Text';
 
 interface ButtonProps extends PressableProps {
   title?: string;
@@ -74,7 +69,9 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
       ) : children ? (
         children
       ) : (
-        <Text style={[styles.text, { color: textColor }]}>{title}</Text>
+        <Text variant="md" weight="600" style={{ color: textColor }}>
+          {title}
+        </Text>
       )}
     </Pressable>
   );
@@ -82,12 +79,3 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
 );
 
 export default Button;
-
-const styles = StyleSheet.create({
-  text: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-});
-
