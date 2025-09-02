@@ -2,7 +2,8 @@ import React from 'react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { WalletProvider } from './WalletProvider';
 import { WakuProvider } from '@/contexts/WakuContext';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { CheckedQueryClientProvider } from './CheckedQueryClientProvider';
 import GlobalErrorBoundary from '@/components/GlobalErrorBoundary';
 
 interface Props {
@@ -16,9 +17,9 @@ export default function AppProviders({ children }: Props) {
     <GlobalErrorBoundary>
       <ThemeProvider>
         <WalletProvider>
-          <QueryClientProvider client={queryClient}>
+          <CheckedQueryClientProvider client={queryClient}>
             <WakuProvider>{children}</WakuProvider>
-          </QueryClientProvider>
+          </CheckedQueryClientProvider>
         </WalletProvider>
       </ThemeProvider>
     </GlobalErrorBoundary>
