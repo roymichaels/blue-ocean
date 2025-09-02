@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { spacing } from '@/constants/tokens';
+import { spacing } from 'src/shared/ui/tokens';
 import Button from './Button';
 import { usePathname, router } from 'expo-router';
 import { errorLog } from '@/utils/logger';

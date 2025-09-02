@@ -7,7 +7,7 @@ import {
   PressableProps,
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { spacing, radius } from '@/constants/tokens';
+import { spacing, radius } from 'src/shared/ui/tokens';
 
 interface ButtonProps extends PressableProps {
   title?: string;

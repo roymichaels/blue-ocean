@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Platform, ViewStyle, StyleProp } from 'react-native';
-import { radius, shadows } from '@/constants/tokens';
+import { radius, shadows } from 'src/shared/ui/tokens';
 
 interface CardProps {
   children?: React.ReactNode;

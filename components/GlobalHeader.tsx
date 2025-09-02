@@ -16,7 +16,7 @@ import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
 import WishlistModal from '@/features/cart/components/WishlistModal';
 import CartService from '@/features/cart/services/cart';
-import { spacing, radius } from '@/constants/tokens';
+import { spacing, radius } from 'src/shared/ui/tokens';
 
 interface GlobalHeaderProps {
   searchQuery?: string;
