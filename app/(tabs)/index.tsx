@@ -45,6 +45,7 @@ import CartModal from '@/features/cart/components/CartModal';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
 import SmartImage from '@/components/SmartImage';
 import InfoModal from '@/components/InfoModal';
+import { useHomeScreen, SortOption } from '@/features/home/hooks/useHomeScreen';
 
 const { width } = Dimensions.get('window');
 const BANNER_WIDTH = width - 32;
@@ -55,22 +56,13 @@ export default function HomeScreen() {
   const params = useLocalSearchParams<{ showCart?: string }>();
   const { width: windowWidth } = useWindowDimensions();
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [bannerFormVisible, setBannerFormVisible] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [sortBy, setSortBy] = useState<
-    'newest' | 'price-low' | 'price-high' | 'rating'
-  >('newest');
-  const [showSortModal, setShowSortModal] = useState(false);
   const [productFormVisible, setProductFormVisible] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [showCartModal, setShowCartModal] = useState(false);
@@ -85,6 +77,22 @@ export default function HomeScreen() {
   const { t } = useLanguage();
   const { colors } = useTheme();
   const bannerScrollRef = useRef<ScrollView>(null);
+
+  const {
+    filteredProducts,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    minPrice,
+    setMinPrice,
+    maxPrice,
+    setMaxPrice,
+    sortBy,
+    setSortBy,
+    showSortModal,
+    setShowSortModal,
+  } = useHomeScreen(products);
 
   // Fallback content to guarantee a rich homepage even with empty services
   const fallbackCategories: Category[] = [
@@ -129,10 +137,6 @@ export default function HomeScreen() {
     }
   }, [heroBanners.length]);
 
-  useEffect(() => {
-    filterAndSortProducts();
-  }, [products, searchQuery, sortBy, selectedCategory, minPrice, maxPrice]);
-
   const loadData = async () => {
     try {
       setLoading(true);
@@ -163,55 +167,6 @@ export default function HomeScreen() {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
-  };
-
-  const filterAndSortProducts = () => {
-    let filtered = products;
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(q) ||
-          product.category.toLowerCase().includes(q)
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
-
-    // Filter by price range
-    const min = parseFloat(minPrice);
-    const max = parseFloat(maxPrice);
-    if (!isNaN(min)) {
-      filtered = filtered.filter((p) => p.price >= min);
-    }
-    if (!isNaN(max)) {
-      filtered = filtered.filter((p) => p.price <= max);
-    }
-
-    // Sort products
-    filtered = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'rating':
-          return b.rating - a.rating;
-        case 'newest':
-        default:
-          return (
-            new Date(b.createdAt || 0).getTime() -
-            new Date(a.createdAt || 0).getTime()
-          );
-      }
-    });
-
-    setFilteredProducts(filtered);
   };
 
   const addBanner = () => {
@@ -761,7 +716,7 @@ export default function HomeScreen() {
                   ],
                 ]}
                 onPress={() => {
-                  setSortBy(option.key as any);
+                  setSortBy(option.key as SortOption);
                   setShowSortModal(false);
                 }}
               >
