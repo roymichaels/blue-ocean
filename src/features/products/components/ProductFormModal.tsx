@@ -693,7 +693,7 @@ export default function ProductFormModal({
                 style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary, backgroundColor: colors.interactive.secondary }]}
                 onPress={() => {
                   setShowCategorySelector(false);
-                  router.push('/(tabs)/categories');
+                  router.push('/categories');
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>

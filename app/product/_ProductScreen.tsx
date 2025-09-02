@@ -296,7 +296,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
     await addToCart();
     // Navigate to cart or checkout
     push({
-      pathname: '/(tabs)',
+      pathname: '/',
       params: { showCart: 'true' },
     });
   };

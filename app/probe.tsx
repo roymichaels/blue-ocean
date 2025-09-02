@@ -23,7 +23,7 @@ export default function Probe() {
           PROBE OK
         </Text>
         <Link
-          href="/(tabs)/categories"
+          href="/categories"
           style={{ color: colors.gold, fontWeight: '700' }}
         >
           Open Tabs → Categories

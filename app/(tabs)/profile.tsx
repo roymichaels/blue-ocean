@@ -398,7 +398,7 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() => push('/(tabs)/orders')}
+              onPress={() => push('/orders')}
             >
               <View style={styles.menuItemContent}>
                 <Text style={[styles.menuText, { color: colors.text.primary }]}>

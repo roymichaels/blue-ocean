@@ -58,7 +58,7 @@ export default function Landing() {
             <Link href="/store/alpha" asChild>
               <Button title="Open Alpha Store" style={{ borderRadius: 10 }} />
             </Link>
-            <Link href="/(tabs)" asChild>
+            <Link href="/" asChild>
               <Button
                 title="Browse App"
                 variant="secondary"

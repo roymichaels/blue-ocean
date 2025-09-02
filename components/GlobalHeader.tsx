@@ -59,7 +59,7 @@ export default function GlobalHeader({
         <View style={styles.headerTop}>
           <TouchableOpacity
             style={styles.logo}
-            onPress={() => router.push('/(tabs)')}
+            onPress={() => router.push('/')}
           >
             {logoCid ? (
               <SmartImage uri={logoCid} width={50} height={50} style={styles.logoImage} contentFit="contain" />

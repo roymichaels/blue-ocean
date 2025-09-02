@@ -45,7 +45,7 @@ export default function DriverDashboardScreen() {
     if (canGoBack) {
       back();
     } else {
-      replace('/(tabs)');
+      replace('/');
     }
   };
 

@@ -4,7 +4,7 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 export default function Index() {
   return (
     <ErrorBoundary>
-      <Redirect href="/(tabs)" />
+      <Redirect href="/" />
     </ErrorBoundary>
   );
 }

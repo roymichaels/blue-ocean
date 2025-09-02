@@ -58,7 +58,7 @@ export default function ReviewsScreen() {
     if (canGoBack) {
       back();
     } else {
-      replace('/(tabs)');
+      replace('/');
     }
   };
 
