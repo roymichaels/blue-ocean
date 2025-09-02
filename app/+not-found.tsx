@@ -1,12 +1,26 @@
-import { Stack } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Stack, router } from 'expo-router';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect } from 'react';
 
 export default function NotFoundScreen() {
+  useEffect(() => {
+    if (__DEV__) {
+      router.replace('/');
+    }
+  }, []);
+
+  if (__DEV__) {
+    return null;
+  }
+
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
+      <Stack.Screen options={{ title: '404' }} />
       <View style={styles.container}>
-        <Text style={styles.text}>This screen doesn't exist.</Text>
+        <Text style={styles.text}>404 - Page Not Found</Text>
+        <TouchableOpacity onPress={() => router.replace('/')}>
+          <Text style={styles.link}>Go Home</Text>
+        </TouchableOpacity>
       </View>
     </>
   );
@@ -22,5 +36,10 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     fontWeight: '600',
+  },
+  link: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#007aff',
   },
 });
