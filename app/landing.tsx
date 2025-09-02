@@ -12,6 +12,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
 import Button from '../components/ui/Button';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { spacing } from '@/shared/ui/tokens';
 
 export default function Landing() {
   const { push } = useAppRouter();
@@ -42,19 +43,19 @@ export default function Landing() {
   return (
     <ErrorBoundary>
       <AppShell>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ backgroundColor: colors.canvas }} showsVerticalScrollIndicator={false}>
           {/* Hero */}
-        <View style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 12, alignItems: 'center' }}>
+        <View style={{ paddingHorizontal: spacing.spacer16, paddingTop: spacing.spacer24, paddingBottom: spacing.spacer12, alignItems: 'center' }}>
           <Text style={{ color: colors.text.primary, fontSize: 28, fontWeight: '800', textAlign: 'center' }}>
             Blue Ocean Marketplace
           </Text>
-          <Text style={{ color: colors.text.secondary, marginTop: 8, textAlign: 'center' }}>
+          <Text style={{ color: colors.text.secondary, marginTop: spacing.spacer8, textAlign: 'center' }}>
             Decentralized commerce on NEAR — own your store, your data, your future.
           </Text>
-          <View style={{ marginTop: 12 }}>
+          <View style={{ marginTop: spacing.spacer12 }}>
             <GoldDivider width={200} />
           </View>
-          <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+          <View style={{ flexDirection: 'row', gap: spacing.spacer12, marginTop: spacing.spacer16 }}>
             <Link href="/store/alpha" asChild>
               <Button title="Open Alpha Store" style={{ borderRadius: 10 }} />
             </Link>
@@ -71,7 +72,7 @@ export default function Landing() {
         {/* Banners */}
         <Section title="Highlights" center>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 16 }}>
+            <View style={{ flexDirection: 'row', gap: spacing.spacer12, paddingHorizontal: spacing.spacer16 }}>
               {(banners.length ? banners : [
                 { id: 'b1', image: '', title: 'Welcome to Blue Ocean', subtitle: 'Own your store on NEAR' },
                 { id: 'b2', image: '', title: 'Decentralized by design', subtitle: 'Fast, P2P and secure' },
@@ -96,7 +97,7 @@ export default function Landing() {
         {/* Categories */}
         <Section title="Categories">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flexDirection: 'row', gap: spacing.spacer8 }}>
               {(categories.length ? categories : [
                 { id: 'electronics', name: 'Electronics' },
                 { id: 'fashion', name: 'Fashion' },
@@ -109,8 +110,8 @@ export default function Landing() {
                   key={c.id}
                   onPress={() => push(`/category/${c.id}`)}
                   style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
+                    paddingHorizontal: spacing.spacer12,
+                    paddingVertical: spacing.spacer8,
                     borderRadius: 16,
                     borderWidth: 1,
                     borderColor: colors.border.primary,
@@ -126,7 +127,7 @@ export default function Landing() {
 
         {/* Featured */}
         <Section title="Featured">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingHorizontal: 0 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.spacer12, paddingHorizontal: 0 }}>
             {featured.map((p) => (
               <View key={p.id} style={{ width: '48%' }}>
                 <ProductCard product={p} />
