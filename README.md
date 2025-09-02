@@ -352,6 +352,17 @@ yarn test
 
 Run `yarn install` before executing `yarn test` so Jest and other dependencies are present.
 
+### Web Smoke Test
+
+Verify the exported web build serves the root page correctly:
+
+```sh
+yarn build:web
+node tests/web-smoke.js
+```
+
+The script starts a temporary server for `dist/` and asserts the home page includes the `#root` marker.
+
 ## Runbooks & Checklists
 
 - [Incident Runbook](docs/incident-runbook.md)
