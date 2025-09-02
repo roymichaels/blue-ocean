@@ -27,6 +27,12 @@ class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     errorLog('ErrorBoundary caught error:', error, info);
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error(error.stack);
+      // eslint-disable-next-line no-console
+      console.error(info.componentStack);
+    }
     this.setState({ error });
   }
 

@@ -43,7 +43,7 @@ const { width } = Dimensions.get('window');
 const BANNER_WIDTH = width - 32;
 const BANNER_HEIGHT = (BANNER_WIDTH * 9) / 16;
 
-export default function HomeScreen() {
+function HomeScreenContent() {
   const { push } = useAppRouter();
   const params = useLocalSearchParams<{ showCart?: string }>();
   const { width: windowWidth } = useWindowDimensions();
@@ -342,22 +342,21 @@ export default function HomeScreen() {
   }
 
   return (
-    <ErrorBoundary>
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-      <HomeHeader
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-      />
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+    <HomeHeader
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+    />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <CategoryTabs
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <CategoryTabs
           categories={categories}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
@@ -638,7 +637,14 @@ export default function HomeScreen() {
         visible={showCartModal}
         onClose={() => setShowCartModal(false)}
       />
-      </SafeAreaView>
+    </SafeAreaView>
+  );
+}
+
+export default function HomeScreen() {
+  return (
+    <ErrorBoundary>
+      <HomeScreenContent />
     </ErrorBoundary>
   );
 }
