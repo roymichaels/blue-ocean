@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import {
   Pressable,
   Text,
@@ -15,16 +15,20 @@ interface ButtonProps extends PressableProps {
   loading?: boolean;
 }
 
-export default function Button({
-  title,
-  variant = 'primary',
-  loading = false,
-  style,
-  disabled,
-  children,
-  accessibilityRole = 'button',
-  ...rest
-}: ButtonProps) {
+const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
+  (
+    {
+      title,
+      variant = 'primary',
+      loading = false,
+      style,
+      disabled,
+      children,
+      accessibilityRole = 'button',
+      ...rest
+    },
+    ref,
+  ) => {
   const { getColor } = useTheme();
 
   const isDisabled = disabled || loading;
@@ -59,6 +63,7 @@ export default function Button({
 
   return (
     <Pressable
+      ref={ref}
       accessibilityRole={accessibilityRole}
       style={[buttonStyle, { backgroundColor }, borderStyle, style]}
       disabled={isDisabled}
@@ -73,7 +78,10 @@ export default function Button({
       )}
     </Pressable>
   );
-}
+},
+);
+
+export default Button;
 
 const styles = StyleSheet.create({
   text: {
