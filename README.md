@@ -20,6 +20,8 @@ yarn start      # web
 yarn test
 ```
 
+Then open `/` to see the Home screen.
+
 ## Design Tokens
 
 Shared design tokens live in `constants/tokens.ts`. Import `spacing`, `radius`, `colors`, `zIndex`, and `shadows` to keep styles consistent across components.
@@ -114,6 +116,8 @@ the desired values:
 
 The OrderPayment factory contract address is configured by admins through the
 **Admin → Settings** dashboard and does not require an environment variable.
+
+`NEAR_STRICT` remains permissive in development, so local runs skip strict NEAR validation.
 
 - `ADMIN_WALLET_ADDRESS` – NEAR account granted admin rights if no on-chain list exists (required)
 - `NEAR_RPC_URL` – primary NEAR RPC endpoint used for blockchain calls (optional; overrides tenant setting)
