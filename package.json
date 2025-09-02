@@ -21,6 +21,7 @@
     "fix:near": "node scripts/fix-near.js",
     "seed": "node scripts/app.js seed",
     "lint": "node scripts/app.js lint",
+    "pretest": "yarn lint",
     "typecheck": "node scripts/app.js typecheck",
     "test": "node scripts/app.js test",
     "depcheck": "node scripts/app.js depcheck",

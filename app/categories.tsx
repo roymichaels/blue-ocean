@@ -1,1 +1,1 @@
-export { default } from './(tabs)/categories';
+export { default } from './categories';

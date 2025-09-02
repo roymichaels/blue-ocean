@@ -24,8 +24,12 @@ module.exports = [
       'no-restricted-syntax': [
         'error',
         {
-          selector: "JSXAttribute[name.name='href'][value.value=/\\(tabs\\)/]",
-          message: "Use '/' or named routes instead of '/(tabs)/' in hrefs.",
+          selector: "Literal[value=/\\(tabs\\)/]",
+          message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
+        },
+        {
+          selector: "TemplateElement[value.raw=/\\(tabs\\)/]",
+          message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
         },
       ],
     },
@@ -96,6 +100,17 @@ module.exports = [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "Literal[value=/\\(tabs\\)/]",
+          message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
+        },
+        {
+          selector: "TemplateElement[value.raw=/\\(tabs\\)/]",
+          message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
+        },
+      ],
     },
   },
 ];
