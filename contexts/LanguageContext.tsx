@@ -53,14 +53,14 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       }
     } catch (error) {
       errorLog('Error loading stored language:', error);
+      await setLanguage('en');
     }
   };
 
   const setLanguage = async (language: Language) => {
     try {
       setCurrentLanguage(language);
-      
-      // Update translations
+
       if (language === 'en') {
         setTranslations(enTranslations);
         setIsRTL(false);
@@ -70,11 +70,27 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       }
       configureRTL(language === 'he');
 
-      // Store language preference
       await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
     } catch (error) {
       errorLog('Error setting language:', error);
+      setTranslations(enTranslations);
+      setIsRTL(false);
+      setCurrentLanguage('en');
+      configureRTL(false);
+      await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, 'en');
     }
+  };
+
+  const getValue = (obj: any, keys: string[]) => {
+    let val = obj;
+    for (const k of keys) {
+      if (val && typeof val === 'object' && k in val) {
+        val = val[k];
+      } else {
+        return undefined;
+      }
+    }
+    return val;
   };
 
   const t = (
@@ -82,7 +98,6 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     options?: Record<string, string | number> | string
   ): string => {
     const keys = key.split('.');
-    let value: any = translations;
     let params: Record<string, string | number> | undefined;
     let fallback: string | undefined;
 
@@ -92,18 +107,15 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       params = options;
     }
 
-    for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k];
-      } else {
-        return fallback || key;
-      }
+    let value = getValue(translations, keys);
+    if (value === undefined) {
+      value = getValue(enTranslations, keys);
     }
 
-      if (typeof value === 'string') {
-        if (params) {
-          return value.replace(/\{(.*?)\}/g, (_, p) => String(params?.[p] ?? ''));
-        }
+    if (typeof value === 'string') {
+      if (params) {
+        return value.replace(/\{(.*?)\}/g, (_, p) => String(params?.[p] ?? ''));
+      }
       return value;
     }
 

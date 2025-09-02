@@ -27,6 +27,9 @@
   },
   "navigation": {
     "home": "Home",
+    "stores": "Stores",
+    "cart": "Cart",
+    "orders": "Orders",
     "categories": "Categories",
     "notifications": "Notifications",
     "reviews": "Reviews",
