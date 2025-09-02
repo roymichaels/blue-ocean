@@ -6,24 +6,15 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  FlatList,
   Dimensions,
   Modal,
-  TextInput,
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
-import {
-  Heart,
-  Plus,
-  Pencil,
-  X,
-  Filter,
-  ArrowUpDown,
-} from 'lucide-react-native';
+import { Plus, Pencil, X, ArrowUpDown } from 'lucide-react-native';
 import DatabaseService from '@/services/database';
 import { Product, Category, HeroBanner } from '@/types';
 import chain from '@/services/chain';
@@ -35,10 +26,11 @@ if (chain === 'near') {
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import GlobalHeader from '@/components/GlobalHeader';
-import ProductCard from '@/features/products/components/ProductCard';
-import Spinner from '@/components/ui/Spinner';
-import EmptyState from '@/components/ui/EmptyState';
+import HomeHeader from '@/features/home/components/HomeHeader';
+import CategoryTabs from '@/features/home/components/CategoryTabs';
+import ProductGrid from '@/features/home/components/ProductGrid';
+import Spinner from '@/features/home/components/Spinner';
+import EmptyState from '@/features/home/components/EmptyState';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import BannerFormModal from '@/components/BannerFormModal';
 import CartModal from '@/features/cart/components/CartModal';
@@ -340,10 +332,9 @@ export default function HomeScreen() {
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
       >
-        <GlobalHeader
+        <HomeHeader
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          showSearch={true}
         />
         <Spinner label="Loading home" />
       </SafeAreaView>
@@ -355,10 +346,9 @@ export default function HomeScreen() {
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
       >
-      <GlobalHeader
+      <HomeHeader
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        showSearch={true}
       />
 
       <ScrollView
@@ -367,96 +357,15 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.filtersContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoriesScroll}
-          >
-            <TouchableOpacity
-              style={[
-                styles.categoryChip,
-                {
-                  borderColor: colors.border.primary,
-                  backgroundColor:
-                    selectedCategory === null ? colors.gold : 'transparent',
-                },
-              ]}
-              onPress={() => setSelectedCategory(null)}
-            >
-              <Text
-                style={{
-                  color:
-                    selectedCategory === null
-                      ? colors.text.inverse
-                      : colors.text.primary,
-                }}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                style={[
-                  styles.categoryChip,
-                  {
-                    borderColor: colors.border.primary,
-                    backgroundColor:
-                      selectedCategory === cat.id
-                        ? colors.gold
-                        : 'transparent',
-                  },
-                ]}
-                onPress={() => setSelectedCategory(cat.id)}
-              >
-                <Text
-                  style={{
-                    color:
-                      selectedCategory === cat.id
-                        ? colors.text.inverse
-                        : colors.text.primary,
-                  }}
-                >
-                  {cat.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-          <View style={styles.priceRow}>
-            <TextInput
-              style={[
-                styles.priceInput,
-                {
-                  borderColor: colors.border.primary,
-                  color: colors.text.primary,
-                  marginRight: 8,
-                },
-              ]}
-              placeholder="Min"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="numeric"
-              value={minPrice}
-              onChangeText={setMinPrice}
-              textAlign="end"
-            />
-            <TextInput
-              style={[
-                styles.priceInput,
-                {
-                  borderColor: colors.border.primary,
-                  color: colors.text.primary,
-                },
-              ]}
-              placeholder="Max"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="numeric"
-              value={maxPrice}
-              onChangeText={setMaxPrice}
-              textAlign="end"
-            />
-          </View>
-        </View>
+        <CategoryTabs
+          categories={categories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          minPrice={minPrice}
+          setMinPrice={setMinPrice}
+          maxPrice={maxPrice}
+          setMaxPrice={setMaxPrice}
+        />
         <TouchableOpacity
           style={[styles.becomeSellerButton, { backgroundColor: colors.gold }]}
           onPress={() => push('/stores/create')}
@@ -609,44 +518,15 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {filteredProducts.length > 0 ? (
-            <View style={styles.productsGrid}>
-              {filteredProducts.map((item) => (
-                <View
-                  key={item.id}
-                  style={[
-                    styles.productWrapper,
-                    { width: getProductItemWidth() },
-                  ]}
-                >
-                  <ProductCard
-                    product={item}
-                    isOwner={isStoreOwner}
-                    onEdit={editProduct}
-
-                    subcategoryName={
-                      categories
-                        .flatMap((c) => c.subcategories || [])
-                        .find((s) => s.id === item.subcategory)?.name
-
-                    }
-                  />
-                </View>
-              ))}
-            </View>
-          ) : (
-            <EmptyState
-              icon={searchQuery ? Filter : Plus}
-              title={searchQuery ? t('home.noResults') : t('home.noProducts')}
-              message={
-                searchQuery
-                  ? t('home.tryDifferentSearch')
-                  : t('home.productsComingSoon')
-              }
-              actionText={isStoreOwner && !searchQuery ? 'הוסף מוצר' : undefined}
-              onAction={isStoreOwner && !searchQuery ? addProduct : undefined}
-            />
-          )}
+          <ProductGrid
+            products={filteredProducts}
+            categories={categories}
+            isStoreOwner={isStoreOwner}
+            onEdit={editProduct}
+            getItemWidth={getProductItemWidth}
+            searchQuery={searchQuery}
+            onAddProduct={addProduct}
+          />
         </View>
       </ScrollView>
 
@@ -969,14 +849,6 @@ const styles = StyleSheet.create({
     marginRight: 2,
     borderWidth: 1,
   },
-  productsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  productWrapper: {
-    marginBottom: 16,
-  },
   sortModalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -1037,31 +909,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
-  },
-  filtersContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  categoriesScroll: {
-    marginBottom: 8,
-  },
-  categoryChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    marginTop: 8,
-  },
-  priceInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
   },
   categorySelector: {
     borderWidth: 1,
