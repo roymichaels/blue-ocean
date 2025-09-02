@@ -1,15 +1,5 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-  Modal,
-  RefreshControl,
-  useWindowDimensions,
-} from 'react-native';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, RefreshControl, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
@@ -21,6 +11,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import HomeHeader from '@/features/home/components/HomeHeader';
 import CategoryTabs from '@/features/home/components/CategoryTabs';
+import PriceRange from '@/features/home/components/PriceRange';
+import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
+import BannerArea from '@/features/home/components/BannerArea';
 const ProductGrid = lazy(() => import('@/features/home/components/ProductGrid'));
 import Spinner from '@/shared/ui/Spinner';
 import EmptyState from '@/shared/ui/EmptyState';
@@ -28,13 +21,8 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 const BannerFormModal = lazy(() => import('@/components/BannerFormModal'));
 const CartModal = lazy(() => import('@/features/cart/components/CartModal'));
 const ProductFormModal = lazy(() => import('@/features/products/components/ProductFormModal'));
-const SmartImage = lazy(() => import('@/components/SmartImage'));
 const InfoModal = lazy(() => import('@/components/InfoModal'));
 import { useHomeScreen, SortOption } from '@/features/home/hooks/useHomeScreen';
-
-const { width } = Dimensions.get('window');
-const BANNER_WIDTH = width - 32;
-const BANNER_HEIGHT = (BANNER_WIDTH * 9) / 16;
 
 function HomeScreenContent() {
   const { push } = useAppRouter();
@@ -52,7 +40,6 @@ function HomeScreenContent() {
     removeProduct,
     error,
   } = useHome();
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [bannerFormVisible, setBannerFormVisible] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
   const [productFormVisible, setProductFormVisible] = useState(false);
@@ -68,7 +55,6 @@ function HomeScreenContent() {
   const { isStoreOwner } = useAuth();
   const { t } = useLanguage();
   const { colors } = useTheme();
-  const bannerScrollRef = useRef<ScrollView>(null);
 
   const {
     filteredProducts,
@@ -95,35 +81,12 @@ function HomeScreenContent() {
     { id: 'sports', name: 'Sports', icon: '🏀' } as any,
     { id: 'books', name: 'Books', icon: '📚' } as any,
   ];
-  const fallbackBanners: Partial<HeroBanner & { id: string }>[] = [
-    { id: 'b1', image: '', title: 'Welcome to Blue Ocean', subtitle: 'Own your store on NEAR' },
-    { id: 'b2', image: '', title: 'Decentralized by design', subtitle: 'Fast, P2P and secure' },
-  ];
-
   useEffect(() => {
     // Check if we should show the cart modal from URL params
     if (params.showCart === 'true') {
       setShowCartModal(true);
     }
   }, [params.showCart]);
-
-  useEffect(() => {
-    // Auto-scroll banner for web compatibility
-    if (heroBanners.length > 1) {
-      const bannerInterval = setInterval(() => {
-        setCurrentBannerIndex((prevIndex) => {
-          const nextIndex = (prevIndex + 1) % heroBanners.length;
-          bannerScrollRef.current?.scrollTo({
-            x: nextIndex * (width - 32),
-            animated: true,
-          });
-          return nextIndex;
-        });
-      }, 5000);
-
-      return () => clearInterval(bannerInterval);
-    }
-  }, [heroBanners.length]);
 
   useEffect(() => {
     if (error) {
@@ -212,59 +175,6 @@ function HomeScreenContent() {
     </TouchableOpacity>
   );
 
-  const renderBanner = (item: HeroBanner, index: number) => (
-    <View key={item.id} style={styles.heroBanner}>
-      <TouchableOpacity
-        style={styles.bannerTouchable}
-        onPress={() => push(`/category/${item.category}`)}
-      >
-        <Suspense fallback={<Spinner />}>
-          <SmartImage
-            uri={item.image}
-            width={BANNER_WIDTH}
-            height={BANNER_HEIGHT}
-            contentFit="cover"
-          />
-        </Suspense>
-        <View style={styles.heroOverlay}>
-          <View style={styles.heroContent}>
-            {item.discount ? (
-              <Text
-                style={[
-                  styles.heroDiscount,
-                  {
-                    color: colors.text.inverse,
-                    backgroundColor: colors.gold,
-                  },
-                ]}
-              >
-                {item.discount} הנחה
-              </Text>
-            ) : null}
-            <Text style={[styles.heroTitle, { color: colors.gold }]}>
-              {item.title}
-            </Text>
-
-            <Text style={[styles.heroSubtitle, { color: colors.gold }]}>
-              {item.subtitle}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-
-      {isStoreOwner && (
-        <View style={styles.bannerAdminActions}>
-          <TouchableOpacity
-            style={styles.bannerAdminButton}
-            onPress={() => editBanner(item)}
-          >
-            <Pencil size={16} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  );
-
   // Function to determine product item width based on screen size
   const getProductItemWidth = () => {
     if (windowWidth >= 1024) {
@@ -314,90 +224,24 @@ function HomeScreenContent() {
       }
     >
       <CategoryTabs
-          categories={categories}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          minPrice={minPrice}
-          setMinPrice={setMinPrice}
-          maxPrice={maxPrice}
-          setMaxPrice={setMaxPrice}
-        />
-        <TouchableOpacity
-          style={[styles.becomeSellerButton, { backgroundColor: colors.gold }]}
-          onPress={() => push('/stores/create')}
-          accessibilityRole="link"
-        >
-          <Text style={[styles.becomeSellerText, { color: colors.text.inverse }]}>Become a Seller</Text>
-        </TouchableOpacity>
-        {/* Hero Banner Carousel */}
-        <View style={styles.bannerContainer}>
-          <View style={styles.bannerHeader}>
-            {isStoreOwner && (
-              <TouchableOpacity
-                style={[
-                  styles.addBannerButton,
-                  { backgroundColor: colors.gold },
-                ]}
-                onPress={addBanner}
-              >
-                <Plus size={20} color={colors.text.inverse} />
-                <Text
-                  style={[styles.addBannerText, { color: colors.text.inverse }]}
-                >
-                  {t('banner.addBanner')}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {heroBanners.length > 0 ? (
-            <>
-              <ScrollView
-                ref={bannerScrollRef}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={(event) => {
-                  const newIndex = Math.round(
-                    event.nativeEvent.contentOffset.x / (width - 32)
-                  );
-                  setCurrentBannerIndex(newIndex);
-                }}
-                contentContainerStyle={styles.bannerScrollContent}
-              >
-                {heroBanners.map((item, index) => renderBanner(item, index))}
-              </ScrollView>
-
-              {/* Banner Indicators */}
-              {heroBanners.length > 1 && (
-                <View style={styles.bannerIndicators}>
-                  {heroBanners.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.indicator,
-                        index === currentBannerIndex && [
-                          styles.activeIndicator,
-                          { backgroundColor: colors.gold },
-                        ],
-                      ]}
-                    />
-                  ))}
-                </View>
-              )}
-            </>
-          ) : (
-            <EmptyState
-              icon={Plus}
-              title={t('home.noBanners')}
-              message={
-                isStoreOwner ? t('home.addBanners') : t('home.bannersComingSoon')
-              }
-              actionText={isStoreOwner ? t('banner.addBanner') : undefined}
-              onAction={isStoreOwner ? addBanner : undefined}
-            />
-          )}
-        </View>
+        categories={categories}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
+      <PriceRange
+        minPrice={minPrice}
+        setMinPrice={setMinPrice}
+        maxPrice={maxPrice}
+        setMaxPrice={setMaxPrice}
+      />
+      <CTABecomeSeller onPress={() => push('/stores/create')} />
+      <BannerArea
+        heroBanners={heroBanners}
+        isStoreOwner={isStoreOwner}
+        onAdd={addBanner}
+        onEdit={editBanner}
+        onBannerPress={(categoryId) => push(`/category/${categoryId}`)}
+      />
 
         {/* Categories Section */}
         <View style={styles.section}>
@@ -621,121 +465,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  becomeSellerButton: {
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 24,
-  },
-  becomeSellerText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  bannerContainer: {
-    height: BANNER_HEIGHT + 40,
-    marginBottom: 24,
-  },
-  bannerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  addBannerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  addBannerText: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  bannerScrollContent: {
-    paddingHorizontal: 16,
-  },
-  heroBanner: {
-    width: BANNER_WIDTH,
-    height: BANNER_HEIGHT,
-    marginRight: 16,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  bannerTouchable: {
-    width: '100%',
-    height: '100%',
-  },
-  heroOverlay: {
-    position: 'absolute',
-    top: 0,
-    start: 0,
-    end: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(14, 13, 10, 0.4)',
-    justifyContent: 'center',
-  },
-  heroContent: {
-    paddingHorizontal: 20,
-    alignItems: 'flex-end',
-  },
-  heroDiscount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    textAlign: 'end',
-  },
-  heroSubtitle: {
-    fontSize: 16,
-    marginBottom: 16,
-    textAlign: 'end',
-  },
-  bannerAdminActions: {
-    position: 'absolute',
-    top: 8,
-    start: 8,
-    flexDirection: 'row',
-  },
-  bannerAdminButton: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    borderRadius: 16,
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 4,
-  },
-  bannerIndicators: {
-    position: 'absolute',
-    bottom: 16,
-    start: 0,
-    end: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.5)',
-    marginHorizontal: 4,
-  },
-  activeIndicator: {
-    width: 16,
   },
   section: {
     paddingHorizontal: 16,
