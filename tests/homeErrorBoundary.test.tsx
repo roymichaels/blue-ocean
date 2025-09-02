@@ -1,7 +1,7 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
 import { Text } from 'react-native';
-import HomeScreen from '../app/(tabs)/index';
+import HomeScreen from '../app/index';
 
 jest.mock('../hooks/useAppRouter', () => () => ({ push: jest.fn() }));
 jest.mock('expo-router', () => ({
