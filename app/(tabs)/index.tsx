@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import {
   View,
   Text,
@@ -28,15 +28,15 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import HomeHeader from '@/features/home/components/HomeHeader';
 import CategoryTabs from '@/features/home/components/CategoryTabs';
-import ProductGrid from '@/features/home/components/ProductGrid';
+const ProductGrid = lazy(() => import('@/features/home/components/ProductGrid'));
 import Spinner from '@/shared/ui/Spinner';
 import EmptyState from '@/shared/ui/EmptyState';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
-import BannerFormModal from '@/components/BannerFormModal';
-import CartModal from '@/features/cart/components/CartModal';
-import ProductFormModal from '@/features/products/components/ProductFormModal';
-import SmartImage from '@/components/SmartImage';
-import InfoModal from '@/components/InfoModal';
+const BannerFormModal = lazy(() => import('@/components/BannerFormModal'));
+const CartModal = lazy(() => import('@/features/cart/components/CartModal'));
+const ProductFormModal = lazy(() => import('@/features/products/components/ProductFormModal'));
+const SmartImage = lazy(() => import('@/components/SmartImage'));
+const InfoModal = lazy(() => import('@/components/InfoModal'));
 import { useHomeScreen, SortOption } from '@/features/home/hooks/useHomeScreen';
 
 const { width } = Dimensions.get('window');
@@ -249,12 +249,14 @@ function HomeScreenContent() {
         style={styles.bannerTouchable}
         onPress={() => push(`/category/${item.category}`)}
       >
-        <SmartImage
-          uri={item.image}
-          width={BANNER_WIDTH}
-          height={BANNER_HEIGHT}
-          contentFit="cover"
-        />
+        <Suspense fallback={<Spinner />}>
+          <SmartImage
+            uri={item.image}
+            width={BANNER_WIDTH}
+            height={BANNER_HEIGHT}
+            contentFit="cover"
+          />
+        </Suspense>
         <View style={styles.heroOverlay}>
           <View style={styles.heroContent}>
             {item.discount ? (
@@ -517,33 +519,39 @@ function HomeScreenContent() {
             </View>
           </View>
 
-          <ProductGrid
-            products={filteredProducts}
-            categories={categories}
-            isStoreOwner={isStoreOwner}
-            onEdit={editProduct}
-            getItemWidth={getProductItemWidth}
-            searchQuery={searchQuery}
-            onAddProduct={addProduct}
-          />
+          <Suspense fallback={<Spinner />}>
+            <ProductGrid
+              products={filteredProducts}
+              categories={categories}
+              isStoreOwner={isStoreOwner}
+              onEdit={editProduct}
+              getItemWidth={getProductItemWidth}
+              searchQuery={searchQuery}
+              onAddProduct={addProduct}
+            />
+          </Suspense>
         </View>
       </ScrollView>
 
-      <BannerFormModal
-        visible={bannerFormVisible}
-        onClose={() => setBannerFormVisible(false)}
-        banner={editingBanner || undefined}
-        categories={categories}
-        onSaved={handleBannerSaved}
-        onDeleted={handleBannerDeleted}
-      />
-      <ProductFormModal
-        visible={productFormVisible}
-        onClose={() => setProductFormVisible(false)}
-        product={productToEdit || undefined}
-        onSaved={handleProductSaved}
-        onDeleted={handleProductDeleted}
-      />
+      <Suspense fallback={<Spinner />}>
+        <BannerFormModal
+          visible={bannerFormVisible}
+          onClose={() => setBannerFormVisible(false)}
+          banner={editingBanner || undefined}
+          categories={categories}
+          onSaved={handleBannerSaved}
+          onDeleted={handleBannerDeleted}
+        />
+      </Suspense>
+      <Suspense fallback={<Spinner />}>
+        <ProductFormModal
+          visible={productFormVisible}
+          onClose={() => setProductFormVisible(false)}
+          product={productToEdit || undefined}
+          onSaved={handleProductSaved}
+          onDeleted={handleProductDeleted}
+        />
+      </Suspense>
 
       {/* Sort Modal */}
       <Modal
@@ -622,21 +630,25 @@ function HomeScreenContent() {
         </View>
       </Modal>
 
-      <InfoModal
-        visible={infoModal.visible}
-        title={infoModal.title}
-        message={infoModal.message}
-        type={infoModal.type}
-        buttonText={infoModal.buttonText}
-        onClose={handleReload}
-        autoClose={false}
-      />
+      <Suspense fallback={<Spinner />}>
+        <InfoModal
+          visible={infoModal.visible}
+          title={infoModal.title}
+          message={infoModal.message}
+          type={infoModal.type}
+          buttonText={infoModal.buttonText}
+          onClose={handleReload}
+          autoClose={false}
+        />
+      </Suspense>
 
       {/* Cart Modal */}
-      <CartModal
-        visible={showCartModal}
-        onClose={() => setShowCartModal(false)}
-      />
+      <Suspense fallback={<Spinner />}>
+        <CartModal
+          visible={showCartModal}
+          onClose={() => setShowCartModal(false)}
+        />
+      </Suspense>
     </SafeAreaView>
   );
 }
