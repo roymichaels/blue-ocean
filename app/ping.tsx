@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function Ping() {
   const { colors } = useTheme();

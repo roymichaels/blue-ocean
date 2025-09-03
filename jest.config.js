@@ -18,6 +18,7 @@ module.exports = {
     '^@/shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@/ui/(.*)$': '<rootDir>/src/ui/$1',
     '^@/layout/(.*)$': '<rootDir>/src/layout/$1',
+    '^@/services/(.*)$': '<rootDir>/src/services/$1',
     '^@/(.*)$': '<rootDir>/$1',
   },
   testMatch: [
@@ -29,6 +30,7 @@ module.exports = {
     '<rootDir>/tests/not-found.test.tsx',
     '<rootDir>/tests/wakuErrorLogging.test.ts',
     '<rootDir>/tests/nearAdapter.test.ts',
+    '<rootDir>/tests/i18n-offline.test.ts',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],

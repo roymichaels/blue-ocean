@@ -11,7 +11,7 @@ import ProductCard from '@/features/products/components/ProductCard';
 import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
 import Button from '../components/ui/Button';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing } from '@/shared/ui/tokens';
 
 export default function Landing() {

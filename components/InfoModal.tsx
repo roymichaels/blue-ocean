@@ -3,9 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   Animated,
   Platform,
 } from 'react-native';
@@ -14,6 +12,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { spacing, radius, zIndex, shadows } from '@/shared/ui/tokens';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 import Button from '@/components/ui/Button';
+import { Portal, Overlay } from '@/ui/primitives';
 
 type InfoType = 'success' | 'error' | 'info' | 'warning';
 
@@ -100,64 +99,59 @@ export default function InfoModal({
 
   const { icon, color } = getIconAndColor();
 
+  if (!visible) return null;
+
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="none"
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
-            <Animated.View
-              style={[
-                styles.modalContainer,
-                {
-                  backgroundColor: colors.surface.elevated,
-                  transform: [{ scale: scaleAnim }],
-                  opacity: opacityAnim,
-                }
-              ]}
-            >
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <X size={20} color={colors.text.secondary} />
-              </TouchableOpacity>
+    <Portal>
+      <Overlay style={styles.overlay} />
+      <View style={styles.center} pointerEvents="box-none">
+        <Animated.View
+          style={[
+            styles.modalContainer,
+            {
+              backgroundColor: colors.surface.elevated,
+              transform: [{ scale: scaleAnim }],
+              opacity: opacityAnim,
+            }
+          ]}
+        >
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <X size={20} color={colors.text.secondary} />
+          </TouchableOpacity>
 
-              <View style={styles.iconContainer}>
-                {icon}
-              </View>
+          <View style={styles.iconContainer}>{icon}</View>
 
-              <Text style={[styles.title, { color: colors.text.primary }]}>
-                {title}
-              </Text>
+          <Text style={[styles.title, { color: colors.text.primary }]}>
+            {title}
+          </Text>
 
-              <Text style={[styles.message, { color: colors.text.secondary }]}> 
-                {message}
-              </Text>
+          <Text style={[styles.message, { color: colors.text.secondary }]}>
+            {message}
+          </Text>
 
-              <Button
-                title={buttonLabel}
-                onPress={onClose}
-                style={{
-                  minWidth: 120,
-                  paddingHorizontal: spacing.spacer24,
-                  borderRadius: radius.lg,
-                  backgroundColor: color,
-                }}
-              />
-            </Animated.View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+          <Button
+            title={buttonLabel}
+            onPress={onClose}
+            style={{
+              minWidth: 120,
+              paddingHorizontal: spacing.spacer24,
+              borderRadius: radius.lg,
+              backgroundColor: color,
+            }}
+          />
+        </Animated.View>
+      </View>
+    </Portal>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  center: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.spacer20,

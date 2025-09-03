@@ -11,6 +11,7 @@ import {
 import { X } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing, zIndex } from '@/shared/ui/tokens';
+import { Portal, Overlay } from '@/ui/primitives';
 
 interface NotificationPopupProps {
   title: string;
@@ -88,26 +89,29 @@ export default function NotificationPopup({
   };
 
   return (
-    <Animated.View 
-      style={[
-        styles.container, 
-        { 
-          transform: [{ translateY }],
-          opacity,
-          backgroundColor: getBackgroundColor()
-        }
-      ]}
-    >
-      <View style={styles.content}>
-        <View style={styles.textContainer}>
-          <Text style={[styles.title, { color: colors.text.inverse }]}>{title}</Text>
-          <Text style={[styles.message, { color: colors.text.inverse }]} numberOfLines={2}>{message}</Text>
+    <Portal>
+      <Overlay />
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            transform: [{ translateY }],
+            opacity,
+            backgroundColor: getBackgroundColor()
+          }
+        ]}
+      >
+        <View style={styles.content}>
+          <View style={styles.textContainer}>
+            <Text style={[styles.title, { color: colors.text.inverse }]}>{title}</Text>
+            <Text style={[styles.message, { color: colors.text.inverse }]} numberOfLines={2}>{message}</Text>
+          </View>
+          <TouchableOpacity style={styles.closeButton} onPress={dismiss}>
+            <X size={20} color={colors.text.inverse} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.closeButton} onPress={dismiss}>
-          <X size={20} color={colors.text.inverse} />
-        </TouchableOpacity>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </Portal>
   );
 }
 

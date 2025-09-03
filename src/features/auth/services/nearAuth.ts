@@ -5,6 +5,7 @@ import { setupWalletSelector } from '@near-wallet-selector/core';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import '@near-wallet-selector/wallet-utils';
 import { Buffer } from 'buffer';
+import { requireEnv } from '../../services/config';
 
 // Expose for test injection where needed
 export let selector: WalletSelector | null = null;
@@ -15,14 +16,14 @@ async function init() {
   if (!selector) {
     // Resolve wallet URL: prefer env override, then infer from contract/network
     const resolveNetwork = () => {
-      const explicit = process.env.EXPO_PUBLIC_NETWORK;
+      const explicit = requireEnv('EXPO_PUBLIC_NETWORK', '');
       if (explicit === 'mainnet' || explicit === 'testnet') return explicit;
-      const cid = process.env.EXPO_PUBLIC_CONTRACT_ID || '';
+      const cid = requireEnv('EXPO_PUBLIC_CONTRACT_ID', '');
       return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
     };
 
     const getWalletUrl = () => {
-      const override = process.env.EXPO_PUBLIC_WALLET_URL;
+      const override = requireEnv('EXPO_PUBLIC_WALLET_URL', '');
       if (override) return override;
       const net = resolveNetwork();
       return net === 'mainnet'
@@ -41,7 +42,7 @@ async function init() {
 export async function signIn(): Promise<void> {
   const sel = await init();
   const wallet = await sel.wallet('near-wallet');
-  const contractId = process.env.EXPO_PUBLIC_CONTRACT_ID || 'example.testnet';
+  const contractId = requireEnv('EXPO_PUBLIC_CONTRACT_ID', 'example.testnet');
   const baseUrl = typeof window !== 'undefined'
     ? window.location.origin + (window.location.pathname || '/')
     : undefined;

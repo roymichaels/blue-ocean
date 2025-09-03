@@ -11,7 +11,7 @@ import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import { WakuProvider } from '@/contexts/WakuContext';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Router, usePathname, useRouter, useSegments } from 'expo-router';
 
