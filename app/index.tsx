@@ -1,8 +1,8 @@
 import { Redirect } from 'expo-router';
 
 export default function Index() {
-  // Redirect to the root route and let Expo Router handle the tab layout.
-  // Using "/" avoids repeating the current route which previously caused
-  // an infinite loop and a "Maximum update depth exceeded" warning.
-  return <Redirect href="/" />;
+  // Send users to the tabs group. Redirecting to "/" re-renders this screen
+  // which triggers an endless navigation loop and "Maximum update depth"
+  // warnings. Pointing to the tabs layout avoids reloading the current route.
+  return <Redirect href="/(tabs)" />;
 }
