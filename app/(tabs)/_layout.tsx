@@ -88,10 +88,13 @@ function mapTitle(t: (key: string) => string, raw: string) {
   // Try i18n keys for known items, fall back to raw
   const map: Record<string, string> = {
     Home: t('navigation.home'),
-    Categories: t('navigation.categories'),
-    Orders: 'הזמנות',
-    Notifications: t('navigation.notifications'),
+    Stores: t('navigation.stores'),
+    Cart: t('navigation.cart'),
+    Orders: t('navigation.orders'),
     Profile: t('navigation.profile'),
+    Categories: t('navigation.categories'),
+    Notifications: t('navigation.notifications'),
+    Reviews: t('navigation.reviews'),
     Dashboard: 'Dashboard',
     Catalog: 'Catalog',
   };

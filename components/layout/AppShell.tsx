@@ -1,6 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '@/contexts/ThemeContext';
 import GlobalHeader from '../GlobalHeader';
 
 interface AppShellProps {
@@ -9,10 +11,12 @@ interface AppShellProps {
 }
 
 export default function AppShell({ children, showSearch = true }: AppShellProps) {
+  const { theme, colors } = useTheme();
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}>
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.canvas} />
       <GlobalHeader showSearch={showSearch} />
-      <View style={{ flex: 1 }}>{children}</View>
+      <View style={{ flex: 1, backgroundColor: colors.canvas }}>{children}</View>
     </SafeAreaView>
   );
 }
