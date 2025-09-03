@@ -30,7 +30,7 @@ jest.mock('../features/home/components/HomeHeader', () => {
     throw new Error('boom');
   };
 });
-jest.mock('../features/home/components/CategoryTabs', () => () => null);
+jest.mock('../features/home/components/CategoryChips', () => () => null);
 jest.mock('../features/home/components/ProductGrid', () => () => null);
 jest.mock('../shared/ui/Spinner', () => () => null);
 jest.mock('../shared/ui/EmptyState', () => () => null);

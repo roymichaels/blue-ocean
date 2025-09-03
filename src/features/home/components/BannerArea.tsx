@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'flex-end',
     borderRadius: 12,
+    zIndex: 1,
   },
   heroContent: { padding: 16 },
   heroDiscount: {},
@@ -214,6 +215,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 8,
+    zIndex: 1,
   },
   indicator: {
     width: 8,

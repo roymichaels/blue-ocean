@@ -22,7 +22,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import HomeHeader from '@/features/home/components/HomeHeader';
 import SearchBar from '@/features/home/components/SearchBar';
 import PriceRange from '@/features/home/components/PriceRange';
-import CategoryTabs from '@/features/home/components/CategoryTabs';
+import CategoryChips from '@/features/home/components/CategoryChips';
 import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
 import BannerArea from '@/features/home/components/BannerArea';
 const ProductGrid = lazy(() => import('@/features/home/components/ProductGrid'));
@@ -254,11 +254,11 @@ function HomeScreenContent() {
         <RefreshControl refreshing={refreshing} onRefresh={refresh} />
       }
     >
-      <CategoryTabs
-          categories={categories}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-        />
+      <CategoryChips
+        categories={categories}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
       <PriceRange
           minPrice={minPrice}
           setMinPrice={setMinPrice}
