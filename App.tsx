@@ -4,14 +4,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text } from 'react-native';
 import { AppInfoProvider } from '@/contexts/AppInfoContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ConfigProvider } from '@/contexts/ConfigContext';
 import { AuthProvider } from '@/features/auth/AuthContext';
 import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
-import { WakuProvider } from '@/contexts/WakuContext';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import AppProviders from '@/providers/AppProviders';
 import { Router, usePathname, useRouter, useSegments } from 'expo-router';
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
@@ -45,29 +43,25 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AppInfoProvider>
-          <LanguageProvider>
-            <ThemeProvider>
+        <AppProviders>
+          <AppInfoProvider>
+            <LanguageProvider>
               <ConfigProvider>
                 <AuthProvider>
                   <AuthModalProvider>
                     <CurrencyProvider>
-                      <WakuProvider>
-                        <NotificationProvider>
-                          <ErrorBoundary>
-                            <React.Suspense fallback={null}>
-                              {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-                            </React.Suspense>
-                          </ErrorBoundary>
-                        </NotificationProvider>
-                      </WakuProvider>
+                      <NotificationProvider>
+                        <React.Suspense fallback={null}>
+                          {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
+                        </React.Suspense>
+                      </NotificationProvider>
                     </CurrencyProvider>
                   </AuthModalProvider>
                 </AuthProvider>
               </ConfigProvider>
-            </ThemeProvider>
-          </LanguageProvider>
-        </AppInfoProvider>
+            </LanguageProvider>
+          </AppInfoProvider>
+        </AppProviders>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
