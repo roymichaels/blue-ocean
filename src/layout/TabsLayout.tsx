@@ -7,7 +7,7 @@ import { usePathname } from 'expo-router';
 import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import { getTabsForAuth } from '@/config/navigation/tabs';
 import { useAuth } from '@/features/auth/AuthContext';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function TabsLayout() {
   const { t } = useLanguage();
