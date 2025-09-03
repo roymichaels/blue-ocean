@@ -80,10 +80,10 @@ export async function ensureNode(): Promise<LightNode | null> {
     await waitForRemotePeer(cachedNode, [Protocols.Relay]);
     return cachedNode;
   } catch (err) {
-    errorLog(
-      'Failed to start Waku node',
-      err instanceof Error ? err.stack : String(err),
-    );
+    errorLog('Failed to start Waku node', err instanceof Error ? err.message : err);
+    if (err instanceof Error && err.stack) {
+      errorLog(err.stack);
+    }
     cachedNode = null;
     return null;
   }
