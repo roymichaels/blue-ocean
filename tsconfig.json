@@ -31,6 +31,10 @@
       "@/layout/*": [
         "src/layout/*"
       ],
+      "@/services/*": [
+        "src/services/*",
+        "services/*"
+      ],
       "@/*": [
         "./*"
       ],

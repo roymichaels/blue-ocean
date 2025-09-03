@@ -4,11 +4,20 @@ import { spacing } from '../tokens';
 
 interface ScrollAreaProps extends ScrollViewProps {
   padding?: keyof typeof spacing;
+  backgroundColor?: string;
 }
 
-export default function ScrollArea({ padding, contentContainerStyle, children, ...rest }: ScrollAreaProps) {
+export default function ScrollArea({
+  padding,
+  backgroundColor,
+  contentContainerStyle,
+  style,
+  children,
+  ...rest
+}: ScrollAreaProps) {
   return (
     <ScrollView
+      style={[backgroundColor ? { backgroundColor } : null, style]}
       {...rest}
       contentContainerStyle={[
         padding ? { padding: spacing[padding] } : null,

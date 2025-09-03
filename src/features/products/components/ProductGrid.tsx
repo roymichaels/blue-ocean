@@ -1,17 +1,20 @@
 import React, { useCallback, useMemo } from 'react';
-import { FlatList, View } from 'react-native';
+import { FlatList, View, StyleSheet } from 'react-native';
 import EmptyState from '@/shared/ui/EmptyState';
 import ProductCard from './ProductCard';
 import { Product } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Package } from 'lucide-react-native';
+import { spacing } from '@/shared/ui/tokens';
+
+const rowStyles = StyleSheet.create({ flex: { flex: 1 } });
 
 const ProductRow = React.memo(
   ({ item, borderColor }: { item: Product; borderColor: string }) => (
-    <View style={{ flex: 1 }}>
+    <View style={rowStyles.flex}>
       <ProductCard
         product={item}
-        style={{ marginBottom: 12, borderColor }}
+        style={{ marginBottom: spacing.spacer12, borderColor }}
       />
     </View>
   )
@@ -31,11 +34,11 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   const keyExtractor = useCallback((item: Product) => item.id, []);
 
   const columnWrapperStyle = useMemo(
-    () => ({ gap: 12, paddingHorizontal: 16 }),
+    () => ({ gap: spacing.spacer12, paddingHorizontal: spacing.spacer16 }),
     []
   );
   const contentContainerStyle = useMemo(
-    () => ({ paddingVertical: 16 }),
+    () => ({ paddingVertical: spacing.spacer16 }),
     []
   );
 

@@ -245,7 +245,7 @@ function HomeScreenContent() {
       <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       <ScrollArea
-        style={{ backgroundColor: colors.canvas }}
+        backgroundColor={colors.canvas}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
