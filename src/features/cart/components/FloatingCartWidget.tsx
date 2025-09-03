@@ -283,12 +283,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    textAlign: 'end',
+    textAlign: 'right',
   },
   headerSubtitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    textAlign: 'end',
+    textAlign: 'right',
   },
   headerRight: {
     marginStart: 12,
@@ -339,16 +339,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 2,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   itemPrice: {
     fontSize: 12,
     fontWeight: '600',
-    textAlign: 'end',
+    textAlign: 'right',
   },
   tierInfo: {
     fontSize: 10,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   quantityControls: {
     flexDirection: 'row',

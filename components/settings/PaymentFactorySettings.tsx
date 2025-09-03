@@ -40,7 +40,7 @@ const PaymentFactorySettings: React.FC<Props> = ({
             value={paymentFactoryAddress}
             onChangeText={setPaymentFactoryAddress}
             placeholder="EQ..."
-            textAlign="end"
+            textAlign="right"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   input: {
     borderWidth: 1,

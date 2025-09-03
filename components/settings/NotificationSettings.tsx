@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     marginBottom: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   badge: {
     paddingHorizontal: 16,

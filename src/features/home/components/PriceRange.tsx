@@ -24,7 +24,7 @@ export default function PriceRange({
         placeholder="Min"
         keyboardType="numeric"
         style={[styles.priceInput, { marginEnd: spacing.spacer8 }]}
-        textAlign="end"
+        textAlign="right"
       />
       <TextField
         value={maxPrice}
@@ -32,7 +32,7 @@ export default function PriceRange({
         placeholder="Max"
         keyboardType="numeric"
         style={styles.priceInput}
-        textAlign="end"
+        textAlign="right"
       />
     </View>
   );

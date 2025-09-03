@@ -188,7 +188,7 @@ export default function PricingTierFormModal({
                 value={formData.name}
                 onChangeText={text => setFormData({ ...formData, name: text })}
                 placeholder="הכנס שם מדרג (לדוגמה: הנחת כמות)"
-                textAlign="end"
+                textAlign="right"
               />
             </View>
 
@@ -209,7 +209,7 @@ export default function PricingTierFormModal({
                       setFormData({ ...formData, rules: updated });
                     }}
                     keyboardType="numeric"
-                    textAlign="end"
+                    textAlign="right"
                   />
                 </View>
                 <View style={styles.formGroupHalf}>
@@ -227,7 +227,7 @@ export default function PricingTierFormModal({
                       setFormData({ ...formData, rules: updated });
                     }}
                     keyboardType="numeric"
-                    textAlign="end"
+                    textAlign="right"
                   />
                 </View>
                 <View style={styles.formGroupHalf}>
@@ -245,7 +245,7 @@ export default function PricingTierFormModal({
                       setFormData({ ...formData, rules: updated });
                     }}
                     keyboardType="numeric"
-                    textAlign="end"
+                    textAlign="right"
                   />
                 </View>
                 <View style={styles.formGroupHalf}>
@@ -263,7 +263,7 @@ export default function PricingTierFormModal({
                       setFormData({ ...formData, rules: updated });
                     }}
                     keyboardType="numeric"
-                    textAlign="end"
+                    textAlign="right"
                   />
                 </View>
                 <TouchableOpacity
@@ -312,7 +312,7 @@ export default function PricingTierFormModal({
                 placeholder="הכנס תיאור מדרג (לדוגמה: מחיר מיוחד של 8₪ ליחידה בקנייה של 5 פריטים ומעלה)"
                 multiline
                 numberOfLines={4}
-                textAlign="end"
+                textAlign="right"
               />
             </View>
 
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   formGroup: { marginBottom: 20 },
   formRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 12 },
   formGroupHalf: { flex: 1 },
-  formLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'end' },
+  formLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
   formInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },
   textArea: { height: 100, textAlignVertical: 'top' },
   addRuleButton: { marginBottom: 10 },

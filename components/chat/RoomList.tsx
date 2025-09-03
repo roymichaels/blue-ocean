@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   name: {
-    textAlign: 'end',
+    textAlign: 'right',
     fontSize: 16,
   },
   badge: {

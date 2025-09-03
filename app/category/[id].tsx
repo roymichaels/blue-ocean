@@ -343,7 +343,7 @@ export default function CategoryScreen() {
                 value={newSubcategory.name}
                 onChangeText={(text) => setNewSubcategory({...newSubcategory, name: text})}
                 placeholder="הכנס שם תת-קטגוריה"
-                textAlign="end"
+                textAlign="right"
               />
             </View>
 
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   formInput: {
     borderWidth: 1,

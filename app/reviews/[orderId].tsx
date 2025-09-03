@@ -125,7 +125,7 @@ export default function SubmitReviewScreen() {
           value={title}
           onChangeText={setTitle}
           placeholderTextColor={colors.text.tertiary}
-          textAlign="end"
+          textAlign="right"
         />
         <TextInput
           style={[styles.textarea, { borderColor: colors.border.primary, color: colors.text.primary }]}
@@ -135,7 +135,7 @@ export default function SubmitReviewScreen() {
           placeholderTextColor={colors.text.tertiary}
           multiline
           numberOfLines={4}
-          textAlign="end"
+          textAlign="right"
         />
         <TouchableOpacity style={[styles.submitButton, { backgroundColor: colors.gold }] } onPress={submit}>
           <Text style={[styles.submitText, { color: colors.text.inverse }]}>שלח</Text>
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   content: { padding: 16 },
   productRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
   productImage: { borderRadius: 8, marginLeft: 12 },
-  productName: { flex: 1, fontSize: 16, fontWeight: '600', textAlign: 'end' },
+  productName: { flex: 1, fontSize: 16, fontWeight: '600', textAlign: 'right' },
   ratingSection: { alignItems: 'center', marginBottom: 24 },
   input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 16 },
   textarea: { borderWidth: 1, borderRadius: 8, padding: 12, height: 120, marginBottom: 16, textAlignVertical: 'top' },

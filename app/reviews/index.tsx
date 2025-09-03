@@ -557,7 +557,7 @@ export default function ReviewsScreen() {
             placeholder="חיפוש ביקורות..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            textAlign="end"
+            textAlign="right"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -749,7 +749,7 @@ export default function ReviewsScreen() {
                   onChangeText={(text) => setNewReview(prev => ({ ...prev, title: text }))}
                   placeholder="סכם את החוויה שלך"
                   maxLength={100}
-                  textAlign="end"
+                  textAlign="right"
                   placeholderTextColor={colors.text.tertiary}
                 />
               </View>
@@ -768,7 +768,7 @@ export default function ReviewsScreen() {
                   multiline
                   numberOfLines={4}
                   maxLength={500}
-                  textAlign="end"
+                  textAlign="right"
                   placeholderTextColor={colors.text.tertiary}
                 />
               </View>
@@ -960,7 +960,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   ratingFilter: {
     paddingRight: 16,
@@ -1048,13 +1048,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   reviewComment: {
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   reviewActions: {
     flexDirection: 'row',
@@ -1152,12 +1152,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   orderSelectorDate: {
     fontSize: 14,
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   orderSelectorItems: {
     borderTopWidth: 1,
@@ -1176,11 +1176,11 @@ const styles = StyleSheet.create({
   orderSelectorItemName: {
     fontSize: 14,
     flex: 1,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   orderSelectorMoreItems: {
     fontSize: 12,
-    textAlign: 'end',
+    textAlign: 'right',
     marginTop: 4,
   },
   alreadyReviewedBadge: {
@@ -1208,12 +1208,12 @@ const styles = StyleSheet.create({
   selectedOrderTitle: {
     fontSize: 18,
     fontWeight: '600',
-    textAlign: 'end',
+    textAlign: 'right',
   },
   selectedOrderDate: {
     fontSize: 14,
     marginBottom: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   selectedOrderItems: {
     borderTopWidth: 1,
@@ -1237,11 +1237,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   selectedOrderItemQuantity: {
     fontSize: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   ratingSection: {
     marginBottom: 24,
@@ -1251,7 +1251,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   inputGroup: {
     marginBottom: 24,
@@ -1313,7 +1313,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   filterOption: {
     flexDirection: 'row',
@@ -1325,7 +1325,7 @@ const styles = StyleSheet.create({
   },
   filterOptionText: {
     fontSize: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   selectedFilterDot: {
     width: 12,

@@ -16,6 +16,8 @@ module.exports = {
     '^react-native$': '<rootDir>/tests/__mocks__/react-native.js',
     '^@/features/(.*)$': '<rootDir>/src/features/$1',
     '^@/shared/(.*)$': '<rootDir>/src/shared/$1',
+    '^@/ui/(.*)$': '<rootDir>/src/ui/$1',
+    '^@/layout/(.*)$': '<rootDir>/src/layout/$1',
     '^@/(.*)$': '<rootDir>/$1',
   },
   testMatch: [
