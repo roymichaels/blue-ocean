@@ -7,7 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { push, replace } from '@/services/navigation';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import Menu, { MenuItem } from '@/components/ui/Menu';
+import { Menu, type MenuItem } from '@/ui/primitives';
 import Text from '@/shared/ui/Text';
 
 export default function UserAvatar() {

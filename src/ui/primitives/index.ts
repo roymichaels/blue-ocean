@@ -11,3 +11,5 @@ export { default as Portal } from './Portal';
 export { default as Overlay } from './Overlay';
 export { default as Spinner } from './Spinner';
 export { default as Skeleton } from './Skeleton';
+export { default as Menu } from './Menu';
+export type { MenuItem } from './Menu';
