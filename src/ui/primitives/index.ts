@@ -11,3 +11,5 @@ export { default as Spinner } from './Spinner';
 export { default as Skeleton } from './Skeleton';
 export { default as Menu } from './Menu';
 export type { MenuItem } from './Menu';
+export { default as Button } from './Button';
+export { default as Text } from './Text';
