@@ -1,13 +1,13 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import Impersonate from '../app/admin/stores/[storeId]/impersonate';
+import Impersonate from '@app/admin/stores/[storeId]/impersonate';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),
   router: { replace: jest.fn() },
 }));
 
-jest.mock('../hooks/useRequirePlatformAdmin', () => jest.fn());
+jest.mock('hooks/useRequirePlatformAdmin', () => jest.fn());
 
 describe('Admin store impersonation', () => {
   const { useLocalSearchParams, router } = require('expo-router');

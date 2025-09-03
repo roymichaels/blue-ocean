@@ -1,1 +1,1 @@
-export { default, chainAdapter, assertNearChain } from '../src/services/chain';
+export { default, chainAdapter, assertNearChain } from '@services/chain';

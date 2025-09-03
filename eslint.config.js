@@ -37,6 +37,12 @@ module.exports = [
           message: "Avoid hiding the tab bar with tabBarStyle.display 'none'.",
         },
       ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['../src/**', '../app/**', '../../src/**', '../../app/**'],
+        },
+      ],
     },
   },
   // Feature boundaries
@@ -58,9 +64,9 @@ module.exports = [
         'error',
         {
           patterns: [
-            '@/features/*/components/*',
-            '@/features/*/hooks/*',
-            '@/features/*/services/*',
+            '@features/*/components/*',
+            '@features/*/hooks/*',
+            '@features/*/services/*',
           ],
         },
       ],
@@ -84,7 +90,7 @@ module.exports = [
       'no-restricted-imports': [
         'error',
         {
-          patterns: ['@/services/**'],
+          patterns: ['@services/**'],
         },
       ],
     },
@@ -114,6 +120,12 @@ module.exports = [
         {
           selector: "TemplateElement[value.raw=/\\(tabs\\)/]",
           message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['../src/**', '../app/**', '../../src/**', '../../app/**'],
         },
       ],
     },

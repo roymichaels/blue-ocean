@@ -71,9 +71,9 @@ jest.mock('@/ui/primitives', () => ({ Spinner: () => null }));
 // minimal mocks for unused components
 jest.mock('@/features/products/ProductCard', () => ({ __esModule: true, default: () => null }));
 
-import storesAgent from '../agents/stores-agent';
-import StorefrontStoreScreen from '../app/store/[storeId]';
-import AdminDashboardScreen from '../app/admin/dashboard';
+import storesAgent from '@/agents/stores-agent';
+import StorefrontStoreScreen from '@app/store/[storeId]';
+import AdminDashboardScreen from '@app/admin/dashboard';
 
 describe('store reputation', () => {
   it('aggregates reviews and orders into reputation score', async () => {

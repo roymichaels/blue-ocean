@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import CategoryScreen from '../app/storefront/category/[id]';
+import CategoryScreen from '@app/storefront/category/[id]';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ id: 'vegetables' }),

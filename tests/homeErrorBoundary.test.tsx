@@ -1,9 +1,9 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
 import { Text } from 'react-native';
-import HomeScreen from '../app/index';
+import HomeScreen from '@app/index';
 
-jest.mock('../hooks/useAppRouter', () => () => ({ push: jest.fn() }));
+jest.mock('hooks/useAppRouter', () => () => ({ push: jest.fn() }));
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
   usePathname: () => '/index',
@@ -15,36 +15,36 @@ jest.mock('react-native-safe-area-context', () => {
     SafeAreaView: ({ children }: any) => React.createElement(React.Fragment, null, children),
   };
 });
-jest.mock('../features/auth/AuthContext', () => ({
+jest.mock('@features/auth/AuthContext', () => ({
   useAuth: () => ({ isStoreOwner: false }),
 }));
-jest.mock('../contexts/LanguageContext', () => ({
+jest.mock('@/contexts/LanguageContext', () => ({
   useLanguage: () => ({ t: (s: string) => s }),
 }));
-jest.mock('../contexts/ThemeContext', () => ({
+jest.mock('@/contexts/ThemeContext', () => ({
   useTheme: () => ({ colors: { background: '#fff', text: { primary: '#000', secondary: '#333' } } }),
 }));
-jest.mock('../features/home/components/HomeHeader', () => {
+jest.mock('@features/home/components/HomeHeader', () => {
   const React = require('react');
   return () => {
     throw new Error('boom');
   };
 });
-jest.mock('../features/home/components/CategoryChips', () => () => null);
-jest.mock('../features/home/components/ProductGrid', () => () => null);
-jest.mock('../ui/primitives', () => ({ Spinner: () => null }));
-jest.mock('../shared/ui/EmptyState', () => () => null);
-jest.mock('../components/BannerFormModal', () => () => null);
-jest.mock('../features/cart/components/CartModal', () => () => null);
-jest.mock('../features/products/components/ProductFormModal', () => () => null);
-jest.mock('../components/SmartImage', () => () => null);
-jest.mock('../components/InfoModal', () => () => null);
-jest.mock('../services/database', () => ({}));
-jest.mock('../services/chain', () => 'near');
-jest.mock('../features/products/services/nearCategories', () => ({
+jest.mock('@features/home/components/CategoryChips', () => () => null);
+jest.mock('@features/home/components/ProductGrid', () => () => null);
+jest.mock('@ui/primitives', () => ({ Spinner: () => null }));
+jest.mock('@shared/ui/EmptyState', () => () => null);
+jest.mock('@/components/BannerFormModal', () => () => null);
+jest.mock('@features/cart/components/CartModal', () => () => null);
+jest.mock('@features/products/components/ProductFormModal', () => () => null);
+jest.mock('@/components/SmartImage', () => () => null);
+jest.mock('@/components/InfoModal', () => () => null);
+jest.mock('@services/database', () => ({}));
+jest.mock('@services/chain', () => 'near');
+jest.mock('@features/products/services/nearCategories', () => ({
   listCategories: jest.fn().mockResolvedValue([]),
 }));
-jest.mock('../features/home/hooks/useHome', () => ({
+jest.mock('@features/home/hooks/useHome', () => ({
   useHome: () => ({
     products: [],
     categories: [],
@@ -55,7 +55,7 @@ jest.mock('../features/home/hooks/useHome', () => ({
     error: null,
   }),
 }));
-jest.mock('../features/home/hooks/useHomeBanners', () => ({
+jest.mock('@features/home/hooks/useHomeBanners', () => ({
   useHomeBanners: () => ({
     heroBanners: [],
     refreshing: false,
@@ -65,7 +65,7 @@ jest.mock('../features/home/hooks/useHomeBanners', () => ({
     error: null,
   }),
 }));
-jest.mock('../features/home/hooks/useHomeFilters', () => ({
+jest.mock('@features/home/hooks/useHomeFilters', () => ({
   useHomeFilters: () => ({
     filteredProducts: [],
     searchQuery: '',

@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import StorefrontScreen from '../app/storefront';
+import StorefrontScreen from '@app/storefront';
 
 jest.mock('../contexts/ThemeContext', () => ({
   useTheme: () => ({
