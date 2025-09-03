@@ -6,11 +6,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { CheckedQueryClientProvider } from './CheckedQueryClientProvider';
 import GlobalErrorBoundary from '@/components/GlobalErrorBoundary';
 
-interface Props {
-  children: React.ReactNode;
-}
-
-export default function AppProviders({ children }: Props) {
+export default function AppProviders({ children }: React.PropsWithChildren) {
   const [queryClient] = React.useState(() => new QueryClient());
 
   return (

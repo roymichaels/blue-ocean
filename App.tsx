@@ -12,11 +12,9 @@ import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import { WakuProvider } from '@/contexts/WakuContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Router, usePathname, useRouter, useSegments } from 'expo-router';
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
-const queryClient = new QueryClient();
 
 function RouterApp() {
   const router = useRouter();
@@ -57,11 +55,9 @@ export default function App() {
                       <WakuProvider>
                         <NotificationProvider>
                           <ErrorBoundary>
-                            <QueryClientProvider client={queryClient}>
-                              <React.Suspense fallback={null}>
-                                {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-                              </React.Suspense>
-                            </QueryClientProvider>
+                            <React.Suspense fallback={null}>
+                              {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
+                            </React.Suspense>
                           </ErrorBoundary>
                         </NotificationProvider>
                       </WakuProvider>
