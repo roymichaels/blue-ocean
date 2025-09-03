@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-// eslint-disable-next-line no-restricted-imports
-import ProductCard from '@/features/products/components/ProductCard';
+import ProductCard from '@/components/ui/ProductCard';
 import { Product, Category } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import EmptyState from '@/shared/ui/EmptyState';

@@ -9,6 +9,9 @@ import EmptyState from '@/shared/ui/EmptyState';
 import Spinner from '@/shared/ui/Spinner';
 import Text from '@/shared/ui/Text';
 import Heading from '@/shared/ui/Heading';
+import Button from '@/components/ui/Button';
+import { spacing } from '@/shared/ui/tokens';
+
 
 const SmartImage = lazy(() => import('@/components/SmartImage'));
 
@@ -113,19 +116,20 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
     <View style={styles.container}>
       <View style={styles.bannerHeader}>
         {isStoreOwner && (
-          <TouchableOpacity
-            style={[styles.addBannerButton, { backgroundColor: colors.gold }]}
+          <Button
+            variant="secondary"
             onPress={onAddBanner}
+            style={styles.addBannerButton}
           >
-            <Plus size={20} color={colors.text.inverse} />
+            <Plus size={20} color={colors.text.primary} />
             <Text
               variant="sm"
               weight="600"
-              style={{ marginStart: 8, color: colors.text.inverse }}
+              style={{ marginStart: spacing.spacer8, color: colors.text.primary }}
             >
               {t('banner.addBanner')}
             </Text>
-          </TouchableOpacity>
+          </Button>
         )}
       </View>
 

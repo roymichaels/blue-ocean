@@ -1,19 +1,24 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import { HeroBanner } from '@/types';
 
 export function useHomeBanners() {
-  const { data, refetch } = useQuery({
+  const { data, refetch, isLoading } = useQuery({
     queryKey: ['homeBanners'],
     queryFn: async () => {
       const db = DatabaseService.getInstance();
       return db.getHeroBanners();
     },
-    suspense: true,
+    suspense: false,
   });
-
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>(data ?? []);
+
+  useEffect(() => {
+    if (data) {
+      setHeroBanners(data);
+    }
+  }, [data]);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -49,6 +54,7 @@ export function useHomeBanners() {
     refresh,
     upsertBanner,
     removeBanner,
+    loading: isLoading,
   } as const;
 }
 

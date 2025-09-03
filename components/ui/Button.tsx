@@ -6,7 +6,7 @@ import Text from '@/shared/ui/Text';
 
 interface ButtonProps extends PressableProps {
   title?: string;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'ghost';
   loading?: boolean;
 }
 
@@ -32,19 +32,25 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
     ? getColor('interactive.disabled')
     : variant === 'primary'
       ? getColor('interactive.primary')
-      : getColor('interactive.secondary');
+      : variant === 'secondary'
+        ? getColor('interactive.secondary')
+        : 'transparent';
 
   const textColor = isDisabled
     ? getColor('text.secondary')
     : variant === 'primary'
       ? getColor('text.inverse')
-      : getColor('text.primary');
+      : variant === 'secondary'
+        ? getColor('text.primary')
+        : getColor('interactive.primary');
 
   const borderStyle =
     variant === 'secondary'
       ? {
           borderWidth: 1,
-          borderColor: isDisabled ? getColor('interactive.disabled') : getColor('border.primary'),
+          borderColor: isDisabled
+            ? getColor('interactive.disabled')
+            : getColor('border.primary'),
         }
       : null;
 
