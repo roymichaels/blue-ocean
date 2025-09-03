@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { Stack } from 'expo-router';
-import { initNear } from '../services/near';
+import { chainAdapter } from '@/services/chain';
 import '../services/chainGuard';
 import WalletButton from '../components/WalletButton';
 
@@ -10,7 +10,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (walletEnabled) {
-      initNear().catch((e) => {
+      chainAdapter.init().catch((e) => {
         console.error('Wallet init failed', e);
       });
     }

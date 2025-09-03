@@ -28,6 +28,7 @@ module.exports = {
     '<rootDir>/tests/admin-store-detail.test.tsx',
     '<rootDir>/tests/not-found.test.tsx',
     '<rootDir>/tests/wakuErrorLogging.test.ts',
+    '<rootDir>/tests/nearAdapter.test.ts',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],

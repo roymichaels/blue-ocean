@@ -32,7 +32,7 @@ async function ensureNode(): Promise<LightNode | null> {
     let bootstrap = getWakuBootstrapNodes();
     if (bootstrap.length === 0) bootstrap = STABLE_BOOTSTRAP;
     if (bootstrap.length === 0) return null;
-    node = await createLightNode({ libp2p: { bootstrap } });
+    node = await createLightNode({ libp2p: { bootstrap } } as any);
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
     return node;

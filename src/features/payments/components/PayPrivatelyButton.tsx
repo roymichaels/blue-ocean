@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '@/components/ui/Button';
-import { payPrivately, openModal, useNearAccount } from '@/services/near';
+import { chainAdapter } from '@/services/chain';
 
 interface PayPrivatelyButtonProps {
   listingId: number;
@@ -9,17 +9,17 @@ interface PayPrivatelyButtonProps {
 }
 
 export default function PayPrivatelyButton({ listingId, amountYocto, onComplete }: PayPrivatelyButtonProps) {
-  const accountId = useNearAccount();
+  const accountId = chainAdapter.useAccount();
   const [loading, setLoading] = useState(false);
 
   const handlePress = async () => {
     if (!accountId) {
-      await openModal();
+      await chainAdapter.openModal();
       return;
     }
     try {
       setLoading(true);
-      await payPrivately({ id: listingId, buyer: accountId, amountYocto });
+      await chainAdapter.payPrivately?.({ id: listingId, buyer: accountId, amountYocto });
       onComplete?.();
     } finally {
       setLoading(false);
