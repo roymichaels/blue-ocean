@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, StyleSheet } from 'react-native';
+import Text from '@/ui/primitives/Text';
+import Button from '@/ui/primitives/Button';
 import { Server } from 'lucide-react-native';
 import Card from '../Card';
 import SettingsAgent from '../../agents/settings-agent';
@@ -89,13 +91,13 @@ const RpcSettings: React.FC<Props> = ({ colors }) => {
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
-        <TouchableOpacity
-          style={[styles.saveButton, { backgroundColor: colors.gold }]}
+        <Button
+          title="Save RPC URLs"
           onPress={save}
           disabled={saving}
-        >
-          <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>Save RPC URLs</Text>
-        </TouchableOpacity>
+          style={[styles.saveButton, { backgroundColor: colors.gold }]}
+          textStyle={[styles.saveButtonText, { color: colors.text.inverse }]}
+        />
       </View>
     </Card>
   );
