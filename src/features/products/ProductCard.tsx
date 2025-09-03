@@ -3,7 +3,7 @@ import { Pressable, Image, View, StyleSheet, ViewStyle } from 'react-native';
 import { Star } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import Text from '@/shared/ui/Text';
-import Button from '@/components/ui/Button';
+import Button from '@/ui/primitives/Button';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { Skeleton } from '@/ui/primitives';
 import { Product } from '@/types';

@@ -10,7 +10,7 @@ import { Product, Category, HeroBanner } from '../types';
 import ProductCard from '@/features/products/ProductCard';
 import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
-import Button from '../components/ui/Button';
+import Button from '@/ui/primitives/Button';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing } from '@/shared/ui/tokens';
 
@@ -62,7 +62,6 @@ export default function Landing() {
             <Link href="/" asChild>
               <Button
                 title="Browse App"
-                variant="secondary"
                 style={{ borderRadius: 10, borderColor: colors.gold, backgroundColor: 'transparent' }}
               />
             </Link>

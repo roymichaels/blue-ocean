@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Button from '@/components/ui/Button';
+import Button from '@/ui/primitives/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useAppRouter from 'hooks/useAppRouter';
 import ProofUploader from '../../components/ProofUploader';

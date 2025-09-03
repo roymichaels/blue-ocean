@@ -9,7 +9,7 @@ import EmptyState from '@/shared/ui/EmptyState';
 import { Spinner, Skeleton } from '@/ui/primitives';
 import Text from '@/shared/ui/Text';
 import Heading from '@/shared/ui/Heading';
-import Button from '@/components/ui/Button';
+import Button from '@/ui/primitives/Button';
 import { spacing, radius } from '@/shared/ui/tokens';
 
 
@@ -126,9 +126,15 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
       <View style={styles.bannerHeader}>
         {isStoreOwner && (
           <Button
-            variant="secondary"
             onPress={onAddBanner}
-            style={styles.addBannerButton}
+            style={[
+              styles.addBannerButton,
+              {
+                backgroundColor: 'transparent',
+                borderWidth: 1,
+                borderColor: colors.border.primary,
+              },
+            ]}
           >
             <Plus size={20} color={colors.text.primary} />
             <Text

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
-import Button from '@/components/ui/Button';
+import Button from '@/ui/primitives/Button';
 
 interface Props {
   value: string;

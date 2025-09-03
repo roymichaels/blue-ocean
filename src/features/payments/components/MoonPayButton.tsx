@@ -1,6 +1,6 @@
 import { errorLog } from '@/utils/logger';
 import React, { useState } from 'react';
-import Button from '@/components/ui/Button';
+import Button from '@/ui/primitives/Button';
 import { useAppInfo } from '@/contexts/AppInfoContext';
 import { chainAdapter } from '@/services/chain';
 import MoonPayModal from './MoonPayModal';

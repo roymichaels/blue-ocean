@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Button from '@/components/ui/Button';
+import Button from '@/ui/primitives/Button';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import { useTheme } from '@/contexts/ThemeContext';
