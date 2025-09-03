@@ -69,7 +69,7 @@ jest.mock('../components/InfoModal', () => () => null);
 jest.mock('@/shared/ui/Spinner', () => () => null);
 
 // minimal mocks for unused components
-jest.mock('@/features/products/components/ProductCard', () => ({ __esModule: true, default: () => null }));
+jest.mock('@/features/products/ProductCard', () => ({ __esModule: true, default: () => null }));
 
 import storesAgent from '../agents/stores-agent';
 import StorefrontStoreScreen from '../app/store/[storeId]';

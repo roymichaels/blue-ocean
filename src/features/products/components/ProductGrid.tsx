@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { FlatList, View, StyleSheet } from 'react-native';
 import EmptyState from '@/shared/ui/EmptyState';
-import ProductCard from './ProductCard';
+import ProductCard from '../ProductCard';
 import { Product } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Package } from 'lucide-react-native';
@@ -13,6 +13,7 @@ const ProductRow = React.memo(
   ({ item, borderColor }: { item: Product; borderColor: string }) => (
     <View style={rowStyles.flex}>
       <ProductCard
+        key={item.id}
         product={item}
         style={{ marginBottom: spacing.spacer12, borderColor }}
       />
