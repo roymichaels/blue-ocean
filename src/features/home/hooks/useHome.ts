@@ -5,8 +5,10 @@ import chain from '@/services/chain';
 import { Product, Category } from '@/types';
 
 let listCategories: (() => Promise<Category[]>) | undefined;
+let listProducts: ((storeId: string) => Promise<Product[]>) | undefined;
 if (chain === 'near') {
   ({ listCategories } = require('@/features/products/services/nearCategories'));
+  ({ listProducts } = require('@/features/products/services/nearProducts'));
 }
 
 export function useHome() {
@@ -14,10 +16,16 @@ export function useHome() {
     queryKey: ['home'],
     queryFn: async () => {
       const db = DatabaseService.getInstance();
-      const [productsData, categoriesData] = await Promise.all([
-        db.getProducts(),
-        listCategories ? listCategories() : Promise.resolve([]),
-      ]);
+      let productsData = await db.getProducts();
+      if (productsData.length === 0) {
+        const fallbackStore = process.env.EXPO_PUBLIC_DEFAULT_STORE;
+        if (fallbackStore && listProducts) {
+          try {
+            productsData = await listProducts(fallbackStore);
+          } catch {}
+        }
+      }
+      const categoriesData = listCategories ? await listCategories() : [];
       return { productsData, categoriesData };
     },
     suspense: true,

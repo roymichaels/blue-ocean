@@ -22,7 +22,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import HomeHeader from '@/features/home/components/HomeHeader';
 import SearchBar from '@/features/home/components/SearchBar';
 import PriceRange from '@/features/home/components/PriceRange';
-import CategoryTabs from '@/features/home/components/CategoryTabs';
+import CategoryChips from '@/features/home/components/CategoryChips';
 import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
 import BannerArea from '@/features/home/components/BannerArea';
 const ProductGrid = lazy(() => import('@/features/home/components/ProductGrid'));
@@ -34,6 +34,7 @@ const CartModal = lazy(() => import('@/features/cart/components/CartModal'));
 const ProductFormModal = lazy(() => import('@/features/products/components/ProductFormModal'));
 const InfoModal = lazy(() => import('@/components/InfoModal'));
 import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
+import { spacing } from '@/shared/ui/tokens';
 
 
 function HomeScreenContent() {
@@ -238,7 +239,7 @@ function HomeScreenContent() {
   return (
     <SafeAreaView
       testID="home-root"
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: colors.canvas }]}
     >
     <HomeHeader />
     <SearchBar
@@ -247,16 +248,17 @@ function HomeScreenContent() {
     />
 
     <ScrollView
+      style={{ backgroundColor: colors.canvas }}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={refresh} />
       }
     >
-      <CategoryTabs
-          categories={categories}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-        />
+      <CategoryChips
+        categories={categories}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
       <PriceRange
           minPrice={minPrice}
           setMinPrice={setMinPrice}
@@ -495,14 +497,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    paddingHorizontal: spacing.spacer16,
+    marginBottom: spacing.spacer24,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.spacer16,
   },
   sectionTitle: {
     fontSize: 18,
@@ -511,7 +513,7 @@ const styles = StyleSheet.create({
   sectionActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.spacer8,
   },
   seeAll: {
     fontSize: 14,
@@ -520,7 +522,7 @@ const styles = StyleSheet.create({
   sortButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.spacer12,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
@@ -528,7 +530,7 @@ const styles = StyleSheet.create({
   sortText: {
     fontSize: 12,
     fontWeight: '500',
-    marginLeft: 4,
+    marginLeft: spacing.spacer4,
   },
   addProductButton: {
     width: 28,
@@ -539,10 +541,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   categoriesList: {
-    paddingLeft: 16,
+    paddingLeft: spacing.spacer16,
   },
   categoryWrapper: {
-    marginLeft: 20,
+    marginLeft: spacing.spacer20,
   },
   categoryCard: {
     alignItems: 'center',
@@ -555,7 +557,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.spacer8,
     borderWidth: 1,
   },
   categoryEmoji: {
@@ -623,16 +625,16 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: spacing.spacer4,
     textAlign: 'end',
   },
   adminActionsContainer: {
-    padding: 16,
-    marginBottom: 24,
+    padding: spacing.spacer16,
+    marginBottom: spacing.spacer24,
   },
   clearDataButton: {
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: spacing.spacer12,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -640,13 +642,13 @@ const styles = StyleSheet.create({
   clearDataText: {
     fontSize: 16,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: spacing.spacer8,
   },
   categorySelector: {
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.spacer16,
+    paddingVertical: spacing.spacer12,
   },
   categorySelectorText: {
     fontSize: 16,
@@ -679,8 +681,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.spacer12,
+    paddingHorizontal: spacing.spacer16,
     borderBottomWidth: 1,
   },
   categorySelectorItemContent: {
@@ -689,7 +691,7 @@ const styles = StyleSheet.create({
   },
   categorySelectorItemIcon: {
     fontSize: 24,
-    marginRight: 12,
+    marginRight: spacing.spacer12,
   },
   categorySelectorItemText: {
     fontSize: 16,
@@ -699,6 +701,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   buttonSpinner: {
-    marginRight: 8,
+    marginRight: spacing.spacer8,
   },
 });

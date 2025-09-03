@@ -8,12 +8,17 @@ import {
   Alert,
   I18nManager,
 } from 'react-native';
+import { router } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { useLanguage } from '@/contexts/LanguageContext';
 import storesAgent from '@/agents/stores-agent';
 import nearAuth from '../../auth/services/nearAuth';
 import { errorLog } from '@/utils/logger';
 
 const StoreCreation: React.FC = () => {
   const [name, setName] = useState('');
+  const queryClient = useQueryClient();
+  const { t } = useLanguage();
 
   const mintStore = async () => {
     if (!name) return;
@@ -27,11 +32,18 @@ const StoreCreation: React.FC = () => {
       await nearAuth.signMessage(`MintStore:${id}`);
       await storesAgent.add({ id, name, owner, nftId: id });
       setName('');
+      Alert.alert(t('common.success'), t('stores.createSuccess'));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['home'] }),
+        queryClient.invalidateQueries({ queryKey: ['store'] }),
+        queryClient.invalidateQueries({ queryKey: ['product'] }),
+      ]);
+      router.replace('/');
     } catch (err: any) {
       if (err?.message?.toLowerCase().includes('insufficient')) {
-        Alert.alert('Transaction failed', 'Insufficient funds to deploy the store');
+        Alert.alert(t('stores.transactionFailed'), t('stores.insufficientFunds'));
       } else {
-        Alert.alert('Transaction cancelled');
+        Alert.alert(t('stores.transactionCancelled'));
       }
       errorLog('Store mint failed', err);
     }
@@ -39,9 +51,9 @@ const StoreCreation: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Store Name</Text>
+      <Text style={styles.label}>{t('stores.storeName')}</Text>
       <TextInput style={styles.input} value={name} onChangeText={setName} />
-      <Button title="Mint Store" onPress={mintStore} />
+      <Button title={t('stores.mintStore')} onPress={mintStore} />
     </View>
   );
 };

@@ -33,7 +33,7 @@ export default function Categories() {
     <ErrorBoundary>
       <AppShell>
         {categories.length > 0 ? (
-          <ScrollView contentContainerStyle={styles.list}>
+          <ScrollView style={{ backgroundColor: colors.canvas }} contentContainerStyle={styles.list}>
             {categories.map((c) => (
               <TouchableOpacity
                 key={c.id}
