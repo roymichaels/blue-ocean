@@ -3,14 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   Platform,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { X } from 'lucide-react-native';
 import Button from './ui/Button';
+import { Portal, Overlay } from '@/ui/primitives';
 
 interface ConfirmationModalProps {
   visible: boolean;
@@ -38,66 +37,63 @@ export default function ConfirmationModal({
   if (!visible) return null;
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onCancel}
-    >
-      <TouchableWithoutFeedback onPress={onCancel}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback onPress={e => e.stopPropagation()}>
-            <View style={[styles.modalContainer, { backgroundColor: colors.surface.elevated }]}>
-              <View style={styles.header}>
-                <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
-                <TouchableOpacity
-                  onPress={onCancel}
-                  style={styles.closeButton}
-                  accessibilityRole="button"
-                >
-                  <X size={20} color={colors.text.secondary} />
-                </TouchableOpacity>
-              </View>
-              
-              <View style={styles.content}>
-                <Text style={[styles.message, { color: colors.text.secondary }]}>
-                  {message}
-                </Text>
-              </View>
-              
-              <View style={styles.actions}>
-                <Button
-                  title={cancelText}
-                  variant="secondary"
-                  onPress={onCancel}
-                  style={{ flex: 1 }}
-                  accessibilityRole="button"
-                />
+    <Portal>
+      <Overlay style={styles.overlay} />
+      <View style={styles.center} pointerEvents="box-none">
+        <View
+          style={[styles.modalContainer, { backgroundColor: colors.surface.elevated }]}
+        >
+          <View style={styles.header}>
+            <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
+            <TouchableOpacity
+              onPress={onCancel}
+              style={styles.closeButton}
+              accessibilityRole="button"
+            >
+              <X size={20} color={colors.text.secondary} />
+            </TouchableOpacity>
+          </View>
 
-                <Button
-                  title={confirmText}
-                  onPress={onConfirm}
-                  style={{
-                    flex: 1,
-                    backgroundColor: destructive
-                      ? colors.status.error
-                      : colors.interactive.primary,
-                  }}
-                  accessibilityRole="button"
-                />
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
+          <View style={styles.content}>
+            <Text style={[styles.message, { color: colors.text.secondary }]}>
+              {message}
+            </Text>
+          </View>
+
+          <View style={styles.actions}>
+            <Button
+              title={cancelText}
+              variant="secondary"
+              onPress={onCancel}
+              style={{ flex: 1 }}
+              accessibilityRole="button"
+            />
+
+            <Button
+              title={confirmText}
+              onPress={onConfirm}
+              style={{
+                flex: 1,
+                backgroundColor: destructive
+                  ? colors.status.error
+                  : colors.interactive.primary,
+              }}
+              accessibilityRole="button"
+            />
+          </View>
         </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+      </View>
+    </Portal>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  center: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

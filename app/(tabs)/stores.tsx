@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, Text, Button } from '@/ui/primitives';
+
 import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function StoresScreen() {
@@ -10,5 +11,6 @@ export default function StoresScreen() {
         <Button title="Okay" onPress={() => {}} />
       </Card>
     </ErrorBoundary>
+
   );
 }
