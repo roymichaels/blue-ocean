@@ -20,6 +20,7 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
       disabled,
       children,
       accessibilityRole = 'button',
+      accessibilityLabel,
       ...rest
     },
     ref,
@@ -60,13 +61,26 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 44,
+    minWidth: 44,
   } as const;
+
+  const focusStyle = {
+    borderColor: getColor('border.focus'),
+    borderWidth: 2,
+  } as const;
+
+  const [isFocused, setIsFocused] = React.useState(false);
 
   return (
     <Pressable
       ref={ref}
       accessibilityRole={accessibilityRole}
-      style={[buttonStyle, { backgroundColor }, borderStyle, style]}
+      accessibilityLabel={accessibilityLabel ?? title}
+      hitSlop={8}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      style={[buttonStyle, { backgroundColor }, borderStyle, style, isFocused && focusStyle]}
       disabled={isDisabled}
       {...rest}
     >
