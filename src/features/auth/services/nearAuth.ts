@@ -5,7 +5,7 @@ import { setupWalletSelector } from '@near-wallet-selector/core';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import '@near-wallet-selector/wallet-utils';
 import { Buffer } from 'buffer';
-import { requireEnv } from '../../services/config';
+import { requireEnv } from '@/services/config';
 
 // Expose for test injection where needed
 export let selector: WalletSelector | null = null;
