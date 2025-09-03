@@ -7,7 +7,8 @@ import AppShell from '../components/layout/AppShell';
 import Section from '../components/ui/Section';
 import GoldDivider from '../components/ui/GoldDivider';
 import DatabaseService from '../services/database';
-import { Product, Category, HeroBanner } from '../types';
+import { Product, HeroBanner } from '../types';
+import { useCategories } from '@/services';
 import ProductCard from '@/features/products/ProductCard';
 import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
@@ -19,8 +20,8 @@ export default function Landing() {
   const { push } = useAppRouter();
   const { colors } = useTheme();
   const [featured, setFeatured] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [banners, setBanners] = useState<HeroBanner[]>([]);
+  const { data: categories = [] } = useCategories();
 
   useEffect(() => {
     const load = async () => {
@@ -28,10 +29,6 @@ export default function Landing() {
         const db = DatabaseService.getInstance();
         const prods = await db.getProducts();
         setFeatured(prods.slice(0, 6));
-        try {
-          const cats = await db.getCategories();
-          setCategories(cats.slice(0, 8));
-        } catch {}
         try {
           const hs = await db.getHeroBanners();
           setBanners(hs);
@@ -98,7 +95,7 @@ export default function Landing() {
         <Section title="Categories">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={{ flexDirection: 'row', gap: spacing.spacer8 }}>
-              {(categories.length ? categories : [
+              {(categories.length ? categories.slice(0, 8) : [
                 { id: 'electronics', name: 'Electronics' },
                 { id: 'fashion', name: 'Fashion' },
                 { id: 'home', name: 'Home' },

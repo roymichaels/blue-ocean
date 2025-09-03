@@ -15,13 +15,14 @@ import {
 } from 'react-native';
 import { push } from '@/services/navigation';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
-import { Product, Category, Subcategory, PricingTier, ProductIndexItem } from '@/types';
+import { Product, Subcategory, PricingTier, ProductIndexItem } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import DatabaseService from '@/services/database';
 import PinataService from '@/services/pinata';
 import ipfsService from '@/services/ipfsService';
 import chain from '@/services/chain';
+import { useCategories } from '@/services';
 
 let setProductBatch:
   | ((items: ProductIndexItem[]) => Promise<void>)
@@ -62,7 +63,7 @@ export default function ProductFormModal({
   const [videoError, setVideoError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { data: categories = [] } = useCategories();
   const pinata = PinataService.getInstance();
 
   const toHttpUrl = (uri: string) =>
@@ -87,7 +88,6 @@ export default function ProductFormModal({
   useEffect(() => {
     if (visible) {
       initForm();
-      loadCategories();
       loadPricingTiers();
     }
   }, [visible, product, address]);
@@ -114,20 +114,6 @@ export default function ProductFormModal({
     setImageUrls((product?.images || []).join('\n'));
     setVideoUrls((product?.videos || []).join('\n'));
     setVariants(product?.variants || []);
-  };
-
-  const loadCategories = async () => {
-    try {
-      const db = DatabaseService.getInstance();
-      const data = await db.getCategories();
-      setCategories(data);
-      if (editingProduct.category) {
-        const category = data.find(c => c.id === editingProduct.category);
-        setAvailableSubcategories(category?.subcategories || []);
-      }
-    } catch (error) {
-      errorLog('Error loading categories:', error);
-    }
   };
 
   const loadPricingTiers = async () => {
