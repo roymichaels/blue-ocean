@@ -1,15 +1,7 @@
-import { useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import { Redirect } from 'expo-router';
 
 export default function Index() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Send users to the tabs group. Redirecting to "/" re-renders this screen
-    // which triggers an endless navigation loop and "Maximum update depth"
-    // warnings. Pointing to the tabs layout avoids reloading the current route.
-    router.replace('/(tabs)'); // eslint-disable-line no-restricted-syntax
-  }, [router]);
-
-  return null;
+  // Use a dedicated Redirect component to avoid navigating before the
+  // root layout has mounted, which previously triggered errors.
+  return <Redirect href="/(tabs)" />; // eslint-disable-line no-restricted-syntax
 }
