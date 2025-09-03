@@ -31,6 +31,7 @@ module.exports = {
     '<rootDir>/tests/wakuErrorLogging.test.ts',
     '<rootDir>/tests/nearAdapter.test.ts',
     '<rootDir>/tests/i18n-offline.test.ts',
+    '<rootDir>/tests/smoke.test.ts',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],
