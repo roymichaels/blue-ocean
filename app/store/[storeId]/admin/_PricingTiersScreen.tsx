@@ -26,7 +26,7 @@ import { PricingTier } from '../../../../types';
 import { Spinner } from '@/ui/primitives';
 import InfoModal from '../../../../components/InfoModal';
 import PricingTierFormModal from '@/features/products/components/PricingTierFormModal';
-import Card from '../../../../components/Card';
+import Card from '@/ui/primitives/Card';
 
 export default function PricingTiersScreen() {
   const { replace, back } = useAppRouter();
@@ -83,18 +83,16 @@ export default function PricingTiersScreen() {
   };
 
   const renderTierCard = (tier: PricingTier) => (
-    <Card
-      Component={TouchableOpacity}
-      key={tier.id}
-      style={[
-        styles.tierCard,
-        {
-          backgroundColor: colors.surface.primary,
-          borderColor: colors.border.primary,
-        },
-      ]}
-      onPress={() => editTier(tier)}
-    >
+    <TouchableOpacity key={tier.id} onPress={() => editTier(tier)}>
+      <Card
+        style={[
+          styles.tierCard,
+          {
+            backgroundColor: colors.surface.primary,
+            borderColor: colors.border.primary,
+          },
+        ]}
+      >
       <View style={styles.tierHeader}>
         <View
           style={[
@@ -154,7 +152,8 @@ export default function PricingTiersScreen() {
           {tier.description}
         </Text>
       </View>
-    </Card>
+      </Card>
+    </TouchableOpacity>
   );
 
   if (loading && pricingTiers.length === 0) {

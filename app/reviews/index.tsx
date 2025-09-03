@@ -23,7 +23,7 @@ import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import commonStyles from '@/constants/styles';
-import Card from '../../components/Card';
+import Card from '@/ui/primitives/Card';
 import SmartImage from '../../components/SmartImage';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 
@@ -375,17 +375,8 @@ export default function ReviewsScreen() {
     );
 
     return (
-      <Card
-        Component={TouchableOpacity}
+      <TouchableOpacity
         key={item.id}
-        style={[
-          styles.orderSelectorItem,
-          {
-            backgroundColor: colors.surface.primary,
-            borderColor: colors.border.primary,
-          },
-          alreadyReviewed && styles.orderSelectorItemDisabled
-        ]}
         onPress={() => {
           if (!alreadyReviewed) {
             setSelectedOrder(item);
@@ -400,6 +391,16 @@ export default function ReviewsScreen() {
         }}
         disabled={alreadyReviewed}
       >
+        <Card
+          style={[
+            styles.orderSelectorItem,
+            {
+              backgroundColor: colors.surface.primary,
+              borderColor: colors.border.primary,
+            },
+            alreadyReviewed && styles.orderSelectorItemDisabled
+          ]}
+        >
         <View style={styles.orderSelectorInfo}>
           <Text style={[styles.orderSelectorTitle, { color: colors.text.primary }]}>
             הזמנה #{item.id.slice(-6)}
@@ -434,7 +435,8 @@ export default function ReviewsScreen() {
             <Text style={[styles.alreadyReviewedText, { color: colors.text.inverse }]}>נסקר</Text>
           </View>
         )}
-      </Card>
+        </Card>
+      </TouchableOpacity>
     );
   };
 

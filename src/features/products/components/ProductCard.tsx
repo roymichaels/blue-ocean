@@ -19,7 +19,7 @@ import DatabaseService from '@/services/database';
 import MediaService from '@/services/media';
 import { useAccountId } from '../../auth/services/nearAuth';
 import productsAgent from '@/agents/products-agent';
-import Card from '@/components/Card';
+import Card from '@/ui/primitives/Card';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 32 - 12) / 2;
@@ -161,15 +161,19 @@ function ProductCard({
   }
 
   return (
-    <Card Component={TouchableOpacity} style={[
-      styles.container,
-      {
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary
-      },
-      style,
-    ]} onPress={handlePress}>
-      <View style={styles.imageContainer}>
+    <TouchableOpacity
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+        },
+        style,
+      ]}
+      onPress={handlePress}
+    >
+      <Card style={{ padding: 0, backgroundColor: 'transparent' }}>
+        <View style={styles.imageContainer}>
         {product.images && product.images.length > 0 ? (
           <SmartImage uri={product.images[0]} width={CARD_WIDTH} height={IMAGE_HEIGHT} contentFit="cover" />
         ) : product.videos && product.videos.length > 0 ? (
@@ -309,8 +313,9 @@ function ProductCard({
             {stock > 0 ? `במלאי (${stock})` : 'אזל מהמלאי'}
           </Text>
         </View>
-      </View>
-    </Card>
+        </View>
+      </Card>
+    </TouchableOpacity>
   );
 }
 
