@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,13 +15,13 @@ import useAppRouter from 'hooks/useAppRouter';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
-import DatabaseService from '../../services/database';
-import { Category, Subcategory } from '../../types';
+import { Subcategory } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
 import { Spinner } from '@/ui/primitives';
 import commonStyles from '@/constants/styles';
+import { useCategories, useCategory } from '@/services';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
 
@@ -31,19 +31,26 @@ export default function CategoryScreen() {
   const { push, back } = useAppRouter();
   const params = validateParams(useLocalSearchParams());
   const id = params.success ? params.data.id : undefined;
-  const [category, setCategory] = useState<Category | null>(null);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const category = categories.find((cat) => cat.id === id) || null;
+  const subcategories = category?.subcategories || [];
+  const {
+    addSubcategory: addSubcategoryMutation,
+    updateSubcategory: updateSubcategoryMutation,
+    deleteSubcategory: deleteSubcategoryMutation,
+    isPending: mutationLoading,
+  } = useCategory(category);
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [newSubcategory, setNewSubcategory] = useState<Partial<Subcategory>>({
     id: '',
     name: '',
     icon: '',
-    categoryId: id || ''
+    categoryId: id || '',
   });
-  const [loading, setLoading] = useState(true);
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
+  const loading = categoriesLoading || mutationLoading;
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -53,36 +60,6 @@ export default function CategoryScreen() {
     type: 'info' as 'success' | 'error' | 'info' | 'warning'
   });
 
-  useEffect(() => {
-    if (!id) return;
-    loadCategory();
-  }, [id]);
-
-  const loadCategory = async () => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const db = DatabaseService.getInstance();
-      const categories = await db.getCategories();
-      const foundCategory = categories.find(cat => cat.id === id);
-      
-      if (foundCategory) {
-        setCategory(foundCategory);
-        setSubcategories(foundCategory.subcategories || []);
-      }
-    } catch (error) {
-      errorLog('Error loading category:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'טעינת הקטגוריה נכשלה',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (!params.success) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -91,13 +68,13 @@ export default function CategoryScreen() {
     );
   }
 
-  const addSubcategory = () => {
+  const openAddSubcategory = () => {
     setEditingSubcategory(null);
     setNewSubcategory({
       id: '',
       name: '',
       icon: '',
-      categoryId: id || ''
+      categoryId: id || '',
     });
     setShowSubcategoryModal(true);
   };
@@ -114,43 +91,30 @@ export default function CategoryScreen() {
         visible: true,
         title: 'שגיאה',
         message: 'אנא מלא את כל השדות',
-        type: 'error'
+        type: 'error',
       });
       return;
     }
 
-    setLoading(true);
     try {
-      const db = DatabaseService.getInstance();
-      
       if (editingSubcategory) {
-        // Update existing subcategory
-        await db.updateSubcategory(editingSubcategory.id, newSubcategory);
-        
-        // Refresh category data
-        await loadCategory();
-        
+        await updateSubcategoryMutation(editingSubcategory.id, newSubcategory as Subcategory);
         setInfoModal({
           visible: true,
           title: 'הצלחה',
           message: 'תת-הקטגוריה עודכנה בהצלחה',
-          type: 'success'
+          type: 'success',
         });
       } else {
-        // Add new subcategory
-        await db.addSubcategory(newSubcategory as Subcategory);
-        
-        // Refresh category data
-        await loadCategory();
-        
+        await addSubcategoryMutation(newSubcategory as Subcategory);
         setInfoModal({
           visible: true,
           title: 'הצלחה',
           message: 'תת-הקטגוריה נוספה בהצלחה',
-          type: 'success'
+          type: 'success',
         });
       }
-      
+
       setShowSubcategoryModal(false);
     } catch (error) {
       errorLog('Error saving subcategory:', error);
@@ -158,28 +122,20 @@ export default function CategoryScreen() {
         visible: true,
         title: 'שגיאה',
         message: error instanceof Error ? error.message : 'שמירת תת-הקטגוריה נכשלה',
-        type: 'error'
+        type: 'error',
       });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const deleteSubcategory = async (subcategoryId: string) => {
-    setLoading(true);
+  const handleDeleteSubcategory = async (subcategoryId: string) => {
     try {
-      const db = DatabaseService.getInstance();
-      await db.deleteSubcategory(subcategoryId);
-      
-      // Refresh category data
-      await loadCategory();
-      
+      await deleteSubcategoryMutation(subcategoryId);
       setShowSubcategoryModal(false);
       setInfoModal({
         visible: true,
         title: 'הצלחה',
         message: 'תת-הקטגוריה נמחקה בהצלחה',
-        type: 'success'
+        type: 'success',
       });
     } catch (error) {
       errorLog('Error deleting subcategory:', error);
@@ -187,10 +143,8 @@ export default function CategoryScreen() {
         visible: true,
         title: 'שגיאה',
         message: error instanceof Error ? error.message : 'מחיקת תת-הקטגוריה נכשלה',
-        type: 'error'
+        type: 'error',
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -265,7 +219,7 @@ export default function CategoryScreen() {
         <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{category.name}</Text>
         <View style={styles.headerActions}>
           {isStoreOwner && (
-            <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={addSubcategory}>
+            <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.gold }]} onPress={openAddSubcategory}>
               <Plus size={20} color={colors.text.inverse} />
             </TouchableOpacity>
           )}
@@ -289,7 +243,7 @@ export default function CategoryScreen() {
               {isStoreOwner ? 'הוסף תת-קטגוריות כדי להתחיל' : 'תת-קטגוריות יתווספו בקרוב'}
             </Text>
             {isStoreOwner && (
-              <TouchableOpacity style={[styles.emptyButton, { backgroundColor: colors.gold }]} onPress={addSubcategory}>
+              <TouchableOpacity style={[styles.emptyButton, { backgroundColor: colors.gold }]} onPress={openAddSubcategory}>
                 <Plus size={20} color={colors.text.inverse} />
                 <Text style={[styles.emptyButtonText, { color: colors.text.inverse }]}>הוסף תת-קטגוריה</Text>
               </TouchableOpacity>
@@ -381,7 +335,7 @@ export default function CategoryScreen() {
               {editingSubcategory && (
                 <TouchableOpacity 
                   style={[styles.deleteButton, { backgroundColor: colors.status.error }]}
-                  onPress={() => deleteSubcategory(editingSubcategory.id)}
+                  onPress={() => handleDeleteSubcategory(editingSubcategory.id)}
                   disabled={loading}
                 >
                   <Trash2 size={20} color={colors.text.inverse} />
