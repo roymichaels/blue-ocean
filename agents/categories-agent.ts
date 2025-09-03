@@ -1,11 +1,11 @@
 import { Category } from '@/types';
-import { assertNearChain } from '@/services/chain';
+import { assertNearChain } from '@services/chain';
 import {
   setCategory,
   getCategory,
   listCategories,
   removeCategory,
-} from '@/features/products/services/nearCategories';
+} from '@features/products/services/nearCategories';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
 

@@ -1,5 +1,5 @@
 import { Product } from '@/types';
-import { assertNearChain } from '@/services/chain';
+import { assertNearChain } from '@services/chain';
 import {
   setProduct,
   getProduct,
@@ -7,8 +7,8 @@ import {
   removeProduct,
   getProducts as fetchProducts,
   getVersion,
-} from '@/features/products/services/nearProducts';
-import { getStore } from '@/features/stores/services/nearStores';
+} from '@features/products/services/nearProducts';
+import { getStore } from '@features/stores/services/nearStores';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import {
   LightNode,
@@ -23,7 +23,7 @@ import {
 import { getWakuBootstrapNodes } from '@/utils/appConfig';
 import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
-import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
+import { getPrivateKey, getPublicKeyHex } from '@services/localIdentity';
 import { sign } from '@noble/ed25519';
 import type { WakuMessage } from '@/types/waku';
 import { errorLog } from '@/utils/logger';
@@ -35,7 +35,7 @@ import {
   getProductCache,
   setProductCache,
   clearProductCache,
-} from '@/features/products/services/productCache';
+} from '@features/products/services/productCache';
 
 const buildProductTopic = (storeId: string) => buildTopic('products', storeId);
 const PAGE_SIZE = 50;

@@ -6,7 +6,7 @@ jest.mock('../utils/validateNearAddress', () => ({
 }));
 import validateNearAddress from '../utils/validateNearAddress';
 
-jest.mock('@/features/auth/services/nearAuth', () => ({
+jest.mock('@features/auth/services/nearAuth', () => ({
   getAccountId: () => 'addr_admin',
   signIn: jest.fn(),
 }));

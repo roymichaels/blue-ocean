@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import ErrorBoundary from '@shared/ErrorBoundary';
 
 export default function StoresScreen() {
   const { colors } = useTheme();

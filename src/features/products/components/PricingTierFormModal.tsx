@@ -14,7 +14,7 @@ import {
 import { X, Save, Trash2 } from 'lucide-react-native';
 import { PricingTier } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
-import DatabaseService from '@/services/database';
+import DatabaseService from '@services/database';
 import InfoModal from '@/components/InfoModal';
 
 interface PricingTierFormModalProps {

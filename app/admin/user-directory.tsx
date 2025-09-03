@@ -3,12 +3,12 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
 import RequireWallet from '@/components/RequireWallet';
-import chain from '@/services/chain';
+import chain from '@services/chain';
 import { User } from '@/types';
 
 let listUsers: (() => Promise<User[]>) | undefined;
 if (chain === 'near') {
-  ({ listUsers } = require('@/features/auth/services/nearUsers'));
+  ({ listUsers } = require('@features/auth/services/nearUsers'));
 }
 
 export default function UserDirectory() {

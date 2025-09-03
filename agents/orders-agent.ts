@@ -1,6 +1,6 @@
 import { uuid } from '../utils/uuid';
 import { Order, OrderStatus, Notification, OrderTrackingStep } from '../types';
-import nearAuth from '@/features/auth/services/nearAuth';
+import nearAuth from '@features/auth/services/nearAuth';
 import notificationsAgent from './notifications-agent';
 import { assertNearChain } from '../services/chain';
 import {
@@ -18,7 +18,7 @@ import {
   refundPayment,
 } from '../services/nearContract';
 import productsAgent from './products-agent';
-import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
+import { getSellerPublicKey } from '@features/stores/services/sellerRegistry';
 
 assertNearChain();
 import { encryptShippingInfo } from '../utils/shippingCrypto';

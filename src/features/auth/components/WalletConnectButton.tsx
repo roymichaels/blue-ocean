@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { chainAdapter } from '@/services/chain';
+import { chainAdapter } from '@services/chain';
 
 interface WalletConnectButtonProps {
   onConnect?: () => void;

@@ -17,7 +17,7 @@ import chain from '../services/chain';
 
 let listAllReviews: (() => Promise<Review[]>) | undefined;
 if (chain === 'near') {
-  ({ listAllReviews } = require('@/features/reviews/services/nearReviews'));
+  ({ listAllReviews } = require('@features/reviews/services/nearReviews'));
 }
 import {
   User,

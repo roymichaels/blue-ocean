@@ -21,6 +21,18 @@ module.exports = [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../../../**', '../../../../**', '../../../../../**'],
+              message:
+                'Avoid deep relative imports outside module boundaries; use path aliases like @app, @features, @ui, or @shared.',
+            },
+          ],
+        },
+      ],
       'no-restricted-syntax': [
         'error',
         {
@@ -58,9 +70,9 @@ module.exports = [
         'error',
         {
           patterns: [
-            '@/features/*/components/*',
-            '@/features/*/hooks/*',
-            '@/features/*/services/*',
+            '@features/*/components/*',
+            '@features/*/hooks/*',
+            '@features/*/services/*',
           ],
         },
       ],
@@ -84,7 +96,7 @@ module.exports = [
       'no-restricted-imports': [
         'error',
         {
-          patterns: ['@/services/**'],
+          patterns: ['@services/**'],
         },
       ],
     },

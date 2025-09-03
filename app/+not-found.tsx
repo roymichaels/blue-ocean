@@ -1,5 +1,5 @@
 import { Redirect, Stack } from 'expo-router';
-import { replace } from '@/services/navigation';
+import { replace } from '@services/navigation';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function NotFoundScreen() {

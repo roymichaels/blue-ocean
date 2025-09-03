@@ -1,10 +1,10 @@
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { spacing } from '@/shared/ui/tokens';
-import Button from '@/ui/primitives/Button';
+import { spacing } from '@shared/ui/tokens';
+import Button from '@ui/primitives/Button';
 import { usePathname } from 'expo-router';
-import { replace } from '@/services/navigation';
+import { replace } from '@services/navigation';
 import { errorLog } from '@/utils/logger';
 
 interface Props {

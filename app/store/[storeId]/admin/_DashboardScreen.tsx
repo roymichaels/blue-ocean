@@ -3,14 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import { useTheme } from '@/contexts/ThemeContext';
-import chain from '@/services/chain';
+import chain from '@services/chain';
 import OrderRevenueMetrics from '@/components/OrderRevenueMetrics';
-import { useAuth } from '@/features/auth/AuthContext';
-import { useStore } from '@/features/products/hooks';
+import { useAuth } from '@features/auth/AuthContext';
+import { useStore } from '@features/products/hooks';
 
 let listProducts: (() => Promise<any[]>) | undefined;
 if (chain === 'near') {
-  ({ listProducts } = require('@/features/products/services/nearProducts'));
+  ({ listProducts } = require('@features/products/services/nearProducts'));
 }
 
 export default function StoreDashboardScreen() {

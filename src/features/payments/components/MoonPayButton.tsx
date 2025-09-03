@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import React, { useState } from 'react';
 import Button from '@/components/ui/Button';
 import { useAppInfo } from '@/contexts/AppInfoContext';
-import { chainAdapter } from '@/services/chain';
+import { chainAdapter } from '@services/chain';
 import MoonPayModal from './MoonPayModal';
 
 interface MoonPayButtonProps {

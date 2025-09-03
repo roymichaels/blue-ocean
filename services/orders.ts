@@ -11,12 +11,12 @@ import {
   OrderTrackingStep,
 } from '../types';
 import { sha256 } from '@noble/hashes/sha256';
-import { getStore } from '@/features/stores/services/nearStores';
-import { getProduct, setProduct } from '@/features/products/services/nearProducts';
-import nearAuth from '@/features/auth/services/nearAuth';
+import { getStore } from '@features/stores/services/nearStores';
+import { getProduct, setProduct } from '@features/products/services/nearProducts';
+import nearAuth from '@features/auth/services/nearAuth';
 import { adminResolve, deployOrderPayment } from './nearContract';
 import config from '../utils/appConfig';
-import { calculateCardFees } from '@/features/payments/services/card';
+import { calculateCardFees } from '@features/payments/services/card';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TextInput, TextInputProps } from 'react-native';
 import { Search } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { spacing, radius } from '@/shared/ui/tokens';
+import { spacing, radius } from '@shared/ui/tokens';
 
 interface TextFieldProps extends TextInputProps {
   variant?: 'default' | 'search';

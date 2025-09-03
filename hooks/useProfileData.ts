@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { errorLog } from '@/utils/logger';
-import OrderService from '@/services/orders';
-import CartService from '@/features/cart/services/cart';
-import DatabaseService from '@/services/database';
-import chain from '@/services/chain';
+import OrderService from '@services/orders';
+import CartService from '@features/cart/services/cart';
+import DatabaseService from '@services/database';
+import chain from '@services/chain';
 import { User } from '@/types';
 
 let listStores: (() => Promise<any[]>) | undefined;
 if (chain === 'near') {
-  ({ listStores } = require('@/features/stores/services/nearStores'));
+  ({ listStores } = require('@features/stores/services/nearStores'));
 }
 
 export function useProfileData(user?: User | null) {

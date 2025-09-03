@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, I18nManager } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import storesAgent, { selectStore } from '../../../agents/stores-agent';
-import { getProducts } from '../../../agents/products-agent';
-import reviewAgent from '../../../agents/review-agent';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { Store, Product } from '../../../types';
-import StoreHeader from '@/features/stores/components/store/StoreHeader';
-import StoreTabs from '@/features/stores/components/store/StoreTabs';
-import ProductGrid from '@/features/products/components/ProductGrid';
+import storesAgent, { selectStore } from '@/agents/stores-agent';
+import { getProducts } from '@/agents/products-agent';
+import reviewAgent from '@/agents/review-agent';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Store, Product } from '@/types';
+import StoreHeader from '@features/stores/components/store/StoreHeader';
+import StoreTabs from '@features/stores/components/store/StoreTabs';
+import ProductGrid from '@features/products/components/ProductGrid';
 
 interface ReviewMap {
   [productId: string]: { rating: number; count: number };

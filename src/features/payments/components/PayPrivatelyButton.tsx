@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '@/components/ui/Button';
-import { chainAdapter } from '@/services/chain';
+import { chainAdapter } from '@services/chain';
 
 interface PayPrivatelyButtonProps {
   listingId: number;

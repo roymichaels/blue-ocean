@@ -4,7 +4,7 @@ import { debugLog } from '@/utils/logger';
 import {
   push as navigationPush,
   replace as navigationReplace,
-} from '@/services/navigation';
+} from '@services/navigation';
 
 function warnGroupPath(path: unknown) {
   if (__DEV__ && typeof path === 'string' && /(\([^/]+\))/g.test(path)) {

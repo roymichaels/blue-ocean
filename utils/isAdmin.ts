@@ -1,4 +1,4 @@
-import nearAuth from '@/features/auth/services/nearAuth';
+import nearAuth from '@features/auth/services/nearAuth';
 import SettingsAgent from '../agents/settings-agent';
 
 export default async function isAdmin(): Promise<boolean> {

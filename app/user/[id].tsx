@@ -16,7 +16,7 @@ import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, User as UserIcon, Mail, Calendar, Shield, MessageCircle } from 'lucide-react-native';
 import DatabaseService from '../../services/database';
 import { User } from '../../types';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import commonStyles from '@/constants/styles';
 import SmartImage from '../../components/SmartImage';

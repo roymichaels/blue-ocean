@@ -9,7 +9,7 @@ import React, {
   useMemo,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { tokens as darkTokens, lightTokens, Tokens } from '@/shared/ui/tokens';
+import { tokens as darkTokens, lightTokens, Tokens } from '@shared/ui/tokens';
 import { useAppInfo } from './AppInfoContext';
 
 const THEME_STORAGE_KEY = 'app_theme';

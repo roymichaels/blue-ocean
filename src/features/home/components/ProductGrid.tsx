@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
-import ProductCard, { ProductCardSkeleton } from '@/features/products/ProductCard';
+import ProductCard, { ProductCardSkeleton } from '@features/products/ProductCard';
 import { Product, Category } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
-import EmptyState from '@/shared/ui/EmptyState';
+import EmptyState from '@shared/ui/EmptyState';
 import { Filter, Plus } from 'lucide-react-native';
-import { spacing } from '@/shared/ui/tokens';
+import { spacing } from '@shared/ui/tokens';
 
 interface ProductGridProps {
   products: Product[];

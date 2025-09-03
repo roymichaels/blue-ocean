@@ -3,9 +3,9 @@ import {
   setValue,
   listValues,
   removeValue,
-} from '@/services/nearKvStore';
+} from '@services/nearKvStore';
 import { Store } from '@/types';
-import { assertNearChain } from '@/services/chain';
+import { assertNearChain } from '@services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 import { getNearContract } from '@/utils/nearEnv';
 

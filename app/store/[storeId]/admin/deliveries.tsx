@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
-import Spinner from '@/shared/ui/Spinner';
-import RequireWallet from '../../../../components/RequireWallet';
+import Spinner from '@shared/ui/Spinner';
+import RequireWallet from '@/components/RequireWallet';
 
 // Lazy-load the deliveries management screen to reduce the main bundle
 const DeliveriesScreen = React.lazy(() =>

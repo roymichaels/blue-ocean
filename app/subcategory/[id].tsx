@@ -19,19 +19,19 @@ import useAppRouter from 'hooks/useAppRouter';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, Heart } from 'lucide-react-native';
-import DatabaseService from '@/services/database';
-import chain from '@/services/chain';
+import DatabaseService from '@services/database';
+import chain from '@services/chain';
 import { Product, Subcategory, Category, PricingTier, Store } from '@/types';
 
 let listStores: (() => Promise<Store[]>) | undefined;
 if (chain === 'near') {
-  ({ listStores } = require('@/features/stores/services/nearStores'));
+  ({ listStores } = require('@features/stores/services/nearStores'));
 }
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@features/auth/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import MediaUploader from '@/components/MediaUploader';
-import Spinner from '@/shared/ui/Spinner';
+import Spinner from '@shared/ui/Spinner';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import commonStyles from '@/constants/styles';

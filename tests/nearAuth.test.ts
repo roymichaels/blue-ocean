@@ -1,4 +1,4 @@
-import * as nearAuth from '@/features/auth/services/nearAuth';
+import * as nearAuth from '@features/auth/services/nearAuth';
 
 describe('nearAuth.signMessage', () => {
   it('delegates to wallet signMessage', async () => {

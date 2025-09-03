@@ -6,12 +6,12 @@ import { AppInfoProvider } from '@/contexts/AppInfoContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ConfigProvider } from '@/contexts/ConfigContext';
-import { AuthProvider } from '@/features/auth/AuthContext';
-import { AuthModalProvider } from '@/features/auth/AuthModalContext';
+import { AuthProvider } from '@features/auth/AuthContext';
+import { AuthModalProvider } from '@features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import { WakuProvider } from '@/contexts/WakuContext';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import ErrorBoundary from '@shared/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Router, usePathname, useRouter, useSegments } from 'expo-router';
 

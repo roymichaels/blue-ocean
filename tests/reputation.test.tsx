@@ -1,14 +1,14 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 
-jest.mock('@/features/stores/services/nearStores', () => ({
+jest.mock('@features/stores/services/nearStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: 'Store', owner: 'owner1', nftId: 'n1', reputation: 0 })),
   setStore: jest.fn(async () => {}),
   listStores: jest.fn(async () => [{ id: 's1', name: 'Store', owner: 'owner1', nftId: 'n1', reputation: 0 }]),
   removeStore: jest.fn(),
 }));
 
-jest.mock('@/features/auth/services/nearAuth', () => ({
+jest.mock('@features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('addr'),
   signIn: jest.fn(),
 }));
@@ -36,11 +36,11 @@ jest.mock('../components/NotificationContext', () => ({
   useNotifications: () => ({ showNotification: jest.fn() }),
 }));
 
-jest.mock('@/features/auth/AuthContext', () => ({
+jest.mock('@features/auth/AuthContext', () => ({
   useAuth: () => ({ isAdmin: true, isDriver: false, user: { id: 'u1' } }),
 }));
 
-jest.mock('@/features/auth/AuthModalContext', () => ({
+jest.mock('@features/auth/AuthModalContext', () => ({
   useAuthModal: () => ({ openAuthModal: jest.fn() }),
 }));
 
@@ -66,10 +66,10 @@ jest.mock('../agents/moderation-agent', () => ({
 jest.mock('../agents/products-agent', () => ({ remove: jest.fn() }));
 
 jest.mock('../components/InfoModal', () => () => null);
-jest.mock('@/shared/ui/Spinner', () => () => null);
+jest.mock('@shared/ui/Spinner', () => () => null);
 
 // minimal mocks for unused components
-jest.mock('@/features/products/ProductCard', () => ({ __esModule: true, default: () => null }));
+jest.mock('@features/products/ProductCard', () => ({ __esModule: true, default: () => null }));
 
 import storesAgent from '../agents/stores-agent';
 import StorefrontStoreScreen from '../app/store/[storeId]';

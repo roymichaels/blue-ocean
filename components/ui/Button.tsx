@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
 import { Pressable, ActivityIndicator, PressableProps } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { spacing, radius } from '@/shared/ui/tokens';
-import Text from '@/shared/ui/Text';
+import { spacing, radius } from '@shared/ui/tokens';
+import Text from '@shared/ui/Text';
 
 interface ButtonProps extends PressableProps {
   title?: string;

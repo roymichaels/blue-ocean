@@ -14,13 +14,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
-import FullScreenMediaViewer from '../../../../components/FullScreenMediaViewer';
-import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../../../contexts/ThemeContext';
-import DatabaseService from '../../../../services/database';
-import { DeliveryJob, User } from '../../../../types';
+import FullScreenMediaViewer from '@/components/FullScreenMediaViewer';
+import { useAuth } from '@features/auth/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import DatabaseService from '@/services/database';
+import { DeliveryJob, User } from '@/types';
 import commonStyles from '@/constants/styles';
-import SmartImage from '../../../../components/SmartImage';
+import SmartImage from '@/components/SmartImage';
 
 export default function AdminDeliveriesScreen() {
   const { isStoreOwner } = useAuth();

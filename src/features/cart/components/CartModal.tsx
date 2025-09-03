@@ -25,7 +25,7 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { CartItem, ShippingAddress, Store } from '@/types';
-import chain from '@/services/chain';
+import chain from '@services/chain';
 import useCart from '../hooks/useCart';
 import useCartStores from '../hooks/useCartStores';
 
@@ -33,19 +33,19 @@ let getStore:
   | ((storeId: string, id: string) => Promise<Store | null>)
   | undefined;
 if (chain === 'near') {
-  ({ getStore } = require('@/features/stores/services/nearStores'));
+  ({ getStore } = require('@features/stores/services/nearStores'));
 }
 
-import OrderService from '@/services/orders';
-import eventBus from '@/services/eventBus';
-const MoonPayButton = require('@/features/payments/components/MoonPayButton').default;
-import { useAuth } from '@/features/auth/AuthContext';
+import OrderService from '@services/orders';
+import eventBus from '@services/eventBus';
+const MoonPayButton = require('@features/payments/components/MoonPayButton').default;
+import { useAuth } from '@features/auth/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import commonStyles from '@/constants/styles';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNotifications } from '@/components/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { push } from '@/services/navigation';
+import { push } from '@services/navigation';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 

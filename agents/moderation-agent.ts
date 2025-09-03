@@ -1,7 +1,7 @@
 import { uuid } from '@/utils/uuid';
 import { Report } from '@/types';
-import { assertNearChain } from '@/services/chain';
-import { addReport, listReports, removeReport } from '@/features/reviews/services/nearReports';
+import { assertNearChain } from '@services/chain';
+import { addReport, listReports, removeReport } from '@features/reviews/services/nearReports';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
 

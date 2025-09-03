@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import { encryptMessage } from '@/utils/chatCrypto';
-import DatabaseService from '@/services/database';
+import DatabaseService from '@services/database';
 import { ChatMessage } from '@/types';
 
 export interface WakuClient {

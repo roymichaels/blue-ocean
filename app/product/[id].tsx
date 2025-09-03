@@ -3,7 +3,7 @@ import { Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
-import Spinner from '@/shared/ui/Spinner';
+import Spinner from '@shared/ui/Spinner';
 
 const ProductScreen = React.lazy(() => import('./_ProductScreen'));
 const validateParams = createValidateParams(z.object({ id: z.string() }));

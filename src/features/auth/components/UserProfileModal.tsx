@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import DatabaseService from '@/services/database';
+import DatabaseService from '@services/database';
 
 interface UserProfileModalProps {
   visible: boolean;

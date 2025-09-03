@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import useAppRouter from 'hooks/useAppRouter';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@features/auth/AuthContext';
 
 export default function useRequirePlatformAdmin() {
   const { user } = useAuth();

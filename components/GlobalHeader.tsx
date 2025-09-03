@@ -8,15 +8,15 @@ import {
 } from 'react-native';
 import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
-import { push } from '@/services/navigation';
+import { push } from '@services/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
-import WishlistModal from '@/features/cart/components/WishlistModal';
-import CartService from '@/features/cart/services/cart';
-import { spacing, radius, typography } from '@/ui/tokens';
+import WishlistModal from '@features/cart/components/WishlistModal';
+import CartService from '@features/cart/services/cart';
+import { spacing, radius, typography } from '@ui/tokens';
 
 interface GlobalHeaderProps {
   searchQuery?: string;

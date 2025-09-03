@@ -20,11 +20,11 @@ jest.mock('../services/nearContract', () => ({
   refundPayment: jest.fn(),
 }));
 
-jest.mock('@/features/stores/services/nearStores', () => ({
+jest.mock('@features/stores/services/nearStores', () => ({
   getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
 }));
 
-jest.mock('@/features/products/services/nearProducts', () => ({
+jest.mock('@features/products/services/nearProducts', () => ({
   getProduct: jest.fn(async (id: string) => mockProducts[id] || null),
   setProduct: jest.fn(async (p: any) => {
     mockProducts[p.id] = p;
@@ -41,7 +41,7 @@ jest.mock('../agents/orders-agent', () => ({
   update: jest.fn(),
 }));
 
-jest.mock('@/features/auth/services/nearAuth', () => ({
+jest.mock('@features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('buyer_address'),
   signIn: jest.fn(),
 }));

@@ -4,10 +4,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'expo-router';
-import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
+import FloatingCartWidget from '@features/cart/components/FloatingCartWidget';
 import { getTabsForAuth } from '@/config/navigation/tabs';
-import { useAuth } from '@/features/auth/AuthContext';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import { useAuth } from '@features/auth/AuthContext';
+import ErrorBoundary from '@shared/ErrorBoundary';
 
 export default function TabsLayout() {
   const { t } = useLanguage();

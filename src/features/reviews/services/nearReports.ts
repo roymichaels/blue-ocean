@@ -1,6 +1,6 @@
-import { setValue, listValues, removeValue } from '@/services/nearKvStore';
+import { setValue, listValues, removeValue } from '@services/nearKvStore';
 import { Report } from '@/types';
-import { assertNearChain } from '@/services/chain';
+import { assertNearChain } from '@services/chain';
 import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
