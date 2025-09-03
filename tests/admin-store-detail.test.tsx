@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import StoreDetail from '../app/admin/stores/[storeId]/index';
+import StoreDetail from '@app/admin/stores/[storeId]/index';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),

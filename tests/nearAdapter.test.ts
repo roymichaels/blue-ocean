@@ -1,4 +1,4 @@
-import { nearAdapter } from '../src/services/chain/near';
+import { nearAdapter } from '@services/chain/near';
 
 describe('NearAdapter.getBalance', () => {
   it('returns balance from RPC response', async () => {
