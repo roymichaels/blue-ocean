@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   Animated,
   Platform,
 } from 'react-native';
+import Text from '@/ui/primitives/Text';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { spacing, radius, zIndex, shadows } from '@/shared/ui/tokens';

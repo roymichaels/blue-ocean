@@ -1,6 +1,7 @@
 import { debugLog } from '@/utils/logger';
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
 import { useLocalSearchParams } from 'expo-router';
 import { z } from 'zod';

@@ -1,11 +1,11 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   Platform,
 } from 'react-native';
+import Text from '@/ui/primitives/Text';
 import { useTheme } from '../contexts/ThemeContext';
 import { X } from 'lucide-react-native';
 import Button from '@/ui/primitives/Button';

@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import Text from '@/ui/primitives/Text';
 import { useTheme } from '@/contexts/ThemeContext';
 import { spacing } from '@/shared/ui/tokens';
 import Button from '@/ui/primitives/Button';

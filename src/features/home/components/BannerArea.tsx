@@ -7,10 +7,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import useAppRouter from 'hooks/useAppRouter';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Spinner, Skeleton } from '@/ui/primitives';
-import Text from '@/shared/ui/Text';
+import Text from '@/ui/primitives/Text';
 import Heading from '@/shared/ui/Heading';
 import Button from '@/ui/primitives/Button';
-import { spacing, radius } from '@/shared/ui/tokens';
+import { spacing, radius, typography } from '@/ui/tokens';
 
 
 const SmartImage = lazy(() => import('@/components/SmartImage'));
@@ -71,17 +71,19 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
           <View style={styles.heroContent}>
             {item.discount ? (
               <Text
-                variant="xs"
-                weight="600"
-                style={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 8,
-                  alignSelf: 'flex-start',
-                  marginBottom: 8,
-                  color: colors.text.inverse,
-                  backgroundColor: colors.gold,
-                }}
+                style={[
+                  typography.xs,
+                  {
+                    fontWeight: '600',
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 8,
+                    alignSelf: 'flex-start',
+                    marginBottom: 8,
+                    color: colors.text.inverse,
+                    backgroundColor: colors.gold,
+                  },
+                ]}
               >
                 {item.discount} הנחה
               </Text>
@@ -90,7 +92,7 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
               {item.title}
             </Heading>
 
-            <Text variant="sm" style={{ marginTop: 4, color: colors.gold }}>
+            <Text style={[typography.sm, { marginTop: 4, color: colors.gold }]}> 
               {item.subtitle}
             </Text>
           </View>
@@ -138,9 +140,10 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
           >
             <Plus size={20} color={colors.text.primary} />
             <Text
-              variant="sm"
-              weight="600"
-              style={{ marginStart: spacing.spacer8, color: colors.text.primary }}
+              style={[
+                typography.sm,
+                { fontWeight: '600', marginStart: spacing.spacer8, color: colors.text.primary },
+              ]}
             >
               {t('banner.addBanner')}
             </Text>
