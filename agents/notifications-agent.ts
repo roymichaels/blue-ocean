@@ -10,23 +10,14 @@ import {
 import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
-import {
-  LightNode,
-  createLightNode,
-  waitForRemotePeer,
-  createEncoder,
-  Protocols,
-  utf8ToBytes,
-} from '@waku/sdk';
-import { getWakuBootstrapNodes } from '../utils/appConfig';
+import { createEncoder, utf8ToBytes } from '@waku/sdk';
+import { ensureNode, isWakuDisabled } from '@/services/waku';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';
-import AgentError from '@/types/AgentError';
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
-  private node: LightNode | null = null;
 
   private async ensureWallet() {
     await ensureNearWallet('Please connect your NEAR wallet to send notifications.');
@@ -85,7 +76,8 @@ class NotificationsAgent {
     event: string,
     payload: Record<string, unknown> = {},
   ): Promise<void> {
-    const node = await this.ensureNode();
+    if (isWakuDisabled()) return;
+    const node = await ensureNode();
     if (!node) return;
     try {
       const topic = buildTopic('analytics', '1');
@@ -98,30 +90,12 @@ class NotificationsAgent {
     }
   }
 
-  private async ensureNode(): Promise<LightNode | null> {
-    if (this.node) return this.node;
-    try {
-      const bootstrap = getWakuBootstrapNodes();
-      if (bootstrap.length === 0) {
-        throw new AgentError('WAKU_BOOTSTRAP_UNCONFIGURED', 'No Waku bootstrap nodes configured', 'notifications-agent');
-      }
-      this.node = await createLightNode({ libp2p: { bootstrap } } as any);
-      await this.node.start();
-      await waitForRemotePeer(this.node, [Protocols.Relay]);
-      return this.node;
-    } catch (err) {
-      errorLog('Failed to start Waku node', err);
-      this.node = null;
-      return null;
-    }
-  }
-
   private async broadcastWaku(
     item: Notification,
     event?: NotificationEvent,
     storeId = 'default',
   ) {
-    const node = await this.ensureNode();
+    const node = await ensureNode();
     if (!node) return;
     try {
       const topic = buildTopic('orders', storeId);
