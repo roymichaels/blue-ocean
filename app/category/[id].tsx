@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,8 @@ import useAppRouter from 'hooks/useAppRouter';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
-import DatabaseService from '../../services/database';
-import { Category, Subcategory } from '../../types';
+import { useCategories, setSubcategory, removeSubcategory } from '@/services';
+import { Subcategory } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
@@ -31,8 +31,9 @@ export default function CategoryScreen() {
   const { push, back } = useAppRouter();
   const params = validateParams(useLocalSearchParams());
   const id = params.success ? params.data.id : undefined;
-  const [category, setCategory] = useState<Category | null>(null);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const { data: categories = [], isLoading: categoriesLoading, refetch } = useCategories();
+  const category = categories.find((cat) => cat.id === id) || null;
+  const subcategories = category?.subcategories || [];
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [newSubcategory, setNewSubcategory] = useState<Partial<Subcategory>>({
@@ -41,7 +42,7 @@ export default function CategoryScreen() {
     icon: '',
     categoryId: id || ''
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
 
@@ -53,35 +54,7 @@ export default function CategoryScreen() {
     type: 'info' as 'success' | 'error' | 'info' | 'warning'
   });
 
-  useEffect(() => {
-    if (!id) return;
-    loadCategory();
-  }, [id]);
-
-  const loadCategory = async () => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const db = DatabaseService.getInstance();
-      const categories = await db.getCategories();
-      const foundCategory = categories.find(cat => cat.id === id);
-      
-      if (foundCategory) {
-        setCategory(foundCategory);
-        setSubcategories(foundCategory.subcategories || []);
-      }
-    } catch (error) {
-      errorLog('Error loading category:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'טעינת הקטגוריה נכשלה',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Data is loaded via useCategories; no local loadCategory
 
   if (!params.success) {
     return (
@@ -121,37 +94,16 @@ export default function CategoryScreen() {
 
     setLoading(true);
     try {
-      const db = DatabaseService.getInstance();
-      
-      if (editingSubcategory) {
-        // Update existing subcategory
-        await db.updateSubcategory(editingSubcategory.id, newSubcategory);
-        
-        // Refresh category data
-        await loadCategory();
-        
-        setInfoModal({
-          visible: true,
-          title: 'הצלחה',
-          message: 'תת-הקטגוריה עודכנה בהצלחה',
-          type: 'success'
-        });
-      } else {
-        // Add new subcategory
-        await db.addSubcategory(newSubcategory as Subcategory);
-        
-        // Refresh category data
-        await loadCategory();
-        
-        setInfoModal({
-          visible: true,
-          title: 'הצלחה',
-          message: 'תת-הקטגוריה נוספה בהצלחה',
-          type: 'success'
-        });
-      }
-      
+      if (!setSubcategory) throw new Error('setSubcategory not implemented');
+      await setSubcategory(newSubcategory as Subcategory);
+      await refetch();
       setShowSubcategoryModal(false);
+      setInfoModal({
+        visible: true,
+        title: 'הצלחה',
+        message: editingSubcategory ? 'תת-הקטגוריה עודכנה בהצלחה' : 'תת-הקטגוריה נוספה בהצלחה',
+        type: 'success'
+      });
     } catch (error) {
       errorLog('Error saving subcategory:', error);
       setInfoModal({
@@ -168,12 +120,10 @@ export default function CategoryScreen() {
   const deleteSubcategory = async (subcategoryId: string) => {
     setLoading(true);
     try {
-      const db = DatabaseService.getInstance();
-      await db.deleteSubcategory(subcategoryId);
-      
-      // Refresh category data
-      await loadCategory();
-      
+      if (!removeSubcategory) throw new Error('removeSubcategory not implemented');
+      if (!id) throw new Error('קטגוריה לא נמצאה');
+      await removeSubcategory(id, subcategoryId);
+      await refetch();
       setShowSubcategoryModal(false);
       setInfoModal({
         visible: true,
@@ -227,7 +177,7 @@ export default function CategoryScreen() {
     </TouchableOpacity>
   );
 
-  if (loading && !category) {
+  if (categoriesLoading && !category) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>

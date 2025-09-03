@@ -4,7 +4,7 @@ import {
   listValues,
   removeValue,
 } from '@/services/nearKvStore';
-import { Category } from '@/types';
+import { Category, Subcategory } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { getNearContract } from '@/utils/nearEnv';
 
@@ -28,4 +28,27 @@ export async function removeCategory(id: string) {
 export async function listCategories(): Promise<Category[]> {
   const items = await listValues(ADDRESS);
   return items.map((i) => JSON.parse(i.value) as Category);
+}
+
+export async function setSubcategory(subcategory: Subcategory) {
+  const category = await getCategory(subcategory.categoryId);
+  if (!category) throw new Error('Category not found');
+  const list = category.subcategories || [];
+  const index = list.findIndex((s) => s.id === subcategory.id);
+  if (index >= 0) {
+    list[index] = subcategory;
+  } else {
+    list.push(subcategory);
+  }
+  category.subcategories = list;
+  await setCategory(category);
+}
+
+export async function removeSubcategory(categoryId: string, subcategoryId: string) {
+  const category = await getCategory(categoryId);
+  if (!category) throw new Error('Category not found');
+  category.subcategories = (category.subcategories || []).filter(
+    (s) => s.id !== subcategoryId,
+  );
+  await setCategory(category);
 }
