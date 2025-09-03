@@ -3,13 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Modal,
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import { Plus, X, ArrowUpDown } from 'lucide-react-native';
@@ -37,6 +35,7 @@ const ProductFormModal = lazy(() => import('@/features/products/components/Produ
 const InfoModal = lazy(() => import('@/components/InfoModal'));
 import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
 import { spacing } from '@/shared/ui/tokens';
+import { Screen, ScrollArea, Container, Stack } from '@/ui/layout';
 
 
 function HomeScreenContent() {
@@ -241,23 +240,15 @@ function HomeScreenContent() {
   };
 
   return (
-    <SafeAreaView
-      testID="home-root"
-      style={[styles.container, { backgroundColor: colors.canvas }]}
-    >
-    <HomeHeader />
-    <SearchBar
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-    />
+    <Screen testID="home-root" style={styles.container}>
+      <HomeHeader />
+      <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-    <ScrollView
-      style={{ backgroundColor: colors.canvas }}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={refresh} />
-      }
-    >
+      <ScrollArea
+        style={{ backgroundColor: colors.canvas }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
+      >
       <CategoryChips
         categories={categories}
         selectedCategory={selectedCategory}
@@ -282,8 +273,8 @@ function HomeScreenContent() {
       )}
 
         {/* Categories Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+        <Container style={styles.section}>
+          <Stack direction="horizontal" style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               {t('home.categories')}
             </Text>
@@ -292,10 +283,10 @@ function HomeScreenContent() {
                 {t('common.viewAll')}
               </Text>
             </TouchableOpacity>
-          </View>
+          </Stack>
 
           {categories.length > 0 ? (
-            <ScrollView
+            <ScrollArea
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.categoriesList}
@@ -305,7 +296,7 @@ function HomeScreenContent() {
                   {renderCategory({ item })}
                 </View>
               ))}
-            </ScrollView>
+            </ScrollArea>
           ) : (
             <EmptyState
               icon={Plus}
@@ -313,17 +304,17 @@ function HomeScreenContent() {
               message={t('home.categoriesComingSoon')}
             />
           )}
-        </View>
+        </Container>
 
         {/* Products Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+        <Container style={styles.section}>
+          <Stack direction="horizontal" style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               {searchQuery
                 ? t('home.searchResults', { query: searchQuery })
                 : t('home.products')}
             </Text>
-            <View style={styles.sectionActions}>
+          <Stack direction="horizontal" gap="spacer8" style={styles.sectionActions}>
               <TouchableOpacity
                 style={[
                   styles.sortButton,
@@ -353,13 +344,13 @@ function HomeScreenContent() {
                   <Plus size={16} color={colors.gold} />
                 </TouchableOpacity>
               )}
-            </View>
-          </View>
+            </Stack>
+          </Stack>
 
           {productsLoading ? (
             <ProductGridSkeleton />
           ) : (
-            <Suspense fallback={<ProductGridSkeleton />}>
+            <Suspense fallback={<ProductGridSkeleton />}> 
               <ProductGrid
                 products={filteredProducts}
                 categories={categories}
@@ -371,8 +362,8 @@ function HomeScreenContent() {
               />
             </Suspense>
           )}
-        </View>
-      </ScrollView>
+        </Container>
+      </ScrollArea>
 
       <Suspense fallback={<Spinner />}>
         <BannerFormModal
@@ -490,7 +481,7 @@ function HomeScreenContent() {
           onClose={() => setShowCartModal(false)}
         />
       </Suspense>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -513,7 +504,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.spacer24,
   },
   sectionHeader: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.spacer16,
@@ -523,9 +513,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   sectionActions: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.spacer8,
   },
   seeAll: {
     fontSize: 14,
@@ -628,7 +616,7 @@ const styles = StyleSheet.create({
   },
   sortOptionText: {
     fontSize: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   selectedDot: {
     width: 12,
@@ -638,7 +626,7 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: 12,
     marginTop: spacing.spacer4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   adminActionsContainer: {
     padding: spacing.spacer16,
@@ -664,7 +652,7 @@ const styles = StyleSheet.create({
   },
   categorySelectorText: {
     fontSize: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   categorySelectorOverlay: {
     flex: 1,

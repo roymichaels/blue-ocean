@@ -592,16 +592,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   stepDescription: {
     fontSize: 14,
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   stepTime: {
     fontSize: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   contactOptions: {
     flexDirection: 'row',
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
   orderInfoTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    textAlign: 'end',
+    textAlign: 'right',
   },
   copyButton: {
     flexDirection: 'row',
@@ -696,13 +696,13 @@ const styles = StyleSheet.create({
   shippingAddress: {
     fontSize: 14,
     lineHeight: 20,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   shippingNotes: {
     fontSize: 12,
     marginTop: 8,
     fontStyle: 'italic',
-    textAlign: 'end',
+    textAlign: 'right',
   },
   itemsContainer: {
     borderRadius: 12,
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   orderItem: {
     flexDirection: 'row',
@@ -734,12 +734,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   itemDetails: {
     fontSize: 12,
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   itemColor: {
     flexDirection: 'row',
@@ -771,12 +771,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   instructionsText: {
     fontSize: 14,
     lineHeight: 20,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   reviewPrompt: {
     borderRadius: 12,

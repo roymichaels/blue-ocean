@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   mediaList: {
     paddingRight: 16,
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: 12,
     marginTop: 8,
-    textAlign: 'end',
+    textAlign: 'right',
     lineHeight: 16,
   },
 });

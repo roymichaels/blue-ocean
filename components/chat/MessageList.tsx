@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 14,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   loader: {
     padding: 8,
