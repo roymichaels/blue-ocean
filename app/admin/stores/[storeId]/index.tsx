@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 import RequireWallet from '../../../../components/RequireWallet';
 
 const StoreDetailScreen = React.lazy(() => import('./_StoreDetailScreen'));
@@ -7,7 +7,7 @@ const StoreDetailScreen = React.lazy(() => import('./_StoreDetailScreen'));
 export default function AdminStoreDetailRoute(props: any) {
   return (
     <RequireWallet>
-      <Suspense fallback={<Spinner label="Store Detail" />}>
+      <Suspense fallback={<Spinner />}>
         <StoreDetailScreen {...props} />
       </Suspense>
     </RequireWallet>

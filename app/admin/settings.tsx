@@ -8,7 +8,7 @@ import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 import InfoModal from '../../components/InfoModal';
 import { useAppInfo } from '../../contexts/AppInfoContext';
 import commonStyles from '@/constants/styles';
@@ -141,7 +141,7 @@ export default function SettingsScreen() {
             <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
             <View style={commonStyles.spacer24} />
           </View>
-          <Spinner label="Loading settings" />
+          <Spinner />
         </SafeAreaView>
       </RequireWallet>
     );

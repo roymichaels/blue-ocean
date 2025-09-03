@@ -31,7 +31,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import MediaUploader from '@/components/MediaUploader';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import commonStyles from '@/constants/styles';
@@ -600,7 +600,7 @@ export default function SubcategoryScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
           <View style={commonStyles.spacer24} />
         </View>
-        <Spinner label="Loading subcategory" />
+        <Spinner />
       </SafeAreaView>
     );
   }

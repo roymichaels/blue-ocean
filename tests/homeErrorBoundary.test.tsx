@@ -32,7 +32,7 @@ jest.mock('../features/home/components/HomeHeader', () => {
 });
 jest.mock('../features/home/components/CategoryChips', () => () => null);
 jest.mock('../features/home/components/ProductGrid', () => () => null);
-jest.mock('../shared/ui/Spinner', () => () => null);
+jest.mock('../ui/primitives', () => ({ Spinner: () => null }));
 jest.mock('../shared/ui/EmptyState', () => () => null);
 jest.mock('../components/BannerFormModal', () => () => null);
 jest.mock('../features/cart/components/CartModal', () => () => null);
