@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 import RequireWallet from '../../../../components/RequireWallet';
 
 // Lazy-load the heavy KYC approvals screen to keep the initial bundle slim
@@ -12,7 +12,7 @@ const KycApprovalsScreen = React.lazy(() =>
 export default function KycApprovalsRoute(props: any) {
   return (
     <RequireWallet>
-      <Suspense fallback={<Spinner label="KYC Approvals" />}>
+      <Suspense fallback={<Spinner />}>
         <KycApprovalsScreen {...props} />
       </Suspense>
     </RequireWallet>

@@ -15,7 +15,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import DatabaseService from '../../../../services/database';
 import { User as UserType } from '../../../../types';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 import commonStyles from '@/constants/styles';
 import SmartImage from '../../../../components/SmartImage';
 
@@ -114,7 +114,7 @@ export default function KycApprovalsScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אישורי KYC</Text>
           <View style={commonStyles.spacer24} />
         </View>
-        <Spinner label="Loading KYC approvals" />
+        <Spinner />
       </SafeAreaView>
     );
   }

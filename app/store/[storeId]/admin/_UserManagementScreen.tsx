@@ -20,7 +20,7 @@ import DatabaseService from '../../../../services/database';
 import { User as UserType, CustomerTier, UserRole } from '../../../../types';
 import { useNotifications } from '../../../../components/NotificationContext';
 import commonStyles from '@/constants/styles';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 
 export default function UserManagementScreen() {
   const [users, setUsers] = useState<UserType[]>([]);
@@ -304,7 +304,7 @@ export default function UserManagementScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>ניהול משתמשים</Text>
           <View style={commonStyles.spacer24} />
         </View>
-        <Spinner label="טוען משתמשים..." />
+        <Spinner />
       </SafeAreaView>
     );
   }

@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 import RequireWallet from '../../../../components/RequireWallet';
 
 const BulkUploadScreen = React.lazy(() => import('./_BulkUploadScreen'));
@@ -7,7 +7,7 @@ const BulkUploadScreen = React.lazy(() => import('./_BulkUploadScreen'));
 export default function BulkUploadRoute(props: any) {
   return (
     <RequireWallet>
-      <Suspense fallback={<Spinner label="Bulk Upload" />}>
+      <Suspense fallback={<Spinner />}>
         <BulkUploadScreen {...props} />
       </Suspense>
     </RequireWallet>

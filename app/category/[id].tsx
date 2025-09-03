@@ -20,7 +20,7 @@ import { Category, Subcategory } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import InfoModal from '../../components/InfoModal';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 import commonStyles from '@/constants/styles';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
@@ -237,7 +237,7 @@ export default function CategoryScreen() {
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
           <View style={commonStyles.spacer24} />
         </View>
-        <Spinner label="Loading category" />
+        <Spinner />
       </SafeAreaView>
     );
   }
