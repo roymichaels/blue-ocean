@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { router } from 'expo-router';
+import { push } from '@/services/navigation';
 import Button from '@/components/ui/Button';
 
 export default function CTABecomeSeller() {
@@ -10,7 +10,7 @@ export default function CTABecomeSeller() {
   return (
     <Button
       title={t('home.becomeSeller')}
-      onPress={() => router.push('/stores/create')}
+      onPress={() => push('/stores/create')}
       accessibilityRole="link"
       style={styles.button}
     />

@@ -27,7 +27,7 @@ export default function StoreDashboardScreen() {
       if (!storeId || !store || !listProducts) return;
       const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
       if (store.owner !== user?.address && !isAdmin) {
-        router.replace(`/store/${storeId}`);
+        replace(`/store/${storeId}`);
         return;
       }
       setAuthorized(true);

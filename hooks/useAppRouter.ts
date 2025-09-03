@@ -1,6 +1,10 @@
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { debugLog } from '@/utils/logger';
+import {
+  push as navigationPush,
+  replace as navigationReplace,
+} from '@/services/navigation';
 
 function warnGroupPath(path: unknown) {
   if (__DEV__ && typeof path === 'string' && /(\([^/]+\))/g.test(path)) {
@@ -12,21 +16,21 @@ export function useAppRouter() {
   const router = useRouter();
 
   const push = useCallback(
-    (...args: Parameters<typeof router.push>) => {
+    (...args: Parameters<typeof navigationPush>) => {
       debugLog('[router] push', ...args);
       warnGroupPath(args[0]);
-      router.push(...args);
+      navigationPush(...args);
     },
-    [router],
+    [],
   );
 
   const replace = useCallback(
-    (...args: Parameters<typeof router.replace>) => {
+    (...args: Parameters<typeof navigationReplace>) => {
       debugLog('[router] replace', ...args);
       warnGroupPath(args[0]);
-      router.replace(...args);
+      navigationReplace(...args);
     },
-    [router],
+    [],
   );
 
   const back = useCallback(() => {

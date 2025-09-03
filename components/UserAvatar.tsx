@@ -4,7 +4,7 @@ import { User, LogOut } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { router } from 'expo-router';
+import { push, replace } from '@/services/navigation';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import Menu, { MenuItem } from '@/components/ui/Menu';
@@ -38,7 +38,7 @@ export default function UserAvatar() {
 
   const handleProfile = () => {
     setMenuOpen(false);
-    router.push('/profile');
+    push('/profile');
   };
 
   const handleLogin = () => {
@@ -53,7 +53,7 @@ export default function UserAvatar() {
 
   const confirmLogout = async () => {
     await logout();
-    router.replace('/');
+    replace('/');
     setLogoutConfirmVisible(false);
   };
 

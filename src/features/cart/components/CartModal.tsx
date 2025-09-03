@@ -45,7 +45,7 @@ import commonStyles from '@/constants/styles';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNotifications } from '@/components/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { router } from 'expo-router';
+import { push } from '@/services/navigation';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 
@@ -185,7 +185,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           cancelText: t('common.cancel'),
           action: () => {
             onClose();
-            router.push('/kyc');
+            push('/kyc');
           },
         });
       } else {

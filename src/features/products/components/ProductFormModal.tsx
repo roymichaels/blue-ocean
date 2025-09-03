@@ -13,7 +13,7 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import { router } from 'expo-router';
+import { push } from '@/services/navigation';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
 import { Product, Category, Subcategory, PricingTier, ProductIndexItem } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -665,7 +665,7 @@ export default function ProductFormModal({
         onAdd={() => {
           setShowSubcategorySelector(false);
           if (editingProduct.category) {
-            router.push(`/category/${editingProduct.category}`);
+            push(`/category/${editingProduct.category}`);
           }
         }}
       />
@@ -693,7 +693,7 @@ export default function ProductFormModal({
                 style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary, backgroundColor: colors.interactive.secondary }]}
                 onPress={() => {
                   setShowCategorySelector(false);
-                  router.push('/categories');
+                  push('/categories');
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>

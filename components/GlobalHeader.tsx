@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { push } from '@/services/navigation';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
@@ -50,7 +50,7 @@ export default function GlobalHeader({
   }, []);
 
   const navigateToReviews = () => {
-    router.push('/reviews');
+    push('/reviews');
   };
 
   return (
@@ -59,7 +59,7 @@ export default function GlobalHeader({
         <View style={styles.headerTop}>
           <TouchableOpacity
             style={styles.logo}
-            onPress={() => router.push('/')}
+            onPress={() => push('/')}
           >
             {logoCid ? (
               <SmartImage uri={logoCid} width={50} height={50} style={styles.logoImage} contentFit="contain" />
