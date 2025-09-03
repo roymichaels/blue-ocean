@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import Portal from './Portal';
 import Text from './Text';
 import { useTheme } from '../ThemeProvider';
@@ -21,13 +21,20 @@ interface MenuProps {
 
 export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) {
   const { colors } = useTheme();
+  const [focusedIndex, setFocusedIndex] = React.useState<number | null>(null);
 
   return (
     <>
       {trigger}
       {open && (
         <Portal>
-          <TouchableOpacity style={styles.overlay} onPress={() => onOpenChange(false)}>
+          <Pressable
+            style={styles.overlay}
+            onPress={() => onOpenChange(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Close menu"
+            hitSlop={8}
+          >
             <View
               style={[
                 styles.menu,
@@ -37,10 +44,21 @@ export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) 
                 },
               ]}
             >
-              {items.map((item) => (
-                <TouchableOpacity
+              {items.map((item, index) => (
+                <Pressable
                   key={item.label}
-                  style={styles.item}
+                  accessibilityRole="menuitem"
+                  accessibilityLabel={item.label}
+                  hitSlop={8}
+                  onFocus={() => setFocusedIndex(index)}
+                  onBlur={() => setFocusedIndex(null)}
+                  style={[
+                    styles.item,
+                    focusedIndex === index && {
+                      borderColor: colors.border.focus,
+                      borderWidth: 2,
+                    },
+                  ]}
                   onPress={() => {
                     onOpenChange(false);
                     item.onPress();
@@ -59,10 +77,10 @@ export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) 
                   >
                     {item.label}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
-          </TouchableOpacity>
+          </Pressable>
         </Portal>
       )}
     </>
@@ -76,6 +94,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingTop: 60,
     paddingRight: 16,
+    minHeight: 44,
+    minWidth: 44,
   },
   menu: {
     borderWidth: 1,
@@ -87,6 +107,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.spacer12,
     paddingHorizontal: spacing.spacer16,
+    minHeight: 44,
+    minWidth: 44,
   },
   label: {
     marginLeft: spacing.spacer12,
