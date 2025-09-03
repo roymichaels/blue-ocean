@@ -16,7 +16,7 @@ import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
 import WishlistModal from '@/features/cart/components/WishlistModal';
 import CartService from '@/features/cart/services/cart';
-import { spacing, radius } from '@/shared/ui/tokens';
+import { spacing, radius, typography } from '@/ui/tokens';
 
 interface GlobalHeaderProps {
   searchQuery?: string;
@@ -133,7 +133,7 @@ export default function GlobalHeader({
               placeholder={t('home.searchPlaceholder')}
               value={searchQuery}
               onChangeText={onSearchChange}
-              textAlign="end"
+              textAlign="right"
               placeholderTextColor={colors.text.tertiary}
             />
           </View>
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing.spacer8,
   },
   logoText: {
-    fontSize: 20,
+    ...typography.lg,
     fontWeight: 'bold',
   },
   headerIcons: {
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.spacer4,
   },
   badgeText: {
-    fontSize: 12,
+    ...typography.xs,
     fontWeight: 'bold',
   },
   progressContainer: {
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   progressText: {
-    fontSize: 12,
+    ...typography.xs,
     fontWeight: 'bold',
   },
   searchContainer: {
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    ...typography.md,
     marginLeft: spacing.spacer12,
   },
 });

@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 8,
     lineHeight: 18,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   priceContainer: {
     flexDirection: 'row',
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   selectedVariantText: {
     fontSize: 12,
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   stockContainer: {
     flexDirection: 'row',

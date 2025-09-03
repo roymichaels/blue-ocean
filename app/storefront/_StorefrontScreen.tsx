@@ -149,7 +149,7 @@ export default function StorefrontScreen({ initialCategory }: Props) {
   const renderItem = ({ item: p }: { item: Product }) => (
     <View style={styles.product}>
       <ProductCard product={p} style={{ marginBottom: 4 }} />
-      <Text style={{ color: colors.text.secondary, textAlign: 'end' }}>
+      <Text style={{ color: colors.text.secondary, textAlign: 'right' }}>
         ⭐ {reviews[p.id]?.rating.toFixed(1) || '0'} ({reviews[p.id]?.count || 0})
       </Text>
     </View>

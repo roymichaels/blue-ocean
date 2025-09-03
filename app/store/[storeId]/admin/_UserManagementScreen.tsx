@@ -331,7 +331,7 @@ export default function UserManagementScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor={colors.text.tertiary}
-            textAlign="end"
+            textAlign="right"
           />
         </View>
         
@@ -985,7 +985,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   activeFiltersList: {
     flexDirection: 'row',
@@ -1062,11 +1062,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 2,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   userUsername: {
     fontSize: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   userBadges: {
     flexDirection: 'row',
@@ -1101,7 +1101,7 @@ const styles = StyleSheet.create({
   },
   userDetailText: {
     fontSize: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -1164,7 +1164,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   userDetailItem: {
     flexDirection: 'row',
@@ -1178,7 +1178,7 @@ const styles = StyleSheet.create({
   userDetailValue: {
     fontSize: 14,
     fontWeight: '500',
-    textAlign: 'end',
+    textAlign: 'right',
   },
   dropdownContainer: {
     marginBottom: 16,
@@ -1188,7 +1188,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   dropdown: {
     flexDirection: 'row',
@@ -1221,7 +1221,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   saveButton: {
     flexDirection: 'row',
@@ -1256,7 +1256,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   filterOption: {
     flexDirection: 'row',
@@ -1268,7 +1268,7 @@ const styles = StyleSheet.create({
   },
   filterOptionText: {
     fontSize: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   filterSelectedDot: {
     width: 12,

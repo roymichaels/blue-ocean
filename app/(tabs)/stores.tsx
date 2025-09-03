@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Card, Text, Button } from '@/ui/primitives';
 
 export default function StoresScreen() {
   return (
-    <View>
+    <Card>
       <Text>Stores Screen</Text>
-    </View>
+      <Button title="Okay" onPress={() => {}} />
+    </Card>
   );
 }
-

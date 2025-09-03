@@ -18,7 +18,7 @@ export default function SearchBar({ searchQuery, onSearchChange }: SearchBarProp
       onChangeText={onSearchChange}
       placeholder={t('home.searchPlaceholder')}
       style={styles.field}
-      textAlign="end"
+      textAlign="right"
     />
   );
 }
