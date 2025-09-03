@@ -1,24 +1,57 @@
 import React from 'react';
-import { Pressable, Text, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import {
+  Pressable,
+  Text,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+  PressableProps,
+  ActivityIndicator,
+  PressableStateCallbackType,
+} from 'react-native';
 import { useTheme } from '../ThemeProvider';
 import { spacing, radius, typography } from '../tokens';
 
-interface ButtonProps {
-  title: string;
-  onPress?: () => void;
-  disabled?: boolean;
-  style?: StyleProp<ViewStyle>;
+interface ButtonProps extends PressableProps {
+  title?: string;
   textStyle?: StyleProp<TextStyle>;
+  loading?: boolean;
+  children?: React.ReactNode;
 }
 
-export default function Button({ title, onPress, disabled, style, textStyle }: ButtonProps) {
+export default function Button({
+  title,
+  disabled,
+  style,
+  textStyle,
+  loading = false,
+  children,
+  ...rest
+}: ButtonProps) {
   const { colors } = useTheme();
+  const isDisabled = disabled || loading;
+  const combinedStyle =
+    typeof style === 'function'
+      ? (state: PressableStateCallbackType) => [
+          styles.button(colors),
+          isDisabled && styles.disabled,
+          style(state),
+        ]
+      : [styles.button(colors), isDisabled && styles.disabled, style];
+
   return (
     <Pressable
-      onPress={disabled ? undefined : onPress}
-      style={[styles.button(colors), disabled && styles.disabled, style]}
+      disabled={isDisabled}
+      style={combinedStyle}
+      {...rest}
     >
-      <Text style={[styles.label(colors), textStyle]}>{title}</Text>
+      {loading ? (
+        <ActivityIndicator color={colors.text.inverse} />
+      ) : children ? (
+        children
+      ) : (
+        <Text style={[styles.label(colors), textStyle]}>{title}</Text>
+      )}
     </Pressable>
   );
 }

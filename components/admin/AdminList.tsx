@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import Button from '../ui/Button';
+import Button from '@/ui/primitives/Button';
 
 export type AdminListItem = {
   id: string;
@@ -25,7 +25,6 @@ export default function AdminList({ items, emptyText = 'Nothing yet.' }: { items
         <Button
           key={it.id}
           onPress={it.onPress}
-          variant="secondary"
           style={{
             marginBottom: 10,
             alignItems: 'flex-start',

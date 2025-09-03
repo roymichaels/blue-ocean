@@ -16,7 +16,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAppInfo } from '@/contexts/AppInfoContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { spacing, typography } from '@/constants/styles';
-import Button from '@/components/ui/Button';
+import Button from '@/ui/primitives/Button';
 
 const AGE_VERIFICATION_KEY = 'age_verified';
 
@@ -167,9 +167,12 @@ export default function AgeVerificationModal() {
 
               <Button
                 title={t('ageVerification.noUnder18')}
-                variant="secondary"
                 onPress={handleDeny}
-                style={{ borderColor: colors.interactive.disabled }}
+                style={{
+                  borderColor: colors.interactive.disabled,
+                  backgroundColor: 'transparent',
+                  borderWidth: 1,
+                }}
                 accessibilityRole="button"
               />
             </View>

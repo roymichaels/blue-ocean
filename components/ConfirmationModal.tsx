@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { X } from 'lucide-react-native';
-import Button from './ui/Button';
+import Button from '@/ui/primitives/Button';
 import { Portal, Overlay } from '@/ui/primitives';
 
 interface ConfirmationModalProps {
@@ -63,9 +63,13 @@ export default function ConfirmationModal({
           <View style={styles.actions}>
             <Button
               title={cancelText}
-              variant="secondary"
               onPress={onCancel}
-              style={{ flex: 1 }}
+              style={{
+                flex: 1,
+                backgroundColor: 'transparent',
+                borderWidth: 1,
+                borderColor: colors.border.primary,
+              }}
               accessibilityRole="button"
             />
 

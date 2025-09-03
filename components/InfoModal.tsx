@@ -11,7 +11,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { spacing, radius, zIndex, shadows } from '@/shared/ui/tokens';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
-import Button from '@/components/ui/Button';
+import Button from '@/ui/primitives/Button';
 import { Portal, Overlay } from '@/ui/primitives';
 
 type InfoType = 'success' | 'error' | 'info' | 'warning';
