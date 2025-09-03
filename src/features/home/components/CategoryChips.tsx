@@ -3,17 +3,17 @@ import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-nati
 import { Category } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 
-interface CategoryTabsProps {
+interface CategoryChipsProps {
   categories: Category[];
   selectedCategory: string | null;
   setSelectedCategory: (id: string | null) => void;
 }
 
-export default function CategoryTabs({
+export default function CategoryChips({
   categories,
   selectedCategory,
   setSelectedCategory,
-}: CategoryTabsProps) {
+}: CategoryChipsProps) {
   const { colors } = useTheme();
 
   return (

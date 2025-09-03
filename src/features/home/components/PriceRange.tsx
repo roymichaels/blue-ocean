@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { View, StyleSheet } from 'react-native';
+import TextField from '@/components/ui/TextField';
+import { spacing } from '@/shared/ui/tokens';
 
 interface PriceRangeProps {
   minPrice: string;
@@ -15,36 +16,22 @@ export default function PriceRange({
   maxPrice,
   setMaxPrice,
 }: PriceRangeProps) {
-  const { colors } = useTheme();
-
   return (
     <View style={styles.priceRow}>
-      <TextInput
-        style={[
-          styles.priceInput,
-          {
-            borderColor: colors.border.primary,
-            color: colors.text.primary,
-            marginEnd: 8,
-          },
-        ]}
-        placeholder="Min"
-        placeholderTextColor={colors.text.tertiary}
-        keyboardType="numeric"
+      <TextField
         value={minPrice}
         onChangeText={setMinPrice}
+        placeholder="Min"
+        keyboardType="numeric"
+        style={[styles.priceInput, { marginEnd: spacing.spacer8 }]}
         textAlign="end"
       />
-      <TextInput
-        style={[
-          styles.priceInput,
-          { borderColor: colors.border.primary, color: colors.text.primary },
-        ]}
-        placeholder="Max"
-        placeholderTextColor={colors.text.tertiary}
-        keyboardType="numeric"
+      <TextField
         value={maxPrice}
         onChangeText={setMaxPrice}
+        placeholder="Max"
+        keyboardType="numeric"
+        style={styles.priceInput}
         textAlign="end"
       />
     </View>
@@ -54,15 +41,11 @@ export default function PriceRange({
 const styles = StyleSheet.create({
   priceRow: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: spacing.spacer16,
+    marginBottom: spacing.spacer16,
   },
   priceInput: {
     flex: 1,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
   },
 });
 

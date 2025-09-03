@@ -1,30 +1,45 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import chain from '@/services/chain';
 import { Product, Category } from '@/types';
 
 let listCategories: (() => Promise<Category[]>) | undefined;
+let listProducts: ((storeId: string) => Promise<Product[]>) | undefined;
 if (chain === 'near') {
   ({ listCategories } = require('@/features/products/services/nearCategories'));
+  ({ listProducts } = require('@/features/products/services/nearProducts'));
 }
 
 export function useHome() {
-  const { data, refetch } = useQuery({
+  const { data, refetch, isLoading } = useQuery({
     queryKey: ['home'],
     queryFn: async () => {
       const db = DatabaseService.getInstance();
-      const [productsData, categoriesData] = await Promise.all([
-        db.getProducts(),
-        listCategories ? listCategories() : Promise.resolve([]),
-      ]);
+      let productsData = await db.getProducts();
+      if (productsData.length === 0) {
+        const fallbackStore = process.env.EXPO_PUBLIC_DEFAULT_STORE;
+        if (fallbackStore && listProducts) {
+          try {
+            productsData = await listProducts(fallbackStore);
+          } catch {}
+        }
+      }
+      const categoriesData = listCategories ? await listCategories() : [];
       return { productsData, categoriesData };
     },
-    suspense: true,
+    suspense: false,
   });
 
-  const [products, setProducts] = useState<Product[]>(data.productsData);
-  const [categories, setCategories] = useState<Category[]>(data.categoriesData);
+  const [products, setProducts] = useState<Product[]>(data?.productsData ?? []);
+  const [categories, setCategories] = useState<Category[]>(data?.categoriesData ?? []);
+
+  useEffect(() => {
+    if (data) {
+      setProducts(data.productsData);
+      setCategories(data.categoriesData);
+    }
+  }, [data]);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -57,7 +72,7 @@ export function useHome() {
   return {
     products,
     categories,
-    loading: false,
+    loading: isLoading,
     refreshing,
     error,
     reload: refresh,
