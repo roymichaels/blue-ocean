@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import ProductCard from '@/components/ui/ProductCard';
+import ProductCard, { ProductCardSkeleton } from '@/components/ui/ProductCard';
 import { Product, Category } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import EmptyState from '@/shared/ui/EmptyState';
@@ -14,6 +14,7 @@ interface ProductGridProps {
   getItemWidth: () => string;
   searchQuery: string;
   onAddProduct: () => void;
+  loading?: boolean;
 }
 
 export default function ProductGrid({
@@ -24,8 +25,21 @@ export default function ProductGrid({
   getItemWidth,
   searchQuery,
   onAddProduct,
+  loading,
 }: ProductGridProps) {
   const { t } = useLanguage();
+
+  if (loading) {
+    return (
+      <View style={styles.productsGrid}>
+        {Array.from({ length: 4 }).map((_, idx) => (
+          <View key={idx} style={[styles.productWrapper, { width: getItemWidth() }]}>
+            <ProductCardSkeleton />
+          </View>
+        ))}
+      </View>
+    );
+  }
 
   if (!products || products.length === 0) {
     return (
