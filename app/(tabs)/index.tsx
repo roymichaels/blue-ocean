@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   sortOptionText: {
     fontSize: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   selectedDot: {
     width: 12,
@@ -638,7 +638,7 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: 12,
     marginTop: spacing.spacer4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   adminActionsContainer: {
     padding: spacing.spacer16,
@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
   },
   categorySelectorText: {
     fontSize: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   categorySelectorOverlay: {
     flex: 1,
