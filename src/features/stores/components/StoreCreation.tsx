@@ -8,7 +8,7 @@ import {
   Alert,
   I18nManager,
 } from 'react-native';
-import { router } from 'expo-router';
+import { replace } from '@/services/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/LanguageContext';
 import storesAgent from '@/agents/stores-agent';
@@ -38,7 +38,7 @@ const StoreCreation: React.FC = () => {
         queryClient.invalidateQueries({ queryKey: ['store'] }),
         queryClient.invalidateQueries({ queryKey: ['product'] }),
       ]);
-      router.replace('/');
+      replace('/');
     } catch (err: any) {
       if (err?.message?.toLowerCase().includes('insufficient')) {
         Alert.alert(t('stores.transactionFailed'), t('stores.insufficientFunds'));

@@ -3,7 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { spacing } from '@/shared/ui/tokens';
 import Button from '@/ui/primitives/Button';
-import { usePathname, router } from 'expo-router';
+import { usePathname } from 'expo-router';
+import { replace } from '@/services/navigation';
 import { errorLog } from '@/utils/logger';
 
 interface Props {
@@ -55,7 +56,7 @@ function ErrorFallback({ error, onRetry }: { error?: Error; onRetry: () => void 
   const handleRetry = () => {
     onRetry();
     try {
-      router.replace(pathname);
+      replace(pathname);
     } catch {}
   };
 

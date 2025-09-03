@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { X, Heart, ShoppingCart, Trash2 } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { push } from '@/services/navigation';
 import { WishlistItem } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -33,7 +33,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
 
   const viewProduct = (productId: string) => {
     onClose();
-    router.push(`/product/${productId}`);
+    push(`/product/${productId}`);
   };
 
   const ITEM_HEIGHT = 118;

@@ -17,7 +17,7 @@ import { Order, OrderStatus } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import OrderService from '../services/orders';
-import { router } from 'expo-router';
+import { push } from '@/services/navigation';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -205,7 +205,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
   const writeReview = () => {
     onClose();
     // Navigate to reviews screen
-    router.push('/reviews');
+    push('/reviews');
   };
 
   const copyOrderDetails = async () => {

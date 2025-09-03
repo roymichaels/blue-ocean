@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { Heart, Pencil, ShoppingCart, Tag } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { push } from '@/services/navigation';
 import { Product, PricingTier } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -117,7 +117,7 @@ function ProductCard({
   };
 
   const handlePress = useCallback(() => {
-    router.push(`/product/${product.id}`);
+    push(`/product/${product.id}`);
   }, [product.id]);
 
   const handleEdit = useCallback(
