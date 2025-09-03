@@ -11,7 +11,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext';
 import { getProducts } from '../../agents/products-agent';
 import reviewAgent from '../../agents/review-agent';
-import ProductCard from '@/features/products/components/ProductCard';
+import ProductCard from '@/features/products/ProductCard';
 import { Product } from '../../types';
 import Fuse from 'fuse.js';
 import eventBus from '../../services/eventBus';
@@ -148,7 +148,7 @@ export default function StorefrontScreen({ initialCategory }: Props) {
 
   const renderItem = ({ item: p }: { item: Product }) => (
     <View style={styles.product}>
-      <ProductCard product={p} style={{ marginBottom: 4 }} />
+      <ProductCard key={p.id} product={p} style={{ marginBottom: 4 }} />
       <Text style={{ color: colors.text.secondary, textAlign: 'right' }}>
         ⭐ {reviews[p.id]?.rating.toFixed(1) || '0'} ({reviews[p.id]?.count || 0})
       </Text>

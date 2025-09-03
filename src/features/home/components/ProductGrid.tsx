@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import ProductCard, { ProductCardSkeleton } from '@/components/ui/ProductCard';
+import React, { useCallback, useMemo } from 'react';
+import { View, StyleSheet, FlatList } from 'react-native';
+import ProductCard, { ProductCardSkeleton } from '@/features/products/ProductCard';
 import { Product, Category } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Filter, Plus } from 'lucide-react-native';
+import { spacing } from '@/shared/ui/tokens';
 
 interface ProductGridProps {
   products: Product[];
@@ -28,6 +29,25 @@ export default function ProductGrid({
   loading,
 }: ProductGridProps) {
   const { t } = useLanguage();
+  const renderItem = useCallback(
+    ({ item }: { item: Product }) => (
+      <View style={rowStyles.flex}>
+        <ProductCard key={item.id} product={item} style={{ marginBottom: spacing.spacer12 }} />
+      </View>
+    ),
+    []
+  );
+
+  const keyExtractor = useCallback((item: Product) => item.id, []);
+
+  const columnWrapperStyle = useMemo(
+    () => ({ gap: spacing.spacer12, paddingHorizontal: spacing.spacer16 }),
+    []
+  );
+  const contentContainerStyle = useMemo(
+    () => ({ paddingVertical: spacing.spacer16 }),
+    []
+  );
 
   if (loading) {
     return (
@@ -60,25 +80,14 @@ export default function ProductGrid({
   }
 
   return (
-    <View style={styles.productsGrid}>
-      {products.map((item) => (
-        <View
-          key={item.id}
-          style={[styles.productWrapper, { width: getItemWidth() }]}
-        >
-          <ProductCard
-            product={item}
-            isOwner={isStoreOwner}
-            onEdit={onEdit}
-            subcategoryName={
-              categories
-                .flatMap((c) => c.subcategories || [])
-                .find((s) => s.id === item.subcategory)?.name
-            }
-          />
-        </View>
-      ))}
-    </View>
+    <FlatList
+      data={products}
+      keyExtractor={keyExtractor}
+      numColumns={2}
+      columnWrapperStyle={columnWrapperStyle}
+      contentContainerStyle={contentContainerStyle}
+      renderItem={renderItem}
+    />
   );
 }
 
@@ -92,4 +101,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 });
+
+const rowStyles = StyleSheet.create({ flex: { flex: 1 } });
 

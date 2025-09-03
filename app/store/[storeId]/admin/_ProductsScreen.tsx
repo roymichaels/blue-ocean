@@ -5,7 +5,7 @@ import { useTheme } from '../../../../contexts/ThemeContext';
 import { Product } from '../../../../types';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { useProducts } from '@/services/useProducts';
-import ProductCard from '@/features/products/components/ProductCard';
+import ProductCard from '@/features/products/ProductCard';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
 import { useAccountId } from '@/features/auth/services/nearAuth';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -15,17 +15,14 @@ const ITEM_HEIGHT = 200;
 interface ProductItemProps {
   product: Product;
   onEdit: (p: Product) => void;
-  onDelete: (id: string) => void;
 }
 
-const ProductItem = React.memo(({ product, onEdit, onDelete }: ProductItemProps) => (
-  <TouchableOpacity style={{ marginBottom: spacing.spacer12 }}>
-    <ProductCard
-      product={product}
-      isOwner
-      onEdit={() => onEdit(product)}
-      onDelete={onDelete}
-    />
+const ProductItem = React.memo(({ product, onEdit }: ProductItemProps) => (
+  <TouchableOpacity
+    style={{ marginBottom: spacing.spacer12 }}
+    onPress={() => onEdit(product)}
+  >
+    <ProductCard key={product.id} product={product} />
   </TouchableOpacity>
 ));
 
@@ -66,9 +63,9 @@ export default function StoreProductsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Product }) => (
-      <ProductItem product={item} onEdit={openForm} onDelete={handleDeleted} />
+      <ProductItem product={item} onEdit={openForm} />
     ),
-    [openForm, handleDeleted]
+    [openForm]
   );
 
   if (!isStoreOwner || address !== storeId) {

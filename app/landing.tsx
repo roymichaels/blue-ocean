@@ -7,7 +7,7 @@ import Section from '../components/ui/Section';
 import GoldDivider from '../components/ui/GoldDivider';
 import DatabaseService from '../services/database';
 import { Product, Category, HeroBanner } from '../types';
-import ProductCard from '@/features/products/components/ProductCard';
+import ProductCard from '@/features/products/ProductCard';
 import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
 import Button from '../components/ui/Button';
@@ -130,7 +130,7 @@ export default function Landing() {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.spacer12, paddingHorizontal: 0 }}>
             {featured.map((p) => (
               <View key={p.id} style={{ width: '48%' }}>
-                <ProductCard product={p} />
+                <ProductCard key={p.id} product={p} />
               </View>
             ))}
           </View>
