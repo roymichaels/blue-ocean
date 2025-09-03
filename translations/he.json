@@ -90,7 +90,8 @@
     "priceLowHigh": "מחיר: נמוך לגבוה",
     "priceHighLow": "מחיר: גבוה לנמוך",
     "highRating": "דירוג גבוה",
-    "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש."
+    "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש.",
+    "becomeSeller": "הפוך למוכר"
   },
   "product": {
     "inStock": "במלאי ({count})",
@@ -431,5 +432,13 @@
     "loginRequiredTitle": "נדרשת התחברות",
     "loginRequiredMessage": "עליך להתחבר כדי לראות את ההזמנות שלך",
     "myOrders": "ההזמנות שלי"
+  },
+  "stores": {
+    "storeName": "שם החנות",
+    "mintStore": "צור חנות",
+    "transactionFailed": "העסקה נכשלה",
+    "insufficientFunds": "אין מספיק כספים לפריסת החנות",
+    "transactionCancelled": "העסקה בוטלה",
+    "createSuccess": "החנות נוצרה בהצלחה"
   }
 }

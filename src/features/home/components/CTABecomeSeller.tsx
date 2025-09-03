@@ -1,11 +1,13 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { router } from 'expo-router';
 import Text from '@/shared/ui/Text';
 
 export default function CTABecomeSeller() {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <TouchableOpacity
@@ -14,7 +16,7 @@ export default function CTABecomeSeller() {
       accessibilityRole="link"
     >
       <Text variant="md" weight="600" style={{ color: colors.text.inverse }}>
-        Become a Seller
+        {t('home.becomeSeller')}
       </Text>
     </TouchableOpacity>
   );

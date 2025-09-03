@@ -90,7 +90,8 @@
     "priceLowHigh": "Price: Low to High",
     "priceHighLow": "Price: High to Low",
     "highRating": "High Rating",
-    "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload."
+    "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload.",
+    "becomeSeller": "Become a Seller"
   },
   "product": {
     "inStock": "In Stock ({count})",
@@ -431,5 +432,13 @@
     "loginRequiredTitle": "Login Required",
     "loginRequiredMessage": "You must log in to view your orders",
     "myOrders": "My Orders"
+  },
+  "stores": {
+    "storeName": "Store Name",
+    "mintStore": "Mint Store",
+    "transactionFailed": "Transaction failed",
+    "insufficientFunds": "Insufficient funds to deploy the store",
+    "transactionCancelled": "Transaction cancelled",
+    "createSuccess": "Store created successfully"
   }
 }
