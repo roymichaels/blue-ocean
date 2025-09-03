@@ -1,16 +1,9 @@
-import { Stack, router } from 'expo-router';
+import { Redirect, Stack, router } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useEffect } from 'react';
 
 export default function NotFoundScreen() {
-  useEffect(() => {
-    if (__DEV__) {
-      router.replace('/');
-    }
-  }, []);
-
   if (__DEV__) {
-    return null;
+    return <Redirect href="/" />;
   }
 
   return (
