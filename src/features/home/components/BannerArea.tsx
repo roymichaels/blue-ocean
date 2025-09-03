@@ -12,6 +12,7 @@ import Heading from '@/shared/ui/Heading';
 import Button from '@/components/ui/Button';
 import { spacing } from '@/shared/ui/tokens';
 
+
 const SmartImage = lazy(() => import('@/components/SmartImage'));
 
 const { width } = Dimensions.get('window');
