@@ -2,12 +2,12 @@ import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   ScrollView,
   Platform,
 } from 'react-native';
+import Text from '@/ui/primitives/Text';
 import SmartImage from '@/components/SmartImage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';

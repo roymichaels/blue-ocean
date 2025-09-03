@@ -2,9 +2,9 @@ import React from 'react';
 import { Pressable, Image, View, StyleSheet, ViewStyle } from 'react-native';
 import { Star } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import Text from '@/shared/ui/Text';
+import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
-import { spacing, radius } from '@/shared/ui/tokens';
+import { spacing, radius, typography } from '@/ui/tokens';
 import { Skeleton } from '@/ui/primitives';
 import { Product } from '@/types';
 
@@ -31,26 +31,20 @@ function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) 
       )}
       <View style={styles.content}>
         <Text
-          variant="sm"
-          weight="500"
           numberOfLines={1}
-          style={{ color: colors.text.primary }}
+          style={[typography.sm, { fontWeight: '500', color: colors.text.primary }]}
         >
           {product.name}
         </Text>
         <Text
-          variant="md"
-          weight="600"
-          style={{ marginTop: spacing.spacer4, color: colors.text.primary }}
+          style={[typography.md, { fontWeight: '600', marginTop: spacing.spacer4, color: colors.text.primary }]}
         >
           {product.price}
         </Text>
         <View style={styles.ratingRow}>
           <Star size={12} color={colors.gold} />
           <Text
-            variant="xs"
-            weight="500"
-            style={{ marginStart: spacing.spacer4, color: colors.text.primary }}
+            style={[typography.xs, { fontWeight: '500', marginStart: spacing.spacer4, color: colors.text.primary }]}
           >
             {product.rating ?? 0}
           </Text>

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, FlatList } from 'react-native';
+import { View, FlatList } from 'react-native';
+import Text from '@/ui/primitives/Text';
+import Button from '@/ui/primitives/Button';
 import { RoadmapProvider, useRoadmap } from '../../contexts/RoadmapContext';
 import RoadmapService from '../../services/roadmap';
 import type { RoadmapTask } from '../../types';

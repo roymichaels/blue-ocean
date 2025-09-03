@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Pressable, ScrollView } from 'react-native';
+import Text from '@/ui/primitives/Text';
 import { Link } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import AppShell from '../components/layout/AppShell';
