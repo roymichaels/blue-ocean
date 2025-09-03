@@ -35,7 +35,7 @@ import { Spinner } from '@/ui/primitives';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import commonStyles from '@/constants/styles';
-import Card from '@/components/Card';
+import Card from '@/ui/primitives/Card';
 import SmartImage from '@/components/SmartImage';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
@@ -67,15 +67,15 @@ const ProductItem = React.memo(
     const { colors } = useTheme();
 
     return (
-      <Card
-        Component={TouchableOpacity}
+      <TouchableOpacity
         style={[
           styles.productCard,
           { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
         ]}
         onPress={onPress}
       >
-        <View style={styles.productImageContainer}>
+        <Card style={{ padding: 0, backgroundColor: 'transparent' }}>
+          <View style={styles.productImageContainer}>
           {product.images && product.images.length > 0 ? (
             <SmartImage
               uri={product.images[0]}
@@ -154,7 +154,8 @@ const ProductItem = React.memo(
             </Text>
           </View>
         </View>
-      </Card>
+        </Card>
+      </TouchableOpacity>
     );
   }
 );
