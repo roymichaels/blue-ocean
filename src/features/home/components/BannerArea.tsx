@@ -6,11 +6,11 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import useAppRouter from 'hooks/useAppRouter';
 import EmptyState from '@/shared/ui/EmptyState';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner, Skeleton } from '@/ui/primitives';
 import Text from '@/shared/ui/Text';
 import Heading from '@/shared/ui/Heading';
 import Button from '@/components/ui/Button';
-import { spacing } from '@/shared/ui/tokens';
+import { spacing, radius } from '@/shared/ui/tokens';
 
 
 const SmartImage = lazy(() => import('@/components/SmartImage'));
@@ -24,9 +24,10 @@ interface BannerAreaProps {
   isStoreOwner: boolean;
   onAddBanner: () => void;
   onEditBanner: (banner: HeroBanner) => void;
+  loading?: boolean;
 }
 
-export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner }: BannerAreaProps) {
+export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, loading }: BannerAreaProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const { push } = useAppRouter();
@@ -111,6 +112,14 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
       )}
     </View>
   );
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Skeleton width={BANNER_WIDTH} height={BANNER_HEIGHT} borderRadius={radius.lg} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

@@ -9,3 +9,5 @@ export { default as Chip } from './Chip';
 export { default as Divider } from './Divider';
 export { default as Portal } from './Portal';
 export { default as Overlay } from './Overlay';
+export { default as Spinner } from './Spinner';
+export { default as Skeleton } from './Skeleton';

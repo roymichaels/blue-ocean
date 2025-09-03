@@ -23,10 +23,8 @@ import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
 import BannerArea from '@/features/home/components/BannerArea';
-import BannerAreaSkeleton from '@/features/home/components/BannerAreaSkeleton';
 const ProductGrid = lazy(() => import('@/features/home/components/ProductGrid'));
-import ProductGridSkeleton from '@/features/home/components/ProductGridSkeleton';
-import Spinner from '@/shared/ui/Spinner';
+import { Spinner } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 const BannerFormModal = lazy(() => import('@/components/BannerFormModal'));
@@ -261,16 +259,13 @@ function HomeScreenContent() {
           setMaxPrice={setMaxPrice}
         />
       <CTABecomeSeller />
-      {bannersLoading ? (
-        <BannerAreaSkeleton />
-      ) : (
-        <BannerArea
-          heroBanners={heroBanners}
-          isStoreOwner={isStoreOwner}
-          onAddBanner={addBanner}
-          onEditBanner={editBanner}
-        />
-      )}
+      <BannerArea
+        heroBanners={heroBanners}
+        isStoreOwner={isStoreOwner}
+        onAddBanner={addBanner}
+        onEditBanner={editBanner}
+        loading={bannersLoading}
+      />
 
         {/* Categories Section */}
         <Container style={styles.section}>
@@ -347,21 +342,18 @@ function HomeScreenContent() {
             </Stack>
           </Stack>
 
-          {productsLoading ? (
-            <ProductGridSkeleton />
-          ) : (
-            <Suspense fallback={<ProductGridSkeleton />}> 
-              <ProductGrid
-                products={filteredProducts}
-                categories={categories}
-                isStoreOwner={isStoreOwner}
-                onEdit={editProduct}
-                getItemWidth={getProductItemWidth}
-                searchQuery={searchQuery}
-                onAddProduct={addProduct}
-              />
-            </Suspense>
-          )}
+          <Suspense fallback={<Spinner />}>
+            <ProductGrid
+              products={filteredProducts}
+              categories={categories}
+              isStoreOwner={isStoreOwner}
+              onEdit={editProduct}
+              getItemWidth={getProductItemWidth}
+              searchQuery={searchQuery}
+              onAddProduct={addProduct}
+              loading={productsLoading}
+            />
+          </Suspense>
         </Container>
       </ScrollArea>
 

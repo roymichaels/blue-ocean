@@ -5,6 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import Text from '@/shared/ui/Text';
 import Button from '@/components/ui/Button';
 import { spacing, radius } from '@/shared/ui/tokens';
+import { Skeleton } from '@/ui/primitives';
 import { Product } from '@/types';
 
 interface ProductCardProps {
@@ -64,36 +65,24 @@ export default function ProductCard({ product, onPress, onCTAPress }: ProductCar
 export function ProductCardSkeleton() {
   const { colors } = useTheme();
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface.primary }]}
+    <View
+      style={[styles.card, { backgroundColor: colors.surface.primary }]}
       accessibilityLabel="loading product"
     >
-      <View style={[styles.image, { backgroundColor: colors.surface.secondary }]} />
+      <Skeleton style={styles.image} />
       <View style={styles.content}>
-        <View
-          style={{
-            height: 12,
-            width: '60%',
-            backgroundColor: colors.surface.secondary,
-            borderRadius: radius.sm,
-          }}
+        <Skeleton height={12} width="60%" borderRadius={radius.sm} />
+        <Skeleton
+          height={12}
+          width="40%"
+          borderRadius={radius.sm}
+          style={{ marginTop: spacing.spacer4 }}
         />
-        <View
-          style={{
-            height: 12,
-            width: '40%',
-            backgroundColor: colors.surface.secondary,
-            borderRadius: radius.sm,
-            marginTop: spacing.spacer4,
-          }}
-        />
-        <View
-          style={{
-            height: 12,
-            width: 80,
-            backgroundColor: colors.surface.secondary,
-            borderRadius: radius.sm,
-            marginTop: spacing.spacer4,
-          }}
+        <Skeleton
+          height={12}
+          width={80}
+          borderRadius={radius.sm}
+          style={{ marginTop: spacing.spacer4 }}
         />
       </View>
     </View>
