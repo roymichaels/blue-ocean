@@ -18,7 +18,7 @@ const MessageInput: React.FC<Props> = ({ value, onChange, onSend, colors }) => {
         onChangeText={onChange}
         placeholder="Type a message"
         placeholderTextColor={colors.text.tertiary}
-        textAlign="end"
+        textAlign="right"
       />
       <Button
         title="Send"

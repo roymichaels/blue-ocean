@@ -34,6 +34,7 @@ import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useProfileData } from 'hooks/useProfileData';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 
 
@@ -128,16 +129,17 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <GlobalHeader showSearch={false} />
-
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
+    <ErrorBoundary>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
       >
+        <GlobalHeader showSearch={false} />
+
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
         {/* Profile Header */}
         <View
           style={[
@@ -518,7 +520,8 @@ export default function ProfileScreen() {
         onCancel={() => setLogoutConfirmVisible(false)}
         destructive={true}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 
@@ -607,7 +610,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   menuItem: {
     flexDirection: 'row',
@@ -628,7 +631,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 12,
     fontWeight: '500',
-    textAlign: 'end',
+    textAlign: 'right',
     flex: 1,
   },
   languageContainer: {

@@ -2,13 +2,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import chain from '../../../../services/chain';
 import { Product } from '../../../../types';
-
-let listProducts: (() => Promise<Product[]>) | undefined;
-if (chain === 'near') {
-  ({ listProducts } = require('@/features/products/services/nearProducts'));
-}
+import { spacing, radius } from '@/shared/ui/tokens';
+import { useProducts } from '@/services/useProducts';
 import ProductCard from '@/features/products/components/ProductCard';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
 import { useAccountId } from '@/features/auth/services/nearAuth';
@@ -23,7 +19,7 @@ interface ProductItemProps {
 }
 
 const ProductItem = React.memo(({ product, onEdit, onDelete }: ProductItemProps) => (
-  <TouchableOpacity style={{ marginBottom: 12 }}>
+  <TouchableOpacity style={{ marginBottom: spacing.spacer12 }}>
     <ProductCard
       product={product}
       isOwner
@@ -36,20 +32,20 @@ const ProductItem = React.memo(({ product, onEdit, onDelete }: ProductItemProps)
 export default function StoreProductsScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
-  const [products, setProducts] = useState<Product[]>([]);
+  const {
+    data: initialProducts = [],
+    isLoading,
+    refetch,
+  } = useProducts(storeId || '');
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [formVisible, setFormVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const address = useAccountId();
   const { isStoreOwner } = useAuth();
 
   useEffect(() => {
-    const load = async () => {
-      if (!storeId || !isStoreOwner || address !== storeId || !listProducts) return;
-      const all = await listProducts();
-      setProducts(all.filter((p) => p.storeId === storeId));
-    };
-    load();
-  }, [storeId, address, isStoreOwner]);
+    setProducts(initialProducts.filter((p) => p.storeId === storeId));
+  }, [initialProducts, storeId]);
 
   const openForm = useCallback((p?: Product) => {
     setEditingProduct(p || null);
@@ -110,6 +106,8 @@ export default function StoreProductsScreen() {
         contentContainerStyle={styles.list}
         getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
         removeClippedSubviews
+        refreshing={isLoading}
+        onRefresh={refetch}
       />
       <ProductFormModal
         visible={formVisible}
@@ -123,17 +121,17 @@ export default function StoreProductsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, padding: spacing.spacer16 },
   addButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.spacer12,
+    paddingHorizontal: spacing.spacer16,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radius.md,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.spacer16,
   },
   list: {
-    paddingBottom: 24,
+    paddingBottom: spacing.spacer24,
   },
 });
 

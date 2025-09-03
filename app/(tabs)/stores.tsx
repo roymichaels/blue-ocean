@@ -1,11 +1,14 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Card, Text, Button } from '@/ui/primitives';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function StoresScreen() {
   return (
-    <View>
-      <Text>Stores Screen</Text>
-    </View>
+    <ErrorBoundary>
+      <Card>
+        <Text>Stores Screen</Text>
+        <Button title="Okay" onPress={() => {}} />
+      </Card>
+    </ErrorBoundary>
   );
 }
-

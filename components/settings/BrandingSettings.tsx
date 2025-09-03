@@ -50,7 +50,7 @@ const BrandingSettings: React.FC<Props> = ({
             value={name}
             onChangeText={setName}
             placeholder={t('ageVerification.platformName')}
-            textAlign="end"
+            textAlign="right"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -68,7 +68,7 @@ const BrandingSettings: React.FC<Props> = ({
             value={logoCidInput}
             onChangeText={setLogoCidInput}
             placeholder="ipfs://..."
-            textAlign="end"
+            textAlign="right"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   input: {
     borderWidth: 1,

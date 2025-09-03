@@ -25,6 +25,16 @@
       "@/shared/*": [
         "src/shared/*"
       ],
+      "@/ui/*": [
+        "src/ui/*"
+      ],
+      "@/layout/*": [
+        "src/layout/*"
+      ],
+      "@/services/*": [
+        "src/services/*",
+        "services/*"
+      ],
       "@/*": [
         "./*"
       ],

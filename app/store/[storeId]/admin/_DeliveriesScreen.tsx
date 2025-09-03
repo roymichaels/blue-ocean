@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   dropdownItem: { padding: 8 },
-  dropdownItemText: { fontSize: 14, textAlign: 'end' },
+  dropdownItemText: { fontSize: 14, textAlign: 'right' },
   addButton: {
     width: 40,
     height: 40,
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   jobTitle: { fontSize: 16, marginRight: 8 },
-  jobInfo: { fontSize: 14, marginBottom: 4, textAlign: 'end' },
+  jobInfo: { fontSize: 14, marginBottom: 4, textAlign: 'right' },
   actionsRow: {
     flexDirection: 'row-reverse',
     marginTop: 8,

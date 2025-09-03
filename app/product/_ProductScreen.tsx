@@ -974,7 +974,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   galleryContent: {
     paddingRight: 16,
@@ -1060,7 +1060,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   pricingTierContainer: {
     alignItems: 'flex-end',
@@ -1086,13 +1086,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     marginBottom: 24,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   quantitySection: {
     marginBottom: 24,
@@ -1154,17 +1154,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   tieredPricingText: {
     fontSize: 14,
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   tieredPricingTotal: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'end',
+    textAlign: 'right',
   },
   modalContainer: {
     flex: 1,
@@ -1191,7 +1191,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   formInput: {
     borderWidth: 1,
@@ -1236,7 +1236,7 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: 12,
     marginTop: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   categorySelector: {
     borderWidth: 1,
@@ -1246,7 +1246,7 @@ const styles = StyleSheet.create({
   },
   categorySelectorText: {
     fontSize: 16,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   categorySelectorOverlay: {
     flex: 1,
@@ -1306,7 +1306,7 @@ const styles = StyleSheet.create({
   },
   pricingTierDescription: {
     fontSize: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   reviewsSection: {
     marginTop: 24,
@@ -1328,6 +1328,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   reviewComment: {
-    textAlign: 'end',
+    textAlign: 'right',
   },
 });

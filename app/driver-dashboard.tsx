@@ -24,7 +24,7 @@ import ProofUploader from '../components/ProofUploader';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 import { DeliveryJob } from '../types';
 import commonStyles from '@/constants/styles';
 
@@ -216,8 +216,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   jobTitle: { fontSize: 16, marginRight: 8 },
-  jobStatus: { fontSize: 14, marginBottom: 4, textAlign: 'end' },
-  jobInfo: { fontSize: 14, marginBottom: 4, textAlign: 'end' },
+  jobStatus: { fontSize: 14, marginBottom: 4, textAlign: 'right' },
+  jobInfo: { fontSize: 14, marginBottom: 4, textAlign: 'right' },
   actionsRow: {
     flexDirection: 'row-reverse',
     justifyContent: 'flex-start',

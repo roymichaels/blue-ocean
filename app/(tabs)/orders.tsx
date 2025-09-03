@@ -14,6 +14,7 @@ import OrderService from '../../services/orders';
 import { Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import AppShell from '../../components/layout/AppShell';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 import EmptyState from '@/shared/ui/EmptyState';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import InfoModal from '../../components/InfoModal';
@@ -203,7 +204,8 @@ export default function OrdersScreen() {
   );
 
   return (
-    <AppShell showSearch={false}>
+    <ErrorBoundary>
+      <AppShell showSearch={false}>
       
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
         <TouchableOpacity onPress={() => back()}>
@@ -235,14 +237,15 @@ export default function OrdersScreen() {
       />
 
       {/* Info Modal */}
-      <InfoModal
-        visible={infoModal.visible}
-        title={infoModal.title}
-        message={infoModal.message}
-        type={infoModal.type}
-        onClose={() => setInfoModal({...infoModal, visible: false})}
-      />
-    </AppShell>
+        <InfoModal
+          visible={infoModal.visible}
+          title={infoModal.title}
+          message={infoModal.message}
+          type={infoModal.type}
+          onClose={() => setInfoModal({...infoModal, visible: false})}
+        />
+      </AppShell>
+    </ErrorBoundary>
   );
 }
 
@@ -290,11 +293,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   orderDate: {
     fontSize: 12,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   orderStatus: {
     flexDirection: 'row',
@@ -312,18 +315,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   itemText: {
     fontSize: 14,
     marginBottom: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   moreItems: {
     fontSize: 12,
     fontWeight: '500',
     marginTop: 4,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   orderFooter: {
     flexDirection: 'row',

@@ -36,7 +36,7 @@ const MoonPaySettings: React.FC<Props> = ({ fiatKeyInput, setFiatKeyInput, color
             value={fiatKeyInput}
             onChangeText={setFiatKeyInput}
             placeholder="pk_live_..."
-            textAlign="end"
+            textAlign="right"
             placeholderTextColor={colors.text.tertiary}
           />
         </View>
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'end',
+    textAlign: 'right',
   },
   input: {
     borderWidth: 1,
