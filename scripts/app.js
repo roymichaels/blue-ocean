@@ -179,7 +179,7 @@ async function main() {
       return process.exit(await runBin('tsc', ['--noEmit']));
 
     case 'test':
-      return process.exit(await runBin('jest'));
+      return process.exit(await runBin('jest', process.argv.slice(3)));
 
     case 'depcheck':
       return process.exit(await runBin('depcheck'));
