@@ -28,7 +28,7 @@ const ProductGrid = lazy(() => import('@/features/home/components/ProductGrid'))
 import ProductGridSkeleton from '@/features/home/components/ProductGridSkeleton';
 import Spinner from '@/shared/ui/Spinner';
 import EmptyState from '@/shared/ui/EmptyState';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 const BannerFormModal = lazy(() => import('@/components/BannerFormModal'));
 const CartModal = lazy(() => import('@/features/cart/components/CartModal'));
 const ProductFormModal = lazy(() => import('@/features/products/components/ProductFormModal'));

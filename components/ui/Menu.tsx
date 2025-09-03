@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Modal, TouchableOpacity, View, StyleSheet } from 'react-native';
 import Text from '@/shared/ui/Text';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Portal, Overlay } from '@/ui/primitives';
 
 export interface MenuItem {
   label: string;
@@ -25,47 +24,49 @@ export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) 
   return (
     <>
       {trigger}
-      {open && (
-        <Portal>
-          <Overlay />
-          <View style={styles.overlay} pointerEvents="box-none">
-            <View
-              style={[
-                styles.menu,
-                {
-                  backgroundColor: getColor('background.secondary'),
-                  borderColor: getColor('border.primary'),
-                },
-              ]}
-            >
-              {items.map((item) => (
-                <TouchableOpacity
-                  key={item.label}
-                  style={styles.item}
-                  onPress={() => {
-                    onOpenChange(false);
-                    item.onPress();
-                  }}
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        onRequestClose={() => onOpenChange(false)}
+      >
+        <TouchableOpacity style={styles.overlay} onPress={() => onOpenChange(false)}>
+          <View
+            style={[
+              styles.menu,
+              {
+                backgroundColor: getColor('background.secondary'),
+                borderColor: getColor('border.primary'),
+              },
+            ]}
+          >
+            {items.map((item) => (
+              <TouchableOpacity
+                key={item.label}
+                style={styles.item}
+                onPress={() => {
+                  onOpenChange(false);
+                  item.onPress();
+                }}
+              >
+                {item.icon}
+                <Text
+                  style={[
+                    styles.label,
+                    {
+                      color: item.destructive
+                        ? getColor('status.error')
+                        : getColor('text.primary'),
+                    },
+                  ]}
                 >
-                  {item.icon}
-                  <Text
-                    style={[
-                      styles.label,
-                      {
-                        color: item.destructive
-                          ? getColor('status.error')
-                          : getColor('text.primary'),
-                      },
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        </Portal>
-      )}
+        </TouchableOpacity>
+      </Modal>
     </>
   );
 }

@@ -7,7 +7,7 @@ import ProofUploader from '../../components/ProofUploader';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import usersAgent from '../../agents/users-agent';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function KycScreen() {
   const { user } = useAuth();

@@ -25,7 +25,7 @@ import { useAuthModal } from '@/features/auth/AuthModalContext';
 import commonStyles from '@/constants/styles';
 import Card from '../../components/Card';
 import SmartImage from '../../components/SmartImage';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 
 

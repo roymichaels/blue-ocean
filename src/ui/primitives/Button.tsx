@@ -24,7 +24,7 @@ export default function Button({ title, onPress, disabled, style, textStyle }: B
 }
 
 const styles = {
-  button: (colors: any) => ({
+  button: (colors: any): ViewStyle => ({
     backgroundColor: colors.interactive.primary,
     paddingVertical: spacing.spacer12,
     paddingHorizontal: spacing.spacer16,
