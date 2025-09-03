@@ -1,33 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import AppShell from '../components/layout/AppShell';
-import DatabaseService from '../services/database';
-import { Category } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import useAppRouter from 'hooks/useAppRouter';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Plus } from 'lucide-react-native';
 import ErrorBoundary from '@/shared/ErrorBoundary';
+import { useCategories } from '@/services';
 
 export default function Categories() {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const { push } = useAppRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const db = DatabaseService.getInstance();
-        const data = await db.getCategories();
-        setCategories(data);
-      } catch {
-        // ignore
-      }
-    };
-    load();
-  }, []);
+  const { data: categories = [] } = useCategories();
 
   return (
     <ErrorBoundary>
