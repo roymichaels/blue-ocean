@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { View, Text } from 'react-native';
 import { AppInfoProvider } from '@/contexts/AppInfoContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -12,15 +13,17 @@ import { NotificationProvider } from '@/components/NotificationContext';
 import { WakuProvider } from '@/contexts/WakuContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import AppProviders from './providers/AppProviders';
 import { Router, usePathname, useRouter, useSegments } from 'expo-router';
 
-export default function App() {
+const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
+const queryClient = new QueryClient();
+
+function RouterApp() {
   const router = useRouter();
   const pathname = usePathname();
   const segments = useSegments();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!__DEV__) return;
 
     const path = (router as any).getPath?.() ?? pathname;
@@ -29,6 +32,18 @@ export default function App() {
     console.log('[breadcrumb]', path, currentTab);
   }, [router, pathname, segments]);
 
+  return <Router />;
+}
+
+function FallbackScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Router disabled</Text>
+    </View>
+  );
+}
+
+export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -44,7 +59,7 @@ export default function App() {
                           <ErrorBoundary>
                             <QueryClientProvider client={queryClient}>
                               <React.Suspense fallback={null}>
-                                <Router />
+                                {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
                               </React.Suspense>
                             </QueryClientProvider>
                           </ErrorBoundary>

@@ -2,6 +2,7 @@
 import './polyfills';
 import { AppRegistry } from 'react-native';
 import App from './App';
+process.env.EXPO_PUBLIC_USE_ROUTER = '1';
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
 // Ensure root has height even without +html Document and mount manually
 try {
