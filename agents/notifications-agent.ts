@@ -11,7 +11,7 @@ import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 import { createEncoder, utf8ToBytes } from '@waku/sdk';
-import { ensureNode, isWakuDisabled } from '@/services/waku';
+import { ensureNode, isWakuDisabled } from '@services/waku';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';

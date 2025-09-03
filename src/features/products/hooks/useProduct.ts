@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import chain from '@/services/chain';
+import chain from '@services/chain';
 import { Product } from '@/types';
 
 let getProduct: ((storeId: string, id: string) => Promise<Product | null>) | undefined;

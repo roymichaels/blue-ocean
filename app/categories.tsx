@@ -6,9 +6,9 @@ import { Category } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import useAppRouter from 'hooks/useAppRouter';
-import EmptyState from '@/shared/ui/EmptyState';
+import EmptyState from '@shared/ui/EmptyState';
 import { Plus } from 'lucide-react-native';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import ErrorBoundary from '@shared/ErrorBoundary';
 
 export default function Categories() {
   const { colors } = useTheme();

@@ -5,7 +5,7 @@ import {
   getCartItem,
   listCartItems,
   removeCartItem,
-} from '@/features/cart/services/nearCart';
+} from '@features/cart/services/nearCart';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
 

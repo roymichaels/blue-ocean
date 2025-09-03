@@ -1,4 +1,4 @@
-import { initI18n, t } from '@/services/i18n';
+import { initI18n, t } from '@services/i18n';
 
 test('falls back to bundled translations when fetch fails', async () => {
   const originalFetch = global.fetch;

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import useRequirePlatformAdmin from '@/hooks/useRequirePlatformAdmin';
-import RequireWallet from '../../../../components/RequireWallet';
+import RequireWallet from '@/components/RequireWallet';
 
 export default function ImpersonateStore() {
   useRequirePlatformAdmin();

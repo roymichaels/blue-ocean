@@ -1,10 +1,10 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import Spinner from '@/shared/ui/Spinner';
-import DatabaseService from '@/services/database';
+import Spinner from '@shared/ui/Spinner';
+import DatabaseService from '@services/database';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
-import { chainAdapter } from '@/services/chain';
+import { chainAdapter } from '@services/chain';
 
 interface AuthContextType {
   isLoggedIn: boolean;

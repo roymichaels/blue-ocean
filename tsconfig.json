@@ -19,19 +19,22 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/features/*": [
+      "@app/*": [
+        "app/*"
+      ],
+      "@features/*": [
         "src/features/*"
       ],
-      "@/shared/*": [
+      "@shared/*": [
         "src/shared/*"
       ],
-      "@/ui/*": [
+      "@ui/*": [
         "src/ui/*"
       ],
-      "@/layout/*": [
+      "@layout/*": [
         "src/layout/*"
       ],
-      "@/services/*": [
+      "@services/*": [
         "src/services/*",
         "services/*"
       ],

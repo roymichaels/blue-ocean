@@ -1,8 +1,8 @@
 import * as nacl from 'tweetnacl';
 import { sha256 } from '@noble/hashes/sha256';
 import { Order } from '../types';
-import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
-import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
+import { decryptOrderShipping } from '@features/stores/services/sellerTools';
+import { getSellerPublicKey } from '@features/stores/services/sellerRegistry';
 import { getEd25519KeyPair } from '../services/localIdentity';
 
 const mockStore: Record<string, any> = {};
@@ -32,12 +32,12 @@ jest.mock('../services/nearContract', () => ({
   refundPayment: jest.fn().mockResolvedValue('hash-refund'),
 }));
 
-jest.mock('@/features/stores/services/sellerRegistry');
+jest.mock('@features/stores/services/sellerRegistry');
 jest.mock('../services/localIdentity');
 jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
 jest.mock('../services/eventBus', () => ({ publish: jest.fn() }));
 
-jest.mock('@/features/auth/services/nearAuth', () => ({
+jest.mock('@features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('seller'),
   signIn: jest.fn(),
 }));
@@ -52,7 +52,7 @@ const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
 
 const ordersAgent = require('../agents/orders-agent').default;
 const notificationsAgent = require('../agents/notifications-agent');
-const nearAuth = require('@/features/auth/services/nearAuth');
+const nearAuth = require('@features/auth/services/nearAuth');
 const eventBus = require('../services/eventBus');
 
 describe('ordersAgent.add', () => {

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import GoldDivider from './GoldDivider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { spacing } from '@/shared/ui/tokens';
+import { spacing } from '@shared/ui/tokens';
 
 export default function Section({
   title,

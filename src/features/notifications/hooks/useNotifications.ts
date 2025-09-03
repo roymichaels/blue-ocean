@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import NotificationService from '@/services/notification';
+import NotificationService from '@services/notification';
 import { Notification } from '@/types';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@features/auth/AuthContext';
 
 export function useNotifications() {
   const { isLoggedIn, user } = useAuth();

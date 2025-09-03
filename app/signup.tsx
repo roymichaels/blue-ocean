@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { spacing } from '@/ui/tokens';
-import { Form, Field, Label, HelperText } from '@/ui/form';
-import TextField from '@/ui/primitives/TextField';
-import Button from '@/ui/primitives/Button';
+import { spacing } from '@ui/tokens';
+import { Form, Field, Label, HelperText } from '@ui/form';
+import TextField from '@ui/primitives/TextField';
+import Button from '@ui/primitives/Button';
 import { validateAll } from '@/utils/validation';
 
 export default function SignupScreen() {

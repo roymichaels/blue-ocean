@@ -1,11 +1,11 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import chain from '@/services/chain';
+import chain from '@services/chain';
 import { CartItem, Store } from '@/types';
 
 let getStore: ((storeId: string, id: string) => Promise<Store | null>) | undefined;
 if (chain === 'near') {
-  ({ getStore } = require('@/features/stores/services/nearStores'));
+  ({ getStore } = require('@features/stores/services/nearStores'));
 }
 
 export default function useCartStores(cartItems: CartItem[]) {

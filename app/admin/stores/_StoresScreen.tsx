@@ -3,14 +3,14 @@ import { Text } from 'react-native';
 import useAppRouter from 'hooks/useAppRouter';
 import { useTheme } from '@/contexts/ThemeContext';
 import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
-import chain from '@/services/chain';
+import chain from '@services/chain';
 import { Store } from '@/types';
 import AdminShell from '@/components/admin/AdminShell';
 import AdminList, { AdminListItem } from '@/components/admin/AdminList';
 
 let listStores: (() => Promise<Store[]>) | undefined;
 if (chain === 'near') {
-  ({ listStores } = require('@/features/stores/services/nearStores'));
+  ({ listStores } = require('@features/stores/services/nearStores'));
 }
 
 export default function AdminStores() {

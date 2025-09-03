@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import DatabaseService from '@/services/database';
+import DatabaseService from '@services/database';
 import { HeroBanner } from '@/types';
 
 export function useHomeBanners() {

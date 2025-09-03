@@ -16,16 +16,16 @@ import { router } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import DatabaseService from '../../services/database';
 import { Product, Review, Order } from '../../types';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import Spinner from '@/shared/ui/Spinner';
+import Spinner from '@shared/ui/Spinner';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
-import { useAuthModal } from '@/features/auth/AuthModalContext';
+import { useAuthModal } from '@features/auth/AuthModalContext';
 import commonStyles from '@/constants/styles';
 import Card from '../../components/Card';
 import SmartImage from '../../components/SmartImage';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import ErrorBoundary from '@shared/ErrorBoundary';
 
 
 

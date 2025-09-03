@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
 import { FlatList, View, StyleSheet } from 'react-native';
-import EmptyState from '@/shared/ui/EmptyState';
+import EmptyState from '@shared/ui/EmptyState';
 import ProductCard from '../ProductCard';
 import { Product } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Package } from 'lucide-react-native';
-import { spacing } from '@/shared/ui/tokens';
+import { spacing } from '@shared/ui/tokens';
 
 const rowStyles = StyleSheet.create({ flex: { flex: 1 } });
 

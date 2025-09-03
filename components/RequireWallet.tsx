@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'expo-router';
-import { replace } from '@/services/navigation';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { replace } from '@services/navigation';
+import { useAccountId } from '@features/auth/services/nearAuth';
 
 interface Props {
   children: React.ReactNode;

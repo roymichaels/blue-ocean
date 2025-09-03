@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { debugLog } from '@/utils/logger';
 import { useLocalSearchParams } from 'expo-router';
-import { useTheme } from '../../../../contexts/ThemeContext';
-import chain from '../../../../services/chain';
-import { Order } from '../../../../types';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { useTheme } from '@/contexts/ThemeContext';
+import chain from '@/services/chain';
+import { Order } from '@/types';
+import { useAccountId } from '@features/auth/services/nearAuth';
 
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)
   | undefined;
 if (chain === 'near') {
-  ({ listOrdersBySeller } = require('../../../../services/nearOrders'));
+  ({ listOrdersBySeller } = require('@/services/nearOrders'));
 }
 
 export default function StoreOrdersScreen() {

@@ -1,9 +1,9 @@
 import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '@/types';
-import DatabaseService from '@/services/database';
+import DatabaseService from '@services/database';
 import cartAgent, { getCartItems } from '@/agents/cart-agent';
-import eventBus from '@/services/eventBus';
+import eventBus from '@services/eventBus';
 import nearAuth from '../../auth/services/nearAuth';
  
 

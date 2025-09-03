@@ -5,12 +5,12 @@ import { HeroBanner } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import useAppRouter from 'hooks/useAppRouter';
-import EmptyState from '@/shared/ui/EmptyState';
-import { Spinner, Skeleton } from '@/ui/primitives';
-import Text from '@/shared/ui/Text';
-import Heading from '@/shared/ui/Heading';
+import EmptyState from '@shared/ui/EmptyState';
+import { Spinner, Skeleton } from '@ui/primitives';
+import Text from '@shared/ui/Text';
+import Heading from '@shared/ui/Heading';
 import Button from '@/components/ui/Button';
-import { spacing, radius } from '@/shared/ui/tokens';
+import { spacing, radius } from '@shared/ui/tokens';
 
 
 const SmartImage = lazy(() => import('@/components/SmartImage'));

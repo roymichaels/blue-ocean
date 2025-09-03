@@ -3,14 +3,14 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import * as DocumentPicker from 'expo-document-picker';
 import pLimit from 'p-limit';
 import { useTheme } from '@/contexts/ThemeContext';
-import MediaService from '@/services/media';
+import MediaService from '@services/media';
 import { Product } from '@/types';
-import chain from '@/services/chain';
+import chain from '@services/chain';
 
 let setProductBatch: ((storeId: string, items: Product[]) => Promise<void>) | undefined;
 let estimateSetProductBatch: ((items: Product[]) => number) | undefined;
 if (chain === 'near') {
-  ({ setProductBatch, estimateSetProductBatch } = require('@/features/products/services/nearProducts'));
+  ({ setProductBatch, estimateSetProductBatch } = require('@features/products/services/nearProducts'));
 }
 
 interface Summary {

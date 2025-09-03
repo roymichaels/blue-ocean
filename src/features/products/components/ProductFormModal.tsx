@@ -13,15 +13,15 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import { push } from '@/services/navigation';
+import { push } from '@services/navigation';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
 import { Product, Category, Subcategory, PricingTier, ProductIndexItem } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import DatabaseService from '@/services/database';
-import PinataService from '@/services/pinata';
-import ipfsService from '@/services/ipfsService';
-import chain from '@/services/chain';
+import DatabaseService from '@services/database';
+import PinataService from '@services/pinata';
+import ipfsService from '@services/ipfsService';
+import chain from '@services/chain';
 
 let setProductBatch:
   | ((items: ProductIndexItem[]) => Promise<void>)

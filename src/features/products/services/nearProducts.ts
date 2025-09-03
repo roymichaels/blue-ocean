@@ -1,6 +1,6 @@
-import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
+import { getValue, setValue, listValues, removeValue } from '@services/nearKvStore';
 import { Product } from '@/types';
-import { assertNearChain } from '@/services/chain';
+import { assertNearChain } from '@services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 import { errorLog } from '@/utils/logger';
 import { productSchema } from '@/schemas/waku';

@@ -6,14 +6,14 @@ import { useLocalSearchParams } from 'expo-router';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@features/auth/AuthContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
 import OrderService from '../../services/orders';
 import { Order, OrderStatus, ShippingAddress } from '../../types';
 import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
-import nearAuth from '@/features/auth/services/nearAuth';
-import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
+import nearAuth from '@features/auth/services/nearAuth';
+import { decryptOrderShipping } from '@features/stores/services/sellerTools';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
 

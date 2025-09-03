@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Bell, X } from 'lucide-react-native';
 import NotificationService from '../services/notification';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@features/auth/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AdminNotificationBanner() {

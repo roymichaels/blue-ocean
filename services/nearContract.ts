@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import nearAuth from '@/features/auth/services/nearAuth';
+import nearAuth from '@features/auth/services/nearAuth';
 import { fetchSettings } from './nearSettings';
 import { assertNearChain } from './chain';
 import { getNearContract } from '@/utils/nearEnv';

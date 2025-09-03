@@ -1,7 +1,7 @@
 import { User } from '@/types';
-import { assertNearChain } from '@/services/chain';
-import { getUser, setUser, listUsers, removeUser } from '@/features/auth/services/nearUsers';
-import { getPublicKeyHex } from '@/services/localIdentity';
+import { assertNearChain } from '@services/chain';
+import { getUser, setUser, listUsers, removeUser } from '@features/auth/services/nearUsers';
+import { getPublicKeyHex } from '@services/localIdentity';
 import SettingsAgent from './settings-agent';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import validateNearAddress from '@/utils/validateNearAddress';

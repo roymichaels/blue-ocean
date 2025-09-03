@@ -1,6 +1,6 @@
 import * as nacl from 'tweetnacl';
 import { encryptShippingInfo } from '../utils/shippingCrypto';
-import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
+import { decryptOrderShipping } from '@features/stores/services/sellerTools';
 import { getEd25519KeyPair } from '../services/localIdentity';
 import { Order } from '../types';
 

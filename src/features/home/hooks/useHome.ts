@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Product, Category } from '@/types';
-import { useProducts } from '@/services/useProducts';
-import { useCategories } from '@/services/useCategories';
-import { requireEnv } from '@/services/config';
+import { useProducts } from '@services/useProducts';
+import { useCategories } from '@services/useCategories';
+import { requireEnv } from '@services/config';
 
 export function useHome() {
   const defaultStore = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');

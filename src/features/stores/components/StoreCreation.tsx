@@ -8,7 +8,7 @@ import {
   Alert,
   I18nManager,
 } from 'react-native';
-import { replace } from '@/services/navigation';
+import { replace } from '@services/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/LanguageContext';
 import storesAgent from '@/agents/stores-agent';

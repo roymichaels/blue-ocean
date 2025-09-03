@@ -18,15 +18,15 @@ import {
   Percent,
   Package,
 } from 'lucide-react-native';
-import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../../../contexts/ThemeContext';
-import { useCurrency } from '../../../../contexts/CurrencyContext';
-import DatabaseService from '../../../../services/database';
-import { PricingTier } from '../../../../types';
-import Spinner from '@/shared/ui/Spinner';
-import InfoModal from '../../../../components/InfoModal';
-import PricingTierFormModal from '@/features/products/components/PricingTierFormModal';
-import Card from '../../../../components/Card';
+import { useAuth } from '@features/auth/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import DatabaseService from '@/services/database';
+import { PricingTier } from '@/types';
+import Spinner from '@shared/ui/Spinner';
+import InfoModal from '@/components/InfoModal';
+import PricingTierFormModal from '@features/products/components/PricingTierFormModal';
+import Card from '@/components/Card';
 
 export default function PricingTiersScreen() {
   const { replace, back } = useAppRouter();

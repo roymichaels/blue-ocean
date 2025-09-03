@@ -11,7 +11,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext';
 import { getProducts } from '../../agents/products-agent';
 import reviewAgent from '../../agents/review-agent';
-import ProductCard from '@/features/products/ProductCard';
+import ProductCard from '@features/products/ProductCard';
 import { Product } from '../../types';
 import Fuse from 'fuse.js';
 import eventBus from '../../services/eventBus';

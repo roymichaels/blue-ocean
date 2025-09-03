@@ -18,7 +18,7 @@ import {
   utf8ToBytes,
 } from '@waku/sdk';
 import { encryptMessage, decryptMessage } from '@/utils/chatCrypto';
-import DatabaseService from '@/services/database';
+import DatabaseService from '@services/database';
 import { ChatMessage } from '@/types';
 import { getWakuBootstrapNodes } from '@/utils/appConfig';
 import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';

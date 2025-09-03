@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
-import { useTheme } from '../../../../contexts/ThemeContext';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@features/auth/AuthContext';
 import useAppRouter from 'hooks/useAppRouter';
-import ordersAgent from '../../../../agents/orders-agent';
-import { Order } from '../../../../types';
-import DisputeEvidence from '../../../../components/DisputeEvidence';
-import DisputeResolver from '../../../../components/DisputeResolver';
+import ordersAgent from '@/agents/orders-agent';
+import { Order } from '@/types';
+import DisputeEvidence from '@/components/DisputeEvidence';
+import DisputeResolver from '@/components/DisputeResolver';
 import commonStyles from '@/constants/styles';
 
 export default function AdminDisputesScreen() {

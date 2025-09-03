@@ -9,7 +9,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { X } from 'lucide-react-native';
 import Button from './ui/Button';
-import { Portal, Overlay } from '@/ui/primitives';
+import { Portal, Overlay } from '@ui/primitives';
 
 interface ConfirmationModalProps {
   visible: boolean;

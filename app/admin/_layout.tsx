@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import ErrorBoundary from '@shared/ErrorBoundary';
 import RequireWallet from '../../components/RequireWallet';
 
 export default function AdminLayout() {

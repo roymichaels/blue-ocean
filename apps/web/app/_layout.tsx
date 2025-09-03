@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { Stack } from 'expo-router';
-import { chainAdapter } from '@/services/chain';
+import { chainAdapter } from '@services/chain';
 import '../services/chainGuard';
 import WalletButton from '../components/WalletButton';
 

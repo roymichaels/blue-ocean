@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useCallback } from 'react';
-import { chainAdapter } from '@/services/chain';
+import { chainAdapter } from '@services/chain';
 
 interface WalletContextValue {
   address: string | null;

@@ -7,12 +7,12 @@ import Section from '../components/ui/Section';
 import GoldDivider from '../components/ui/GoldDivider';
 import DatabaseService from '../services/database';
 import { Product, Category, HeroBanner } from '../types';
-import ProductCard from '@/features/products/ProductCard';
+import ProductCard from '@features/products/ProductCard';
 import { useTheme } from '../contexts/ThemeContext';
 import SmartImage from '../components/SmartImage';
 import Button from '../components/ui/Button';
-import ErrorBoundary from '@/shared/ErrorBoundary';
-import { spacing } from '@/shared/ui/tokens';
+import ErrorBoundary from '@shared/ErrorBoundary';
+import { spacing } from '@shared/ui/tokens';
 
 export default function Landing() {
   const { push } = useAppRouter();

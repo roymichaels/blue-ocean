@@ -21,10 +21,10 @@ import {
   Circle as XCircle,
 } from 'lucide-react-native';
 import ProofUploader from '../components/ProofUploader';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@features/auth/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import DatabaseService from '../services/database';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import ErrorBoundary from '@shared/ErrorBoundary';
 import { DeliveryJob } from '../types';
 import commonStyles from '@/constants/styles';
 

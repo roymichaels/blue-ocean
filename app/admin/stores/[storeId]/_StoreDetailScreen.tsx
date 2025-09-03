@@ -5,7 +5,7 @@ import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import { useTheme } from '@/contexts/ThemeContext';
 import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
-import { useStore } from '@/features/products/hooks';
+import { useStore } from '@features/products/hooks';
 
 export default function StoreDetail() {
   useRequirePlatformAdmin();
