@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { openModal, useNearAccount, initNear } from '@/services/near';
+import { chainAdapter } from '@/services/chain';
 
 interface WalletConnectButtonProps {
   onConnect?: () => void;
 }
 
 export default function WalletConnectButton({ onConnect }: WalletConnectButtonProps) {
-  const account = useNearAccount();
+  const account = chainAdapter.useAccount();
 
   useEffect(() => {
     if (account) {
@@ -16,12 +16,12 @@ export default function WalletConnectButton({ onConnect }: WalletConnectButtonPr
   }, [account, onConnect]);
 
   const handleConnect = async () => {
-    const { error } = await initNear();
+    const { error } = await chainAdapter.init();
     if (error) {
       console.error('Wallet initialization failed:', error);
       return;
     }
-    openModal();
+    chainAdapter.openModal();
   };
 
   return (

@@ -29,6 +29,7 @@ module.exports = {
     '<rootDir>/tests/admin-store-detail.test.tsx',
     '<rootDir>/tests/not-found.test.tsx',
     '<rootDir>/tests/wakuErrorLogging.test.ts',
+    '<rootDir>/tests/nearAdapter.test.ts',
     '<rootDir>/tests/i18n-offline.test.ts',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],

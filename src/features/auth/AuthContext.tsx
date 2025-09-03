@@ -4,7 +4,7 @@ import Spinner from '@/shared/ui/Spinner';
 import DatabaseService from '@/services/database';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
-import { initNear, openModal, useNearAccount, getSelector } from '@/services/near';
+import { chainAdapter } from '@/services/chain';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -41,7 +41,7 @@ export const useAuth = () => useContext(AuthContext);
 interface AuthProviderProps { children: ReactNode }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const address = useNearAccount();
+  const address = chainAdapter.useAccount();
   const [user, setUser] = useState<User | null>(null);
   const [initialized, setInitialized] = useState(false);
 
@@ -86,7 +86,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   useEffect(() => {
-    initNear()
+    chainAdapter
+      .init()
       .catch(() => null)
       .finally(() => {
         checkAuthState().finally(() => setInitialized(true));
@@ -95,7 +96,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async () => {
     try {
-      await openModal();
+      await chainAdapter.openModal();
     } catch (err: unknown) {
       errorLog('Wallet connection failed', err);
       Alert.alert('Error', 'Wallet connection failed. Please try again.');
@@ -106,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      const selector = getSelector();
+      const selector = chainAdapter.getSelector();
       const wallet = await selector?.wallet();
       await wallet?.signOut();
     } catch (err) {

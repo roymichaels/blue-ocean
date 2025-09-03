@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useCallback } from 'react';
-import { useNearAccount, openModal, getSelector } from '@/services/near';
+import { chainAdapter } from '@/services/chain';
 
 interface WalletContextValue {
   address: string | null;
@@ -20,14 +20,14 @@ interface Props {
 }
 
 export function WalletProvider({ children }: Props) {
-  const address = useNearAccount();
+  const address = chainAdapter.useAccount();
 
   const connect = useCallback(async () => {
-    await openModal();
+    await chainAdapter.openModal();
   }, []);
 
   const disconnect = useCallback(async () => {
-    const selector = getSelector();
+    const selector = chainAdapter.getSelector();
     const wallet = await selector?.wallet();
     await wallet?.signOut();
   }, []);

@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import React, { useState } from 'react';
 import Button from '@/components/ui/Button';
 import { useAppInfo } from '@/contexts/AppInfoContext';
-import near, { useNearAccount } from '@/services/near';
+import { chainAdapter } from '@/services/chain';
 import MoonPayModal from './MoonPayModal';
 
 interface MoonPayButtonProps {
@@ -11,7 +11,7 @@ interface MoonPayButtonProps {
 
 export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
   const { fiatKey } = useAppInfo();
-  const walletAddress = useNearAccount();
+  const walletAddress = chainAdapter.useAccount();
   const [visible, setVisible] = useState(false);
   const [amountNEAR, setAmountNEAR] = useState<number | undefined>(undefined);
 
@@ -19,7 +19,7 @@ export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
 
   const handlePress = async () => {
     if (!walletAddress) {
-      await near.openModal();
+      await chainAdapter.openModal();
       return;
     }
     try {
