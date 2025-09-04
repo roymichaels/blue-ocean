@@ -6,6 +6,7 @@ import { useTheme } from '../../../../contexts/ThemeContext';
 import chain from '../../../../services/chain';
 import { Order } from '../../../../types';
 import { useAccountId } from '@/features/auth/services/nearAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)
@@ -19,6 +20,7 @@ export default function StoreOrdersScreen() {
   const { colors } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
   const address = useAccountId();
+  const { t } = useLanguage();
 
   const handlePress = (order: Order) => {
     debugLog('Pressed order', order.id);
@@ -46,7 +48,7 @@ export default function StoreOrdersScreen() {
           { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' },
         ]}
       >
-        <Text style={{ color: colors.text.primary }}>יש להתחבר לארנק המתאים</Text>
+        <Text style={{ color: colors.text.primary }}>{t('orders.connectWallet')}</Text>
       </View>
     );
   }
@@ -69,10 +71,14 @@ export default function StoreOrdersScreen() {
         </TouchableOpacity>
       )}
       ListEmptyComponent={
-        <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>אין הזמנות</Text>
+        <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
+          {t('orders.emptyTitle')}
+        </Text>
       }
       ListHeaderComponent={
-        <Text style={[styles.title, { color: colors.text.primary }]}>הזמנות</Text>
+        <Text style={[styles.title, { color: colors.text.primary }]}>
+          {t('navigation.orders')}
+        </Text>
       }
     />
   );
