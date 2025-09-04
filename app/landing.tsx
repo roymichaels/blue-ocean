@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Pressable, ScrollView } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import { Link } from 'expo-router';
-import { useAppRouter } from '@/services';
+import { useAppRouter, useCategories, useLanding } from '@/services';
 import AppShell from '../components/layout/AppShell';
 import Divider from '@/ui/primitives/Divider';
-import DatabaseService from '@/services/database';
-import { Product, HeroBanner } from '../types';
-import { useCategories } from '@/services';
 import ProductCard from '@/features/products/ProductCard';
 import { useTheme } from '@/ui/ThemeProvider';
 import SmartImage from '../components/SmartImage';
@@ -18,24 +15,10 @@ import { spacing } from '@/shared/ui/tokens';
 export default function Landing() {
   const { push } = useAppRouter();
   const { colors } = useTheme();
-  const [featured, setFeatured] = useState<Product[]>([]);
-  const [banners, setBanners] = useState<HeroBanner[]>([]);
+  const { data } = useLanding();
+  const featured = data?.featured ?? [];
+  const banners = data?.banners ?? [];
   const { data: categories = [] } = useCategories();
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const db = DatabaseService.getInstance();
-        const prods = await db.getProducts();
-        setFeatured(prods.slice(0, 6));
-        try {
-          const hs = await db.getHeroBanners();
-          setBanners(hs);
-        } catch {}
-      } catch {}
-    };
-    load();
-  }, []);
 
   return (
     <ErrorBoundary>
