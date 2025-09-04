@@ -31,7 +31,7 @@ import {
 import CartService from '@/features/cart/services/cart';
 import { Product } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
@@ -69,6 +69,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const { currencySymbol } = useCurrency();
   const address = useAccountId();
   const reviews = useReviews(id);
@@ -93,8 +94,8 @@ export default function ProductDetailScreen({ id }: { id: string }) {
     if (address && fetchedProduct && fetchedProduct.storeId !== address) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'מוצר לא נמצא',
+        title: t('common.error'),
+        message: t('product.notFound'),
         type: 'error',
       });
       setProduct(null);
@@ -154,8 +155,8 @@ export default function ProductDetailScreen({ id }: { id: string }) {
       if (navigator.share) {
         navigator
           .share({
-            title: product?.name || 'Check out this product',
-            text: product?.description || 'I found this amazing product',
+            title: product?.name || t('product.shareDefaultTitle'),
+            text: product?.description || t('product.shareDefaultText'),
             url: window.location.href,
           })
           .catch((error) => {
@@ -164,16 +165,16 @@ export default function ProductDetailScreen({ id }: { id: string }) {
       } else {
         setInfoModal({
           visible: true,
-          title: 'שיתוף',
-          message: 'שיתוף אינו נתמך בדפדפן זה',
+          title: t('product.share'),
+          message: t('product.shareUnsupported'),
           type: 'info',
         });
       }
     } else {
       setInfoModal({
         visible: true,
-        title: 'שיתוף',
-        message: 'פונקציונליות השיתוף תתווסף בקרוב',
+        title: t('product.share'),
+        message: t('product.shareSoon'),
         type: 'info',
       });
     }
@@ -186,8 +187,11 @@ export default function ProductDetailScreen({ id }: { id: string }) {
     await cartService.addToCart(product, quantity);
     setInfoModal({
       visible: true,
-      title: 'נוסף לעגלה',
-      message: `${product.name} נוסף לעגלה בכמות ${quantity}`,
+      title: t('product.addedToCartTitle'),
+      message: t('product.addedToCartMessage', {
+        name: product.name,
+        quantity,
+      }),
       type: 'success',
     });
   };
@@ -213,16 +217,16 @@ export default function ProductDetailScreen({ id }: { id: string }) {
       await moderationAgent.reportProduct(product.id, 'inappropriate');
       setInfoModal({
         visible: true,
-        title: 'דיווח נשלח',
-        message: 'תודה שדיווחת על המוצר',
+        title: t('product.reportSent'),
+        message: t('product.reportThankYou'),
         type: 'success',
       });
     } catch (err) {
       errorLog('Error reporting product:', err);
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'שליחת הדיווח נכשלה',
+        title: t('common.error'),
+        message: t('product.reportFailed'),
         type: 'error',
       });
     }
@@ -254,7 +258,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
-            טוען...
+            {t('common.loading')}
           </Text>
           <View style={commonStyles.spacer24} />
         </View>
@@ -337,8 +341,8 @@ export default function ProductDetailScreen({ id }: { id: string }) {
           ) : (
             <View style={styles.noImageContainer}>
               <ImageIcon size={64} color={colors.text.secondary} />
-              <Text style={[styles.noImageText, { color: colors.text.secondary }]}>
-                אין תמונה
+              <Text style={[styles.noImageText, { color: colors.text.secondary }]}> 
+                {t('product.noImage')}
               </Text>
             </View>
           )}
@@ -429,12 +433,13 @@ export default function ProductDetailScreen({ id }: { id: string }) {
                 <Text
                   style={[styles.discountText, { color: colors.text.primary }]}
                 >
-                  {Math.round(
-                    ((product.originalPrice - product.price) /
-                      product.originalPrice) *
-                      100
-                  )}
-                  % הנחה
+                  {t('product.percentOff', {
+                    percent: Math.round(
+                      ((product.originalPrice - product.price) /
+                        product.originalPrice) *
+                        100
+                    ),
+                  })}
                 </Text>
               </View>
             )}
@@ -462,7 +467,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
               <Text
                 style={[styles.ratingText, { color: colors.text.secondary }]}
               >
-                {averageRating.toFixed(1)} ({reviews.length} ביקורות)
+                {averageRating.toFixed(1)} {t('product.reviewsCount', { count: reviews.length })}
               </Text>
             </View>
           </View>
@@ -475,12 +480,10 @@ export default function ProductDetailScreen({ id }: { id: string }) {
           {/* Pricing Tier */}
           {currentPricingTier && (
             <View style={styles.pricingTierContainer}>
-              <Text style={[styles.pricingTierText, { color: colors.gold }]}>
+              <Text style={[styles.pricingTierText, { color: colors.gold }]}> 
                 {currentPricingTier.name}
                 {typeof currentPricingTier.pricePerUnit === 'number' &&
-                  ` - מחיר ליחידה: ${currencySymbol}${currentPricingTier.pricePerUnit.toFixed(
-                    2
-                  )}`}
+                  ` - ${t('product.pricePerUnit', { price: `${currencySymbol}${currentPricingTier.pricePerUnit.toFixed(2)}` })}`}
               </Text>
               {currentPricingTier.minQuantity > 1 && (
                 <Text
@@ -489,7 +492,9 @@ export default function ProductDetailScreen({ id }: { id: string }) {
                     { color: colors.text.secondary },
                   ]}
                 >
-                  (מינימום {currentPricingTier.minQuantity} יחידות)
+                  {t('product.minQuantity', {
+                    count: currentPricingTier.minQuantity,
+                  })}
                 </Text>
               )}
             </View>
@@ -509,8 +514,8 @@ export default function ProductDetailScreen({ id }: { id: string }) {
               ]}
             >
               {product.stock > 0
-                ? `במלאי (${product.stock} יחידות)`
-                : 'אזל מהמלאי'}
+                ? t('product.inStock', { count: product.stock })
+                : t('product.outOfStock')}
             </Text>
           </View>
 
@@ -520,7 +525,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
               <Text
                 style={[styles.galleryTitle, { color: colors.text.primary }]}
               >
-                גלריית מדיה
+                {t('product.mediaGallery')}
               </Text>
               <ScrollView
                 horizontal
@@ -582,7 +587,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
                   { color: colors.text.primary },
                 ]}
               >
-                מחיר מדורג פעיל!
+                {t('product.tieredPricingActive')}
               </Text>
               <Text
                 style={[
@@ -590,12 +595,13 @@ export default function ProductDetailScreen({ id }: { id: string }) {
                   { color: colors.text.secondary },
                 ]}
               >
-                {`מחיר ליחידה: ${currencySymbol}${effectivePrice.toFixed(
-                  2
-                )} (במקום ${currencySymbol}${product.price.toFixed(2)})`}
+                {t('product.tieredPricingUnitPrice', {
+                  price: `${currencySymbol}${effectivePrice.toFixed(2)}`,
+                  original: `${currencySymbol}${product.price.toFixed(2)}`,
+                })}
               </Text>
               <Text style={[styles.tieredPricingTotal, { color: colors.gold }]}>
-                {`סה"כ: ${currencySymbol}${totalPrice.toFixed(2)}`}
+                {`${t('cart.total')} ${currencySymbol}${totalPrice.toFixed(2)}`}
               </Text>
             </View>
           )}
@@ -606,7 +612,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
               <Text
                 style={[styles.sectionTitle, { color: colors.text.primary }]}
               >
-                כמות
+                {t('product.quantity')}
               </Text>
               <View style={styles.quantityContainer}>
                 <TouchableOpacity
@@ -672,7 +678,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
             <Text
               style={[styles.messageSellerText, { color: colors.text.inverse }]}
             >
-              Message Seller
+              {t('product.messageSeller')}
             </Text>
           </TouchableOpacity>
 
@@ -690,7 +696,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
             <Text
               style={[styles.reportButtonText, { color: colors.status.error }]}
             >
-              Report
+              {t('product.report')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -701,7 +707,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
             <Text
               style={[styles.sectionTitle, { color: colors.text.primary }]}
             >
-              ביקורות
+              {t('product.reviews')}
             </Text>
             {reviews.map((rev) => (
               <View key={rev.id} style={styles.reviewItem}>
