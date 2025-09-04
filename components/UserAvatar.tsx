@@ -3,7 +3,7 @@ import { User, LogOut } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { push, replace } from '@/services/navigation';
+import useAppRouter from 'hooks/useAppRouter';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { Menu, Avatar, type MenuItem } from '@/ui/primitives';
@@ -13,6 +13,7 @@ export default function UserAvatar() {
   const { t } = useLanguage();
   const { getColor } = useTheme();
   const { openAuthModal } = useAuthModal();
+  const { push, replace } = useAppRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
 

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { X, Heart, ShoppingCart, Trash2 } from 'lucide-react-native';
-import { push } from '@/services/navigation';
+import useAppRouter from 'hooks/useAppRouter';
 import { WishlistItem } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -25,6 +25,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
   const { wishlistItems, removeFromWishlist, addToCart } = useWishlist(visible);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+  const { push } = useAppRouter();
 
   const handleAddToCart = async (item: WishlistItem) => {
     await addToCart(item);

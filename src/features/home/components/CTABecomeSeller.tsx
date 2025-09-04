@@ -1,11 +1,12 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { push } from '@/services/navigation';
+import useAppRouter from 'hooks/useAppRouter';
 import Button from '@/ui/primitives/Button';
 
 export default function CTABecomeSeller() {
   const { t } = useLanguage();
+  const { push } = useAppRouter();
 
   return (
     <Button
