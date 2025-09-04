@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { X } from 'lucide-react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import WalletConnectButton from './WalletConnectButton';
 
 interface AuthTabsModalProps {

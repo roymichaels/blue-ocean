@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import type { LucideProps } from 'lucide-react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import Button from '@/ui/primitives/Button';
 
 type IconComponent = React.ComponentType<LucideProps>;

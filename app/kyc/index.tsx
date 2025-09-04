@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import useAppRouter from 'hooks/useAppRouter';
 import ProofUploader from '../../components/ProofUploader';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import usersAgent from '../../agents/users-agent';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 

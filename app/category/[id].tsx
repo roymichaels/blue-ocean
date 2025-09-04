@@ -17,7 +17,7 @@ import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
 import { Subcategory } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import InfoModal from '../../components/InfoModal';
 import { Spinner } from '@/ui/primitives';
 import commonStyles from '@/constants/styles';

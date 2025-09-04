@@ -31,7 +31,7 @@ import {
 import CartService from '@/features/cart/services/cart';
 import { Product } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';

@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function Ping() {

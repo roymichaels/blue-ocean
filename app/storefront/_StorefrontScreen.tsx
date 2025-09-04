@@ -8,7 +8,7 @@ import {
   FlatList,
   I18nManager,
 } from 'react-native';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { getProducts } from '../../agents/products-agent';
 import reviewAgent from '../../agents/review-agent';
 import ProductCard from '@/features/products/ProductCard';

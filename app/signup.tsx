@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/ui/ThemeProvider';
+import { useLanguage } from '@/ui/ThemeProvider';
 import { spacing } from '@/ui/tokens';
 import { Form, Field, Label, HelperText } from '@/ui/form';
 import TextField from '@/ui/primitives/TextField';

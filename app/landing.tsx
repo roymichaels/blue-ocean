@@ -9,7 +9,7 @@ import DatabaseService from '@/services/database';
 import { Product, HeroBanner } from '../types';
 import { useCategories } from '@/services';
 import ProductCard from '@/features/products/ProductCard';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import SmartImage from '../components/SmartImage';
 import Button from '@/ui/primitives/Button';
 import ErrorBoundary from '@/shared/ErrorBoundary';

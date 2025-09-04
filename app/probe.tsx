@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Link } from 'expo-router';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function Probe() {

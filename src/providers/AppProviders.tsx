@@ -1,5 +1,4 @@
 import React from 'react';
-import { ThemeProvider } from '@/contexts/ThemeContext';
 import { WalletProvider } from './WalletProvider';
 import { WakuProvider } from '@/contexts/WakuContext';
 import { QueryClient } from '@tanstack/react-query';
@@ -11,13 +10,11 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <WalletProvider>
-          <CheckedQueryClientProvider client={queryClient}>
-            <WakuProvider>{children}</WakuProvider>
-          </CheckedQueryClientProvider>
-        </WalletProvider>
-      </ThemeProvider>
+      <WalletProvider>
+        <CheckedQueryClientProvider client={queryClient}>
+          <WakuProvider>{children}</WakuProvider>
+        </CheckedQueryClientProvider>
+      </WalletProvider>
     </ErrorBoundary>
   );
 }

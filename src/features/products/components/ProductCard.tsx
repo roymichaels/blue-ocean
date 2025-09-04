@@ -12,7 +12,7 @@ import SmartImage from '@/components/SmartImage';
 import { Heart, Pencil, ShoppingCart, Tag } from 'lucide-react-native';
 import useAppRouter from 'hooks/useAppRouter';
 import { Product, PricingTier } from '@/types';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import CartService from '../../cart/services/cart';
 import DatabaseService from '@/services/database';

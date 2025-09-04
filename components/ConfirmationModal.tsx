@@ -6,7 +6,7 @@ import {
   Platform,
 } from 'react-native';
 import Text from '@/ui/primitives/Text';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { X } from 'lucide-react-native';
 import Button from '@/ui/primitives/Button';
 import { Portal, Overlay } from '@/ui/primitives';

@@ -12,8 +12,8 @@ import {
 } from '../utils/audio';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, X } from 'lucide-react-native';
-import { useTheme } from '../contexts/ThemeContext';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '@/ui/ThemeProvider';
+import { useLanguage } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
 import useChatRooms from '../hooks/useChatRooms';
 import useChatMessages from '../hooks/useChatMessages';

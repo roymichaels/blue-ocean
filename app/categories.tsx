@@ -1,8 +1,8 @@
 import React from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import AppShell from '../components/layout/AppShell';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/ui/ThemeProvider';
+import { useLanguage } from '@/ui/ThemeProvider';
 import useAppRouter from 'hooks/useAppRouter';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Plus } from 'lucide-react-native';

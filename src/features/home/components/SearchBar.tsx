@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/ui/ThemeProvider';
 import TextField from '@/ui/primitives/TextField';
 
 interface SearchBarProps {

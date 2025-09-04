@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import chain from '@/services/chain';
 import OrderRevenueMetrics from '@/components/OrderRevenueMetrics';
 import { useAuth } from '@/features/auth/AuthContext';

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useTheme } from '../../../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { Product } from '../../../../types';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { useProducts } from '@/services/useProducts';

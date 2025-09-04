@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { replace } from '@/services/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/ui/ThemeProvider';
 import storesAgent from '@/agents/stores-agent';
 import nearAuth from '../../auth/services/nearAuth';
 import { errorLog } from '@/utils/logger';

@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, CircleCheck as CheckCircle, Circle as XCircle, Clock, User, Mail, FileText, Calendar } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import { User as UserType } from '../../../../types';
 import { Spinner } from '@/ui/primitives';

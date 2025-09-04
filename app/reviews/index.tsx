@@ -17,7 +17,7 @@ import useAppRouter from 'hooks/useAppRouter';
 import DatabaseService from '@/services/database';
 import { Product, Review, Order } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui/primitives';
 import InfoModal from '../../components/InfoModal';
 import ConfirmationModal from '../../components/ConfirmationModal';

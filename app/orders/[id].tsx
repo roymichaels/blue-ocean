@@ -6,7 +6,7 @@ import Button from '@/ui/primitives/Button';
 import { useLocalSearchParams } from 'expo-router';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';

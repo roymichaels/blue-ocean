@@ -4,7 +4,7 @@ import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
 import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
 import { useStore } from '@/features/products/hooks';
 

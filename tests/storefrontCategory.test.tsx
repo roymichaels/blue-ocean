@@ -6,7 +6,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ id: 'vegetables' }),
 }));
 
-jest.mock('../contexts/ThemeContext', () => ({
+jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({
     colors: {
       background: '#fff',

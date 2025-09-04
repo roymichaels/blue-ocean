@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, Platform } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 
 interface Props {
   name: string;

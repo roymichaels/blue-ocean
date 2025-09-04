@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { Product } from '@/types';
 import { parseJson, parseCsv, processRecords } from './BulkProductUploader';
 

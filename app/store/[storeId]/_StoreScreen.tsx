@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import storesAgent, { selectStore } from '../../../agents/stores-agent';
 import { getProducts } from '../../../agents/products-agent';
 import reviewAgent from '../../../agents/review-agent';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { Store, Product } from '../../../types';
 import StoreHeader from '@/features/stores/components/store/StoreHeader';
 import StoreTabs from '@/features/stores/components/store/StoreTabs';

@@ -22,7 +22,7 @@ import {
 } from 'lucide-react-native';
 import ProofUploader from '../components/ProofUploader';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { DeliveryJob } from '../types';

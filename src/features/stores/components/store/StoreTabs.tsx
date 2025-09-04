@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 
 type TabKey = 'products' | 'about' | 'reviews';
 
