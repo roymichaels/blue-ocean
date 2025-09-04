@@ -11,6 +11,9 @@ import { NotificationProvider } from '@/components/NotificationContext';
 import { AppProviders, ThemeProvider, LanguageProvider } from '@/providers';
 import { Router, usePathname, useSegments } from 'expo-router';
 import { stripTabsPrefix } from '@/services/navigation';
+import { initI18n } from '@/services/i18n';
+
+await initI18n('en');
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
 
