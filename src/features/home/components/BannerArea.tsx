@@ -8,7 +8,7 @@ import useAppRouter from 'hooks/useAppRouter';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Spinner, Skeleton } from '@/ui/primitives';
 import Text from '@/ui/primitives/Text';
-import Heading from '@/shared/ui/Heading';
+import Heading from '@/ui/primitives/Heading';
 import Button from '@/ui/primitives/Button';
 import { spacing, radius, typography } from '@/ui/tokens';
 
