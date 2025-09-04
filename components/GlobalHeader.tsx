@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-} from 'react-native';
+import { View, StyleSheet, Pressable, TextInput } from 'react-native';
+import Text from '@/ui/primitives/Text';
 import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
 import { useAppRouter } from '@/services';
@@ -58,7 +53,7 @@ export default function GlobalHeader({
     <>
       <View style={[styles.header, { backgroundColor: colors.background }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity
+          <Pressable
             style={styles.logo}
             onPress={() => push('/')}
           >
@@ -72,9 +67,9 @@ export default function GlobalHeader({
             <Text style={[styles.logoText, { color: colors.gold }]}>
               {appName || t('ageVerification.platformName')}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
           <View style={styles.headerIcons}>
-            <TouchableOpacity
+            <Pressable
               style={[
                 styles.iconButton,
                 { backgroundColor: colors.surface.primary },
@@ -82,8 +77,8 @@ export default function GlobalHeader({
               onPress={navigateToReviews}
             >
               <Star size={24} color={colors.text.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={[
                 styles.iconButton,
                 { backgroundColor: colors.surface.primary },
@@ -100,7 +95,7 @@ export default function GlobalHeader({
                   </Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
             <View
               style={[
                 styles.progressContainer,
