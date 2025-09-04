@@ -9,7 +9,6 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import {
@@ -38,6 +37,7 @@ if (chain === 'near') {
 
 import OrderService from '@/services/orders';
 import eventBus from '@/services/eventBus';
+import { Spinner } from '@/ui/primitives';
 const MoonPayButton = require('@/features/payments/components/MoonPayButton').default;
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';
@@ -1008,7 +1008,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator size="small" color={colors.text.inverse} />
+            <Spinner size="small" color={colors.text.inverse} />
           ) : (
             <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}> 
               {t('cart.completeOrder')}

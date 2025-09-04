@@ -9,7 +9,6 @@ import {
   ScrollView,
   TextInput,
   SafeAreaView,
-  ActivityIndicator,
   Image,
   Platform,
 } from 'react-native';
@@ -38,6 +37,7 @@ import SubcategoryPicker from './SubcategoryPicker';
 import { useAccountId } from '../../auth/services/nearAuth';
 import { useAppRouter } from '@/services';
 import { routes } from '@/utils/routes';
+import { Spinner } from '@/ui/primitives';
 
 interface ProductFormModalProps {
   visible: boolean;
@@ -619,7 +619,7 @@ export default function ProductFormModal({
               >
                 {loading ? (
                   <>
-                    <ActivityIndicator
+                    <Spinner
                       size="small"
                       color={colors.text.inverse}
                       style={styles.buttonSpinner}

@@ -9,13 +9,13 @@ import {
   ScrollView,
   TextInput,
   SafeAreaView,
-  ActivityIndicator,
 } from 'react-native';
 import { X, Save, Trash2 } from 'lucide-react-native';
 import { PricingTier } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import InfoModal from '@/components/InfoModal';
+import { Spinner } from '@/ui/primitives';
 
 interface PricingTierFormModalProps {
   visible: boolean;
@@ -323,7 +323,7 @@ export default function PricingTierFormModal({
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color={colors.text.inverse} style={styles.buttonSpinner} />
+                <Spinner size="small" color={colors.text.inverse} style={styles.buttonSpinner} />
                 ) : (
                   <>
                     <Save size={20} color={colors.text.inverse} />

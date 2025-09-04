@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
   Platform
 } from 'react-native';
@@ -16,6 +15,7 @@ import { Upload, Camera, File as FileIcon } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import MediaService from '@/services/media';
 import DatabaseService from '@/services/database';
+import { Spinner } from '@/ui/primitives';
 
 interface ProofUploaderProps {
   jobId: string;
@@ -121,7 +121,7 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
             disabled={uploading || !pinataConfigured}
           >
             {uploading ? (
-              <ActivityIndicator size="small" color={colors.gold} />
+              <Spinner size="small" color={colors.gold} />
             ) : (
               <>
                 <Upload size={20} color={colors.gold} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 import { Button } from '@/ui';
+import { Spinner } from '@/ui/primitives';
 import OrderService from '@/services/orders';
 
 interface Props {
@@ -22,7 +23,7 @@ export default function DisputeResolver({ orderId }: Props) {
   if (loading) {
     return (
       <View>
-        <ActivityIndicator />
+        <Spinner />
       </View>
     );
   }

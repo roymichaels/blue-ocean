@@ -6,11 +6,11 @@ import {
   ViewStyle,
   TextStyle,
   PressableProps,
-  ActivityIndicator,
   PressableStateCallbackType,
 } from 'react-native';
 import { useTheme } from '../ThemeProvider';
 import { spacing, radius, typography } from '../tokens';
+import Spinner from './Spinner';
 
 interface ButtonProps extends PressableProps {
   title?: string;
@@ -51,7 +51,7 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
         {...rest}
       >
         {loading ? (
-          <ActivityIndicator color={colors.text.inverse} />
+          <Spinner color={colors.text.inverse} />
         ) : children ? (
           children
         ) : (
