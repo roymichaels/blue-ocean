@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 
 const TABS_PREFIX = '/' + '(' + 'tabs' + ')';
 
-function stripTabsPrefix(path?: string | null): string | undefined {
+export function stripTabsPrefix(path?: string | null): string | undefined {
   if (typeof path !== 'string') return path ?? undefined;
   return path.startsWith(`${TABS_PREFIX}/`) ? path.replace(`${TABS_PREFIX}`, '') : path;
 }

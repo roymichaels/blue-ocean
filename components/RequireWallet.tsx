@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'expo-router';
-import { replace } from '@/services/navigation';
+import { replace, stripTabsPrefix } from '@/services/navigation';
 import { useAccountId } from '@/features/auth/services/nearAuth';
 
 interface Props {
@@ -14,7 +14,7 @@ export default function RequireWallet({ children }: Props) {
 
   useEffect(() => {
     if (!accountId) {
-      let dest = pathname;
+      let dest = stripTabsPrefix(pathname) ?? pathname;
       const query = params.toString();
       if (query) dest += `?${query}`;
       replace(`/login?redirect=${encodeURIComponent(dest)}`); // eslint-disable-line no-restricted-syntax

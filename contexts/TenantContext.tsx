@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'expo-router';
+import { stripTabsPrefix } from '@/services/navigation';
 import { loadTenantSettings } from '@/constants/tenant';
 
 interface TenantContextType {
@@ -23,7 +24,8 @@ export function TenantProvider({ children }: Props) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const match = pathname.match(/^\/store\/([^\/]+)/);
+    const path = stripTabsPrefix(pathname) ?? pathname;
+    const match = path.match(/^\/store\/([^\/]+)/);
     setStoreId(match ? match[1] : null);
   }, [pathname]);
 
