@@ -4,6 +4,7 @@ export * from './useCategories';
 export * from './useCategory';
 export * from './useSubcategories';
 export * from './usePricingTiers';
+export * from './useProductPricing';
 export * from './useCart';
 export * from './useOrders';
 export * from './useUser';
