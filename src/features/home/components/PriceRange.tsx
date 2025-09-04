@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import TextField from '@/ui/primitives/TextField';
+import { TextField } from '@/ui';
 import { spacing } from '@/shared/ui/tokens';
 
 interface PriceRangeProps {

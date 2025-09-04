@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { Settings as SettingsIcon } from 'lucide-react-native';
-import Card from '@/ui/primitives/Card';
+import { Card } from '@/ui';
 
 interface Props {
   paymentFactoryAddress: string;

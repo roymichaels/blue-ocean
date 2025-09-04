@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Button from '@/ui/primitives/Button';
+import { Button } from '@/ui';
 import { chainAdapter } from '@/services/chain';
 
 interface PayPrivatelyButtonProps {

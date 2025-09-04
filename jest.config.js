@@ -22,6 +22,7 @@ module.exports = {
     '^@/features/(.*)$': '<rootDir>/src/features/$1',
     '^@/shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@/ui/(.*)$': '<rootDir>/src/ui/$1',
+    '^@/ui$': '<rootDir>/src/ui/index',
     '^@/layout/(.*)$': '<rootDir>/src/layout/$1',
     '^@/services$': '<rootDir>/src/services/index',
     '^@/services/(.*)$': ['<rootDir>/src/services/$1', '<rootDir>/services/$1'],

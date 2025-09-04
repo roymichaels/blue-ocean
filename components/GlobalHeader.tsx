@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, TextInput } from 'react-native';
-import Text from '@/ui/primitives/Text';
+import { Text } from '@/ui';
 import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
 import { useAppRouter } from '@/services';

@@ -5,7 +5,7 @@ import NotificationService from '@/services/notification';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
 import { spacing } from '@/shared/ui/tokens';
-import Badge from '@/ui/primitives/Badge';
+import { Badge } from '@/ui';
 
 interface NotificationBadgeProps {
   size?: number;

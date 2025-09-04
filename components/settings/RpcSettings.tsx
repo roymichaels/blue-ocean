@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
-import Text from '@/ui/primitives/Text';
-import Button from '@/ui/primitives/Button';
+import { Text, Button, Card } from '@/ui';
 import { Server } from 'lucide-react-native';
-import Card from '@/ui/primitives/Card';
 import SettingsAgent from '../../agents/settings-agent';
 import { errorLog } from '@/utils/logger';
 

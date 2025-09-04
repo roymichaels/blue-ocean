@@ -43,6 +43,9 @@
       "@/ui/*": [
         "src/ui/*"
       ],
+      "@/ui": [
+        "src/ui/index.ts"
+      ],
       "@/layout/*": [
         "src/layout/*"
       ],

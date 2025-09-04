@@ -14,7 +14,7 @@ import { X, Save, Trash2 } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { HeroBanner, Category } from '../types';
 import DatabaseService from '@/services/database';
-import { Spinner } from '@/ui/primitives';
+import { Spinner } from '@/ui';
 import InfoModal from './InfoModal';
 import ConfirmationModal from './ConfirmationModal';
 
