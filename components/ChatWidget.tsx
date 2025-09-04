@@ -16,7 +16,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
 import useChatRooms from '../hooks/useChatRooms';
-import useChatMessages from '../hooks/useChatMessages';
+import useChatMessages from '@features/chat/services/useChatMessages';
 import { useWaku } from '@/contexts/WakuContext';
 import { ChatMessage, ChatRoom } from '../types';
 import SettingsAgent from '../agents/settings-agent';

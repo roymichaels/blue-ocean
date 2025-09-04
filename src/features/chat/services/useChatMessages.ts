@@ -1,7 +1,7 @@
 import { errorLog } from '@/utils/logger';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import DatabaseService from '@/services/database';
-import { ChatMessage, ChatRoom, User } from '../types';
+import { ChatMessage, ChatRoom, User } from '@/types';
 import { useWaku } from '@/contexts/WakuContext';
 
 export function useChatMessages(selectedRoom: ChatRoom | null, user: User | null | undefined, isAdmin: boolean) {
