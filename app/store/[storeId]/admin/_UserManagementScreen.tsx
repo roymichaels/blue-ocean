@@ -9,7 +9,6 @@ import {
   TextInput,
   Modal,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppRouter } from '@/services';
@@ -525,7 +524,7 @@ export default function UserManagementScreen() {
                     disabled={loading}
                   >
                     {loading ? (
-                      <ActivityIndicator size="small" color={colors.text.inverse} />
+                      <Spinner size="small" color={colors.text.inverse} />
                     ) : (
                       <>
                         <UserCheck size={20} color={colors.text.inverse} />
@@ -695,7 +694,7 @@ export default function UserManagementScreen() {
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator size="small" color={colors.text.inverse} />
+                    <Spinner size="small" color={colors.text.inverse} />
                   ) : (
                     <>
                       <Save size={20} color={colors.text.inverse} />

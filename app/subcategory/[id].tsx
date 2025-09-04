@@ -10,7 +10,6 @@ import {
   Modal,
   TextInput,
   Platform,
-  ActivityIndicator,
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -859,7 +858,7 @@ export default function SubcategoryScreen() {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color={colors.text.inverse} />
+                  <Spinner size="small" color={colors.text.inverse} />
                 ) : (
                   <>
                     <Save size={20} color={colors.text.inverse} />
@@ -936,7 +935,7 @@ export default function SubcategoryScreen() {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color={colors.text.inverse} />
+                  <Spinner size="small" color={colors.text.inverse} />
                 ) : (
                   <>
                     <Save size={20} color={colors.text.inverse} />

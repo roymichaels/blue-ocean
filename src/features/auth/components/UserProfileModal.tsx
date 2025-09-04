@@ -6,12 +6,12 @@ import {
   Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
+import { Spinner } from '@/ui/primitives';
 
 interface UserProfileModalProps {
   visible: boolean;
@@ -74,7 +74,7 @@ export default function UserProfileModal({ visible, userId, onClose, isAdmin = f
                 <X size={20} color={colors.text.secondary} />
               </TouchableOpacity>
               {loading ? (
-                <ActivityIndicator size="large" color={colors.gold} style={styles.loader} />
+                <Spinner size="large" color={colors.gold} style={styles.loader} />
               ) : profile ? (
                 <>
                   <Text style={[styles.username, { color: colors.text.primary }]}>@{profile.username}</Text>

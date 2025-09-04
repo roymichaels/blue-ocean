@@ -8,13 +8,13 @@ import {
   ScrollView,
   Alert,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import SmartImage from './SmartImage';
 import { Camera, Upload, X, Play, Video } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/ui/ThemeProvider';
 import MediaService from '@/services/media';
+import { Spinner } from '@/ui/primitives';
 
 interface MediaItem {
   id: string;
@@ -287,7 +287,7 @@ export default function MediaUploader({
               disabled={uploading || !pinataConfigured}
             >
               {uploading ? (
-                <ActivityIndicator size="small" color={colors.gold} />
+                <Spinner size="small" color={colors.gold} />
               ) : (
                 <>
                   <Upload size={20} color={colors.gold} />

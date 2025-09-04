@@ -2,6 +2,8 @@ import React, { memo, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button } from '@/ui';
 import { spacing, radius, colors } from '@/shared/ui/tokens';
+import EmptyState from '@/shared/ui/EmptyState';
+import { Inbox } from 'lucide-react-native';
 
 export type AdminListItem = {
   id: string;
@@ -32,7 +34,7 @@ function AdminList({ items, emptyText = 'Nothing yet.' }: Props) {
   if (!items.length) {
     return (
       <View style={styles.container}>
-        <Text style={secondaryTextColor}>{emptyText}</Text>
+        <EmptyState icon={Inbox} title="No items" message={emptyText} />
       </View>
     );
   }

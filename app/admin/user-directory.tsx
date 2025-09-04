@@ -5,6 +5,8 @@ import { useRequirePlatformAdmin } from '@/services';
 import RequireWallet from '@/components/RequireWallet';
 import chain from '@/services/chain';
 import { User } from '@/types';
+import EmptyState from '@/shared/ui/EmptyState';
+import { Users } from 'lucide-react-native';
 
 let listUsers: (() => Promise<User[]>) | undefined;
 if (chain === 'near') {
@@ -25,13 +27,14 @@ export default function UserDirectory() {
   return (
     <RequireWallet>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {users.map((u) => (
-          <Text key={u.id} style={{ color: colors.text.primary }}>
-            {u.displayName || u.id}
-          </Text>
-        ))}
-        {users.length === 0 && (
-          <Text style={{ color: colors.text.secondary }}>No users found.</Text>
+        {users.length === 0 ? (
+          <EmptyState icon={Users} title="No users" message="No users found." />
+        ) : (
+          users.map((u) => (
+            <Text key={u.id} style={{ color: colors.text.primary }}>
+              {u.displayName || u.id}
+            </Text>
+          ))
         )}
       </View>
     </RequireWallet>
