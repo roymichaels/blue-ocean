@@ -16,12 +16,12 @@ interface ProductCardProps {
 
 function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) {
   const { colors } = useTheme();
-  const { isInWishlist, toggleWishlist, price, originalPrice } = useProductCard(product);
-
-  const handleWishlistPress = (e: any) => {
-    e.stopPropagation();
-    toggleWishlist();
-  };
+  const {
+    isInWishlist,
+    handleWishlistPress,
+    price,
+    originalPrice,
+  } = useProductCard(product);
 
   return (
     <Pressable
