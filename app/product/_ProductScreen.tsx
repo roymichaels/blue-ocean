@@ -47,7 +47,7 @@ import SmartImage from '../../components/SmartImage';
 import eventBus from '@/services/eventBus';
 import { useProduct } from '@/features/products/hooks';
 import useCategories from 'hooks/useCategories';
-import usePricingTiers from 'hooks/usePricingTiers';
+import { useProductPricing } from '@/services/useProductPricing';
 import useReviews from 'hooks/useReviews';
 import useVideoThumbnails from 'hooks/useVideoThumbnails';
 
@@ -68,8 +68,9 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const { push, back } = useAppRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const categories = useCategories();
-  const pricingTiers = usePricingTiers();
   const [quantity, setQuantity] = useState(1);
+  const { effectivePrice, totalPrice, currentPricingTier, showTieredPricing } =
+    useProductPricing(product, quantity);
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -273,43 +274,6 @@ export default function ProductDetailScreen({ id }: { id: string }) {
     back();
   };
 
-  // Calculate effective price based on pricing tier and quantity
-  const getEffectivePrice = (basePrice: number, quantity: number): number => {
-    if (!product?.pricingTier) return basePrice;
-
-    const tier = pricingTiers.find(t => t.id === product.pricingTier);
-    if (!tier) return basePrice;
-
-    // Prefer tier rules if present
-    if (tier.rules && tier.rules.length > 0) {
-      const matched = tier.rules.find(
-        r => quantity >= r.minQty && quantity <= r.maxQty,
-      );
-      if (matched) {
-        if (typeof matched.pricePerBaseUnit === 'number') {
-          return matched.pricePerBaseUnit;
-        }
-        if (typeof matched.discountPct === 'number') {
-          return basePrice * (1 - matched.discountPct / 100);
-        }
-      }
-    }
-
-    // Fallback to legacy single-tier fields
-    if (quantity >= tier.minQuantity && typeof tier.pricePerUnit === 'number') {
-      return tier.pricePerUnit;
-    }
-
-    return basePrice;
-  };
-
-  // Calculate total price based on quantity and pricing tier
-  const getTotalPrice = (): number => {
-    if (!product) return 0;
-
-    const effectivePrice = getEffectivePrice(product.price, quantity);
-    return effectivePrice * quantity;
-  };
 
   if (!product) {
     return (
@@ -337,11 +301,6 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const mainImageUri =
     product.images?.[0] ||
     videoThumbnails['video_0'];
-  const currentPricingTier = pricingTiers.find(
-    tier => tier.id === product.pricingTier,
-  );
-  const effectivePrice = getEffectivePrice(product.price, quantity);
-  const showTieredPricing = effectivePrice !== product.price;
 
   return (
     <SafeAreaView
@@ -674,7 +633,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
                 )} (במקום ${currencySymbol}${product.price.toFixed(2)})`}
               </Text>
               <Text style={[styles.tieredPricingTotal, { color: colors.gold }]}>
-                {`סה"כ: ${currencySymbol}${getTotalPrice().toFixed(2)}`}
+                {`סה"כ: ${currencySymbol}${totalPrice.toFixed(2)}`}
               </Text>
             </View>
           )}
