@@ -117,6 +117,7 @@
     "deleteSuccess": "Product deleted successfully",
     "updateSuccess": "Product updated successfully",
     "updateError": "Product update failed",
+    "invalid": "Invalid product",
     "fillRequired": "Please fill in all required fields"
   },
   "category": {

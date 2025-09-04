@@ -117,6 +117,7 @@
     "deleteSuccess": "המוצר נמחק בהצלחה",
     "updateSuccess": "המוצר עודכן בהצלחה",
     "updateError": "עדכון המוצר נכשל",
+    "invalid": "מוצר לא תקין",
     "fillRequired": "אנא מלא את כל השדות הנדרשים"
   },
   "category": {
