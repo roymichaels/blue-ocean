@@ -1,10 +1,11 @@
 import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import NotificationService from '@/services/notification';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
 import { spacing } from '@/shared/ui/tokens';
+import Badge from '@/ui/primitives/Badge';
 
 interface NotificationBadgeProps {
   size?: number;
@@ -45,23 +46,28 @@ export default function NotificationBadge({ size = spacing.spacer20, style }: No
   }
 
   return (
-    <View style={[
-      styles.badge, 
-      { 
-        width: size, 
-        height: size, 
-        borderRadius: size / 2,
-        backgroundColor: getColor('status.error')
-      },
-      style
-    ]}>
-      <Text style={[styles.badgeText, { 
-        fontSize: size * 0.5,
-        color: getColor('text.primary')
-      }]}>
-        {unreadCount > 99 ? '99+' : unreadCount}
-      </Text>
-    </View>
+    <Badge
+      label={unreadCount > 99 ? '99+' : String(unreadCount)}
+      style={[
+        styles.badge,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: getColor('status.error'),
+          paddingHorizontal: 0,
+          paddingVertical: 0,
+        },
+        style,
+      ]}
+      textStyle={[
+        styles.badgeText,
+        {
+          fontSize: size * 0.5,
+          color: getColor('text.primary'),
+        },
+      ]}
+    />
   );
 }
 
@@ -73,7 +79,6 @@ const styles = StyleSheet.create({
     top: -spacing.spacer4,
     end: -spacing.spacer4,
     minWidth: spacing.spacer20,
-    paddingHorizontal: spacing.spacer4 / 2,
   },
   badgeText: {
     fontWeight: 'bold',
