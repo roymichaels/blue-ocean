@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { DollarSign } from 'lucide-react-native';
-import Card from '../Card';
+import Card from '@/ui/primitives/Card';
 
 interface Props {
   currencySymbol: string;
