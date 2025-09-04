@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { Spinner } from '@/ui/primitives';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 import RequireWallet from '../../../../components/RequireWallet';
 
 // Lazy-load the deliveries management screen to reduce the main bundle
@@ -13,7 +14,9 @@ export default function DeliveriesRoute(props: any) {
   return (
     <RequireWallet>
       <Suspense fallback={<Spinner />}>
-        <DeliveriesScreen {...props} />
+        <ErrorBoundary>
+          <DeliveriesScreen {...props} />
+        </ErrorBoundary>
       </Suspense>
     </RequireWallet>
   );
