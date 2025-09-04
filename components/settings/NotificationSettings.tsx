@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Bell } from 'lucide-react-native';
-import Card from '@/ui/primitives/Card';
+import { Card } from '@/ui';
 
 interface Props {
   colors: any;

@@ -2,10 +2,8 @@ import React from 'react';
 import { Pressable, Image, View, StyleSheet, ViewStyle } from 'react-native';
 import { Star, Heart } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
-import Text from '@/ui/primitives/Text';
-import Button from '@/ui/primitives/Button';
+import { Text, Button, Skeleton } from '@/ui';
 import { spacing, radius, typography } from '@/ui/tokens';
-import { Skeleton } from '@/ui/primitives';
 import { Product } from '@/types';
 import { useProductCard } from './hooks/useProductCard';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
-import Button from '@/ui/primitives/Button';
+import { Button } from '@/ui';
 
 export default function CTABecomeSeller() {
   const { t } = useLanguage();

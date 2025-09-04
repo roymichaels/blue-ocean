@@ -11,7 +11,7 @@ import {
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { spacing, zIndex } from '@/shared/ui/tokens';
-import { Portal, Overlay } from '@/ui/primitives';
+import { Portal, Overlay } from '@/ui';
 
 interface NotificationPopupProps {
   title: string;
