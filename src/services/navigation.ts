@@ -17,7 +17,7 @@ export function push(...args: Parameters<typeof router.push>) {
   } else if (typeof args[0] === 'object' && args[0] !== null && 'pathname' in args[0]) {
     args[0] = { ...args[0], pathname: stripTabsPrefix(args[0].pathname) } as any;
   }
-  router.push(...(args as any));
+  (router as any).push(...args);
 }
 
 export function replace(...args: Parameters<typeof router.replace>) {
@@ -26,6 +26,6 @@ export function replace(...args: Parameters<typeof router.replace>) {
   } else if (typeof args[0] === 'object' && args[0] !== null && 'pathname' in args[0]) {
     args[0] = { ...args[0], pathname: stripTabsPrefix(args[0].pathname) } as any;
   }
-  router.replace(...(args as any));
+  (router as any).replace(...args);
 }
 
