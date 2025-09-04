@@ -10,6 +10,7 @@ import {
 import { X, Plus } from 'lucide-react-native';
 import { Subcategory } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SubcategoryPickerProps {
   visible: boolean;
@@ -27,6 +28,7 @@ export default function SubcategoryPicker({
   onClose,
 }: SubcategoryPickerProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Modal
@@ -38,7 +40,9 @@ export default function SubcategoryPicker({
       <View style={styles.overlay}>
         <View style={[styles.content, { backgroundColor: colors.surface.elevated }]}>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text.primary }]}>בחר תת-קטגוריה</Text>
+            <Text style={[styles.title, { color: colors.text.primary }]}>
+              {t('category.selectSubcategory')}
+            </Text>
             <TouchableOpacity onPress={onClose}>
               <X size={24} color={colors.text.primary} />
             </TouchableOpacity>
@@ -60,7 +64,9 @@ export default function SubcategoryPicker({
               ))
             ) : (
               <View style={styles.itemContent}>
-                <Text style={[styles.itemText, { color: colors.text.secondary }]}>אין תת-קטגוריות זמינות</Text>
+                <Text style={[styles.itemText, { color: colors.text.secondary }]}>
+                  {t('category.noSubcategoriesAvailable')}
+                </Text>
               </View>
             )}
             {onAdd && (
@@ -70,7 +76,9 @@ export default function SubcategoryPicker({
               >
                 <View style={styles.itemContent}>
                   <Plus size={20} color={colors.gold} />
-                  <Text style={[styles.itemText, { color: colors.gold }]}>הוסף תת-קטגוריה חדשה</Text>
+                  <Text style={[styles.itemText, { color: colors.gold }]}>
+                    {t('category.addNewSubcategory')}
+                  </Text>
                 </View>
               </TouchableOpacity>
             )}

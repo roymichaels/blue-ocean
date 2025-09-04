@@ -127,6 +127,8 @@
     "addSubcategory": "הוסף תת-קטגוריה",
     "editSubcategory": "עריכת תת-קטגוריה",
     "addNewSubcategory": "הוספת תת-קטגוריה חדשה",
+    "selectSubcategory": "בחר תת-קטגוריה",
+    "noSubcategoriesAvailable": "אין תת-קטגוריות זמינות",
     "subcategoryId": "מזהה תת-קטגוריה",
     "subcategoryName": "שם תת-הקטגוריה",
     "icon": "אייקון (אמוג'י)",
@@ -435,6 +437,7 @@
     "shopNow": "התחל לקנות",
     "loginRequiredTitle": "נדרשת התחברות",
     "loginRequiredMessage": "עליך להתחבר כדי לראות את ההזמנות שלך",
+    "connectWallet": "יש להתחבר לארנק המתאים",
     "myOrders": "ההזמנות שלי"
   },
   "stores": {
