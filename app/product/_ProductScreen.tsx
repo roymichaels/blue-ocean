@@ -49,17 +49,9 @@ import { useProduct } from '@/features/products/hooks';
 import useCategories from 'hooks/useCategories';
 import { useProductPricing } from '@/services/useProductPricing';
 import useReviews from 'hooks/useReviews';
-import useVideoThumbnails from 'hooks/useVideoThumbnails';
+import { useProductMedia } from '@/services/useProductMedia';
 
 
-
-interface MediaItem {
-  id: string;
-  uri: string;
-  type: 'image' | 'video';
-  name?: string;
-  thumbnail?: string;
-}
 
 const { width } = Dimensions.get('window');
 const COVER_SIZE = Math.min(width, 540);
@@ -78,10 +70,10 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const videoThumbnails = useVideoThumbnails(product?.videos);
   const address = useAccountId();
   const reviews = useReviews(id);
   const { data: fetchedProduct, isLoading: productLoading } = useProduct(id);
+  const { media: allMedia, mainImageUri } = useProductMedia(product);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -128,32 +120,6 @@ export default function ProductDetailScreen({ id }: { id: string }) {
     }
   }, [product]);
 
-  const getAllMedia = () => {
-    if (!product) return [];
-    const media: MediaItem[] = [];
-
-    // Add images
-    product.images?.forEach((uri, index) => {
-      media.push({
-        id: `image_${index}`,
-        uri,
-        type: 'image',
-        name: `Image ${index + 1}`,
-      });
-    });
-
-    // Add videos
-    product.videos?.forEach((uri, index) => {
-      media.push({
-        id: `video_${index}`,
-        uri,
-        type: 'video',
-        name: `Video ${index + 1}`,
-      });
-    });
-
-    return media;
-  };
 
   const openMediaViewer = (index: number) => {
     setSelectedMediaIndex(index);
@@ -297,10 +263,6 @@ export default function ProductDetailScreen({ id }: { id: string }) {
     );
   }
 
-  const allMedia = getAllMedia();
-  const mainImageUri =
-    product.images?.[0] ||
-    videoThumbnails['video_0'];
 
   return (
     <SafeAreaView
@@ -400,7 +362,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
                   onPress={() => openMediaViewer(idx)}
                 >
                   <SmartImage
-                    uri={media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri}
+                    uri={media.thumbnail || media.uri}
                     width={80}
                     height={80}
                     contentFit="cover"
@@ -575,7 +537,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
                     onPress={() => openMediaViewer(index)}
                   >
                     <SmartImage
-                      uri={media.type === 'video' ? videoThumbnails[media.id] || media.uri : media.uri}
+                      uri={media.thumbnail || media.uri}
                       width={80}
                       height={80}
                       contentFit="cover"
