@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,9 @@ import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2, Heart } from 'lucide-react-native';
 import DatabaseService from '@/services/database';
 import chain from '@/services/chain';
-import { Product, Subcategory, Category, PricingTier, Store } from '@/types';
+import { Product, Subcategory, PricingTier, Store } from '@/types';
+import { useCategories, useCategory, useProducts, usePricingTiers } from '@/services';
+import { requireEnv } from '@/services/config';
 
 let listStores: (() => Promise<Store[]>) | undefined;
 if (chain === 'near') {
@@ -165,11 +167,7 @@ export default function SubcategoryScreen() {
   const params = validateParams(useLocalSearchParams());
   const id = params.success ? params.data.id : undefined;
   const invalidParams = !params.success;
-  const [subcategory, setSubcategory] = useState<Subcategory | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
@@ -198,6 +196,40 @@ export default function SubcategoryScreen() {
   const [storeId, setStoreId] = useState<string | null>(null);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+  const defaultStore = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
+  const { data: productsData = [], isLoading: productsLoading } = useProducts(
+    storeId || defaultStore,
+  );
+  const [products, setProducts] = useState<Product[]>(productsData);
+  useEffect(() => {
+    setProducts(productsData.filter((p) => p.subcategory === id));
+  }, [productsData, id]);
+
+  const { data: pricingTiers = [] } = usePricingTiers();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const category = useMemo(
+    () => categories.find((c) => c.subcategories?.some((s) => s.id === id)) || null,
+    [categories, id],
+  );
+  const subcategory = useMemo(
+    () => category?.subcategories?.find((s) => s.id === id) || null,
+    [category, id],
+  );
+  const {
+    updateSubcategory: updateSubcategoryMutation,
+    deleteSubcategory: deleteSubcategoryMutation,
+    isPending: mutationLoading,
+  } = useCategory(category);
+
+  useEffect(() => {
+    if (subcategory) {
+      setNewProduct((prev) => ({
+        ...prev,
+        category: subcategory.categoryId,
+        subcategory: subcategory.id,
+      }));
+    }
+  }, [subcategory?.id]);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -206,12 +238,6 @@ export default function SubcategoryScreen() {
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning'
   });
-
-  useEffect(() => {
-    if (!id) return;
-    loadSubcategoryData();
-    loadPricingTiers();
-  }, [id]);
 
   useEffect(() => {
     const loadStore = async () => {
@@ -230,7 +256,7 @@ export default function SubcategoryScreen() {
   useEffect(() => {
     // When category changes, update available subcategories
     if (newProduct.category) {
-      const selectedCategory = categories.find(c => c.id === newProduct.category);
+      const selectedCategory = categories.find((c) => c.id === newProduct.category);
       if (selectedCategory && selectedCategory.subcategories) {
         setAvailableSubcategories(selectedCategory.subcategories);
       } else {
@@ -240,61 +266,6 @@ export default function SubcategoryScreen() {
       setAvailableSubcategories([]);
     }
   }, [newProduct.category, categories]);
-
-
-  const loadSubcategoryData = async () => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const db = DatabaseService.getInstance();
-      const [categoriesData, productsData] = await Promise.all([
-        db.getCategories(),
-        db.getProducts()
-      ]);
-
-      setCategories(categoriesData);
-
-      // Find the subcategory
-        let foundSubcategory: Subcategory | null = null;
-        for (const category of categoriesData) {
-          if (category.subcategories) {
-          foundSubcategory =
-            category.subcategories.find(sub => sub.id === id) || null;
-          if (foundSubcategory) {
-            // Set default category for new products
-            setNewProduct(prev => ({...prev, category: category.id, subcategory: foundSubcategory?.id || ''}));
-            break;
-          }
-        }
-      }
-
-      setSubcategory(foundSubcategory);
-
-      // Filter products by subcategory
-      const filteredProducts = productsData.filter(product => product.subcategory === id);
-      setProducts(filteredProducts);
-    } catch (error) {
-      errorLog('Error loading subcategory data:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: 'טעינת נתוני תת-הקטגוריה נכשלה',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadPricingTiers = async () => {
-    try {
-      const db = DatabaseService.getInstance();
-      const tiers = await db.getPricingTiers();
-      setPricingTiers(tiers);
-    } catch (error) {
-      errorLog('Error loading pricing tiers:', error);
-    }
-  };
 
   const addProduct = () => {
     setEditingProduct(null);
@@ -329,37 +300,31 @@ export default function SubcategoryScreen() {
       setInfoModal({ visible: true, title: "שגיאה", message: "אנא מלא את כל השדות", type: "error" });
       return;
     }
-    setLoading(true);
     try {
-      const db = DatabaseService.getInstance();
-      await db.updateSubcategory(subcategory.id, editSubcategoryData);
-      await loadSubcategoryData();
+      await updateSubcategoryMutation(subcategory.id, editSubcategoryData as Subcategory);
       setShowSubcategoryEditModal(false);
       setInfoModal({ visible: true, title: "הצלחה", message: "תת-הקטגוריה עודכנה בהצלחה", type: "success" });
     } catch (error) {
       errorLog("Error updating subcategory:", error);
       setInfoModal({ visible: true, title: "שגיאה", message: "עדכון תת-הקטגוריה נכשל", type: "error" });
-    } finally {
-      setLoading(false);
     }
   };
 
   const deleteCurrentSubcategory = async () => {
     if (!subcategory) return;
-    setLoading(true);
     try {
-      const db = DatabaseService.getInstance();
-      await db.deleteSubcategory(subcategory.id);
+      await deleteSubcategoryMutation(subcategory.id);
       setShowSubcategoryEditModal(false);
       setInfoModal({ visible: true, title: "הצלחה", message: "תת-הקטגוריה נמחקה בהצלחה", type: "success" });
       back();
     } catch (error) {
       errorLog("Error deleting subcategory:", error);
       setInfoModal({ visible: true, title: "שגיאה", message: "מחיקת תת-הקטגוריה נכשלה", type: "error" });
-    } finally {
-      setLoading(false);
     }
   };
+
+  const loading =
+    categoriesLoading || productsLoading || mutationLoading || actionLoading;
 
   const editProduct = useCallback((product: Product) => {
     setEditingProduct(product);
@@ -455,7 +420,7 @@ export default function SubcategoryScreen() {
   };
 
   const saveProduct = async () => {
-    setLoading(true);
+    setActionLoading(true);
     try {
       const db = DatabaseService.getInstance();
       const productData = {
@@ -499,7 +464,7 @@ export default function SubcategoryScreen() {
         type: 'error'
       });
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
@@ -525,7 +490,7 @@ export default function SubcategoryScreen() {
       return;
     }
 
-    setLoading(true);
+    setActionLoading(true);
     try {
       const db = DatabaseService.getInstance();
       await db.deleteProduct(productId);
@@ -547,7 +512,7 @@ export default function SubcategoryScreen() {
         type: 'error'
       });
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
