@@ -9,7 +9,7 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import {
   Settings,
   User,
@@ -33,7 +33,7 @@ import { useAppInfo } from '@/contexts/AppInfoContext';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
-import { useProfileData } from 'hooks/useProfileData';
+import { useProfileData } from '@/services';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 
 

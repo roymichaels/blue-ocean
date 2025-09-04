@@ -3,9 +3,9 @@ import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
 import { useLocalSearchParams } from 'expo-router';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
-import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
+import { useRequirePlatformAdmin } from '@/services';
 import { useStore } from '@/features/products/hooks';
 
 export default function StoreDetail() {

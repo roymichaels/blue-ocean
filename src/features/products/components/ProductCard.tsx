@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { Heart, Pencil, ShoppingCart, Tag } from 'lucide-react-native';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { Product, PricingTier } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';

@@ -1,7 +1,7 @@
 import { errorLog } from '@/utils/logger';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import DatabaseService from '@/services/database';
-import { ChatRoom } from '../types';
+import { ChatRoom } from '@/types';
 
 export function useChatRooms(isOpen: boolean) {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);

@@ -15,7 +15,7 @@ import { ShoppingCart, X, Plus, Minus } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/ui/ThemeProvider';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import useCart from '../hooks/useCart';
 
 const { width } = Dimensions.get('window');

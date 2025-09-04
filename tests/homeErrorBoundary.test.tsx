@@ -3,7 +3,9 @@ import renderer from 'react-test-renderer';
 import { Text } from 'react-native';
 import HomeScreen from '@app/index';
 
-jest.mock('hooks/useAppRouter', () => () => ({ push: jest.fn() }));
+jest.mock('@/services', () => ({
+  useAppRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
+}));
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
   usePathname: () => '/index',

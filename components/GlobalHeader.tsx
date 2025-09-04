@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';

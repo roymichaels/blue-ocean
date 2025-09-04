@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
 import chain from '@/services/chain';
 import OrderRevenueMetrics from '@/components/OrderRevenueMetrics';

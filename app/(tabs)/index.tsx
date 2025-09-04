@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { Plus, X, ArrowUpDown } from 'lucide-react-native';
 import { Product, Category, HeroBanner } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';

@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import ProofUploader from '../../components/ProofUploader';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';

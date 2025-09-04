@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
-import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
+import { useRequirePlatformAdmin } from '@/services';
 import chain from '@/services/chain';
 import { Store } from '@/types';
 import AdminShell from '@/components/admin/AdminShell';

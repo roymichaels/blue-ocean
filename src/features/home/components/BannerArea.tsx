@@ -4,7 +4,7 @@ import { Plus, Pencil } from 'lucide-react-native';
 import { HeroBanner } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Spinner, Skeleton } from '@/ui/primitives';
 import Text from '@/ui/primitives/Text';
