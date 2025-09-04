@@ -39,8 +39,8 @@ jest.mock('@features/cart/components/CartModal', () => () => null);
 jest.mock('@features/products/components/ProductFormModal', () => () => null);
 jest.mock('@/components/SmartImage', () => () => null);
 jest.mock('@/components/InfoModal', () => () => null);
-jest.mock('@services/database', () => ({}));
-jest.mock('@services/chain', () => 'near');
+jest.mock('@/services/database', () => ({}));
+jest.mock('@/services/chain', () => 'near');
 jest.mock('@features/products/services/nearCategories', () => ({
   listCategories: jest.fn().mockResolvedValue([]),
 }));

@@ -31,13 +31,6 @@
       "@shared/*": [
         "src/shared/*"
       ],
-      "@services/*": [
-        "src/services/*",
-        "services/*"
-      ],
-      "@services": [
-        "src/services/index.ts"
-      ],
       "@providers/*": [
         "src/providers/*"
       ],
