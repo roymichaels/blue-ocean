@@ -17,7 +17,7 @@ import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
 import { Subcategory } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import InfoModal from '../../components/InfoModal';
 import { Spinner } from '@/ui/primitives';
 import commonStyles from '@/constants/styles';
@@ -49,6 +49,7 @@ export default function CategoryScreen() {
   });
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -61,7 +62,7 @@ export default function CategoryScreen() {
   if (!params.success) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text.primary }}>Invalid category</Text>
+        <Text style={{ color: colors.text.primary }}>{t('category.invalid')}</Text>
       </SafeAreaView>
     );
   }
@@ -87,8 +88,8 @@ export default function CategoryScreen() {
     if (!newSubcategory.name || !newSubcategory.icon || !newSubcategory.id) {
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אנא מלא את כל השדות',
+        title: t('common.error'),
+        message: t('auth.fillAllFields'),
         type: 'error',
       });
       return;
@@ -99,16 +100,16 @@ export default function CategoryScreen() {
         await updateSubcategoryMutation(editingSubcategory.id, newSubcategory as Subcategory);
         setInfoModal({
           visible: true,
-          title: 'הצלחה',
-          message: 'תת-הקטגוריה עודכנה בהצלחה',
+          title: t('common.success'),
+          message: t('category.saveSuccess'),
           type: 'success',
         });
       } else {
         await addSubcategoryMutation(newSubcategory as Subcategory);
         setInfoModal({
           visible: true,
-          title: 'הצלחה',
-          message: 'תת-הקטגוריה נוספה בהצלחה',
+          title: t('common.success'),
+          message: t('category.saveSuccess'),
           type: 'success',
         });
       }
@@ -118,8 +119,9 @@ export default function CategoryScreen() {
       errorLog('Error saving subcategory:', error);
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: error instanceof Error ? error.message : 'שמירת תת-הקטגוריה נכשלה',
+        title: t('common.error'),
+        message:
+          error instanceof Error ? error.message : t('category.saveError'),
         type: 'error',
       });
     }
@@ -129,21 +131,22 @@ export default function CategoryScreen() {
     try {
       await deleteSubcategoryMutation(subcategoryId);
       setShowSubcategoryModal(false);
-      setInfoModal({
-        visible: true,
-        title: 'הצלחה',
-        message: 'תת-הקטגוריה נמחקה בהצלחה',
-        type: 'success',
-      });
-    } catch (error) {
-      errorLog('Error deleting subcategory:', error);
-      setInfoModal({
-        visible: true,
-        title: 'שגיאה',
-        message: error instanceof Error ? error.message : 'מחיקת תת-הקטגוריה נכשלה',
-        type: 'error',
-      });
-    }
+        setInfoModal({
+          visible: true,
+          title: t('common.success'),
+          message: t('category.deleteSuccess'),
+          type: 'success',
+        });
+      } catch (error) {
+        errorLog('Error deleting subcategory:', error);
+        setInfoModal({
+          visible: true,
+          title: t('common.error'),
+          message:
+            error instanceof Error ? error.message : t('category.deleteError'),
+          type: 'error',
+        });
+      }
   };
 
   const renderSubcategory = (item: Subcategory) => (
@@ -236,14 +239,20 @@ export default function CategoryScreen() {
         ) : (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>{category.icon}</Text>
-            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין תת-קטגוריות</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+              {t('category.noSubcategories')}
+            </Text>
             <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
-              {isStoreOwner ? 'הוסף תת-קטגוריות כדי להתחיל' : 'תת-קטגוריות יתווספו בקרוב'}
+              {isStoreOwner
+                ? t('category.addSubcategoriesToStart')
+                : t('category.subcategoriesComingSoon')}
             </Text>
             {isStoreOwner && (
               <TouchableOpacity style={[styles.emptyButton, { backgroundColor: colors.gold }]} onPress={openAddSubcategory}>
                 <Plus size={20} color={colors.text.inverse} />
-                <Text style={[styles.emptyButtonText, { color: colors.text.inverse }]}>הוסף תת-קטגוריה</Text>
+                <Text style={[styles.emptyButtonText, { color: colors.text.inverse }]}>
+                  {t('category.addSubcategory')}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -260,7 +269,9 @@ export default function CategoryScreen() {
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.border.primary }]}>
             <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-              {editingSubcategory ? 'עריכת תת-קטגוריה' : 'הוספת תת-קטגוריה חדשה'}
+              {editingSubcategory
+                ? t('category.editSubcategory')
+                : t('category.addNewSubcategory')}
             </Text>
             <TouchableOpacity onPress={() => setShowSubcategoryModal(false)}>
               <X size={24} color={colors.text.primary} />
@@ -269,7 +280,9 @@ export default function CategoryScreen() {
 
           <ScrollView style={styles.modalContent}>
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מזהה תת-קטגוריה *</Text>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+                {t('category.subcategoryId')} *
+              </Text>
               <TextInput
                 style={[styles.formInput, { 
                   borderColor: colors.border.primary, 
@@ -278,14 +291,16 @@ export default function CategoryScreen() {
                 }]}
                 value={newSubcategory.id}
                 onChangeText={(text) => setNewSubcategory({...newSubcategory, id: text})}
-                placeholder="הכנס מזהה תת-קטגוריה (באנגלית)"
+                placeholder={t('category.subcategoryIdPlaceholder')}
                 textAlign="start"
                 editable={!editingSubcategory} // Don't allow editing ID for existing subcategories
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם תת-הקטגוריה *</Text>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+                {t('category.subcategoryName')} *
+              </Text>
               <TextInput
                 style={[styles.formInput, { 
                   borderColor: colors.border.primary, 
@@ -294,13 +309,15 @@ export default function CategoryScreen() {
                 }]}
                 value={newSubcategory.name}
                 onChangeText={(text) => setNewSubcategory({...newSubcategory, name: text})}
-                placeholder="הכנס שם תת-קטגוריה"
+                placeholder={t('category.subcategoryNamePlaceholder')}
                 textAlign="right"
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>אייקון (אמוג'י) *</Text>
+              <Text style={[styles.formLabel, { color: colors.text.primary }]}>
+                {t('category.icon')} *
+              </Text>
               <TextInput
                 style={[styles.formInput, { 
                   borderColor: colors.border.primary, 
@@ -309,7 +326,7 @@ export default function CategoryScreen() {
                 }]}
                 value={newSubcategory.icon}
                 onChangeText={(text) => setNewSubcategory({...newSubcategory, icon: text})}
-                placeholder="הכנס אמוג'י (למשל: 💻)"
+                placeholder={t('category.iconPlaceholder')}
                 textAlign="center"
               />
             </View>
@@ -325,7 +342,9 @@ export default function CategoryScreen() {
                 ) : (
                   <>
                     <Save size={20} color={colors.text.inverse} />
-                    <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>שמור תת-קטגוריה</Text>
+                    <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>
+                      {t('category.saveSubcategory')}
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -337,7 +356,9 @@ export default function CategoryScreen() {
                   disabled={loading}
                 >
                   <Trash2 size={20} color={colors.text.inverse} />
-                  <Text style={[styles.deleteButtonText, { color: colors.text.inverse }]}>מחק תת-קטגוריה</Text>
+                  <Text style={[styles.deleteButtonText, { color: colors.text.inverse }]}>
+                    {t('category.deleteSubcategory')}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
