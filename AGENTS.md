@@ -5,6 +5,11 @@ There is **no centralized backend** and **no SQLite**.
 Configuration such as debug logging and Waku peers is supplied through `EXPO_PUBLIC_*` environment variables.
 All SQL migration files have been removed.
 
+## 🧩 Provider Setup
+
+See [src/providers/README.md](src/providers/README.md) for the order and invariants of React providers.
+
+
 ---
 
 ## 🧠 Core Principles
