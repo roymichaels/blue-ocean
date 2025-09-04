@@ -28,7 +28,6 @@ import {
   MessageCircle,
   Shield,
 } from 'lucide-react-native';
-import CartService from '@/features/cart/services/cart';
 import { Product } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
@@ -37,6 +36,7 @@ import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
 import { Spinner } from '@/ui/primitives';
+import CartService from '@/features/cart/services/cart';
 import { useAccountId } from '@/features/auth/services/nearAuth';
 import chatAgent from '../../agents/chat-agent';
 import moderationAgent from '../../agents/moderation-agent';
@@ -44,10 +44,7 @@ import commonStyles from '@/constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import SmartImage from '../../components/SmartImage';
-import eventBus from '@/services/eventBus';
-import { useProduct } from '@/features/products/hooks';
-import { useProductPricing } from '@/services/useProductPricing';
-import { useProductMedia } from '@/services/useProductMedia';
+import { useProductDetail } from '@/features/products/hooks';
 
 
 
@@ -56,13 +53,25 @@ const COVER_SIZE = Math.min(width, 540);
 
 export default function ProductDetailScreen({ id }: { id: string }) {
   const { push, back } = useAppRouter();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const { effectivePrice, totalPrice, currentPricingTier, showTieredPricing } =
-    useProductPricing(product, quantity);
+  const {
+    product,
+    quantity,
+    incrementQuantity,
+    decrementQuantity,
+    effectivePrice,
+    totalPrice,
+    currentPricingTier,
+    showTieredPricing,
+    media: allMedia,
+    mainImageUri,
+    isFavorite,
+    toggleFavorite,
+    updateProduct,
+    notFound,
+    isLoading: productLoading,
+  } = useProductDetail(id);
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
@@ -70,8 +79,6 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const { currencySymbol } = useCurrency();
   const address = useAccountId();
   const reviews = useReviews(id);
-  const { data: fetchedProduct, isLoading: productLoading } = useProduct(id);
-  const { media: allMedia, mainImageUri } = useProductMedia(product);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -87,64 +94,20 @@ export default function ProductDetailScreen({ id }: { id: string }) {
       : 0;
 
   useEffect(() => {
-    if (productLoading) return;
-    if (address && fetchedProduct && fetchedProduct.storeId !== address) {
+    if (notFound) {
       setInfoModal({
         visible: true,
         title: t('common.error'),
         message: t('product.notFound'),
         type: 'error',
       });
-      setProduct(null);
-      return;
     }
-    if (fetchedProduct) {
-      setProduct(fetchedProduct);
-      eventBus.track('catalog.product_view', { productId: fetchedProduct.id });
-    }
-  }, [fetchedProduct, productLoading, address]);
-
-  useEffect(() => {
-    if (product) {
-      const cartService = CartService.getInstance();
-      setIsFavorite(cartService.isInWishlist(product.id));
-
-      const handleUpdate = () => {
-        setIsFavorite(cartService.isInWishlist(product.id));
-      };
-
-      cartService.addListener(handleUpdate);
-      return () => cartService.removeListener(handleUpdate);
-    }
-  }, [product]);
+  }, [notFound, t]);
 
 
   const openMediaViewer = (index: number) => {
     setSelectedMediaIndex(index);
     setMediaViewerVisible(true);
-  };
-
-  const incrementQuantity = () => {
-    if (product && quantity < product.stock) {
-      setQuantity(quantity + 1);
-    }
-  };
-
-  const decrementQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
-    }
-  };
-
-  const toggleFavorite = async () => {
-    if (!product) return;
-
-    const cartService = CartService.getInstance();
-    if (isFavorite) {
-      await cartService.removeFromWishlist(product.id);
-    } else {
-      await cartService.addToWishlist(product);
-    }
   };
 
   const shareProduct = () => {
@@ -234,7 +197,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   };
 
   const handleProductSaved = (p: Product) => {
-    setProduct(p);
+    updateProduct(p);
   };
 
   const handleProductDeleted = (id: string) => {
