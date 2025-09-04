@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
-import GoldDivider from '../ui/GoldDivider';
+import Divider from '@/ui/primitives/Divider';
 
 export default function AdminShell({ title, children, actions }: {
   title: string;
@@ -17,9 +17,16 @@ export default function AdminShell({ title, children, actions }: {
           <Text style={{ color: colors.text.primary, fontSize: 20, fontWeight: '700' }}>{title}</Text>
           {actions}
         </View>
-        <View style={{ marginTop: 8 }}>
-          <GoldDivider width={160} />
-        </View>
+        <Divider
+          style={{
+            width: 160,
+            height: 2,
+            backgroundColor: colors.gold,
+            borderRadius: 1,
+            marginVertical: 0,
+            marginTop: 8,
+          }}
+        />
       </View>
       <View style={{ flex: 1 }}>{children}</View>
     </SafeAreaView>

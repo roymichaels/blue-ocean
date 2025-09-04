@@ -4,8 +4,7 @@ import Text from '@/ui/primitives/Text';
 import { Link } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import AppShell from '../components/layout/AppShell';
-import Section from '../components/ui/Section';
-import GoldDivider from '../components/ui/GoldDivider';
+import Divider from '@/ui/primitives/Divider';
 import DatabaseService from '@/services/database';
 import { Product, HeroBanner } from '../types';
 import { useCategories } from '@/services';
@@ -50,9 +49,16 @@ export default function Landing() {
           <Text style={{ color: colors.text.secondary, marginTop: spacing.spacer8, textAlign: 'center' }}>
             Decentralized commerce on NEAR — own your store, your data, your future.
           </Text>
-          <View style={{ marginTop: spacing.spacer12 }}>
-            <GoldDivider width={200} />
-          </View>
+          <Divider
+            style={{
+              width: 200,
+              height: 2,
+              backgroundColor: colors.gold,
+              borderRadius: 1,
+              marginVertical: 0,
+              marginTop: spacing.spacer12,
+            }}
+          />
           <View style={{ flexDirection: 'row', gap: spacing.spacer12, marginTop: spacing.spacer16 }}>
             <Link href="/store/alpha" asChild>
               <Button title="Open Alpha Store" style={{ borderRadius: 10 }} />
@@ -67,74 +73,136 @@ export default function Landing() {
         </View>
 
         {/* Banners */}
-        <Section title="Highlights" center>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: 'row', gap: spacing.spacer12, paddingHorizontal: spacing.spacer16 }}>
-              {(banners.length ? banners : [
-                { id: 'b1', image: '', title: 'Welcome to Blue Ocean', subtitle: 'Own your store on NEAR' },
-                { id: 'b2', image: '', title: 'Decentralized by design', subtitle: 'Fast, P2P and secure' },
-              ] as any[]).map((b) => (
-                <View key={b.id} style={{ width: 280, height: 140, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border.primary, backgroundColor: colors.surface.primary }}>
-                  {b.image ? (
-                    <SmartImage uri={b.image} width={280} height={140} contentFit="cover" />
-                  ) : (
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                      <Text style={{ color: colors.gold, fontWeight: '800' }}>{b.title}</Text>
-                      {b.subtitle ? (
-                        <Text style={{ color: colors.text.secondary, marginTop: 4 }}>{b.subtitle}</Text>
-                      ) : null}
-                    </View>
-                  )}
+        <View style={{ paddingHorizontal: spacing.spacer16, paddingVertical: spacing.spacer16 }}>
+          <Text
+            style={{
+              color: colors.text.primary,
+              fontSize: 18,
+              fontWeight: '700',
+              textAlign: 'center',
+            }}
+          >
+            Highlights
+          </Text>
+          <Divider
+            style={{
+              width: 160,
+              height: 2,
+              backgroundColor: colors.gold,
+              borderRadius: 1,
+              alignSelf: 'center',
+              marginVertical: 0,
+              marginTop: spacing.spacer8,
+            }}
+          />
+          <View style={{ marginTop: spacing.spacer12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ flexDirection: 'row', gap: spacing.spacer12, paddingHorizontal: spacing.spacer16 }}>
+                {(banners.length ? banners : [
+                  { id: 'b1', image: '', title: 'Welcome to Blue Ocean', subtitle: 'Own your store on NEAR' },
+                  { id: 'b2', image: '', title: 'Decentralized by design', subtitle: 'Fast, P2P and secure' },
+                ] as any[]).map((b) => (
+                  <View
+                    key={b.id}
+                    style={{
+                      width: 280,
+                      height: 140,
+                      borderRadius: 12,
+                      overflow: 'hidden',
+                      borderWidth: 1,
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.surface.primary,
+                    }}
+                  >
+                    {b.image ? (
+                      <SmartImage uri={b.image} width={280} height={140} contentFit="cover" />
+                    ) : (
+                      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ color: colors.gold, fontWeight: '800' }}>{b.title}</Text>
+                        {b.subtitle ? (
+                          <Text style={{ color: colors.text.secondary, marginTop: 4 }}>{b.subtitle}</Text>
+                        ) : null}
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+
+        {/* Categories */}
+        <View style={{ paddingHorizontal: spacing.spacer16, paddingVertical: spacing.spacer16 }}>
+          <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700' }}>Categories</Text>
+          <Divider
+            style={{
+              width: 120,
+              height: 2,
+              backgroundColor: colors.gold,
+              borderRadius: 1,
+              alignSelf: 'flex-start',
+              marginVertical: 0,
+              marginTop: spacing.spacer8,
+            }}
+          />
+          <View style={{ marginTop: spacing.spacer12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ flexDirection: 'row', gap: spacing.spacer8 }}>
+                {(categories.length ? categories.slice(0, 8) : [
+                  { id: 'electronics', name: 'Electronics' },
+                  { id: 'fashion', name: 'Fashion' },
+                  { id: 'home', name: 'Home' },
+                  { id: 'beauty', name: 'Beauty' },
+                  { id: 'sports', name: 'Sports' },
+                  { id: 'books', name: 'Books' },
+                ] as any[]).map((c) => (
+                  <Pressable
+                    key={c.id}
+                    onPress={() => push(`/category/${c.id}`)}
+                    style={{
+                      paddingHorizontal: spacing.spacer12,
+                      paddingVertical: spacing.spacer8,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: colors.border.primary,
+                      backgroundColor: colors.surface.primary,
+                    }}
+                  >
+                    <Text style={{ color: colors.text.primary, fontWeight: '600' }}>{c.name}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+
+        {/* Featured */}
+        <View style={{ paddingHorizontal: spacing.spacer16, paddingVertical: spacing.spacer16 }}>
+          <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700' }}>Featured</Text>
+          <Divider
+            style={{
+              width: 120,
+              height: 2,
+              backgroundColor: colors.gold,
+              borderRadius: 1,
+              alignSelf: 'flex-start',
+              marginVertical: 0,
+              marginTop: spacing.spacer8,
+            }}
+          />
+          <View style={{ marginTop: spacing.spacer12 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.spacer12, paddingHorizontal: 0 }}>
+              {featured.map((p) => (
+                <View key={p.id} style={{ width: '48%' }}>
+                  <ProductCard key={p.id} product={p} />
                 </View>
               ))}
             </View>
-          </ScrollView>
-        </Section>
-
-        {/* Categories */}
-        <Section title="Categories">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: 'row', gap: spacing.spacer8 }}>
-              {(categories.length ? categories.slice(0, 8) : [
-                { id: 'electronics', name: 'Electronics' },
-                { id: 'fashion', name: 'Fashion' },
-                { id: 'home', name: 'Home' },
-                { id: 'beauty', name: 'Beauty' },
-                { id: 'sports', name: 'Sports' },
-                { id: 'books', name: 'Books' },
-              ] as any[]).map((c) => (
-                <Pressable
-                  key={c.id}
-                  onPress={() => push(`/category/${c.id}`)}
-                  style={{
-                    paddingHorizontal: spacing.spacer12,
-                    paddingVertical: spacing.spacer8,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    borderColor: colors.border.primary,
-                    backgroundColor: colors.surface.primary,
-                  }}
-                >
-                  <Text style={{ color: colors.text.primary, fontWeight: '600' }}>{c.name}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </ScrollView>
-        </Section>
-
-        {/* Featured */}
-        <Section title="Featured">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.spacer12, paddingHorizontal: 0 }}>
-            {featured.map((p) => (
-              <View key={p.id} style={{ width: '48%' }}>
-                <ProductCard key={p.id} product={p} />
-              </View>
-            ))}
+            {featured.length === 0 && (
+              <Text style={{ color: colors.text.secondary }}>No featured items yet.</Text>
+            )}
           </View>
-          {featured.length === 0 && (
-            <Text style={{ color: colors.text.secondary }}>No featured items yet.</Text>
-          )}
-        </Section>
+        </View>
       </ScrollView>
       </AppShell>
     </ErrorBoundary>
