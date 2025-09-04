@@ -1,11 +1,10 @@
 import { setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { Report } from '@/types';
 import { assertNearChain } from '@/services/chain';
-import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const ADDRESS = getNearContract('REPORTS');
+const ADDRESS = 'reports';
 
 export async function addReport(report: Report) {
   await setValue(ADDRESS, report.id, JSON.stringify(report));

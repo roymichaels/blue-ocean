@@ -1,11 +1,10 @@
 import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { CartItem } from '@/types';
 import { assertNearChain } from '@/services/chain';
-import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const ADDRESS = getNearContract('CART');
+const ADDRESS = 'cart';
 
 export async function getCartItem(id: string): Promise<CartItem | null> {
   const res = await getValue(ADDRESS, id);

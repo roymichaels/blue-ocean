@@ -7,12 +7,11 @@ import {
 import { Store } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
-import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const ADDRESS = getNearContract('STORES');
-const DISABLED = !ADDRESS;
+const ADDRESS = 'stores';
+const DISABLED = false;
 let SEEDED = false;
 
 function ensureSeed() {

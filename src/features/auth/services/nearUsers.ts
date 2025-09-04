@@ -6,11 +6,10 @@ import {
 } from '@/services/nearKvStore';
 import { User } from '@/types';
 import { assertNearChain } from '@/services/chain';
-import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const ADDRESS = getNearContract('USERS');
+const ADDRESS = 'users';
 
 export async function getUser(id: string): Promise<User | null> {
   const res = await getValue(ADDRESS, id);

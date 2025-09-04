@@ -2,11 +2,10 @@ import { getValue, setValue, listValues, removeValue } from './nearKvStore';
 import { Order } from '../types';
 import { assertNearChain } from './chain';
 import { requireStoreId } from '@blue-ocean/utils';
-import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const ADDRESS = getNearContract('ORDERS');
+const ADDRESS = 'orders';
 
 export async function getOrder(storeId: string, id: string): Promise<Order | null> {
   const sid = requireStoreId(storeId);

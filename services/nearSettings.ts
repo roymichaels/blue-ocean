@@ -2,7 +2,6 @@ import { debugLog, errorLog } from '@/utils/logger';
 import { assertNearChain } from './chain';
 import { getValue, setValue, listValues } from './nearKvStore';
 import config, { getWakuBootstrapNodes } from '../utils/appConfig';
-import { getNearContract } from '@/utils/nearEnv';
 import {
   LightNode,
   Protocols,
@@ -22,7 +21,7 @@ import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
 assertNearChain();
 
-const ADDRESS = getNearContract('SETTINGS');
+const ADDRESS = 'settings';
 
 const TEST_ADMIN = 'testadmin.near';
 const NETWORK =
