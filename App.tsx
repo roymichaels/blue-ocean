@@ -9,6 +9,7 @@ import { AuthProvider } from '@/features/auth/AuthContext';
 import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 import AppProviders from '@/providers/AppProviders';
 import { Router, usePathname, useRouter, useSegments } from 'expo-router';
 
@@ -41,28 +42,30 @@ function FallbackScreen() {
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <AppProviders>
-          <AppInfoProvider>
-            <LanguageProvider>
-              <ConfigProvider>
-                <AuthProvider>
-                  <AuthModalProvider>
-                    <CurrencyProvider>
-                      <NotificationProvider>
-                        <React.Suspense fallback={null}>
-                          {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-                        </React.Suspense>
-                      </NotificationProvider>
-                    </CurrencyProvider>
-                  </AuthModalProvider>
-                </AuthProvider>
-              </ConfigProvider>
-            </LanguageProvider>
-          </AppInfoProvider>
-        </AppProviders>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <AppProviders>
+            <AppInfoProvider>
+              <LanguageProvider>
+                <ConfigProvider>
+                  <AuthProvider>
+                    <AuthModalProvider>
+                      <CurrencyProvider>
+                        <NotificationProvider>
+                          <React.Suspense fallback={null}>
+                            {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
+                          </React.Suspense>
+                        </NotificationProvider>
+                      </CurrencyProvider>
+                    </AuthModalProvider>
+                  </AuthProvider>
+                </ConfigProvider>
+              </LanguageProvider>
+            </AppInfoProvider>
+          </AppProviders>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
