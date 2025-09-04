@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Category } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -10,13 +10,19 @@ interface CategoryChipsProps {
   setSelectedCategory: (id: string | null) => void;
 }
 
-export default function CategoryChips({
+function CategoryChips({
   categories,
   selectedCategory,
   setSelectedCategory,
 }: CategoryChipsProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
+
+  const handleSelectAll = useCallback(() => setSelectedCategory(null), [setSelectedCategory]);
+  const handleSelectCategory = useCallback(
+    (id: string) => () => setSelectedCategory(id),
+    [setSelectedCategory],
+  );
 
   return (
     <View style={styles.container}>
@@ -34,7 +40,7 @@ export default function CategoryChips({
                 selectedCategory === null ? colors.gold : 'transparent',
             },
           ]}
-          onPress={() => setSelectedCategory(null)}
+          onPress={handleSelectAll}
         >
           <Text
             style={{
@@ -58,7 +64,7 @@ export default function CategoryChips({
                   selectedCategory === cat.id ? colors.gold : 'transparent',
               },
             ]}
-            onPress={() => setSelectedCategory(cat.id)}
+            onPress={handleSelectCategory(cat.id)}
           >
             <Text
               style={{
@@ -76,6 +82,8 @@ export default function CategoryChips({
     </View>
   );
 }
+
+export default React.memo(CategoryChips);
 
 const styles = StyleSheet.create({
   container: {
