@@ -10,7 +10,7 @@ import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import AppProviders from '@/providers/AppProviders';
+import { AppProviders } from '@/providers';
 import { Router, usePathname, useRouter, useSegments } from 'expo-router';
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
