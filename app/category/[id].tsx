@@ -21,7 +21,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import InfoModal from '../../components/InfoModal';
 import { Spinner } from '@/ui/primitives';
 import commonStyles from '@/constants/styles';
-import { useCategories, useCategory } from '@/services';
+import { useSubcategories } from '@/services';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
 
@@ -31,15 +31,14 @@ export default function CategoryScreen() {
   const { push, back } = useAppRouter();
   const params = validateParams(useLocalSearchParams());
   const id = params.success ? params.data.id : undefined;
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-  const category = categories.find((cat) => cat.id === id) || null;
-  const subcategories = category?.subcategories || [];
   const {
+    category,
+    subcategories,
     addSubcategory: addSubcategoryMutation,
     updateSubcategory: updateSubcategoryMutation,
     deleteSubcategory: deleteSubcategoryMutation,
-    isPending: mutationLoading,
-  } = useCategory(category);
+    isLoading: loading,
+  } = useSubcategories(id);
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [newSubcategory, setNewSubcategory] = useState<Partial<Subcategory>>({
@@ -50,7 +49,6 @@ export default function CategoryScreen() {
   });
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
-  const loading = categoriesLoading || mutationLoading;
 
   // Modal states
   const [infoModal, setInfoModal] = useState({

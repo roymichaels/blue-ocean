@@ -2,6 +2,7 @@ export * from './useProducts';
 export * from './useStores';
 export * from './useCategories';
 export * from './useCategory';
+export * from './useSubcategories';
 export * from './usePricingTiers';
 export * from './useCart';
 export * from './useOrders';
