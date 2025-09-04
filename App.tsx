@@ -11,7 +11,7 @@ import { NotificationProvider } from '@/components/NotificationContext';
 import AppProviders from '@/providers';
 import { Router, usePathname, useSegments } from 'expo-router';
 import { stripTabsPrefix } from '@/services/navigation';
-import { initI18n } from '@/services/i18n';
+import { useLanguage } from '@/ui/ThemeProvider';
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
 
@@ -32,9 +32,10 @@ function RouterApp() {
 }
 
 function FallbackScreen() {
+  const { t } = useLanguage();
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Router disabled</Text>
+      <Text>{t('app.routerDisabled')}</Text>
     </View>
   );
 }
@@ -66,29 +67,5 @@ function MainApp() {
 }
 
 export default function App() {
-  const [ready, setReady] = React.useState(false);
-
-  React.useEffect(() => {
-    let mounted = true;
-    initI18n('en').finally(() => {
-      if (mounted) setReady(true);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  if (!ready) {
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text>Loading translations...</Text>
-          </View>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    );
-  }
-
   return <MainApp />;
 }

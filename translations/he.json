@@ -25,6 +25,9 @@
     "understood": "הבנתי",
     "reload": "טען מחדש"
   },
+  "app": {
+    "routerDisabled": "הנתב מושבת"
+  },
   "navigation": {
     "home": "בית",
     "stores": "חנויות",

@@ -25,6 +25,9 @@
     "understood": "Understood",
     "reload": "Reload"
   },
+  "app": {
+    "routerDisabled": "Router disabled"
+  },
   "navigation": {
     "home": "Home",
     "stores": "Stores",
