@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { stripTabsPrefix, push, replace } from '@/services/navigation';
 
 jest.mock('expo-router', () => ({
@@ -7,7 +8,30 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-describe('navigation', () => {
+describe('stripTabsPrefix', () => {
+  it('removes group prefix when present', () => {
+    expect(stripTabsPrefix('/(tabs)/profile')).toBe('/profile');
+  });
+
+  it('returns undefined for nullish values', () => {
+    expect(stripTabsPrefix(undefined)).toBeUndefined();
+    expect(stripTabsPrefix(null)).toBeUndefined();
+  });
+
+  it('leaves path unchanged if no prefix', () => {
+    expect(stripTabsPrefix('/profile')).toBe('/profile');
+  });
+
+  it('does not alter root group path without trailing slash', () => {
+    expect(stripTabsPrefix('/(tabs)')).toBe('/(tabs)');
+  });
+
+  it('handles nested routes and query strings', () => {
+    expect(stripTabsPrefix('/(tabs)/orders/123?foo=bar')).toBe('/orders/123?foo=bar');
+  });
+});
+
+describe('navigation helpers', () => {
   const { router } = require('expo-router');
 
   beforeEach(() => {
@@ -15,22 +39,14 @@ describe('navigation', () => {
     router.replace.mockReset();
   });
 
-  it('stripTabsPrefix removes group prefix', () => {
-    // eslint-disable-next-line no-restricted-syntax
-    expect(stripTabsPrefix('/(tabs)/profile')).toBe('/profile');
-    expect(stripTabsPrefix('/profile')).toBe('/profile');
-    expect(stripTabsPrefix(undefined)).toBeUndefined();
-  });
-
   it('push strips group prefix before routing', () => {
-    // eslint-disable-next-line no-restricted-syntax
     push('/(tabs)/orders');
     expect(router.push).toHaveBeenCalledWith('/orders');
   });
 
   it('replace strips group prefix in pathname objects', () => {
-    // eslint-disable-next-line no-restricted-syntax
     replace({ pathname: '/(tabs)/orders', params: { foo: 'bar' } });
     expect(router.replace).toHaveBeenCalledWith({ pathname: '/orders', params: { foo: 'bar' } });
   });
 });
+
