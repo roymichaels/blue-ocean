@@ -9,7 +9,7 @@ import {
 import Text from '@/ui/primitives/Text';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
-import { spacing, radius, zIndex, shadows } from '@/shared/ui/tokens';
+import { spacing, radius, zIndex, shadows, typography } from '@/shared/ui/tokens';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 import Button from '@/ui/primitives/Button';
 import { Portal, Overlay } from '@/ui/primitives';
@@ -103,7 +103,7 @@ export default function InfoModal({
 
   return (
     <Portal>
-      <Overlay style={styles.overlay} />
+      <Overlay style={[styles.overlay, { backgroundColor: colors.canvas }]} />
       <View style={styles.center} pointerEvents="box-none">
         <Animated.View
           style={[
@@ -148,7 +148,7 @@ export default function InfoModal({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    opacity: 0.5,
   },
   center: {
     ...StyleSheet.absoluteFillObject,
@@ -175,15 +175,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.spacer16,
   },
   title: {
-    fontSize: 18,
+    ...typography.lg,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: spacing.spacer8,
   },
   message: {
-    fontSize: 16,
+    ...typography.md,
     textAlign: 'center',
     marginBottom: spacing.spacer24,
-    lineHeight: 24,
   },
 });
