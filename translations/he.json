@@ -93,6 +93,9 @@
     "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש.",
     "becomeSeller": "הפוך למוכר"
   },
+  "categories": {
+    "all": "הכל"
+  },
   "product": {
     "inStock": "במלאי ({count})",
     "outOfStock": "אזל מהמלאי",
