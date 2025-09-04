@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import chain from '@/services/chain';
-import { Order } from '../types';
+import { Order } from '@/types';
 
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)

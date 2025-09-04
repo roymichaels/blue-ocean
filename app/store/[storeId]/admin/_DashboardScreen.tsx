@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
 import chain from '@/services/chain';
-import OrderRevenueMetrics from '@/components/OrderRevenueMetrics';
+import OrderRevenueMetrics from '@/features/stores/components/OrderRevenueMetrics';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useStore } from '@/features/products/hooks';
 import { routes } from '@/utils/routes';
