@@ -25,6 +25,7 @@ import commonStyles from '@/constants/styles';
 import Card from '@/ui/primitives/Card';
 import SmartImage from '../../components/SmartImage';
 import ErrorBoundary from '@/shared/ErrorBoundary';
+import { routes } from '@/utils/routes';
 
 
 
@@ -296,8 +297,8 @@ export default function ReviewsScreen() {
       <View style={styles.reviewHeader}>
         <TouchableOpacity 
           style={styles.productInfo}
-          onPress={() => push(`/product/${item.productId}`)}
-        >
+            onPress={() => push(routes.product(item.productId))}
+          >
           <SmartImage
             uri={item.productImage}
             width={40}

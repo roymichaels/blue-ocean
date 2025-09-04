@@ -7,6 +7,7 @@ import chain from '@/services/chain';
 import OrderRevenueMetrics from '@/components/OrderRevenueMetrics';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useStore } from '@/features/products/hooks';
+import { routes } from '@/utils/routes';
 
 let listProducts: (() => Promise<any[]>) | undefined;
 if (chain === 'near') {
@@ -27,7 +28,7 @@ export default function StoreDashboardScreen() {
       if (!storeId || !store || !listProducts) return;
       const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
       if (store.owner !== user?.address && !isAdmin) {
-        replace(`/store/${storeId}`);
+        replace(routes.store(storeId));
         return;
       }
       setAuthorized(true);
@@ -51,16 +52,16 @@ export default function StoreDashboardScreen() {
         {storeId && <OrderRevenueMetrics storeId={storeId} />}
       </View>
       <View style={styles.nav}>
-        <TouchableOpacity
-          style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => push(`/store/${storeId}/admin/products`)}
-        >
+          <TouchableOpacity
+            style={[styles.navButton, { borderColor: colors.border.primary }]}
+            onPress={() => push(routes.storeAdminProducts(storeId))}
+          >
           <Text style={{ color: colors.text.primary }}>ניהול מוצרים</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => push(`/store/${storeId}/admin/orders`)}
-        >
+          <TouchableOpacity
+            style={[styles.navButton, { borderColor: colors.border.primary }]}
+            onPress={() => push(routes.storeAdminOrders(storeId))}
+          >
           <Text style={{ color: colors.text.primary }}>צפייה בהזמנות</Text>
         </TouchableOpacity>
       </View>

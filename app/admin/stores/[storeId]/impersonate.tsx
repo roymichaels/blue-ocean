@@ -3,6 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
 import { useRequirePlatformAdmin } from '@/services';
 import RequireWallet from '../../../../components/RequireWallet';
+import { routes } from '@/utils/routes';
 
 export default function ImpersonateStore() {
   useRequirePlatformAdmin();
@@ -11,7 +12,7 @@ export default function ImpersonateStore() {
 
   useEffect(() => {
     if (storeId) {
-      replace(`/store/${storeId}/admin/dashboard?impersonate=true`);
+      replace(routes.storeAdminDashboard(storeId, true));
     }
   }, [storeId, replace]);
 

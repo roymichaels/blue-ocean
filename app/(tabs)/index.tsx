@@ -34,6 +34,7 @@ const InfoModal = lazy(() => import('@/components/InfoModal'));
 import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
 import { spacing } from '@/shared/ui/tokens';
 import { Screen, ScrollArea, Container, Stack } from '@/ui/layout';
+import { routes } from '@/utils/routes';
 
 
 function HomeScreenContent() {
@@ -169,7 +170,7 @@ function HomeScreenContent() {
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
       style={[styles.categoryCard]}
-      onPress={() => push(`/category/${item.id}`)}
+      onPress={() => push(routes.category(item.id))}
     >
       <View
         style={[
@@ -195,7 +196,7 @@ function HomeScreenContent() {
                 borderColor: colors.gold,
               },
             ]}
-            onPress={() => push(`/category/${item.id}`)}
+            onPress={() => push(routes.category(item.id))}
           >
             <Pencil size={10} color={colors.gold} />
           </TouchableOpacity>

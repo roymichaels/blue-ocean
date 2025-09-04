@@ -15,6 +15,7 @@ import { WishlistItem } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import useWishlist from '../hooks/useWishlist';
+import { routes } from '@/utils/routes';
 
 interface WishlistModalProps {
   visible: boolean;
@@ -34,7 +35,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
 
   const viewProduct = (productId: string) => {
     onClose();
-    push(`/product/${productId}`);
+    push(routes.product(productId));
   };
 
   const ITEM_HEIGHT = 118;

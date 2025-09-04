@@ -8,6 +8,7 @@ import { useAppRouter } from '@/services';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Spinner, Skeleton, Text, Heading, Button } from '@/ui';
 import { spacing, radius, typography } from '@/ui/tokens';
+import { routes } from '@/utils/routes';
 
 
 const SmartImage = lazy(() => import('@/components/SmartImage'));
@@ -48,7 +49,7 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
     <View key={item.id} style={styles.heroBanner}>
       <TouchableOpacity
         style={styles.bannerTouchable}
-        onPress={() => push(`/category/${item.category}`)}
+        onPress={() => push(routes.category(item.category))}
       >
         <Suspense fallback={<Spinner />}>
           <SmartImage

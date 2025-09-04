@@ -35,6 +35,7 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useProfileData } from '@/services';
 import ErrorBoundary from '@/shared/ErrorBoundary';
+import { routes } from '@/utils/routes';
 
 
 
@@ -261,9 +262,9 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() =>
-                storeId && push(`/store/${storeId}/admin/dashboard`)
-              }
+                onPress={() =>
+                  storeId && push(routes.storeAdminDashboard(storeId))
+                }
             >
               <View style={styles.menuItemContent}>
                 <Shield size={24} color={colors.gold} />
@@ -280,9 +281,9 @@ export default function ProfileScreen() {
                   borderColor: colors.border.primary,
                 },
               ]}
-              onPress={() =>
-                storeId && push(`/store/${storeId}/admin/deliveries`)
-              }
+                onPress={() =>
+                  storeId && push(routes.storeAdminDeliveries(storeId))
+                }
             >
               <View style={styles.menuItemContent}>
                 <Package size={24} color={colors.gold} />

@@ -11,6 +11,7 @@ import SmartImage from '../components/SmartImage';
 import Button from '@/ui/primitives/Button';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing } from '@/shared/ui/tokens';
+import { routes } from '@/utils/routes';
 
 export default function Landing() {
   const { push } = useAppRouter();
@@ -141,7 +142,7 @@ export default function Landing() {
                 ] as any[]).map((c) => (
                   <Pressable
                     key={c.id}
-                    onPress={() => push(`/category/${c.id}`)}
+                    onPress={() => push(routes.category(c.id))}
                     style={{
                       paddingHorizontal: spacing.spacer12,
                       paddingVertical: spacing.spacer8,

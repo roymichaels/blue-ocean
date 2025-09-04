@@ -22,6 +22,7 @@ import InfoModal from '../../components/InfoModal';
 import { Spinner } from '@/ui/primitives';
 import commonStyles from '@/constants/styles';
 import { useCategoryDetail } from '@/services';
+import { routes } from '@/utils/routes';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
 
@@ -152,11 +153,11 @@ export default function CategoryScreen() {
   const renderSubcategory = (item: Subcategory) => (
     <TouchableOpacity
       key={item.id}
-      style={[styles.subcategoryCard, { 
+      style={[styles.subcategoryCard, {
         backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary 
+        borderColor: colors.border.primary
       }]}
-      onPress={() => push(`/subcategory/${item.id}`)}
+      onPress={() => push(routes.subcategory(item.id))}
     >
       <View style={[styles.subcategoryIcon, { 
         backgroundColor: colors.interactive.secondary,
