@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, Image, View, StyleSheet, ViewStyle } from 'react-native';
 import { Star } from 'lucide-react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
 import { spacing, radius, typography } from '@/ui/tokens';

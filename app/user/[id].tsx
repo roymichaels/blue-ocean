@@ -17,7 +17,7 @@ import { ArrowLeft, User as UserIcon, Mail, Calendar, Shield, MessageCircle } fr
 import DatabaseService from '@/services/database';
 import { User } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import commonStyles from '@/constants/styles';
 import SmartImage from '../../components/SmartImage';
 

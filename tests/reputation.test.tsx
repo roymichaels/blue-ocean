@@ -18,7 +18,7 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
 }));
 
-jest.mock('../contexts/ThemeContext', () => ({
+jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({
     colors: {
       background: '#fff',

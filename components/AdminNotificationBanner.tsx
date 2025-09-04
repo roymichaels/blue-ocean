@@ -11,7 +11,7 @@ import {
 import { Bell, X } from 'lucide-react-native';
 import NotificationService from '@/services/notification';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 
 export default function AdminNotificationBanner() {
   const [visible, setVisible] = useState(false);

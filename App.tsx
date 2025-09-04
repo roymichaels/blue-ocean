@@ -3,13 +3,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text } from 'react-native';
 import { AppInfoProvider } from '@/contexts/AppInfoContext';
-import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ConfigProvider } from '@/contexts/ConfigContext';
 import { AuthProvider } from '@/features/auth/AuthContext';
 import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
-import { AppProviders } from '@/providers';
+import { AppProviders, ThemeProvider, LanguageProvider } from '@/providers';
 import { Router, usePathname, useRouter, useSegments } from 'expo-router';
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
@@ -43,25 +42,27 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AppProviders>
-          <AppInfoProvider>
+        <AppInfoProvider>
+          <ThemeProvider>
             <LanguageProvider>
-              <ConfigProvider>
-                <AuthProvider>
-                  <AuthModalProvider>
-                    <CurrencyProvider>
-                      <NotificationProvider>
-                        <React.Suspense fallback={null}>
-                          {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-                        </React.Suspense>
-                      </NotificationProvider>
-                    </CurrencyProvider>
-                  </AuthModalProvider>
-                </AuthProvider>
-              </ConfigProvider>
+              <AppProviders>
+                <ConfigProvider>
+                  <AuthProvider>
+                    <AuthModalProvider>
+                      <CurrencyProvider>
+                        <NotificationProvider>
+                          <React.Suspense fallback={null}>
+                            {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
+                          </React.Suspense>
+                        </NotificationProvider>
+                      </CurrencyProvider>
+                    </AuthModalProvider>
+                  </AuthProvider>
+                </ConfigProvider>
+              </AppProviders>
             </LanguageProvider>
-          </AppInfoProvider>
-        </AppProviders>
+          </ThemeProvider>
+        </AppInfoProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -2,7 +2,7 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import MoonPayButton from '@/features/payments/components/MoonPayButton';
 
-jest.mock('../contexts/ThemeContext', () => ({
+jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({ colors: { gold: 'gold', text: { inverse: '#fff' } } }),
 }));
 

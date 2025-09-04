@@ -24,7 +24,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { VideoView, createVideoPlayer } from '../utils/video';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 
 const { width, height } = Dimensions.get('window');
 

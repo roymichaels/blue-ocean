@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { X, Save, Trash2 } from 'lucide-react-native';
 import { PricingTier } from '@/types';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import InfoModal from '@/components/InfoModal';
 

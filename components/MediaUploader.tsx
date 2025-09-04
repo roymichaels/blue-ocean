@@ -13,7 +13,7 @@ import {
 import SmartImage from './SmartImage';
 import { Camera, Upload, X, Play, Video } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import MediaService from '@/services/media';
 
 interface MediaItem {

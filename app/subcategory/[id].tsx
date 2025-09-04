@@ -30,7 +30,7 @@ if (chain === 'near') {
   ({ listStores } = require('@/features/stores/services/nearStores'));
 }
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import MediaUploader from '@/components/MediaUploader';
 import { Spinner } from '@/ui/primitives';

@@ -3,7 +3,7 @@ import { FlatList, View, StyleSheet } from 'react-native';
 import EmptyState from '@/shared/ui/EmptyState';
 import ProductCard from '../ProductCard';
 import { Product } from '@/types';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { Package } from 'lucide-react-native';
 import { spacing } from '@/shared/ui/tokens';
 

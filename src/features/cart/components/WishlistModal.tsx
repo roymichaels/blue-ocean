@@ -12,7 +12,7 @@ import SmartImage from '@/components/SmartImage';
 import { X, Heart, ShoppingCart, Trash2 } from 'lucide-react-native';
 import useAppRouter from 'hooks/useAppRouter';
 import { WishlistItem } from '@/types';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import useWishlist from '../hooks/useWishlist';
 

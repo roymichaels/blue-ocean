@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { X } from 'lucide-react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 
 interface UserProfileModalProps {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
 import RequireWallet from '@/components/RequireWallet';
 import chain from '@/services/chain';

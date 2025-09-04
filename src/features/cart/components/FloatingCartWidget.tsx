@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { ShoppingCart, X, Plus, Minus } from 'lucide-react-native';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/ui/ThemeProvider';
 import useAppRouter from 'hooks/useAppRouter';
 import useCart from '../hooks/useCart';
 

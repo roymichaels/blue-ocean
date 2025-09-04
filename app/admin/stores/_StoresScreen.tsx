@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
 import useAppRouter from 'hooks/useAppRouter';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import useRequirePlatformAdmin from 'hooks/useRequirePlatformAdmin';
 import chain from '@/services/chain';
 import { Store } from '@/types';

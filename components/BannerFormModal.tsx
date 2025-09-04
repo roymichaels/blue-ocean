@@ -11,7 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { X, Save, Trash2 } from 'lucide-react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { HeroBanner, Category } from '../types';
 import DatabaseService from '@/services/database';
 import { Spinner } from '@/ui/primitives';

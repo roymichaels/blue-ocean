@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { debugLog } from '@/utils/logger';
 import { useLocalSearchParams } from 'expo-router';
-import { useTheme } from '../../../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import chain from '@/services/chain';
 import { Order } from '../../../../types';
 import { useAccountId } from '@/features/auth/services/nearAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/ui/ThemeProvider';
 
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)

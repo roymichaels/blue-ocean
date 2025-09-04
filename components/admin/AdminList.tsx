@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import Text from '@/ui/primitives/Text';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import Button from '@/ui/primitives/Button';
 
 export type AdminListItem = {

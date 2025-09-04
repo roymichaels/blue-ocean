@@ -19,7 +19,7 @@ import {
   Package,
 } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import DatabaseService from '@/services/database';
 import { PricingTier } from '../../../../types';

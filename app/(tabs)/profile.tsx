@@ -25,10 +25,10 @@ import {
   Clock,
 } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import GlobalHeader from '@/components/GlobalHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppInfo } from '@/contexts/AppInfoContext';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';

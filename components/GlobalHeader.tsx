@@ -9,8 +9,8 @@ import {
 import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
 import useAppRouter from 'hooks/useAppRouter';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '@/ui/ThemeProvider';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';

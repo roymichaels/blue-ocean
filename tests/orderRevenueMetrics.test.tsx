@@ -2,7 +2,7 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import OrderRevenueMetrics from '../components/OrderRevenueMetrics';
 
-jest.mock('../contexts/ThemeContext', () => ({
+jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({ colors: { text: { primary: '#000' } } }),
 }));
 

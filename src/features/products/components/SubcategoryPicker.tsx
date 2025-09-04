@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import { X, Plus } from 'lucide-react-native';
 import { Subcategory } from '@/types';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/ui/ThemeProvider';
+import { useLanguage } from '@/ui/ThemeProvider';
 
 interface SubcategoryPickerProps {
   visible: boolean;

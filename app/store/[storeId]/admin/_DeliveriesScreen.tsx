@@ -16,7 +16,7 @@ import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
 import FullScreenMediaViewer from '../../../../components/FullScreenMediaViewer';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import { DeliveryJob, User } from '../../../../types';
 import commonStyles from '@/constants/styles';

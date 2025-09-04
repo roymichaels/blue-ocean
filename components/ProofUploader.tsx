@@ -13,7 +13,7 @@ import SmartImage from './SmartImage';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Upload, Camera, File as FileIcon } from 'lucide-react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import MediaService from '@/services/media';
 import DatabaseService from '@/services/database';
 

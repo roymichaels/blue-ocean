@@ -6,7 +6,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ storeId: 's1' }),
 }));
 
-jest.mock('../contexts/ThemeContext', () => ({
+jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({
     colors: {
       background: '#fff',

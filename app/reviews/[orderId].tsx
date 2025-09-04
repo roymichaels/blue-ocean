@@ -5,7 +5,7 @@ import { useLocalSearchParams } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
 import { Star, ArrowLeft } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui/primitives';
 import ordersAgent from '../../agents/orders-agent';
 import reviewAgent from '../../agents/review-agent';

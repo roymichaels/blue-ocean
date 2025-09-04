@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
 import { Product, Subcategory, PricingTier, ProductIndexItem } from '@/types';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import DatabaseService from '@/services/database';
 import PinataService from '@/services/pinata';

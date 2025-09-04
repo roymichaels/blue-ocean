@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { User, LogOut } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/ui/ThemeProvider';
+import { useTheme } from '@/ui/ThemeProvider';
 import useAppRouter from 'hooks/useAppRouter';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import ConfirmationModal from '@/components/ConfirmationModal';

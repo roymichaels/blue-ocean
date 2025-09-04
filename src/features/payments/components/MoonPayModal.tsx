@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, View, StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Spinner } from '@/ui/primitives';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '@/contexts/AppInfoContext';
 
 interface MoonPayModalProps {

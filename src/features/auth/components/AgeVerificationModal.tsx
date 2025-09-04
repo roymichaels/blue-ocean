@@ -12,9 +12,9 @@ import SmartImage from '@/components/SmartImage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '@/contexts/AppInfoContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/ui/ThemeProvider';
 import { spacing, typography } from '@/constants/styles';
 import Button from '@/ui/primitives/Button';
 
