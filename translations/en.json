@@ -93,6 +93,9 @@
     "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload.",
     "becomeSeller": "Become a Seller"
   },
+  "categories": {
+    "all": "All"
+  },
   "product": {
     "inStock": "In Stock ({count})",
     "outOfStock": "Out of Stock",

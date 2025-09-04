@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Category } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CategoryChipsProps {
   categories: Category[];
@@ -15,6 +16,7 @@ export default function CategoryChips({
   setSelectedCategory,
 }: CategoryChipsProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <View style={styles.container}>
@@ -42,7 +44,7 @@ export default function CategoryChips({
                   : colors.text.primary,
             }}
           >
-            All
+            {t('categories.all')}
           </Text>
         </TouchableOpacity>
         {categories.map((cat) => (
