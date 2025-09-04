@@ -1,61 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, I18nManager } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import storesAgent, { selectStore } from '../../../agents/stores-agent';
-import { getProducts } from '../../../agents/products-agent';
-import reviewAgent from '../../../agents/review-agent';
 import { useTheme } from '@/ui/ThemeProvider';
-import { Store, Product } from '../../../types';
 import StoreHeader from '@/features/stores/components/store/StoreHeader';
 import StoreTabs from '@/features/stores/components/store/StoreTabs';
 import ProductGrid from '@/features/products/components/ProductGrid';
-
-interface ReviewMap {
-  [productId: string]: { rating: number; count: number };
-}
+import { useStoreData } from '@/services/useStoreData';
 
 export default function StorefrontStoreScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
-  const [store, setStore] = useState<Store | null>(null);
-  const [score, setScore] = useState(0);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [reviews, setReviews] = useState<ReviewMap>({});
+  const { store, products, score } = useStoreData(storeId);
   const [tab, setTab] = useState<'products' | 'about' | 'reviews'>('products');
-
-  useEffect(() => {
-    let callback: ((sid: string, s: number) => void) | undefined;
-    const load = async () => {
-      if (!storeId) return;
-      const s = await selectStore(storeId);
-      setStore(s);
-      setScore(storesAgent.getReputationScore(storeId));
-      const all = await getProducts();
-      const filtered = all.filter((p) => p.storeId === storeId);
-      setProducts(filtered);
-      const entries = await Promise.all(
-        filtered.map(async (p) => {
-          const revs = await reviewAgent.getByProduct(p.id);
-          const count = revs.length;
-          const rating = count > 0 ? revs.reduce((a, r) => a + r.rating, 0) / count : 0;
-          return [p.id, { rating, count }] as [string, { rating: number; count: number }];
-        })
-      );
-      const map: ReviewMap = {};
-      entries.forEach(([pid, data]) => {
-        map[pid] = data;
-      });
-      setReviews(map);
-      callback = (sid: string, sc: number) => {
-        if (sid === storeId) setScore(sc);
-      };
-      storesAgent.subscribe(callback);
-    };
-    load();
-    return () => {
-      if (callback) storesAgent.unsubscribe(callback);
-    };
-  }, [storeId]);
 
   if (!store) {
     return (

@@ -3,7 +3,7 @@ import { View, TextInput, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
 import { Server } from 'lucide-react-native';
-import Card from '../Card';
+import Card from '@/ui/primitives/Card';
 import SettingsAgent from '../../agents/settings-agent';
 import { errorLog } from '@/utils/logger';
 
