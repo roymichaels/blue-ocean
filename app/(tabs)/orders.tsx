@@ -1,5 +1,4 @@
-import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,9 +7,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import useAppRouter from 'hooks/useAppRouter';
-import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Calendar, Truck } from 'lucide-react-native';
+import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Truck } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import OrderService from '../../services/orders';
+import { useOrders } from '@/services';
 import { Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import AppShell from '../../components/layout/AppShell';
@@ -26,11 +25,11 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 
 
 export default function OrdersScreen() {
-  const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderTracking, setShowOrderTracking] = useState(false);
   const { openAuthModal } = useAuthModal();
   const { isLoggedIn, user } = useAuth();
+  const { data: orders = [], refetch, isFetching } = useOrders(user?.id || '');
   const { colors } = useTheme();
   const { t, currentLanguage } = useLanguage();
   const { currencySymbol } = useCurrency();
@@ -43,40 +42,6 @@ export default function OrdersScreen() {
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning'
   });
-
-  useEffect(() => {
-    if (isLoggedIn && user) {
-      loadOrders();
-    }
-  }, [isLoggedIn, user]);
-
-  useEffect(() => {
-    const orderService = OrderService.getInstance();
-    const handleOrderUpdate = () => {
-      if (isLoggedIn && user) {
-        loadOrders();
-      }
-    };
-
-    orderService.addListener(handleOrderUpdate);
-    return () => orderService.removeListener(handleOrderUpdate);
-  }, [isLoggedIn, user]);
-
-  const loadOrders = async () => {
-    try {
-      const orderService = OrderService.getInstance();
-      const userOrders = await orderService.getUserOrders(user?.id || '');
-      setOrders(userOrders);
-    } catch (error) {
-      errorLog('Error loading orders:', error);
-      setInfoModal({
-        visible: true,
-        title: t('common.error'),
-        message: t('orders.loadFailed'),
-        type: 'error'
-      });
-    }
-  };
 
   const openOrderTracking = (order: Order) => {
     setSelectedOrder(order);
@@ -227,6 +192,8 @@ export default function OrdersScreen() {
         ]}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
+        refreshing={isFetching}
+        onRefresh={refetch}
       />
 
       {/* Order Tracking Modal */}
