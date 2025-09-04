@@ -35,6 +35,9 @@
         "src/services/*",
         "services/*"
       ],
+      "@providers/*": [
+        "src/providers/*"
+      ],
       "@/features/*": [
         "src/features/*"
       ],
@@ -50,6 +53,12 @@
       "@/services/*": [
         "src/services/*",
         "services/*"
+      ],
+      "@/providers": [
+        "src/providers/index.ts"
+      ],
+      "@/providers/*": [
+        "src/providers/*"
       ],
       "@/*": [
         "./*"
