@@ -1,14 +1,20 @@
 import React from 'react';
-import { Text as RNText, StyleProp, TextStyle } from 'react-native';
-import { useTheme } from '../ThemeProvider';
+import { TextProps, TextStyle } from 'react-native';
+import Text from './Text';
 import { typography } from '../tokens';
 
-interface HeadingProps {
-  children: React.ReactNode;
-  style?: StyleProp<TextStyle>;
+type Size = keyof typeof typography;
+
+interface HeadingProps extends TextProps {
+  size?: Size;
+  weight?: TextStyle['fontWeight'];
 }
 
-export default function Heading({ children, style }: HeadingProps) {
-  const { colors } = useTheme();
-  return <RNText style={[{ color: colors.text.primary, ...typography.xl }, style]}>{children}</RNText>;
+export default function Heading({
+  size = 'lg',
+  weight = '700',
+  ...rest
+}: HeadingProps) {
+  return <Text variant={size} weight={weight} {...rest} />;
 }
+
