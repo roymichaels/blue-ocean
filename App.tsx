@@ -8,7 +8,7 @@ import { AuthProvider } from '@/features/auth/AuthContext';
 import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
-import { AppProviders, ThemeProvider, LanguageProvider } from '@/providers';
+import AppProviders from '@/providers';
 import { Router, usePathname, useSegments } from 'expo-router';
 import { stripTabsPrefix } from '@/services/navigation';
 import { initI18n } from '@/services/i18n';
@@ -44,25 +44,21 @@ function MainApp() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AppInfoProvider>
-          <ThemeProvider>
-            <LanguageProvider>
-              <AppProviders>
-                <ConfigProvider>
-                  <AuthProvider>
-                    <AuthModalProvider>
-                      <CurrencyProvider>
-                        <NotificationProvider>
-                          <React.Suspense fallback={null}>
-                            {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-                          </React.Suspense>
-                        </NotificationProvider>
-                      </CurrencyProvider>
-                    </AuthModalProvider>
-                  </AuthProvider>
-                </ConfigProvider>
-              </AppProviders>
-            </LanguageProvider>
-          </ThemeProvider>
+          <AppProviders>
+            <ConfigProvider>
+              <AuthProvider>
+                <AuthModalProvider>
+                  <CurrencyProvider>
+                    <NotificationProvider>
+                      <React.Suspense fallback={null}>
+                        {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
+                      </React.Suspense>
+                    </NotificationProvider>
+                  </CurrencyProvider>
+                </AuthModalProvider>
+              </AuthProvider>
+            </ConfigProvider>
+          </AppProviders>
         </AppInfoProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

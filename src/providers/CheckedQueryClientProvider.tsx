@@ -22,5 +22,5 @@ export function CheckedQueryClientProvider(props: QueryClientProviderProps) {
     };
   }, []);
 
-  return <BaseQueryClientProvider {...props} />;
+  return React.createElement(BaseQueryClientProvider, props);
 }
