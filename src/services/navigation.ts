@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { router } from 'expo-router';
 
 const TABS_PREFIX = '/' + '(' + 'tabs' + ')';
