@@ -40,6 +40,9 @@
       "@/shared/*": [
         "src/shared/*"
       ],
+      "@/ui": [
+        "src/ui/index.ts"
+      ],
       "@/ui/*": [
         "src/ui/*"
       ],

@@ -19,7 +19,7 @@ import DatabaseService from '@/services/database';
 import MediaService from '@/services/media';
 import { useAccountId } from '../../auth/services/nearAuth';
 import productsAgent from '@/agents/products-agent';
-import Card from '@/ui/primitives/Card';
+import { Card } from '@/ui';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 32 - 12) / 2;

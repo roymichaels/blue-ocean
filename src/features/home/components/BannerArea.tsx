@@ -6,10 +6,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import EmptyState from '@/shared/ui/EmptyState';
-import { Spinner, Skeleton } from '@/ui/primitives';
-import Text from '@/ui/primitives/Text';
-import Heading from '@/ui/primitives/Heading';
-import Button from '@/ui/primitives/Button';
+import { Spinner, Skeleton, Text, Heading, Button } from '@/ui';
 import { spacing, radius, typography } from '@/ui/tokens';
 
 

@@ -6,13 +6,11 @@ import {
   Animated,
   Platform,
 } from 'react-native';
-import Text from '@/ui/primitives/Text';
+import { Text, Button, Portal, Overlay } from '@/ui';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { spacing, radius, zIndex, shadows } from '@/shared/ui/tokens';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
-import Button from '@/ui/primitives/Button';
-import { Portal, Overlay } from '@/ui/primitives';
 
 type InfoType = 'success' | 'error' | 'info' | 'warning';
 

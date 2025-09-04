@@ -1,9 +1,8 @@
 import React, { ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
-import Text from '@/ui/primitives/Text';
+import { Text, Button } from '@/ui';
 import { useTheme } from '@/ui/ThemeProvider';
 import { spacing } from '@/shared/ui/tokens';
-import Button from '@/ui/primitives/Button';
 import { usePathname } from 'expo-router';
 import { replace } from '@/services/navigation';
 import { errorLog } from '@/utils/logger';

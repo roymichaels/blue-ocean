@@ -1,7 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import Text from '@/ui/primitives/Text';
-import Button from '@/ui/primitives/Button';
+import { Text, Button } from '@/ui';
 import { spacing, radius, colors } from '@/shared/ui/tokens';
 
 export type AdminListItem = {

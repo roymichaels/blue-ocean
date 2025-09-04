@@ -5,11 +5,9 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import Text from '@/ui/primitives/Text';
+import { Text, Button, Portal, Overlay } from '@/ui';
 import { useTheme } from '@/ui/ThemeProvider';
 import { X } from 'lucide-react-native';
-import Button from '@/ui/primitives/Button';
-import { Portal, Overlay } from '@/ui/primitives';
 
 interface ConfirmationModalProps {
   visible: boolean;

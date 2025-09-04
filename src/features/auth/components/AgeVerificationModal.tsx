@@ -7,7 +7,7 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import Text from '@/ui/primitives/Text';
+import { Text, Button } from '@/ui';
 import SmartImage from '@/components/SmartImage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Calendar } from 'lucide-react-native';
@@ -16,7 +16,6 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '@/contexts/AppInfoContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { spacing, typography } from '@/constants/styles';
-import Button from '@/ui/primitives/Button';
 
 const AGE_VERIFICATION_KEY = 'age_verified';
 

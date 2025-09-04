@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import Text from '@/ui/primitives/Text';
-import Button from '@/ui/primitives/Button';
+import { Text, Button } from '@/ui';
 import { chainAdapter } from '@/services/chain';
 
 interface WalletConnectButtonProps {

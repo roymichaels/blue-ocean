@@ -6,7 +6,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { Menu, Avatar, type MenuItem } from '@/ui/primitives';
+import { Menu, Avatar, type MenuItem } from '@/ui';
 
 export default function UserAvatar() {
   const { isLoggedIn, user, logout } = useAuth();
