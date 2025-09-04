@@ -21,7 +21,7 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import InfoModal from '../../components/InfoModal';
 import { Spinner } from '@/ui/primitives';
 import commonStyles from '@/constants/styles';
-import { useSubcategories } from '@/services';
+import { useCategoryDetail } from '@/services';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
 
@@ -38,7 +38,7 @@ export default function CategoryScreen() {
     updateSubcategory: updateSubcategoryMutation,
     deleteSubcategory: deleteSubcategoryMutation,
     isLoading: loading,
-  } = useSubcategories(id);
+  } = useCategoryDetail(id);
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [newSubcategory, setNewSubcategory] = useState<Partial<Subcategory>>({
