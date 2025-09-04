@@ -45,7 +45,7 @@ import commonStyles from '@/constants/styles';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNotifications } from '@/components/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { push } from '@/services/navigation';
+import useAppRouter from 'hooks/useAppRouter';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 
@@ -76,6 +76,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const { currencySymbol } = useCurrency();
   const { showNotification } = useNotifications();
   const { t } = useLanguage();
+  const { push } = useAppRouter();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Info/confirm modals

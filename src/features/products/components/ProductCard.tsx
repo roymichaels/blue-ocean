@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { Heart, Pencil, ShoppingCart, Tag } from 'lucide-react-native';
-import { push } from '@/services/navigation';
+import useAppRouter from 'hooks/useAppRouter';
 import { Product, PricingTier } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -53,6 +53,7 @@ function ProductCard({
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const address = useAccountId();
+  const { push } = useAppRouter();
   const variants = useMemo(() => product.variants || [], [product.variants]);
   const selectedVariant = useMemo(() => variants[selectedVariantIndex], [variants, selectedVariantIndex]);
   const stock = useMemo(() => (selectedVariant ? selectedVariant.stock : product.stock), [selectedVariant, product.stock]);
@@ -118,7 +119,7 @@ function ProductCard({
 
   const handlePress = useCallback(() => {
     push(`/product/${product.id}`);
-  }, [product.id]);
+  }, [product.id, push]);
 
   const handleEdit = useCallback(
     (e: any) => {

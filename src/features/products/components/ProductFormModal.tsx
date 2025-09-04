@@ -13,7 +13,6 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import { push } from '@/services/navigation';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
 import { Product, Subcategory, PricingTier, ProductIndexItem } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -37,6 +36,7 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
 import { useAccountId } from '../../auth/services/nearAuth';
+import useAppRouter from 'hooks/useAppRouter';
 
 interface ProductFormModalProps {
   visible: boolean;
@@ -56,6 +56,7 @@ export default function ProductFormModal({
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const address = useAccountId();
+  const { push } = useAppRouter();
   const [editingProduct, setEditingProduct] = useState<Partial<Product>>({});
   const [imageUrls, setImageUrls] = useState('');
   const [videoUrls, setVideoUrls] = useState('');

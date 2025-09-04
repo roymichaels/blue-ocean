@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
-import { push } from '@/services/navigation';
+import useAppRouter from 'hooks/useAppRouter';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppInfo } from '../contexts/AppInfoContext';
@@ -33,6 +33,7 @@ export default function GlobalHeader({
   const { colors } = useTheme();
   const { appName, logoCid } = useAppInfo();
   const { progress } = useRoadmap();
+  const { push } = useAppRouter();
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [wishlistItemsCount, setWishlistItemsCount] = useState(0);
 

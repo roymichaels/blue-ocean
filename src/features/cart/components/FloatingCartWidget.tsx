@@ -15,7 +15,7 @@ import { ShoppingCart, X, Plus, Minus } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { push } from '@/services/navigation';
+import useAppRouter from 'hooks/useAppRouter';
 import useCart from '../hooks/useCart';
 
 const { width } = Dimensions.get('window');
@@ -29,6 +29,7 @@ export default function FloatingCartWidget() {
   const { t } = useLanguage();
   const isRTL = I18nManager.isRTL;
   const { cartItems, updateQuantity, removeItem, getTotal, getTotalItems } = useCart();
+  const { push } = useAppRouter();
 
   useEffect(() => {
     if (cartItems.length > 0) {
