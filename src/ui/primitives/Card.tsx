@@ -8,7 +8,7 @@ interface CardProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export default function Card({ children, style }: CardProps) {
+function Card({ children, style }: CardProps) {
   const { colors } = useTheme();
   return (
     <View
@@ -26,3 +26,5 @@ export default function Card({ children, style }: CardProps) {
     </View>
   );
 }
+
+export default React.memo(Card);

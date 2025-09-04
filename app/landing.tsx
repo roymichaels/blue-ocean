@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Pressable, ScrollView } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Pressable, ScrollView, FlatList } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import { Link } from 'expo-router';
 import { useAppRouter, useCategories, useLanding } from '@/services';
@@ -12,6 +12,7 @@ import Button from '@/ui/primitives/Button';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing } from '@/shared/ui/tokens';
 import { routes } from '@/utils/routes';
+import { Product } from '@/types';
 
 export default function Landing() {
   const { push } = useAppRouter();
@@ -20,6 +21,17 @@ export default function Landing() {
   const featured = data?.featured ?? [];
   const banners = data?.banners ?? [];
   const { data: categories = [] } = useCategories();
+
+  const FeaturedItem = React.memo(({ item }: { item: Product }) => (
+    <View style={{ flex: 1 }}>
+      <ProductCard product={item} />
+    </View>
+  ));
+
+  const renderFeaturedItem = useCallback(
+    ({ item }: { item: Product }) => <FeaturedItem item={item} />,
+    []
+  );
 
   return (
     <ErrorBoundary>
@@ -175,16 +187,19 @@ export default function Landing() {
             }}
           />
           <View style={{ marginTop: spacing.spacer12 }}>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.spacer12, paddingHorizontal: 0 }}>
-              {featured.map((p) => (
-                <View key={p.id} style={{ width: '48%' }}>
-                  <ProductCard key={p.id} product={p} />
-                </View>
-              ))}
-            </View>
-            {featured.length === 0 && (
-              <Text style={{ color: colors.text.secondary }}>No featured items yet.</Text>
-            )}
+            <FlatList
+              data={featured}
+              keyExtractor={(item) => item.id}
+              renderItem={renderFeaturedItem}
+              numColumns={2}
+              columnWrapperStyle={{ gap: spacing.spacer12 }}
+              scrollEnabled={false}
+              ListEmptyComponent={() => (
+                <Text style={{ color: colors.text.secondary }}>
+                  No featured items yet.
+                </Text>
+              )}
+            />
           </View>
         </View>
       </ScrollView>
