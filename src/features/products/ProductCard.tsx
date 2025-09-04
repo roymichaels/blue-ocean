@@ -1,12 +1,13 @@
 import React from 'react';
 import { Pressable, Image, View, StyleSheet, ViewStyle } from 'react-native';
-import { Star } from 'lucide-react-native';
+import { Star, Heart } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
 import { spacing, radius, typography } from '@/ui/tokens';
 import { Skeleton } from '@/ui/primitives';
 import { Product } from '@/types';
+import { useProductCard } from './hooks/useProductCard';
 
 interface ProductCardProps {
   product: Product;
@@ -17,6 +18,12 @@ interface ProductCardProps {
 
 function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) {
   const { colors } = useTheme();
+  const { isInWishlist, toggleWishlist, price, originalPrice } = useProductCard(product);
+
+  const handleWishlistPress = (e: any) => {
+    e.stopPropagation();
+    toggleWishlist();
+  };
 
   return (
     <Pressable
@@ -24,11 +31,24 @@ function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) 
       onPress={onPress}
       style={[styles.card, { backgroundColor: colors.surface.primary }, style]}
     >
-      {product.images && product.images[0] ? (
-        <Image source={{ uri: product.images[0] }} style={styles.image} />
-      ) : (
-        <View style={[styles.image, { backgroundColor: colors.muted }]} />
-      )}
+      <View style={styles.imageWrapper}>
+        {product.images && product.images[0] ? (
+          <Image source={{ uri: product.images[0] }} style={styles.image} />
+        ) : (
+          <View style={[styles.image, { backgroundColor: colors.muted }]} />
+        )}
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleWishlistPress}
+          style={styles.wishlist}
+        >
+          <Heart
+            size={16}
+            color={isInWishlist ? colors.status.error : colors.text.primary}
+            fill={isInWishlist ? colors.status.error : 'transparent'}
+          />
+        </Pressable>
+      </View>
       <View style={styles.content}>
         <Text
           numberOfLines={1}
@@ -36,11 +56,24 @@ function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) 
         >
           {product.name}
         </Text>
-        <Text
-          style={[typography.md, { fontWeight: '600', marginTop: spacing.spacer4, color: colors.text.primary }]}
-        >
-          {product.price}
-        </Text>
+        <View style={styles.priceRow}>
+          {originalPrice && (
+            <Text
+              style={[
+                typography.sm,
+                styles.originalPrice,
+                { color: colors.text.secondary },
+              ]}
+            >
+              {originalPrice}
+            </Text>
+          )}
+          <Text
+            style={[typography.md, { fontWeight: '600', color: colors.text.primary }]}
+          >
+            {price}
+          </Text>
+        </View>
         <View style={styles.ratingRow}>
           <Star size={12} color={colors.gold} />
           <Text
@@ -88,12 +121,29 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     overflow: 'hidden',
   },
+  imageWrapper: {
+    position: 'relative',
+  },
   image: {
     width: '100%',
     aspectRatio: 1,
   },
+  wishlist: {
+    position: 'absolute',
+    top: spacing.spacer4,
+    end: spacing.spacer4,
+  },
   content: {
     padding: spacing.spacer8,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.spacer4,
+  },
+  originalPrice: {
+    textDecorationLine: 'line-through',
+    marginEnd: spacing.spacer4,
   },
   ratingRow: {
     flexDirection: 'row',
