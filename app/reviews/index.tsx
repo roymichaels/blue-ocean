@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import useAppRouter from 'hooks/useAppRouter';
-import DatabaseService from '../../services/database';
+import DatabaseService from '@/services/database';
 import { Product, Review, Order } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';

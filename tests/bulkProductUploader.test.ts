@@ -6,7 +6,7 @@ jest.mock('expo-document-picker', () => ({}));
 
 const uploadMediaMock = jest.fn((uri: string, name: string) => Promise.resolve(`${name}-cid`));
 
-jest.mock('../services/media', () => ({
+jest.mock('@/services/media', () => ({
   __esModule: true,
   default: {
     getInstance: () => ({

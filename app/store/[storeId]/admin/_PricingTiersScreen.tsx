@@ -21,7 +21,7 @@ import {
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
-import DatabaseService from '../../../../services/database';
+import DatabaseService from '@/services/database';
 import { PricingTier } from '../../../../types';
 import { Spinner } from '@/ui/primitives';
 import InfoModal from '../../../../components/InfoModal';

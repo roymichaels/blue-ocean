@@ -16,7 +16,7 @@ import { X, CircleCheck as CheckCircle, Circle, Package, Truck, MapPin, Star, Ph
 import { Order, OrderStatus } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../contexts/CurrencyContext';
-import OrderService from '../services/orders';
+import OrderService from '@/services/orders';
 import useAppRouter from 'hooks/useAppRouter';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '@/features/auth/AuthContext';

@@ -12,7 +12,7 @@ jest.mock(
 
 jest.mock('@/utils/logger', () => ({ errorLog: jest.fn() }));
 
-import { ensureNode } from '../services/waku';
+import { ensureNode } from '@/services/waku';
 import { errorLog } from '@/utils/logger';
 
 describe('ensureNode error logging', () => {

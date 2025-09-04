@@ -14,7 +14,7 @@ import reviewAgent from '../../agents/review-agent';
 import ProductCard from '@/features/products/ProductCard';
 import { Product } from '../../types';
 import Fuse from 'fuse.js';
-import eventBus from '../../services/eventBus';
+import eventBus from '@/services/eventBus';
 
 interface ReviewMap {
   [productId: string]: { rating: number; count: number };

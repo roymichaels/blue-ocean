@@ -1,12 +1,12 @@
 import { Notification } from '../types';
 import { NotificationEvent } from '../types/waku';
-import { assertNearChain } from '../services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   setNotification,
   getNotification,
   listNotifications,
   removeNotification,
-} from '../services/nearNotifications';
+} from '@/services/nearNotifications';
 import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();

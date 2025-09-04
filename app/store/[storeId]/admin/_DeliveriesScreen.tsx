@@ -17,7 +17,7 @@ import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
 import FullScreenMediaViewer from '../../../../components/FullScreenMediaViewer';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import DatabaseService from '../../../../services/database';
+import DatabaseService from '@/services/database';
 import { DeliveryJob, User } from '../../../../types';
 import commonStyles from '@/constants/styles';
 import SmartImage from '../../../../components/SmartImage';

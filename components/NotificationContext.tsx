@@ -8,7 +8,7 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
-import NotificationService from '../services/notification';
+import NotificationService from '@/services/notification';
 import { Notification } from '../types';
 import NotificationPopup from './NotificationPopup';
 import { useAuth } from '@/features/auth/AuthContext';

@@ -10,8 +10,8 @@ insertConfig({
   EXPO_PUBLIC_CONTRACT_ID: 'EQtestcontract',
 });
 
-jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
-jest.mock('../services/nearSettings');
+jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
+jest.mock('@/services/nearSettings');
 const { loadTenantSettings } = require('@/constants/tenant');
 
 var __DEV__ = false;

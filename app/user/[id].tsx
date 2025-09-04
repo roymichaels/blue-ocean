@@ -14,7 +14,7 @@ import useAppRouter from 'hooks/useAppRouter';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
 import { ArrowLeft, User as UserIcon, Mail, Calendar, Shield, MessageCircle } from 'lucide-react-native';
-import DatabaseService from '../../services/database';
+import DatabaseService from '@/services/database';
 import { User } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';

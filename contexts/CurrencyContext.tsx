@@ -1,7 +1,7 @@
 import { errorLog } from '@/utils/logger';
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DatabaseService from '../services/database';
+import DatabaseService from '@/services/database';
 
 interface CurrencyContextType {
   currencySymbol: string;

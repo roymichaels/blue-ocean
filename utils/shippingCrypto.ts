@@ -1,5 +1,5 @@
 import { ShippingAddress } from '../types';
-import { getEd25519KeyPair } from '../services/localIdentity';
+import { getEd25519KeyPair } from '@/services/localIdentity';
 import { deriveSharedKey, aesEncrypt, aesDecrypt, deriveChatSalt } from './encryption';
 import { getPublicKey } from '@noble/ed25519';
 

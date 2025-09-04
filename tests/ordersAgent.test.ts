@@ -3,11 +3,11 @@ import { sha256 } from '@noble/hashes/sha256';
 import { Order } from '../types';
 import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
 import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
-import { getEd25519KeyPair } from '../services/localIdentity';
+import { getEd25519KeyPair } from '@/services/localIdentity';
 
 const mockStore: Record<string, any> = {};
 
-jest.mock('../services/nearOrders', () => ({
+jest.mock('@/services/nearOrders', () => ({
   setOrder: jest.fn(async (o: any) => {
     mockStore[o.id] = o;
   }),
@@ -26,16 +26,16 @@ jest.mock('../agents/settings-agent', () => ({
   default: { getInstance: () => ({ getAdmins: getAdminsMock }) },
 }));
 
-jest.mock('../services/nearContract', () => ({
+jest.mock('@/services/nearContract', () => ({
   deployOrderPayment: jest.fn().mockResolvedValue({ contractAddress: 'escrow1', txHash: 'tx1' }),
   releasePayment: jest.fn().mockResolvedValue('hash-release'),
   refundPayment: jest.fn().mockResolvedValue('hash-refund'),
 }));
 
 jest.mock('@/features/stores/services/sellerRegistry');
-jest.mock('../services/localIdentity');
-jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
-jest.mock('../services/eventBus', () => ({ publish: jest.fn() }));
+jest.mock('@/services/localIdentity');
+jest.mock('@/services/eventLog', () => ({ logOrderEvent: jest.fn() }));
+jest.mock('@/services/eventBus', () => ({ publish: jest.fn() }));
 
 jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('seller'),
@@ -53,7 +53,7 @@ const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
 const ordersAgent = require('../agents/orders-agent').default;
 const notificationsAgent = require('../agents/notifications-agent');
 const nearAuth = require('@/features/auth/services/nearAuth');
-const eventBus = require('../services/eventBus');
+const eventBus = require('@/services/eventBus');
 
 describe('ordersAgent.add', () => {
   it('encrypts shipping address and persists new fields', async () => {

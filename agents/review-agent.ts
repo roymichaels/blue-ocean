@@ -1,5 +1,5 @@
 import { Review } from '../types';
-import { assertNearChain } from '../services/chain';
+import { assertNearChain } from '@/services/chain';
 import { addReview, getReviews } from '@/features/reviews/services/nearReviews';
 import ordersAgent from './orders-agent';
 import { selectProduct } from './products-agent';

@@ -6,7 +6,7 @@ import useAppRouter from 'hooks/useAppRouter';
 import AppShell from '../components/layout/AppShell';
 import Section from '../components/ui/Section';
 import GoldDivider from '../components/ui/GoldDivider';
-import DatabaseService from '../services/database';
+import DatabaseService from '@/services/database';
 import { Product, HeroBanner } from '../types';
 import { useCategories } from '@/services';
 import ProductCard from '@/features/products/ProductCard';

@@ -44,7 +44,7 @@ import commonStyles from '@/constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import SmartImage from '../../components/SmartImage';
-import eventBus from '../../services/eventBus';
+import eventBus from '@/services/eventBus';
 import { useProduct } from '@/features/products/hooks';
 import useCategories from 'hooks/useCategories';
 import usePricingTiers from 'hooks/usePricingTiers';

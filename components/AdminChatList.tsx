@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, MessageCircle, Send, X } from 'lucide-react-native';
 import { ChatRoom, ChatMessage } from '../types';
-import DatabaseService from '../services/database';
+import DatabaseService from '@/services/database';
 import { useAuth } from '@/features/auth/AuthContext';
 
 interface Props {

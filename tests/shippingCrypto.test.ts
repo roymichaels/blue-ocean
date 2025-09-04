@@ -1,8 +1,8 @@
 import * as nacl from 'tweetnacl';
 import { encryptShippingInfo, decryptShippingInfo } from '../utils/shippingCrypto';
-import { getEd25519KeyPair } from '../services/localIdentity';
+import { getEd25519KeyPair } from '@/services/localIdentity';
 
-jest.mock('../services/localIdentity');
+jest.mock('@/services/localIdentity');
 
 const seller = nacl.sign.keyPair();
 const sellerPub = Buffer.from(seller.publicKey).toString('hex');

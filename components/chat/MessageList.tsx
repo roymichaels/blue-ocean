@@ -9,7 +9,7 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { ChatMessage } from '../../types';
-import eventBus from '../../services/eventBus';
+import eventBus from '@/services/eventBus';
 
 interface Props {
   messages: ChatMessage[];

@@ -2,30 +2,30 @@ import { uuid } from '../utils/uuid';
 import { Order, OrderStatus, Notification, OrderTrackingStep } from '../types';
 import nearAuth from '@/features/auth/services/nearAuth';
 import notificationsAgent from './notifications-agent';
-import { assertNearChain } from '../services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   setOrder,
   getOrder,
   listOrders,
   removeOrder,
   listOrdersBySeller,
-} from '../services/nearOrders';
+} from '@/services/nearOrders';
 import storesAgent from './stores-agent';
 import SettingsAgent from './settings-agent';
 import {
   deployOrderPayment,
   releasePayment,
   refundPayment,
-} from '../services/nearContract';
+} from '@/services/nearContract';
 import productsAgent from './products-agent';
 import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
 
 assertNearChain();
 import { encryptShippingInfo } from '../utils/shippingCrypto';
 import { sha256 } from '@noble/hashes/sha256';
-import { logOrderEvent } from '../services/eventLog';
+import { logOrderEvent } from '@/services/eventLog';
 import ensureNearWallet from '../utils/ensureNearWallet';
-import eventBus from '../services/eventBus';
+import eventBus from '@/services/eventBus';
 import { errorLog, warnLog } from '../utils/logger';
 import {
   LightNode,

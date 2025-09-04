@@ -1,7 +1,7 @@
 import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../utils/appConfig';
-import { fetchSettings } from '../services/nearSettings';
+import { fetchSettings } from '@/services/nearSettings';
 
 export let TENANT = 'blue-ocean';
 

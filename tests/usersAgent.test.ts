@@ -11,13 +11,13 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   signIn: jest.fn(),
 }));
 
-jest.mock('../services/localIdentity', () => ({
+jest.mock('@/services/localIdentity', () => ({
   getPublicKeyHex: () => 'chat_pub',
 }));
 
-jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
+jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
 import { __clear } from './nearKvMock';
-import { setAdmins } from '../services/nearSettings';
+import { setAdmins } from '@/services/nearSettings';
 
 describe('UsersAgent NEAR integration', () => {
   beforeEach(() => {

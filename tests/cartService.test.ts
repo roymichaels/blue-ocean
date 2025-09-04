@@ -1,6 +1,6 @@
 import CartService from '@/features/cart/services/cart';
 import cartAgent from '../agents/cart-agent';
-import DatabaseService from '../services/database';
+import DatabaseService from '@/services/database';
 import nearAuth from '@/features/auth/services/nearAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product } from '../types';
@@ -19,7 +19,7 @@ jest.mock('../agents/cart-agent', () => ({
   selectCartItem: jest.fn(),
 }));
 
-jest.mock('../services/database', () => ({
+jest.mock('@/services/database', () => ({
   __esModule: true,
   default: { getInstance: jest.fn() },
 }));
