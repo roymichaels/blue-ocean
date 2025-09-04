@@ -22,5 +22,7 @@ export function useLanding() {
       return { featured: products.slice(0, 6), banners };
     },
     initialData: { featured: [], banners: [] },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }

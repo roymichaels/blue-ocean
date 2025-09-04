@@ -15,6 +15,8 @@ export function useCategoryDetail(id?: string) {
     queryKey: ['category', id],
     queryFn: () => (id && getCategory ? getCategory(id) : Promise.resolve(null)),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
   const mutation = useMutation({

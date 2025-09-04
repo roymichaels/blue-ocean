@@ -12,5 +12,7 @@ export function useCategories() {
     queryKey: ['categories'],
     queryFn: () => (listCategories ? listCategories() : Promise.resolve([])),
     select: (data) => data ?? [],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }
