@@ -4,13 +4,13 @@ import { WalletProvider } from './WalletProvider';
 import { WakuProvider } from '@/contexts/WakuContext';
 import { QueryClient } from '@tanstack/react-query';
 import { CheckedQueryClientProvider } from './CheckedQueryClientProvider';
-import GlobalErrorBoundary from '@/components/GlobalErrorBoundary';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function AppProviders({ children }: React.PropsWithChildren) {
   const [queryClient] = React.useState(() => new QueryClient());
 
   return (
-    <GlobalErrorBoundary>
+    <ErrorBoundary>
       <ThemeProvider>
         <WalletProvider>
           <CheckedQueryClientProvider client={queryClient}>
@@ -18,6 +18,6 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
           </CheckedQueryClientProvider>
         </WalletProvider>
       </ThemeProvider>
-    </GlobalErrorBoundary>
+    </ErrorBoundary>
   );
 }
