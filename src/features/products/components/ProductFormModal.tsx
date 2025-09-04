@@ -36,7 +36,7 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
 import { useAccountId } from '../../auth/services/nearAuth';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 
 interface ProductFormModalProps {
   visible: boolean;

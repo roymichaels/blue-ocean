@@ -6,7 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Truck } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Order, CartItem } from '../../types';

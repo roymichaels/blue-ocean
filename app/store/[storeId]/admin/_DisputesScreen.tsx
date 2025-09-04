@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import ordersAgent from '../../../../agents/orders-agent';
 import { Order } from '../../../../types';
 import DisputeEvidence from '../../../../components/DisputeEvidence';

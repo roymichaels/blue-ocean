@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import useRequirePlatformAdmin from '../../hooks/useRequirePlatformAdmin';
+import { useRequirePlatformAdmin } from '@/services';
 
 export default function AdminIndex() {
   useRequirePlatformAdmin();

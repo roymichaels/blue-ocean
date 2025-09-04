@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from './useAppRouter';
 import { useAuth } from '@/features/auth/AuthContext';
 
-export default function useRequirePlatformAdmin() {
+export function useRequirePlatformAdmin() {
   const { user } = useAuth();
   const { replace } = useAppRouter();
 
@@ -12,4 +12,6 @@ export default function useRequirePlatformAdmin() {
     }
   }, [user, replace]);
 }
+
+export default useRequirePlatformAdmin;
 

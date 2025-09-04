@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { useLanguage } from '@/ui/ThemeProvider';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import Button from '@/ui/primitives/Button';
 
 export default function CTABecomeSeller() {

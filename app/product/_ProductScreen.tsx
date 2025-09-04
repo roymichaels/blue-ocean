@@ -13,7 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter, useReviews } from '@/services';
 import {
   ArrowLeft,
   Heart,
@@ -46,9 +46,7 @@ import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import SmartImage from '../../components/SmartImage';
 import eventBus from '@/services/eventBus';
 import { useProduct } from '@/features/products/hooks';
-import useCategories from 'hooks/useCategories';
 import { useProductPricing } from '@/services/useProductPricing';
-import useReviews from 'hooks/useReviews';
 import { useProductMedia } from '@/services/useProductMedia';
 
 
@@ -59,7 +57,6 @@ const COVER_SIZE = Math.min(width, 540);
 export default function ProductDetailScreen({ id }: { id: string }) {
   const { push, back } = useAppRouter();
   const [product, setProduct] = useState<Product | null>(null);
-  const categories = useCategories();
   const [quantity, setQuantity] = useState(1);
   const { effectivePrice, totalPrice, currentPricingTier, showTieredPricing } =
     useProductPricing(product, quantity);

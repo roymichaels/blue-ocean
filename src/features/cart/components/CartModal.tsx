@@ -45,7 +45,7 @@ import commonStyles from '@/constants/styles';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNotifications } from '@/components/NotificationContext';
 import { useLanguage } from '@/ui/ThemeProvider';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 

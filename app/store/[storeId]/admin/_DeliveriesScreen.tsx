@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
 import FullScreenMediaViewer from '../../../../components/FullScreenMediaViewer';
 import { useAuth } from '@/features/auth/AuthContext';

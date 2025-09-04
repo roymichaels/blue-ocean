@@ -15,7 +15,7 @@ import { MessageCircle, X } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
-import useChatRooms from '../hooks/useChatRooms';
+import { useChatRooms } from '@/services';
 import useChatMessages from '@features/chat/services/useChatMessages';
 import { useWaku } from '@/contexts/WakuContext';
 import { ChatMessage, ChatRoom } from '../types';

@@ -7,7 +7,13 @@ jest.mock('expo-router', () => ({
   router: { replace: jest.fn() },
 }));
 
-jest.mock('hooks/useRequirePlatformAdmin', () => jest.fn());
+jest.mock('@/services', () => {
+  const { router } = require('expo-router');
+  return {
+    useRequirePlatformAdmin: jest.fn(),
+    useAppRouter: () => ({ replace: router.replace, push: jest.fn(), back: jest.fn() }),
+  };
+});
 
 describe('Admin store impersonation', () => {
   const { useLocalSearchParams, router } = require('expo-router');

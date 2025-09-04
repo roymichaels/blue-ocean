@@ -17,7 +17,7 @@ import { Order, OrderStatus } from '../types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '../contexts/CurrencyContext';
 import OrderService from '@/services/orders';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';

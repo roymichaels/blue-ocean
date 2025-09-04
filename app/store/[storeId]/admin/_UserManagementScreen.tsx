@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { ArrowLeft, Search, User, Mail, Calendar, Shield, UserCheck, UserX, Filter, X, Save, ChevronDown } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';

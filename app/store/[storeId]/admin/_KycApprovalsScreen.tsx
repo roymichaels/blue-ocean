@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import { ArrowLeft, CircleCheck as CheckCircle, Circle as XCircle, Clock, User, Mail, FileText, Calendar } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';

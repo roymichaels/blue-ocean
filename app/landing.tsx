@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Pressable, ScrollView } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import { Link } from 'expo-router';
-import useAppRouter from 'hooks/useAppRouter';
+import { useAppRouter } from '@/services';
 import AppShell from '../components/layout/AppShell';
 import Divider from '@/ui/primitives/Divider';
 import DatabaseService from '@/services/database';
