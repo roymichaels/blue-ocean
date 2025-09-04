@@ -1,12 +1,12 @@
 import nearAuth from '@/features/auth/services/nearAuth';
-import { assertNearChain } from '../services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   getSetting,
   setSetting,
   getAdmins as fetchAdmins,
   setAdmins as storeAdmins,
   subscribeToSettingsWrites,
-} from '../services/nearSettings';
+} from '@/services/nearSettings';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
 

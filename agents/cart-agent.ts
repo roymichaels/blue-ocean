@@ -1,5 +1,5 @@
 import { CartItem } from '../types';
-import { assertNearChain } from '../services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
   setCartItem,
   getCartItem,

@@ -1,4 +1,4 @@
-import { getEd25519KeyPair } from '../services/localIdentity';
+import { getEd25519KeyPair } from '@/services/localIdentity';
 import { deriveSharedKey, aesEncrypt, aesDecrypt, deriveChatSalt } from './encryption';
 
 // roomKeys stores derived AES keys per chat room. To keep memory usage bounded

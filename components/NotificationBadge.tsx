@@ -1,7 +1,7 @@
 import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import NotificationService from '../services/notification';
+import NotificationService from '@/services/notification';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '@/features/auth/AuthContext';
 import { spacing } from '@/shared/ui/tokens';

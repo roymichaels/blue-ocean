@@ -1,11 +1,11 @@
-import OrderService from '../services/orders';
-import { deployOrderPayment } from '../services/nearContract';
+import OrderService from '@/services/orders';
+import { deployOrderPayment } from '@/services/nearContract';
 import { CartItem, ShippingAddress } from '../types';
 
 const mockStore: Record<string, any> = {};
 const mockProducts: Record<string, any> = {};
 
-jest.mock('../services/nearOrders', () => ({
+jest.mock('@/services/nearOrders', () => ({
   setOrder: jest.fn(async (o: any) => { mockStore[o.id] = o; }),
   getOrder: jest.fn(async (id: string) => mockStore[id] || null),
   listOrders: jest.fn().mockResolvedValue([]),
@@ -13,9 +13,9 @@ jest.mock('../services/nearOrders', () => ({
   listOrdersBySeller: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('../services/eventBus', () => ({ publish: jest.fn() }));
+jest.mock('@/services/eventBus', () => ({ publish: jest.fn() }));
 
-jest.mock('../services/nearContract', () => ({
+jest.mock('@/services/nearContract', () => ({
   deployOrderPayment: jest
     .fn()
     .mockImplementation(async (amount: number) => ({
@@ -41,7 +41,7 @@ jest.mock('@/features/products/services/nearProducts', () => ({
   }),
 }));
 
-jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
+jest.mock('@/services/eventLog', () => ({ logOrderEvent: jest.fn() }));
 
 jest.mock('../agents/orders-agent', () => ({
   subscribe: jest.fn(),
@@ -126,7 +126,7 @@ describe('multi-seller checkout flow', () => {
       true,
     );
 
-    const eventBus = require('../services/eventBus');
+    const eventBus = require('@/services/eventBus');
     expect(eventBus.publish).toHaveBeenCalledTimes(4);
     const events = eventBus.publish.mock.calls.map((c: any) => c[1]);
     expect(events).toEqual([

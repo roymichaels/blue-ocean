@@ -1,6 +1,6 @@
 import { errorLog } from '@/utils/logger';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import DatabaseService from '../services/database';
+import DatabaseService from '@/services/database';
 import { ChatMessage, ChatRoom, User } from '../types';
 import { useWaku } from '@/contexts/WakuContext';
 

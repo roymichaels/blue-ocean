@@ -6,7 +6,7 @@ jest.mock('../contexts/ThemeContext', () => ({
   useTheme: () => ({ colors: { text: { primary: '#000' } } }),
 }));
 
-jest.mock('../services/nearOrders', () => ({
+jest.mock('@/services/nearOrders', () => ({
   listOrdersBySeller: jest.fn(async () => [
     { id: '1', total: 10 } as any,
     { id: '2', total: 5 } as any,

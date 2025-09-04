@@ -20,16 +20,16 @@ import useChatMessages from '../hooks/useChatMessages';
 import { useWaku } from '@/contexts/WakuContext';
 import { ChatMessage, ChatRoom } from '../types';
 import SettingsAgent from '../agents/settings-agent';
-import DatabaseService from '../services/database';
+import DatabaseService from '@/services/database';
 import RoomList from './chat/RoomList';
 import MessageList from './chat/MessageList';
 import MessageInput from './chat/MessageInput';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import MediaService from '../services/media';
-import PinataService from '../services/pinata';
+import MediaService from '@/services/media';
+import PinataService from '@/services/pinata';
 import { decryptMessage } from '../utils/chatCrypto';
 import chatAgent from '../agents/chat-agent';
-import { isChatConfigured } from '../services/chatConfig';
+import { isChatConfigured } from '@/services/chatConfig';
 
 function ChatWidgetInner() {
   const CHAT_ONBOARDED_KEY = 'chat_onboarded';

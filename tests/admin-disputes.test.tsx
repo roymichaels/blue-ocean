@@ -1,6 +1,6 @@
-import OrderService from '../services/orders';
+import OrderService from '@/services/orders';
 import ordersAgent from '../agents/orders-agent';
-import { adminResolve } from '../services/nearContract';
+import { adminResolve } from '@/services/nearContract';
 
 jest.mock('../agents/orders-agent', () => ({
   get: jest.fn(),
@@ -8,11 +8,11 @@ jest.mock('../agents/orders-agent', () => ({
   subscribe: jest.fn(),
 }));
 
-jest.mock('../services/nearContract', () => ({
+jest.mock('@/services/nearContract', () => ({
   adminResolve: jest.fn().mockResolvedValue('tx'),
 }));
 
-jest.mock('../services/eventLog', () => ({ logOrderEvent: jest.fn() }));
+jest.mock('@/services/eventLog', () => ({ logOrderEvent: jest.fn() }));
 jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('testadmin.near'),
   signIn: jest.fn(),

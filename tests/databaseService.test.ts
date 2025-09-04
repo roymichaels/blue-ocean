@@ -1,4 +1,4 @@
-import DatabaseService from '../services/database';
+import DatabaseService from '@/services/database';
 import productsAgent from '../agents/products-agent';
 import categoriesAgent from '../agents/categories-agent';
 import storesAgent from '../agents/stores-agent';

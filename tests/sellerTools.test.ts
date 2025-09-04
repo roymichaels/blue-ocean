@@ -1,10 +1,10 @@
 import * as nacl from 'tweetnacl';
 import { encryptShippingInfo } from '../utils/shippingCrypto';
 import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
-import { getEd25519KeyPair } from '../services/localIdentity';
+import { getEd25519KeyPair } from '@/services/localIdentity';
 import { Order } from '../types';
 
-jest.mock('../services/localIdentity');
+jest.mock('@/services/localIdentity');
 
 describe('sellerTools.decryptOrderShipping', () => {
   it('decrypts shipping info using seller private key', async () => {

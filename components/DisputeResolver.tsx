@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import Button from '@/ui/primitives/Button';
-import OrderService from '../services/orders';
+import OrderService from '@/services/orders';
 
 interface Props {
   orderId: string;

@@ -3,7 +3,7 @@ import { View, FlatList } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import Button from '@/ui/primitives/Button';
 import { RoadmapProvider, useRoadmap } from '../../contexts/RoadmapContext';
-import RoadmapService from '../../services/roadmap';
+import RoadmapService from '@/services/roadmap';
 import type { RoadmapTask } from '../../types';
 import { spacing, typography } from '@/constants/styles';
 

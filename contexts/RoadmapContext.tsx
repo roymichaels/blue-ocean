@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Roadmap, RoadmapTask } from '../types';
-import RoadmapService from '../services/roadmap';
+import RoadmapService from '@/services/roadmap';
 
 interface RoadmapContextValue {
   activeRoadmap: Roadmap | null;

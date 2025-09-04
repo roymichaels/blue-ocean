@@ -44,7 +44,7 @@ jest.mock('@/features/auth/AuthModalContext', () => ({
   useAuthModal: () => ({ openAuthModal: jest.fn() }),
 }));
 
-jest.mock('../services/database', () => ({
+jest.mock('@/services/database', () => ({
   getInstance: () => ({
     getProducts: jest.fn(async () => []),
     getChatRooms: jest.fn(async () => []),
@@ -54,7 +54,7 @@ jest.mock('../services/database', () => ({
   }),
 }));
 
-jest.mock('../services/notification', () => ({
+jest.mock('@/services/notification', () => ({
   getInstance: () => ({ getNotifications: jest.fn(async () => []) }),
 }));
 

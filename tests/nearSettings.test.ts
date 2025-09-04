@@ -1,6 +1,6 @@
-import { fetchSettings } from '../services/nearSettings';
+import { fetchSettings } from '@/services/nearSettings';
 
-jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
+jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
 
 const { setValue, __clear } = require('./nearKvMock');
 

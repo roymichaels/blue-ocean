@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import DatabaseService from '../services/database';
+import DatabaseService from '@/services/database';
 import { ChatRoom } from '../types';
 import { normalizeMessage } from '../lib/normalizeMessage';
 

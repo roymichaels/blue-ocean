@@ -16,7 +16,7 @@ import useAppRouter from 'hooks/useAppRouter';
 import { ArrowLeft, Search, User, Mail, Calendar, Shield, UserCheck, UserX, Filter, X, Save, ChevronDown } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import DatabaseService from '../../../../services/database';
+import DatabaseService from '@/services/database';
 import { User as UserType, CustomerTier, UserRole } from '../../../../types';
 import { useNotifications } from '../../../../components/NotificationContext';
 import commonStyles from '@/constants/styles';

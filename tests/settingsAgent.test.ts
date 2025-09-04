@@ -2,12 +2,12 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: () => 'addr_admin',
   signIn: jest.fn(),
 }));
-jest.mock('../services/nearKvStore', () => require('./nearKvMock'));
-jest.mock('../services/nearSettings');
+jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
+jest.mock('@/services/nearSettings');
 
 import SettingsAgent from '../agents/settings-agent';
 import { __clear } from './nearKvMock';
-import * as nearSettings from '../services/nearSettings';
+import * as nearSettings from '@/services/nearSettings';
 const directSetAdmins = nearSettings.setAdmins;
 const __store = (nearSettings as any).__store;
 let subscribed: (evt: any) => void;

@@ -13,7 +13,7 @@ import productsAgent, {
 import ordersAgent from '../agents/orders-agent';
 import SettingsAgent from '../agents/settings-agent';
 import reviewAgent from '../agents/review-agent';
-import chain from '../services/chain';
+import chain from '@/services/chain';
 
 let listAllReviews: (() => Promise<Review[]>) | undefined;
 if (chain === 'near') {

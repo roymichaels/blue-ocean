@@ -10,7 +10,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '@/features/auth/AuthContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
-import OrderService from '../../services/orders';
+import OrderService from '@/services/orders';
 import { Order, OrderStatus, ShippingAddress } from '../../types';
 import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
 import nearAuth from '@/features/auth/services/nearAuth';

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import chain from '../services/chain';
+import chain from '@/services/chain';
 import { Order } from '../types';
 
 let listOrdersBySeller:
   | ((storeId: string, sellerId: string) => Promise<Order[]>)
   | undefined;
 if (chain === 'near') {
-  ({ listOrdersBySeller } = require('../services/nearOrders'));
+  ({ listOrdersBySeller } = require('@/services/nearOrders'));
 }
 
 interface Props {
