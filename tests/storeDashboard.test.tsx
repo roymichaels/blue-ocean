@@ -22,7 +22,7 @@ jest.mock('@/features/products/services/nearProducts', () => ({ listProducts: je
 
 jest.mock('@/features/auth/AuthContext', () => ({ useAuth: jest.fn() }));
 
-jest.mock('../components/OrderRevenueMetrics', () => ({
+jest.mock('@/features/stores/components/OrderRevenueMetrics', () => ({
   __esModule: true,
   default: () => React.createElement('OrderRevenueMetrics', null, 'metrics'),
 }));
