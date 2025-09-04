@@ -1,8 +1,8 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
-import { useTheme } from '@/ui/ThemeProvider';
 import Button from '@/ui/primitives/Button';
+import { spacing, radius, colors } from '@/shared/ui/tokens';
 
 export type AdminListItem = {
   id: string;
@@ -12,34 +12,50 @@ export type AdminListItem = {
 };
 
 export default function AdminList({ items, emptyText = 'Nothing yet.' }: { items: AdminListItem[]; emptyText?: string }) {
-  const { colors } = useTheme();
   if (!items.length) {
     return (
-      <View style={{ padding: 16 }}>
-        <Text style={{ color: colors.text.secondary }}>{emptyText}</Text>
+      <View style={styles.container}>
+        <Text style={styles.emptyText}>{emptyText}</Text>
       </View>
     );
   }
   return (
-    <View style={{ padding: 16 }}>
+    <View style={styles.container}>
       {items.map((it) => (
         <Button
           key={it.id}
           onPress={it.onPress}
-          style={{
-            marginBottom: 10,
-            alignItems: 'flex-start',
-            backgroundColor: colors.surface.primary,
-          }}
+          style={styles.itemButton}
           accessibilityRole="button"
         >
-          <Text style={{ color: colors.text.primary, fontWeight: '600' }}>{it.title}</Text>
-          {it.subtitle ? (
-            <Text style={{ color: colors.text.secondary, marginTop: 4 }}>{it.subtitle}</Text>
-          ) : null}
+          <Text style={styles.title}>{it.title}</Text>
+          {it.subtitle ? <Text style={styles.subtitle}>{it.subtitle}</Text> : null}
         </Button>
       ))}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: spacing.spacer16,
+  },
+  emptyText: {
+    color: colors.text.secondary,
+  },
+  itemButton: {
+    marginBottom: spacing.spacer12,
+    alignItems: 'flex-start',
+    backgroundColor: colors.surface.primary,
+    borderRadius: radius.md,
+  },
+  title: {
+    color: colors.text.primary,
+    fontWeight: '600',
+  },
+  subtitle: {
+    color: colors.text.secondary,
+    marginTop: spacing.spacer4,
+  },
+});
 
