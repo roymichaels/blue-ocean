@@ -74,6 +74,10 @@ config.resolver.unstable_enablePackageExports = true;
     __dirname,
     'node_modules/multiformats/dist/src/hashes/sha2.js'
   ),
+  'multiformats/hashes/sha2-browser': path.resolve(
+    __dirname,
+    'node_modules/multiformats/dist/src/hashes/sha2-browser.js'
+  ),
   multiformats: path.resolve(
     __dirname,
     'node_modules/multiformats/dist/src/index.js'
