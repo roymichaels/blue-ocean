@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
 import useAppRouter from 'hooks/useAppRouter';
 import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Truck } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import { Order } from '../../types';
+import { Order, CartItem } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import AppShell from '../../components/layout/AppShell';
 import ErrorBoundary from '@/shared/ErrorBoundary';
@@ -21,6 +21,20 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useOrders } from '@/services';
 import { requireEnv } from '@/services/config';
+
+const OrderItem = React.memo(({ item }: { item: CartItem }) => {
+  const { t } = useLanguage();
+  const { colors } = useTheme();
+
+  return (
+    <Text style={[styles.itemText, { color: colors.text.secondary }]}>
+      {t('orders.itemQuantity', {
+        name: item.product.name,
+        quantity: item.quantity,
+      })}
+    </Text>
+  );
+});
 
 
 
@@ -92,27 +106,36 @@ export default function OrdersScreen() {
 
   const userOrders = orders.filter((o) => o.userId === user?.id);
 
-  const renderOrder = ({ item: order }: { item: Order }) => (
+
+  const renderOrder = useCallback(
+    ({ item: order }: { item: Order }) => (
     <TouchableOpacity
-      style={[styles.orderCard, {
-        backgroundColor: colors.surface.primary,
-        borderColor: colors.border.primary
-      }]}
+      style={[
+        styles.orderCard,
+        {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+        },
+      ]}
       onPress={() => openOrderTracking(order)}
     >
       <View style={[styles.orderHeader, { borderBottomColor: colors.border.secondary }]}>
         <View style={styles.orderInfo}>
-          <Text style={[styles.orderNumber, { color: colors.text.primary }]}> 
+          <Text style={[styles.orderNumber, { color: colors.text.primary }]}>
             {t('orders.orderNumber', { id: order.id.slice(-6) })}
           </Text>
-          <Text style={[styles.orderDate, { color: colors.text.secondary }]}>{formatDate(order.createdAt)}</Text>
+          <Text style={[styles.orderDate, { color: colors.text.secondary }]}>
+            {formatDate(order.createdAt)}
+          </Text>
         </View>
         <View style={styles.orderStatus}>
           {getOrderStatusIcon(order.status)}
-          <Text style={[
-            styles.statusText,
-            { color: getOrderStatusColor(order.status) }
-          ]}>
+          <Text
+            style={[
+              styles.statusText,
+              { color: getOrderStatusColor(order.status) },
+            ]}
+          >
             {getOrderStatusText(order.status)}
           </Text>
         </View>
@@ -123,9 +146,7 @@ export default function OrdersScreen() {
           {t('orders.itemsLabel')}
         </Text>
         {order.items.slice(0, 2).map((item, index) => (
-          <Text key={index} style={[styles.itemText, { color: colors.text.secondary }]}>
-            {t('orders.itemQuantity', { name: item.product.name, quantity: item.quantity })}
-          </Text>
+          <OrderItem key={index} item={item} />
         ))}
         {order.items.length > 2 && (
           <Text style={[styles.moreItems, { color: colors.gold }]}>
@@ -140,14 +161,26 @@ export default function OrdersScreen() {
           {order.total.toFixed(2)}
         </Text>
         <View style={styles.viewDetails}>
-          <Text style={[styles.viewDetailsText, { color: colors.gold }]}> 
+          <Text style={[styles.viewDetailsText, { color: colors.gold }]}>
             {t('orders.details')}
           </Text>
           <ChevronLeft size={16} color={colors.gold} />
         </View>
       </View>
     </TouchableOpacity>
-  );
+  ),
+  [
+    colors,
+    t,
+    currencySymbol,
+    openOrderTracking,
+    getOrderStatusColor,
+    getOrderStatusIcon,
+    getOrderStatusText,
+    formatDate,
+  ],
+);
+
 
   const renderEmpty = () => (
     isLoggedIn ? (
