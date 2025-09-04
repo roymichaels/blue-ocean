@@ -8,32 +8,28 @@ import { AuthProvider } from '@/features/auth/AuthContext';
 import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
-import { AppProviders, ThemeProvider, LanguageProvider } from '@/providers';
+import AppProviders from '@/providers';
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AppInfoProvider>
-          <ThemeProvider>
-            <LanguageProvider>
-              <AppProviders>
-                <ConfigProvider>
-                  <AuthProvider>
-                    <AuthModalProvider>
-                      <CurrencyProvider>
-                        <NotificationProvider>
-                          <React.Suspense fallback={null}>
-                            <Slot />
-                          </React.Suspense>
-                        </NotificationProvider>
-                      </CurrencyProvider>
-                    </AuthModalProvider>
-                  </AuthProvider>
-                </ConfigProvider>
-              </AppProviders>
-            </LanguageProvider>
-          </ThemeProvider>
+          <AppProviders>
+            <ConfigProvider>
+              <AuthProvider>
+                <AuthModalProvider>
+                  <CurrencyProvider>
+                    <NotificationProvider>
+                      <React.Suspense fallback={null}>
+                        <Slot />
+                      </React.Suspense>
+                    </NotificationProvider>
+                  </CurrencyProvider>
+                </AuthModalProvider>
+              </AuthProvider>
+            </ConfigProvider>
+          </AppProviders>
         </AppInfoProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

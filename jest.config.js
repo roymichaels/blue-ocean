@@ -41,6 +41,7 @@ module.exports = {
     '<rootDir>/tests/i18n-offline.test.ts',
     '<rootDir>/tests/smoke.test.ts',
     '<rootDir>/tests/navigation.test.ts',
+    '<rootDir>/tests/CheckedQueryClientProvider.test.tsx',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],
