@@ -1,4 +1,3 @@
-import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,25 +7,24 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import useAppRouter from 'hooks/useAppRouter';
-import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Calendar, Truck } from 'lucide-react-native';
+import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Truck } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
-import OrderService from '../../services/orders';
 import { Order } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import AppShell from '../../components/layout/AppShell';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import EmptyState from '@/shared/ui/EmptyState';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
-import InfoModal from '../../components/InfoModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import commonStyles from '@/constants/styles';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useOrders } from '@/services';
+import { requireEnv } from '@/services/config';
 
 
 
 export default function OrdersScreen() {
-  const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderTracking, setShowOrderTracking] = useState(false);
   const { openAuthModal } = useAuthModal();
@@ -35,48 +33,14 @@ export default function OrdersScreen() {
   const { t, currentLanguage } = useLanguage();
   const { currencySymbol } = useCurrency();
   const { push, back } = useAppRouter();
-
-  // Modal states
-  const [infoModal, setInfoModal] = useState({
-    visible: false,
-    title: '',
-    message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
-  });
+  const storeId = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
+  const { data: orders = [], refetch } = useOrders(storeId);
 
   useEffect(() => {
     if (isLoggedIn && user) {
-      loadOrders();
+      refetch();
     }
-  }, [isLoggedIn, user]);
-
-  useEffect(() => {
-    const orderService = OrderService.getInstance();
-    const handleOrderUpdate = () => {
-      if (isLoggedIn && user) {
-        loadOrders();
-      }
-    };
-
-    orderService.addListener(handleOrderUpdate);
-    return () => orderService.removeListener(handleOrderUpdate);
-  }, [isLoggedIn, user]);
-
-  const loadOrders = async () => {
-    try {
-      const orderService = OrderService.getInstance();
-      const userOrders = await orderService.getUserOrders(user?.id || '');
-      setOrders(userOrders);
-    } catch (error) {
-      errorLog('Error loading orders:', error);
-      setInfoModal({
-        visible: true,
-        title: t('common.error'),
-        message: t('orders.loadFailed'),
-        type: 'error'
-      });
-    }
-  };
+  }, [isLoggedIn, user, refetch]);
 
   const openOrderTracking = (order: Order) => {
     setSelectedOrder(order);
@@ -125,6 +89,8 @@ export default function OrdersScreen() {
   const handleLogin = () => {
     openAuthModal();
   };
+
+  const userOrders = orders.filter((o) => o.userId === user?.id);
 
   const renderOrder = ({ item: order }: { item: Order }) => (
     <TouchableOpacity
@@ -217,13 +183,13 @@ export default function OrdersScreen() {
         <View style={commonStyles.spacer24} />
       </View>
       <FlatList
-        data={isLoggedIn ? orders : []}
+        data={isLoggedIn ? userOrders : []}
         keyExtractor={(order) => order.id}
         renderItem={renderOrder}
         contentContainerStyle={[
           styles.content,
           { flexGrow: 1 },
-          isLoggedIn && orders.length > 0 && styles.ordersList
+          isLoggedIn && userOrders.length > 0 && styles.ordersList
         ]}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
@@ -235,15 +201,6 @@ export default function OrdersScreen() {
         onClose={() => setShowOrderTracking(false)}
         order={selectedOrder}
       />
-
-      {/* Info Modal */}
-        <InfoModal
-          visible={infoModal.visible}
-          title={infoModal.title}
-          message={infoModal.message}
-          type={infoModal.type}
-          onClose={() => setInfoModal({...infoModal, visible: false})}
-        />
       </AppShell>
     </ErrorBoundary>
   );
