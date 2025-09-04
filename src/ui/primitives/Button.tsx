@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import {
   Pressable,
   Text,
@@ -19,42 +19,52 @@ interface ButtonProps extends PressableProps {
   children?: React.ReactNode;
 }
 
-export default function Button({
-  title,
-  disabled,
-  style,
-  textStyle,
-  loading = false,
-  children,
-  ...rest
-}: ButtonProps) {
-  const { colors } = useTheme();
-  const isDisabled = disabled || loading;
-  const combinedStyle =
-    typeof style === 'function'
-      ? (state: PressableStateCallbackType) => [
-          styles.button(colors),
-          isDisabled && styles.disabled,
-          style(state),
-        ]
-      : [styles.button(colors), isDisabled && styles.disabled, style];
+const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
+  (
+    {
+      title,
+      disabled,
+      style,
+      textStyle,
+      loading = false,
+      children,
+      ...rest
+    },
+    ref,
+  ) => {
+    const { colors } = useTheme();
+    const isDisabled = disabled || loading;
+    const combinedStyle =
+      typeof style === 'function'
+        ? (state: PressableStateCallbackType) => [
+            styles.button(colors),
+            isDisabled && styles.disabled,
+            style(state),
+          ]
+        : [styles.button(colors), isDisabled && styles.disabled, style];
 
-  return (
-    <Pressable
-      disabled={isDisabled}
-      style={combinedStyle}
-      {...rest}
-    >
-      {loading ? (
-        <ActivityIndicator color={colors.text.inverse} />
-      ) : children ? (
-        children
-      ) : (
-        <Text style={[styles.label(colors), textStyle]}>{title}</Text>
-      )}
-    </Pressable>
-  );
-}
+    return (
+      <Pressable
+        ref={ref}
+        disabled={isDisabled}
+        style={combinedStyle}
+        {...rest}
+      >
+        {loading ? (
+          <ActivityIndicator color={colors.text.inverse} />
+        ) : children ? (
+          children
+        ) : (
+          <Text style={[styles.label(colors), textStyle]}>{title}</Text>
+        )}
+      </Pressable>
+    );
+  },
+);
+
+Button.displayName = 'Button';
+
+export default Button;
 
 const styles = {
   button: (colors: any): ViewStyle => ({
