@@ -1,7 +1,8 @@
 import React from 'react';
-import { Pressable, Text, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../ThemeProvider';
 import { radius, spacing, typography } from '../tokens';
+import Button from './Button';
 
 interface ChipProps {
   label: string;
@@ -14,9 +15,9 @@ export default function Chip({ label, onPress, style, textStyle }: ChipProps) {
   const { colors } = useTheme();
   const [isFocused, setIsFocused] = React.useState(false);
   return (
-    <Pressable
+    <Button
+      title={label}
       onPress={onPress}
-      accessibilityRole="button"
       accessibilityLabel={label}
       hitSlop={8}
       onFocus={() => setIsFocused(true)}
@@ -38,8 +39,7 @@ export default function Chip({ label, onPress, style, textStyle }: ChipProps) {
           borderWidth: 2,
         },
       ]}
-    >
-      <Text style={[{ color: colors.text.primary, ...typography.sm }, textStyle]}>{label}</Text>
-    </Pressable>
+      textStyle={[{ color: colors.text.primary, ...typography.sm }, textStyle]}
+    />
   );
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Pressable, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import { Link } from 'expo-router';
 import { useAppRouter, useCategories, useLanding } from '@/services';
@@ -10,7 +10,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import SmartImage from '../components/SmartImage';
 import Button from '@/ui/primitives/Button';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import { spacing } from '@/shared/ui/tokens';
+import { spacing, radius } from '@/shared/ui/tokens';
 import { routes } from '@/utils/routes';
 
 export default function Landing() {
@@ -45,12 +45,12 @@ export default function Landing() {
           />
           <View style={{ flexDirection: 'row', gap: spacing.spacer12, marginTop: spacing.spacer16 }}>
             <Link href="/store/alpha" asChild>
-              <Button title="Open Alpha Store" style={{ borderRadius: 10 }} />
+              <Button title="Open Alpha Store" />
             </Link>
             <Link href="/" asChild>
               <Button
                 title="Browse App"
-                style={{ borderRadius: 10, borderColor: colors.gold, backgroundColor: 'transparent' }}
+                style={{ borderRadius: radius.md, borderColor: colors.gold, backgroundColor: 'transparent' }}
               />
             </Link>
           </View>
@@ -140,20 +140,20 @@ export default function Landing() {
                   { id: 'sports', name: 'Sports' },
                   { id: 'books', name: 'Books' },
                 ] as any[]).map((c) => (
-                  <Pressable
+                  <Button
                     key={c.id}
+                    title={c.name}
                     onPress={() => push(routes.category(c.id))}
                     style={{
                       paddingHorizontal: spacing.spacer12,
                       paddingVertical: spacing.spacer8,
-                      borderRadius: 16,
+                      borderRadius: radius.xl,
                       borderWidth: 1,
                       borderColor: colors.border.primary,
                       backgroundColor: colors.surface.primary,
                     }}
-                  >
-                    <Text style={{ color: colors.text.primary, fontWeight: '600' }}>{c.name}</Text>
-                  </Pressable>
+                    textStyle={{ color: colors.text.primary, fontWeight: '600' }}
+                  />
                 ))}
               </View>
             </ScrollView>

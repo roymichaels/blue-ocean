@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Pressable } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import AppShell from '../components/layout/AppShell';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
@@ -8,7 +8,7 @@ import EmptyState from '@/shared/ui/EmptyState';
 import { Plus } from 'lucide-react-native';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { useCategories } from '@/services';
-import Text from '@/ui/primitives/Text';
+import Button from '@/ui/primitives/Button';
 import { spacing } from '@/ui/tokens';
 import { routes } from '@/utils/routes';
 
@@ -24,13 +24,19 @@ export default function Categories() {
         {categories.length > 0 ? (
           <ScrollView style={{ backgroundColor: colors.canvas }} contentContainerStyle={styles.list}>
             {categories.map((c) => (
-                <Pressable
+                <Button
                   key={c.id}
+                  title={c.name}
                   onPress={() => push(routes.category(c.id))}
-                  style={[styles.item, { borderColor: colors.border.primary }]}
-                >
-                <Text style={[styles.itemText, { color: colors.text.primary }]}>{c.name}</Text>
-              </Pressable>
+                  style={[
+                    styles.item,
+                    {
+                      borderColor: colors.border.primary,
+                      backgroundColor: 'transparent',
+                    },
+                  ]}
+                  textStyle={[styles.itemText, { color: colors.text.primary }]}
+                />
             ))}
           </ScrollView>
         ) : (
@@ -52,6 +58,7 @@ const styles = StyleSheet.create({
   item: {
     paddingVertical: spacing.spacer12,
     borderBottomWidth: 1,
+    alignItems: 'flex-start',
   },
   itemText: {
     fontWeight: '600',

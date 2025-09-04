@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, TextInput } from 'react-native';
-import { Text } from '@/ui';
+import { Text, Button } from '@/ui';
 import SmartImage from './SmartImage';
 import { Heart, Search, Star } from 'lucide-react-native';
 import { useAppRouter } from '@/services';
@@ -69,7 +69,7 @@ export default function GlobalHeader({
             </Text>
           </Pressable>
           <View style={styles.headerIcons}>
-            <Pressable
+            <Button
               style={[
                 styles.iconButton,
                 { backgroundColor: colors.surface.primary },
@@ -77,8 +77,8 @@ export default function GlobalHeader({
               onPress={navigateToReviews}
             >
               <Star size={24} color={colors.text.primary} />
-            </Pressable>
-            <Pressable
+            </Button>
+            <Button
               style={[
                 styles.iconButton,
                 { backgroundColor: colors.surface.primary },
@@ -87,7 +87,7 @@ export default function GlobalHeader({
             >
               <Heart size={24} color={colors.text.primary} />
               {wishlistItemsCount > 0 && (
-                <View style={[styles.badge, { backgroundColor: colors.gold }]}>
+                <View style={[styles.badge, { backgroundColor: colors.gold }]}> 
                   <Text
                     style={[styles.badgeText, { color: colors.text.inverse }]}
                   >
@@ -95,7 +95,7 @@ export default function GlobalHeader({
                   </Text>
                 </View>
               )}
-            </Pressable>
+            </Button>
             <View
               style={[
                 styles.progressContainer,
@@ -185,8 +185,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     width: spacing.spacer40,
     height: spacing.spacer40,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   badge: {
     position: 'absolute',
