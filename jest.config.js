@@ -18,8 +18,6 @@ module.exports = {
     '^@features/(.*)$': '<rootDir>/src/features/$1',
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@ui/(.*)$': '<rootDir>/src/ui/$1',
-    '^@services/(.*)$': ['<rootDir>/src/services/$1', '<rootDir>/services/$1'],
-    '^@services$': '<rootDir>/src/services/index',
     '^@providers/(.*)$': '<rootDir>/src/providers/$1',
     '^@/features/(.*)$': '<rootDir>/src/features/$1',
     '^@/shared/(.*)$': '<rootDir>/src/shared/$1',
