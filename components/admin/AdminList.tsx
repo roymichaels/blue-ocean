@@ -1,9 +1,8 @@
 import React, { memo, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
-import { useTheme } from '@/ui/ThemeProvider';
 import Button from '@/ui/primitives/Button';
-import { spacing } from '@/ui/tokens';
+import { spacing, radius, colors } from '@/shared/ui/tokens';
 
 export type AdminListItem = {
   id: string;
@@ -11,6 +10,7 @@ export type AdminListItem = {
   subtitle?: string;
   onPress?: () => void;
 };
+
 
 type Props = { items: AdminListItem[]; emptyText?: string };
 
@@ -44,6 +44,7 @@ function AdminList({ items, emptyText = 'Nothing yet.' }: Props) {
         <Button
           key={it.id}
           onPress={it.onPress}
+
           style={[styles.button, buttonBackground]}
           accessibilityRole="button"
         >
@@ -63,14 +64,21 @@ const styles = StyleSheet.create({
   container: {
     padding: spacing.spacer16,
   },
-  button: {
+  emptyText: {
+    color: colors.text.secondary,
+  },
+  itemButton: {
     marginBottom: spacing.spacer12,
     alignItems: 'flex-start',
+    backgroundColor: colors.surface.primary,
+    borderRadius: radius.md,
   },
   title: {
+    color: colors.text.primary,
     fontWeight: '600',
   },
   subtitle: {
+    color: colors.text.secondary,
     marginTop: spacing.spacer4,
   },
 });
