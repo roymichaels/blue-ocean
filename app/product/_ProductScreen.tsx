@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -28,9 +28,8 @@ import {
   MessageCircle,
   Shield,
 } from 'lucide-react-native';
-import DatabaseService from '../../services/database';
 import CartService from '@/features/cart/services/cart';
-import { Product, Category, PricingTier, Review } from '../../types';
+import { Product } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -38,17 +37,19 @@ import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
 import ProductFormModal from '@/features/products/components/ProductFormModal';
 import { Spinner } from '@/ui/primitives';
-import MediaService from '../../services/media';
 import { useAccountId } from '@/features/auth/services/nearAuth';
 import chatAgent from '../../agents/chat-agent';
 import moderationAgent from '../../agents/moderation-agent';
-import reviewAgent from '../../agents/review-agent';
 import commonStyles from '@/constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
 import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import SmartImage from '../../components/SmartImage';
 import eventBus from '../../services/eventBus';
 import { useProduct } from '@/features/products/hooks';
+import useCategories from 'hooks/useCategories';
+import usePricingTiers from 'hooks/usePricingTiers';
+import useReviews from 'hooks/useReviews';
+import useVideoThumbnails from 'hooks/useVideoThumbnails';
 
 
 
@@ -66,8 +67,8 @@ const COVER_SIZE = Math.min(width, 540);
 export default function ProductDetailScreen({ id }: { id: string }) {
   const { push, back } = useAppRouter();
   const [product, setProduct] = useState<Product | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
+  const categories = useCategories();
+  const pricingTiers = usePricingTiers();
   const [quantity, setQuantity] = useState(1);
   const [mediaViewerVisible, setMediaViewerVisible] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
@@ -76,9 +77,9 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const { isStoreOwner } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
+  const videoThumbnails = useVideoThumbnails(product?.videos);
   const address = useAccountId();
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const reviews = useReviews(id);
   const { data: fetchedProduct, isLoading: productLoading } = useProduct(id);
 
   // Modal states
@@ -113,22 +114,6 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   }, [fetchedProduct, productLoading, address]);
 
   useEffect(() => {
-    loadCategories();
-    loadPricingTiers();
-    loadReviews();
-  }, [id]);
-
-  useEffect(() => {
-    const sub = (rev: Review) => {
-      if (rev.productId === id) {
-        setReviews((prev) => [rev, ...prev]);
-      }
-    };
-    reviewAgent.subscribe(sub);
-    return () => reviewAgent.unsubscribe(sub);
-  }, [id]);
-
-  useEffect(() => {
     if (product) {
       const cartService = CartService.getInstance();
       setIsFavorite(cartService.isInWishlist(product.id));
@@ -141,58 +126,6 @@ export default function ProductDetailScreen({ id }: { id: string }) {
       return () => cartService.removeListener(handleUpdate);
     }
   }, [product]);
-
-
-  useEffect(() => {
-    const loadThumbs = async () => {
-      if (!product?.videos) return;
-      const svc = MediaService.getInstance();
-      for (let i = 0; i < product.videos.length; i++) {
-        const id = `video_${i}`;
-        if (!videoThumbnails[id]) {
-          try {
-            const thumb = await svc.generateVideoThumbnail(product.videos[i]);
-            if (thumb) {
-              setVideoThumbnails((prev) => ({ ...prev, [id]: thumb }));
-            }
-          } catch (err) {
-            errorLog('Error generating video thumbnail:', err);
-          }
-        }
-      }
-    };
-    loadThumbs();
-  }, [product]);
-
-
-  const loadCategories = async () => {
-    try {
-      const db = DatabaseService.getInstance();
-      const categoriesData = await db.getCategories();
-      setCategories(categoriesData);
-    } catch (error) {
-      errorLog('Error loading categories:', error);
-    }
-  };
-
-  const loadPricingTiers = async () => {
-    try {
-      const db = DatabaseService.getInstance();
-      const tiersData = await db.getPricingTiers();
-      setPricingTiers(tiersData);
-    } catch (error) {
-      errorLog('Error loading pricing tiers:', error);
-    }
-  };
-
-  const loadReviews = async () => {
-    try {
-      const list = await reviewAgent.getByProduct(id);
-      setReviews(list);
-    } catch (err) {
-      errorLog('Error loading reviews:', err);
-    }
-  };
 
   const getAllMedia = () => {
     if (!product) return [];
