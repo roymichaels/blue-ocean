@@ -1,8 +1,9 @@
-import React from 'react';
-import { View } from 'react-native';
+import React, { memo, useMemo } from 'react';
+import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import { useTheme } from '@/ui/ThemeProvider';
 import Button from '@/ui/primitives/Button';
+import { spacing } from '@/ui/tokens';
 
 export type AdminListItem = {
   id: string;
@@ -11,35 +12,66 @@ export type AdminListItem = {
   onPress?: () => void;
 };
 
-export default function AdminList({ items, emptyText = 'Nothing yet.' }: { items: AdminListItem[]; emptyText?: string }) {
+type Props = { items: AdminListItem[]; emptyText?: string };
+
+function AdminList({ items, emptyText = 'Nothing yet.' }: Props) {
   const { colors } = useTheme();
+
+  const buttonBackground = useMemo(
+    () => ({ backgroundColor: colors.surface.primary }),
+    [colors.surface.primary]
+  );
+  const primaryTextColor = useMemo(
+    () => ({ color: colors.text.primary }),
+    [colors.text.primary]
+  );
+  const secondaryTextColor = useMemo(
+    () => ({ color: colors.text.secondary }),
+    [colors.text.secondary]
+  );
+
   if (!items.length) {
     return (
-      <View style={{ padding: 16 }}>
-        <Text style={{ color: colors.text.secondary }}>{emptyText}</Text>
+      <View style={styles.container}>
+        <Text style={secondaryTextColor}>{emptyText}</Text>
       </View>
     );
   }
+
   return (
-    <View style={{ padding: 16 }}>
+    <View style={styles.container}>
       {items.map((it) => (
         <Button
           key={it.id}
           onPress={it.onPress}
-          style={{
-            marginBottom: 10,
-            alignItems: 'flex-start',
-            backgroundColor: colors.surface.primary,
-          }}
+          style={[styles.button, buttonBackground]}
           accessibilityRole="button"
         >
-          <Text style={{ color: colors.text.primary, fontWeight: '600' }}>{it.title}</Text>
+          <Text style={[styles.title, primaryTextColor]}>{it.title}</Text>
           {it.subtitle ? (
-            <Text style={{ color: colors.text.secondary, marginTop: 4 }}>{it.subtitle}</Text>
+            <Text style={[styles.subtitle, secondaryTextColor]}>{it.subtitle}</Text>
           ) : null}
         </Button>
       ))}
     </View>
   );
 }
+
+export default memo(AdminList);
+
+const styles = StyleSheet.create({
+  container: {
+    padding: spacing.spacer16,
+  },
+  button: {
+    marginBottom: spacing.spacer12,
+    alignItems: 'flex-start',
+  },
+  title: {
+    fontWeight: '600',
+  },
+  subtitle: {
+    marginTop: spacing.spacer4,
+  },
+});
 
