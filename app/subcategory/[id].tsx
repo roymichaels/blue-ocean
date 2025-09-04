@@ -38,6 +38,7 @@ import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import commonStyles from '@/constants/styles';
 import Card from '@/ui/primitives/Card';
+import { routes } from '@/utils/routes';
 import SmartImage from '@/components/SmartImage';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
@@ -541,7 +542,7 @@ export default function SubcategoryScreen() {
         currencySymbol={currencySymbol}
         pricingTiers={pricingTiers}
         isStoreOwner={isStoreOwner}
-        onPress={() => push(`/product/${item.id}`)}
+        onPress={() => push(routes.product(item.id))}
         onEdit={editProduct}
       />
     ),
@@ -1056,7 +1057,7 @@ export default function SubcategoryScreen() {
                 }]}
                 onPress={() => {
                   setShowSubcategorySelector(false);
-                  push(`/category/${newProduct.category}`);
+                  push(routes.category(newProduct.category));
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>
@@ -1117,7 +1118,7 @@ export default function SubcategoryScreen() {
                 onPress={() => {
                   setShowPricingTierSelector(false);
                   if (storeId) {
-                    push(`/store/${storeId}/admin/pricing-tiers`);
+                    push(routes.storeAdminPricingTiers(storeId));
                   }
                 }}
               >

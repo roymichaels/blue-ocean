@@ -37,6 +37,7 @@ import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
 import { useAccountId } from '../../auth/services/nearAuth';
 import { useAppRouter } from '@/services';
+import { routes } from '@/utils/routes';
 
 interface ProductFormModalProps {
   visible: boolean;
@@ -651,9 +652,9 @@ export default function ProductFormModal({
         onClose={() => setShowSubcategorySelector(false)}
         onAdd={() => {
           setShowSubcategorySelector(false);
-          if (editingProduct.category) {
-            push(`/category/${editingProduct.category}`);
-          }
+            if (editingProduct.category) {
+              push(routes.category(editingProduct.category));
+            }
         }}
       />
 

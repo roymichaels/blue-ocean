@@ -7,6 +7,7 @@ import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useRequirePlatformAdmin } from '@/services';
 import { useStore } from '@/features/products/hooks';
+import { routes } from '@/utils/routes';
 
 export default function StoreDetail() {
   useRequirePlatformAdmin();
@@ -24,7 +25,7 @@ export default function StoreDetail() {
       <Text style={[styles.value, { color: colors.text.primary }]}>{store.owner}</Text>
       <Button
         title="Impersonate"
-        onPress={() => push(`/store/${store.id}/admin/dashboard?impersonate=true`)}
+        onPress={() => push(routes.storeAdminDashboard(store.id, true))}
         style={{ marginTop: 24 }}
       />
     </View>

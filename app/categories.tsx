@@ -10,6 +10,7 @@ import ErrorBoundary from '@/shared/ErrorBoundary';
 import { useCategories } from '@/services';
 import Text from '@/ui/primitives/Text';
 import { spacing } from '@/ui/tokens';
+import { routes } from '@/utils/routes';
 
 export default function Categories() {
   const { colors } = useTheme();
@@ -23,11 +24,11 @@ export default function Categories() {
         {categories.length > 0 ? (
           <ScrollView style={{ backgroundColor: colors.canvas }} contentContainerStyle={styles.list}>
             {categories.map((c) => (
-              <Pressable
-                key={c.id}
-                onPress={() => push(`/category/${c.id}`)}
-                style={[styles.item, { borderColor: colors.border.primary }]}
-              >
+                <Pressable
+                  key={c.id}
+                  onPress={() => push(routes.category(c.id))}
+                  style={[styles.item, { borderColor: colors.border.primary }]}
+                >
                 <Text style={[styles.itemText, { color: colors.text.primary }]}>{c.name}</Text>
               </Pressable>
             ))}
