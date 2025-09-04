@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { Spinner } from '@/ui/primitives';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 import RequireWallet from '../../../../components/RequireWallet';
 
 // Lazy-load the heavy KYC approvals screen to keep the initial bundle slim
@@ -13,7 +14,9 @@ export default function KycApprovalsRoute(props: any) {
   return (
     <RequireWallet>
       <Suspense fallback={<Spinner />}>
-        <KycApprovalsScreen {...props} />
+        <ErrorBoundary>
+          <KycApprovalsScreen {...props} />
+        </ErrorBoundary>
       </Suspense>
     </RequireWallet>
   );
