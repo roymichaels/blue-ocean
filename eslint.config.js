@@ -36,6 +36,14 @@ module.exports = [
             "Property[key.name='tabBarStyle'] > ObjectExpression > Property[key.name='display'] > Literal[value='none']",
           message: "Avoid hiding the tab bar with tabBarStyle.display 'none'.",
         },
+        {
+          selector: "CallExpression[callee.name='useRouter']",
+          message: "useAppRouter hook must be used instead of useRouter.",
+        },
+        {
+          selector: "MemberExpression[object.name='router']",
+          message: "Do not use router directly; use useAppRouter().",
+        },
       ],
       'no-restricted-imports': [
         'error',

@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Star, Plus, X, Send, Filter, Search, ThumbsUp, ArrowLeft } from 'lucide-react-native';
-import { router } from 'expo-router';
 import { useAppRouter } from '@/services';
 import DatabaseService from '@/services/database';
 import { Product, Review, Order } from '../../types';
@@ -48,14 +47,11 @@ export default function ReviewsScreen() {
   const [sortBy, setSortBy] = useState<'newest' | 'highest' | 'lowest'>('newest');
   const { isLoggedIn, isAdmin, user } = useAuth();
   const { colors } = useTheme();
-  const { push, back, replace } = useAppRouter();
+  const { push, back, replace, canGoBack } = useAppRouter();
 
   const goBack = () => {
     // If there's no history, navigate home
-    const canGoBack =
-      typeof (router as any).canGoBack === 'function' &&
-      (router as any).canGoBack();
-    if (canGoBack) {
+    if (canGoBack()) {
       back();
     } else {
       replace('/');

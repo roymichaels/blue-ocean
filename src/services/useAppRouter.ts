@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { debugLog } from '@/utils/logger';
@@ -38,7 +39,11 @@ export function useAppRouter() {
     router.back();
   }, [router]);
 
-  return { push, replace, back };
+  const canGoBack = useCallback(() => {
+    return typeof (router as any).canGoBack === 'function' && (router as any).canGoBack();
+  }, [router]);
+
+  return { push, replace, back, canGoBack };
 }
 
 export default useAppRouter;

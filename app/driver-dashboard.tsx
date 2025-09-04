@@ -11,7 +11,6 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import { useAppRouter } from '@/services';
 import {
   ArrowLeft,
@@ -31,7 +30,7 @@ import commonStyles from '@/constants/styles';
 
 
 export default function DriverDashboardScreen() {
-  const { back, replace } = useAppRouter();
+  const { back, replace, canGoBack } = useAppRouter();
   const { user, isDriver, isAdmin } = useAuth();
   const { colors } = useTheme();
   const [jobs, setJobs] = useState<DeliveryJob[]>([]);
@@ -39,10 +38,7 @@ export default function DriverDashboardScreen() {
 
   const goBack = () => {
     // Fallback to home when history is empty
-    const canGoBack =
-      typeof (router as any).canGoBack === 'function' &&
-      (router as any).canGoBack();
-    if (canGoBack) {
+    if (canGoBack()) {
       back();
     } else {
       replace('/');
