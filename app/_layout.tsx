@@ -8,7 +8,7 @@ import { AuthProvider } from '@/features/auth/AuthContext';
 import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
-import { AppProviders, ThemeProvider, LanguageProvider } from '@/providers';
+import { AppProviders } from '@/providers';
 import { View } from 'react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui/primitives';
@@ -20,38 +20,34 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AppInfoProvider>
-          <ThemeProvider>
-            <LanguageProvider>
-              <AppProviders>
-                <ConfigProvider>
-                  <AuthProvider>
-                    <AuthModalProvider>
-                      <CurrencyProvider>
-                        <NotificationProvider>
-                          <React.Suspense
-                            fallback={
-                              <View
-                                style={{
-                                  flex: 1,
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  backgroundColor: colors.background,
-                                }}
-                              >
-                                <Spinner color={colors.gold} />
-                              </View>
-                            }
+          <AppProviders>
+            <ConfigProvider>
+              <AuthProvider>
+                <AuthModalProvider>
+                  <CurrencyProvider>
+                    <NotificationProvider>
+                      <React.Suspense
+                        fallback={
+                          <View
+                            style={{
+                              flex: 1,
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              backgroundColor: colors.background,
+                            }}
                           >
-                            <Slot />
-                          </React.Suspense>
-                        </NotificationProvider>
-                      </CurrencyProvider>
-                    </AuthModalProvider>
-                  </AuthProvider>
-                </ConfigProvider>
-              </AppProviders>
-            </LanguageProvider>
-          </ThemeProvider>
+                            <Spinner color={colors.gold} />
+                          </View>
+                        }
+                      >
+                        <Slot />
+                      </React.Suspense>
+                    </NotificationProvider>
+                  </CurrencyProvider>
+                </AuthModalProvider>
+              </AuthProvider>
+            </ConfigProvider>
+          </AppProviders>
         </AppInfoProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
