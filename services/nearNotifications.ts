@@ -1,11 +1,10 @@
 import { getValue, setValue, listValues, removeValue } from './nearKvStore';
 import { Notification } from '../types';
 import { assertNearChain } from './chain';
-import { getNearContract } from '@/utils/nearEnv';
 
 assertNearChain();
 
-const ADDRESS = getNearContract('NOTIFICATIONS');
+const ADDRESS = 'notifications';
 
 export async function getNotification(id: string): Promise<Notification | null> {
   const res = await getValue(ADDRESS, id);
