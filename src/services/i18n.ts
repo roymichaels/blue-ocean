@@ -1,8 +1,8 @@
-import en from '../../translations/en.json';
+import enTranslations from '../../translations/en.json';
 
-const translations: Record<string, any> = { en };
+const translations: Record<string, any> = { en: enTranslations };
 let currentLanguage = 'en';
-const missing: Record<string, boolean> = {};
+const warnedKeys = new Set<string>();
 
 export async function initI18n(lang: string = 'en') {
   try {
@@ -18,20 +18,32 @@ export async function initI18n(lang: string = 'en') {
 
 export function t(key: string, params?: Record<string, string | number>) {
   const keys = key.split('.');
-  let value: any = translations[currentLanguage];
-  for (const k of keys) {
-    value = value?.[k];
+
+  const getValue = (obj: any) => {
+    let val = obj;
+    for (const k of keys) {
+      val = val?.[k];
+    }
+    return val;
+  };
+
+  let value = getValue(translations[currentLanguage]);
+  if (value === undefined) {
+    value = getValue(enTranslations);
   }
+
   if (typeof value === 'string') {
     if (params) {
       return value.replace(/\{(.*?)\}/g, (_, p) => String(params[p] ?? ''));
     }
     return value;
   }
-  if (process.env.NODE_ENV !== 'production' && !missing[key]) {
+
+  if (process.env.NODE_ENV !== 'production' && !warnedKeys.has(key)) {
     console.warn(`Missing i18n key: ${key}`);
-    missing[key] = true;
+    warnedKeys.add(key);
   }
+
   const fallback = keys[keys.length - 1]
     .replace(/[-_]/g, ' ')
     .replace(/([A-Z])/g, ' $1')
