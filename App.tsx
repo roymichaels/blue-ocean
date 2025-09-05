@@ -2,7 +2,6 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text } from 'react-native';
-import AppProviders from '@/providers';
 import { Router, usePathname, useSegments } from 'expo-router';
 import { stripTabsPrefix } from '@/services/navigation';
 import { useLanguage } from '@/ui/ThemeProvider';
@@ -38,11 +37,9 @@ function MainApp() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AppProviders>
-          <React.Suspense fallback={null}>
-            {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-          </React.Suspense>
-        </AppProviders>
+        <React.Suspense fallback={null}>
+          {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
+        </React.Suspense>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
