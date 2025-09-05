@@ -1,7 +1,14 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Platform, StyleSheet } from 'react-native';
+import { TextInput, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import { Settings as SettingsIcon } from 'lucide-react-native';
 import { Card } from '@/ui';
+import Text from '@/ui/primitives/Text';
+import { Stack } from '@/ui/layout';
+import { spacing, radius } from '@/shared/ui/tokens';
+
+const colorChoices = [0xb99c5a, 0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0x00ffff].map(
+  (c) => `#${c.toString(16).padStart(6, '0')}`
+);
 
 interface Props {
   name: string;
@@ -31,13 +38,17 @@ const BrandingSettings: React.FC<Props> = ({
         { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
       ]}
     >
-      <View style={styles.header}>
+      <Stack direction="row" style={styles.header}>
         <SettingsIcon size={20} color={colors.gold} />
-        <Text style={[styles.title, { color: colors.text.primary }]}>הגדרות מיתוג</Text>
-      </View>
-      <View style={styles.content}>
-        <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>שם הפלטפורמה</Text>
+        <Text style={[styles.title, { color: colors.text.primary }]}>
+          {t('brandingSettings.title')}
+        </Text>
+      </Stack>
+      <Stack style={styles.content} gap="spacer8">
+        <Stack gap="spacer8">
+          <Text style={[styles.label, { color: colors.text.primary }]}>
+            {t('brandingSettings.platformName')}
+          </Text>
           <TextInput
             style={[
               styles.input,
@@ -53,9 +64,11 @@ const BrandingSettings: React.FC<Props> = ({
             textAlign="right"
             placeholderTextColor={colors.text.tertiary}
           />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>לוגו (CID או URL)</Text>
+        </Stack>
+        <Stack gap="spacer8">
+          <Text style={[styles.label, { color: colors.text.primary }]}>
+            {t('brandingSettings.logo')}
+          </Text>
           <TextInput
             style={[
               styles.input,
@@ -71,9 +84,11 @@ const BrandingSettings: React.FC<Props> = ({
             textAlign="right"
             placeholderTextColor={colors.text.tertiary}
           />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.text.primary }]}>צבע נושא</Text>
+        </Stack>
+        <Stack gap="spacer8">
+          <Text style={[styles.label, { color: colors.text.primary }]}>
+            {t('brandingSettings.themeColor')}
+          </Text>
           {Platform.OS === 'web' ? (
             <input
               type="color"
@@ -82,8 +97,8 @@ const BrandingSettings: React.FC<Props> = ({
               style={styles.colorInput}
             />
           ) : (
-            <View style={styles.colorOptions}>
-              {['#B99C5A', '#FF0000', '#00FF00', '#0000FF', '#FF00FF', '#00FFFF'].map((c) => (
+            <Stack direction="row" style={styles.colorOptions}>
+              {colorChoices.map((c) => (
                 <TouchableOpacity
                   key={c}
                   onPress={() => setThemeColorState(c)}
@@ -97,68 +112,62 @@ const BrandingSettings: React.FC<Props> = ({
                   ]}
                 />
               ))}
-            </View>
+            </Stack>
           )}
-        </View>
-      </View>
+        </Stack>
+      </Stack>
     </Card>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: spacing.spacer16,
     overflow: 'hidden',
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.spacer16,
     borderBottomWidth: 1,
     justifyContent: 'flex-end',
   },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginRight: 8,
+    marginRight: spacing.spacer8,
   },
   content: {
-    padding: 16,
-  },
-  inputContainer: {
-    marginBottom: 8,
+    padding: spacing.spacer16,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
     textAlign: 'right',
   },
   input: {
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.spacer16,
+    paddingVertical: spacing.spacer12,
     fontSize: 16,
   },
   colorInput: {
-    width: 40,
-    height: 40,
+    width: spacing.spacer40,
+    height: spacing.spacer40,
     borderWidth: 0,
     backgroundColor: 'transparent',
   },
   colorOptions: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
   },
   colorOption: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
+    borderRadius: radius.xl,
+    marginRight: spacing.spacer8,
+    marginBottom: spacing.spacer8,
   },
 });
 
