@@ -2,13 +2,12 @@ import { Tabs } from 'expo-router';
 import * as Lucide from 'lucide-react-native';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'expo-router';
 import { FloatingCartWidget } from '@/features/cart';
 import { getTabsForAuth } from '@/config/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import { debugLog } from '@/utils/logger';
 
 export default function TabsLayout() {
   const { t } = useLanguage();
@@ -16,8 +15,7 @@ export default function TabsLayout() {
   const auth = useAuth();
   const pathname = usePathname();
   const [showCartWidget, setShowCartWidget] = useState(false);
-  const tabs = getTabsForAuth(auth);
-  debugLog(`[TabsLayout] route: ${pathname} tabs: ${tabs.map((tb) => tb.name)}`);
+  const tabs = useMemo(() => getTabsForAuth(auth), [auth]);
 
   useEffect(() => {
     setShowCartWidget(pathname === '/' || pathname === '/index');
