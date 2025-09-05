@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,13 @@ import {
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
 import { Plus, X, ArrowUpDown } from 'lucide-react-native';
 import { Product, Category, HeroBanner } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
 import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
+import { useHomeModals } from '@/features/home/hooks/useHomeModals';
+import { useHomeRefresh } from '@/features/home/hooks/useHomeRefresh';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
@@ -42,47 +43,42 @@ import AppShell from '@/components/layout/AppShell';
 
 function HomeScreenContent() {
   const { push } = useAppRouter();
-  const params = useLocalSearchParams<{ showCart?: string }>();
   const { width: windowWidth } = useWindowDimensions();
+  const home = useHome();
+  const banners = useHomeBanners();
+  const { refreshing, refresh, error } = useHomeRefresh(home, banners);
   const {
-    products,
-    categories,
-    refreshing: dataRefreshing,
-    refresh: refreshData,
-    upsertProduct,
-    removeProduct,
-    error: dataError,
-    loading: productsLoading,
-  } = useHome();
-  const {
-    heroBanners,
-    refreshing: bannersRefreshing,
-    refresh: refreshBanners,
-    upsertBanner,
-    removeBanner,
-    error: bannersError,
-    loading: bannersLoading,
-  } = useHomeBanners();
-  const refreshing = dataRefreshing || bannersRefreshing;
-  const refresh = async () => {
-    await Promise.all([refreshData(), refreshBanners()]);
-  };
-  const error = dataError || bannersError;
-  const [bannerFormVisible, setBannerFormVisible] = useState(false);
-  const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
-  const [productFormVisible, setProductFormVisible] = useState(false);
-  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-  const [showCartModal, setShowCartModal] = useState(false);
-  const [infoModal, setInfoModal] = useState({
-    visible: false,
-    title: '',
-    message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning',
-    buttonText: undefined as string | undefined,
-  });
+    bannerFormVisible,
+    editingBanner,
+    openBannerForm,
+    closeBannerForm,
+    productFormVisible,
+    productToEdit,
+    openProductForm,
+    closeProductForm,
+    showCartModal,
+    closeCartModal,
+    infoModal,
+    closeInfoModal,
+  } = useHomeModals(error);
   const { isStoreOwner } = useAuth();
   const { t } = useLanguage();
   const { colors } = useTheme();
+
+  const {
+    products,
+    categories,
+    upsertProduct,
+    removeProduct,
+    loading: productsLoading,
+  } = home;
+
+  const {
+    heroBanners,
+    upsertBanner,
+    removeBanner,
+    loading: bannersLoading,
+  } = banners;
 
   const {
     filteredProducts,
@@ -123,53 +119,12 @@ function HomeScreenContent() {
       subtitle: t('home.fallbackBanner2Subtitle'),
     },
   ];
-
-  useEffect(() => {
-    // Check if we should show the cart modal from URL params
-    if (params.showCart === 'true') {
-      setShowCartModal(true);
-    }
-  }, [params.showCart]);
-
-  useEffect(() => {
-    if (error) {
-      setInfoModal({
-        visible: true,
-        title: t('common.error'),
-        message: t('home.loadErrorMessage'),
-        type: 'error',
-        buttonText: t('common.reload'),
-      });
-    }
-  }, [error, t]);
-
-
-  const addBanner = () => {
-    setEditingBanner(null);
-    setBannerFormVisible(true);
-  };
-
-  const editBanner = (banner: HeroBanner) => {
-    setEditingBanner(banner);
-    setBannerFormVisible(true);
-  };
-
   const handleBannerSaved = (b: HeroBanner, isNew: boolean) => {
     upsertBanner(b, isNew);
   };
 
   const handleBannerDeleted = (id: string) => {
     removeBanner(id);
-  };
-
-  const addProduct = () => {
-    setProductToEdit(null);
-    setProductFormVisible(true);
-  };
-
-  const editProduct = (product: Product) => {
-    setProductToEdit(product);
-    setProductFormVisible(true);
   };
 
   const handleProductSaved = (p: Product, isNew: boolean) => {
@@ -247,7 +202,7 @@ function HomeScreenContent() {
   };
 
   const handleReload = () => {
-    setInfoModal((prev) => ({ ...prev, visible: false }));
+    closeInfoModal();
     refresh();
   };
 
@@ -278,8 +233,8 @@ function HomeScreenContent() {
       <BannerArea
         heroBanners={heroBanners}
         isStoreOwner={isStoreOwner}
-        onAddBanner={addBanner}
-        onEditBanner={editBanner}
+        onAddBanner={openBannerForm}
+        onEditBanner={openBannerForm}
         loading={bannersLoading}
       />
 
@@ -350,7 +305,7 @@ function HomeScreenContent() {
                       borderColor: colors.gold,
                     },
                   ]}
-                  onPress={addProduct}
+                    onPress={openProductForm}
                 >
                   <Plus size={16} color={colors.gold} />
                 </TouchableOpacity>
@@ -363,10 +318,10 @@ function HomeScreenContent() {
               products={filteredProducts}
               categories={categories}
               isStoreOwner={isStoreOwner}
-              onEdit={editProduct}
+              onEdit={openProductForm}
               getItemWidth={getProductItemWidth}
               searchQuery={searchQuery}
-              onAddProduct={addProduct}
+              onAddProduct={openProductForm}
               loading={productsLoading}
             />
           </Suspense>
@@ -376,7 +331,7 @@ function HomeScreenContent() {
       <Suspense fallback={<Spinner />}>
         <BannerFormModal
           visible={bannerFormVisible}
-          onClose={() => setBannerFormVisible(false)}
+          onClose={closeBannerForm}
           banner={editingBanner || undefined}
           categories={categories}
           onSaved={handleBannerSaved}
@@ -386,7 +341,7 @@ function HomeScreenContent() {
       <Suspense fallback={<Spinner />}>
         <ProductFormModal
           visible={productFormVisible}
-          onClose={() => setProductFormVisible(false)}
+          onClose={closeProductForm}
           product={productToEdit || undefined}
           onSaved={handleProductSaved}
           onDeleted={handleProductDeleted}
@@ -486,7 +441,7 @@ function HomeScreenContent() {
       <Suspense fallback={<Spinner />}>
         <CartModal
           visible={showCartModal}
-          onClose={() => setShowCartModal(false)}
+          onClose={closeCartModal}
         />
       </Suspense>
     </AppShell>
