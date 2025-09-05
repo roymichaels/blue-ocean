@@ -2,17 +2,16 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
-import { useRequirePlatformAdmin } from '@/services';
+import { useRequirePlatformAdmin, useUsers } from '@/services';
 import RequireWallet from '@/components/RequireWallet';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Users } from 'lucide-react-native';
-import { useUserDirectory } from '@/features/auth/hooks/useUserDirectory';
 
 export default function UserDirectory() {
   useRequirePlatformAdmin();
   const { colors } = useTheme();
   const { t } = useLanguage();
-  const { data: users = [], isLoading } = useUserDirectory();
+  const { data: users = [], isLoading } = useUsers();
 
   return (
     <RequireWallet>

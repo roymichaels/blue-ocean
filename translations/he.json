@@ -309,7 +309,9 @@
     "noKycRequests": "אין בקשות אימות ממתינות",
     "kycApproved": "אימות KYC אושר בהצלחה",
     "kycRejected": "אימות KYC נדחה",
-    "copyOrderDetails": "העתק פרטי הזמנה"
+    "copyOrderDetails": "העתק פרטי הזמנה",
+    "productCount": "מוצרים: {count}",
+    "viewOrders": "צפייה בהזמנות"
   },
   "chat": {
     "customerSupport": "תמיכת לקוחות",

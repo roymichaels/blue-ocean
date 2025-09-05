@@ -1,43 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useAppRouter } from '@/services';
+import { useAppRouter, useProducts } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
-import chain from '@/services/chain';
+import { useLanguage } from '@/ui/ThemeProvider';
 import OrderRevenueMetrics from '@/features/stores/components/OrderRevenueMetrics';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useStore } from '@/features/products';
 import { routes } from '@/utils/routes';
 
-let listProducts: (() => Promise<any[]>) | undefined;
-if (chain === 'near') {
-  ({ listProducts } = require('@/features/products/services/nearProducts'));
-}
-
 export default function StoreDashboardScreen() {
   const { replace, push } = useAppRouter();
   const { storeId, impersonate } = useLocalSearchParams<{ storeId: string; impersonate?: string }>();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [productCount, setProductCount] = useState(0);
   const [authorized, setAuthorized] = useState(false);
   const { data: store } = useStore(storeId);
+  const { data: products = [] } = useProducts(storeId || '');
 
   useEffect(() => {
-    const loadStats = async () => {
-      if (!storeId || !store || !listProducts) return;
-      const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
-      if (store.owner !== user?.address && !isAdmin) {
-        replace(routes.store(storeId));
-        return;
-      }
-      setAuthorized(true);
-      const products = await listProducts();
-      setProductCount(products.filter((p) => p.storeId === storeId).length);
-    };
-
-    loadStats();
-  }, [storeId, store, user?.address]);
+    if (!storeId || !store) return;
+    const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
+    if (store.owner !== user?.address && !isAdmin) {
+      replace(routes.store(storeId));
+      return;
+    }
+    setAuthorized(true);
+    setProductCount(products.filter((p) => p.storeId === storeId).length);
+  }, [storeId, store, user?.address, products]);
   
 
   if (!authorized) {
@@ -46,23 +38,25 @@ export default function StoreDashboardScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text.primary }]}>לוח חנות</Text>
+      <Text style={[styles.title, { color: colors.text.primary }]}>{t('admin.dashboard')}</Text>
       <View style={styles.stats}>
-        <Text style={[styles.statText, { color: colors.text.primary }]}>מוצרים: {productCount}</Text>
+        <Text style={[styles.statText, { color: colors.text.primary }]}>
+          {t('admin.productCount', { count: productCount })}
+        </Text>
         {storeId && <OrderRevenueMetrics storeId={storeId} />}
       </View>
       <View style={styles.nav}>
-          <TouchableOpacity
-            style={[styles.navButton, { borderColor: colors.border.primary }]}
-            onPress={() => push(routes.storeAdminProducts(storeId))}
-          >
-          <Text style={{ color: colors.text.primary }}>ניהול מוצרים</Text>
+        <TouchableOpacity
+          style={[styles.navButton, { borderColor: colors.border.primary }]}
+          onPress={() => push(routes.storeAdminProducts(storeId))}
+        >
+          <Text style={{ color: colors.text.primary }}>{t('admin.manageProducts')}</Text>
         </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.navButton, { borderColor: colors.border.primary }]}
-            onPress={() => push(routes.storeAdminOrders(storeId))}
-          >
-          <Text style={{ color: colors.text.primary }}>צפייה בהזמנות</Text>
+        <TouchableOpacity
+          style={[styles.navButton, { borderColor: colors.border.primary }]}
+          onPress={() => push(routes.storeAdminOrders(storeId))}
+        >
+          <Text style={{ color: colors.text.primary }}>{t('admin.viewOrders')}</Text>
         </TouchableOpacity>
       </View>
     </View>

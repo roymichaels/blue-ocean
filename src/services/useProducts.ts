@@ -9,6 +9,7 @@ export function useProducts(storeId: string) {
     queryFn: async () => {
       const db = DatabaseService.getInstance();
       let data = await db.getProducts();
+      data = data.filter((p) => p.storeId === storeId);
       if (data.length === 0) {
         try {
           data = await productsAdapter.listProducts(storeId);

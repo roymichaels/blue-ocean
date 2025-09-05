@@ -335,7 +335,9 @@
     "kycRejected": "KYC rejected",
     "copyOrderDetails": "Copy Order Details",
     "noUsers": "No users",
-    "noUsersFound": "No users found"
+    "noUsersFound": "No users found",
+    "productCount": "Products: {count}",
+    "viewOrders": "View Orders"
   },
   "chat": {
     "customerSupport": "Customer Support",

@@ -16,3 +16,4 @@ export * from './useProfileData';
 export * from './useRequirePlatformAdmin';
 export * from './useReviews';
 export * from './useLanding';
+export * from './useUsers';
