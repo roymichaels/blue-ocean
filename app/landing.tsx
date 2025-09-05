@@ -44,7 +44,7 @@ export default function Landing() {
             }}
           />
           <View style={{ flexDirection: 'row', gap: spacing.spacer12, marginTop: spacing.spacer16 }}>
-            <Link href="/store/alpha" asChild>
+            <Link href={routes.store('alpha')} asChild>
               <Button title="Open Alpha Store" />
             </Link>
             <Link href="/" asChild>

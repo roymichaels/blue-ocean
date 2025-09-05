@@ -1,5 +1,6 @@
 import { spawn, ChildProcess } from 'child_process';
 import { chromium, Browser, Page } from 'playwright';
+import { routes } from '@/utils/routes';
 
 const PORT = 4173;
 const URL = `http://localhost:${PORT}/`;
@@ -55,7 +56,7 @@ describe('web smoke test', () => {
     await page!.waitForSelector('text=Login');
 
     // category route loads
-    await page!.goto(`${URL}storefront/category/electronics`);
+    await page!.goto(`${URL}storefront${routes.category('electronics')}`);
     await page!.waitForSelector('[data-testid="search-input"]');
   }, 60000);
 });
