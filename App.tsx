@@ -39,11 +39,11 @@ function MainApp() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AppProviders>
-          <React.Suspense fallback={<Spinner />}>
+        <React.Suspense fallback={<Spinner />}>
+          <AppProviders>
             {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-          </React.Suspense>
-        </AppProviders>
+          </AppProviders>
+        </React.Suspense>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

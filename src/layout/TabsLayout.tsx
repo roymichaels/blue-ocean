@@ -9,7 +9,7 @@ import { FloatingCartWidget } from '@/features/cart';
 import { getTabsForAuth } from '@/config/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import { spacing, shadows } from '@/shared/ui/tokens';
+import { spacing, shadows, typography } from '@/shared/ui/tokens';
 
 export default function TabsLayout() {
   const { t } = useLanguage();
@@ -44,7 +44,7 @@ export default function TabsLayout() {
     tabBarInactiveTintColor: colors.tabBar.inactive,
     tabBarStyle,
     tabBarLabelStyle: {
-      fontSize: 12,
+      fontSize: typography.xs.fontSize,
       fontWeight: '500',
     },
   } as const;
