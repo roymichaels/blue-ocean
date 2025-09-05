@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, TextInput } from 'react-native';
 import { Text, Button } from '@/ui';
 import SmartImage from './SmartImage';
@@ -9,8 +9,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
-import { WishlistModal } from '@/features/cart';
-import CartService from '@/features/cart/services/cart';
+import { WishlistModal, useWishlistCount } from '@/features/cart';
 import { spacing, radius, typography } from '@/ui/tokens';
 
 interface GlobalHeaderProps {
@@ -30,20 +29,7 @@ export default function GlobalHeader({
   const { progress } = useRoadmap();
   const { push } = useAppRouter();
   const [showWishlistModal, setShowWishlistModal] = useState(false);
-  const [wishlistItemsCount, setWishlistItemsCount] = useState(0);
-
-  useEffect(() => {
-    const cartService = CartService.getInstance();
-
-    const updateCounts = () => {
-      setWishlistItemsCount(cartService.getWishlistItemsCount());
-    };
-
-    updateCounts();
-    cartService.addListener(updateCounts);
-
-    return () => cartService.removeListener(updateCounts);
-  }, []);
+  const wishlistItemsCount = useWishlistCount();
 
   const navigateToReviews = () => {
     push('/reviews');
