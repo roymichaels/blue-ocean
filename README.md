@@ -202,10 +202,6 @@ TypeScript and webpack use the same aliases so all tools reference the wrapper
 consistently. Polyfills are initialized at the app entry point, so the HMR
 runtime runs within the already-prepared environment.
 
-Metro also maps `react-native/Libraries/Utilities/HMRClient` to a stub
-`EmptyHMRClient.ts` with no-op methods so bundling succeeds even when the native
-implementation isn't available.
-
 ### Debugging & Logs
 
 Call `debugLog()` for development-only messages. When

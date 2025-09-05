@@ -73,9 +73,6 @@
       ],
       "@expo/metro-runtime/src/HMRClient.ts": [
         "./HMRClient.ts"
-      ],
-      "react-native/Libraries/Utilities/HMRClient": [
-        "./EmptyHMRClient.ts"
       ]
     },
     "customConditions": [
