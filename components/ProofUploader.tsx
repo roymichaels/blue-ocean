@@ -15,7 +15,10 @@ import { Upload, Camera, File as FileIcon } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import MediaService from '@/services/media';
 import DatabaseService from '@/services/database';
+import { Card, Stack } from '@/ui';
+import { spacing, colors as tokenColors } from '@/ui/tokens';
 import { Spinner } from '@/ui/primitives';
+import { useLanguage } from '@/ui/ThemeProvider';
 
 interface ProofUploaderProps {
   jobId: string;
@@ -23,11 +26,21 @@ interface ProofUploaderProps {
   onUploaded?: (uri: string) => void;
 }
 
+function useUploaderColors() {
+  const { colors } = useTheme();
+  return {
+    border: colors.border.primary || tokenColors.border.primary,
+    text: colors.text.primary || tokenColors.text.primary,
+    gold: colors.gold || tokenColors.gold,
+  };
+}
+
 export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUploaderProps) {
   const [uri, setUri] = useState(proofUri);
   const [uploading, setUploading] = useState(false);
   const [pinataConfigured, setPinataConfigured] = useState(true);
-  const { colors } = useTheme();
+  const theme = useUploaderColors();
+  const { t } = useLanguage();
 
   useEffect(() => {
     MediaService.getInstance()
@@ -39,7 +52,10 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'אנא אפשר גישה למדיה במכשיר.');
+        Alert.alert(
+          t('proofUploader.permissionRequired'),
+          t('proofUploader.permissionMessage')
+        );
         return false;
       }
     }
@@ -50,7 +66,10 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
     const configured = await MediaService.getInstance().isPinataConfigured();
     setPinataConfigured(configured);
     if (!configured) {
-      Alert.alert('Unavailable', 'Media uploads are not configured.');
+      Alert.alert(
+        t('proofUploader.unavailableTitle'),
+        t('proofUploader.unavailableMessage')
+      );
     }
     return configured;
   };
@@ -95,98 +114,108 @@ export default function ProofUploader({ jobId, proofUri, onUploaded }: ProofUplo
       setUri(uploaded);
       onUploaded?.(uploaded);
     } catch (error) {
-      errorLog('Error uploading proof:', error);
-      Alert.alert('שגיאה', 'העלאת הקובץ נכשלה');
+      errorLog(t('proofUploader.errorLog'), error);
+      Alert.alert(t('proofUploader.errorTitle'), t('proofUploader.errorMessage'));
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <Card style={styles.container}>
       {uri ? (
         uri.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-          <SmartImage uri={uri} width={100} height={100} style={styles.preview} contentFit="cover" />
+          <SmartImage
+            uri={uri}
+            width={100}
+            height={100}
+            style={styles.preview}
+            contentFit="cover"
+          />
         ) : (
-          <View style={[styles.filePreview, { borderColor: colors.border.primary }]}>
-            <FileIcon size={24} color={colors.text.primary} />
-            <Text style={[styles.fileLabel, { color: colors.text.primary }]}>File</Text>
+          <View style={[styles.filePreview, { borderColor: theme.border }]}>
+            <FileIcon size={24} color={theme.text} />
+            <Text style={[styles.fileLabel, { color: theme.text }]}>
+              {t('proofUploader.file')}
+            </Text>
           </View>
         )
       ) : (
-        <View style={styles.actions}>
+        <Stack direction="horizontal" gap="spacer8">
           <TouchableOpacity
-            style={[styles.button, { borderColor: colors.gold }]}
+            style={[styles.button, { borderColor: theme.gold }]}
             onPress={pickImage}
             disabled={uploading || !pinataConfigured}
           >
             {uploading ? (
-              <Spinner size="small" color={colors.gold} />
+              <Spinner size="small" color={theme.gold} />
             ) : (
               <>
-                <Upload size={20} color={colors.gold} />
-                <Text style={[styles.buttonText, { color: colors.gold }]}>Gallery</Text>
+                <Upload size={20} color={theme.gold} />
+                <Text style={[styles.buttonText, { color: theme.gold }]}>
+                  {t('proofUploader.gallery')}
+                </Text>
               </>
             )}
           </TouchableOpacity>
           {Platform.OS !== 'web' && (
             <TouchableOpacity
-              style={[styles.button, { borderColor: colors.gold }]}
+              style={[styles.button, { borderColor: theme.gold }]}
               onPress={takePhoto}
               disabled={uploading || !pinataConfigured}
             >
-              <Camera size={20} color={colors.gold} />
-              <Text style={[styles.buttonText, { color: colors.gold }]}>Camera</Text>
+              <Camera size={20} color={theme.gold} />
+              <Text style={[styles.buttonText, { color: theme.gold }]}>
+                {t('proofUploader.camera')}
+              </Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.button, { borderColor: colors.gold }]}
+            style={[styles.button, { borderColor: theme.gold }]}
             onPress={pickDocument}
             disabled={uploading || !pinataConfigured}
           >
-            <FileIcon size={20} color={colors.gold} />
-            <Text style={[styles.buttonText, { color: colors.gold }]}>File</Text>
+            <FileIcon size={20} color={theme.gold} />
+            <Text style={[styles.buttonText, { color: theme.gold }]}>
+              {t('proofUploader.file')}
+            </Text>
           </TouchableOpacity>
-        </View>
+        </Stack>
       )}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 8,
-    alignItems: 'flex-start'
-  },
-  actions: {
-    flexDirection: 'row-reverse',
-    gap: 8
+    marginTop: spacing.spacer8,
+    alignItems: 'flex-start',
   },
   button: {
     borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    borderRadius: spacing.spacer8,
+    paddingVertical: spacing.spacer4,
+    paddingHorizontal: spacing.spacer12,
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 4
+    gap: spacing.spacer4,
   },
   buttonText: {
     fontSize: 12,
-    fontWeight: '600'
+    fontWeight: '600',
   },
   preview: {
-    borderRadius: 8,
+    borderRadius: spacing.spacer8,
   },
   filePreview: {
     width: 100,
     height: 100,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: spacing.spacer8,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   fileLabel: {
-    marginTop: 4,
-  }
+    marginTop: spacing.spacer4,
+  },
 });
