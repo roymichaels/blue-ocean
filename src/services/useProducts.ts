@@ -1,14 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
-import chain from '@/services/chain';
+import { productsAdapter } from '@/features/products/services';
 import { Product } from '@/types';
-
-let listProducts: ((storeId: string) => Promise<Product[]>) | undefined;
-let setProduct: ((storeId: string, product: Product) => Promise<void>) | undefined;
-let removeProduct: ((storeId: string, id: string) => Promise<void>) | undefined;
-if (chain === 'near') {
-  ({ listProducts, setProduct, removeProduct } = require('@/features/products/services/nearProducts'));
-}
 
 export function useProducts(storeId: string) {
   return useQuery({
@@ -16,9 +9,9 @@ export function useProducts(storeId: string) {
     queryFn: async () => {
       const db = DatabaseService.getInstance();
       let data = await db.getProducts();
-      if (data.length === 0 && listProducts) {
+      if (data.length === 0) {
         try {
-          data = await listProducts(storeId);
+          data = await productsAdapter.listProducts(storeId);
         } catch {}
       }
       return data;
@@ -34,15 +27,14 @@ export function useProductMutations(storeId: string) {
 
   const upsert = useMutation({
     mutationFn: (product: Product) =>
-      setProduct ? setProduct(storeId, product) : Promise.resolve(),
+      productsAdapter.setProduct(storeId, product),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', storeId] });
     },
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) =>
-      removeProduct ? removeProduct(storeId, id) : Promise.resolve(),
+    mutationFn: (id: string) => productsAdapter.removeProduct(storeId, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', storeId] });
     },
