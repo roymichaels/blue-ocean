@@ -16,8 +16,7 @@ import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
 import { useHomeModals } from '@/features/home/hooks/useHomeModals';
 import { useHomeRefresh } from '@/features/home/hooks/useHomeRefresh';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useLanguage } from '@/ui/ThemeProvider';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
@@ -63,7 +62,7 @@ function HomeScreenContent() {
   } = useHomeModals(error);
   const { isStoreOwner } = useAuth();
   const { t } = useLanguage();
-  const { colors } = useTheme();
+  const { colors: themeColors } = useTheme();
 
   const {
     products,
@@ -144,14 +143,14 @@ function HomeScreenContent() {
         style={[
           styles.categoryIcon,
           {
-            backgroundColor: colors.interactive.secondary,
-            borderColor: colors.gold,
+            backgroundColor: themeColors.interactive.secondary,
+            borderColor: themeColors.gold,
           },
         ]}
       >
         <Text style={styles.categoryEmoji}>{item.icon}</Text>
       </View>
-      <Text style={[styles.categoryName, { color: colors.text.primary }]}>
+      <Text style={[styles.categoryName, { color: themeColors.text.primary }]}>
         {item.name}
       </Text>
       {isStoreOwner && (
@@ -160,13 +159,13 @@ function HomeScreenContent() {
             style={[
               styles.categoryAdminButton,
               {
-                backgroundColor: colors.background,
-                borderColor: colors.gold,
+                backgroundColor: themeColors.background,
+                borderColor: themeColors.gold,
               },
             ]}
             onPress={() => push(routes.category(item.id))}
           >
-            <Pencil size={10} color={colors.gold} />
+            <Pencil size={10} color={themeColors.gold} />
           </TouchableOpacity>
         </View>
       )}
@@ -214,7 +213,7 @@ function HomeScreenContent() {
     >
       <ScrollArea
         testID="home-root"
-        backgroundColor={colors.canvas}
+        backgroundColor={themeColors.canvas}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
@@ -241,11 +240,11 @@ function HomeScreenContent() {
         {/* Categories Section */}
         <Container style={styles.section}>
           <Stack direction="horizontal" style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
               {t('home.categories')}
             </Text>
             <TouchableOpacity onPress={() => push('/categories')}>
-              <Text style={[styles.seeAll, { color: colors.gold }]}>
+              <Text style={[styles.seeAll, { color: themeColors.gold }]}>
                 {t('common.viewAll')}
               </Text>
             </TouchableOpacity>
@@ -275,7 +274,7 @@ function HomeScreenContent() {
         {/* Products Section */}
         <Container style={styles.section}>
           <Stack direction="horizontal" style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
               {searchQuery
                 ? t('home.searchResults', { query: searchQuery })
                 : t('home.products')}
@@ -285,14 +284,14 @@ function HomeScreenContent() {
                 style={[
                   styles.sortButton,
                   {
-                    backgroundColor: colors.surface.primary,
-                    borderColor: colors.border.primary,
+                    backgroundColor: themeColors.surface.primary,
+                    borderColor: themeColors.border.primary,
                   },
                 ]}
                 onPress={() => setShowSortModal(true)}
               >
-                <ArrowUpDown size={16} color={colors.gold} />
-                <Text style={[styles.sortText, { color: colors.gold }]}>
+                <ArrowUpDown size={16} color={themeColors.gold} />
+                <Text style={[styles.sortText, { color: themeColors.gold }]}>
                   {getSortLabel()}
                 </Text>
               </TouchableOpacity>
@@ -301,13 +300,13 @@ function HomeScreenContent() {
                   style={[
                     styles.addProductButton,
                     {
-                      backgroundColor: colors.interactive.secondary,
-                      borderColor: colors.gold,
+                      backgroundColor: themeColors.interactive.secondary,
+                      borderColor: themeColors.gold,
                     },
                   ]}
                     onPress={openProductForm}
                 >
-                  <Plus size={16} color={colors.gold} />
+                  <Plus size={16} color={themeColors.gold} />
                 </TouchableOpacity>
               )}
             </Stack>
@@ -358,26 +357,26 @@ function HomeScreenContent() {
         <View
           style={[
             styles.sortModalOverlay,
-            { backgroundColor: colors.background + '80' },
+            { backgroundColor: themeColors.background + '80' },
           ]}
         >
           <View
             style={[
               styles.sortModalContent,
               {
-                backgroundColor: colors.surface.elevated,
-                borderColor: colors.border.primary,
+                backgroundColor: themeColors.surface.elevated,
+                borderColor: themeColors.border.primary,
               },
             ]}
           >
             <View style={styles.sortModalHeader}>
               <Text
-                style={[styles.sortModalTitle, { color: colors.text.primary }]}
+                style={[styles.sortModalTitle, { color: themeColors.text.primary }]}
               >
                 {t('home.sortProducts')}
               </Text>
               <TouchableOpacity onPress={() => setShowSortModal(false)}>
-                <X size={24} color={colors.text.primary} />
+                <X size={24} color={themeColors.text.primary} />
               </TouchableOpacity>
             </View>
 
@@ -391,10 +390,10 @@ function HomeScreenContent() {
                 key={option.key}
                 style={[
                   styles.sortOption,
-                  { borderBottomColor: colors.border.secondary },
+                  { borderBottomColor: themeColors.border.secondary },
                   sortBy === option.key && [
                     styles.selectedSortOption,
-                    { backgroundColor: colors.interactive.secondary },
+                    { backgroundColor: themeColors.interactive.secondary },
                   ],
                 ]}
                 onPress={() => {
@@ -405,8 +404,8 @@ function HomeScreenContent() {
                 <Text
                   style={[
                     styles.sortOptionText,
-                    { color: colors.text.primary },
-                    sortBy === option.key && { color: colors.gold },
+                    { color: themeColors.text.primary },
+                    sortBy === option.key && { color: themeColors.gold },
                   ]}
                 >
                   {option.label}
@@ -415,7 +414,7 @@ function HomeScreenContent() {
                   <View
                     style={[
                       styles.selectedDot,
-                      { backgroundColor: colors.gold },
+                      { backgroundColor: themeColors.gold },
                     ]}
                   />
                 )}
