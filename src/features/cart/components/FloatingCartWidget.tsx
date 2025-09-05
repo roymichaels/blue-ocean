@@ -17,6 +17,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import useCart from '../hooks/useCart';
+import { spacing, radius } from '@/shared/ui/tokens';
 
 function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
   let timeout: ReturnType<typeof setTimeout>;
@@ -266,9 +267,9 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 170,
-    start: 16,
-    end: 16,
-    borderRadius: 16,
+    start: spacing.spacer16,
+    end: spacing.spacer16,
+    borderRadius: radius.xl,
     zIndex: 999,
     borderWidth: 1,
     overflow: 'hidden',
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: spacing.spacer16,
     height: 60,
   },
   headerLeft: {
@@ -287,23 +288,23 @@ const styles = StyleSheet.create({
   },
   cartIcon: {
     position: 'relative',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: spacing.spacer40,
+    height: spacing.spacer40,
+    borderRadius: radius.full,
     justifyContent: 'center',
     alignItems: 'center',
-    marginEnd: 12,
+    marginEnd: spacing.spacer12,
   },
   itemCount: {
     position: 'absolute',
-    top: -4,
-    end: -4,
-    borderRadius: 8,
-    minWidth: 16,
-    height: 16,
+    top: -spacing.spacer4,
+    end: -spacing.spacer4,
+    borderRadius: radius.md,
+    minWidth: spacing.spacer16,
+    height: spacing.spacer16,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: spacing.spacer4,
   },
   itemCountText: {
     fontSize: 10,
@@ -323,20 +324,20 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   headerRight: {
-    marginStart: 12,
+    marginStart: spacing.spacer12,
   },
   productPreview: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   previewImage: {
-    borderRadius: 16,
+    borderRadius: radius.xl,
     borderWidth: 2,
   },
   moreItems: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: radius.xl,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -356,16 +357,16 @@ const styles = StyleSheet.create({
   cartItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: spacing.spacer12,
     borderBottomWidth: 1,
   },
   itemImage: {
-    borderRadius: 8,
-    marginEnd: 12,
+    borderRadius: radius.md,
+    marginEnd: spacing.spacer12,
   },
   itemInfo: {
     flex: 1,
-    marginEnd: 8,
+    marginEnd: spacing.spacer8,
   },
   itemName: {
     fontSize: 14,
@@ -385,12 +386,12 @@ const styles = StyleSheet.create({
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginEnd: 8,
+    marginEnd: spacing.spacer8,
   },
   quantityButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: spacing.spacer24,
+    height: spacing.spacer24,
+    borderRadius: radius.lg,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -398,26 +399,26 @@ const styles = StyleSheet.create({
   quantity: {
     fontSize: 14,
     fontWeight: '600',
-    marginHorizontal: 8,
-    minWidth: 20,
+    marginHorizontal: spacing.spacer8,
+    minWidth: spacing.spacer20,
     textAlign: 'center',
   },
   removeButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: spacing.spacer24,
+    height: spacing.spacer24,
+    borderRadius: radius.lg,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
   },
   footer: {
-    padding: 12,
+    padding: spacing.spacer12,
     borderTopWidth: 1,
   },
   checkoutButton: {
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.spacer12,
+    paddingHorizontal: spacing.spacer16,
     alignItems: 'center',
   },
   checkoutButtonText: {
