@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import Text from '@/ui/primitives/Text';
-import { Link } from 'expo-router';
 import { useAppRouter, useLanding } from '@/services';
 import AppShell from '../components/layout/AppShell';
 import Divider from '@/ui/primitives/Divider';
@@ -44,15 +43,12 @@ export default function Landing() {
             }}
           />
           <View style={{ flexDirection: 'row', gap: spacing.spacer12, marginTop: spacing.spacer16 }}>
-            <Link href={routes.store('alpha')} asChild>
-              <Button title="Open Alpha Store" />
-            </Link>
-            <Link href="/" asChild>
-              <Button
-                title="Browse App"
-                style={{ borderRadius: radius.md, borderColor: colors.gold, backgroundColor: 'transparent' }}
-              />
-            </Link>
+            <Button title="Open Alpha Store" onPress={() => push(routes.store('alpha'))} />
+            <Button
+              title="Browse App"
+              style={{ borderRadius: radius.md, borderColor: colors.gold, backgroundColor: 'transparent' }}
+              onPress={() => push('/') /* eslint-disable-line no-restricted-syntax */}
+            />
           </View>
         </View>
 
