@@ -23,7 +23,9 @@
     "premium": "פרימיום",
     "info": "מידע",
     "understood": "הבנתי",
-    "reload": "טען מחדש"
+    "reload": "טען מחדש",
+    "goHome": "חזור לבית",
+    "route": "נתיב:"
   },
   "app": {
     "routerDisabled": "הנתב מושבת"
@@ -377,7 +379,8 @@
     "unauthorized": "לא מורשה",
     "forbidden": "אסור",
     "validationError": "שגיאת אימות",
-    "unknownError": "שגיאה לא ידועה"
+    "unknownError": "שגיאה לא ידועה",
+    "pageNotFound": "404 - הדף לא נמצא"
   },
   "cart": {
     "loginRequiredTitle": "נדרשת התחברות",

@@ -23,7 +23,9 @@
     "premium": "Premium",
     "info": "Information",
     "understood": "Understood",
-    "reload": "Reload"
+    "reload": "Reload",
+    "goHome": "Go Home",
+    "route": "Route:"
   },
   "app": {
     "routerDisabled": "Router disabled"
@@ -403,7 +405,8 @@
     "unauthorized": "Unauthorized",
     "forbidden": "Forbidden",
     "validationError": "Validation error",
-    "unknownError": "Unknown error"
+    "unknownError": "Unknown error",
+    "pageNotFound": "404 - Page Not Found"
   },
   "cart": {
     "loginRequiredTitle": "Login Required",
