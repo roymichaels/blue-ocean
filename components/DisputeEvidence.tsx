@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
+import { t } from '@/services/i18n';
 
 interface Props {
   uri?: string;
@@ -27,8 +28,8 @@ export default function DisputeEvidence({ uri }: Props) {
     };
   }, [uri]);
 
-  if (!uri) return <Text>No evidence</Text>;
-  if (content == null) return <Text>Loading evidence...</Text>;
+  if (!uri) return <Text>{t('disputes.noEvidence')}</Text>;
+  if (content == null) return <Text>{t('disputes.loadingEvidence')}</Text>;
   return (
     <View>
       <Text selectable>{content}</Text>

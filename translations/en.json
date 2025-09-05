@@ -507,6 +507,12 @@
     "transactionCancelled": "Transaction cancelled",
     "createSuccess": "Store created successfully"
   },
+  "disputes": {
+    "title": "Disputes",
+    "noDisputes": "No disputes",
+    "noEvidence": "No evidence",
+    "loadingEvidence": "Loading evidence..."
+  },
   "proofUploader": {
     "permissionRequired": "Permission Required",
     "permissionMessage": "Please allow access to media on the device.",
