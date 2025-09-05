@@ -4,10 +4,12 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'expo-router';
+import { Platform } from 'react-native';
 import { FloatingCartWidget } from '@/features/cart';
 import { getTabsForAuth } from '@/config/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';
+import { spacing, shadows } from '@/shared/ui/tokens';
 
 export default function TabsLayout() {
   const { t } = useLanguage();
@@ -27,11 +29,10 @@ export default function TabsLayout() {
     start: 0,
     end: 0,
     backgroundColor: colors.tabBar.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.tabBar.border,
-    height: 70,
-    paddingBottom: 8,
-    paddingTop: 8,
+    height: spacing.spacer24 * 3,
+    paddingBottom: spacing.spacer8,
+    paddingTop: spacing.spacer8,
+    ...Platform.select(shadows.sm),
   } as const;
   warnIfTabBarHidden(tabBarStyle as any, TabsLayout.name);
 
