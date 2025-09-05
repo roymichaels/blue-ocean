@@ -14,6 +14,7 @@ import { useAppInfo } from '@/contexts/AppInfoContext';
 import { configureRTL } from '@/utils/rtl';
 import enTranslations from '@/translations/en.json';
 import heTranslations from '@/translations/he.json';
+import { setT, t as defaultT } from '@/i18n';
 
 // -----------------
 // Theme context
@@ -81,7 +82,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         await setTheme(storedTheme as ThemeMode);
       }
     } catch (error) {
-      errorLog('Error loading stored theme:', error);
+      errorLog(error);
     }
   };
 
@@ -113,7 +114,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         applyTheme(newTheme, themeColor);
         await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
       } catch (error) {
-        errorLog('Error setting theme:', error);
+        errorLog(error);
       }
     },
     [themeColor],
@@ -154,8 +155,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType>({
   currentLanguage: 'he',
   setLanguage: async () => {},
-  t: (key: string, options?: Record<string, string | number> | string) =>
-    typeof options === 'string' ? options : key,
+  t: defaultT,
   isRTL: true,
 });
 
@@ -187,7 +187,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
         await setLanguage(storedLanguage as Language);
       }
     } catch (error) {
-      errorLog('Error loading stored language:', error);
+      errorLog(error);
       await setLanguage('en');
     }
   };
@@ -207,7 +207,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
       await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
     } catch (error) {
-      errorLog('Error setting language:', error);
+      errorLog(error);
       setTranslations(enTranslations);
       setIsRTL(false);
       setCurrentLanguage('en');
@@ -228,7 +228,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     return val;
   };
 
-  const t = (
+  const translate = (
     key: string,
     options?: Record<string, string | number> | string,
   ): string => {
@@ -257,12 +257,14 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     return fallback || key;
   };
 
+  setT(translate);
+
   return (
     <LanguageContext.Provider
       value={{
         currentLanguage,
         setLanguage,
-        t,
+        t: translate,
         isRTL,
       }}
     >
