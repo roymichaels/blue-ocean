@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import chain from '@/services/chain';
 import { Product, HeroBanner, Category } from '@/types';
-import { t } from '@/services/i18n';
+import { t } from '@/i18n';
 
 interface LandingData {
   featured: Product[];
