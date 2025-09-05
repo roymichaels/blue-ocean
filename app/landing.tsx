@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
 import { Text, Divider, Button } from '@/ui';
 import { useAppRouter, useLanding } from '@/services';
-import AppShell from '../components/layout/AppShell';
+import AppShell from '@/components/layout/AppShell';
 import { ProductCard } from '@/features/products';
 import { useTheme } from '@/ui/ThemeProvider';
 import SmartImage from '../components/SmartImage';
@@ -109,7 +109,7 @@ export default function Landing() {
   );
 
   return (
-    <AppShell>
+    <AppShell showSearch={false}>
         <ScrollView style={{ backgroundColor: colors.canvas }} showsVerticalScrollIndicator={false}>
           {/* Hero */}
         <View style={{ paddingHorizontal: spacing.spacer16, paddingTop: spacing.spacer24, paddingBottom: spacing.spacer12, alignItems: 'center' }}>
