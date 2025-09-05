@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { FlatList, View, StyleSheet } from 'react-native';
 import EmptyState from '@/shared/ui/EmptyState';
 import ProductCard from '../ProductCard';
 import { Product } from '@/types';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Package } from 'lucide-react-native';
 import { spacing } from '@/shared/ui/tokens';
 
@@ -21,8 +21,9 @@ const ProductRow = React.memo(
   )
 );
 
-export default function ProductGrid({ products }: { products: Product[] }) {
+function ProductGrid({ products }: { products: Product[] }) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   const borderColor = colors.border.primary;
   const renderItem = useCallback(
@@ -47,8 +48,8 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     return (
       <EmptyState
         icon={Package}
-        title="No products yet"
-        message="When the owner adds items, they will appear here."
+        title={t('subcategory.noProducts')}
+        message={t('home.productsComingSoon')}
       />
     );
   }
@@ -64,4 +65,6 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     />
   );
 }
+
+export default memo(ProductGrid);
 

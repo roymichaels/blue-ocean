@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { ProductCard, ProductCardSkeleton } from '@/features/products';
 import { Product, Category } from '@/types';
@@ -29,7 +29,7 @@ const ProductRow = React.memo(({ item }: { item: Product }) => (
   </View>
 ));
 
-export default function ProductGrid({
+function ProductGrid({
   products,
   categories,
   isStoreOwner,
@@ -97,6 +97,8 @@ export default function ProductGrid({
     />
   );
 }
+
+export default memo(ProductGrid);
 
 const styles = StyleSheet.create({
   productsGrid: {
