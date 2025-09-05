@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import Text from '@/ui/primitives/Text';
-import { Link } from 'expo-router';
 import { useAppRouter, useLanding } from '@/services';
 import AppShell from '../components/layout/AppShell';
 import Divider from '@/ui/primitives/Divider';

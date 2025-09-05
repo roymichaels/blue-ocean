@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import { stripTabsPrefix, push, replace } from '@/services/navigation';
+import { stripTabsPrefix, push, replace, toTab } from '@/services/navigation';
 
 jest.mock('expo-router', () => ({
   router: {
@@ -47,6 +47,10 @@ describe('navigation helpers', () => {
   it('replace strips group prefix in pathname objects', () => {
     replace({ pathname: '/(tabs)/orders', params: { foo: 'bar' } });
     expect(router.replace).toHaveBeenCalledWith({ pathname: '/orders', params: { foo: 'bar' } });
+  });
+
+  it('toTab removes group prefix', () => {
+    expect(toTab('/(tabs)/profile')).toBe('/profile');
   });
 });
 
