@@ -6,7 +6,8 @@ import {
   Platform,
 } from 'react-native';
 import { Text, Button, Portal, Overlay } from '@/ui';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
+import { spacing, radius, shadows, typography } from '@/shared/ui/tokens';
 import { X } from 'lucide-react-native';
 
 interface ConfirmationModalProps {
@@ -24,24 +25,27 @@ export default function ConfirmationModal({
   visible,
   title,
   message,
-  confirmText = 'אישור',
-  cancelText = 'ביטול',
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
   destructive = false,
 }: ConfirmationModalProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
+  const confirmLabel = confirmText ?? t('common.confirm');
+  const cancelLabel = cancelText ?? t('common.cancel');
 
   if (!visible) return null;
 
   return (
     <Portal>
-      <Overlay style={styles.overlay} />
+      <Overlay style={[styles.overlay, { backgroundColor: colors.canvas }]} />
       <View style={styles.center} pointerEvents="box-none">
         <View
           style={[styles.modalContainer, { backgroundColor: colors.surface.elevated }]}
         >
-          <View style={styles.header}>
+          <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
             <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
             <TouchableOpacity
               onPress={onCancel}
@@ -60,26 +64,23 @@ export default function ConfirmationModal({
 
           <View style={styles.actions}>
             <Button
-              title={cancelText}
+              title={cancelLabel}
               onPress={onCancel}
-              style={{
-                flex: 1,
-                backgroundColor: 'transparent',
-                borderWidth: 1,
-                borderColor: colors.border.primary,
-              }}
+              style={[styles.cancelButton, { borderColor: colors.border.primary }]}
               accessibilityRole="button"
             />
 
             <Button
-              title={confirmText}
+              title={confirmLabel}
               onPress={onConfirm}
-              style={{
-                flex: 1,
-                backgroundColor: destructive
-                  ? colors.status.error
-                  : colors.interactive.primary,
-              }}
+              style={[
+                styles.confirmButton,
+                {
+                  backgroundColor: destructive
+                    ? colors.status.error
+                    : colors.interactive.primary,
+                },
+              ]}
               accessibilityRole="button"
             />
           </View>
@@ -92,32 +93,27 @@ export default function ConfirmationModal({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    opacity: 0.5,
   },
   center: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: spacing.spacer20,
   },
   modalContainer: {
     width: '100%',
     maxWidth: 400,
-    borderRadius: 16,
+    borderRadius: radius.xl,
     overflow: 'hidden',
-    ...Platform.select({
-      ios: { elevation: 5 },
-      android: { elevation: 5 },
-      web: { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)' },
-    }),
+    ...Platform.select(shadows.md),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.spacer16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   title: {
     fontSize: 18,
@@ -126,20 +122,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   closeButton: {
-    padding: 4,
+    padding: spacing.spacer4,
   },
   content: {
-    padding: 20,
+    padding: spacing.spacer20,
   },
   message: {
-    fontSize: 16,
-    lineHeight: 24,
+    ...typography.md,
     textAlign: 'center',
   },
   actions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 16,
-    gap: 12,
+    padding: spacing.spacer16,
+    gap: spacing.spacer12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+  },
+  confirmButton: {
+    flex: 1,
   },
 });
