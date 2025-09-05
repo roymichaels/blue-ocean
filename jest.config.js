@@ -28,6 +28,7 @@ module.exports = {
     '^@/services/(.*)$': ['<rootDir>/src/services/$1', '<rootDir>/services/$1'],
     '^@/providers/(.*)$': '<rootDir>/src/providers/$1',
     '^@/providers$': '<rootDir>/src/providers/index',
+    '^@/i18n$': '<rootDir>/src/i18n',
     '^@/(.*)$': '<rootDir>/$1',
   },
   testMatch: [

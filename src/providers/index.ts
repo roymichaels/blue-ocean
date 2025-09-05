@@ -1,4 +1,3 @@
-export { default, default as AppProviders } from './AppProviders';
 export { CheckedQueryClientProvider } from './CheckedQueryClientProvider';
 export { WalletProvider } from './WalletProvider';
-export { ThemeProvider, LanguageProvider, useLanguage } from '../ui/ThemeProvider';
+export { ThemeProvider, LanguageProvider, useLanguage, t } from '../ui/ThemeProvider';
