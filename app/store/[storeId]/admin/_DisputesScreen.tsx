@@ -10,6 +10,7 @@ import { Order } from '../../../../types';
 import DisputeEvidence from '../../../../components/DisputeEvidence';
 import DisputeResolver from '../../../../components/DisputeResolver';
 import commonStyles from '@/constants/styles';
+import { t } from '@/services/i18n';
 
 export default function AdminDisputesScreen() {
   const { colors } = useTheme();
@@ -53,7 +54,7 @@ export default function AdminDisputesScreen() {
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={{ flex: 1, textAlign: 'center', fontSize: 18, color: colors.text.primary }}>
-          Disputes
+          {t('disputes.title')}
         </Text>
         <View style={commonStyles.spacer24} />
       </View>
@@ -68,13 +69,15 @@ export default function AdminDisputesScreen() {
               padding: 16,
             }}
           >
-            <Text style={{ color: colors.text.primary }}>Order: {order.id}</Text>
+            <Text style={{ color: colors.text.primary }}>
+              {t('orders.orderNumber', { id: order.id })}
+            </Text>
             <DisputeEvidence uri={order.disputeEvidenceUri} />
             <DisputeResolver orderId={order.id} />
           </View>
         ))}
         {orders.length === 0 && (
-          <Text style={{ color: colors.text.secondary }}>No disputes</Text>
+          <Text style={{ color: colors.text.secondary }}>{t('disputes.noDisputes')}</Text>
         )}
       </ScrollView>
     </SafeAreaView>
