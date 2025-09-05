@@ -1,17 +1,16 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import AppShell from '../../components/layout/AppShell';
-import ErrorBoundary from '@/shared/ErrorBoundary';
+import { useLanguage } from '@/ui/ThemeProvider';
 
 export default function CartScreen() {
+  const { t } = useLanguage();
   return (
-    <ErrorBoundary>
-      <AppShell showSearch={false}>
-        <View>
-          <Text>Cart Screen</Text>
-        </View>
-      </AppShell>
-    </ErrorBoundary>
+    <AppShell showSearch={false}>
+      <View>
+        <Text>{t('cart.title')}</Text>
+      </View>
+    </AppShell>
   );
 }
 

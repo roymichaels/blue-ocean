@@ -12,7 +12,6 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { Order, CartItem } from '../../types';
 import { useTheme } from '@/ui/ThemeProvider';
 import AppShell from '../../components/layout/AppShell';
-import ErrorBoundary from '@/shared/ErrorBoundary';
 import EmptyState from '@/shared/ui/EmptyState';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
@@ -47,7 +46,8 @@ export default function OrdersScreen() {
   const { t, currentLanguage } = useLanguage();
   const { currencySymbol } = useCurrency();
   const { push, back } = useAppRouter();
-  const storeId = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
+  const storeEnv = 'expo_public_default_store'.toUpperCase();
+  const storeId = requireEnv(storeEnv, 'default');
   const { data: orders = [], refetch } = useOrders(storeId);
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function OrdersScreen() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(
-      currentLanguage === 'he' ? 'he-IL' : 'en-US',
+      (currentLanguage === 'he' ? 'he-il' : 'en-us').toUpperCase(),
       {
         year: 'numeric',
         month: '2-digit',
@@ -203,10 +203,9 @@ export default function OrdersScreen() {
   );
 
   return (
-    <ErrorBoundary>
-      <AppShell showSearch={false}>
-      
-      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
+    <AppShell showSearch={false}>
+
+      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
         <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
@@ -234,8 +233,7 @@ export default function OrdersScreen() {
         onClose={() => setShowOrderTracking(false)}
         order={selectedOrder}
       />
-      </AppShell>
-    </ErrorBoundary>
+    </AppShell>
   );
 }
 

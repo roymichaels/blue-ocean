@@ -6,7 +6,6 @@ import { useLanguage } from '@/providers';
 import { useAppRouter } from '@/services';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Plus } from 'lucide-react-native';
-import ErrorBoundary from '@/shared/ErrorBoundary';
 import { useCategories } from '@/services';
 import Button from '@/ui/primitives/Button';
 import { spacing } from '@/ui/tokens';
@@ -19,8 +18,7 @@ export default function Categories() {
   const { data: categories = [] } = useCategories();
 
   return (
-    <ErrorBoundary>
-      <AppShell>
+    <AppShell>
         {categories.length > 0 ? (
           <ScrollView style={{ backgroundColor: colors.canvas }} contentContainerStyle={styles.list}>
             {categories.map((c) => (
@@ -47,7 +45,6 @@ export default function Categories() {
           />
         )}
       </AppShell>
-    </ErrorBoundary>
   );
 }
 

@@ -7,6 +7,7 @@ import { Form, Field, Label, HelperText } from '@/ui/form';
 import TextField from '@/ui/primitives/TextField';
 import Button from '@/ui/primitives/Button';
 import { validateAll } from '@/utils/validation';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function SignupScreen() {
   const { colors } = useTheme();
@@ -37,8 +38,9 @@ export default function SignupScreen() {
   };
 
   return (
-    <View style={{ flex: 1, padding: spacing.spacer16, backgroundColor: colors.canvas }}>
-      <Form>
+    <ErrorBoundary>
+      <View style={{ flex: 1, padding: spacing.spacer16, backgroundColor: colors.canvas }}>
+        <Form>
         <Field>
           <Label>{t('auth.username')}</Label>
           <TextField
@@ -70,5 +72,6 @@ export default function SignupScreen() {
         <Button title={t('auth.signup')} onPress={handleSubmit} />
       </Form>
     </View>
+    </ErrorBoundary>
   );
 }
