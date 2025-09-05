@@ -4,14 +4,15 @@ import { User } from '@/types';
 
 let listUsers: (() => Promise<User[]>) | undefined;
 if (chain === 'near') {
-  ({ listUsers } = require('../services/nearUsers'));
+  ({ listUsers } = require('@/features/auth/services/nearUsers'));
 }
 
-export function useUserDirectory() {
-  const { data = [], isLoading, error } = useQuery<User[]>({
-    queryKey: ['user-directory'],
+export function useUsers() {
+  return useQuery<User[]>({
+    queryKey: ['users'],
     queryFn: () => (listUsers ? listUsers() : Promise.resolve([])),
+    select: (data) => data ?? [],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
-
-  return { data, isLoading, error } as const;
 }
