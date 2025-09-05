@@ -29,7 +29,7 @@ export default function UserAvatar() {
   };
 
   const getRandomColor = () => {
-    const palette = getColor('avatarPalette') as string[];
+    const palette = getColor(`avatarPalette`) as string[];
     const initials = getInitials();
     const index = initials.charCodeAt(0) % palette.length;
     return palette[index];
@@ -86,7 +86,9 @@ export default function UserAvatar() {
             size={36}
             uri={user?.avatar}
             initials={getInitials()}
-            onPress={() => (isLoggedIn ? setMenuOpen(true) : handleLogin())}
+            onPress={() =>
+              isLoggedIn ? setMenuOpen((prev) => !prev) : handleLogin()
+            }
             style={{
               borderColor: getColor('border.primary'),
               backgroundColor: isLoggedIn
