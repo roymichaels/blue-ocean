@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Link } from 'expo-router';
+import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function Probe() {
   const { colors } = useTheme();
+  const { push } = useAppRouter();
   return (
     <ErrorBoundary>
       <View
@@ -22,12 +23,12 @@ export default function Probe() {
         >
           PROBE OK
         </Text>
-        <Link
-          href="/categories"
+        <Text
+          onPress={() => push('/categories') /* eslint-disable-line no-restricted-syntax */}
           style={{ color: colors.gold, fontWeight: '700' }}
         >
           Open Tabs → Categories
-        </Link>
+        </Text>
       </View>
     </ErrorBoundary>
   );
