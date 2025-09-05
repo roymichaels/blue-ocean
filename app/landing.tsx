@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import { useAppRouter, useLanding } from '@/services';
@@ -11,14 +11,104 @@ import Button from '@/ui/primitives/Button';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { routes } from '@/utils/routes';
 import { t } from '@/services/i18n';
+import { HeroBanner, Category } from '@/types';
+import { Link } from 'expo-router';
+
+export const BannerItem = React.memo(
+  ({ banner, colors }: { banner: HeroBanner; colors: any }) => {
+    const containerStyle = useMemo(
+      () => ({
+        width: 280,
+        height: 140,
+        borderRadius: 12,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: colors.border.primary,
+        backgroundColor: colors.surface.primary,
+      }),
+      [colors]
+    );
+
+    return (
+      <View style={containerStyle}>
+        {banner.image ? (
+          <SmartImage uri={banner.image} width={280} height={140} contentFit="cover" />
+        ) : (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ color: colors.gold, fontWeight: '800' }}>{banner.title}</Text>
+            {banner.subtitle ? (
+              <Text style={{ color: colors.text.secondary, marginTop: 4 }}>
+                {banner.subtitle}
+              </Text>
+            ) : null}
+          </View>
+        )}
+      </View>
+    );
+  }
+);
+
+export const CategoryButton = React.memo(
+  ({
+    category,
+    onPress,
+    colors,
+  }: {
+    category: Category;
+    onPress: (id: string) => void;
+    colors: any;
+  }) => {
+    const style = useMemo(
+      () => ({
+        paddingHorizontal: spacing.spacer12,
+        paddingVertical: spacing.spacer8,
+        borderRadius: radius.xl,
+        borderWidth: 1,
+        borderColor: colors.border.primary,
+        backgroundColor: colors.surface.primary,
+      }),
+      [colors]
+    );
+    const textStyle = useMemo(
+      () => ({ color: colors.text.primary, fontWeight: '600' }),
+      [colors]
+    );
+    const handlePress = useCallback(() => onPress(category.id), [category.id, onPress]);
+
+    return (
+      <Button
+        title={category.name}
+        onPress={handlePress}
+        style={style}
+        textStyle={textStyle}
+      />
+    );
+  }
+);
 
 export default function Landing() {
   const { push } = useAppRouter();
   const { colors } = useTheme();
   const { data } = useLanding();
   const featured = data?.featured ?? [];
-  const banners = data?.banners ?? [];
-  const categories = data?.categories ?? [];
+  const banners = useMemo(() => data?.banners ?? [], [data?.banners]);
+  const categories = useMemo(() => data?.categories ?? [], [data?.categories]);
+
+  const handleCategoryPress = useCallback(
+    (id: string) => {
+      push(routes.category(id));
+    },
+    [push]
+  );
+
+  const bannerRowStyle = useMemo(
+    () => ({ flexDirection: 'row', gap: spacing.spacer12, paddingHorizontal: spacing.spacer16 }),
+    []
+  );
+  const categoryRowStyle = useMemo(
+    () => ({ flexDirection: 'row', gap: spacing.spacer8 }),
+    []
+  );
 
   return (
     <AppShell>
@@ -79,31 +169,9 @@ export default function Landing() {
           />
           <View style={{ marginTop: spacing.spacer12 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ flexDirection: 'row', gap: spacing.spacer12, paddingHorizontal: spacing.spacer16 }}>
-                {banners.map((b) => (
-                  <View
-                    key={b.id}
-                    style={{
-                      width: 280,
-                      height: 140,
-                      borderRadius: 12,
-                      overflow: 'hidden',
-                      borderWidth: 1,
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.surface.primary,
-                    }}
-                  >
-                    {b.image ? (
-                      <SmartImage uri={b.image} width={280} height={140} contentFit="cover" />
-                    ) : (
-                      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ color: colors.gold, fontWeight: '800' }}>{b.title}</Text>
-                        {b.subtitle ? (
-                          <Text style={{ color: colors.text.secondary, marginTop: 4 }}>{b.subtitle}</Text>
-                        ) : null}
-                      </View>
-                    )}
-                  </View>
+              <View style={bannerRowStyle}>
+                {banners.map((b: HeroBanner) => (
+                  <BannerItem key={b.id} banner={b} colors={colors} />
                 ))}
               </View>
             </ScrollView>
@@ -126,22 +194,9 @@ export default function Landing() {
           />
           <View style={{ marginTop: spacing.spacer12 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ flexDirection: 'row', gap: spacing.spacer8 }}>
-                {categories.map((c) => (
-                  <Button
-                    key={c.id}
-                    title={c.name}
-                    onPress={() => push(routes.category(c.id))}
-                    style={{
-                      paddingHorizontal: spacing.spacer12,
-                      paddingVertical: spacing.spacer8,
-                      borderRadius: radius.xl,
-                      borderWidth: 1,
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.surface.primary,
-                    }}
-                    textStyle={{ color: colors.text.primary, fontWeight: '600' }}
-                  />
+              <View style={categoryRowStyle}>
+                {categories.map((c: Category) => (
+                  <CategoryButton key={c.id} category={c} colors={colors} onPress={handleCategoryPress} />
                 ))}
               </View>
             </ScrollView>

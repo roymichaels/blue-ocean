@@ -18,6 +18,17 @@ interface ProductGridProps {
   loading?: boolean;
 }
 
+const rowStyles = StyleSheet.create({
+  flex: { flex: 1 },
+  card: { marginBottom: spacing.spacer12 },
+});
+
+const ProductRow = React.memo(({ item }: { item: Product }) => (
+  <View style={rowStyles.flex}>
+    <ProductCard product={item} style={rowStyles.card} />
+  </View>
+));
+
 export default function ProductGrid({
   products,
   categories,
@@ -30,11 +41,7 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const { t } = useLanguage();
   const renderItem = useCallback(
-    ({ item }: { item: Product }) => (
-      <View style={rowStyles.flex}>
-        <ProductCard key={item.id} product={item} style={{ marginBottom: spacing.spacer12 }} />
-      </View>
-    ),
+    ({ item }: { item: Product }) => <ProductRow item={item} />,
     []
   );
 
@@ -101,6 +108,4 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 });
-
-const rowStyles = StyleSheet.create({ flex: { flex: 1 } });
 
