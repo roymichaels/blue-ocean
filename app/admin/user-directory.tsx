@@ -6,6 +6,7 @@ import { useRequirePlatformAdmin, useUsers } from '@/services';
 import RequireWallet from '@/components/RequireWallet';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Users } from 'lucide-react-native';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function UserDirectory() {
   useRequirePlatformAdmin();
@@ -14,23 +15,25 @@ export default function UserDirectory() {
   const { data: users = [], isLoading } = useUsers();
 
   return (
-    <RequireWallet>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {users.length === 0 && !isLoading ? (
-          <EmptyState
-            icon={Users}
-            title={t('admin.noUsers') as string}
-            message={t('admin.noUsersFound') as string}
-          />
-        ) : (
-          users.map((u) => (
-            <Text key={u.id} style={{ color: colors.text.primary }}>
-              {u.displayName || u.id}
-            </Text>
-          ))
-        )}
-      </View>
-    </RequireWallet>
+    <ErrorBoundary>
+      <RequireWallet>
+        <View style={[styles.container, { backgroundColor: colors.background }]}> 
+          {users.length === 0 && !isLoading ? (
+            <EmptyState
+              icon={Users}
+              title={t('admin.noUsers') as string}
+              message={t('admin.noUsersFound') as string}
+            />
+          ) : (
+            users.map((u) => (
+              <Text key={u.id} style={{ color: colors.text.primary }}>
+                {u.displayName || u.id}
+              </Text>
+            ))
+          )}
+        </View>
+      </RequireWallet>
+    </ErrorBoundary>
   );
 }
 

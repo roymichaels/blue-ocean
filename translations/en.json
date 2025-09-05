@@ -338,6 +338,9 @@
     "copyOrderDetails": "Copy Order Details",
     "noUsers": "No users",
     "noUsersFound": "No users found",
+    "platformOverview": "Platform Overview",
+    "complianceSoon": "Compliance tools coming soon.",
+    "feesSoon": "Fees management coming soon.",
     "productCount": "Products: {count}",
     "viewOrders": "View Orders"
   },
