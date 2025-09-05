@@ -5,6 +5,7 @@ import { View, Text } from 'react-native';
 import { Router, usePathname, useSegments } from 'expo-router';
 import { stripTabsPrefix } from '@/services/navigation';
 import { useLanguage } from '@/ui/ThemeProvider';
+import { Spinner } from '@/ui/primitives';
 import { debugLog } from '@/utils/logger';
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
@@ -37,7 +38,7 @@ function MainApp() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <React.Suspense fallback={null}>
+        <React.Suspense fallback={<Spinner />}>
           {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
         </React.Suspense>
       </SafeAreaProvider>
