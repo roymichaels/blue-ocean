@@ -10,7 +10,7 @@ import { Order } from '../../../../types';
 import DisputeEvidence from '../../../../components/DisputeEvidence';
 import DisputeResolver from '../../../../components/DisputeResolver';
 import commonStyles from '@/constants/styles';
-import { t } from '@/services/i18n';
+import { t } from '@/i18n';
 
 export default function AdminDisputesScreen() {
   const { colors } = useTheme();

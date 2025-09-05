@@ -50,10 +50,6 @@ config.resolver.unstable_enablePackageExports = true;
     __dirname,
     'HMRClient.ts'
   ),
-  'react-native/Libraries/Utilities/HMRClient': path.resolve(
-    __dirname,
-    'EmptyHMRClient.ts'
-  ),
   '@noble/hashes': path.resolve(__dirname, 'node_modules/@noble/hashes'),
   '@noble/ed25519': path.resolve(__dirname, 'node_modules/@noble/ed25519'),
   '@noble/hashes/hkdf': require.resolve('@noble/hashes/hkdf'),

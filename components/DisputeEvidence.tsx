@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import { t } from '@/services/i18n';
+import { t } from '@/i18n';
 
 interface Props {
   uri?: string;
