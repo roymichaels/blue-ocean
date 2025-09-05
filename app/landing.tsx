@@ -18,7 +18,7 @@ export const BannerItem = React.memo(
       () => ({
         width: 280,
         height: 140,
-        borderRadius: 12,
+        borderRadius: radius.lg,
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: colors.border.primary,
@@ -35,7 +35,7 @@ export const BannerItem = React.memo(
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ color: colors.gold, fontWeight: '800' }}>{banner.title}</Text>
             {banner.subtitle ? (
-              <Text style={{ color: colors.text.secondary, marginTop: 4 }}>
+              <Text style={{ color: colors.text.secondary, marginTop: spacing.spacer4 }}>
                 {banner.subtitle}
               </Text>
             ) : null}
