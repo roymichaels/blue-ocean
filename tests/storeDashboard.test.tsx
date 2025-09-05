@@ -1,6 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import StoreDashboardScreen from '@app/store/[storeId]/admin/dashboard';
+import { routes } from '@/utils/routes';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),
@@ -70,7 +71,7 @@ describe('StoreDashboardScreen', () => {
       root = renderer.create(<StoreDashboardScreen />);
     });
     await act(async () => {});
-    expect(router.replace).toHaveBeenCalledWith('/store/s1');
+    expect(router.replace).toHaveBeenCalledWith(routes.store('s1'));
     expect(root!.toJSON()).toBeNull();
   });
 
@@ -84,7 +85,7 @@ describe('StoreDashboardScreen', () => {
       root = renderer.create(<StoreDashboardScreen />);
     });
     await act(async () => {});
-    expect(router.replace).toHaveBeenCalledWith('/store/s1');
+    expect(router.replace).toHaveBeenCalledWith(routes.store('s1'));
     expect(root!.toJSON()).toBeNull();
   });
 

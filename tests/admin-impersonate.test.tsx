@@ -1,6 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import Impersonate from '@app/admin/stores/[storeId]/impersonate';
+import { routes } from '@/utils/routes';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),
@@ -28,6 +29,6 @@ describe('Admin store impersonation', () => {
       renderer.create(<Impersonate />);
     });
     await act(async () => {});
-    expect(router.replace).toHaveBeenCalledWith('/store/s1/admin/dashboard?impersonate=true');
+    expect(router.replace).toHaveBeenCalledWith(routes.storeAdminDashboard('s1', true));
   });
 });

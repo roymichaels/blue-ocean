@@ -44,6 +44,14 @@ module.exports = [
           selector: "MemberExpression[object.name='router']",
           message: "Do not use router directly; use useAppRouter().",
         },
+        {
+          selector: "Literal[value^='/']",
+          message: 'Use routes helper functions instead of hard-coded paths.',
+        },
+        {
+          selector: "TemplateElement[value.raw^='/']",
+          message: 'Use routes helper functions instead of hard-coded paths.',
+        },
       ],
       'no-restricted-imports': [
         'error',
@@ -128,6 +136,14 @@ module.exports = [
         {
           selector: "TemplateElement[value.raw=/\\(tabs\\)/]",
           message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
+        },
+        {
+          selector: "Literal[value^='/']",
+          message: 'Use routes helper functions instead of hard-coded paths.',
+        },
+        {
+          selector: "TemplateElement[value.raw^='/']",
+          message: 'Use routes helper functions instead of hard-coded paths.',
         },
       ],
       'no-restricted-imports': [
