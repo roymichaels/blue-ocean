@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,14 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import useCart from '../hooks/useCart';
 
+function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
+  let timeout: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
+
 const { width } = Dimensions.get('window');
 
 export default function FloatingCartWidget() {
@@ -31,40 +39,62 @@ export default function FloatingCartWidget() {
   const { cartItems, updateQuantity, removeItem, getTotal, getTotalItems } = useCart();
   const { push } = useAppRouter();
 
-  useEffect(() => {
-    if (cartItems.length > 0) {
-      Animated.timing(animatedOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    } else {
-      Animated.timing(animatedOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-      setIsExpanded(false);
-    }
-  }, [cartItems.length, animatedOpacity]);
+  const itemCount = useMemo(() => cartItems.length, [cartItems]);
+  const totalItems = useMemo(() => getTotalItems(), [getTotalItems]);
+  const totalAmount = useMemo(() => getTotal(), [getTotal]);
+  const hasItems = useMemo(() => itemCount > 0, [itemCount]);
 
-  const toggleExpanded = () => {
+  const animateOpacity = useCallback(
+    (visible: boolean) => {
+      Animated.timing(animatedOpacity, {
+        toValue: visible ? 1 : 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start(() => {
+        if (!visible) setIsExpanded(false);
+      });
+    },
+    [animatedOpacity]
+  );
+
+  const animateHeight = useCallback(
+    (expanded: boolean, count: number) => {
+      Animated.timing(animatedHeight, {
+        toValue: expanded ? Math.min(300, count * 80 + 120) : 60,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    },
+    [animatedHeight]
+  );
+
+  const debouncedAnimateHeight = useMemo(
+    () => debounce(animateHeight, 100),
+    [animateHeight]
+  );
+
+  const toggleExpanded = useCallback(() => {
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
-    
-    Animated.timing(animatedHeight, {
-      toValue: newExpanded ? Math.min(300, cartItems.length * 80 + 120) : 60,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
+    debouncedAnimateHeight(newExpanded, itemCount);
+  }, [isExpanded, debouncedAnimateHeight, itemCount]);
 
-    const goToCheckout = () => {
-      setIsExpanded(false);
-      push({ pathname: '/', params: { showCart: 'true' } });
-    };
+  useEffect(() => {
+    animateOpacity(hasItems);
+  }, [hasItems, animateOpacity]);
 
-  if (cartItems.length === 0) {
+  useEffect(() => {
+    if (isExpanded) {
+      debouncedAnimateHeight(true, itemCount);
+    }
+  }, [itemCount, isExpanded, debouncedAnimateHeight]);
+
+  const goToCheckout = useCallback(() => {
+    setIsExpanded(false);
+    push({ pathname: '/', params: { showCart: 'true' } });
+  }, [push]);
+
+  if (!hasItems) {
     return null;
   }
 
@@ -80,7 +110,7 @@ export default function FloatingCartWidget() {
           ...Platform.select({
             ios: { elevation: 12 },
             android: { elevation: 12 },
-            web: { boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)' }
+            web: { boxShadow: `0px 4px 8px rgba(0, 0, 0, 0.3)` }
           }),
         }
       ]}
@@ -95,7 +125,7 @@ export default function FloatingCartWidget() {
               style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
             />
             <View style={[styles.itemCount, { backgroundColor: colors.status.error }]}>
-              <Text style={[styles.itemCountText, { color: colors.text.primary }]}>{getTotalItems()}</Text>
+              <Text style={[styles.itemCountText, { color: colors.text.primary }]}>{totalItems}</Text>
             </View>
           </View>
           <View style={styles.headerText}>
@@ -104,7 +134,7 @@ export default function FloatingCartWidget() {
             </Text>
             <Text style={[styles.headerSubtitle, { color: colors.gold }]} numberOfLines={1}>
               {currencySymbol}
-              {getTotal().toFixed(2)}
+              {totalAmount.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -139,7 +169,7 @@ export default function FloatingCartWidget() {
                   }
                 ]}
               >
-                <Text style={[styles.moreItemsText, { color: colors.text.inverse }]}>+{cartItems.length - 3}</Text>
+                <Text style={[styles.moreItemsText, { color: colors.text.inverse }]}>{`+${cartItems.length - 3}`}</Text>
               </View>
             )}
           </View>
@@ -173,8 +203,9 @@ export default function FloatingCartWidget() {
                     {currencySymbol}{(item.unitPrice ?? item.product.price).toFixed(2)}
                   </Text>
                     {item.tierName && (
-                      <Text style={[styles.tierInfo, { color: colors.text.secondary }]}>{'\n'}
-                      {item.tierName} • EQ {item.effectiveQty}
+                      <Text style={[styles.tierInfo, { color: colors.text.secondary }]}>
+                        {'\n'}
+                        {`${item.tierName} • EQ ${item.effectiveQty}`}
                       </Text>
                     )}
                 </View>
@@ -220,7 +251,7 @@ export default function FloatingCartWidget() {
             <TouchableOpacity style={[styles.checkoutButton, { backgroundColor: colors.gold }]} onPress={goToCheckout}>
               <Text style={[styles.checkoutButtonText, { color: colors.text.inverse }]}>
                 {t('cart.proceedToPaymentTotal', {
-                  total: `${currencySymbol}${getTotal().toFixed(2)}`,
+                  total: `${currencySymbol}${totalAmount.toFixed(2)}`,
                 })}
               </Text>
             </TouchableOpacity>
