@@ -1,13 +1,9 @@
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Button, Portal, Overlay } from '@/ui';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
-import { spacing, radius, shadows, typography } from '@/shared/ui/tokens';
+import { spacing, radius, typography } from '@/shared/ui/tokens';
+import { platformShadow } from '@/utils/shadow';
 import { X } from 'lucide-react-native';
 
 interface ConfirmationModalProps {
@@ -106,7 +102,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     borderRadius: radius.xl,
     overflow: 'hidden',
-    ...Platform.select(shadows.md),
+    ...platformShadow('md'),
   },
   header: {
     flexDirection: 'row',

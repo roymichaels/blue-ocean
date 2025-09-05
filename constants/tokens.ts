@@ -31,12 +31,17 @@ export const shadows = {
   sm: {
     ios: { elevation: 2 },
     android: { elevation: 2 },
-    web: { boxShadow: '0px 2px 4px rgba(0,0,0,0.1)' },
+    web: { boxShadow: `0px 2px 4px rgba(0,0,0,0.1)` },
   },
   md: {
     ios: { elevation: 5 },
     android: { elevation: 5 },
-    web: { boxShadow: '0px 4px 12px rgba(0,0,0,0.15)' },
+    web: { boxShadow: `0px 4px 12px rgba(0,0,0,0.15)` },
+  },
+  lg: {
+    ios: { elevation: 12 },
+    android: { elevation: 12 },
+    web: { boxShadow: `0px 4px 8px rgba(0,0,0,0.3)` },
   },
 };
 
