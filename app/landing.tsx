@@ -8,7 +8,6 @@ import { ProductCard } from '@/features/products';
 import { useTheme } from '@/ui/ThemeProvider';
 import SmartImage from '../components/SmartImage';
 import Button from '@/ui/primitives/Button';
-import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { routes } from '@/utils/routes';
 import { t } from '@/services/i18n';
@@ -22,8 +21,7 @@ export default function Landing() {
   const categories = data?.categories ?? [];
 
   return (
-    <ErrorBoundary>
-      <AppShell>
+    <AppShell>
         <ScrollView style={{ backgroundColor: colors.canvas }} showsVerticalScrollIndicator={false}>
           {/* Hero */}
         <View style={{ paddingHorizontal: spacing.spacer16, paddingTop: spacing.spacer24, paddingBottom: spacing.spacer12, alignItems: 'center' }}>
@@ -179,6 +177,5 @@ export default function Landing() {
         </View>
       </ScrollView>
       </AppShell>
-    </ErrorBoundary>
   );
 }
