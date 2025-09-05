@@ -278,7 +278,9 @@
     "noKycRequests": "No pending KYC requests",
     "kycApproved": "KYC approved successfully",
     "kycRejected": "KYC rejected",
-    "copyOrderDetails": "Copy Order Details"
+    "copyOrderDetails": "Copy Order Details",
+    "noUsers": "No users",
+    "noUsersFound": "No users found"
   },
   "chat": {
     "customerSupport": "Customer Support",
