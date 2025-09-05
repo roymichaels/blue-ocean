@@ -62,6 +62,9 @@
       "@/providers/*": [
         "src/providers/*"
       ],
+      "@/i18n": [
+        "src/i18n.ts"
+      ],
       "@/*": [
         "./*"
       ],

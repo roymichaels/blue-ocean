@@ -8,7 +8,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import SmartImage from '../components/SmartImage';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { routes } from '@/utils/routes';
-import { t } from '@/services/i18n';
+import { t } from '@/i18n';
 import { HeroBanner, Category } from '@/types';
 import { Link } from 'expo-router';
 
