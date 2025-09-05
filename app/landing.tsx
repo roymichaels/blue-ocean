@@ -1,13 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
-import Text from '@/ui/primitives/Text';
+import { Text, Divider, Button } from '@/ui';
 import { useAppRouter, useLanding } from '@/services';
 import AppShell from '../components/layout/AppShell';
-import Divider from '@/ui/primitives/Divider';
 import { ProductCard } from '@/features/products';
 import { useTheme } from '@/ui/ThemeProvider';
 import SmartImage from '../components/SmartImage';
-import Button from '@/ui/primitives/Button';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { routes } from '@/utils/routes';
 import { t } from '@/services/i18n';
