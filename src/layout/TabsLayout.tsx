@@ -8,6 +8,7 @@ import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
 import { getTabsForAuth } from '@/config/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';
+import { debugLog } from '@/utils/logger';
 
 export default function TabsLayout() {
   const { t } = useLanguage();
@@ -16,9 +17,7 @@ export default function TabsLayout() {
   const pathname = usePathname();
   const [showCartWidget, setShowCartWidget] = useState(false);
   const tabs = getTabsForAuth(auth);
-  try {
-    console.log('[TabsLayout] route:', pathname, 'tabs:', tabs.map((tb) => tb.name));
-  } catch {}
+  debugLog(`[TabsLayout] route: ${pathname} tabs: ${tabs.map((tb) => tb.name)}`);
 
   useEffect(() => {
     setShowCartWidget(pathname === '/' || pathname === '/index');
@@ -36,7 +35,7 @@ export default function TabsLayout() {
     paddingBottom: 8,
     paddingTop: 8,
   } as const;
-  warnIfTabBarHidden(tabBarStyle as any, 'TabsLayout');
+  warnIfTabBarHidden(tabBarStyle as any, TabsLayout.name);
 
   const screenOptions = {
     headerShown: false,
@@ -89,8 +88,6 @@ function mapTitle(t: (key: string) => string, raw: string) {
     Categories: t('navigation.categories'),
     Notifications: t('navigation.notifications'),
     Reviews: t('navigation.reviews'),
-    Dashboard: 'Dashboard',
-    Catalog: 'Catalog',
   };
   return map[raw] ?? raw;
 }
