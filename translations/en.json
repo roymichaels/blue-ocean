@@ -499,5 +499,17 @@
     "insufficientFunds": "Insufficient funds to deploy the store",
     "transactionCancelled": "Transaction cancelled",
     "createSuccess": "Store created successfully"
+  },
+  "proofUploader": {
+    "permissionRequired": "Permission Required",
+    "permissionMessage": "Please allow access to media on the device.",
+    "unavailableTitle": "Unavailable",
+    "unavailableMessage": "Media uploads are not configured.",
+    "errorLog": "Error uploading proof:",
+    "errorTitle": "Error",
+    "errorMessage": "File upload failed",
+    "file": "File",
+    "gallery": "Gallery",
+    "camera": "Camera"
   }
 }

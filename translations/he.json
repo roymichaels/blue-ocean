@@ -475,5 +475,17 @@
     "insufficientFunds": "אין מספיק כספים לפריסת החנות",
     "transactionCancelled": "העסקה בוטלה",
     "createSuccess": "החנות נוצרה בהצלחה"
+  },
+  "proofUploader": {
+    "permissionRequired": "נדרשת הרשאה",
+    "permissionMessage": "אנא אפשר גישה למדיה במכשיר.",
+    "unavailableTitle": "לא זמין",
+    "unavailableMessage": "העלאת מדיה לא הוגדרה.",
+    "errorLog": "שגיאה בהעלאת הוכחה:",
+    "errorTitle": "שגיאה",
+    "errorMessage": "העלאת הקובץ נכשלה",
+    "file": "קובץ",
+    "gallery": "גלריה",
+    "camera": "מצלמה"
   }
 }
