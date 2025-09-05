@@ -9,7 +9,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
-import WishlistModal from '@/features/cart/components/WishlistModal';
+import { WishlistModal } from '@/features/cart';
 import CartService from '@/features/cart/services/cart';
 import { spacing, radius, typography } from '@/ui/tokens';
 

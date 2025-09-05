@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
 import NotificationPopup from './NotificationPopup';
 import AgentError from '@/types/AgentError';
-import { useNotificationSubscription } from '@/features/notifications/hooks/useNotificationSubscription';
+import { useNotificationSubscription } from '@/features/notifications';
 
 interface NotificationState {
   unreadCount: number;

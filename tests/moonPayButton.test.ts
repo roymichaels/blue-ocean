@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import MoonPayButton from '@/features/payments/components/MoonPayButton';
+import { MoonPayButton } from '@/features/payments';
 
 jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({ colors: { gold: 'gold', text: { inverse: '#fff' } } }),
@@ -20,10 +20,10 @@ const modalMock = jest.fn(({ visible, amountNEAR, amountUSD }: any) =>
   visible ? React.createElement('MoonPayModal', { amountNEAR, amountUSD }) : null,
 );
 
-jest.mock('@/features/payments/components/MoonPayModal', () => ({
-  __esModule: true,
-  default: (props: any) => modalMock(props),
-}));
+jest.mock('@/features/payments', () => {
+  const actual = jest.requireActual('@/features/payments');
+  return { ...actual, MoonPayModal: (props: any) => modalMock(props) };
+});
 
 describe('MoonPayButton', () => {
   afterEach(() => {

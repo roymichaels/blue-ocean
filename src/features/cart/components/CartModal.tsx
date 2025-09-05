@@ -38,7 +38,7 @@ if (chain === 'near') {
 import OrderService from '@/services/orders';
 import eventBus from '@/services/eventBus';
 import { Spinner } from '@/ui/primitives';
-const MoonPayButton = require('@/features/payments/components/MoonPayButton').default;
+const MoonPayButton = require('@/features/payments').MoonPayButton;
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';
 import commonStyles from '@/constants/styles';

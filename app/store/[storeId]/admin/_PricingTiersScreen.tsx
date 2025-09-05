@@ -25,7 +25,7 @@ import DatabaseService from '@/services/database';
 import { PricingTier } from '../../../../types';
 import { Spinner } from '@/ui/primitives';
 import InfoModal from '../../../../components/InfoModal';
-import PricingTierFormModal from '@/features/products/components/PricingTierFormModal';
+import { PricingTierFormModal } from '@/features/products';
 import Card from '@/ui/primitives/Card';
 
 export default function PricingTiersScreen() {

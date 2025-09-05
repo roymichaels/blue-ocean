@@ -28,8 +28,12 @@ import { Spinner } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 const BannerFormModal = lazy(() => import('@/components/BannerFormModal'));
-const CartModal = lazy(() => import('@/features/cart/components/CartModal'));
-const ProductFormModal = lazy(() => import('@/features/products/components/ProductFormModal'));
+const CartModal = lazy(() =>
+  import('@/features/cart').then((m) => ({ default: m.CartModal }))
+);
+const ProductFormModal = lazy(() =>
+  import('@/features/products').then((m) => ({ default: m.ProductFormModal }))
+);
 const InfoModal = lazy(() => import('@/components/InfoModal'));
 import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
 import { spacing } from '@/shared/ui/tokens';

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
-import ProductCard, { ProductCardSkeleton } from '@/features/products/ProductCard';
+import { ProductCard, ProductCardSkeleton } from '@/features/products';
 import { Product, Category } from '@/types';
 import { useLanguage } from '@/ui/ThemeProvider';
 import EmptyState from '@/shared/ui/EmptyState';

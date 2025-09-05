@@ -5,8 +5,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { Product } from '../../../../types';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { useProducts } from '@/services/useProducts';
-import ProductCard from '@/features/products/ProductCard';
-import ProductFormModal from '@/features/products/components/ProductFormModal';
+import { ProductCard, ProductFormModal } from '@/features/products';
 import { useAccountId } from '@/features/auth/services/nearAuth';
 import { useAuth } from '@/features/auth/AuthContext';
 

@@ -4,7 +4,7 @@ import Text from '@/ui/primitives/Text';
 import { useAppRouter, useLanding } from '@/services';
 import AppShell from '../components/layout/AppShell';
 import Divider from '@/ui/primitives/Divider';
-import ProductCard from '@/features/products/ProductCard';
+import { ProductCard } from '@/features/products';
 import { useTheme } from '@/ui/ThemeProvider';
 import SmartImage from '../components/SmartImage';
 import Button from '@/ui/primitives/Button';

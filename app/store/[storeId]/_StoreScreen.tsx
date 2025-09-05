@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/ui/ThemeProvider';
 import StoreHeader from '@/features/stores/components/store/StoreHeader';
 import StoreTabs from '@/features/stores/components/store/StoreTabs';
-import ProductGrid from '@/features/products/components/ProductGrid';
+import { ProductGrid } from '@/features/products';
 import { useStoreData } from '@/services/useStoreData';
 
 export default function StorefrontStoreScreen() {
