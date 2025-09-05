@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import AppShell from '../components/layout/AppShell';
 import { useTheme } from '@/ui/ThemeProvider';
-import { useLanguage } from '@/ui/ThemeProvider';
+import { useLanguage } from '@/providers';
 import { useAppRouter } from '@/services';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Plus } from 'lucide-react-native';
