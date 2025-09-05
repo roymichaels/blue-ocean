@@ -29,6 +29,7 @@
     "ts-prune": "node scripts/app.js ts-prune",
     "doctor": "node scripts/app.js doctor",
     "prepare": "husky install",
+    "i18n:check": "node scripts/check-i18n.js",
     "contract:build": "node scripts/app.js contract build",
     "contract:deploy": "node scripts/app.js contract deploy",
     "indexer:dev": "node scripts/app.js indexer dev",
@@ -168,7 +169,8 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "yarn lint"
+      "yarn lint",
+      "node scripts/check-i18n.js"
     ],
     "**/*": [
       "node scripts/check-no-ton.js"
