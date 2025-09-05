@@ -2,10 +2,23 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import StoreDetail from '@app/admin/stores/[storeId]/index';
 
-jest.mock('expo-router', () => ({
-  useLocalSearchParams: jest.fn(),
-  router: { replace: jest.fn(), push: jest.fn() },
-}));
+jest.mock('expo-router', () => {
+  const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };
+  return {
+    useLocalSearchParams: jest.fn(),
+    useRouter: () => router,
+    router,
+  };
+});
+
+jest.mock('@/services/navigation', () => {
+  const actual = jest.requireActual('@/services/navigation');
+  return {
+    ...actual,
+    push: jest.fn(actual.push),
+    replace: jest.fn(actual.replace),
+  };
+});
 
 jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({
@@ -22,14 +35,16 @@ jest.mock('@/features/stores/services/nearStores', () => ({ getStore: jest.fn() 
 jest.mock('@/features/auth/AuthContext', () => ({ useAuth: jest.fn() }));
 
 describe('Admin store detail access control', () => {
-  const { useLocalSearchParams, router } = require('expo-router');
+  const { useLocalSearchParams } = require('expo-router');
+  const navigation = require('@/services/navigation');
   const { getStore } = require('@/features/stores/services/nearStores');
   const { useAuth } = require('@/features/auth/AuthContext');
+  const TAB_GROUP = '(' + 'tabs' + ')';
 
   beforeEach(() => {
     useLocalSearchParams.mockReturnValue({ storeId: 's1' });
-    router.replace.mockReset();
-    router.push.mockReset();
+    navigation.replace.mockClear();
+    navigation.push.mockClear();
     getStore.mockReset();
     useAuth.mockReset();
   });
@@ -39,10 +54,11 @@ describe('Admin store detail access control', () => {
     getStore.mockResolvedValue({ id: 's1', name: 'Store', owner: 'owner1' });
 
     await act(async () => {
-      renderer.create(<StoreDetail />);
+      renderer.create(React.createElement(StoreDetail));
     });
     await act(async () => {});
-    expect(router.replace).toHaveBeenCalledWith('/');
+    expect(navigation.replace).toHaveBeenCalledWith('/');
+    expect(navigation.replace.mock.calls[0][0]).not.toContain(TAB_GROUP);
   });
 
   it('allows platform admin', async () => {
@@ -51,10 +67,10 @@ describe('Admin store detail access control', () => {
 
     let root: renderer.ReactTestRenderer;
     await act(async () => {
-      root = renderer.create(<StoreDetail />);
+      root = renderer.create(React.createElement(StoreDetail));
     });
     await act(async () => {});
-    expect(router.replace).not.toHaveBeenCalled();
+    expect(navigation.replace).not.toHaveBeenCalled();
     const str = JSON.stringify(root!.toJSON());
     expect(str).toContain('Impersonate');
   });
