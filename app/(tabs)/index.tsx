@@ -17,8 +17,6 @@ import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
-import HomeHeader from '@/features/home/components/HomeHeader';
-import SearchBar from '@/features/home/components/SearchBar';
 import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
@@ -37,8 +35,9 @@ const ProductFormModal = lazy(() =>
 const InfoModal = lazy(() => import('@/components/InfoModal'));
 import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
 import { spacing } from '@/shared/ui/tokens';
-import { Screen, ScrollArea, Container, Stack } from '@/ui/layout';
+import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { routes } from '@/utils/routes';
+import AppShell from '@/components/layout/AppShell';
 
 
 function HomeScreenContent() {
@@ -103,16 +102,26 @@ function HomeScreenContent() {
 
   // Fallback content to guarantee a rich homepage even with empty services
   const fallbackCategories: Category[] = [
-    { id: 'electronics', name: 'Electronics', icon: '📱' } as any,
-    { id: 'fashion', name: 'Fashion', icon: '👗' } as any,
-    { id: 'home', name: 'Home', icon: '🏠' } as any,
-    { id: 'beauty', name: 'Beauty', icon: '💄' } as any,
-    { id: 'sports', name: 'Sports', icon: '🏀' } as any,
-    { id: 'books', name: 'Books', icon: '📚' } as any,
+    { id: 'electronics', name: t('categories.electronics'), icon: String.fromCodePoint(0x1F4F1) } as any,
+    { id: 'fashion', name: t('categories.fashion'), icon: String.fromCodePoint(0x1F457) } as any,
+    { id: 'home', name: t('categories.home'), icon: String.fromCodePoint(0x1F3E0) } as any,
+    { id: 'beauty', name: t('categories.beauty'), icon: String.fromCodePoint(0x1F484) } as any,
+    { id: 'sports', name: t('categories.sports'), icon: String.fromCodePoint(0x1F3C0) } as any,
+    { id: 'books', name: t('categories.books'), icon: String.fromCodePoint(0x1F4DA) } as any,
   ];
   const fallbackBanners: Partial<HeroBanner & { id: string }>[] = [
-    { id: 'b1', image: '', title: 'Welcome to Blue Ocean', subtitle: 'Own your store on NEAR' },
-    { id: 'b2', image: '', title: 'Decentralized by design', subtitle: 'Fast, P2P and secure' },
+    {
+      id: 'b1',
+      image: '',
+      title: t('home.fallbackBanner1Title'),
+      subtitle: t('home.fallbackBanner1Subtitle'),
+    },
+    {
+      id: 'b2',
+      image: '',
+      title: t('home.fallbackBanner2Title'),
+      subtitle: t('home.fallbackBanner2Subtitle'),
+    },
   ];
 
   useEffect(() => {
@@ -243,11 +252,13 @@ function HomeScreenContent() {
   };
 
   return (
-    <Screen testID="home-root" style={styles.container}>
-      <HomeHeader />
-      <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-
+    <AppShell
+      showSearch
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+    >
       <ScrollArea
+        testID="home-root"
         backgroundColor={colors.canvas}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
@@ -408,7 +419,7 @@ function HomeScreenContent() {
               <Text
                 style={[styles.sortModalTitle, { color: colors.text.primary }]}
               >
-                מיון מוצרים
+                {t('home.sortProducts')}
               </Text>
               <TouchableOpacity onPress={() => setShowSortModal(false)}>
                 <X size={24} color={colors.text.primary} />
@@ -478,7 +489,7 @@ function HomeScreenContent() {
           onClose={() => setShowCartModal(false)}
         />
       </Suspense>
-    </Screen>
+    </AppShell>
   );
 }
 
@@ -493,9 +504,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   section: {
     paddingHorizontal: spacing.spacer16,
     marginBottom: spacing.spacer24,
