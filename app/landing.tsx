@@ -11,6 +11,7 @@ import Button from '@/ui/primitives/Button';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { routes } from '@/utils/routes';
+import { t } from '@/services/i18n';
 
 export default function Landing() {
   const { push } = useAppRouter();
@@ -27,10 +28,10 @@ export default function Landing() {
           {/* Hero */}
         <View style={{ paddingHorizontal: spacing.spacer16, paddingTop: spacing.spacer24, paddingBottom: spacing.spacer12, alignItems: 'center' }}>
           <Text style={{ color: colors.text.primary, fontSize: 28, fontWeight: '800', textAlign: 'center' }}>
-            Blue Ocean Marketplace
+            {t('landing.title')}
           </Text>
           <Text style={{ color: colors.text.secondary, marginTop: spacing.spacer8, textAlign: 'center' }}>
-            Decentralized commerce on NEAR — own your store, your data, your future.
+            {t('landing.subtitle')}
           </Text>
           <Divider
             style={{
@@ -43,12 +44,15 @@ export default function Landing() {
             }}
           />
           <View style={{ flexDirection: 'row', gap: spacing.spacer12, marginTop: spacing.spacer16 }}>
-            <Button title="Open Alpha Store" onPress={() => push(routes.store('alpha'))} />
-            <Button
-              title="Browse App"
-              style={{ borderRadius: radius.md, borderColor: colors.gold, backgroundColor: 'transparent' }}
-              onPress={() => push('/') /* eslint-disable-line no-restricted-syntax */}
-            />
+            <Link href={routes.store('alpha')} asChild>
+              <Button title={t('landing.openAlphaStore')} />
+            </Link>
+            <Link href="/" asChild>
+              <Button
+                title={t('landing.browseApp')}
+                style={{ borderRadius: radius.md, borderColor: colors.gold, backgroundColor: 'transparent' }}
+              />
+            </Link>
           </View>
         </View>
 
@@ -62,7 +66,7 @@ export default function Landing() {
               textAlign: 'center',
             }}
           >
-            Highlights
+            {t('landing.highlights')}
           </Text>
           <Divider
             style={{
@@ -110,7 +114,7 @@ export default function Landing() {
 
         {/* Categories */}
         <View style={{ paddingHorizontal: spacing.spacer16, paddingVertical: spacing.spacer16 }}>
-          <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700' }}>Categories</Text>
+          <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700' }}>{t('landing.categories')}</Text>
           <Divider
             style={{
               width: 120,
@@ -148,7 +152,7 @@ export default function Landing() {
 
         {/* Featured */}
         <View style={{ paddingHorizontal: spacing.spacer16, paddingVertical: spacing.spacer16 }}>
-          <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700' }}>Featured</Text>
+          <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700' }}>{t('landing.featured')}</Text>
           <Divider
             style={{
               width: 120,
@@ -169,7 +173,7 @@ export default function Landing() {
               ))}
             </View>
             {featured.length === 0 && (
-              <Text style={{ color: colors.text.secondary }}>No featured items yet.</Text>
+              <Text style={{ color: colors.text.secondary }}>{t('landing.noFeaturedItemsYet')}</Text>
             )}
           </View>
         </View>

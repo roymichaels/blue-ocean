@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import chain from '@/services/chain';
 import { Product, HeroBanner, Category } from '@/types';
+import { t } from '@/services/i18n';
 
 interface LandingData {
   featured: Product[];
@@ -15,17 +16,27 @@ if (chain === 'near') {
 }
 
 const defaultBanners: HeroBanner[] = [
-  { id: 'b1', image: '', title: 'Welcome to Blue Ocean', subtitle: 'Own your store on NEAR' },
-  { id: 'b2', image: '', title: 'Decentralized by design', subtitle: 'Fast, P2P and secure' },
+  {
+    id: 'b1',
+    image: '',
+    title: t('landing.defaultBanners.welcome'),
+    subtitle: t('landing.defaultBanners.ownStore'),
+  },
+  {
+    id: 'b2',
+    image: '',
+    title: t('landing.defaultBanners.decentralized'),
+    subtitle: t('landing.defaultBanners.fastSecure'),
+  },
 ];
 
 const defaultCategories: Category[] = [
-  { id: 'electronics', name: 'Electronics' },
-  { id: 'fashion', name: 'Fashion' },
-  { id: 'home', name: 'Home' },
-  { id: 'beauty', name: 'Beauty' },
-  { id: 'sports', name: 'Sports' },
-  { id: 'books', name: 'Books' },
+  { id: 'electronics', name: t('landing.defaultCategories.electronics') },
+  { id: 'fashion', name: t('landing.defaultCategories.fashion') },
+  { id: 'home', name: t('landing.defaultCategories.home') },
+  { id: 'beauty', name: t('landing.defaultCategories.beauty') },
+  { id: 'sports', name: t('landing.defaultCategories.sports') },
+  { id: 'books', name: t('landing.defaultCategories.books') },
 ];
 
 export function useLanding() {
