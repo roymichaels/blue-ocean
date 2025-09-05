@@ -1,5 +1,21 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { View, ScrollView, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import React, {
+  memo,
+  useState,
+  useEffect,
+  useRef,
+  Suspense,
+  lazy,
+  useCallback,
+} from 'react';
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  Dimensions,
+  StyleSheet,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+} from 'react-native';
 import { Plus, Pencil } from 'lucide-react-native';
 import { HeroBanner } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
@@ -25,11 +41,11 @@ interface BannerAreaProps {
   loading?: boolean;
 }
 
-export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, loading }: BannerAreaProps) {
+function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, loading }: BannerAreaProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const { push } = useAppRouter();
-  const bannerScrollRef = useRef<ScrollView>(null);
+  const bannerScrollRef = useRef<FlatList<HeroBanner>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -37,80 +53,95 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
       const bannerInterval = setInterval(() => {
         setCurrentIndex((prevIndex) => {
           const nextIndex = (prevIndex + 1) % heroBanners.length;
-          bannerScrollRef.current?.scrollTo({ x: nextIndex * (width - 32), animated: true });
+          bannerScrollRef.current?.scrollToOffset({
+            offset: nextIndex * (width - 32),
+            animated: true,
+          });
           return nextIndex;
         });
       }, 5000);
       return () => clearInterval(bannerInterval);
     }
   }, [heroBanners.length]);
-
-  const renderBanner = (item: HeroBanner) => (
-    <View key={item.id} style={styles.heroBanner}>
-      <TouchableOpacity
-        style={styles.bannerTouchable}
-        onPress={() => push(routes.category(item.category))}
-      >
-        <Suspense fallback={<Spinner />}>
-          <SmartImage
-            uri={item.image}
-            width={BANNER_WIDTH}
-            height={BANNER_HEIGHT}
-            contentFit="cover"
-          />
-        </Suspense>
-        <View
-          pointerEvents="none"
-          style={[
-            styles.heroOverlay,
-            { backgroundColor: colors.background + '66' },
-          ]}
+  const renderBanner = useCallback(
+    ({ item }: { item: HeroBanner }) => (
+      <View style={styles.heroBanner}>
+        <TouchableOpacity
+          style={styles.bannerTouchable}
+          onPress={() => push(routes.category(item.category))}
         >
-          <View style={styles.heroContent}>
-            {item.discount ? (
-              <Text
-                style={[
-                  typography.xs,
-                  {
-                    fontWeight: '600',
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 8,
-                    alignSelf: 'flex-start',
-                    marginBottom: 8,
-                    color: colors.text.inverse,
-                    backgroundColor: colors.gold,
-                  },
-                ]}
-              >
-                {item.discount} הנחה
-              </Text>
-            ) : null}
-            <Heading size="lg" style={{ color: colors.gold }}>
-              {item.title}
-            </Heading>
-
-            <Text style={[typography.sm, { marginTop: 4, color: colors.gold }]}> 
-              {item.subtitle}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-
-      {isStoreOwner && (
-        <View style={styles.bannerAdminActions}>
-          <TouchableOpacity
+          <Suspense fallback={<Spinner />}>
+            <SmartImage
+              uri={item.image}
+              width={BANNER_WIDTH}
+              height={BANNER_HEIGHT}
+              contentFit="cover"
+            />
+          </Suspense>
+          <View
+            pointerEvents="none"
             style={[
-              styles.bannerAdminButton,
-              { backgroundColor: colors.background + 'CC' },
+              styles.heroOverlay,
+              { backgroundColor: colors.background + '66' },
             ]}
-            onPress={() => onEditBanner(item)}
           >
-            <Pencil size={16} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+            <View style={styles.heroContent}>
+              {item.discount ? (
+                <Text
+                  style={[
+                    typography.xs,
+                    {
+                      fontWeight: '600',
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      borderRadius: 8,
+                      alignSelf: 'flex-start',
+                      marginBottom: 8,
+                      color: colors.text.inverse,
+                      backgroundColor: colors.gold,
+                    },
+                  ]}
+                >
+              {t('product.percentOff', { percent: item.discount })}
+                </Text>
+              ) : null}
+              <Heading size="lg" style={{ color: colors.gold }}>
+                {item.title}
+              </Heading>
+
+              <Text style={[typography.sm, { marginTop: 4, color: colors.gold }]}>
+                {item.subtitle}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {isStoreOwner && (
+          <View style={styles.bannerAdminActions}>
+            <TouchableOpacity
+              style={[
+                styles.bannerAdminButton,
+                { backgroundColor: colors.background + 'CC' },
+              ]}
+              onPress={() => onEditBanner(item)}
+            >
+            <Pencil size={16} color={colors.text.inverse} />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    ),
+    [colors, isStoreOwner, onEditBanner, push, t]
+  );
+
+  const keyExtractor = useCallback((item: HeroBanner) => item.id, []);
+
+  const handleMomentumScrollEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const newIndex = Math.round(event.nativeEvent.contentOffset.x / (width - 32));
+      setCurrentIndex(newIndex);
+    },
+    []
   );
 
   if (loading) {
@@ -151,21 +182,17 @@ export default function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onE
 
       {heroBanners.length > 0 ? (
         <>
-          <ScrollView
+          <FlatList
             ref={bannerScrollRef}
+            data={heroBanners}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(event) => {
-              const newIndex = Math.round(
-                event.nativeEvent.contentOffset.x / (width - 32)
-              );
-              setCurrentIndex(newIndex);
-            }}
+            onMomentumScrollEnd={handleMomentumScrollEnd}
+            renderItem={renderBanner}
+            keyExtractor={keyExtractor}
             contentContainerStyle={styles.bannerScrollContent}
-          >
-            {heroBanners.map((item) => renderBanner(item))}
-          </ScrollView>
+          />
 
           {heroBanners.length > 1 && (
             <View pointerEvents="none" style={styles.bannerIndicators}>
@@ -241,7 +268,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#ccc',
+    backgroundColor: colors.border.primary,
     marginHorizontal: 4,
   },
   activeIndicator: {},
@@ -260,4 +287,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+export default memo(BannerArea);
 
