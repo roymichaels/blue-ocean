@@ -312,6 +312,11 @@
     "kycApproved": "אימות KYC אושר בהצלחה",
     "kycRejected": "אימות KYC נדחה",
     "copyOrderDetails": "העתק פרטי הזמנה",
+    "noUsers": "אין משתמשים",
+    "noUsersFound": "לא נמצאו משתמשים",
+    "platformOverview": "סקירת פלטפורמה",
+    "complianceSoon": "כלי ציות יגיעו בקרוב.",
+    "feesSoon": "ניהול עמלות יגיע בקרוב.",
     "productCount": "מוצרים: {count}",
     "viewOrders": "צפייה בהזמנות"
   },
