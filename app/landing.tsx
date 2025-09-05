@@ -2,7 +2,7 @@ import React from 'react';
 import { View, ScrollView } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import { Link } from 'expo-router';
-import { useAppRouter, useCategories, useLanding } from '@/services';
+import { useAppRouter, useLanding } from '@/services';
 import AppShell from '../components/layout/AppShell';
 import Divider from '@/ui/primitives/Divider';
 import ProductCard from '@/features/products/ProductCard';
@@ -19,7 +19,7 @@ export default function Landing() {
   const { data } = useLanding();
   const featured = data?.featured ?? [];
   const banners = data?.banners ?? [];
-  const { data: categories = [] } = useCategories();
+  const categories = data?.categories ?? [];
 
   return (
     <ErrorBoundary>
@@ -82,10 +82,7 @@ export default function Landing() {
           <View style={{ marginTop: spacing.spacer12 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={{ flexDirection: 'row', gap: spacing.spacer12, paddingHorizontal: spacing.spacer16 }}>
-                {(banners.length ? banners : [
-                  { id: 'b1', image: '', title: 'Welcome to Blue Ocean', subtitle: 'Own your store on NEAR' },
-                  { id: 'b2', image: '', title: 'Decentralized by design', subtitle: 'Fast, P2P and secure' },
-                ] as any[]).map((b) => (
+                {banners.map((b) => (
                   <View
                     key={b.id}
                     style={{
@@ -132,14 +129,7 @@ export default function Landing() {
           <View style={{ marginTop: spacing.spacer12 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={{ flexDirection: 'row', gap: spacing.spacer8 }}>
-                {(categories.length ? categories.slice(0, 8) : [
-                  { id: 'electronics', name: 'Electronics' },
-                  { id: 'fashion', name: 'Fashion' },
-                  { id: 'home', name: 'Home' },
-                  { id: 'beauty', name: 'Beauty' },
-                  { id: 'sports', name: 'Sports' },
-                  { id: 'books', name: 'Books' },
-                ] as any[]).map((c) => (
+                {categories.map((c) => (
                   <Button
                     key={c.id}
                     title={c.name}
