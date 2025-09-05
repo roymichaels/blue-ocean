@@ -44,9 +44,8 @@ jest.mock('../agents/review-agent', () => ({
   getByProduct: jest.fn(async () => []),
 }));
 
-jest.mock('@/features/products/ProductCard', () => ({
-  __esModule: true,
-  default: ({ product }: any) => React.createElement('ProductCard', null, product.name),
+jest.mock('@/features/products', () => ({
+  ProductCard: ({ product }: any) => React.createElement('ProductCard', null, product.name),
 }));
 
 describe('StorefrontScreen', () => {

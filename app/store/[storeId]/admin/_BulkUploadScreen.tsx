@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useAppRouter } from '@/services';
-import AdminBulkUploader from '@/features/products/components/AdminBulkUploader';
+import { AdminBulkUploader } from '@/features/products';
 import { useAuth } from '@/features/auth/AuthContext';
 
 export default function BulkUploadScreen() {

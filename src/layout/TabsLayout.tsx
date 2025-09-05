@@ -4,7 +4,7 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'expo-router';
-import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
+import { FloatingCartWidget } from '@/features/cart';
 import { getTabsForAuth } from '@/config/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';

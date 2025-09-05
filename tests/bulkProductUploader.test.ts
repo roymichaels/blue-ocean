@@ -40,7 +40,7 @@ describe('BulkProductUploader processRecords', () => {
   it('uploads 100 products in ≤4 batches', async () => {
     const admins = await getAdmins();
     expect(admins).toEqual([]);
-    const { processRecords } = await import('@/features/products/components/BulkProductUploader');
+    const { processRecords } = await import('@/features/products');
     const products: Product[] = Array.from({ length: 100 }, (_, i) => ({
       id: `p${i}`,
       name: `prod${i}`,

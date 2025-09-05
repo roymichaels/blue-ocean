@@ -6,7 +6,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useRequirePlatformAdmin } from '@/services';
-import { useStore } from '@/features/products/hooks';
+import { useStore } from '@/features/products';
 import { routes } from '@/utils/routes';
 
 export default function StoreDetail() {

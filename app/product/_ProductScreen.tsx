@@ -34,7 +34,7 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import FullScreenMediaViewer from '../../components/FullScreenMediaViewer';
 import InfoModal from '../../components/InfoModal';
-import ProductFormModal from '@/features/products/components/ProductFormModal';
+import { ProductFormModal, useProductDetail } from '@/features/products';
 import { Spinner } from '@/ui/primitives';
 import CartService from '@/features/cart/services/cart';
 import { useAccountId } from '@/features/auth/services/nearAuth';
@@ -42,9 +42,8 @@ import chatAgent from '../../agents/chat-agent';
 import moderationAgent from '../../agents/moderation-agent';
 import commonStyles from '@/constants/styles';
 import GlobalHeader from '../../components/GlobalHeader';
-import FloatingCartWidget from '@/features/cart/components/FloatingCartWidget';
+import { FloatingCartWidget } from '@/features/cart';
 import SmartImage from '../../components/SmartImage';
-import { useProductDetail } from '@/features/products/hooks';
 
 
 
