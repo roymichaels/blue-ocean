@@ -8,7 +8,7 @@ import {
   Alert,
   I18nManager,
 } from 'react-native';
-import { replace } from '@/services/navigation';
+import { useAppRouter } from '@/services';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/ui/ThemeProvider';
 import storesAgent from '@/agents/stores-agent';
@@ -19,6 +19,7 @@ const StoreCreation: React.FC = () => {
   const [name, setName] = useState('');
   const queryClient = useQueryClient();
   const { t } = useLanguage();
+  const { replace } = useAppRouter();
 
   const mintStore = async () => {
     if (!name) return;
@@ -45,7 +46,7 @@ const StoreCreation: React.FC = () => {
       } else {
         Alert.alert(t('stores.transactionCancelled'));
       }
-      errorLog('Store mint failed', err);
+      errorLog('mint', 'shop', 'fail', err);
     }
   };
 

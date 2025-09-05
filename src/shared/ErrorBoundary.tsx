@@ -1,11 +1,11 @@
 import React, { ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { spacing } from '@/shared/ui/tokens';
 import Button from '@/ui/primitives/Button';
 import { usePathname } from 'expo-router';
-import { replace } from '@/services/navigation';
+import { useAppRouter } from '@/services';
 import { errorLog } from '@/utils/logger';
 
 interface Props {
@@ -28,7 +28,7 @@ class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    errorLog('ErrorBoundary caught error:', error, info);
+    errorLog('EB', 'err', error, info);
     if (__DEV__) {
       // eslint-disable-next-line no-console
       console.error(error.stack);
@@ -52,7 +52,9 @@ class ErrorBoundary extends React.Component<Props, State> {
 
 function ErrorFallback({ error, onRetry }: { error?: Error; onRetry: () => void }) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const pathname = usePathname();
+  const { replace } = useAppRouter();
 
   const handleRetry = () => {
     onRetry();
@@ -63,12 +65,16 @@ function ErrorFallback({ error, onRetry }: { error?: Error; onRetry: () => void 
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}> 
-      <Text style={[styles.title, { color: colors.text.primary }]}>Something went wrong</Text>
+      <Text style={[styles.title, { color: colors.text.primary }]}>
+        {t('errors.somethingWentWrong')}
+      </Text>
       {error?.message && (
         <Text style={[styles.message, { color: colors.text.secondary }]}>{error.message}</Text>
       )}
-      <Text style={[styles.route, { color: colors.text.secondary }]}>Route: {pathname}</Text>
-      <Button title="Retry" onPress={handleRetry} />
+      <Text style={[styles.route, { color: colors.text.secondary }]}>
+        {t('common.route')} {pathname}
+      </Text>
+      <Button title={t('errors.tryAgain')} onPress={handleRetry} />
     </View>
   );
 }

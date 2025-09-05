@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'expo-router';
-import { replace, stripTabsPrefix } from '@/services/navigation';
+import { stripTabsPrefix } from '@/services/navigation';
+import { useAppRouter } from '@/services';
 import { useAccountId } from '@/features/auth/services/nearAuth';
 
 interface Props {
@@ -11,6 +12,7 @@ export default function RequireWallet({ children }: Props) {
   const accountId = useAccountId();
   const pathname = usePathname();
   const params = useSearchParams();
+  const { replace } = useAppRouter();
 
   useEffect(() => {
     if (!accountId) {
