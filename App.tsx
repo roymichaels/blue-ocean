@@ -7,6 +7,7 @@ import { stripTabsPrefix } from '@/services/navigation';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui/primitives';
 import { debugLog } from '@/utils/logger';
+import AppProviders from '@/providers/AppProviders';
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
 
@@ -38,9 +39,11 @@ function MainApp() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <React.Suspense fallback={<Spinner />}>
-          {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-        </React.Suspense>
+        <AppProviders>
+          <React.Suspense fallback={<Spinner />}>
+            {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
+          </React.Suspense>
+        </AppProviders>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
