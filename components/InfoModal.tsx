@@ -9,7 +9,8 @@ import {
 import { Text, Button, Portal, Overlay } from '@/ui';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
-import { spacing, radius, zIndex, shadows, typography } from '@/shared/ui/tokens';
+import { spacing, radius, zIndex, typography } from '@/shared/ui/tokens';
+import { platformShadow } from '@/utils/shadow';
 import { X, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 
 type InfoType = 'success' | 'error' | 'info' | 'warning';
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     padding: spacing.spacer24,
     alignItems: 'center',
-    ...Platform.select(shadows.md),
+    ...platformShadow('md'),
   },
   closeButton: {
     position: 'absolute',

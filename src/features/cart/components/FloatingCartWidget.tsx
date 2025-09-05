@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   Animated,
   ScrollView,
-  Dimensions,
-  Platform,
   I18nManager,
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
@@ -17,21 +15,17 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import useCart from '../hooks/useCart';
-import { spacing, radius } from '@/shared/ui/tokens';
+import { spacing, radius, zIndex } from '@/shared/ui/tokens';
+import debounce from '@/utils/debounce';
+import { platformShadow } from '@/utils/shadow';
+import { Card } from '@/ui/primitives';
+import { Stack } from '@/ui/layout';
 
-function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-  let timeout: ReturnType<typeof setTimeout>;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), delay);
-  };
-}
-
-const { width } = Dimensions.get('window');
+const AnimatedCard = Animated.createAnimatedComponent(Card);
 
 export default function FloatingCartWidget() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [animatedHeight] = useState(new Animated.Value(60));
+  const [animatedHeight] = useState(new Animated.Value(spacing.spacer20 * 3));
   const [animatedOpacity] = useState(new Animated.Value(0));
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
@@ -61,7 +55,12 @@ export default function FloatingCartWidget() {
   const animateHeight = useCallback(
     (expanded: boolean, count: number) => {
       Animated.timing(animatedHeight, {
-        toValue: expanded ? Math.min(300, count * 80 + 120) : 60,
+        toValue: expanded
+          ? Math.min(
+              spacing.spacer40 * 7 + spacing.spacer20,
+              count * spacing.spacer40 * 2 + spacing.spacer40 * 3
+            )
+          : spacing.spacer20 * 3,
         duration: 300,
         useNativeDriver: false,
       }).start();
@@ -100,7 +99,7 @@ export default function FloatingCartWidget() {
   }
 
   return (
-    <Animated.View 
+    <AnimatedCard
       style={[
         styles.container,
         {
@@ -108,20 +107,17 @@ export default function FloatingCartWidget() {
           height: animatedHeight,
           backgroundColor: colors.surface.elevated,
           borderColor: colors.border.primary,
-          ...Platform.select({
-            ios: { elevation: 12 },
-            android: { elevation: 12 },
-            web: { boxShadow: `0px 4px 8px rgba(0, 0, 0, 0.3)` }
-          }),
-        }
+          ...platformShadow('lg'),
+        },
       ]}
     >
-      {/* Header */}
-      <TouchableOpacity style={styles.header} onPress={toggleExpanded}>
+      <Stack>
+        {/* Header */}
+        <TouchableOpacity style={styles.header} onPress={toggleExpanded}>
         <View style={styles.headerLeft}>
           <View style={[styles.cartIcon, { backgroundColor: colors.gold }]}>
             <ShoppingCart
-              size={20}
+              size={spacing.spacer20}
               color={colors.text.inverse}
               style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
             />
@@ -146,12 +142,12 @@ export default function FloatingCartWidget() {
               <SmartImage
                 key={item.id}
                 uri={item.product.images[0]}
-                width={32}
-                height={32}
+                width={spacing.spacer16 * 2}
+                height={spacing.spacer16 * 2}
                 style={[
                   styles.previewImage,
                   {
-                    marginStart: index > 0 ? -8 : 0,
+                    marginStart: index > 0 ? -spacing.spacer8 : 0,
                     zIndex: 3 - index,
                     borderColor: colors.background,
                   }
@@ -164,7 +160,7 @@ export default function FloatingCartWidget() {
                 style={[
                   styles.moreItems,
                   {
-                    marginStart: -8,
+                    marginStart: -spacing.spacer8,
                     borderColor: colors.background,
                     backgroundColor: colors.interactive.disabled,
                   }
@@ -190,8 +186,8 @@ export default function FloatingCartWidget() {
               }]}>
                 <SmartImage
                   uri={item.product.images[0]}
-                  width={40}
-                  height={40}
+                  width={spacing.spacer40}
+                  height={spacing.spacer40}
                   style={styles.itemImage}
                   contentFit="cover"
                 />
@@ -219,7 +215,7 @@ export default function FloatingCartWidget() {
                     }]}
                     onPress={() => updateQuantity(item.id, item.quantity - 1)}
                   >
-                    <Minus size={12} color={colors.text.primary} />
+                    <Minus size={spacing.spacer12} color={colors.text.primary} />
                   </TouchableOpacity>
                   
                   <Text style={[styles.quantity, { color: colors.text.primary }]}>{item.quantity}</Text>
@@ -231,7 +227,7 @@ export default function FloatingCartWidget() {
                     }]}
                     onPress={() => updateQuantity(item.id, item.quantity + 1)}
                   >
-                    <Plus size={12} color={colors.text.primary} />
+                    <Plus size={spacing.spacer12} color={colors.text.primary} />
                   </TouchableOpacity>
                 </View>
 
@@ -242,7 +238,7 @@ export default function FloatingCartWidget() {
                   }]}
                   onPress={() => removeItem(item.id)}
                 >
-                  <X size={12} color={colors.status.error} />
+                  <X size={spacing.spacer12} color={colors.status.error} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -258,28 +254,30 @@ export default function FloatingCartWidget() {
             </TouchableOpacity>
           </View>
         </View>
-      )}
-    </Animated.View>
+        )}
+      </Stack>
+    </AnimatedCard>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 170,
+    bottom: spacing.spacer40 * 4 + spacing.spacer20 / 2,
     start: spacing.spacer16,
     end: spacing.spacer16,
     borderRadius: radius.xl,
-    zIndex: 999,
+    zIndex: zIndex.modal,
     borderWidth: 1,
     overflow: 'hidden',
+    padding: 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: spacing.spacer16,
-    height: 60,
+    height: spacing.spacer20 * 3,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -335,8 +333,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   moreItems: {
-    width: 32,
-    height: 32,
+    width: spacing.spacer16 * 2,
+    height: spacing.spacer16 * 2,
     borderRadius: radius.xl,
     justifyContent: 'center',
     alignItems: 'center',
@@ -352,7 +350,7 @@ const styles = StyleSheet.create({
   },
   itemsList: {
     flex: 1,
-    maxHeight: 200,
+    maxHeight: spacing.spacer40 * 5,
   },
   cartItem: {
     flexDirection: 'row',

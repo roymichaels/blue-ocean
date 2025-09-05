@@ -56,6 +56,10 @@
         "src/services/*",
         "services/*"
       ],
+      "@/utils/*": [
+        "src/utils/*",
+        "utils/*"
+      ],
       "@/providers": [
         "src/providers/index.ts"
       ],

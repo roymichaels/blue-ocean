@@ -26,6 +26,7 @@ module.exports = {
     '^@/layout/(.*)$': '<rootDir>/src/layout/$1',
     '^@/services$': '<rootDir>/src/services/index',
     '^@/services/(.*)$': ['<rootDir>/src/services/$1', '<rootDir>/services/$1'],
+    '^@/utils/(.*)$': ['<rootDir>/src/utils/$1', '<rootDir>/utils/$1'],
     '^@/providers/(.*)$': '<rootDir>/src/providers/$1',
     '^@/providers$': '<rootDir>/src/providers/index',
     '^@/i18n$': '<rootDir>/src/i18n',
