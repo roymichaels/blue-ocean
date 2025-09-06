@@ -508,7 +508,11 @@
     "transactionFailed": "Transaction failed",
     "insufficientFunds": "Insufficient funds to deploy the store",
     "transactionCancelled": "Transaction cancelled",
-    "createSuccess": "Store created successfully"
+    "createSuccess": "Store created successfully",
+    "metrics": {
+      "orders": "Orders:",
+      "revenue": "Revenue:"
+    }
   },
   "disputes": {
     "title": "Disputes",

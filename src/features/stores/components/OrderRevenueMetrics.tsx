@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '@/ui/ThemeProvider';
-import chain from '@/services/chain';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
+import { chainAdapter } from '@/services/chain';
 import { Order } from '@/types';
-
-let listOrdersBySeller:
-  | ((storeId: string, sellerId: string) => Promise<Order[]>)
-  | undefined;
-if (chain === 'near') {
-  ({ listOrdersBySeller } = require('@/services/nearOrders'));
-}
 
 interface Props {
   storeId: string;
@@ -17,12 +10,13 @@ interface Props {
 
 export default function OrderRevenueMetrics({ storeId }: Props) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      if (!storeId || !listOrdersBySeller) return;
-      const list = await listOrdersBySeller(storeId, storeId);
+      if (!storeId || !chainAdapter.listOrdersBySeller) return;
+      const list = await chainAdapter.listOrdersBySeller(storeId, storeId);
       setOrders(list);
     };
     load();
@@ -33,8 +27,12 @@ export default function OrderRevenueMetrics({ storeId }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.stat, { color: colors.text.primary }]}>Orders: {totalOrders}</Text>
-      <Text style={[styles.stat, { color: colors.text.primary }]}>Revenue: {totalRevenue.toFixed(2)}</Text>
+      <Text style={[styles.stat, { color: colors.text.primary }]}> 
+        {t('stores.metrics.orders')} {totalOrders}
+      </Text>
+      <Text style={[styles.stat, { color: colors.text.primary }]}> 
+        {t('stores.metrics.revenue')} {totalRevenue.toFixed(2)}
+      </Text>
     </View>
   );
 }

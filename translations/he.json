@@ -484,7 +484,11 @@
     "transactionFailed": "העסקה נכשלה",
     "insufficientFunds": "אין מספיק כספים לפריסת החנות",
     "transactionCancelled": "העסקה בוטלה",
-    "createSuccess": "החנות נוצרה בהצלחה"
+    "createSuccess": "החנות נוצרה בהצלחה",
+    "metrics": {
+      "orders": "הזמנות:",
+      "revenue": "הכנסות:"
+    }
   },
   "proofUploader": {
     "permissionRequired": "נדרשת הרשאה",
