@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import CartService from '@/features/cart/services/cart';
 import { Product, PricingTier } from '@/types';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 import { useProduct } from './useProduct';
 import { useProductPricing } from '@/services/useProductPricing';
 import { useProductMedia } from '@/services/useProductMedia';
@@ -28,7 +28,7 @@ interface ProductDetailResult {
 
 export function useProductDetail(id: string): ProductDetailResult {
   const { data: fetchedProduct, isLoading } = useProduct(id);
-  const address = useAccountId();
+  const address = chainAdapter.useAccountId();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);

@@ -10,7 +10,7 @@ import {
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { uuid } from '../utils/uuid';
 import { sha256 } from '@noble/hashes/sha256';
-import nearAuth from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 
 const STABLE_BOOTSTRAP = [
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP',
@@ -52,7 +52,7 @@ export async function publish(
   if (!n) return;
   try {
     const encoder = createEncoder({ contentTopic });
-    const addr = nearAuth.getAccountId();
+    const addr = chainAdapter.getAccountId();
     const event = {
       id: uuid(),
       timestamp: Date.now(),

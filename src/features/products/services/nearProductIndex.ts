@@ -1,7 +1,6 @@
 import { Buffer } from 'buffer';
 import { ProductIndexItem } from '@/types';
-import nearAuth from '../../auth/services/nearAuth';
-import { assertNearChain } from '@/services/chain';
+import { chainAdapter, assertNearChain } from '@/services/chain';
 
 assertNearChain();
 
@@ -25,7 +24,7 @@ export async function setProductBatch(
   items: ProductIndexItem[],
 ): Promise<void> {
   const payload = buildBatch(items);
-  await nearAuth.signMessage(Buffer.from(payload));
+  await chainAdapter.signMessage?.(Buffer.from(payload));
 }
 
 export function estimateSetProductBatch(items: ProductIndexItem[]): number {

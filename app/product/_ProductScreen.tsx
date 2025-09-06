@@ -37,7 +37,7 @@ import InfoModal from '../../components/InfoModal';
 import { ProductFormModal, useProductDetail } from '@/features/products';
 import { Spinner } from '@/ui/primitives';
 import CartService from '@/features/cart/services/cart';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 import chatAgent from '../../agents/chat-agent';
 import moderationAgent from '../../agents/moderation-agent';
 import commonStyles from '@/constants/styles';
@@ -76,7 +76,7 @@ export default function ProductDetailScreen({ id }: { id: string }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const { currencySymbol } = useCurrency();
-  const address = useAccountId();
+  const address = chainAdapter.useAccountId();
   const reviews = useReviews(id);
 
   // Modal states

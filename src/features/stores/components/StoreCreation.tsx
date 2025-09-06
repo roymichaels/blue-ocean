@@ -12,7 +12,7 @@ import { useAppRouter } from '@/services';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/ui/ThemeProvider';
 import storesAgent from '@/agents/stores-agent';
-import nearAuth from '../../auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 import { errorLog } from '@/utils/logger';
 
 const StoreCreation: React.FC = () => {
@@ -23,14 +23,14 @@ const StoreCreation: React.FC = () => {
 
   const mintStore = async () => {
     if (!name) return;
-    const owner = nearAuth.getAccountId();
+    const owner = chainAdapter.getAccountId();
     if (!owner) {
-      await nearAuth.signIn();
+      await chainAdapter.openModal();
       return;
     }
     try {
       const id = Date.now().toString();
-      await nearAuth.signMessage(`MintStore:${id}`);
+      await chainAdapter.signMessage?.(`MintStore:${id}`);
       await storesAgent.add({ id, name, owner, nftId: id });
       setName('');
       Alert.alert(t('common.success'), t('stores.createSuccess'));

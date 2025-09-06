@@ -13,7 +13,7 @@ import {
 import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from '@/features/stores/services/nearStores';
 import { getProduct, setProduct } from '@/features/products/services/nearProducts';
-import nearAuth from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 import { adminResolve, deployOrderPayment } from './nearContract';
 import config from '../utils/appConfig';
 import { calculateCardFees } from '@/features/payments/services/card';
@@ -126,15 +126,15 @@ class OrderService {
 
     let pay = payment;
     if (pay?.method === 'near' && (!pay.contractAddress || !pay.txHash)) {
-      if (!nearAuth.getAccountId()) {
-        await nearAuth.signIn();
+      if (!chainAdapter.getAccountId()) {
+        await chainAdapter.openModal();
       }
       const { contractAddress, txHash } = await deployOrderPayment(total);
       pay = { ...pay, contractAddress, txHash };
     }
 
     if (!pay?.buyerAddress) {
-      pay = { ...pay, buyerAddress: nearAuth.getAccountId() || undefined };
+      pay = { ...pay, buyerAddress: chainAdapter.getAccountId() || undefined };
     }
 
     const orderId = uuid();
@@ -192,18 +192,18 @@ class OrderService {
         paymentMethod === 'near'
           ? {
               method: 'near' as const,
-              buyerAddress: nearAuth.getAccountId() || undefined,
+              buyerAddress: chainAdapter.getAccountId() || undefined,
               sellerAddress: store?.owner,
             }
           : paymentMethod === 'card'
           ? {
               method: 'card' as const,
-              buyerAddress: nearAuth.getAccountId() || undefined,
+              buyerAddress: chainAdapter.getAccountId() || undefined,
               sellerAddress: store?.owner,
             }
           : {
               method: 'cash_on_delivery' as const,
-              buyerAddress: nearAuth.getAccountId() || undefined,
+              buyerAddress: chainAdapter.getAccountId() || undefined,
               sellerAddress: store?.owner,
             };
       const order = await this.createOrder(
@@ -292,7 +292,7 @@ class OrderService {
   async resolveDispute(orderId: string, toSeller: boolean): Promise<void> {
     const order = await ordersAgent.get(orderId);
     if (!order || !order.escrowAddr) return;
-    const actor = nearAuth.getAccountId();
+    const actor = chainAdapter.getAccountId();
     const network =
       (config.NEAR_NETWORK || process.env.NEAR_NETWORK || 'mainnet').toLowerCase();
     const legacy =

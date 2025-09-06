@@ -4,7 +4,7 @@ import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup
 import DatabaseService from '@/services/database';
 import cartAgent, { getCartItems } from '@/agents/cart-agent';
 import eventBus from '@/services/eventBus';
-import nearAuth from '../../auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
  
 
 const CART_STORAGE_KEY = 'cart_items';
@@ -20,7 +20,7 @@ class CartService {
 
   private async getCurrentUserId(): Promise<string | null> {
     try {
-      const addr = nearAuth.getAccountId?.();
+      const addr = chainAdapter.getAccountId?.();
       return addr ?? null;
     } catch (err) {
       errorLog('Failed to get current user', err);

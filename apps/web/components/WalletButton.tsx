@@ -1,11 +1,11 @@
 import React from 'react';
-import nearAuth from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 
 export default function WalletButton() {
   const [acct, setAcct] = React.useState<string | null>(null);
   React.useEffect(() => {
     try {
-      setAcct(nearAuth.getAccountId());
+      setAcct(chainAdapter.getAccountId());
     } catch {}
   }, []);
   return (
@@ -19,8 +19,8 @@ export default function WalletButton() {
       }}
       onClick={async () => {
         try {
-          await nearAuth.signIn();
-          setAcct(nearAuth.getAccountId());
+          await chainAdapter.openModal();
+          setAcct(chainAdapter.getAccountId());
         } catch {}
       }}
     >

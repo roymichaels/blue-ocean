@@ -3,23 +3,15 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import { debugLog } from '@/utils/logger';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/ui/ThemeProvider';
-import chain from '@/services/chain';
-import { Order } from '../../../../types';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
+import type { Order } from '../../../../types';
 import { useLanguage } from '@/ui/ThemeProvider';
-
-let listOrdersBySeller:
-  | ((storeId: string, sellerId: string) => Promise<Order[]>)
-  | undefined;
-if (chain === 'near') {
-  ({ listOrdersBySeller } = require('@/services/nearOrders'));
-}
 
 export default function StoreOrdersScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
-  const address = useAccountId();
+  const address = chainAdapter.useAccountId();
   const { t } = useLanguage();
 
   const handlePress = (order: Order) => {
@@ -32,8 +24,8 @@ export default function StoreOrdersScreen() {
 
   useEffect(() => {
     const load = async () => {
-      if (!storeId || address !== storeId || !listOrdersBySeller) return;
-      const all = await listOrdersBySeller(storeId, storeId);
+      if (!storeId || address !== storeId || !chainAdapter.listOrdersBySeller) return;
+      const all = await chainAdapter.listOrdersBySeller(storeId, storeId);
       setOrders(all);
     };
     load();

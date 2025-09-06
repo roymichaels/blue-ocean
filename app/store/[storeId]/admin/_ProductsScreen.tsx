@@ -6,7 +6,7 @@ import { Product } from '../../../../types';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { useProducts } from '@/services/useProducts';
 import { ProductCard, ProductFormModal } from '@/features/products';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 import { useAuth } from '@/features/auth/AuthContext';
 
 const ITEM_HEIGHT = 200;
@@ -36,7 +36,7 @@ export default function StoreProductsScreen() {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [formVisible, setFormVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const address = useAccountId();
+  const address = chainAdapter.useAccountId();
   const { isStoreOwner } = useAuth();
 
   useEffect(() => {

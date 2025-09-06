@@ -19,8 +19,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import DatabaseService from '@/services/database';
 import PinataService from '@/services/pinata';
 import ipfsService from '@/services/ipfsService';
-import chain from '@/services/chain';
-import { useCategories } from '@/services';
+import chain, { chainAdapter } from '@/services/chain';
 
 let setProductBatch:
   | ((items: ProductIndexItem[]) => Promise<void>)
@@ -34,7 +33,7 @@ import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
-import { useAccountId } from '../../auth/services/nearAuth';
+import { useCategories } from '@/services';
 import { useAppRouter } from '@/services';
 import { routes } from '@/utils/routes';
 import { Spinner } from '@/ui/primitives';
@@ -56,7 +55,7 @@ export default function ProductFormModal({
 }: ProductFormModalProps) {
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const address = useAccountId();
+  const address = chainAdapter.useAccountId();
   const { push } = useAppRouter();
   const [editingProduct, setEditingProduct] = useState<Partial<Product>>({});
   const [imageUrls, setImageUrls] = useState('');
