@@ -9,7 +9,6 @@ const toPosix = (p) => p.split(path.sep).join(path.posix.sep);
 const resolvePosix = (...segments) => toPosix(path.resolve(...segments));
 const requirePosix = (id) => toPosix(require.resolve(id));
 
-
 const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('wasm', 'sql', 'boc');
 // Allow Metro's default hierarchical lookup to avoid breaking deep imports
@@ -23,41 +22,35 @@ config.resolver.assetExts.push('wasm', 'sql', 'boc');
 config.resolver.unstable_enablePackageExports = true;
 
 // Map the Expo HMR client to our local wrapper; polyfills are applied at app entry
-  config.resolver.extraNodeModules = {
-    ...(config.resolver.extraNodeModules || {}),
+config.resolver.extraNodeModules = {
+  ...(config.resolver.extraNodeModules || {}),
   // Ensure '@expo/metro-runtime' resolves for Expo Router entry on all platforms
   '@expo/metro-runtime': resolvePosix(
     __dirname,
     'node_modules/@expo/metro-runtime'
   ),
-  '@babel/runtime': resolvePosix(
-    __dirname,
-    'node_modules/@babel/runtime'
-  ),
+  '@babel/runtime': resolvePosix(__dirname, 'node_modules/@babel/runtime'),
   react: resolvePosix(__dirname, 'node_modules/react'),
-    'react-dom': resolvePosix(__dirname, 'node_modules/react-dom'),
-    // Force single copies of React Navigation libs to avoid context mismatches
-    '@react-navigation/native': resolvePosix(
-      __dirname,
-      'node_modules/@react-navigation/native'
-    ),
-    '@react-navigation/bottom-tabs': resolvePosix(
-      __dirname,
-      'node_modules/@react-navigation/bottom-tabs'
-    ),
-    '@react-navigation/native-stack': resolvePosix(
-      __dirname,
-      'node_modules/@react-navigation/native-stack'
-    ),
-    '@react-navigation/core': resolvePosix(
-      __dirname,
-      'node_modules/@react-navigation/core'
-    ),
-  // NOTE: Do not alias 'react-native' here; Metro handles web mapping to RNW
-  '@expo/metro-runtime/src/HMRClient': resolvePosix(
+  'react-dom': resolvePosix(__dirname, 'node_modules/react-dom'),
+  // Force single copies of React Navigation libs to avoid context mismatches
+  '@react-navigation/native': resolvePosix(
     __dirname,
-    'HMRClient.ts'
+    'node_modules/@react-navigation/native'
   ),
+  '@react-navigation/bottom-tabs': resolvePosix(
+    __dirname,
+    'node_modules/@react-navigation/bottom-tabs'
+  ),
+  '@react-navigation/native-stack': resolvePosix(
+    __dirname,
+    'node_modules/@react-navigation/native-stack'
+  ),
+  '@react-navigation/core': resolvePosix(
+    __dirname,
+    'node_modules/@react-navigation/core'
+  ),
+  // NOTE: Do not alias 'react-native' here; Metro handles web mapping to RNW
+  '@expo/metro-runtime/src/HMRClient': resolvePosix(__dirname, 'HMRClient.ts'),
   '@expo/metro-runtime/src/HMRClient.ts': resolvePosix(
     __dirname,
     'HMRClient.ts'
@@ -89,24 +82,6 @@ config.resolver.unstable_enablePackageExports = true;
   multiformats: resolvePosix(
     __dirname,
     'node_modules/multiformats/dist/src/index.js'
-=======
-  'multiformats/hashes/sha2': toPosix(
-    path.resolve(
-      __dirname,
-      'node_modules/multiformats/dist/src/hashes/sha2.js'
-    )
-  ),
-  'multiformats/hashes/sha2-browser': toPosix(
-    path.resolve(
-      __dirname,
-      'node_modules/multiformats/dist/src/hashes/sha2-browser.js'
-    )
-  ),
-  multiformats: toPosix(
-    path.resolve(
-      __dirname,
-      'node_modules/multiformats/dist/src/index.js'
-    )
   ),
   tslib: resolvePosix(__dirname, 'tslib-polyfill.js'),
   // Ensure Metro resolves tslib's ESM entry to a CommonJS-compatible module
@@ -115,21 +90,19 @@ config.resolver.unstable_enablePackageExports = true;
   // generated `modules/index.js` attempts to destructure from an undefined
   // default export.
   'tslib/modules/index.js': resolvePosix(__dirname, 'tslib-polyfill.js'),
-  };
+};
 
-  // Hard alias nested imports that some packages resolve internally so they
-  // point to the single root copy. This avoids duplicate navigation contexts
-  // which cause the "Couldn't register the navigator" error.
-  config.resolver.alias = {
-    ...(config.resolver.alias || {}),
-    '@react-navigation/native-stack/node_modules/@react-navigation/core': resolvePosix(
-      __dirname,
-      'node_modules/@react-navigation/core'
-    ),
-    '@react-navigation/native/node_modules/@react-navigation/core': resolvePosix(
-      __dirname,
-      'node_modules/@react-navigation/core'
-    ),
-  };
+// Hard alias nested imports that some packages resolve internally so they
+// point to the single root copy. This avoids duplicate navigation contexts
+// which cause the "Couldn't register the navigator" error.
+config.resolver.alias = {
+  ...(config.resolver.alias || {}),
+  '@react-navigation/native-stack/node_modules/@react-navigation/core':
+    resolvePosix(__dirname, 'node_modules/@react-navigation/core'),
+  '@react-navigation/native/node_modules/@react-navigation/core': resolvePosix(
+    __dirname,
+    'node_modules/@react-navigation/core'
+  ),
+};
 
 module.exports = config;
