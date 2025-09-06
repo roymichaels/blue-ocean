@@ -1,6 +1,12 @@
 const path = require('path');
 const { getDefaultConfig } = require('@expo/metro-config');
 
+// Metro expects POSIX-style paths for module aliases. On Windows, `path.resolve`
+// returns paths with backslashes which can cause `decodeURI` to throw
+// "URI malformed" when the bundler serves assets. Convert any resolved paths to
+// POSIX format so Metro can safely decode them on all platforms.
+const toPosix = (p) => p.split(path.sep).join(path.posix.sep);
+
 const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('wasm', 'sql', 'boc');
 // Allow Metro's default hierarchical lookup to avoid breaking deep imports
@@ -66,17 +72,23 @@ config.resolver.unstable_enablePackageExports = true;
     __dirname,
     'node_modules/@waku/utils/dist/index.js'
   ),
-  'multiformats/hashes/sha2': path.resolve(
-    __dirname,
-    'node_modules/multiformats/dist/src/hashes/sha2.js'
+  'multiformats/hashes/sha2': toPosix(
+    path.resolve(
+      __dirname,
+      'node_modules/multiformats/dist/src/hashes/sha2.js'
+    )
   ),
-  'multiformats/hashes/sha2-browser': path.resolve(
-    __dirname,
-    'node_modules/multiformats/dist/src/hashes/sha2-browser.js'
+  'multiformats/hashes/sha2-browser': toPosix(
+    path.resolve(
+      __dirname,
+      'node_modules/multiformats/dist/src/hashes/sha2-browser.js'
+    )
   ),
-  multiformats: path.resolve(
-    __dirname,
-    'node_modules/multiformats/dist/src/index.js'
+  multiformats: toPosix(
+    path.resolve(
+      __dirname,
+      'node_modules/multiformats/dist/src/index.js'
+    )
   ),
   tslib: path.resolve(__dirname, 'tslib-polyfill.js'),
   // Ensure Metro resolves tslib's ESM entry to a CommonJS-compatible module
