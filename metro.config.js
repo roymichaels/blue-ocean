@@ -1,5 +1,6 @@
 const path = require('path');
 const { getDefaultConfig } = require('@expo/metro-config');
+const { resolve } = require('metro-resolver');
 
 // Metro expects POSIX-style paths for module aliases. On Windows, `path.resolve`
 // returns paths with backslashes which can cause `decodeURI` to throw
@@ -11,6 +12,9 @@ const requirePosix = (id) => toPosix(require.resolve(id));
 
 const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('wasm', 'sql', 'boc');
+if (!config.resolver.sourceExts.includes('mjs')) {
+  config.resolver.sourceExts.push('mjs');
+}
 // Allow Metro's default hierarchical lookup to avoid breaking deep imports
 // like `react-native-web/dist/exports/*` used in web transforms.
 // If needed, we can revisit this after web bundling is stable.
@@ -100,10 +104,6 @@ config.resolver.alias = {
     __dirname,
     'node_modules/@waku/utils/dist/bytes/index.js'
   ),
-  '@waku/core/lib/message/version_0': resolvePosix(
-    __dirname,
-    'node_modules/@waku/core/dist/lib/message/version_0.js'
-  ),
   '@waku/core$': resolvePosix(
     __dirname,
     'node_modules/@waku/core/dist/index.js'
@@ -114,6 +114,13 @@ config.resolver.alias = {
     __dirname,
     'node_modules/@react-navigation/core'
   ),
+};
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === '@waku/core/lib/message/version_0') {
+    moduleName = '@waku/core/lib/message/version-0';
+  }
+  return resolve(context, moduleName, platform);
 };
 
 module.exports = config;
