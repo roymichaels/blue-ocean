@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import {
   View,
   Text,
@@ -22,18 +22,14 @@ import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
 import BannerArea from '@/features/home/components/BannerArea';
-const ProductGrid = lazy(() => import('@/features/home/components/ProductGrid'));
+import ProductGrid from '@/features/home/components/ProductGrid';
 import { Spinner } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-const BannerFormModal = lazy(() => import('@/components/BannerFormModal'));
-const CartModal = lazy(() =>
-  import('@/features/cart').then((m) => ({ default: m.CartModal }))
-);
-const ProductFormModal = lazy(() =>
-  import('@/features/products').then((m) => ({ default: m.ProductFormModal }))
-);
-const InfoModal = lazy(() => import('@/components/InfoModal'));
+import BannerFormModal from '@/components/BannerFormModal';
+import { CartModal } from '@/features/cart';
+import { ProductFormModal } from '@/features/products';
+import InfoModal from '@/components/InfoModal';
 import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
 import { spacing } from '@/shared/ui/tokens';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
