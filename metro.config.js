@@ -6,6 +6,9 @@ const { getDefaultConfig } = require('@expo/metro-config');
 // "URI malformed" when the bundler serves assets. Convert any resolved paths to
 // POSIX format so Metro can safely decode them on all platforms.
 const toPosix = (p) => p.split(path.sep).join(path.posix.sep);
+const resolvePosix = (...segments) => toPosix(path.resolve(...segments));
+const requirePosix = (id) => toPosix(require.resolve(id));
+
 
 const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('wasm', 'sql', 'boc');
@@ -23,55 +26,70 @@ config.resolver.unstable_enablePackageExports = true;
   config.resolver.extraNodeModules = {
     ...(config.resolver.extraNodeModules || {}),
   // Ensure '@expo/metro-runtime' resolves for Expo Router entry on all platforms
-  '@expo/metro-runtime': path.resolve(
+  '@expo/metro-runtime': resolvePosix(
     __dirname,
     'node_modules/@expo/metro-runtime'
   ),
-  '@babel/runtime': path.resolve(
+  '@babel/runtime': resolvePosix(
     __dirname,
     'node_modules/@babel/runtime'
   ),
-  react: path.resolve(__dirname, 'node_modules/react'),
-    'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+  react: resolvePosix(__dirname, 'node_modules/react'),
+    'react-dom': resolvePosix(__dirname, 'node_modules/react-dom'),
     // Force single copies of React Navigation libs to avoid context mismatches
-    '@react-navigation/native': path.resolve(
+    '@react-navigation/native': resolvePosix(
       __dirname,
       'node_modules/@react-navigation/native'
     ),
-    '@react-navigation/bottom-tabs': path.resolve(
+    '@react-navigation/bottom-tabs': resolvePosix(
       __dirname,
       'node_modules/@react-navigation/bottom-tabs'
     ),
-    '@react-navigation/native-stack': path.resolve(
+    '@react-navigation/native-stack': resolvePosix(
       __dirname,
       'node_modules/@react-navigation/native-stack'
     ),
-    '@react-navigation/core': path.resolve(
+    '@react-navigation/core': resolvePosix(
       __dirname,
       'node_modules/@react-navigation/core'
     ),
   // NOTE: Do not alias 'react-native' here; Metro handles web mapping to RNW
-  '@expo/metro-runtime/src/HMRClient': path.resolve(__dirname, 'HMRClient.ts'),
-  '@expo/metro-runtime/src/HMRClient.ts': path.resolve(
+  '@expo/metro-runtime/src/HMRClient': resolvePosix(
     __dirname,
     'HMRClient.ts'
   ),
-  '@noble/hashes': path.resolve(__dirname, 'node_modules/@noble/hashes'),
-  '@noble/ed25519': path.resolve(__dirname, 'node_modules/@noble/ed25519'),
-  '@noble/hashes/hkdf': require.resolve('@noble/hashes/hkdf'),
-  '@noble/hashes/sha256': require.resolve('@noble/hashes/sha256'),
-  '@noble/hashes/sha512': require.resolve('@noble/hashes/sha512'),
-  '@noble/hashes/crypto': require.resolve('@noble/hashes/crypto'),
-  '@noble/hashes/crypto.js': require.resolve('@noble/hashes/crypto'),
-  'expo-router': path.resolve(__dirname, 'node_modules/expo-router'),
-  'react-native-url-polyfill': path.resolve(
+  '@expo/metro-runtime/src/HMRClient.ts': resolvePosix(
+    __dirname,
+    'HMRClient.ts'
+  ),
+  '@noble/hashes': resolvePosix(__dirname, 'node_modules/@noble/hashes'),
+  '@noble/ed25519': resolvePosix(__dirname, 'node_modules/@noble/ed25519'),
+  '@noble/hashes/hkdf': requirePosix('@noble/hashes/hkdf'),
+  '@noble/hashes/sha256': requirePosix('@noble/hashes/sha256'),
+  '@noble/hashes/sha512': requirePosix('@noble/hashes/sha512'),
+  '@noble/hashes/crypto': requirePosix('@noble/hashes/crypto'),
+  '@noble/hashes/crypto.js': requirePosix('@noble/hashes/crypto'),
+  'expo-router': resolvePosix(__dirname, 'node_modules/expo-router'),
+  'react-native-url-polyfill': resolvePosix(
     __dirname,
     'node_modules/react-native-url-polyfill'
   ),
-  '@waku/utils': path.resolve(
+  '@waku/utils': resolvePosix(
     __dirname,
     'node_modules/@waku/utils/dist/index.js'
   ),
+  'multiformats/hashes/sha2': resolvePosix(
+    __dirname,
+    'node_modules/multiformats/dist/src/hashes/sha2.js'
+  ),
+  'multiformats/hashes/sha2-browser': resolvePosix(
+    __dirname,
+    'node_modules/multiformats/dist/src/hashes/sha2-browser.js'
+  ),
+  multiformats: resolvePosix(
+    __dirname,
+    'node_modules/multiformats/dist/src/index.js'
+=======
   'multiformats/hashes/sha2': toPosix(
     path.resolve(
       __dirname,
@@ -90,13 +108,13 @@ config.resolver.unstable_enablePackageExports = true;
       'node_modules/multiformats/dist/src/index.js'
     )
   ),
-  tslib: path.resolve(__dirname, 'tslib-polyfill.js'),
+  tslib: resolvePosix(__dirname, 'tslib-polyfill.js'),
   // Ensure Metro resolves tslib's ESM entry to a CommonJS-compatible module
   // that includes a default export. Without this, packages that rely on the
   // default export (e.g. rxjs) will crash at runtime because `tslib`'s
   // generated `modules/index.js` attempts to destructure from an undefined
   // default export.
-  'tslib/modules/index.js': path.resolve(__dirname, 'tslib-polyfill.js'),
+  'tslib/modules/index.js': resolvePosix(__dirname, 'tslib-polyfill.js'),
   };
 
   // Hard alias nested imports that some packages resolve internally so they
@@ -104,11 +122,11 @@ config.resolver.unstable_enablePackageExports = true;
   // which cause the "Couldn't register the navigator" error.
   config.resolver.alias = {
     ...(config.resolver.alias || {}),
-    '@react-navigation/native-stack/node_modules/@react-navigation/core': path.resolve(
+    '@react-navigation/native-stack/node_modules/@react-navigation/core': resolvePosix(
       __dirname,
       'node_modules/@react-navigation/core'
     ),
-    '@react-navigation/native/node_modules/@react-navigation/core': path.resolve(
+    '@react-navigation/native/node_modules/@react-navigation/core': resolvePosix(
       __dirname,
       'node_modules/@react-navigation/core'
     ),
