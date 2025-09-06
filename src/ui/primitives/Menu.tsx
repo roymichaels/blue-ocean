@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, Pressable, Platform } from 'react-native';
 import Portal from './Portal';
 import Text from './Text';
-import { useTheme } from '../ThemeProvider';
+import { useTheme, useLanguage } from '../ThemeProvider';
 import { spacing, radius } from '../tokens';
 
 export interface MenuItem {
@@ -21,21 +21,46 @@ interface MenuProps {
 
 export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) {
   const { colors } = useTheme();
-  const [focusedIndex, setFocusedIndex] = React.useState<number | null>(null);
+  const { t } = useLanguage();
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const menuRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!open || Platform.OS !== 'web') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === `Escape`) onOpenChange(false);
+    };
+
+    const handleFocus = (e: FocusEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onOpenChange(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('focusin', handleFocus);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('focusin', handleFocus);
+    };
+  }, [open, onOpenChange]);
 
   return (
     <>
       {trigger}
       {open && (
         <Portal>
-          <Pressable
-            style={styles.overlay}
-            onPress={() => onOpenChange(false)}
-            accessibilityRole="button"
-            accessibilityLabel="Close menu"
-            hitSlop={8}
-          >
+            <Pressable
+              style={styles.overlay}
+              onPress={() => onOpenChange(false)}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              hitSlop={8}
+            >
             <View
+              ref={menuRef}
               style={[
                 styles.menu,
                 {

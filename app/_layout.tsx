@@ -1,11 +1,6 @@
 import React from 'react';
 import { Slot } from 'expo-router';
-import AppProviders from '@/providers/AppProviders';
 
-export default function RootLayout() {
-  return (
-    <AppProviders>
-      <Slot />
-    </AppProviders>
-  );
-}
+// Root layout renders only the current route.
+// No wrappers allowed before <Slot />; providers live in App.tsx.
+export default () => <Slot />;
