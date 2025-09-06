@@ -37,6 +37,7 @@ function findActualVersionFile(coreRoot) {
 }
 
 function patchSdkImport(sdkRoot, fromList, toId) {
+
   const candidates = [
     'dist/index.js','dist/index.cjs','index.js','dist/src/index.js'
   ].map(f => path.join(sdkRoot, f)).filter(exists);
