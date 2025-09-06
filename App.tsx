@@ -2,8 +2,7 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text } from 'react-native';
-import { ExpoRoot } from 'expo-router';
-import { ctx } from 'expo-router/_ctx';
+import { Router } from 'expo-router';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui';
 import AppProviders from '@/providers/AppProviders';
@@ -11,7 +10,7 @@ import AppProviders from '@/providers/AppProviders';
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
 
 function RouterApp() {
-  return <ExpoRoot context={ctx} />;
+  return <Router />;
 }
 
 function FallbackScreen() {

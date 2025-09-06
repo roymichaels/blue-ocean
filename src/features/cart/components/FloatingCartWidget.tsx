@@ -15,11 +15,12 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import useCart from '../hooks/useCart';
-import { spacing, radius, zIndex } from '@/shared/ui/tokens';
+import { spacing, radius, zIndex, typography } from '@/shared/ui/tokens';
 import debounce from '@/utils/debounce';
 import { platformShadow } from '@/utils/shadow';
 import { Card } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
+import { routes } from '@/utils/routes';
 
 const AnimatedCard = Animated.createAnimatedComponent(Card);
 
@@ -91,7 +92,7 @@ export default function FloatingCartWidget() {
 
   const goToCheckout = useCallback(() => {
     setIsExpanded(false);
-    push({ pathname: '/', params: { showCart: 'true' } });
+    push(routes.home({ showCart: 'true' }));
   }, [push]);
 
   if (!hasItems) {
@@ -312,12 +313,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: typography.md.fontSize,
     fontWeight: '600',
     textAlign: 'right',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: typography.sm.fontSize,
     fontWeight: 'bold',
     textAlign: 'right',
   },
@@ -367,13 +368,13 @@ const styles = StyleSheet.create({
     marginEnd: spacing.spacer8,
   },
   itemName: {
-    fontSize: 14,
+    fontSize: typography.sm.fontSize,
     fontWeight: '500',
     marginBottom: 2,
     textAlign: 'right',
   },
   itemPrice: {
-    fontSize: 12,
+    fontSize: typography.xs.fontSize,
     fontWeight: '600',
     textAlign: 'right',
   },
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   quantity: {
-    fontSize: 14,
+    fontSize: typography.sm.fontSize,
     fontWeight: '600',
     marginHorizontal: spacing.spacer8,
     minWidth: spacing.spacer20,
@@ -420,7 +421,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkoutButtonText: {
-    fontSize: 16,
+    fontSize: typography.md.fontSize,
     fontWeight: '600',
   },
 });
