@@ -8,7 +8,13 @@ function findCoreRoot() {
   try {
     return path.dirname(require.resolve('@waku/core/package.json'));
   } catch {
-    return null;
+    const fallback = path.join(
+      process.cwd(),
+      'node_modules',
+      '@waku',
+      'core'
+    );
+    return fs.existsSync(fallback) ? fallback : null;
   }
 }
 
@@ -55,8 +61,58 @@ function findMessageFile(coreRoot) {
   return null;
 }
 
+function patchCorePackage(coreRoot, coreFile) {
+  const pkgPath = path.join(coreRoot, 'package.json');
+  let pkg;
+  try {
+    pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  } catch {
+    return;
+  }
+  const exportKey = './lib/message/version_0';
+  const rel = './' + posix(path.relative(coreRoot, coreFile));
+  pkg.exports = pkg.exports || {};
+  const entry = pkg.exports[exportKey];
+  if (!entry) return;
+  let changed = false;
+  if (!entry.require || !entry.require.startsWith('./')) {
+    entry.require = rel;
+    changed = true;
+  }
+  if (!entry.default || !entry.default.startsWith('./')) {
+    entry.default = rel;
+    changed = true;
+  }
+  if (changed) {
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+    console.log(
+      `[fix-waku] Updated exports in ${posix(
+        path.relative(process.cwd(), pkgPath)
+      )}`
+    );
+  }
+}
+
 function patchSdk(coreFile) {
-  const sdkPkg = require.resolve('@waku/sdk/package.json');
+  let sdkPkg;
+  try {
+    sdkPkg = require.resolve('@waku/sdk/package.json');
+  } catch {
+    const fallback = path.join(
+      process.cwd(),
+      'node_modules',
+      '@waku',
+      'sdk',
+      'package.json'
+    );
+    if (!fs.existsSync(fallback)) {
+      console.error(
+        '[fix-waku] @waku/sdk is not installed. Ensure install completed.'
+      );
+      return 0;
+    }
+    sdkPkg = fallback;
+  }
   const sdkRoot = path.dirname(sdkPkg);
   const candidates = [
     'dist/index.js',
@@ -117,5 +173,6 @@ function patchSdk(coreFile) {
     );
     process.exit(1);
   }
+  patchCorePackage(coreRoot, coreFile);
   patchSdk(coreFile);
 })();
