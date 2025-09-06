@@ -55,7 +55,7 @@ module.exports = async function (env, argv) {
       __dirname,
       'node_modules/@waku/core/dist/lib/message/version_0.js'
     ),
-    '@waku/core': path.resolve(
+    '@waku/core$': path.resolve(
       __dirname,
       'node_modules/@waku/core/dist/index.js'
     ),
