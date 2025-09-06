@@ -86,11 +86,11 @@ export default function SettingsScreen() {
       const pf = await SettingsAgent.getInstance().getSettingValue('paymentFactoryAddress');
       setPaymentFactoryAddress(pf || '');
     } catch (error) {
-      errorLog('Error loading settings:', error);
+      errorLog('Error loading settings:', error); // i18n-ignore
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'טעינת ההגדרות נכשלה',
+        title: t('common.error'),
+        message: t('admin.settings.loadFailed'),
         type: 'error',
       });
     } finally {
@@ -113,16 +113,16 @@ export default function SettingsScreen() {
       );
       setInfoModal({
         visible: true,
-        title: 'הצלחה',
-        message: 'ההגדרות נשמרו בהצלחה',
+        title: t('common.success'),
+        message: t('admin.settings.saveSuccess'),
         type: 'success',
       });
     } catch (error) {
-      errorLog('Error saving settings:', error);
+      errorLog('Error saving settings:', error); // i18n-ignore
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'שמירת ההגדרות נכשלה',
+        title: t('common.error'),
+        message: t('admin.settings.saveError'),
         type: 'error',
       });
     } finally {
@@ -138,7 +138,7 @@ export default function SettingsScreen() {
             <TouchableOpacity onPress={() => back()}>
               <ArrowLeft size={24} color={colors.text.primary} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
+            <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{t('admin.settings.title')}</Text>
             <View style={commonStyles.spacer24} />
           </View>
           <Spinner />
@@ -154,7 +154,7 @@ export default function SettingsScreen() {
           <TouchableOpacity onPress={() => back()}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>הגדרות מערכת</Text>
+          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>{t('admin.settings.title')}</Text>
           <View style={commonStyles.spacer24} />
         </View>
         <ScrollView
@@ -164,7 +164,7 @@ export default function SettingsScreen() {
         >
         <View style={styles.sectionHeader}>
           <SettingsIcon size={24} color={colors.gold} />
-          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>הגדרות כלליות</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>{t('admin.settings.general')}</Text>
         </View>
 
         <BrandingSettings
@@ -207,7 +207,7 @@ export default function SettingsScreen() {
           ) : (
             <>
               <Save size={20} color={colors.text.inverse} />
-              <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>שמור הגדרות</Text>
+              <Text style={[styles.saveButtonText, { color: colors.text.inverse }]}>{t('admin.settings.save')}</Text>
             </>
           )}
         </TouchableOpacity>

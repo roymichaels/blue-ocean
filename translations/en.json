@@ -195,6 +195,8 @@
     "noSubcategories": "No subcategories",
     "addSubcategoriesToStart": "Add subcategories to get started",
     "subcategoriesComingSoon": "Subcategories coming soon",
+    "notFoundTitle": "Category not found",
+    "notFoundMessage": "The category you're looking for doesn't exist",
     "categoryId": "Category ID",
     "categoryName": "Category Name",
     "addCategory": "Add Category",
@@ -308,7 +310,10 @@
     "copyright": "© 2024 Underground Apps",
     "comingSoon": "Coming Soon",
     "featureComingSoon": "This feature will be available soon",
-    "kycVerification": "KYC Verification"
+    "kycVerification": "KYC Verification",
+    "logoutSuccess": "Logged out successfully",
+    "logoutError": "Logout failed",
+    "createStore": "Create your store"
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -343,6 +348,14 @@
     "feesSoon": "Fees management coming soon.",
     "productCount": "Products: {count}",
     "viewOrders": "View Orders"
+    ,"settings": {
+      "title": "System Settings",
+      "general": "General Settings",
+      "loadFailed": "Failed to load settings",
+      "saveSuccess": "Settings saved successfully",
+      "saveError": "Failed to save settings",
+      "save": "Save Settings"
+    }
   },
   "chat": {
     "customerSupport": "Customer Support",
@@ -487,7 +500,9 @@
       "courier_found": "Courier Found",
       "courier_picked_up": "Courier Picked Up",
       "courier_on_way": "Courier On The Way",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "released": "Payment released",
+      "refunded": "Payment refunded"
     },
     "orderNumber": "Order #{id}",
     "itemsLabel": "Items:",
@@ -500,7 +515,13 @@
     "loginRequiredTitle": "Login Required",
     "loginRequiredMessage": "You must log in to view your orders",
     "connectWallet": "Please connect with the correct wallet",
-    "myOrders": "My Orders"
+    "myOrders": "My Orders",
+    "notesLabel": "Notes:",
+    "currentStatus": "Current status",
+    "notFoundTitle": "Order not found",
+    "notFoundMessage": "We couldn't find that order",
+    "statusUpdated": "Order status updated",
+    "updateStatusFailed": "Failed to update status"
   },
   "stores": {
     "storeName": "Store Name",

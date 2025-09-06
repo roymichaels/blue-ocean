@@ -171,6 +171,8 @@
     "noSubcategories": "אין תת-קטגוריות",
     "addSubcategoriesToStart": "הוסף תת-קטגוריות כדי להתחיל",
     "subcategoriesComingSoon": "תת-קטגוריות יתווספו בקרוב",
+    "notFoundTitle": "הקטגוריה לא נמצאה",
+    "notFoundMessage": "הקטגוריה שחיפשת לא קיימת",
     "categoryId": "מזהה קטגוריה",
     "categoryName": "שם הקטגוריה",
     "addCategory": "הוסף קטגוריה",
@@ -284,7 +286,10 @@
     "copyright": "© 2024 אנדרגראונד אפס",
     "comingSoon": "בקרוב",
     "featureComingSoon": "תכונה זו תהיה זמינה בקרוב",
-    "kycVerification": "אימות KYC"
+    "kycVerification": "אימות KYC",
+    "logoutSuccess": "התנתקת בהצלחה",
+    "logoutError": "אירעה שגיאה בהתנתקות",
+    "createStore": "צור את החנות שלך"
   },
   "admin": {
     "dashboard": "לוח בקרה",
@@ -318,7 +323,15 @@
     "complianceSoon": "כלי ציות יגיעו בקרוב.",
     "feesSoon": "ניהול עמלות יגיע בקרוב.",
     "productCount": "מוצרים: {count}",
-    "viewOrders": "צפייה בהזמנות"
+    "viewOrders": "צפייה בהזמנות",
+    "settings": {
+      "title": "הגדרות מערכת",
+      "general": "הגדרות כלליות",
+      "loadFailed": "טעינת ההגדרות נכשלה",
+      "saveSuccess": "ההגדרות נשמרו בהצלחה",
+      "saveError": "שמירת ההגדרות נכשלה",
+      "save": "שמור הגדרות"
+    }
   },
   "chat": {
     "customerSupport": "תמיכת לקוחות",
@@ -463,7 +476,9 @@
       "courier_found": "נמצא שליח",
       "courier_picked_up": "שליח אסף",
       "courier_on_way": "שליח בדרך",
-      "delivered": "נמסר"
+      "delivered": "נמסר",
+      "released": "תשלום שוחרר",
+      "refunded": "תשלום הוחזר"
     },
     "orderNumber": "הזמנה #{id}",
     "itemsLabel": "פריטים:",
@@ -476,7 +491,13 @@
     "loginRequiredTitle": "נדרשת התחברות",
     "loginRequiredMessage": "עליך להתחבר כדי לראות את ההזמנות שלך",
     "connectWallet": "יש להתחבר לארנק המתאים",
-    "myOrders": "ההזמנות שלי"
+    "myOrders": "ההזמנות שלי",
+    "notesLabel": "הערות:",
+    "currentStatus": "סטטוס נוכחי",
+    "notFoundTitle": "הזמנה לא נמצאה",
+    "notFoundMessage": "לא הצלחנו למצוא את ההזמנה הזו",
+    "statusUpdated": "סטטוס ההזמנה עודכן",
+    "updateStatusFailed": "עדכון הסטטוס נכשל"
   },
   "stores": {
     "storeName": "שם החנות",

@@ -14,13 +14,14 @@ import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
-import { ArrowLeft, Plus, Pencil, X, Save, Trash2 } from 'lucide-react-native';
+import { ArrowLeft, Plus, Pencil, X, Save, Trash2, AlertTriangle } from 'lucide-react-native';
 import { Subcategory } from '../../types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import InfoModal from '../../components/InfoModal';
 import { Spinner } from '@/ui/primitives';
-import commonStyles from '@/constants/styles';
+import EmptyState from '@/shared/ui/EmptyState';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 import { useCategoryDetail } from '@/services';
 import { routes } from '@/utils/routes';
 
@@ -65,6 +66,28 @@ export default function CategoryScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <Text style={{ color: colors.text.primary }}>{t('category.invalid')}</Text>
       </SafeAreaView>
+    );
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Spinner />
+      </SafeAreaView>
+    );
+  }
+
+  if (!category) {
+    return (
+      <ErrorBoundary>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+          <EmptyState
+            icon={AlertTriangle}
+            title={t('category.notFoundTitle')}
+            message={t('category.notFoundMessage')}
+          />
+        </SafeAreaView>
+      </ErrorBoundary>
     );
   }
 
@@ -183,37 +206,9 @@ export default function CategoryScreen() {
     </TouchableOpacity>
   );
 
-  if (loading && !category) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => back()}>
-            <ArrowLeft size={24} color={colors.text.primary} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>טוען...</Text>
-          <View style={commonStyles.spacer24} />
-        </View>
-        <Spinner />
-      </SafeAreaView>
-    );
-  }
-
-  if (!category) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => back()}>
-            <ArrowLeft size={24} color={colors.text.primary} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>קטגוריה לא נמצאה</Text>
-          <View style={commonStyles.spacer24} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ErrorBoundary>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
         <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
@@ -375,7 +370,8 @@ export default function CategoryScreen() {
         type={infoModal.type}
         onClose={() => setInfoModal({...infoModal, visible: false})}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 
