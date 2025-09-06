@@ -19,8 +19,8 @@
     "docker:preview": "node scripts/app.js docker preview",
     "clean": "node scripts/app.js clean",
     "fix:near": "node scripts/fix-near.js",
-    "fix-waku": "node scripts/fix-waku-path.js",
-    "postinstall": "node scripts/fix-waku-path.js",
+    "fix-waku": "node scripts/waku-shim.js",
+    "postinstall": "node scripts/waku-shim.js",
     "start:clear": "rimraf .expo node_modules/.cache .turbo && expo start --clear",
     "seed": "node scripts/app.js seed",
     "lint": "node scripts/app.js lint",
@@ -115,7 +115,6 @@
     "tweetnacl": "^1.0.3",
     "url-parse": "1.5.10",
     "use-latest-callback": "0.2.4",
-    "waku": "^0.26.0",
     "web-push": "^3.6.7",
     "zod": "^3.22.4"
   },
