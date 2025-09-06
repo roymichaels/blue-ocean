@@ -8,9 +8,10 @@ interface TextFieldProps {
   onChangeText?: (text: string) => void;
   placeholder?: string;
   style?: StyleProp<TextStyle>;
+  secureTextEntry?: boolean;
 }
 
-export default function TextField({ value, onChangeText, placeholder, style }: TextFieldProps) {
+export default function TextField({ value, onChangeText, placeholder, style, secureTextEntry }: TextFieldProps) {
   const { colors } = useTheme();
   return (
     <TextInput
@@ -18,6 +19,7 @@ export default function TextField({ value, onChangeText, placeholder, style }: T
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor={colors.text.tertiary}
+      secureTextEntry={secureTextEntry}
       style={[
         {
           backgroundColor: colors.surface.primary,

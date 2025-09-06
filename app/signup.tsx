@@ -8,6 +8,7 @@ import TextField from '@/ui/primitives/TextField';
 import Button from '@/ui/primitives/Button';
 import { validateAll } from '@/utils/validation';
 import ErrorBoundary from '@/shared/ErrorBoundary';
+import { signupUser } from './signupLogic';
 
 export default function SignupScreen() {
   const { colors } = useTheme();
@@ -19,7 +20,7 @@ export default function SignupScreen() {
     setValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = validateAll({
       username: { value: values.username, rules: { required: t('auth.username') + ' required' } },
       email: {
@@ -33,7 +34,11 @@ export default function SignupScreen() {
     });
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
-      // TODO: integrate signup logic
+      try {
+        await signupUser(values);
+      } catch (err) {
+        setErrors({ submit: (err as Error).message });
+      }
     }
   };
 
@@ -70,6 +75,7 @@ export default function SignupScreen() {
           {errors.password && <HelperText error>{errors.password}</HelperText>}
         </Field>
         <Button title={t('auth.signup')} onPress={handleSubmit} />
+        {errors.submit && <HelperText error>{errors.submit}</HelperText>}
       </Form>
     </View>
     </ErrorBoundary>
