@@ -1,13 +1,37 @@
 // webpack.config.js
 const path = require('path');
+const fs = require('fs');
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
 const webpack = require('webpack');
 
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
-  const version0 = require.resolve('@waku/core/lib/message/version-0', {
-    paths: [__dirname],
-  });
+  const version0 = (() => {
+    const candidates = [
+      path.resolve(
+        __dirname,
+        'node_modules/@waku/core/dist/lib/message/version_0.js'
+      ),
+      path.resolve(
+        __dirname,
+        'node_modules/@waku/core/lib/message/version_0.js'
+      ),
+      path.resolve(
+        __dirname,
+        'node_modules/@waku/core/dist/lib/message/version-0.js'
+      ),
+      path.resolve(
+        __dirname,
+        'node_modules/@waku/core/lib/message/version-0.js'
+      ),
+    ];
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+    throw new Error('Unable to resolve @waku/core message version 0');
+  })();
   const wakuCore = require.resolve('@waku/core', { paths: [__dirname] });
 
   // Use source maps in all modes to avoid eval-based tooling which can violate CSP
@@ -71,7 +95,9 @@ module.exports = async function (env, argv) {
     'tslib/modules/index.js': path.resolve(__dirname, 'tslib-polyfill.js'),
   };
 
-  config.module.rules.push({ test: /\.mjs$/, type: 'javascript/auto' });
+  if (!config.module.rules.some((r) => String(r.test) === '/\\.mjs$/')) {
+    config.module.rules.push({ test: /\.mjs$/, type: 'javascript/auto' });
+  }
 
   // Ensure Expo Router's Babel plugin sees the app root
   config.plugins.push(
