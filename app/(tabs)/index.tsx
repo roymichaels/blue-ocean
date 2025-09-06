@@ -10,11 +10,12 @@ import {
 } from 'react-native';
 import { useAppRouter } from '@/services';
 import { Plus, X, ArrowUpDown } from 'lucide-react-native';
-import { Product, Category, HeroBanner } from '@/types';
+import { Product, HeroBanner } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
 import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
 import { useHomeModals } from '@/features/home/hooks/useHomeModals';
 import { useHomeRefresh } from '@/features/home/hooks/useHomeRefresh';
+import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import PriceRange from '@/features/home/components/PriceRange';
@@ -79,6 +80,10 @@ function HomeScreenContent() {
     loading: bannersLoading,
   } = banners;
 
+  const { fallbackCategories, fallbackBanners } = useHomeData();
+  const categoriesToShow = categories.length ? categories : fallbackCategories;
+  const heroBannersToShow = heroBanners.length ? heroBanners : fallbackBanners;
+
   const {
     filteredProducts,
     searchQuery,
@@ -95,29 +100,6 @@ function HomeScreenContent() {
     setShowSortModal,
   } = useHomeFilters(products);
 
-  // Fallback content to guarantee a rich homepage even with empty services
-  const fallbackCategories: Category[] = [
-    { id: 'electronics', name: t('categories.electronics'), icon: String.fromCodePoint(0x1F4F1) } as any,
-    { id: 'fashion', name: t('categories.fashion'), icon: String.fromCodePoint(0x1F457) } as any,
-    { id: 'home', name: t('categories.home'), icon: String.fromCodePoint(0x1F3E0) } as any,
-    { id: 'beauty', name: t('categories.beauty'), icon: String.fromCodePoint(0x1F484) } as any,
-    { id: 'sports', name: t('categories.sports'), icon: String.fromCodePoint(0x1F3C0) } as any,
-    { id: 'books', name: t('categories.books'), icon: String.fromCodePoint(0x1F4DA) } as any,
-  ];
-  const fallbackBanners: Partial<HeroBanner & { id: string }>[] = [
-    {
-      id: 'b1',
-      image: '',
-      title: t('home.fallbackBanner1Title'),
-      subtitle: t('home.fallbackBanner1Subtitle'),
-    },
-    {
-      id: 'b2',
-      image: '',
-      title: t('home.fallbackBanner2Title'),
-      subtitle: t('home.fallbackBanner2Subtitle'),
-    },
-  ];
   const handleBannerSaved = (b: HeroBanner, isNew: boolean) => {
     upsertBanner(b, isNew);
   };
@@ -218,7 +200,7 @@ function HomeScreenContent() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
       <CategoryChips
-        categories={categories}
+        categories={categoriesToShow}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
@@ -230,7 +212,7 @@ function HomeScreenContent() {
         />
       <CTABecomeSeller />
       <BannerArea
-        heroBanners={heroBanners}
+        heroBanners={heroBannersToShow}
         isStoreOwner={isStoreOwner}
         onAddBanner={openBannerForm}
         onEditBanner={openBannerForm}
@@ -250,13 +232,13 @@ function HomeScreenContent() {
             </TouchableOpacity>
           </Stack>
 
-          {categories.length > 0 ? (
+          {categoriesToShow.length > 0 ? (
             <ScrollArea
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.categoriesList}
             >
-              {categories.slice(0, 4).map((item) => (
+              {categoriesToShow.slice(0, 4).map((item) => (
                 <View key={item.id} style={styles.categoryWrapper}>
                   {renderCategory({ item })}
                 </View>
@@ -315,7 +297,7 @@ function HomeScreenContent() {
           <Suspense fallback={<Spinner />}>
             <ProductGrid
               products={filteredProducts}
-              categories={categories}
+              categories={categoriesToShow}
               isStoreOwner={isStoreOwner}
               onEdit={openProductForm}
               getItemWidth={getProductItemWidth}
@@ -332,7 +314,7 @@ function HomeScreenContent() {
           visible={bannerFormVisible}
           onClose={closeBannerForm}
           banner={editingBanner || undefined}
-          categories={categories}
+          categories={categoriesToShow}
           onSaved={handleBannerSaved}
           onDeleted={handleBannerDeleted}
         />
