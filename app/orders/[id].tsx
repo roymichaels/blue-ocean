@@ -7,6 +7,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { z } from 'zod';
 import { createValidateParams } from '@/lib/validateParams';
 import { useTheme } from '@/ui/ThemeProvider';
+import { useLanguage } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
 import GlobalHeader from '../../components/GlobalHeader';
 import InfoModal from '../../components/InfoModal';
@@ -15,6 +16,9 @@ import { Order, OrderStatus, ShippingAddress } from '../../types';
 import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
 import { chainAdapter } from '@/services/chain';
 import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
+import ErrorBoundary from '@/shared/ErrorBoundary';
+import EmptyState from '@/shared/ui/EmptyState';
+import { AlertTriangle } from 'lucide-react-native';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
 
@@ -22,6 +26,7 @@ export default function OrderDetailScreen() {
   const params = validateParams(useLocalSearchParams());
   const id = params.success ? params.data.id : undefined;
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const { user, isDriver } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const [infoModal, setInfoModal] = useState({
@@ -65,26 +70,7 @@ export default function OrderDetailScreen() {
     return <Text>Invalid order</Text>;
   }
 
-  const statusLabel = (status: OrderStatus) => {
-    switch (status) {
-      case 'order_received':
-        return 'הזמנה התקבלה';
-      case 'courier_found':
-        return 'נמצא שליח';
-      case 'courier_picked_up':
-        return 'שליח אסף';
-      case 'courier_on_way':
-        return 'שליח בדרך';
-      case 'delivered':
-        return 'הזמנה נמסרה';
-      case 'released':
-        return 'תשלום שוחרר';
-      case 'refunded':
-        return 'תשלום הוחזר';
-      default:
-        return status;
-    }
-  };
+  const statusLabel = (status: OrderStatus) => t(`orders.status.${status}`);
 
   const handleUpdate = async (status: OrderStatus) => {
     if (!order) return;
@@ -93,18 +79,31 @@ export default function OrderDetailScreen() {
       await svc.updateOrderStatus(order.id, status);
       const updated = await svc.getOrder(order.id);
       setOrder(updated);
-      setInfoModal({ visible: true, title: 'עודכן', message: 'סטטוס ההזמנה עודכן', type: 'success' });
+      setInfoModal({
+        visible: true,
+        title: t('common.success'),
+        message: t('orders.statusUpdated'),
+        type: 'success',
+      });
     } catch (e) {
-      setInfoModal({ visible: true, title: 'שגיאה', message: 'עדכון הסטטוס נכשל', type: 'error' });
+      setInfoModal({
+        visible: true,
+        title: t('common.error'),
+        message: t('orders.updateStatusFailed'),
+        type: 'error',
+      });
     }
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}> 
-      <GlobalHeader title={`הזמנה #${id}`} showBackButton />
-      {order && (
-        <View style={styles.content}>
-          <Text style={[styles.status, { color: colors.text.primary }]}>סטטוס נוכחי: {statusLabel(order.status)}</Text>
+    <ErrorBoundary>
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+        <GlobalHeader title={t('orders.orderNumber', { id })} showBackButton />
+        {order && (
+          <View style={styles.content}>
+            <Text style={[styles.status, { color: colors.text.primary }]}>
+              {t('orders.currentStatus')}: {statusLabel(order.status)}
+            </Text>
           {isSeller && (order.shippingAddress as ShippingAddress | undefined) && (
             <View style={{ marginBottom: 16 }}>
               <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
@@ -122,7 +121,7 @@ export default function OrderDetailScreen() {
               </Text>
               {(order.shippingAddress as ShippingAddress).notes && (
                 <Text style={{ color: colors.text.primary, textAlign: 'right' }}>
-                  הערות: {(order.shippingAddress as ShippingAddress).notes}
+                  {t('orders.notesLabel')} {(order.shippingAddress as ShippingAddress).notes}
                 </Text>
               )}
             </View>
@@ -140,18 +139,23 @@ export default function OrderDetailScreen() {
             </View>
           )}
         </View>
-      )}
-      {!order && (
-        <Text style={{ color: colors.text.primary, textAlign: 'center' }}>הזמנה לא נמצאה</Text>
-      )}
-      <InfoModal
-        visible={infoModal.visible}
-        title={infoModal.title}
-        message={infoModal.message}
-        type={infoModal.type}
-        onClose={() => setInfoModal({ ...infoModal, visible: false })}
-      />
-    </ScrollView>
+        )}
+        {!order && (
+          <EmptyState
+            icon={AlertTriangle}
+            title={t('orders.notFoundTitle')}
+            message={t('orders.notFoundMessage')}
+          />
+        )}
+        <InfoModal
+          visible={infoModal.visible}
+          title={infoModal.title}
+          message={infoModal.message}
+          type={infoModal.type}
+          onClose={() => setInfoModal({ ...infoModal, visible: false })}
+        />
+      </ScrollView>
+    </ErrorBoundary>
   );
 }
 

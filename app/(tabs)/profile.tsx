@@ -36,6 +36,8 @@ import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useProfileData } from '@/services';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { routes } from '@/utils/routes';
+import Button from '@/ui/primitives/Button';
+import { spacing } from '@/shared/ui/tokens';
 
 
 
@@ -109,16 +111,16 @@ export default function ProfileScreen() {
       replace('/');
       setInfoModal({
         visible: true,
-        title: 'התנתקות',
-        message: 'התנתקת בהצלחה',
+        title: t('auth.logout'),
+        message: t('profile.logoutSuccess'),
         type: 'success',
       });
     } catch (error) {
       errorLog('Logout error:', error);
       setInfoModal({
         visible: true,
-        title: 'שגיאה',
-        message: 'אירעה שגיאה בהתנתקות',
+        title: t('common.error'),
+        message: t('profile.logoutError'),
         type: 'error',
       });
     }
@@ -222,7 +224,7 @@ export default function ProfileScreen() {
               <Text
                 style={[styles.statLabel, { color: colors.text.secondary }]}
               >
-                הזמנות
+                {t('profile.orders')}
               </Text>
             </View>
             <View style={styles.statItem}>
@@ -232,7 +234,7 @@ export default function ProfileScreen() {
               <Text
                 style={[styles.statLabel, { color: colors.text.secondary }]}
               >
-                מועדפים
+                {t('profile.favorites')}
               </Text>
             </View>
             <View style={styles.statItem}>
@@ -242,74 +244,84 @@ export default function ProfileScreen() {
               <Text
                 style={[styles.statLabel, { color: colors.text.secondary }]}
               >
-                ביקורות
+                {t('profile.myReviews')}
               </Text>
             </View>
           </View>
         )}
 
-        {/* Admin Menu */}
-        {isLoggedIn && isStoreOwner && (
+        {/* Admin Menu or Create Store CTA */}
+        {isLoggedIn && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-              ניהול
-            </Text>
-            <TouchableOpacity
-              style={[
-                styles.menuItem,
-                {
-                  backgroundColor: colors.surface.primary,
-                  borderColor: colors.border.primary,
-                },
-              ]}
-                onPress={() =>
-                  storeId && push(routes.storeAdminDashboard(storeId))
-                }
-            >
-              <View style={styles.menuItemContent}>
-                <Shield size={24} color={colors.gold} />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                  לוח בקרה
+            {isStoreOwner && storeId ? (
+              <>
+                <Text style={[styles.sectionTitle, { color: colors.text.primary }]}> 
+                  {t('profile.management')}
                 </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.menuItem,
-                {
-                  backgroundColor: colors.surface.primary,
-                  borderColor: colors.border.primary,
-                },
-              ]}
-                onPress={() =>
-                  storeId && push(routes.storeAdminDeliveries(storeId))
-                }
-            >
-              <View style={styles.menuItemContent}>
-                <Package size={24} color={colors.gold} />
-                <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                  משלוחים
-                </Text>
-              </View>
-            </TouchableOpacity>
-            {(user?.kycStatus === 'none' || user?.kycStatus === 'rejected') && (
-              <TouchableOpacity
-                style={[
-                  styles.menuItem,
-                  {
-                    backgroundColor: colors.surface.primary,
-                    borderColor: colors.border.primary,
-                  },
-                ]}
-                onPress={() => push('/kyc')}
-              >
-                <View style={styles.menuItemContent}>
-                  <Shield size={24} color={colors.gold} />
-                  <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                    {t('profile.kycVerification')}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.menuItem,
+                    {
+                      backgroundColor: colors.surface.primary,
+                      borderColor: colors.border.primary,
+                    },
+                  ]}
+                  onPress={() =>
+                    storeId && push(routes.storeAdminDashboard(storeId))
+                  }
+                >
+                  <View style={styles.menuItemContent}>
+                    <Shield size={24} color={colors.gold} />
+                    <Text style={[styles.menuText, { color: colors.text.primary }]}> 
+                      {t('profile.dashboard')}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.menuItem,
+                    {
+                      backgroundColor: colors.surface.primary,
+                      borderColor: colors.border.primary,
+                    },
+                  ]}
+                  onPress={() =>
+                    storeId && push(routes.storeAdminDeliveries(storeId))
+                  }
+                >
+                  <View style={styles.menuItemContent}>
+                    <Package size={24} color={colors.gold} />
+                    <Text style={[styles.menuText, { color: colors.text.primary }]}> 
+                      {t('profile.deliveries')}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {(user?.kycStatus === 'none' || user?.kycStatus === 'rejected') && (
+                  <TouchableOpacity
+                    style={[
+                      styles.menuItem,
+                      {
+                        backgroundColor: colors.surface.primary,
+                        borderColor: colors.border.primary,
+                      },
+                    ]}
+                    onPress={() => push('/kyc')}
+                  >
+                    <View style={styles.menuItemContent}>
+                      <Shield size={24} color={colors.gold} />
+                      <Text style={[styles.menuText, { color: colors.text.primary }]}> 
+                        {t('profile.kycVerification')}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <Button
+                title={t('profile.createStore')}
+                onPress={() => push(routes.storeCreate())}
+                style={{ marginTop: spacing.spacer16 }}
+              />
             )}
           </View>
         )}
@@ -318,7 +330,7 @@ export default function ProfileScreen() {
         {isLoggedIn && (isDriver || isStoreOwner) && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-              נהג
+              {t('profile.driver')}
             </Text>
             <TouchableOpacity
               style={[
@@ -333,7 +345,7 @@ export default function ProfileScreen() {
               <View style={styles.menuItemContent}>
                 <Truck size={24} color={colors.gold} />
                 <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                  לוח נהג
+                  {t('profile.driverDashboard')}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -344,7 +356,7 @@ export default function ProfileScreen() {
         {isLoggedIn && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-              חשבון
+              {t('profile.account')}
             </Text>
             <TouchableOpacity
               style={[
@@ -358,7 +370,7 @@ export default function ProfileScreen() {
             >
               <View style={styles.menuItemContent}>
                 <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                  ההזמנות שלי
+                  {t('profile.myOrders')}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -368,7 +380,7 @@ export default function ProfileScreen() {
         {/* Settings */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-            הגדרות
+            {t('profile.settings')}
           </Text>
 
           <View
@@ -387,7 +399,7 @@ export default function ProfileScreen() {
                 <Sun size={24} color={colors.gold} />
               )}
               <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                {theme === 'dark' ? 'מצב כהה' : 'מצב בהיר'}
+                {theme === 'dark' ? t('profile.darkMode') : t('profile.lightMode')}
               </Text>
             </View>
             <Switch
@@ -416,7 +428,7 @@ export default function ProfileScreen() {
               <View style={styles.menuItemContent}>
                 <Bell size={24} color={colors.gold} />
                 <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                  התראות פוש
+                  {t('profile.pushNotifications')}
                 </Text>
               </View>
               <Switch
@@ -448,7 +460,7 @@ export default function ProfileScreen() {
             <View style={styles.menuItemContent}>
               <Globe size={24} color={colors.gold} />
               <Text style={[styles.menuText, { color: colors.text.primary }]}>
-                שפה
+                {t('profile.language')}
               </Text>
             </View>
             <View style={styles.languageContainer}>
@@ -473,7 +485,7 @@ export default function ProfileScreen() {
               <Text
                 style={[styles.authButtonText, { color: colors.text.inverse }]}
               >
-                התחבר
+                {t('auth.login')}
               </Text>
             </TouchableOpacity>
           ) : (
@@ -488,7 +500,7 @@ export default function ProfileScreen() {
               <Text
                 style={[styles.authButtonText, { color: colors.text.inverse }]}
               >
-                התנתק
+                {t('auth.logout')}
               </Text>
             </TouchableOpacity>
           )}
@@ -513,13 +525,13 @@ export default function ProfileScreen() {
       {/* Logout Confirmation Modal */}
       <ConfirmationModal
         visible={logoutConfirmVisible}
-        title="התנתקות"
-        message="האם אתה בטוח שברצונך להתנתק?"
-        confirmText="התנתק"
-        cancelText="ביטול"
+        title={t('auth.logout')}
+        message={t('auth.logoutConfirm')}
+        confirmText={t('auth.logout')}
+        cancelText={t('common.cancel')}
         onConfirm={confirmLogout}
         onCancel={() => setLogoutConfirmVisible(false)}
-        destructive={true}
+        destructive
       />
       </SafeAreaView>
     </ErrorBoundary>
