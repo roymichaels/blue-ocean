@@ -24,7 +24,10 @@ export type UsersAgentMessage =
 
 class UsersAgent {
   private async ensureWallet() {
-    return ensureNearWallet('Please connect your NEAR wallet to manage users.');
+    const { address, publicKey } = await ensureNearWallet(
+      'Please connect your NEAR wallet to manage users.',
+    );
+    return { address, publicKey };
   }
 
   async add(user: User): Promise<void> {
