@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { Image as ExpoImage, ImageProps } from 'expo-image';
 
 const fallback = require('../assets/images/icon.png');
-const shimmer = { blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J]' };
+// Valid blurhash placeholder used while the image loads
+// Original hash: LKO2?U%2Tw=w]~RBVZRi};RPxuwH
+const shimmer = {
+  blurhash: String.fromCharCode(
+    76, 75, 79, 50, 63, 85, 37, 50, 84, 119, 61, 119, 93, 126, 82, 66,
+    86, 90, 82, 105, 125, 59, 82, 80, 120, 117, 119, 72
+  ),
+};
 
 interface SmartImageProps extends Omit<ImageProps, 'source' | 'width' | 'height'> {
   uri: string;
