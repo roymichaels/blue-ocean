@@ -13,7 +13,6 @@
     "@waku/sdk": "0.0.33"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.0.10",
     "ts-node": "^10.9.2",
