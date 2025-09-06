@@ -2,8 +2,7 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text } from 'react-native';
-import { Router, usePathname, useSegments } from 'expo-router';
-import { stripTabsPrefix } from '@/services/navigation';
+import { Router } from 'expo-router';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui';
 import { debugLog } from '@/utils/logger';
@@ -12,17 +11,6 @@ import AppProviders from '@/providers/AppProviders';
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
 
 function RouterApp() {
-  const pathname = usePathname();
-  const segments = useSegments();
-
-  React.useEffect(() => {
-    if (!__DEV__) return;
-
-    const path = stripTabsPrefix(pathname) ?? pathname;
-    const currentTab = segments[0] ?? '';
-    debugLog(`[breadcrumb] ${path} ${currentTab}`);
-  }, [pathname, segments]);
-
   return <Router />;
 }
 

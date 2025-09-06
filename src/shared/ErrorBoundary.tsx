@@ -4,8 +4,6 @@ import Text from '@/ui/primitives/Text';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { spacing } from '@/shared/ui/tokens';
 import Button from '@/ui/primitives/Button';
-import { usePathname } from 'expo-router';
-import { useAppRouter } from '@/services';
 import { errorLog } from '@/utils/logger';
 
 interface Props {
@@ -53,14 +51,8 @@ class ErrorBoundary extends React.Component<Props, State> {
 function ErrorFallback({ error, onRetry }: { error?: Error; onRetry: () => void }) {
   const { colors } = useTheme();
   const { t } = useLanguage();
-  const pathname = usePathname();
-  const { replace } = useAppRouter();
-
   const handleRetry = () => {
     onRetry();
-    try {
-      replace(pathname);
-    } catch {}
   };
 
   return (
@@ -71,9 +63,7 @@ function ErrorFallback({ error, onRetry }: { error?: Error; onRetry: () => void 
       {error?.message && (
         <Text style={[styles.message, { color: colors.text.secondary }]}>{error.message}</Text>
       )}
-      <Text style={[styles.route, { color: colors.text.secondary }]}>
-        {t('common.route')} {pathname}
-      </Text>
+      {/* Route information omitted when router context is unavailable */}
       <Button title={t('errors.tryAgain')} onPress={handleRetry} />
     </View>
   );
@@ -90,10 +80,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: spacing.spacer8,
-    textAlign: 'center',
-  },
-  route: {
-    marginBottom: spacing.spacer16,
     textAlign: 'center',
   },
   message: {
