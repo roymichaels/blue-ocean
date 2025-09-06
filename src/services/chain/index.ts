@@ -6,8 +6,12 @@ const unsupported: ChainAdapter = {
   async init() { throw new Error('Unsupported chain'); },
   async openModal() { throw new Error('Unsupported chain'); },
   useAccount() { return null; },
+  useAccountId() { return null; },
+  getAccountId() { return null; },
   getSelector() { return null; },
   async getBalance() { return '0'; },
+  async signMessage() { throw new Error('Unsupported chain'); },
+  async listOrdersBySeller() { throw new Error('Unsupported chain'); },
   async payPrivately() { throw new Error('Unsupported chain'); },
 };
 

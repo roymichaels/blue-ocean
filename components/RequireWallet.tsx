@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'expo-router';
 import { stripTabsPrefix } from '@/services/navigation';
 import { useAppRouter } from '@/services';
-import { useAccountId } from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 
 interface Props {
   children: React.ReactNode;
 }
 
 export default function RequireWallet({ children }: Props) {
-  const accountId = useAccountId();
+  const accountId = chainAdapter.useAccountId();
   const pathname = usePathname();
   const params = useSearchParams();
   const { replace } = useAppRouter();

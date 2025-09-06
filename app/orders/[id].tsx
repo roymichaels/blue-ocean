@@ -13,7 +13,7 @@ import InfoModal from '../../components/InfoModal';
 import OrderService from '@/services/orders';
 import { Order, OrderStatus, ShippingAddress } from '../../types';
 import { ALLOWED_STATUS_TRANSITIONS } from '../../agents/orders-agent';
-import nearAuth from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 import { decryptOrderShipping } from '@/features/stores/services/sellerTools';
 
 const validateParams = createValidateParams(z.object({ id: z.string() }));
@@ -39,7 +39,7 @@ export default function OrderDetailScreen() {
       let decrypted = raw as Order | null;
       if (raw && raw.shipAddrEnc && isSeller) {
         try {
-          const sig = await nearAuth.signMessage(Buffer.from(raw.id));
+          const sig = await chainAdapter.signMessage?.(Buffer.from(raw.id));
           if (sig) {
             const addr = await decryptOrderShipping(raw);
             if (addr) {

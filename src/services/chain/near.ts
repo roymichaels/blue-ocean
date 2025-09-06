@@ -1,7 +1,9 @@
 import { setupWalletSelector, WalletSelector } from '@near-wallet-selector/core';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import { useEffect, useState } from 'react';
+import { Buffer } from 'buffer';
 import { payPrivately as nearPayPrivately } from '@blue-ocean/sdk-near';
+import { listOrdersBySeller as nearListOrdersBySeller } from '@/services/nearOrders';
 import type { ChainAdapter } from './ChainAdapter';
 
 let selector: WalletSelector | null = null;
@@ -76,6 +78,14 @@ function useAccount(): string | null {
   return accountId;
 }
 
+function useAccountId(): string | null {
+  return useAccount();
+}
+
+function getAccountId(): string | null {
+  return selector?.store.getState().accounts[0]?.accountId || null;
+}
+
 function getSelector() {
   return selector;
 }
@@ -104,12 +114,28 @@ async function getBalance(address: string): Promise<string> {
   return json.result?.amount || '0';
 }
 
+async function signMessage(message: Uint8Array | string): Promise<string> {
+  const { selector, error } = await init();
+  if (!selector) {
+    throw (error || new Error('Wallet initialization failed'));
+  }
+  const wallet = await selector.wallet();
+  const res: any = await (wallet as any).signMessage({
+    message: typeof message === 'string' ? Buffer.from(message) : message,
+  });
+  return res.signature as string;
+}
+
 export const nearAdapter: ChainAdapter = {
   init,
   openModal,
   useAccount,
+  useAccountId,
+  getAccountId,
   getSelector,
   getBalance,
+  signMessage,
+  listOrdersBySeller: nearListOrdersBySeller,
   payPrivately: nearPayPrivately,
 };
 

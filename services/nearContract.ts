@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import nearAuth from '@/features/auth/services/nearAuth';
+import { chainAdapter } from '@/services/chain';
 import { fetchSettings } from './nearSettings';
 import { assertNearChain } from './chain';
 
@@ -18,7 +18,7 @@ export async function getOrderPaymentFactoryAddress(): Promise<string> {
 }
 
 async function sendNear(message: string): Promise<string> {
-  return nearAuth.signMessage(message);
+  return chainAdapter.signMessage?.(message) || '';
 }
 
 export async function deployOrderPayment(
