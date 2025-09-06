@@ -16,10 +16,9 @@ config.resolver.assetExts.push('wasm', 'sql', 'boc');
 // If needed, we can revisit this after web bundling is stable.
 // config.resolver.disableHierarchicalLookup = true;
 
-// Enable Node-style package "exports" field so modules like
-// @waku/core that export subpaths (e.g., ./lib/message/version_0)
-// resolve to their intended dist files.
-config.resolver.unstable_enablePackageExports = true;
+// Disable package "exports" enforcement so packages like multiformats can
+// resolve internal files that are not declared in their exports map.
+delete config.resolver.unstable_enablePackageExports;
 
 // Map the Expo HMR client to our local wrapper; polyfills are applied at app entry
 config.resolver.extraNodeModules = {
@@ -71,11 +70,11 @@ config.resolver.extraNodeModules = {
     __dirname,
     'node_modules/@waku/utils/dist/index.js'
   ),
-  'multiformats/hashes/sha2': resolvePosix(
+  'multiformats/dist/src/hashes/sha2.js': resolvePosix(
     __dirname,
     'node_modules/multiformats/dist/src/hashes/sha2.js'
   ),
-  'multiformats/hashes/sha2-browser': resolvePosix(
+  'multiformats/dist/src/hashes/sha2-browser.js': resolvePosix(
     __dirname,
     'node_modules/multiformats/dist/src/hashes/sha2-browser.js'
   ),
