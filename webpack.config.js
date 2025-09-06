@@ -5,6 +5,10 @@ const webpack = require('webpack');
 
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
+  const version0 = require.resolve('@waku/core/lib/message/version-0', {
+    paths: [__dirname],
+  });
+  const wakuCore = require.resolve('@waku/core', { paths: [__dirname] });
 
   // Use source maps in all modes to avoid eval-based tooling which can violate CSP
   config.devtool = 'source-map';
@@ -51,16 +55,9 @@ module.exports = async function (env, argv) {
       __dirname,
       'node_modules/@waku/utils/dist/bytes/index.js'
     ),
-    '@waku/core/lib/message/version_0': require
-      .resolve('./dist/lib/message/version_0.js', {
-        paths: [path.join(__dirname, 'node_modules/@waku/core')],
-      })
-      .replace(/\\/g, '/'),
-    '@waku/core$': require
-      .resolve('./dist/index.js', {
-        paths: [path.join(__dirname, 'node_modules/@waku/core')],
-      })
-      .replace(/\\/g, '/'),
+    '@waku/core/lib/message/version_0': version0,
+    '@waku/core/lib/message/version-0': version0,
+    '@waku/core$': wakuCore,
     '@blue-ocean/utils': path.resolve(__dirname, 'shims/bo-utils.js'),
     'fs/promises': false,
     // Avoid bundling Node-only NEAR provider in web builds
@@ -73,6 +70,8 @@ module.exports = async function (env, argv) {
     tslib: require.resolve('tslib'),
     'tslib/modules/index.js': path.resolve(__dirname, 'tslib-polyfill.js'),
   };
+
+  config.module.rules.push({ test: /\.mjs$/, type: 'javascript/auto' });
 
   // Ensure Expo Router's Babel plugin sees the app root
   config.plugins.push(
