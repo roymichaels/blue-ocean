@@ -96,11 +96,11 @@ config.resolver.extraNodeModules = {
 // which cause the "Couldn't register the navigator" error.
 config.resolver.alias = {
   ...(config.resolver.alias || {}),
-  '@waku/core/lib/message/version_0': resolvePosix(
+  '@waku/core/lib/message/version_0': path.resolve(
     __dirname,
     'node_modules/@waku/core/dist/lib/message/version_0.js'
   ),
-  '@waku/core$': resolvePosix(
+  '@waku/core$': path.resolve(
     __dirname,
     'node_modules/@waku/core/dist/index.js'
   ),
