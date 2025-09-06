@@ -97,6 +97,14 @@ config.resolver.extraNodeModules = {
 // which cause the "Couldn't register the navigator" error.
 config.resolver.alias = {
   ...(config.resolver.alias || {}),
+  '@waku/core/lib/message/version_0': resolvePosix(
+    __dirname,
+    'node_modules/@waku/core/dist/lib/message/version_0.js'
+  ),
+  '@waku/core': resolvePosix(
+    __dirname,
+    'node_modules/@waku/core/dist/index.js'
+  ),
   '@react-navigation/native-stack/node_modules/@react-navigation/core':
     resolvePosix(__dirname, 'node_modules/@react-navigation/core'),
   '@react-navigation/native/node_modules/@react-navigation/core': resolvePosix(
