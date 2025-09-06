@@ -9,6 +9,7 @@ const toPosix = (p) => p.split(path.sep).join(path.posix.sep);
 const resolvePosix = (...segments) => toPosix(path.resolve(...segments));
 const requirePosix = (id) => toPosix(require.resolve(id));
 
+
 const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('wasm', 'sql', 'boc');
 // Allow Metro's default hierarchical lookup to avoid breaking deep imports
@@ -88,6 +89,24 @@ config.resolver.unstable_enablePackageExports = true;
   multiformats: resolvePosix(
     __dirname,
     'node_modules/multiformats/dist/src/index.js'
+=======
+  'multiformats/hashes/sha2': toPosix(
+    path.resolve(
+      __dirname,
+      'node_modules/multiformats/dist/src/hashes/sha2.js'
+    )
+  ),
+  'multiformats/hashes/sha2-browser': toPosix(
+    path.resolve(
+      __dirname,
+      'node_modules/multiformats/dist/src/hashes/sha2-browser.js'
+    )
+  ),
+  multiformats: toPosix(
+    path.resolve(
+      __dirname,
+      'node_modules/multiformats/dist/src/index.js'
+    )
   ),
   tslib: resolvePosix(__dirname, 'tslib-polyfill.js'),
   // Ensure Metro resolves tslib's ESM entry to a CommonJS-compatible module
