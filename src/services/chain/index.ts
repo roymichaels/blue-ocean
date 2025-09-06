@@ -8,6 +8,7 @@ const unsupported: ChainAdapter = {
   useAccount() { return null; },
   useAccountId() { return null; },
   getAccountId() { return null; },
+  getPublicKey() { return null; },
   getSelector() { return null; },
   async getBalance() { return '0'; },
   async signMessage() { throw new Error('Unsupported chain'); },

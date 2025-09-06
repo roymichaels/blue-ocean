@@ -9,10 +9,10 @@ assertNearChain();
 
 class ModerationAgent {
   private async ensureWallet() {
-    const { address } = await ensureNearWallet(
+    const { address, publicKey } = await ensureNearWallet(
       'Please connect your NEAR wallet to report items.',
     );
-    return { address };
+    return { address, publicKey };
   }
 
   async reportProduct(productId: string, reason: string): Promise<void> {

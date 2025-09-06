@@ -86,6 +86,10 @@ function getAccountId(): string | null {
   return selector?.store.getState().accounts[0]?.accountId || null;
 }
 
+function getPublicKey(): string | null {
+  return selector?.store.getState().accounts[0]?.publicKey || null;
+}
+
 function getSelector() {
   return selector;
 }
@@ -132,6 +136,7 @@ export const nearAdapter: ChainAdapter = {
   useAccount,
   useAccountId,
   getAccountId,
+  getPublicKey,
   getSelector,
   getBalance,
   signMessage,

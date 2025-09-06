@@ -11,6 +11,8 @@ export interface ChainAdapter {
   useAccountId(): string | null;
   /** Synchronously get the current account identifier */
   getAccountId(): string | null;
+  /** Synchronously get the current public key */
+  getPublicKey(): string | null;
   /** Return underlying wallet selector or provider */
   getSelector(): any;
   /** Fetch the balance for the given account in smallest unit */

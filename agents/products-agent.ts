@@ -163,10 +163,10 @@ class ProductsAgent {
   }
 
   private async ensureWallet() {
-    const { address } = await ensureNearWallet(
+    const { address, publicKey } = await ensureNearWallet(
       'Please connect your NEAR wallet to manage products.',
     );
-    return { address };
+    return { address, publicKey };
   }
 
   private async assertStoreOwner(storeId: string) {
