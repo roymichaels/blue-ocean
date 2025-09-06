@@ -116,9 +116,28 @@ config.resolver.alias = {
   ),
 };
 
+const tryResolve = (specifier) => {
+  try {
+    return require.resolve(specifier);
+  } catch {
+    return null;
+  }
+};
+
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === '@waku/core/lib/message/version_0') {
-    moduleName = '@waku/core/lib/message/version-0';
+    const candidates = [
+      '@waku/core/lib/message/version_0',
+      '@waku/core/lib/message/version-0',
+      '@waku/core/dist/message/version_0',
+      '@waku/core/dist/message/version-0',
+    ];
+    for (const candidate of candidates) {
+      const resolved = tryResolve(candidate);
+      if (resolved) {
+        return resolve(context, resolved, platform);
+      }
+    }
   }
   return resolve(context, moduleName, platform);
 };
