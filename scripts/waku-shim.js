@@ -22,31 +22,33 @@ function getUtilsRoot() {
   }
 }
 
-function findVersionFile(coreRoot) {
+function findVersionFile(coreRoot, shimRel) {
   const candidates = [
-    'lib/message/version_0.js',
     'lib/message/version-0.js',
     'dist/lib/message/version_0.js',
     'dist/lib/message/version-0.js',
     'lib/message/version_0/index.js',
     'dist/lib/message/version_0/index.js',
+    'lib/message/version_0.js', // real file may exist here in future
   ];
   for (const rel of candidates) {
+    if (rel === shimRel) continue; // skip self
     const abs = path.join(coreRoot, rel);
     if (exists(abs)) return { rel, abs };
   }
   return null;
 }
 
-function findBytesFile(utilsRoot) {
+function findBytesFile(utilsRoot, shimRel) {
   const candidates = [
-    'bytes/index.js',
     'dist/bytes/index.js',
     'lib/bytes/index.js',
     'dist/bytes.js',
     'lib/bytes.js',
+    'bytes/index.js',
   ];
   for (const rel of candidates) {
+    if (rel === shimRel) continue; // skip self
     const abs = path.join(utilsRoot, rel);
     if (exists(abs)) return { rel, abs };
   }
@@ -54,6 +56,10 @@ function findBytesFile(utilsRoot) {
 }
 
 function writeShim(pkgRoot, shimRel, actualRel) {
+  if (actualRel === shimRel) {
+    log('Shim already points to real file:', shimRel);
+    return;
+  }
   const shimAbs = path.join(pkgRoot, shimRel);
   fs.mkdirSync(path.dirname(shimAbs), { recursive: true });
 
@@ -70,23 +76,25 @@ function writeShim(pkgRoot, shimRel, actualRel) {
     console.error('[waku-shim] @waku/core not found. Did you install deps?');
     process.exit(1);
   }
-  const actual = findVersionFile(coreRoot);
+  const shimVersion = 'lib/message/version_0.js';
+  const actual = findVersionFile(coreRoot, shimVersion);
   if (!actual) {
     console.error('[waku-shim] Could not locate version_0 in @waku/core.');
     process.exit(1);
   }
-  writeShim(coreRoot, 'lib/message/version_0.js', actual.rel);
+  writeShim(coreRoot, shimVersion, actual.rel);
 
   const utilsRoot = getUtilsRoot();
   if (!utilsRoot) {
     console.error('[waku-shim] @waku/utils not found. Did you install deps?');
     process.exit(1);
   }
-  const bytes = findBytesFile(utilsRoot);
+  const shimBytes = path.join('bytes', 'index.js');
+  const bytes = findBytesFile(utilsRoot, shimBytes);
   if (!bytes) {
     console.error('[waku-shim] Could not locate bytes module in @waku/utils.');
     process.exit(1);
   }
-  writeShim(utilsRoot, path.join('bytes', 'index.js'), bytes.rel);
+  writeShim(utilsRoot, shimBytes, bytes.rel);
 })();
 
