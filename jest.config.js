@@ -45,6 +45,7 @@ module.exports = {
     '<rootDir>/tests/smoke.test.ts',
     '<rootDir>/tests/navigation.test.ts',
     '<rootDir>/tests/CheckedQueryClientProvider.test.tsx',
+    '<rootDir>/tests/signupLogic.test.ts',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],
