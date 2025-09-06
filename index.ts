@@ -2,8 +2,9 @@
 import './polyfills';
 import { AppRegistry } from 'react-native';
 import App from './App';
+
 process.env.EXPO_PUBLIC_USE_ROUTER = '1';
-const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
+
 // Ensure root has height even without +html Document and mount manually
 try {
   if (typeof document !== 'undefined') {
@@ -16,14 +17,11 @@ try {
       root.id = 'root';
       document.body.appendChild(root);
     }
-    if (!USE_ROUTER) {
-      AppRegistry.registerComponent('main', () => App);
-      AppRegistry.runApplication('main', { rootTag: root, initialProps: {}, hydrate: false } as any);
-    }
+    AppRegistry.registerComponent('main', () => App);
+    AppRegistry.runApplication('main', {
+      rootTag: root,
+      initialProps: {},
+      hydrate: false,
+    } as any);
   }
 } catch {}
-// Remove debug overlays/listeners used during investigation
-// If router is enabled, hand off to expo-router.
-if (USE_ROUTER) {
-  require('expo-router/entry');
-}
