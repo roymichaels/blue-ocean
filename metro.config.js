@@ -100,7 +100,7 @@ config.resolver.alias = {
     __dirname,
     'node_modules/@waku/core/dist/lib/message/version_0.js'
   ),
-  '@waku/core': resolvePosix(
+  '@waku/core$': resolvePosix(
     __dirname,
     'node_modules/@waku/core/dist/index.js'
   ),
