@@ -51,14 +51,16 @@ module.exports = async function (env, argv) {
       __dirname,
       'node_modules/@waku/utils/dist/bytes/index.js'
     ),
-    '@waku/core/lib/message/version_0': path.resolve(
-      __dirname,
-      'node_modules/@waku/core/dist/lib/message/version_0.js'
-    ),
-    '@waku/core$': path.resolve(
-      __dirname,
-      'node_modules/@waku/core/dist/index.js'
-    ),
+    '@waku/core/lib/message/version_0': require
+      .resolve('./dist/lib/message/version_0.js', {
+        paths: [path.join(__dirname, 'node_modules/@waku/core')],
+      })
+      .replace(/\\/g, '/'),
+    '@waku/core$': require
+      .resolve('./dist/index.js', {
+        paths: [path.join(__dirname, 'node_modules/@waku/core')],
+      })
+      .replace(/\\/g, '/'),
     '@blue-ocean/utils': path.resolve(__dirname, 'shims/bo-utils.js'),
     'fs/promises': false,
     // Avoid bundling Node-only NEAR provider in web builds
