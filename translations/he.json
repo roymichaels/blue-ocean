@@ -283,13 +283,15 @@
     "english": "English",
     "hebrew": "עברית",
     "version": "גרסה 1.0.0",
-    "copyright": "© 2024 אנדרגראונד אפס",
+    "copyright": "© 2024 {appName}",
     "comingSoon": "בקרוב",
     "featureComingSoon": "תכונה זו תהיה זמינה בקרוב",
     "kycVerification": "אימות KYC",
     "logoutSuccess": "התנתקת בהצלחה",
     "logoutError": "אירעה שגיאה בהתנתקות",
-    "createStore": "צור את החנות שלך"
+    "createStore": "צור את החנות שלך",
+    "loadSettingsError": "שגיאה בטעינת הגדרות",
+    "saveNotificationsError": "שגיאה בשמירת הגדרת ההתראות"
   },
   "admin": {
     "dashboard": "לוח בקרה",

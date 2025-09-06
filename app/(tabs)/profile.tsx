@@ -20,6 +20,7 @@ import {
   Bell,
   Truck,
   Package,
+  Store,
   CircleCheck as CheckCircle,
   TriangleAlert as AlertTriangle,
   Clock,
@@ -36,7 +37,6 @@ import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useProfileData } from '@/services';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { routes } from '@/utils/routes';
-import Button from '@/ui/primitives/Button';
 import { spacing } from '@/shared/ui/tokens';
 
 
@@ -83,7 +83,7 @@ export default function ProfileScreen() {
         setNotificationsEnabled(notificationsSetting === 'true');
       }
     } catch (error) {
-      errorLog('Error loading settings:', error);
+      errorLog(t('profile.loadSettingsError'), error);
     }
   };
 
@@ -92,7 +92,7 @@ export default function ProfileScreen() {
     try {
       await AsyncStorage.setItem(NOTIFICATIONS_STORAGE_KEY, value.toString());
     } catch (error) {
-      errorLog('Error saving notifications setting:', error);
+      errorLog(t('profile.saveNotificationsError'), error);
     }
   };
 
@@ -116,7 +116,7 @@ export default function ProfileScreen() {
         type: 'success',
       });
     } catch (error) {
-      errorLog('Logout error:', error);
+      errorLog(t('profile.logoutError'), error);
       setInfoModal({
         visible: true,
         title: t('common.error'),
@@ -317,11 +317,24 @@ export default function ProfileScreen() {
                 )}
               </>
             ) : (
-              <Button
-                title={t('profile.createStore')}
+              <TouchableOpacity
+                style={[
+                  styles.menuItem,
+                  {
+                    backgroundColor: colors.surface.primary,
+                    borderColor: colors.border.primary,
+                    marginTop: spacing.spacer16,
+                  },
+                ]}
                 onPress={() => push(routes.storeCreate())}
-                style={{ marginTop: spacing.spacer16 }}
-              />
+              >
+                <View style={styles.menuItemContent}>
+                  <Store size={24} color={colors.gold} />
+                  <Text style={[styles.menuText, { color: colors.text.primary }]}>
+                    {t('profile.createStore')}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             )}
           </View>
         )}
@@ -507,10 +520,16 @@ export default function ProfileScreen() {
         </View>
 
         {/* App Info */}
-        <View style={styles.appInfo}>
-          <Text style={[styles.appVersion, { color: colors.text.tertiary }]}>{t('profile.version')}</Text>
-          <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}>© 2024 {appName || t('ageVerification.platformName')}</Text>
-        </View>
+          <View style={styles.appInfo}>
+            <Text style={[styles.appVersion, { color: colors.text.tertiary }]}>
+              {t('profile.version')}
+            </Text>
+            <Text style={[styles.appCopyright, { color: colors.text.tertiary }]}> 
+              {t('profile.copyright', {
+                appName: appName || t('ageVerification.platformName'),
+              })}
+            </Text>
+          </View>
       </ScrollView>
 
       {/* Info Modal */}
@@ -554,7 +573,7 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 80,
     height: 80,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 0x1affffff,
     borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
@@ -664,9 +683,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginHorizontal: 16,
   },
-  logoutButton: {
-    backgroundColor: '#FF3B30',
-  },
+    logoutButton: {
+      backgroundColor: 0xffff3b30,
+    },
   authButtonText: {
     fontSize: 16,
     fontWeight: '600',
