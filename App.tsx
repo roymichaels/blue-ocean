@@ -5,6 +5,7 @@ import { View, Text } from 'react-native';
 import { Router } from 'expo-router';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui';
+import { debugLog } from '@/utils/logger';
 import AppProviders from '@/providers/AppProviders';
 
 const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';

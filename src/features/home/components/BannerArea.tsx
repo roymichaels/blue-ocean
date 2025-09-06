@@ -201,6 +201,7 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
                   key={index}
                   style={[
                     styles.indicator,
+                    { backgroundColor: colors.border.primary },
                     index === currentIndex && [
                       styles.activeIndicator,
                       { backgroundColor: colors.gold },
@@ -268,7 +269,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.border.primary,
     marginHorizontal: 4,
   },
   activeIndicator: {},
