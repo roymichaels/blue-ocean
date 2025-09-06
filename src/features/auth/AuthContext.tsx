@@ -5,6 +5,10 @@ import DatabaseService from '@/services/database';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { chainAdapter } from '@/services/chain';
+import usersAgent from '@/agents/users-agent';
+import { getEd25519KeyPair } from '@/services/localIdentity';
+import { t } from '@/i18n';
+import { Buffer } from 'buffer';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -58,16 +62,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const profile = await db.getUserProfile(walletAddress);
-      setUser(
-        profile || {
+
+      // Ensure a Waku key pair exists and retrieve the public key
+      const { publicKey } = await getEd25519KeyPair();
+      const chatPublicKey = Buffer.from(publicKey).toString('hex');
+
+      if (profile) {
+        // Update stored profile if it lacks the current Waku key
+        if (profile.chatPublicKey !== chatPublicKey) {
+          const enriched = { ...profile, chatPublicKey };
+          await usersAgent.update(enriched);
+          setUser(enriched);
+        } else {
+          setUser(profile);
+        }
+      } else {
+        const newProfile: User = {
           id: walletAddress,
           username: walletAddress,
           displayName: walletAddress,
           isAdmin: false,
           address: walletAddress,
           role: 'user',
-        },
-      );
+          chatPublicKey,
+        };
+        await usersAgent.add(newProfile);
+        setUser(newProfile);
+      }
     } catch {
       // In case of any failure, fall back to clearing the user state
       setUser(null);
@@ -98,8 +119,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await chainAdapter.openModal();
     } catch (err: unknown) {
-      errorLog('Wallet connection failed', err);
-      Alert.alert('Error', 'Wallet connection failed. Please try again.');
+      errorLog(
+        t('auth.walletConnectionFailed', 'Wallet connection failed'),
+        err,
+      );
+      Alert.alert(
+        t('common.error', 'Error'),
+        t(
+          'auth.walletConnectionFailedTry',
+          'Wallet connection failed. Please try again.',
+        ),
+      );
     }
   };
 
@@ -111,7 +141,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const wallet = await selector?.wallet();
       await wallet?.signOut();
     } catch (err) {
-      errorLog('Logout failed', err);
+      errorLog(t('auth.logoutFailed', 'Logout failed'), err);
     }
   };
 
