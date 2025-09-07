@@ -9,7 +9,7 @@ interface PortalProps {
 export default function Portal({ children }: PortalProps) {
   if (Platform.OS === 'web') {
     return createPortal(
-      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+      <View style={[StyleSheet.absoluteFill, { pointerEvents: 'box-none' }]}>
         {children}
       </View>,
       document.body
@@ -18,7 +18,7 @@ export default function Portal({ children }: PortalProps) {
 
   return (
     <Modal transparent>
-      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+      <View style={[StyleSheet.absoluteFill, { pointerEvents: 'box-none' }]}>
         {children}
       </View>
     </Modal>

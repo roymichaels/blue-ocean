@@ -79,10 +79,10 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
             />
           </Suspense>
           <View
-            pointerEvents="none"
             style={[
               styles.heroOverlay,
               { backgroundColor: colors.background + '66' },
+              { pointerEvents: 'none' },
             ]}
           >
             <View style={styles.heroContent}>
@@ -195,7 +195,7 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
           />
 
           {heroBanners.length > 1 && (
-            <View pointerEvents="none" style={styles.bannerIndicators}>
+            <View style={[styles.bannerIndicators, { pointerEvents: 'none' }]}> 
               {heroBanners.map((_, index) => (
                 <View
                   key={index}

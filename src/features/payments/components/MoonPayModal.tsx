@@ -80,7 +80,7 @@ export default function MoonPayModal({
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {loading && (
           <Modal transparent visible>
-            <View style={styles.loadingOverlay} pointerEvents="none">
+            <View style={[styles.loadingOverlay, { pointerEvents: 'none' }]}>
               <Spinner />
             </View>
           </Modal>

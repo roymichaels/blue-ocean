@@ -6,5 +6,5 @@ interface OverlayProps {
 }
 
 export default function Overlay({ style }: OverlayProps) {
-  return <View pointerEvents="none" style={[StyleSheet.absoluteFill, style]} />;
+  return <View style={[StyleSheet.absoluteFill, style, { pointerEvents: 'none' }]} />;
 }
