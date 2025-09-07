@@ -1,11 +1,11 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Animated, StyleProp, ViewStyle } from 'react-native';
+import { View, Animated, StyleProp, ViewStyle, Platform, DimensionValue } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../ThemeProvider';
 
 interface SkeletonProps {
-  width?: number | string;
-  height?: number | string;
+  width?: DimensionValue;
+  height?: DimensionValue;
   style?: StyleProp<ViewStyle>;
   borderRadius?: number;
 }
@@ -24,7 +24,7 @@ export default function Skeleton({
       Animated.timing(shimmer, {
         toValue: 1,
         duration: 1000,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     );
     animation.start();
