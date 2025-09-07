@@ -9,6 +9,8 @@ module.exports = function (api) {
   return {
     presets: ["babel-preset-expo"],
     // SDK 50+: expo-router/babel is built into the preset; don't add it here.
-    plugins: [],
+    // Enable support for static class blocks in dependencies like @smithy/core
+    // by transforming them during compilation.
+    plugins: ["@babel/plugin-transform-class-static-block"],
   };
 };
