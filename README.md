@@ -55,13 +55,15 @@ const { tokens, colors } = useTheme();
    yarn install
    ```
 
-2. *(Optional)* **Create a `.env` for customization**
+2. **Set up environment files**
 
    ```sh
-   cp .env.example .env
+   cp .env.example .env          # public defaults
+   touch .env.local              # secrets (git-ignored)
    ```
 
-   Only needed for advanced overrides such as custom Waku peers. See
+   Public `EXPO_PUBLIC_*` values live in `.env`. API keys, RPC URLs, and other
+   secrets belong in `.env.local`. See
    [Environment Variables](#environment-variables).
 
 3. **Start the Expo project**
@@ -76,7 +78,7 @@ const { tokens, colors } = useTheme();
 
 5. **Admin onboarding**
 
-   - The wallet specified in `ADMIN_WALLET_ADDRESS` receives admin rights on first run.
+   - The wallet specified in `ADMIN_WALLET_ADDRESS` (in `.env.local`) receives admin rights on first run.
    - To add more admins, open **Admin → Settings** and add additional wallet addresses or use `SettingsAgent.setAdmins()`.
 
 All data is ephemeral and synchronized between peers over Waku and written to NEAR smart contracts when needed; no external services or local database are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
@@ -98,10 +100,12 @@ yarn husky install
 
 ### Environment Variables
 
-The app ships with sensible defaults and runs without a `.env` file. Environment
-variables let you customize behavior or override settings for development and
-deployment. To supply overrides locally, copy `.env.example` to `.env` and set
-the desired values:
+The app ships with sensible defaults and runs without a `.env` file. Public
+overrides such as `EXPO_PUBLIC_*` values live in `.env` (copy from
+`.env.example`). Secrets like RPC URLs or API keys should be placed in
+`.env.local`, which is git-ignored.
+
+Common variables include:
 
 | Variable | Required | Description |
 | -------- | -------- | ----------- |
