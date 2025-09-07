@@ -20,6 +20,9 @@ yarn start      # web
 yarn test
 ```
 
+Metro's web bundler requires `it-all` and `it-pipe` to be listed explicitly in
+`dependencies`; both packages are included in `package.json` for web builds.
+
 Then open `/` to see the Home screen.
 
 ## Design Tokens
