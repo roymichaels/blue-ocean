@@ -12,7 +12,7 @@ let lakeStarted = false;
 let s3: S3Client | null = null;
 const bucket = process.env.NEAR_LAKE_BUCKET;
 const region = process.env.NEAR_LAKE_REGION || 'eu-central-1';
-const localDir = process.env.NEAR_LAKE_DIR;
+const localDir = process.env.NEAR_LAKE_DIR || path.join(process.cwd(), '.near-lake');
 
 function ensureLake() {
   if (lakeStarted) return;
@@ -41,7 +41,6 @@ function objectKey(address: string, key: string): string {
 }
 
 function localFile(address: string, key: string): string {
-  if (!localDir) throw new Error('missing_lake_dir');
   return path.join(localDir, address, key);
 }
 
@@ -127,7 +126,7 @@ export async function listValues(
     }
     return out;
   }
-  const dir = path.join(localDir || '', address);
+  const dir = path.join(localDir, address);
   try {
     const files = await fs.readdir(dir);
     const entries = await Promise.all(
