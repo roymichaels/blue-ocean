@@ -224,10 +224,10 @@ export default function MediaUploader({
         {item.type === 'video' ? (
           <View style={styles.videoContainer}>
             <SmartImage uri={thumbnailMap[item.id] || item.uri} width={100} height={100} contentFit="cover" />
-            <View pointerEvents="none" style={styles.playOverlay}>
+            <View style={[styles.playOverlay, { pointerEvents: 'none' }]}>
               <Play size={24} color={colors.text.inverse} fill={colors.text.inverse} />
             </View>
-            <View pointerEvents="none" style={styles.videoIndicator}>
+            <View style={[styles.videoIndicator, { pointerEvents: 'none' }]}>
               <Video size={12} color={colors.text.inverse} />
             </View>
           </View>

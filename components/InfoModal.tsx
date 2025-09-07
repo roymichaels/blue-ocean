@@ -103,7 +103,7 @@ export default function InfoModal({
   return (
     <Portal>
       <Overlay style={[styles.overlay, { backgroundColor: colors.canvas }]} />
-      <View style={styles.center} pointerEvents="box-none">
+      <View style={[styles.center, { pointerEvents: 'box-none' }]}>
         <Animated.View
           style={[
             styles.modalContainer,

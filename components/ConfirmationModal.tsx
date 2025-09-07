@@ -37,7 +37,7 @@ export default function ConfirmationModal({
   return (
     <Portal>
       <Overlay style={[styles.overlay, { backgroundColor: colors.canvas }]} />
-      <View style={styles.center} pointerEvents="box-none">
+      <View style={[styles.center, { pointerEvents: 'box-none' }]}>
         <View
           style={[styles.modalContainer, { backgroundColor: colors.surface.elevated }]}
         >
