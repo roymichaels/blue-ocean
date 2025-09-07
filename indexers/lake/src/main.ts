@@ -2,7 +2,7 @@ import { startStream, types } from 'near-lake-framework';
 import dotenv from 'dotenv';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Waku } from '@waku/sdk';
+import { getClient } from '../../../src/utils/transport';
 
 dotenv.config();
 
@@ -100,6 +100,7 @@ async function handleMessage(waku: Waku, streamerMessage: types.StreamerMessage)
 async function main() {
   const { height } = await loadState();
   const startHeight = Math.max(START_BLOCK, height);
+  const { Waku } = await getClient();
   const waku = await Waku.create({ bootstrap: { peers: WAKU_BOOTSTRAP } });
   await waku.waitForConnectedPeer();
 

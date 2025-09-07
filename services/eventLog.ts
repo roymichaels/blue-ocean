@@ -1,13 +1,7 @@
 // @ts-nocheck
 import { errorLog } from '@/utils/logger';
-import {
-  LightNode,
-  createLightNode,
-  waitForRemotePeer,
-  createEncoder,
-  Protocols,
-  utf8ToBytes,
-} from '@waku/sdk';
+import type { LightNode } from '@waku/sdk';
+import { getClient } from '@/utils/transport';
 import { uuid } from '../utils/uuid';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { OrderStatus } from '../types';
@@ -41,7 +35,9 @@ async function ensureNode(): Promise<LightNode | null> {
     }
     const bootstrap = getWakuBootstrapNodes();
     if (bootstrap.length === 0) return null;
+    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
     node = await createLightNode({ libp2p: { bootstrap } });
+    if (!node) return null;
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
     return node;
@@ -59,9 +55,10 @@ export async function logOrderEvent(
   if (!n) return;
   try {
     const eventWithId: OrderEvent = { id: uuid(), ...event };
-    const encoder = createEncoder({ contentTopic: ORDER_TOPIC });
+    const client = await getClient();
+    const encoder = client.createEncoder({ contentTopic: ORDER_TOPIC });
     await n.lightPush.send(encoder, {
-      payload: utf8ToBytes(JSON.stringify(eventWithId)),
+      payload: client.utf8ToBytes(JSON.stringify(eventWithId)),
     });
   } catch (err) {
     errorLog('Failed to log order event', err);

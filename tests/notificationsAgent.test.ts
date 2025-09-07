@@ -17,17 +17,15 @@ const createLightNodeMock = jest.fn().mockResolvedValue({
 const createEncoderMock = jest.fn(({ contentTopic }: any) => ({ contentTopic }));
 const utf8ToBytesMock = jest.fn((str: string) => Buffer.from(str));
 
-jest.mock(
-  '@waku/sdk',
-  () => ({
+jest.mock('@/utils/transport', () => ({
+  getClient: jest.fn(async () => ({
     createLightNode: createLightNodeMock as any,
     waitForRemotePeer: jest.fn().mockResolvedValue(undefined),
     createEncoder: createEncoderMock as any,
     Protocols: { Relay: 'relay' },
     utf8ToBytes: utf8ToBytesMock as any,
-  }),
-  { virtual: true },
-);
+  })),
+}));
 
 const notificationsAgent = require('../agents/notifications-agent').default;
 

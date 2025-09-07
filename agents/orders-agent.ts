@@ -27,14 +27,8 @@ import { logOrderEvent } from '@/services/eventLog';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import eventBus from '@/services/eventBus';
 import { errorLog, warnLog } from '../utils/logger';
-import {
-  LightNode,
-  createLightNode,
-  waitForRemotePeer,
-  createDecoder,
-  Protocols,
-  bytesToUtf8,
-} from '@waku/sdk';
+import type { LightNode } from '@waku/sdk';
+import { getClient } from '@/utils/transport';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { orderStatusMessageSchema } from '../schemas/waku/order.status';
@@ -103,6 +97,7 @@ class OrdersAgent {
     try {
       const bootstrap = getWakuBootstrapNodes();
       if (bootstrap.length === 0) return null;
+      const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
       this.node = await createLightNode({ libp2p: { bootstrap } as any });
       await this.node.start();
       await waitForRemotePeer(this.node, [Protocols.Relay]);
@@ -118,11 +113,12 @@ class OrdersAgent {
     if (this.subscribedStores.has(storeId)) return;
     const n = await this.ensureNode();
     if (!n) return;
-    const decoder = createDecoder(buildTopic('orders', storeId));
+    const client = await getClient();
+    const decoder = client.createDecoder(buildTopic('orders', storeId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
-        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const signed = await verifyBeforeWrite(raw, orderStatusMessageSchema);
         if (!signed) return;
         const { orderId, status } = signed.payload;
