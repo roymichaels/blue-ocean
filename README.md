@@ -16,8 +16,8 @@ Use **Yarn** for dependency management and running scripts.
 ```sh
 yarn install
 yarn dev        # mobile
-yarn start      # web
-yarn test
+yarn dev:web    # web
+yarn lint && yarn typecheck
 ```
 
 Then open `/` to see the Home screen.
@@ -66,7 +66,7 @@ const { tokens, colors } = useTheme();
 
 3. **Start the Expo project**
 
-   - **Web**: `yarn start`
+   - **Web**: `yarn dev:web`
    - **Mobile**: `yarn dev`
 
 4. **Connect a NEAR wallet**
@@ -154,26 +154,6 @@ bootstrap nodes. Developers can override this by setting
 comma‑separated list of multiaddrs. Providing an empty value disables Waku
 connectivity entirely.
 
-### NEAR Smart Contracts
-
-Smart contracts written in Rust live in `contracts/marketplace`. The helper scripts in
-`scripts/` build with `near-sdk` tooling and deploy via commands compatible with `near-cli`.
-
-Compile the contract with:
-
-```sh
-yarn contract:build
-```
-
-Deploy to a NEAR account by providing the account ID and private key:
-
-```sh
-yarn contract:deploy --account-id <account> --private-key <ed25519:...>
-```
-
-The script uploads the WASM, initializes the contract, and writes the account ID to
-`constants/nearAddresses.json`. Start the Expo app normally with `yarn dev`.
-
 ### Credit Card Checkout
 
 Storing a MoonPay publishable key in settings populates
@@ -246,7 +226,7 @@ Start the Expo development server with:
 yarn dev
 ```
 
-`yarn start` works as an alias of `yarn dev`.
+For web only, use `yarn dev:web`.
 
 ### Running the Agents
 
@@ -272,13 +252,13 @@ the app works from any gateway.
 1. **Build**
 
    ```sh
-   yarn web:release
+   yarn build:web
    ```
 
 2. **Preview locally**
 
    ```sh
-   yarn web:preview
+   yarn preview
    ```
 
    Then open `http://localhost:4173/` and navigate within the app (no deep links).
@@ -293,7 +273,7 @@ the app works from any gateway.
 
 #### Pin `dist/` Checklist
 
-1. `yarn web:release`
+1. `yarn build:web`
 2. `node scripts/assert-relative-assets.js`
 3. Pin the entire `dist/` folder to your IPFS node or pinning service
 4. Record the returned CID for later reference
@@ -323,32 +303,7 @@ If the web app fails to load because of CSP errors (for example `Refused to conn
 
 Module resolution relies on custom aliases defined in `metro.config.js` and `webpack.config.js`. If the bundler cannot find modules like `@expo/metro-runtime/src/HMRClient` or `@noble/hashes`, verify those aliases exist and clear caches with `expo start -c`.
 
-## Docker
-
-Run the app and build artifacts inside containers for reproducibility:
-
-```sh
-# start the Expo development server
-yarn docker:dev
-
-# produce a deterministic web build in ./dist
-yarn docker:build:web
-
-# preview the build locally
-yarn docker:preview
-```
-
-## Tests
-
-Run the test suite with:
-
-```sh
-yarn test
-```
-
-Run `yarn install` before executing `yarn test` so Jest and other dependencies are present.
-
-### Web Smoke Test
+## Web Smoke Test
 
 Verify the exported web build serves the root page correctly:
 

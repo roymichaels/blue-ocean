@@ -325,14 +325,6 @@ start({
 });
 ```
 
-### Run
-
-```bash
-yarn indexer:dev
-```
-
----
-
 ## 6) Frontend SDK Wrapper
 
 ```ts
@@ -429,7 +421,7 @@ START_BLOCK=0
 - Relayer safety: allowlist methods, cap gas/deposit, rate-limit.
 - Emit JSON logs from contract (strict schema) for Lake to parse.
 - Keep dependencies clean: run depcheck, knip, ts-prune.
-- CI gates: yarn typecheck && yarn lint && yarn doctor && yarn build:web.
+- CI gates: yarn typecheck && yarn lint && yarn build:web.
 
 ---
 
