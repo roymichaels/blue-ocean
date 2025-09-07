@@ -1,7 +1,13 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Readable } from 'stream';
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+} from '@aws-sdk/client-s3';
 
 import { assertNearChain } from './chain';
 import { initLake } from './nearLake';
@@ -12,10 +18,23 @@ let lakeStarted = false;
 let s3: S3Client | null = null;
 const bucket = process.env.NEAR_LAKE_BUCKET;
 const region = process.env.NEAR_LAKE_REGION || 'eu-central-1';
-const localDir = process.env.NEAR_LAKE_DIR || path.join(process.cwd(), '.near-lake');
+
+// React Native and some web runtimes provide a `process` shim where `cwd`
+// is either missing or not a function. Accessing it directly causes the
+// "process.cwd is not a function" runtime error. Detect this scenario and
+// fall back to an in-memory store instead of the filesystem.
+const useMemoryStore =
+  typeof process === 'undefined' || typeof (process as any).cwd !== 'function';
+
+// Only resolve a local directory when running in a Node environment.
+const localDir =
+  process.env.NEAR_LAKE_DIR || (!useMemoryStore ? path.join(process.cwd(), '.near-lake') : '');
+
+// Simple in-memory map for environments without filesystem access.
+const memStore = new Map<string, Map<string, string>>();
 
 function ensureLake() {
-  if (lakeStarted) return;
+  if (lakeStarted || useMemoryStore) return;
   try {
     const bucketName = bucket;
     if (bucketName) {
@@ -57,6 +76,19 @@ async function streamToString(stream: Readable | Uint8Array | string | undefined
 
 export async function setValue(address: string, key: string, value: string) {
   ensureLake();
+  if (useMemoryStore) {
+    let addrStore = memStore.get(address);
+    if (!addrStore) {
+      addrStore = new Map();
+      memStore.set(address, addrStore);
+    }
+    if (value === '') {
+      addrStore.delete(key);
+    } else {
+      addrStore.set(key, value);
+    }
+    return;
+  }
   if (s3 && bucket) {
     const Key = objectKey(address, key);
     if (value === '') {
@@ -77,6 +109,10 @@ export async function setValue(address: string, key: string, value: string) {
 
 export async function removeValue(address: string, key: string) {
   ensureLake();
+  if (useMemoryStore) {
+    memStore.get(address)?.delete(key);
+    return;
+  }
   if (s3 && bucket) {
     await s3
       .send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey(address, key) }))
@@ -89,6 +125,9 @@ export async function removeValue(address: string, key: string) {
 
 export async function getValue(address: string, key: string): Promise<string | null> {
   ensureLake();
+  if (useMemoryStore) {
+    return memStore.get(address)?.get(key) ?? null;
+  }
   if (s3 && bucket) {
     try {
       const res = await s3.send(
@@ -111,6 +150,11 @@ export async function listValues(
   address: string,
 ): Promise<{ key: string; value: string }[]> {
   ensureLake();
+  if (useMemoryStore) {
+    const addrStore = memStore.get(address);
+    if (!addrStore) return [];
+    return Array.from(addrStore.entries()).map(([key, value]) => ({ key, value }));
+  }
   if (s3 && bucket) {
     const prefix = `${address}/`;
     const res = await s3
