@@ -8,9 +8,8 @@ const queryGenerator = jest.fn(() => {
   })();
 });
 
-jest.mock(
-  '@waku/sdk',
-  () => ({
+jest.mock('@/utils/transport', () => ({
+  getClient: jest.fn(async () => ({
     createLightNode: jest.fn(async () => ({
       start: jest.fn(),
       store: { queryGenerator },
@@ -18,9 +17,8 @@ jest.mock(
     waitForRemotePeer: jest.fn(),
     Protocols: { Store: 'store' },
     createDecoder: jest.fn(() => ({})),
-  }),
-  { virtual: true },
-);
+  })),
+}));
 
 import { hydrateMessages } from '../packages/sdk-near/src/waku';
 

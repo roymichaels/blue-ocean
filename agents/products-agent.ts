@@ -10,16 +10,8 @@ import {
 } from '@/features/products/services/nearProducts';
 import { getStore } from '@/features/stores/services/nearStores';
 import ensureNearWallet from '@/utils/ensureNearWallet';
-import {
-  LightNode,
-  createLightNode,
-  waitForRemotePeer,
-  createEncoder,
-  createDecoder,
-  Protocols,
-  utf8ToBytes,
-  bytesToUtf8,
-} from '@waku/sdk';
+import type { LightNode } from '@waku/sdk';
+import { getClient } from '@/utils/transport';
 import { getWakuBootstrapNodes } from '@/utils/appConfig';
 import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
@@ -62,6 +54,7 @@ class ProductsAgent {
     try {
       const bootstrap = getWakuBootstrapNodes();
       if (bootstrap.length === 0) return null;
+      const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
       this.node = await createLightNode({ libp2p: { bootstrap } as any });
       await this.node.start();
       await waitForRemotePeer(this.node, [Protocols.Relay]);
@@ -77,11 +70,12 @@ class ProductsAgent {
     if (this.subscribedStores.has(storeId)) return;
     const n = await this.ensureNode();
     if (!n) return;
-    const decoder = createDecoder(buildProductTopic(storeId));
+    const client = await getClient();
+    const decoder = client.createDecoder(buildProductTopic(storeId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
-        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const signed = await verifyBeforeWrite(raw, productUpdatedSchema);
         if (!signed) return;
         void this.invalidateCache();
@@ -153,9 +147,12 @@ class ProductsAgent {
       );
       const sig = await sign(msgBytes, priv);
       msg.signature = Buffer.from(sig).toString('hex');
-      const encoder = createEncoder({ contentTopic: buildProductTopic(product.storeId) });
+      const client = await getClient();
+      const encoder = client.createEncoder({
+        contentTopic: buildProductTopic(product.storeId),
+      });
       await n.lightPush.send(encoder, {
-        payload: utf8ToBytes(JSON.stringify(msg)),
+        payload: client.utf8ToBytes(JSON.stringify(msg)),
       });
     } catch (err) {
       errorLog('Failed to broadcast product update', err);

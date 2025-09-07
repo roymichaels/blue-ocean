@@ -7,16 +7,8 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import {
-  LightNode,
-  createLightNode,
-  waitForRemotePeer,
-  createEncoder,
-  createDecoder,
-  Protocols,
-  bytesToUtf8,
-  utf8ToBytes,
-} from '@waku/sdk';
+import type { LightNode } from '@waku/sdk';
+import { getClient } from '@/utils/transport';
 import { encryptMessage, decryptMessage } from '@/utils/chatCrypto';
 import DatabaseService from '@/services/database';
 import { ChatMessage } from '@/types';
@@ -88,6 +80,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
         setStatus('disconnected');
         return;
       }
+      const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
       const node = await createLightNode({ libp2p: { bootstrap } });
       node.libp2p.addEventListener('peer:disconnect', () => {
         setStatus('disconnected');
@@ -134,9 +127,10 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     await db.sendChatMessage(roomId, { ...full, message: encrypted });
 
     if (nodeRef.current) {
-      const encoder = createEncoder({ contentTopic: chatTopic(roomId) });
+      const client = await getClient();
+      const encoder = client.createEncoder({ contentTopic: chatTopic(roomId) });
       await nodeRef.current.lightPush.send(encoder, {
-        payload: utf8ToBytes(encrypted),
+        payload: client.utf8ToBytes(encrypted),
       });
     }
     return full;
@@ -148,11 +142,12 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     cb: (msg: ChatMessage) => void,
   ): Promise<() => void> => {
     if (!nodeRef.current) return () => {};
-    const decoder = createDecoder(chatTopic(roomId));
+    const client = await getClient();
+    const decoder = client.createDecoder(chatTopic(roomId));
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
-        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const schema = wakuMessageSchema.extend({ payload: z.string() });
         const signed = await verifyBeforeWrite(raw, schema);
         if (!signed) return;
@@ -192,7 +187,8 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     before?: number,
   ): Promise<number> => {
     if (!nodeRef.current) return 0;
-    const decoder = createDecoder(chatTopic(roomId));
+    const client = await getClient();
+    const decoder = client.createDecoder(chatTopic(roomId));
     const options: any = { decoder };
     if (after || before) {
       options.timeFilter = {};
@@ -204,7 +200,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       for (const wakuMsg of msgs.messages) {
         if (!wakuMsg.payload) continue;
         try {
-          const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+          const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
           const schema = wakuMessageSchema.extend({ payload: z.string() });
           const signed = await verifyBeforeWrite(raw, schema);
           if (!signed) continue;
@@ -231,23 +227,30 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
 
   const broadcastSystem = useCallback(async (message: string) => {
     if (!nodeRef.current) return;
-    const encoder = createEncoder({ contentTopic: SYSTEM_TOPIC });
-    await nodeRef.current.lightPush.send(encoder, { payload: utf8ToBytes(message) });
+    const client = await getClient();
+    const encoder = client.createEncoder({ contentTopic: SYSTEM_TOPIC });
+    await nodeRef.current.lightPush.send(encoder, {
+      payload: client.utf8ToBytes(message),
+    });
   }, []);
 
   const broadcastOrder = useCallback(async (message: string) => {
     if (!nodeRef.current) return;
-    const encoder = createEncoder({ contentTopic: ORDER_TOPIC });
-    await nodeRef.current.lightPush.send(encoder, { payload: utf8ToBytes(message) });
+    const client = await getClient();
+    const encoder = client.createEncoder({ contentTopic: ORDER_TOPIC });
+    await nodeRef.current.lightPush.send(encoder, {
+      payload: client.utf8ToBytes(message),
+    });
   }, []);
 
   const subscribeSystem = useCallback(async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
-    const decoder = createDecoder(SYSTEM_TOPIC);
+    const client = await getClient();
+    const decoder = client.createDecoder(SYSTEM_TOPIC);
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
-        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const schema = wakuMessageSchema.extend({ payload: z.string() });
         const signed = await verifyBeforeWrite(raw, schema);
         if (!signed) {
@@ -273,11 +276,12 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
 
   const subscribeOrders = useCallback(async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
-    const decoder = createDecoder(ORDER_TOPIC);
+    const client = await getClient();
+    const decoder = client.createDecoder(ORDER_TOPIC);
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
-        const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+        const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const schema = wakuMessageSchema.extend({ payload: z.string() });
         const signed = await verifyBeforeWrite(raw, schema);
         if (!signed) {

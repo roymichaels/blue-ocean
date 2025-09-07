@@ -1,4 +1,5 @@
-import { LightNode, createLightNode, waitForRemotePeer, Protocols } from '@waku/sdk';
+import type { LightNode } from '@waku/sdk';
+import { getClient } from '@/utils/transport';
 import { errorLog } from '@/utils/logger';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -75,7 +76,9 @@ export async function ensureNode(): Promise<LightNode | null> {
   }
   getPublisherKey();
   try {
+    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
     cachedNode = await createLightNode({ libp2p: { bootstrap } } as any);
+    if (!cachedNode) return null;
     await cachedNode.start();
     await waitForRemotePeer(cachedNode, [Protocols.Relay]);
     return cachedNode;

@@ -1,12 +1,6 @@
 import { errorLog } from '@/utils/logger';
-import {
-  LightNode,
-  createLightNode,
-  waitForRemotePeer,
-  createEncoder,
-  Protocols,
-  utf8ToBytes,
-} from '@waku/sdk';
+import type { LightNode } from '@waku/sdk';
+import { getClient } from '@/utils/transport';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { uuid } from '../utils/uuid';
 import { sha256 } from '@noble/hashes/sha256';
@@ -32,7 +26,9 @@ async function ensureNode(): Promise<LightNode | null> {
     let bootstrap = getWakuBootstrapNodes();
     if (bootstrap.length === 0) bootstrap = STABLE_BOOTSTRAP;
     if (bootstrap.length === 0) return null;
+    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
     node = await createLightNode({ libp2p: { bootstrap } } as any);
+    if (!node) return null;
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
     return node;
@@ -51,7 +47,8 @@ export async function publish(
   const n = await ensureNode();
   if (!n) return;
   try {
-    const encoder = createEncoder({ contentTopic });
+    const client = await getClient();
+    const encoder = client.createEncoder({ contentTopic });
     const addr = chainAdapter.getAccountId();
     const event = {
       id: uuid(),
@@ -62,7 +59,7 @@ export async function publish(
       ...payload,
     };
     await n.lightPush.send(encoder, {
-      payload: utf8ToBytes(JSON.stringify(event)),
+      payload: client.utf8ToBytes(JSON.stringify(event)),
     });
   } catch (err) {
     errorLog('Failed to publish event', err);

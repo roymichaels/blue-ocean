@@ -2,16 +2,8 @@ import { debugLog, errorLog } from '@/utils/logger';
 import { assertNearChain } from './chain';
 import { getValue, setValue, listValues } from './nearKvStore';
 import config, { getWakuBootstrapNodes } from '../utils/appConfig';
-import {
-  LightNode,
-  Protocols,
-  createLightNode,
-  waitForRemotePeer,
-  createEncoder,
-  createDecoder,
-  utf8ToBytes,
-  bytesToUtf8,
-} from '@waku/sdk';
+import type { LightNode } from '@waku/sdk';
+import { getClient } from '@/utils/transport';
 import type { SettingsWriteEvent, WakuMessage } from '../types/waku';
 import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
@@ -79,7 +71,9 @@ async function ensureNode(): Promise<LightNode | null> {
     if (bootstrap.length === 0) {
       return null;
     }
+    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
     node = await createLightNode({ libp2p: { bootstrap } as any });
+    if (!node) return null;
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
     return node;
@@ -108,9 +102,10 @@ async function emit(event: SettingsWriteEvent) {
     const sig = await sign(msgBytes, priv);
     msg.signature = Buffer.from(sig).toString('hex');
 
-    const encoder = createEncoder({ contentTopic: '/blue-ocean/settings/1' });
+    const client = await getClient();
+    const encoder = client.createEncoder({ contentTopic: '/blue-ocean/settings/1' });
     await n.lightPush.send(encoder, {
-      payload: utf8ToBytes(JSON.stringify(msg)),
+      payload: client.utf8ToBytes(JSON.stringify(msg)),
     });
   } catch (err) {
     errorLog('Failed to broadcast settings.write', err);
@@ -122,11 +117,12 @@ export async function subscribeToSettingsWrites(
 ): Promise<() => void> {
   const n = await ensureNode();
   if (!n) return () => {};
-  const decoder = createDecoder('/blue-ocean/settings/1');
+  const client = await getClient();
+  const decoder = client.createDecoder('/blue-ocean/settings/1');
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
-      const raw = JSON.parse(bytesToUtf8(wakuMsg.payload));
+      const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
       const schema = wakuMessageSchema.extend({
         type: z.literal('settings.write'),
         payload: settingsWriteEventSchema,

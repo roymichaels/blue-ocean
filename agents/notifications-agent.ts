@@ -10,7 +10,7 @@ import {
 import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
-import { createEncoder, utf8ToBytes } from '@waku/sdk';
+import { getClient } from '@/utils/transport';
 import { ensureNode, isWakuDisabled } from '@/services/waku';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { errorLog } from '../utils/logger';
@@ -81,9 +81,10 @@ class NotificationsAgent {
     if (!node) return;
     try {
       const topic = buildTopic('analytics', '1');
-      const encoder = createEncoder({ contentTopic: topic });
+      const client = await getClient();
+      const encoder = client.createEncoder({ contentTopic: topic });
       await node.lightPush.send(encoder, {
-        payload: utf8ToBytes(JSON.stringify({ type: event, ...payload })),
+        payload: client.utf8ToBytes(JSON.stringify({ type: event, ...payload })),
       });
     } catch (err) {
       errorLog('Failed to broadcast analytics event', err);
@@ -99,12 +100,13 @@ class NotificationsAgent {
     if (!node) return;
     try {
       const topic = buildTopic('orders', storeId);
-      const encoder = createEncoder({ contentTopic: topic });
+      const client = await getClient();
+      const encoder = client.createEncoder({ contentTopic: topic });
       const payload = event
         ? { type: event, notification: item }
         : item;
       await node.lightPush.send(encoder, {
-        payload: utf8ToBytes(JSON.stringify(payload)),
+        payload: client.utf8ToBytes(JSON.stringify(payload)),
       });
     } catch (err) {
       errorLog('Failed to broadcast notification', err);

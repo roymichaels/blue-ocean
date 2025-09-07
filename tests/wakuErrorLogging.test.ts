@@ -1,14 +1,13 @@
-jest.mock(
-  '@waku/sdk',
-  () => ({
-    createLightNode: jest.fn(async () => {
-      throw new Error('boom');
-    }),
+const createLightNode = jest.fn(async () => {
+  throw new Error('boom');
+});
+jest.mock('@/utils/transport', () => ({
+  getClient: jest.fn(async () => ({
+    createLightNode,
     waitForRemotePeer: jest.fn(),
     Protocols: { Relay: 'relay' },
-  }),
-  { virtual: true },
-);
+  })),
+}));
 
 jest.mock('@/utils/logger', () => ({ errorLog: jest.fn() }));
 
