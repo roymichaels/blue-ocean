@@ -93,6 +93,8 @@
     "expo-web-browser": "~12.8.2",
     "form-data": "^4.0.0",
     "fuse.js": "^7.0.0",
+    "it-all": "^3",
+    "it-pipe": "^3",
     "js-cookie": "^3.0.5",
     "lucide-react-native": "^0.475.0",
     "multiformats": "13.4.0",
