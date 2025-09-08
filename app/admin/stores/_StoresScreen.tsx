@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Text } from 'react-native';
 import { useAppRouter } from '@/services';
-import { useTheme } from '@/ui/ThemeProvider';
 import { useRequirePlatformAdmin } from '@/services';
 import chain from '@/services/chain';
 import { Store } from '@/types';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminList, { AdminListItem } from '@/components/admin/AdminList';
 
 let listStores: (() => Promise<Store[]>) | undefined;
@@ -16,7 +13,6 @@ if (chain === 'near') {
 export default function AdminStores() {
   useRequirePlatformAdmin();
   const { push } = useAppRouter();
-  const { colors } = useTheme();
   const [stores, setStores] = useState<Store[]>([]);
 
   useEffect(() => {
@@ -31,11 +27,7 @@ export default function AdminStores() {
     onPress: () => push(`/admin/stores/${s.id}`),
   }));
 
-  return (
-    <AdminShell title="Stores">
-      <AdminList items={items} emptyText="No stores found." />
-    </AdminShell>
-  );
+  return <AdminList items={items} emptyText="No stores found." />;
 }
 
-// Styles removed: superseded by AdminShell/AdminList reusable components
+// Styles removed: superseded by AdminList reusable components
