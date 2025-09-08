@@ -24,4 +24,6 @@ try {
       hydrate: false,
     } as any);
   }
-} catch {}
+} catch (err) {
+  console.error('Failed to start app', err);
+}
