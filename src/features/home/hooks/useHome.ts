@@ -3,6 +3,7 @@ import { Product, Category } from '@/types';
 import { useProducts } from '@/services/useProducts';
 import { useCategories } from '@/services/useCategories';
 import { requireEnv } from '@/services/config';
+import { errorLog } from '@/utils/logger';
 
 export function useHome() {
   const defaultStore = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
@@ -11,6 +12,9 @@ export function useHome() {
 
   const [products, setProducts] = useState<Product[]>(productsQuery.data ?? []);
   const [categories, setCategories] = useState<Category[]>(categoriesQuery.data ?? []);
+  const [error, setError] = useState<Error | null>(
+    (productsQuery.error || categoriesQuery.error) as Error | null,
+  );
 
   useEffect(() => {
     if (productsQuery.data) {
@@ -24,8 +28,22 @@ export function useHome() {
     }
   }, [categoriesQuery.data]);
 
+  useEffect(() => {
+    if (productsQuery.error || categoriesQuery.error) {
+      const err = (productsQuery.error || categoriesQuery.error) as Error;
+      setError(err);
+      errorLog('useHome initial load failed', err);
+    }
+  }, [productsQuery.error, categoriesQuery.error]);
+
   const refresh = useCallback(async () => {
-    await Promise.all([productsQuery.refetch(), categoriesQuery.refetch()]);
+    try {
+      await Promise.all([productsQuery.refetch(), categoriesQuery.refetch()]);
+      setError(null);
+    } catch (err) {
+      setError(err as Error);
+      errorLog('useHome refresh failed', err);
+    }
   }, [productsQuery, categoriesQuery]);
 
   const upsertProduct = useCallback((p: Product, isNew: boolean) => {
@@ -40,7 +58,6 @@ export function useHome() {
 
   const loading = productsQuery.isLoading || categoriesQuery.isLoading;
   const refreshing = productsQuery.isFetching || categoriesQuery.isFetching;
-  const error = productsQuery.error || categoriesQuery.error;
 
   return {
     products,

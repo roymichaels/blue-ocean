@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useAppRouter } from '@/services';
-import { Plus, X, ArrowUpDown, Pencil } from 'lucide-react-native';
+import { Plus, X, ArrowUpDown, Pencil, Info } from 'lucide-react-native';
 import { Product, HeroBanner, Category } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
 import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
@@ -78,20 +78,62 @@ function HomeScreenContent() {
   const categoriesToShow = categories.length ? categories : fallbackCategories;
   const heroBannersToShow = heroBanners.length ? heroBanners : fallbackBanners;
 
-    const {
-      filteredProducts,
-      searchQuery,
-      selectedCategory,
-      setSelectedCategory,
-      minPrice,
-      setMinPrice,
-      maxPrice,
-      setMaxPrice,
-      sortBy,
-      setSortBy,
-      showSortModal,
-      setShowSortModal,
-    } = useHomeFilters(products);
+  const {
+    filteredProducts,
+    searchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    minPrice,
+    setMinPrice,
+    maxPrice,
+    setMaxPrice,
+    sortBy,
+    setSortBy,
+    showSortModal,
+    setShowSortModal,
+  } = useHomeFilters(products);
+
+  const handleReload = () => {
+    closeInfoModal();
+    refresh();
+  };
+
+  if (error) {
+    return (
+      <>
+        <ScrollArea
+          testID="home-root"
+          backgroundColor={themeColors.canvas}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+          }
+        >
+          <EmptyState
+            icon={Info}
+            title={t('common.error')}
+            message={t('home.loadErrorMessage')}
+            actionText={t('common.reload')}
+            onAction={handleReload}
+          />
+        </ScrollArea>
+        <Suspense fallback={<Spinner />}>
+          <InfoModal
+            visible={infoModal.visible}
+            title={infoModal.title}
+            message={infoModal.message}
+            type={infoModal.type}
+            buttonText={infoModal.buttonText}
+            onClose={handleReload}
+            autoClose={false}
+          />
+        </Suspense>
+        <Suspense fallback={<Spinner />}>
+          <CartModal visible={showCartModal} onClose={closeCartModal} />
+        </Suspense>
+      </>
+    );
+  }
 
   const handleBannerSaved = (b: HeroBanner, isNew: boolean) => {
     upsertBanner(b, isNew);
@@ -173,11 +215,6 @@ function HomeScreenContent() {
       default:
         return t('home.newest');
     }
-  };
-
-  const handleReload = () => {
-    closeInfoModal();
-    refresh();
   };
 
   return (
