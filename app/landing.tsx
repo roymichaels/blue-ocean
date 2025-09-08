@@ -1,10 +1,9 @@
-import { useEffect } from 'react';
-import { useAppRouter } from '@/services';
+import { View, Text } from 'react-native';
 
-export default function LandingRedirect() {
-  const { replace } = useAppRouter();
-  useEffect(() => {
-    replace('/');
-  }, [replace]);
-  return null;
+export default function Landing() {
+  return (
+    <View>
+      <Text>Welcome to Blue Ocean</Text>
+    </View>
+  );
 }
