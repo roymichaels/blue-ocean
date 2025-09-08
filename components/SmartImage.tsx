@@ -3,8 +3,7 @@ import { Image as ExpoImage, ImageProps } from 'expo-image';
 import { Platform } from 'react-native';
 
 const fallback = require('../assets/images/icon.png');
-// Valid blurhash placeholder used while the image loads
-// Original hash: LKO2?U%2Tw=w]~RBVZRi};RPxuwH
+// blurhash placeholder used while the image loads
 const shimmer = 'LKO2?U%2Tw=w]~RBVZRi};RPxuwH';
 
 interface SmartImageProps extends Omit<ImageProps, 'source' | 'width' | 'height'> {
