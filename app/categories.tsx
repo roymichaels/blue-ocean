@@ -1,6 +1,5 @@
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import AppShell from '../components/layout/AppShell';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/providers';
 import { useAppRouter } from '@/services';
@@ -17,34 +16,30 @@ export default function Categories() {
   const { push } = useAppRouter();
   const { data: categories = [] } = useCategories();
 
-  return (
-    <AppShell>
-        {categories.length > 0 ? (
-          <ScrollView style={{ backgroundColor: colors.canvas }} contentContainerStyle={styles.list}>
-            {categories.map((c) => (
-                <Button
-                  key={c.id}
-                  title={c.name}
-                  onPress={() => push(routes.category(c.id))}
-                  style={[
-                    styles.item,
-                    {
-                      borderColor: colors.border.primary,
-                      backgroundColor: 'transparent',
-                    },
-                  ]}
-                  textStyle={[styles.itemText, { color: colors.text.primary }]}
-                />
-            ))}
-          </ScrollView>
-        ) : (
-          <EmptyState
-            icon={Plus}
-            title={t('home.noCategories')}
-            message={t('home.categoriesComingSoon')}
-          />
-        )}
-      </AppShell>
+  return categories.length > 0 ? (
+    <ScrollView style={{ backgroundColor: colors.canvas }} contentContainerStyle={styles.list}>
+      {categories.map((c) => (
+        <Button
+          key={c.id}
+          title={c.name}
+          onPress={() => push(routes.category(c.id))}
+          style={[
+            styles.item,
+            {
+              borderColor: colors.border.primary,
+              backgroundColor: 'transparent',
+            },
+          ]}
+          textStyle={[styles.itemText, { color: colors.text.primary }]}
+        />
+      ))}
+    </ScrollView>
+  ) : (
+    <EmptyState
+      icon={Plus}
+      title={t('home.noCategories')}
+      message={t('home.categoriesComingSoon')}
+    />
   );
 }
 

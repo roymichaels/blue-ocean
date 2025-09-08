@@ -34,7 +34,6 @@ import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters
 import { spacing } from '@/shared/ui/tokens';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { routes } from '@/utils/routes';
-import AppShell from '@/components/layout/AppShell';
 
 
 function HomeScreenContent() {
@@ -83,7 +82,6 @@ function HomeScreenContent() {
   const {
     filteredProducts,
     searchQuery,
-    setSearchQuery,
     selectedCategory,
     setSelectedCategory,
     minPrice,
@@ -184,11 +182,7 @@ function HomeScreenContent() {
   };
 
   return (
-    <AppShell
-      showSearch
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-    >
+    <>
       <ScrollArea
         testID="home-root"
         backgroundColor={themeColors.canvas}
@@ -421,7 +415,7 @@ function HomeScreenContent() {
           onClose={closeCartModal}
         />
       </Suspense>
-    </AppShell>
+    </>
   );
 }
 
