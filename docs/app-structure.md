@@ -9,7 +9,6 @@ blue-ocean/
 │  ├─ store/                    Store owner dashboard
 │  │  └─ [storeId]/admin/       Store-specific admin
 │  ├─ stores/                   Store creation & listing
-│  ├─ storefront/               Public storefront pages
 │  ├─ category/
 │  ├─ product/
 │  ├─ orders/
@@ -23,7 +22,6 @@ blue-ocean/
 ## Major Sections
 
 - **App Shell** – [`app/`](../app)
-- **Public** – [`public/`](../public) & [`app/storefront`](../app/storefront)
 - **Store Owner** – [`app/stores`](../app/stores) & [`app/store`](../app/store)
 - **Admin** – [`app/admin`](../app/admin) & [`app/store/[storeId]/admin`](../app/store/%5BstoreId%5D/admin)
 

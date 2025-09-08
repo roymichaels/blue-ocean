@@ -56,7 +56,7 @@ describe('web smoke test', () => {
     await page!.waitForSelector('text=Login');
 
     // category route loads
-    await page!.goto(`${URL}storefront${routes.category('electronics')}`);
+    await page!.goto(`${URL}${routes.category('electronics')}`);
     await page!.waitForSelector('[data-testid="search-input"]');
   }, 60000);
 });

@@ -4,7 +4,6 @@
 | Path | Role requirement |
 |------|------------------|
 | `/t/[tenantId]` | none |
-| `/t/[tenantId]/storefront` | none |
 | `/t/[tenantId]/store/[storeId]` | none |
 | `/t/[tenantId]/product/[id]` | none |
 | `/t/[tenantId]/category/[id]` | none |

@@ -32,7 +32,7 @@ export default function StorefrontStoreScreen() {
             About this store
           </Text>
           <Text style={{ color: colors.text.secondary }}>
-            Decentralized storefront on NEAR. Owner-managed with P2P updates via Waku.
+            Decentralized store on NEAR. Owner-managed with P2P updates via Waku.
           </Text>
         </View>
       )}

@@ -83,7 +83,7 @@ describe('store reputation', () => {
     expect(storesAgent.getReputationScore('s1')).toBeCloseTo(4.5);
   });
 
-  it('displays reputation score in storefront and admin dashboard', async () => {
+  it('displays reputation score in store screen and admin dashboard', async () => {
     jest.spyOn(storesAgent, 'get').mockResolvedValue({ id: 's1', name: 'Store', owner: 'owner1', nftId: 'n1', reputation: 0 } as any);
     jest.spyOn(storesAgent, 'getAll').mockResolvedValue([{ id: 's1', name: 'Store', owner: 'owner1', nftId: 'n1', reputation: 0 }] as any);
     jest.spyOn(storesAgent, 'getReputationScore').mockReturnValue(4.5);
