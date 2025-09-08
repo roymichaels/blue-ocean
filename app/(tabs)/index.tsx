@@ -408,12 +408,13 @@ function HomeScreenContent() {
       </Suspense>
 
       {/* Cart Modal */}
-        <Suspense fallback={<Spinner />}>
-          <CartModal
-            visible={showCartModal}
-            onClose={closeCartModal}
-          />
-        </Suspense>
+      <Suspense fallback={<Spinner />}>
+        <CartModal
+          visible={showCartModal}
+          onClose={closeCartModal}
+        />
+      </Suspense>
+
     </>
   );
 }

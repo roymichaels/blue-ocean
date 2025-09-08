@@ -202,7 +202,7 @@ export default function OrdersScreen() {
   );
 
   return (
-    <>
+    <View style={[styles.container, { backgroundColor: colors.canvas }]}>
       <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
         <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
@@ -224,14 +224,12 @@ export default function OrdersScreen() {
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
       />
-
-      {/* Order Tracking Modal */}
       <OrderTrackingModal
         visible={showOrderTracking}
         onClose={() => setShowOrderTracking(false)}
         order={selectedOrder}
       />
-    </>
+    </View>
   );
 }
 
