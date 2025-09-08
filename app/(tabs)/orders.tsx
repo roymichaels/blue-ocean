@@ -11,7 +11,6 @@ import { Package, ArrowLeft, ChevronLeft, ShoppingBag, Clock, Truck } from 'luci
 import { useAuth } from '@/features/auth/AuthContext';
 import { Order, CartItem } from '../../types';
 import { useTheme } from '@/ui/ThemeProvider';
-import AppShell from '../../components/layout/AppShell';
 import EmptyState from '@/shared/ui/EmptyState';
 import OrderTrackingModal from '../../components/OrderTrackingModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
@@ -203,13 +202,12 @@ export default function OrdersScreen() {
   );
 
   return (
-    <AppShell showSearch={false}>
-
-      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
+    <>
+      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
         <TouchableOpacity onPress={() => back()}>
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}> 
+        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>
           {t('orders.myOrders')}
         </Text>
         <View style={commonStyles.spacer24} />
@@ -221,7 +219,7 @@ export default function OrdersScreen() {
         contentContainerStyle={[
           styles.content,
           { flexGrow: 1 },
-          isLoggedIn && userOrders.length > 0 && styles.ordersList
+          isLoggedIn && userOrders.length > 0 && styles.ordersList,
         ]}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
@@ -233,7 +231,7 @@ export default function OrdersScreen() {
         onClose={() => setShowOrderTracking(false)}
         order={selectedOrder}
       />
-    </AppShell>
+    </>
   );
 }
 

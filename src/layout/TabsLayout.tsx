@@ -4,17 +4,20 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'expo-router';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform, useWindowDimensions, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { FloatingCartWidget } from '@/features/cart';
 import { getTabsForAuth } from '@/config/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing, shadows, typography } from '@/shared/ui/tokens';
+import GlobalHeader from '@/components/GlobalHeader';
 import SidebarTabBar, { SIDEBAR_WIDTH } from './SidebarTabBar';
 
 export default function TabsLayout() {
   const { t } = useLanguage();
-  const { colors } = useTheme();
+  const { theme, colors } = useTheme();
   const auth = useAuth();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
@@ -56,26 +59,29 @@ export default function TabsLayout() {
 
   return (
     <ErrorBoundary>
-      <>
-        <Tabs
-          screenOptions={screenOptions}
-          tabBar={(props) => (isLargeScreen ? <SidebarTabBar {...props} /> : undefined)}
-          sceneContainerStyle={isLargeScreen ? { marginLeft: SIDEBAR_WIDTH } : undefined}
-        >
-          {tabs.map((tab) => {
-            const Icon = (Lucide as any)[tab.icon] as React.ComponentType<{ size: number; color: string }>;
-            const title = mapTitle(t, tab.title);
-            const options = {
-              title,
-              tabBarIcon: ({ size, color }: { size: number; color: string }) =>
-                Icon ? <Icon size={size} color={color} /> : null,
-            } as const;
-            return <Tabs.Screen key={tab.name} name={tab.name} options={options} />;
-          })}
-        </Tabs>
-
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}>
+        <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.canvas} />
+        <GlobalHeader showSearch={pathname === '/' || pathname === '/index'} />
+        <View style={{ flex: 1 }}>
+          <Tabs
+            screenOptions={screenOptions}
+            tabBar={(props) => (isLargeScreen ? <SidebarTabBar {...props} /> : undefined)}
+            sceneContainerStyle={isLargeScreen ? { marginLeft: SIDEBAR_WIDTH } : undefined}
+          >
+            {tabs.map((tab) => {
+              const Icon = (Lucide as any)[tab.icon] as React.ComponentType<{ size: number; color: string }>;
+              const title = mapTitle(t, tab.title);
+              const options = {
+                title,
+                tabBarIcon: ({ size, color }: { size: number; color: string }) =>
+                  Icon ? <Icon size={size} color={color} /> : null,
+              } as const;
+              return <Tabs.Screen key={tab.name} name={tab.name} options={options} />;
+            })}
+          </Tabs>
+        </View>
         {showCartWidget && <FloatingCartWidget />}
-      </>
+      </SafeAreaView>
     </ErrorBoundary>
   );
 }

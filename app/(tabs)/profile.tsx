@@ -8,7 +8,6 @@ import {
   ScrollView,
   Switch,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppRouter } from '@/services';
 import {
   Settings,
@@ -27,7 +26,6 @@ import {
 } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';
-import GlobalHeader from '@/components/GlobalHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppInfo } from '@/contexts/AppInfoContext';
@@ -35,7 +33,6 @@ import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useProfileData } from '@/services';
-import ErrorBoundary from '@/shared/ErrorBoundary';
 import { routes } from '@/utils/routes';
 import { spacing } from '@/shared/ui/tokens';
 
@@ -132,12 +129,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ErrorBoundary>
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-        <GlobalHeader showSearch={false} />
-
+    <View
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
         <ScrollView
           ref={scrollViewRef}
           style={styles.content}
@@ -530,30 +524,29 @@ export default function ProfileScreen() {
               })}
             </Text>
           </View>
-      </ScrollView>
+        </ScrollView>
 
-      {/* Info Modal */}
-      <InfoModal
-        visible={infoModal.visible}
-        title={infoModal.title}
-        message={infoModal.message}
-        type={infoModal.type}
-        onClose={() => setInfoModal({ ...infoModal, visible: false })}
-      />
+        {/* Info Modal */}
+        <InfoModal
+          visible={infoModal.visible}
+          title={infoModal.title}
+          message={infoModal.message}
+          type={infoModal.type}
+          onClose={() => setInfoModal({ ...infoModal, visible: false })}
+        />
 
-      {/* Logout Confirmation Modal */}
-      <ConfirmationModal
-        visible={logoutConfirmVisible}
-        title={t('auth.logout')}
-        message={t('auth.logoutConfirm')}
-        confirmText={t('auth.logout')}
-        cancelText={t('common.cancel')}
-        onConfirm={confirmLogout}
-        onCancel={() => setLogoutConfirmVisible(false)}
-        destructive
-      />
-      </SafeAreaView>
-    </ErrorBoundary>
+        {/* Logout Confirmation Modal */}
+        <ConfirmationModal
+          visible={logoutConfirmVisible}
+          title={t('auth.logout')}
+          message={t('auth.logoutConfirm')}
+          confirmText={t('auth.logout')}
+          cancelText={t('common.cancel')}
+          onConfirm={confirmLogout}
+          onCancel={() => setLogoutConfirmVisible(false)}
+          destructive
+        />
+    </View>
   );
 }
 
