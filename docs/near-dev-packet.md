@@ -8,7 +8,7 @@ A consolidated guide to wire BlueOcean’s NEAR-first, gasless, multi‑tenant s
 
 - Single contract (Rust/WASM): multi‑tenant keyed by `storeId`.
 - Gasless UX: a relayer submits `functionCall` on behalf of the user.
-- Reads: NEAR Lake streams contract logs into a small DB for fast UI.
+- Reads: contract state is queried on demand; no SQLite or Lake indexer.
 - Wallet (optional for MVP): Wallet Selector for account connect; relayer still works without it.
 
 ---
@@ -275,64 +275,18 @@ MAX_GAS=150000000000000
 
 ---
 
-## 5) NEAR Lake Indexer (Node/TS)
-
-### Install
-```bash
-yarn add near-lake-framework better-sqlite3
-```
-
-### Stream & upsert
-```ts
-// indexers/lake/src/store.ts
-import Database from 'better-sqlite3';
-const db = new Database(process.env.DB_PATH || 'lake.db');
-db.exec(`
-CREATE TABLE IF NOT EXISTS listings(store_id TEXT, item_id TEXT, price_cents INT, seller TEXT, metadata TEXT, updated_at INT);
-CREATE TABLE IF NOT EXISTS orders(store_id TEXT, item_id TEXT, buyer TEXT, amount_yocto TEXT, tx_hash TEXT, created_at INT);
-`);
-export function upsertEvent(evt: any, tx?: string) {
-  if (evt.event === 'listing_added') {
-    const s = db.prepare(`REPLACE INTO listings(store_id,item_id,price_cents,seller,metadata,updated_at) VALUES (?,?,?,?,?,?)`);
-    s.run(evt.storeId, evt.itemId, Number(evt.price)/10_4, evt.seller, evt.metadata || '', Date.now());
-  }
-  if (evt.event === 'order_paid') {
-    const s = db.prepare(`INSERT INTO orders(store_id,item_id,buyer,amount_yocto,tx_hash,created_at) VALUES (?,?,?,?,?,?)`);
-    s.run(evt.storeId, evt.itemId, evt.buyer, String(evt.amount), tx || '', Date.now());
-  }
-}
-```
-
-```ts
-// indexers/lake/src/main.ts
-import { start } from 'near-lake-framework';
-import { upsertEvent } from './store';
-
-start({
-  s3BucketName: 'near-lake-data-testnet',
-  startBlockHeight: Number(process.env.START_BLOCK || 0),
-  filters: { accounts: [process.env.CONTRACT_ID!] },
-  handleStreamerMessage: async (msg) => {
-    for (const shard of msg.shards) {
-      for (const reo of shard.receiptExecutionOutcomes) {
-        const tx = reo.executionOutcome.id;
-        for (const line of (reo.executionOutcome.outcome.logs || [])) {
-          try { const evt = JSON.parse(line); if (evt.event) upsertEvent(evt, tx); } catch {}
-        }
-      }
-    }
-  },
-});
-```
-
-## 6) Frontend SDK Wrapper
+## 5) Frontend SDK Wrapper
 
 ```ts
 // packages/sdk-near/src/index.ts
+import { viewFunction } from './near';
+
 export async function getListings(storeId: string) {
-  const url = `${process.env.EXPO_PUBLIC_INDEXER_URL}/listings?storeId=${encodeURIComponent(storeId)}`;
-  const r = await fetch(url); if (!r.ok) throw new Error('indexer error');
-  return r.json();
+  return viewFunction({
+    contractId: process.env.EXPO_PUBLIC_CONTRACT_ID!,
+    methodName: 'get_listings',
+    args: { store_id: storeId },
+  });
 }
 
 export async function addListing(args: { storeId:string; itemId:string; priceYocto:string; metadata:string }) {
@@ -340,7 +294,8 @@ export async function addListing(args: { storeId:string; itemId:string; priceYoc
     method:'POST', headers:{'content-type':'application/json'},
     body: JSON.stringify({ action:'add_listing', args })
   });
-  if (!r.ok) throw new Error('relayer error'); return r.json();
+  if (!r.ok) throw new Error('relayer error');
+  return r.json();
 }
 
 export async function buyListing(args: { storeId:string; itemId:string; amountYocto:string }) {
@@ -348,13 +303,14 @@ export async function buyListing(args: { storeId:string; itemId:string; amountYo
     method:'POST', headers:{'content-type':'application/json'},
     body: JSON.stringify({ action:'buy_listing', args })
   });
-  if (!r.ok) throw new Error('relayer error'); return r.json();
+  if (!r.ok) throw new Error('relayer error');
+  return r.json();
 }
 ```
 
 ---
 
-## 7) CLI Quick Reference
+## 6) CLI Quick Reference
 
 ### Build contract
 ```bash
@@ -388,14 +344,13 @@ near call marketplace.<you>.testnet buy_listing '{"store_id":"alpha","item_id":"
 
 ---
 
-## 8) Env & Flags
+## 7) Env & Flags
 
 ```env
 # web
 EXPO_PUBLIC_CHAIN=near
 EXPO_PUBLIC_CONTRACT_ID=marketplace.<you>.testnet
 EXPO_PUBLIC_RELAYER_URL=http://localhost:8787
-EXPO_PUBLIC_INDEXER_URL=http://localhost:8788
 EXPO_PUBLIC_DEFAULT_STORE=alpha
 EXPO_PUBLIC_DEBUG_LOGS=1
 
@@ -404,28 +359,22 @@ NEAR_RPC_URL=https://rpc.testnet.near.org
 CONTRACT_ID=marketplace.<you>.testnet
 RELAYER_ACCOUNT_ID=<acct>.testnet
 RELAYER_PRIVATE_KEY=ed25519:...
-
-# indexer
-CONTRACT_ID=marketplace.<you>.testnet
-LAKE_BUCKET=near-lake-data-testnet
-DB_PATH=lake.db
-START_BLOCK=0
 ```
 
 ---
 
-## 9) Gotchas & Guardrails
+## 8) Gotchas & Guardrails
 
-- Always pass storeId to contract/SDK/indexer—no cross-tenant leakage.
+- Always pass storeId to contract or SDK—no cross-tenant leakage.
 - Fee math single source of truth (bps → yocto): reuse one helper.
 - Relayer safety: allowlist methods, cap gas/deposit, rate-limit.
-- Emit JSON logs from contract (strict schema) for Lake to parse.
+- Emit JSON logs from contract (strict schema) for clients to parse.
 - Keep dependencies clean: run depcheck, knip, ts-prune.
 - CI gates: yarn typecheck && yarn lint && yarn build:web.
 
 ---
 
-## 10) Optional: Privacy Stub (Mixer Button)
+## 9) Optional: Privacy Stub (Mixer Button)
 
 ```ts
 export async function payPrivately({ storeId, itemId, amountYocto }: any) {
@@ -498,7 +447,7 @@ BlueOcean
 │  ├─ /admin/fees                 (Platform fee %, treasury addr)
 │  ├─ /admin/near                 (Contracts, relayer keys)
 │  ├─ /admin/waku                 (Mesh peers, topics)
-│  ├─ /admin/logs                 (Agent logs, lake indexer)
+│  ├─ /admin/logs                 (Agent logs)
 │  └─ /admin/settings             (Flags, Feature toggles)
 │
 ├─ UI Components (reusable)
@@ -526,7 +475,7 @@ BlueOcean
 │
 ├─ Services / Agents
 │  ├─ TenantAgent           (load store config by slug)
-│  ├─ ProductsAgent         (indexer + contract fallback)
+│  ├─ ProductsAgent         (contract + Waku history)
 │  ├─ OrdersAgent           (relayer submit, status pull)
 │  ├─ DriversAgent          (assignments, state)
 │  ├─ UsersAgent            (wallet → roles)
@@ -535,7 +484,6 @@ BlueOcean
 │  │  ├─ NEAR: GaslessMetaTxClient (relayer)
 │  │  └─ MixerClient (ZK mixer stub)
 │  ├─ StorageAgent          (Pinata, IPFS gateway)
-│  └─ IndexerClient         (Lake stream mirror)
 │
 ├─ NEAR Contracts
 │  ├─ Marketplace (WASM)
@@ -550,13 +498,6 @@ BlueOcean
 │  ├─ .env: relayer keys, limits
 │  └─ Dockerfile, service port
 │
-├─ Lake Indexer
-│  ├─ src/main.ts           (NEAR Lake stream listener)
-│  ├─ src/store.ts          (SQLite schema)
-│  ├─ Table: listings
-│  ├─ Table: orders
-│  └─ Dockerfile
-│
 ├─ Utilities
 │  ├─ log/debug/errorLog
 │  ├─ Fee math (bps → cents)
@@ -565,7 +506,7 @@ BlueOcean
 │  └─ Contracts ABI helper
 │
 └─ DevOps
-   ├─ Docker (web, relayer, indexer)
+   ├─ Docker (web, relayer)
    ├─ Scripts (build:contract, deploy, lint, doctor)
    ├─ Akash config (ports, healthcheck)
    ├─ CI (build, typecheck, prune, deadcode)
