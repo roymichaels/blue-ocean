@@ -33,6 +33,7 @@ import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters
 import { spacing } from '@/shared/ui/tokens';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { routes } from '@/utils/routes';
+import ErrorBoundary from 'src/shared/ErrorBoundary';
 
 
 function HomeScreenContent() {
@@ -458,9 +459,11 @@ function HomeScreenContent() {
 
 export default function HomeScreen() {
   return (
-    <Suspense fallback={<Spinner />}>
-      <HomeScreenContent />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<Spinner />}>
+        <HomeScreenContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
