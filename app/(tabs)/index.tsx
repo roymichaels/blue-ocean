@@ -9,8 +9,8 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useAppRouter } from '@/services';
-import { Plus, X, ArrowUpDown } from 'lucide-react-native';
-import { Product, HeroBanner } from '@/types';
+import { Plus, X, ArrowUpDown, Pencil } from 'lucide-react-native';
+import { Product, HeroBanner, Category } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
 import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
 import { useHomeModals } from '@/features/home/hooks/useHomeModals';
@@ -25,7 +25,6 @@ import BannerArea from '@/features/home/components/BannerArea';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import { Spinner } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
-import ErrorBoundary from '@/shared/ErrorBoundary';
 import BannerFormModal from '@/components/BannerFormModal';
 import { CartModal } from '@/features/cart';
 import { ProductFormModal } from '@/features/products';
@@ -79,20 +78,20 @@ function HomeScreenContent() {
   const categoriesToShow = categories.length ? categories : fallbackCategories;
   const heroBannersToShow = heroBanners.length ? heroBanners : fallbackBanners;
 
-  const {
-    filteredProducts,
-    searchQuery,
-    selectedCategory,
-    setSelectedCategory,
-    minPrice,
-    setMinPrice,
-    maxPrice,
-    setMaxPrice,
-    sortBy,
-    setSortBy,
-    showSortModal,
-    setShowSortModal,
-  } = useHomeFilters(products);
+    const {
+      filteredProducts,
+      searchQuery,
+      selectedCategory,
+      setSelectedCategory,
+      minPrice,
+      setMinPrice,
+      maxPrice,
+      setMaxPrice,
+      sortBy,
+      setSortBy,
+      showSortModal,
+      setShowSortModal,
+    } = useHomeFilters(products);
 
   const handleBannerSaved = (b: HeroBanner, isNew: boolean) => {
     upsertBanner(b, isNew);
@@ -415,17 +414,16 @@ function HomeScreenContent() {
           onClose={closeCartModal}
         />
       </Suspense>
+
     </>
   );
 }
 
 export default function HomeScreen() {
   return (
-    <ErrorBoundary>
-      <Suspense fallback={<Spinner />}>
-        <HomeScreenContent />
-      </Suspense>
-    </ErrorBoundary>
+    <Suspense fallback={<Spinner />}>
+      <HomeScreenContent />
+    </Suspense>
   );
 }
 

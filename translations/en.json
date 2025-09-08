@@ -98,30 +98,6 @@
     "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload.",
     "becomeSeller": "Become a Seller"
   },
-  "landing": {
-    "title": "Blue Ocean Marketplace",
-    "subtitle": "Decentralized commerce on NEAR — own your store, your data, your future.",
-    "openAlphaStore": "Open Alpha Store",
-    "browseApp": "Browse App",
-    "highlights": "Highlights",
-    "categories": "Categories",
-    "featured": "Featured",
-    "noFeaturedItemsYet": "No featured items yet.",
-    "defaultBanners": {
-      "welcome": "Welcome to Blue Ocean",
-      "ownStore": "Own your store on NEAR",
-      "decentralized": "Decentralized by design",
-      "fastSecure": "Fast, P2P and secure"
-    },
-    "defaultCategories": {
-      "electronics": "Electronics",
-      "fashion": "Fashion",
-      "home": "Home",
-      "beauty": "Beauty",
-      "sports": "Sports",
-      "books": "Books"
-    }
-  },
   "categories": {
     "all": "All"
   },
@@ -349,8 +325,8 @@
     "complianceSoon": "Compliance tools coming soon.",
     "feesSoon": "Fees management coming soon.",
     "productCount": "Products: {count}",
-    "viewOrders": "View Orders"
-    ,"settings": {
+    "viewOrders": "View Orders",
+    "settings": {
       "title": "System Settings",
       "general": "General Settings",
       "loadFailed": "Failed to load settings",

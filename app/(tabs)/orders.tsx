@@ -219,7 +219,7 @@ export default function OrdersScreen() {
         contentContainerStyle={[
           styles.content,
           { flexGrow: 1 },
-          isLoggedIn && userOrders.length > 0 && styles.ordersList
+          isLoggedIn && userOrders.length > 0 && styles.ordersList,
         ]}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}

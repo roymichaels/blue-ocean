@@ -18,6 +18,6 @@ flowchart LR
 
 - **Tabs** – implemented in `src/layout/TabsLayout.tsx`, renders the bottom navigation bar or left sidebar based on screen size.
 - **Avatar Menu** – the profile avatar opens authentication actions.
-- **Category** – routes like `/storefront/category/[id]` show filtered storefront views.
+- **Category** – routes like `/category/[id]` show filtered product views.
 
 This high‑level map helps visualize how users move through the application.

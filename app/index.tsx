@@ -1,6 +1,7 @@
 import { Redirect } from 'expo-router';
 
-// Redirect the root path to the landing page so `/` always resolves.
+// Redirect the root path to the main tabs layout
 export default function Index() {
-  return <Redirect href='/landing' />;
+  // eslint-disable-next-line no-restricted-syntax
+  return <Redirect href='/(tabs)' />;
 }
