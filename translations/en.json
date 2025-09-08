@@ -325,8 +325,8 @@
     "complianceSoon": "Compliance tools coming soon.",
     "feesSoon": "Fees management coming soon.",
     "productCount": "Products: {count}",
-    "viewOrders": "View Orders"
-    ,"settings": {
+    "viewOrders": "View Orders",
+    "settings": {
       "title": "System Settings",
       "general": "General Settings",
       "loadFailed": "Failed to load settings",

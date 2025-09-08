@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Image as ExpoImage, ImageProps } from 'expo-image';
 import { Platform } from 'react-native';
-
-const fallback = require('../assets/images/icon.png');
 // blurhash placeholder used while the image loads
 const shimmer = 'LKO2?U%2Tw=w]~RBVZRi};RPxuwH';
 
@@ -21,12 +19,10 @@ export default function SmartImage({
   cachePolicy = 'memory-disk',
   ...props
 }: SmartImageProps) {
-  const [source, setSource] = useState<{ uri: string } | number>({ uri });
-
   return (
     <ExpoImage
       {...props}
-      source={source}
+      source={{ uri }}
       width={width}
       height={height}
       style={style}
@@ -34,7 +30,6 @@ export default function SmartImage({
       cachePolicy={cachePolicy}
       placeholder={Platform.OS === 'web' ? undefined : shimmer}
       transition={300}
-      onError={() => setSource(fallback)}
     />
   );
 }
