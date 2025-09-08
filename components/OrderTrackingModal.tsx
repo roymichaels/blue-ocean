@@ -10,6 +10,7 @@ import {
   Animated,
   Easing,
   Alert,
+  Platform,
 } from 'react-native';
 import SmartImage from './SmartImage';
 import { X, CircleCheck as CheckCircle, Circle, Package, Truck, MapPin, Star, Phone, MessageCircle, Copy } from 'lucide-react-native';
@@ -61,7 +62,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
         toValue: stepIndex / (statusOrder.length - 1),
         duration: 1000,
         easing: Easing.out(Easing.ease),
-        useNativeDriver: false,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
       
       // Set estimated delivery time
