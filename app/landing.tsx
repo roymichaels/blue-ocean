@@ -1,11 +1,6 @@
-import { View, Text } from 'react-native';
+import { Redirect } from 'expo-router';
 
-export default function LandingRedirect() {
-  const { replace } = useAppRouter();
-
-  useEffect(() => {
-    replace('/');
-  }, [replace]);
-
-  return null;
+export default function Landing() {
+  return <Redirect href='/(tabs)' />;
 }
+
