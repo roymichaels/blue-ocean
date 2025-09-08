@@ -4,20 +4,23 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'expo-router';
-import { Platform } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
 import { FloatingCartWidget } from '@/features/cart';
 import { getTabsForAuth } from '@/config/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing, shadows, typography } from '@/shared/ui/tokens';
+import SidebarTabBar, { SIDEBAR_WIDTH } from './SidebarTabBar';
 
 export default function TabsLayout() {
   const { t } = useLanguage();
   const { colors } = useTheme();
   const auth = useAuth();
   const pathname = usePathname();
+  const { width } = useWindowDimensions();
   const [showCartWidget, setShowCartWidget] = useState(false);
   const tabs = useMemo(() => getTabsForAuth(auth), [auth]);
+  const isLargeScreen = width >= 768;
 
   useEffect(() => {
     setShowCartWidget(pathname === '/' || pathname === '/index');
@@ -34,7 +37,9 @@ export default function TabsLayout() {
     paddingTop: spacing.spacer8,
     ...Platform.select(shadows.sm),
   } as const;
-  warnIfTabBarHidden(tabBarStyle as any, TabsLayout.name);
+  if (!isLargeScreen) {
+    warnIfTabBarHidden(tabBarStyle as any, TabsLayout.name);
+  }
 
   const screenOptions = {
     headerShown: false,
@@ -42,7 +47,7 @@ export default function TabsLayout() {
     tabBarShowLabel: true,
     tabBarActiveTintColor: colors.tabBar.active,
     tabBarInactiveTintColor: colors.tabBar.inactive,
-    tabBarStyle,
+    tabBarStyle: isLargeScreen ? undefined : tabBarStyle,
     tabBarLabelStyle: {
       fontSize: typography.xs.fontSize,
       fontWeight: '500',
@@ -52,7 +57,11 @@ export default function TabsLayout() {
   return (
     <ErrorBoundary>
       <>
-        <Tabs screenOptions={screenOptions}>
+        <Tabs
+          screenOptions={screenOptions}
+          tabBar={(props) => (isLargeScreen ? <SidebarTabBar {...props} /> : undefined)}
+          sceneContainerStyle={isLargeScreen ? { marginLeft: SIDEBAR_WIDTH } : undefined}
+        >
           {tabs.map((tab) => {
             const Icon = (Lucide as any)[tab.icon] as React.ComponentType<{ size: number; color: string }>;
             const title = mapTitle(t, tab.title);
