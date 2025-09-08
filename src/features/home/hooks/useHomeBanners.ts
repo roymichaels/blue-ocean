@@ -2,13 +2,19 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import { HeroBanner } from '@/types';
+import { errorLog } from '@/utils/logger';
 
 export function useHomeBanners() {
-  const { data, refetch, isLoading } = useQuery({
+  const { data, refetch, isLoading, error: queryError } = useQuery({
     queryKey: ['homeBanners'],
     queryFn: async () => {
-      const db = DatabaseService.getInstance();
-      return db.getHeroBanners();
+      try {
+        const db = DatabaseService.getInstance();
+        return await db.getHeroBanners();
+      } catch (err) {
+        errorLog('useHomeBanners query failed', err);
+        throw err;
+      }
     },
     suspense: false,
   });
@@ -20,7 +26,13 @@ export function useHomeBanners() {
     }
   }, [data]);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<Error | null>(queryError ?? null);
+
+  useEffect(() => {
+    if (queryError) {
+      setError(queryError as Error);
+    }
+  }, [queryError]);
 
   const refresh = useCallback(async () => {
     try {
@@ -31,6 +43,7 @@ export function useHomeBanners() {
       }
       setError(null);
     } catch (err) {
+      errorLog('useHomeBanners refresh failed', err);
       setError(err as Error);
     } finally {
       setRefreshing(false);
