@@ -4,14 +4,18 @@ This document captures the high-level directory tree for the BlueOcean v2 Expo a
 
 ```text
 blue-ocean/
-├─ app/                         App shell and routes
-│  ├─ admin/                    Global admin console
-│  ├─ store/                    Store owner dashboard
-│  │  └─ [storeId]/admin/       Store-specific admin
-│  ├─ stores/                   Store creation & listing
+├─ app/                          App shell and routes
+│  ├─ _layout.tsx                Global root layout
+│  ├─ +html.tsx                  Web HTML shell
+│  ├─ +not-found.tsx             404 boundary
+│  ├─ index.tsx                  Home tab screen
+│  ├─ stores.tsx                 Stores tab screen
+│  ├─ profile.tsx                Profile tab screen
+│  ├─ cart.tsx                   Cart tab screen
+│  ├─ orders.tsx                 Orders tab screen
+│  ├─ categories.tsx
 │  ├─ category/
 │  ├─ product/
-│  ├─ orders/
 │  ├─ reviews/
 │  ├─ user/
 │  └─ …
@@ -21,8 +25,7 @@ blue-ocean/
 
 ## Major Sections
 
-- **App Shell** – [`app/`](../app)
-- **Store Owner** – [`app/stores`](../app/stores) & [`app/store`](../app/store)
-- **Admin** – [`app/admin`](../app/admin) & [`app/store/[storeId]/admin`](../app/store/%5BstoreId%5D/admin)
+- **App Shell & Tabs** – [`app/`](../app) hosts the root layout and primary tab screens.
+- **Domain Routes** – [`app/category`](../app/category), [`app/product`](../app/product), [`app/orders`](../app/orders), [`app/reviews`](../app/reviews), [`app/user`](../app/user)
 
 *Keep this file in sync with the repository’s evolving structure.*
