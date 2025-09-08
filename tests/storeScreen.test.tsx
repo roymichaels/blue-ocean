@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import StorefrontStoreScreen from '@app/store/[storeId]';
+import StoreScreen from '@app/store/[storeId]';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ storeId: 's1' }),
@@ -60,11 +60,11 @@ jest.mock('@/features/products', () => ({
   ProductCard: ({ product }: any) => React.createElement('ProductCard', null, product.name),
 }));
 
-describe('StorefrontStoreScreen', () => {
+describe('StoreScreen', () => {
   it('shows store catalog with reviews', async () => {
     let root: renderer.ReactTestRenderer;
     await act(async () => {
-      root = renderer.create(<StorefrontStoreScreen />);
+      root = renderer.create(<StoreScreen />);
     });
     await act(async () => {});
     const str = JSON.stringify(root!.toJSON());

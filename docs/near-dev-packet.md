@@ -449,7 +449,7 @@ BlueOcean
 │  └─ Polyfills (web/native) + HMR
 │
 ├─ Public
-│  ├─ /                          (Landing / marketing)
+│  ├─ /                          (marketing)
 │  ├─ /store/[storeId]
 │  │  ├─ /home                  (Hero, featured, promos)
 │  │  ├─ /catalog
