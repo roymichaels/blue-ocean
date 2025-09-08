@@ -72,7 +72,7 @@ jest.mock('@/ui/primitives', () => ({ Spinner: () => null }));
 jest.mock('@/features/products', () => ({ ProductCard: () => null }));
 
 import storesAgent from '@/agents/stores-agent';
-import StorefrontStoreScreen from '@app/store/[storeId]';
+import StoreScreen from '@app/store/[storeId]';
 import AdminDashboardScreen from '@app/admin/dashboard';
 
 describe('store reputation', () => {
@@ -92,7 +92,7 @@ describe('store reputation', () => {
 
     let root: renderer.ReactTestRenderer;
     await act(async () => {
-      root = renderer.create(<StorefrontStoreScreen />);
+      root = renderer.create(<StoreScreen />);
     });
     expect(JSON.stringify(root!.toJSON())).toContain('4.5');
 

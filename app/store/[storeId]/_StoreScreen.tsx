@@ -7,7 +7,7 @@ import StoreTabs from '@/features/stores/components/store/StoreTabs';
 import { ProductGrid } from '@/features/products';
 import { useStoreData } from '@/services/useStoreData';
 
-export default function StorefrontStoreScreen() {
+export default function StoreScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const { store, products, score } = useStoreData(storeId);
