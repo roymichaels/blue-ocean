@@ -5,27 +5,31 @@ This document captures the high-level directory tree for the BlueOcean v2 Expo a
 ```text
 blue-ocean/
 ├─ app/                          App shell and routes
-│  ├─ _layout.tsx                Global root layout
+│  ├─ _layout.tsx                Root layout → TabsLayout
 │  ├─ +html.tsx                  Web HTML shell
 │  ├─ +not-found.tsx             404 boundary
 │  ├─ index.tsx                  Home tab screen
 │  ├─ stores.tsx                 Stores tab screen
-│  ├─ profile.tsx                Profile tab screen
 │  ├─ cart.tsx                   Cart tab screen
 │  ├─ orders.tsx                 Orders tab screen
+│  ├─ profile.tsx                Profile tab screen
 │  ├─ categories.tsx
 │  ├─ category/
 │  ├─ product/
 │  ├─ reviews/
 │  ├─ user/
 │  └─ …
-├─ public/                      Static web assets
+├─ src/layout/                   Shared layouts
+│  ├─ TabsLayout.tsx             Renders global header & tabs
+│  └─ SidebarTabBar.tsx
+├─ components/GlobalHeader.tsx   Top header used in TabsLayout
+├─ public/                       Static web assets
 └─ …
 ```
 
 ## Major Sections
 
-- **App Shell & Tabs** – [`app/`](../app) hosts the root layout and primary tab screens.
+- **Root Layout & Tabs** – [`app/_layout.tsx`](../app/_layout.tsx) re-exports [`TabsLayout`](../src/layout/TabsLayout.tsx), which renders the global header and bottom tab bar.
 - **Domain Routes** – [`app/category`](../app/category), [`app/product`](../app/product), [`app/orders`](../app/orders), [`app/reviews`](../app/reviews), [`app/user`](../app/user)
 
 *Keep this file in sync with the repository’s evolving structure.*

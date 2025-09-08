@@ -23,7 +23,7 @@ yarn lint && yarn typecheck
 Metro's web bundler requires `it-all` and `it-pipe` to be listed explicitly in
 `dependencies`; both packages are included in `package.json` for web builds.
 
-Then open `/` to see the Home screen.
+When the app loads you'll see the global header and bottom tab bar (Home, Stores, Cart, Orders, Profile).
 
 ## Design Tokens
 
