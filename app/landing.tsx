@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { useAppRouter } from '@/services';
+import { View, Text } from 'react-native';
 
 export default function LandingRedirect() {
   const { replace } = useAppRouter();

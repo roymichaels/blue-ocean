@@ -7,6 +7,7 @@ import {
   Animated,
   ScrollView,
   I18nManager,
+  Platform,
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { ShoppingCart, X, Plus, Minus } from 'lucide-react-native';
@@ -45,7 +46,7 @@ export default function FloatingCartWidget() {
       Animated.timing(animatedOpacity, {
         toValue: visible ? 1 : 0,
         duration: 300,
-        useNativeDriver: false,
+        useNativeDriver: Platform.OS !== 'web',
       }).start(() => {
         if (!visible) setIsExpanded(false);
       });
@@ -63,7 +64,7 @@ export default function FloatingCartWidget() {
             )
           : spacing.spacer20 * 3,
         duration: 300,
-        useNativeDriver: false,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     },
     [animatedHeight]
