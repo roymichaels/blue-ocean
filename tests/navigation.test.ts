@@ -10,10 +10,6 @@ jest.mock('expo-router', () => ({
 }));
 
 describe('strip-tabs-prefix', () => {
-  it('removes-group-prefix-when-present', () => {
-    expect(stripTabsPrefix('/(tabs)/profile')).toBe('/profile');
-  });
-
   it('returns-undefined-for-nullish-values', () => {
     expect(stripTabsPrefix(undefined)).toBeUndefined();
     expect(stripTabsPrefix(null)).toBeUndefined();
@@ -23,12 +19,8 @@ describe('strip-tabs-prefix', () => {
     expect(stripTabsPrefix('/profile')).toBe('/profile');
   });
 
-  it('does-not-alter-root-group-path-without-trailing-slash', () => {
-    expect(stripTabsPrefix('/(tabs)')).toBe('/(tabs)');
-  });
-
   it('handles-nested-routes-and-query-strings', () => {
-    expect(stripTabsPrefix('/(tabs)/orders/123?foo=bar')).toBe('/orders/123?foo=bar');
+    expect(stripTabsPrefix('/orders/123?foo=bar')).toBe('/orders/123?foo=bar');
   });
 });
 
@@ -40,18 +32,18 @@ describe('navigation-helpers', () => {
     router.replace.mockReset();
   });
 
-  it('push-strips-group-prefix-before-routing', () => {
-    push('/(tabs)/orders');
+  it('push-forwards-path-before-routing', () => {
+    push('/orders');
     expect(router.push).toHaveBeenCalledWith('/orders');
   });
 
-  it('replace-strips-group-prefix-in-pathname-objects', () => {
-    replace({ pathname: '/(tabs)/orders', params: { foo: 'bar' } });
+  it('replace-uses-provided-pathname-objects', () => {
+    replace({ pathname: '/orders', params: { foo: 'bar' } });
     expect(router.replace).toHaveBeenCalledWith({ pathname: '/orders', params: { foo: 'bar' } });
   });
 
-  it('totab-removes-group-prefix', () => {
-    expect(toTab('/(tabs)/profile')).toBe('/profile');
+  it('totab-returns-same-path', () => {
+    expect(toTab('/profile')).toBe('/profile');
   });
 });
 

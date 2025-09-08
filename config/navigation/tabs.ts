@@ -1,5 +1,5 @@
 export type TabDef = {
-  name: string; // file-based route under (tabs)
+  name: string; // file-based route under app root
   title: string; // display title
   icon: string; // lucide icon name mapping
 };
