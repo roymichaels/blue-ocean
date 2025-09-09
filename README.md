@@ -24,6 +24,8 @@ yarn lint && yarn typecheck
 Metro's web bundler requires `it-all` and `it-pipe` to be listed explicitly in
 `dependencies`; both packages are included in `package.json` for web builds.
 
+The app also uses the open-source [`@shopify/flash-list`](https://github.com/Shopify/flash-list) package solely for local list virtualization. It is independent of Shopify's platform and does not require a Shopify account or any access to Shopify APIs.
+
 When the app loads you'll see the global header and bottom tab bar (Home, Stores, Cart, Orders, Profile).
 
 ## Design Tokens
