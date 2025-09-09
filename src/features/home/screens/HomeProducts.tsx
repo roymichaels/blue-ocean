@@ -5,6 +5,7 @@ import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { Container, Stack } from '@/ui/layout';
 import { Spinner } from '@/ui/primitives';
 import ProductGrid from '@/features/home/components/ProductGrid';
+import HomeServices from '@/features/home/components/HomeServices';
 import { Product, Category } from '@/types';
 import { styles } from './HomeProducts.styles';
 
@@ -59,57 +60,56 @@ export default function HomeProducts({
   };
 
   return (
-    <Container style={styles.section}>
-      <Stack direction="horizontal" style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}> 
-          {searchQuery
-            ? t('home.searchResults', { query: searchQuery })
-            : t('home.products')}
-        </Text>
-        <Stack direction="horizontal" gap="spacer8" style={styles.sectionActions}>
-          <TouchableOpacity
-            style={[
-              styles.sortButton,
-              {
-                backgroundColor: themeColors.surface.primary,
-                borderColor: themeColors.border.primary,
-              },
-            ]}
-            onPress={onSortPress}
-          >
-            <ArrowUpDown size={16} color={themeColors.gold} />
-            <Text style={[styles.sortText, { color: themeColors.gold }]}>
-              {getSortLabel()}
-            </Text>
-          </TouchableOpacity>
-          {isStoreOwner && (
+    <>
+      <HomeServices />
+      <Container style={styles.section}>
+        <Stack direction="horizontal" style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}> 
+            {searchQuery ? t('home.searchResults', { query: searchQuery }) : t('home.products')}
+          </Text>
+          <Stack direction="horizontal" gap="spacer8" style={styles.sectionActions}>
             <TouchableOpacity
               style={[
-                styles.addProductButton,
+                styles.sortButton,
                 {
-                  backgroundColor: themeColors.interactive.secondary,
-                  borderColor: themeColors.gold,
+                  backgroundColor: themeColors.surface.primary,
+                  borderColor: themeColors.border.primary,
                 },
               ]}
-              onPress={onAddProduct}
+              onPress={onSortPress}
             >
-              <Plus size={16} color={themeColors.gold} />
+              <ArrowUpDown size={16} color={themeColors.gold} />
+              <Text style={[styles.sortText, { color: themeColors.gold }]}>{getSortLabel()}</Text>
             </TouchableOpacity>
-          )}
+            {isStoreOwner && (
+              <TouchableOpacity
+                style={[
+                  styles.addProductButton,
+                  {
+                    backgroundColor: themeColors.interactive.secondary,
+                    borderColor: themeColors.gold,
+                  },
+                ]}
+                onPress={onAddProduct}
+              >
+                <Plus size={16} color={themeColors.gold} />
+              </TouchableOpacity>
+            )}
+          </Stack>
         </Stack>
-      </Stack>
-      <Suspense fallback={<Spinner />}>
-        <ProductGrid
-          products={products}
-          categories={categories}
-          isStoreOwner={isStoreOwner}
-          onEdit={onEditProduct}
-          getItemWidth={getProductItemWidth}
-          searchQuery={searchQuery}
-          onAddProduct={onAddProduct}
-          loading={loading}
-        />
-      </Suspense>
-    </Container>
+        <Suspense fallback={<Spinner />}>
+          <ProductGrid
+            products={products}
+            categories={categories}
+            isStoreOwner={isStoreOwner}
+            onEdit={onEditProduct}
+            getItemWidth={getProductItemWidth}
+            searchQuery={searchQuery}
+            onAddProduct={onAddProduct}
+            loading={loading}
+          />
+        </Suspense>
+      </Container>
+    </>
   );
 }
