@@ -4,6 +4,8 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
 }));
 jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
 jest.mock('@/services/nearSettings');
+jest.mock('@/services/chain', () => ({ assertNearChain: jest.fn() }));
+jest.mock('../utils/ensureNearWallet', () => jest.fn().mockResolvedValue(undefined));
 
 import SettingsAgent from '../agents/settings-agent';
 import { __clear } from './nearKvMock';
@@ -14,6 +16,7 @@ let subscribed: (evt: any) => void;
 
 describe('SettingsAgent NEAR integration', () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     __clear();
     (SettingsAgent as any).instance = undefined;
     (SettingsAgent as any).ADMIN_CACHE_TTL = 10; // short TTL for tests
@@ -25,6 +28,10 @@ describe('SettingsAgent NEAR integration', () => {
         return () => {};
       },
     );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('returns null when setting missing', async () => {
@@ -81,7 +88,7 @@ describe('SettingsAgent NEAR integration', () => {
     const stillCached = await agent.getAdmins();
     expect(stillCached).toEqual(['addr_admin']);
 
-    await new Promise((r) => setTimeout(r, 20));
+    jest.advanceTimersByTime(20);
     const refreshed = await agent.getAdmins();
     expect(refreshed).toEqual(['addr_other']);
   });
@@ -90,7 +97,7 @@ describe('SettingsAgent NEAR integration', () => {
     const getSpy = jest.spyOn(nearSettings, 'getAdmins');
     const agent = SettingsAgent.getInstance();
     await agent.setAdmins(['addr_admin']);
-    await new Promise((r) => setTimeout(r, 20));
+    jest.advanceTimersByTime(20);
     await agent.setAdmins(['addr_cached']);
 
     const cached = await agent.getAdmins();
@@ -98,7 +105,7 @@ describe('SettingsAgent NEAR integration', () => {
     expect(getSpy).toHaveBeenCalledTimes(0);
 
     await directSetAdmins(['addr_fetch'], 'addr_admin');
-    await new Promise((r) => setTimeout(r, 20));
+    jest.advanceTimersByTime(20);
     const fetched = await agent.getAdmins();
     expect(fetched).toEqual(['addr_fetch']);
     expect(getSpy).toHaveBeenCalledTimes(1);
