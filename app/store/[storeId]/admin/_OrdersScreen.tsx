@@ -4,6 +4,7 @@ import { debugLog } from '@/utils/logger';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/ui/ThemeProvider';
 import { chainAdapter } from '@/services/chain';
+import { useWallet } from '@/contexts/WalletProvider';
 import type { Order } from '../../../../types';
 import { useLanguage } from '@/ui/ThemeProvider';
 
@@ -11,7 +12,7 @@ export default function StoreOrdersScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
-  const address = chainAdapter.useAccountId();
+  const { address } = useWallet();
   const { t } = useLanguage();
 
   const handlePress = (order: Order) => {
