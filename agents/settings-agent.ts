@@ -5,6 +5,8 @@ import {
   setSetting,
   getAdmins as fetchAdmins,
   setAdmins as storeAdmins,
+  getAdminPublicKeys as fetchAdminPublicKeys,
+  setAdminPublicKeys as storeAdminPublicKeys,
   subscribeToSettingsWrites,
 } from '@/services/nearSettings';
 import ensureNearWallet from '../utils/ensureNearWallet';
@@ -29,6 +31,8 @@ class SettingsAgent {
   private static instance: SettingsAgent;
   private admins: string[] = [];
   private adminsFetchedAt = 0;
+  private adminPublicKeys: string[] = [];
+  private adminPublicKeysFetchedAt = 0;
   private static ADMIN_CACHE_TTL = 60_000; // 1 minute
 
   private constructor() {
@@ -36,6 +40,10 @@ class SettingsAgent {
       if (evt.key === 'admins') {
         this.admins = [];
         this.adminsFetchedAt = 0;
+      }
+      if (evt.key === 'adminPublicKeys') {
+        this.adminPublicKeys = [];
+        this.adminPublicKeysFetchedAt = 0;
       }
     });
   }
@@ -81,6 +89,26 @@ class SettingsAgent {
     await storeAdmins(normalized, actor);
     this.admins = normalized;
     this.adminsFetchedAt = Date.now();
+  }
+
+  async getAdminPublicKeys(): Promise<string[]> {
+    const now = Date.now();
+    if (
+      this.adminPublicKeys.length === 0 ||
+      now - this.adminPublicKeysFetchedAt > SettingsAgent.ADMIN_CACHE_TTL
+    ) {
+      this.adminPublicKeys = await fetchAdminPublicKeys();
+      this.adminPublicKeysFetchedAt = now;
+    }
+    return this.adminPublicKeys;
+  }
+
+  async setAdminPublicKeys(keys: string[]): Promise<void> {
+    await this.ensureWallet();
+    const actor = nearAuth.getAccountId()!;
+    await storeAdminPublicKeys(keys, actor);
+    this.adminPublicKeys = keys;
+    this.adminPublicKeysFetchedAt = Date.now();
   }
 
   async getRpcUrls(): Promise<{ rpcUrl: string; rpcFallbackUrls: string[] }> {
