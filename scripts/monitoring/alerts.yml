@@ -1,0 +1,19 @@
+groups:
+  - name: service-alerts
+    rules:
+      - alert: HighServiceLatency
+        expr: histogram_quantile(0.95, sum(rate(service_latency_seconds_bucket[5m])) by (le,service)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High service latency
+          description: 95th percentile latency over 1s for 5m.
+      - alert: HighServiceFailureRate
+        expr: sum(rate(service_failures_total[5m])) by (service) / sum(rate(service_latency_seconds_count[5m])) by (service) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: High service failure rate
+          description: More than 5% of service calls failing over 5m.

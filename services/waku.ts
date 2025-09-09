@@ -1,6 +1,8 @@
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import { errorLog } from '@/utils/logger';
+import { logger, serviceFailures, serviceLatency } from '@/utils/observability';
+import { retryWithBackoff } from '@/utils/retry';
 
 const isProd = process.env.NODE_ENV === 'production';
 const strict = (process.env.WAKU_STRICT ?? (isProd ? '1' : '0')) === '1';
@@ -69,50 +71,82 @@ export async function ensureNode(): Promise<LightNode | null> {
   if (disabled) return null;
   if (cachedNode) return cachedNode;
   const bootstrap = getBootstraps();
-  if (strict && bootstrap.length === 0) {
-    const err: any = new Error('WAKU_BOOTSTRAP_UNCONFIGURED');
-    err.code = 'WAKU_BOOTSTRAP_UNCONFIGURED';
-    err.source = 'notifications-agent';
-    throw err;
-  }
-  getPublisherKey();
+  const end = serviceLatency.startTimer({ service: 'waku.ensureNode' });
   try {
-    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-    cachedNode = await createLightNode({ libp2p: { bootstrap } } as any);
-    if (!cachedNode) return null;
-    await cachedNode.start();
-    await waitForRemotePeer(cachedNode, [Protocols.Relay]);
+    const startNode = async () => {
+      if (strict && bootstrap.length === 0) {
+        const err: any = new Error('WAKU_BOOTSTRAP_UNCONFIGURED');
+        err.code = 'WAKU_BOOTSTRAP_UNCONFIGURED';
+        err.source = 'notifications-agent';
+        throw err;
+      }
+      getPublisherKey();
+      const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
+      const node = await createLightNode({ libp2p: { bootstrap } } as any);
+      if (!node) return null;
+      await node.start();
+      await waitForRemotePeer(node, [Protocols.Relay]);
+      return node;
+    };
+    cachedNode = await retryWithBackoff(startNode);
+    logger.info({ service: 'waku.ensureNode' }, 'Waku node started');
     return cachedNode;
   } catch (err) {
+    serviceFailures.inc({ service: 'waku.ensureNode' });
     errorLog('Failed to start Waku node', err instanceof Error ? err.message : err);
     if (err instanceof Error && err.stack) {
       errorLog(err.stack);
     }
+    logger.error({ err }, 'Failed to start Waku node');
     cachedNode = null;
     return null;
+  } finally {
+    end();
   }
 }
 
 async function sendAck(topic: string, id: string): Promise<void> {
   const node = await ensureNode();
   if (!node) return;
-  const client = await getClient();
-  const encoder = client.createEncoder({ contentTopic: `${topic}/ack` });
-  await node.lightPush.send(encoder, {
-    payload: client.utf8ToBytes(JSON.stringify({ id })),
-  });
+  const end = serviceLatency.startTimer({ service: 'waku.ack' });
+  try {
+    const client = await getClient();
+    const encoder = client.createEncoder({ contentTopic: `${topic}/ack` });
+    await retryWithBackoff(() =>
+      node.lightPush.send(encoder, {
+        payload: client.utf8ToBytes(JSON.stringify({ id })),
+      }),
+    );
+  } catch (err) {
+    serviceFailures.inc({ service: 'waku.ack' });
+    logger.error({ err, topic }, 'Failed to send Waku ack');
+  } finally {
+    end();
+  }
 }
 
 export async function publish(topic: string, message: any): Promise<string> {
   const node = await ensureNode();
   if (!node) throw new Error('Waku disabled');
-  const client = await getClient();
-  const id = message?.id || Date.now().toString();
-  const encoder = client.createEncoder({ contentTopic: topic });
-  await node.lightPush.send(encoder, {
-    payload: client.utf8ToBytes(JSON.stringify({ ...message, id })),
-  });
-  return id;
+  const end = serviceLatency.startTimer({ service: 'waku.publish' });
+  try {
+    const client = await getClient();
+    const id = message?.id || Date.now().toString();
+    const encoder = client.createEncoder({ contentTopic: topic });
+    await retryWithBackoff(() =>
+      node.lightPush.send(encoder, {
+        payload: client.utf8ToBytes(JSON.stringify({ ...message, id })),
+      }),
+    );
+    logger.info({ service: 'waku.publish', topic, id }, 'Published message');
+    return id;
+  } catch (err) {
+    serviceFailures.inc({ service: 'waku.publish' });
+    logger.error({ err, topic }, 'Failed to publish');
+    throw err;
+  } finally {
+    end();
+  }
 }
 
 export async function subscribeWithAck(
