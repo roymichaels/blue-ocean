@@ -1,10 +1,14 @@
+import { EventEmitter } from 'events';
 import { startStream, types } from 'near-lake-framework';
 
 export interface LakeInitConfig {
   s3BucketName: string;
   s3RegionName: string;
   startBlockHeight: bigint;
+  onError?: (err: unknown) => void;
 }
+
+const lakeMonitor = new EventEmitter();
 
 /**
  * Initialize NEAR Lake stream.
@@ -17,8 +21,22 @@ export function initLake(config: LakeInitConfig): void {
     startBlockHeight: Number(config.startBlockHeight),
   };
 
-  // Fire and forget; failures are ignored to keep tests offline-friendly.
-  startStream(lakeConfig, async () => {}).catch(() => {});
+  (async () => {
+    try {
+      await startStream(lakeConfig, async () => {});
+    } catch (err) {
+      console.error('NEAR Lake stream failed', err);
+      lakeMonitor.emit('error', err);
+      config.onError?.(err);
+    }
+  })();
+}
+
+export function onLakeError(cb: (err: unknown) => void) {
+  lakeMonitor.on('error', cb);
+  return () => lakeMonitor.off('error', cb);
 }
 
 export default initLake;
+
+export { lakeMonitor };
