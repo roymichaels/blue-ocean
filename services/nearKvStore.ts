@@ -43,6 +43,11 @@ function ensureLake() {
         s3RegionName: region,
         startBlockHeight: BigInt(process.env.NEAR_LAKE_START_BLOCK || '0'),
       });
+      // The NEAR Lake bucket exposes a public, S3-compatible API, so this
+      // client works out of the box without AWS credentials. Use the
+      // `NEAR_LAKE_ENDPOINT` env var to point at a custom S3 endpoint and
+      // provide `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` if that endpoint
+      // requires authentication.
       s3 = new S3Client({
         region,
         endpoint: process.env.NEAR_LAKE_ENDPOINT,
