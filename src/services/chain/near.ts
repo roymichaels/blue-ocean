@@ -1,7 +1,15 @@
 import { init, signIn, signMessage, useAccount, useAccountId, getAccountId, getPublicKey, getSelector } from '@/services/walletSelector';
 import { payPrivately as nearPayPrivately } from '@blue-ocean/sdk-near';
 import { listOrdersBySeller as nearListOrdersBySeller } from '@/services/nearOrders';
+import { requireEnv } from '@/services/config';
 import type { ChainAdapter } from './ChainAdapter';
+
+function resolveNetwork(): 'mainnet' | 'testnet' {
+  const explicit = requireEnv('EXPO_PUBLIC_NETWORK', '');
+  if (explicit === 'mainnet' || explicit === 'testnet') return explicit;
+  const cid = requireEnv('EXPO_PUBLIC_CONTRACT_ID', '');
+  return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
+}
 
 async function getBalance(address: string): Promise<string> {
   const network = resolveNetwork();
