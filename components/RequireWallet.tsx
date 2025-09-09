@@ -2,27 +2,27 @@ import React, { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'expo-router';
 import { stripTabsPrefix } from '@/services/navigation';
 import { useAppRouter } from '@/services';
-import { chainAdapter } from '@/services/chain';
+import { useWallet } from '@/contexts/WalletProvider';
 
 interface Props {
   children: React.ReactNode;
 }
 
 export default function RequireWallet({ children }: Props) {
-  const accountId = chainAdapter.useAccountId();
+  const { address } = useWallet();
   const pathname = usePathname();
   const params = useSearchParams();
   const { replace } = useAppRouter();
 
   useEffect(() => {
-    if (!accountId) {
+    if (!address) {
       let dest = stripTabsPrefix(pathname) ?? pathname;
       const query = params.toString();
       if (query) dest += `?${query}`;
       replace(`/login?redirect=${encodeURIComponent(dest)}`); // eslint-disable-line no-restricted-syntax
     }
-  }, [accountId, pathname, params]);
+  }, [address, pathname, params]);
 
-  if (!accountId) return null;
+  if (!address) return null;
   return <>{children}</>;
 }
