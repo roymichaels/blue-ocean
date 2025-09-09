@@ -9,7 +9,8 @@ import React, {
 } from 'react';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
-import { encryptMessage, decryptMessage } from '@/utils/chatCrypto';
+import { encryptMessage, decryptMessage, encryptTopic } from '@/utils/chatCrypto';
+import { enqueue, flush } from '@/utils/wakuStore';
 import DatabaseService from '@/services/database';
 import { ChatMessage } from '@/types';
 import { getWakuBootstrapNodes } from '@/utils/appConfig';
@@ -60,8 +61,9 @@ const defaultValue: WakuContextValue = {
 
 const WakuContext = createContext<WakuContextValue>(defaultValue);
 
-function chatTopic(roomId: string) {
-  return `/blue-ocean/chat/1/${roomId}`;
+async function chatTopic(roomId: string, peerPublicKey: string) {
+  const enc = await encryptTopic(roomId, peerPublicKey);
+  return `/blue-ocean/chat/1/${enc}`;
 }
 
 const SYSTEM_TOPIC = '/blue-ocean/notifications/1';
@@ -89,6 +91,11 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
       nodeRef.current = node;
       setStatus('connected');
+      const client = await getClient();
+      void flush(async (topic, payload) => {
+        const encoder = client.createEncoder({ contentTopic: topic });
+        await node.lightPush.send(encoder, { payload });
+      });
     } catch (err) {
       errorLog('Failed to start Waku node', err);
       nodeRef.current = undefined;
@@ -125,13 +132,14 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       message: msg.message,
     };
     await db.sendChatMessage(roomId, { ...full, message: encrypted });
-
+    const client = await getClient();
+    const topic = await chatTopic(roomId, peerPublicKey);
+    const payload = client.utf8ToBytes(encrypted);
     if (nodeRef.current) {
-      const client = await getClient();
-      const encoder = client.createEncoder({ contentTopic: chatTopic(roomId) });
-      await nodeRef.current.lightPush.send(encoder, {
-        payload: client.utf8ToBytes(encrypted),
-      });
+      const encoder = client.createEncoder({ contentTopic: topic });
+      await nodeRef.current.lightPush.send(encoder, { payload });
+    } else {
+      enqueue(topic, payload);
     }
     return full;
   }, []);
@@ -143,7 +151,8 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
   ): Promise<() => void> => {
     if (!nodeRef.current) return () => {};
     const client = await getClient();
-    const decoder = client.createDecoder(chatTopic(roomId));
+    const topic = await chatTopic(roomId, peerPublicKey);
+    const decoder = client.createDecoder(topic);
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
@@ -188,7 +197,8 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
   ): Promise<number> => {
     if (!nodeRef.current) return 0;
     const client = await getClient();
-    const decoder = client.createDecoder(chatTopic(roomId));
+    const topic = await chatTopic(roomId, peerPublicKey);
+    const decoder = client.createDecoder(topic);
     const options: any = { decoder };
     if (after || before) {
       options.timeFilter = {};

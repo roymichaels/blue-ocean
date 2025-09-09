@@ -30,6 +30,7 @@ const DEFAULT_BOOTSTRAPS: string[] = [
 ];
 
 let cachedNode: LightNode | null = null;
+const receivedIds = new Set<string>();
 
 function getPublisherKey(): string {
   if (PUB) return PUB;
@@ -90,4 +91,58 @@ export async function ensureNode(): Promise<LightNode | null> {
     cachedNode = null;
     return null;
   }
+}
+
+async function sendAck(topic: string, id: string): Promise<void> {
+  const node = await ensureNode();
+  if (!node) return;
+  const client = await getClient();
+  const encoder = client.createEncoder({ contentTopic: `${topic}/ack` });
+  await node.lightPush.send(encoder, {
+    payload: client.utf8ToBytes(JSON.stringify({ id })),
+  });
+}
+
+export async function publish(topic: string, message: any): Promise<string> {
+  const node = await ensureNode();
+  if (!node) throw new Error('Waku disabled');
+  const client = await getClient();
+  const id = message?.id || Date.now().toString();
+  const encoder = client.createEncoder({ contentTopic: topic });
+  await node.lightPush.send(encoder, {
+    payload: client.utf8ToBytes(JSON.stringify({ ...message, id })),
+  });
+  return id;
+}
+
+export async function subscribeWithAck(
+  topic: string,
+  cb: (msg: any) => void,
+): Promise<() => void> {
+  const node = await ensureNode();
+  if (!node) return () => {};
+  const client = await getClient();
+  const decoder = client.createDecoder(topic);
+  const handler = async (wakuMsg: any) => {
+    if (!wakuMsg.payload) return;
+    try {
+      const msg = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
+      if (msg.id && receivedIds.has(msg.id)) return;
+      if (msg.id) receivedIds.add(msg.id);
+      cb(msg);
+      if (msg.id) await sendAck(topic, msg.id);
+    } catch {
+      /* ignore */
+    }
+  };
+  const maybeUnsub = (node.relay as any).addObserver(handler, [decoder]) as
+    | (() => void)
+    | void;
+  return () => {
+    if (typeof maybeUnsub === 'function') {
+      maybeUnsub();
+    } else {
+      (node.relay as any)?.deleteObserver?.(handler);
+    }
+  };
 }
