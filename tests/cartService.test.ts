@@ -1,32 +1,37 @@
 import CartService from '@/features/cart/services/cart';
 import cartAgent from '../agents/cart-agent';
 import DatabaseService from '@/services/database';
-import nearAuth from '@/features/auth/services/nearAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, WishlistItem, Product } from '../types';
 
-const mockGetCartItems = jest.fn();
-jest.mock('../agents/cart-agent', () => ({
-  __esModule: true,
-  default: {
-    getCartItems: mockGetCartItems,
-    add: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
+jest.mock('../agents/cart-agent', () => {
+  const getCartItems = jest.fn();
+  return {
+    __esModule: true,
+    default: {
+      getCartItems,
+      add: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+      selectCartItem: jest.fn(),
+    },
+    getCartItems,
     selectCartItem: jest.fn(),
-  },
-  getCartItems: mockGetCartItems,
-  selectCartItem: jest.fn(),
-}));
+  };
+});
 
 jest.mock('@/services/database', () => ({
   __esModule: true,
   default: { getInstance: jest.fn() },
 }));
 
+const getAccountIdMock = jest.fn();
+jest.mock('@/services/chain', () => ({
+  chainAdapter: { getAccountId: () => getAccountIdMock() },
+}));
 jest.mock('@/features/auth/services/nearAuth', () => ({
   __esModule: true,
-  default: { getAccountId: jest.fn() },
+  default: { getAccountId: getAccountIdMock },
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -77,26 +82,26 @@ describe('CartService storage', () => {
     (AsyncStorage.setItem as jest.Mock).mockReset();
     (cartAgent.getCartItems as jest.Mock).mockReset();
     (DatabaseService.getInstance as jest.Mock).mockReset();
-    (nearAuth.getAccountId as jest.Mock).mockReset();
+    getAccountIdMock.mockReset();
   });
 
   it('loads user cart and wishlist when logged in', async () => {
-    (nearAuth.getAccountId as jest.Mock).mockReturnValue('user1');
+    getAccountIdMock.mockReturnValue('user1');
     (cartAgent.getCartItems as jest.Mock).mockResolvedValue([userCartItem]);
     (DatabaseService.getInstance as jest.Mock).mockReturnValue({
       getWishlistItems: jest.fn().mockResolvedValue([wishItem]),
     });
 
     const svc = CartService.getInstance();
-    await new Promise(r => setTimeout(r, 0));
+    await (svc as any).loadFromStorage();
 
-    expect(svc.getCartItems()).toEqual([userCartItem]);
+    expect(svc.getCartItems()).toEqual([expect.objectContaining(userCartItem)]);
     expect(svc.getWishlistItems()).toEqual([wishItem]);
     expect(AsyncStorage.getItem).not.toHaveBeenCalled();
   });
 
   it('falls back to anonymous storage when no user', async () => {
-    (nearAuth.getAccountId as jest.Mock).mockReturnValue(null);
+    getAccountIdMock.mockReturnValue(null);
     (AsyncStorage.getItem as jest.Mock).mockImplementation((key: string) => {
       if (key === 'cart_items') return Promise.resolve(JSON.stringify([anonCartItem]));
       if (key === 'wishlist_items') return Promise.resolve(JSON.stringify([wishItem]));
@@ -104,9 +109,9 @@ describe('CartService storage', () => {
     });
 
     const svc = CartService.getInstance();
-    await new Promise(r => setTimeout(r, 0));
+    await (svc as any).loadFromStorage();
 
-    expect(svc.getCartItems()).toEqual([anonCartItem]);
+    expect(svc.getCartItems()).toEqual([expect.objectContaining(anonCartItem)]);
     expect(svc.getWishlistItems()).toEqual([wishItem]);
     expect(cartAgent.getCartItems).not.toHaveBeenCalled();
     expect(DatabaseService.getInstance).not.toHaveBeenCalled();

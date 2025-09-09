@@ -8,6 +8,18 @@ module.exports = {
   },
   transformIgnorePatterns: ['/node_modules/(?!(@noble/ed25519|react-native)/)'],
 
+  collectCoverage: true,
+  collectCoverageFrom: [
+    '<rootDir>/contracts/**/*.ts',
+    '<rootDir>/services/**/*.ts',
+    '<rootDir>/src/ui/**/*.{ts,tsx}',
+  ],
+  coverageThreshold: {
+    './contracts/': { statements: 80, branches: 80, functions: 80, lines: 80 },
+    './services/': { statements: 70, branches: 70, functions: 70, lines: 70 },
+    './src/ui/': { statements: 60, branches: 60, functions: 60, lines: 60 },
+  },
+
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '\\.(png|jpg|jpeg|gif|svg)$': '<rootDir>/tests/__mocks__/fileMock.js',
