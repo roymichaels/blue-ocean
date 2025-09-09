@@ -6,7 +6,9 @@ module.exports = {
     '^.+\\.tsx?$': ['ts-jest', { useESM: true }],
     '^.+\\.js$': 'babel-jest',
   },
-  transformIgnorePatterns: ['/node_modules/(?!(@noble/ed25519|react-native)/)'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@noble/ed25519|react-native|@blue-ocean/utils|@blue-ocean/sdk-near)/)',
+  ],
 
   collectCoverage: true,
   collectCoverageFrom: [
