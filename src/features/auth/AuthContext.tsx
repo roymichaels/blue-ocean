@@ -1,7 +1,6 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { Spinner } from '@/ui';
-import DatabaseService from '@/services/database';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { chainAdapter } from '@/services/chain';
@@ -9,6 +8,7 @@ import usersAgent from '@/agents/users-agent';
 import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
 import { Buffer } from 'buffer';
+import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -58,26 +58,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
-    const db = DatabaseService.getInstance();
-
     try {
-      const profile = await db.getUserProfile(walletAddress);
+      let profile = await getChainUser(walletAddress);
 
       // Ensure a Waku key pair exists and retrieve the public key
       const { publicKey } = await getEd25519KeyPair();
       const chatPublicKey = Buffer.from(publicKey).toString('hex');
 
       if (profile) {
-        // Update stored profile if it lacks the current Waku key
         if (profile.chatPublicKey !== chatPublicKey) {
-          const enriched = { ...profile, chatPublicKey };
-          await usersAgent.update(enriched);
-          setUser(enriched);
-        } else {
-          setUser(profile);
+          profile = { ...profile, chatPublicKey };
+          await setChainUser(profile);
+          await usersAgent.update(profile);
         }
       } else {
-        const newProfile: User = {
+        profile = {
           id: walletAddress,
           username: walletAddress,
           displayName: walletAddress,
@@ -86,11 +81,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           role: 'user',
           chatPublicKey,
         };
-        await usersAgent.add(newProfile);
-        setUser(newProfile);
+        await setChainUser(profile);
+        await usersAgent.add(profile);
       }
+      setUser(profile);
     } catch {
-      // In case of any failure, fall back to clearing the user state
       setUser(null);
     }
   };
