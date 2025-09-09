@@ -34,7 +34,9 @@ const ADMIN_ADDRESS =
     : ADMIN_MAIN || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '');
 
 function assertAdmin(actor: string): void {
-  if (!ADMIN_ADDRESS) return;
+  if (!ADMIN_ADDRESS) {
+    throw new Error('Admin wallet address required');
+  }
   if (actor !== ADMIN_ADDRESS) {
     throw new Error('Admin wallet address required');
   }
@@ -49,6 +51,7 @@ export interface NearSettings {
   feeAddress?: string;
   feeBps?: number;
   admins: string[];
+  adminPublicKeys: string[];
   rpcUrl: string;
   rpcFallbackUrls?: string[];
   wakuBootstrap?: string[];
@@ -127,7 +130,8 @@ export async function subscribeToSettingsWrites(
         type: z.literal('settings.write'),
         payload: settingsWriteEventSchema,
       });
-      const signed = await verifyBeforeWrite(raw, schema);
+      const adminKeys = await getAdminPublicKeys();
+      const signed = await verifyBeforeWrite(raw, schema, adminKeys);
       if (!signed) return;
       cb(signed.payload);
     } catch (err) {
@@ -197,6 +201,9 @@ export async function fetchSettings(): Promise<NearSettings> {
     feeAddress: map['feeAddress'] ?? '',
     feeBps,
     admins: map['admins'] ? JSON.parse(map['admins']) : [],
+    adminPublicKeys: map['adminPublicKeys']
+      ? JSON.parse(map['adminPublicKeys'])
+      : [],
     rpcUrl: map['rpcUrl'] ?? '',
     rpcFallbackUrls: map['rpcFallbackUrls']
       ? JSON.parse(map['rpcFallbackUrls'])
@@ -229,6 +236,22 @@ export async function getAdmins(): Promise<string[]> {
 
 export async function setAdmins(admins: string[], actor: string): Promise<void> {
   await setSetting('admins', JSON.stringify(admins), actor);
+}
+
+export async function getAdminPublicKeys(): Promise<string[]> {
+  const raw = await getSetting('adminPublicKeys');
+  try {
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function setAdminPublicKeys(
+  keys: string[],
+  actor: string,
+): Promise<void> {
+  await setSetting('adminPublicKeys', JSON.stringify(keys), actor);
 }
 
 export async function getPaymentFactoryAddress(): Promise<string> {

@@ -6,6 +6,7 @@ import { verifyMessageSignature } from './verifyMessageSignature';
 export async function verifyBeforeWrite<T>(
   data: unknown,
   schema: z.ZodType<WakuMessage<T>>,
+  allowedPublicKeys?: string[],
 ): Promise<WakuMessage<T> | null> {
   const res = schema.safeParse(data);
   if (!res.success) {
@@ -16,6 +17,10 @@ export async function verifyBeforeWrite<T>(
   const ok = await verifyMessageSignature(msg, msg.sender.publicKey);
   if (!ok) {
     errorLog('Invalid message signature', msg);
+    return null;
+  }
+  if (allowedPublicKeys && !allowedPublicKeys.includes(msg.sender.publicKey)) {
+    errorLog('Unauthorized sender', msg.sender.publicKey);
     return null;
   }
   return msg;
