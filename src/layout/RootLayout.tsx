@@ -9,12 +9,8 @@ import { useTheme } from '@/ui/ThemeProvider';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import SidebarTabBar from '@/components/SidebarTabBar';
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { href: '/', title: 'navigation.home', icon: 'Home' },
-  { href: '/stores', title: 'navigation.stores', icon: 'Store' },
-  { href: '/cart', title: 'navigation.cart', icon: 'ShoppingCart' },
-  { href: '/orders', title: 'navigation.orders', icon: 'Package' },
-  { href: '/profile', title: 'navigation.profile', icon: 'User' },
 ] as const;
 
 const LARGE_SCREEN = 768;
@@ -27,7 +23,15 @@ export default function RootLayout() {
   const showSearch = pathname === '/' || pathname === '/index';
   const showCartWidget = showSearch;
 
-  const navItems = useMemo(() => NAV_ITEMS, []);
+  const navItems = useMemo(() => {
+    if (pathname.startsWith('/store/')) {
+      return [
+        ...BASE_NAV_ITEMS,
+        { href: pathname, title: 'navigation.store', icon: 'Store' as const },
+      ];
+    }
+    return BASE_NAV_ITEMS;
+  }, [pathname]);
 
   return (
     <ErrorBoundary>

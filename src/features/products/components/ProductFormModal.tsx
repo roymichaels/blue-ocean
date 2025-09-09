@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   Image,
   Platform,
+  Alert,
 } from 'react-native';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
 import { Product, Subcategory, PricingTier, ProductIndexItem } from '@/types';
@@ -35,7 +36,6 @@ import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
 import { useCategories } from '@/services';
 import { useAppRouter } from '@/services';
-import { routes } from '@/utils/routes';
 import { Spinner } from '@/ui/primitives';
 
 interface ProductFormModalProps {
@@ -651,9 +651,7 @@ export default function ProductFormModal({
         onClose={() => setShowSubcategorySelector(false)}
         onAdd={() => {
           setShowSubcategorySelector(false);
-            if (editingProduct.category) {
-              push(routes.category(editingProduct.category));
-            }
+          Alert.alert('Info', 'Category management is unavailable');
         }}
       />
 
@@ -677,10 +675,13 @@ export default function ProductFormModal({
                 </TouchableOpacity>
               ))}
               <TouchableOpacity
-                style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary, backgroundColor: colors.interactive.secondary }]}
+                style={[
+                  styles.categorySelectorItem,
+                  { borderBottomColor: colors.border.secondary, backgroundColor: colors.interactive.secondary },
+                ]}
                 onPress={() => {
                   setShowCategorySelector(false);
-                  push('/categories');
+                  Alert.alert('Info', 'Category management is unavailable');
                 }}
               >
                 <View style={styles.categorySelectorItemContent}>

@@ -7,17 +7,15 @@ import { useAppRouter } from '@/services';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { Menu, Avatar, type MenuItem } from '@/ui';
-import { usePathname } from 'expo-router';
 
 export default function UserAvatar() {
   const { isLoggedIn, user, logout } = useAuth();
   const { t } = useLanguage();
   const { getColor } = useTheme();
   const { openAuthModal } = useAuthModal();
-  const { push, replace } = useAppRouter();
+  const { replace } = useAppRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
-  const pathname = usePathname();
 
   const getInitials = () => {
     if (!user?.displayName && !user?.username) return 'G';
@@ -35,13 +33,6 @@ export default function UserAvatar() {
     const initials = getInitials();
     const index = initials.charCodeAt(0) % palette.length;
     return palette[index];
-  };
-
-  const handleProfile = () => {
-    setMenuOpen(false);
-    if (pathname !== '/profile') {
-      push('/profile');
-    }
   };
 
   const handleLogin = () => {
@@ -62,11 +53,6 @@ export default function UserAvatar() {
 
   const items: MenuItem[] = isLoggedIn
     ? [
-        {
-          label: t('profile.profile'),
-          icon: <User size={20} color={getColor('text.primary')} />,
-          onPress: handleProfile,
-        },
         {
           label: t('auth.logout'),
           icon: <LogOut size={20} color={getColor('status.error')} />,

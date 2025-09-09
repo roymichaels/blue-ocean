@@ -10,12 +10,10 @@ import {
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import { X, Heart, ShoppingCart, Trash2 } from 'lucide-react-native';
-import { useAppRouter } from '@/services';
 import { WishlistItem } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import useWishlist from '../hooks/useWishlist';
-import { routes } from '@/utils/routes';
 
 interface WishlistModalProps {
   visible: boolean;
@@ -26,7 +24,6 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
   const { wishlistItems, removeFromWishlist, addToCart } = useWishlist(visible);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const { push } = useAppRouter();
 
   const handleAddToCart = async (item: WishlistItem) => {
     await addToCart(item);
@@ -35,7 +32,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
 
   const viewProduct = (productId: string) => {
     onClose();
-    push(routes.product(productId));
+    Alert.alert('Info', 'Product view is unavailable');
   };
 
   const ITEM_HEIGHT = 118;

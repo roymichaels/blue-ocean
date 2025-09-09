@@ -18,7 +18,6 @@ import { Order, OrderStatus } from '../types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '../contexts/CurrencyContext';
 import OrderService from '@/services/orders';
-import { useAppRouter } from '@/services';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';
@@ -39,7 +38,6 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
   const { t } = useLanguage();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
-  const { push } = useAppRouter();
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -206,8 +204,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
 
   const writeReview = () => {
     onClose();
-    // Navigate to reviews screen
-    push('/reviews');
+    Alert.alert('Info', 'Reviews are not available yet');
   };
 
   const copyOrderDetails = async () => {

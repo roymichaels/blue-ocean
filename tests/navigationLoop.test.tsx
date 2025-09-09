@@ -56,12 +56,5 @@ describe('navigation loop prevention', () => {
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it('avoids pushing reviews when already there', () => {
-    usePathnameMock.mockReturnValue('/reviews');
-    const tree = renderer.create(React.createElement(GlobalHeader));
-    const pressables = tree.root.findAllByType(Pressable);
-    pressables[1].props.onPress();
-    expect(pushMock).not.toHaveBeenCalled();
-  });
 });
 

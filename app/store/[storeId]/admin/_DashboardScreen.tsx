@@ -48,13 +48,13 @@ export default function StoreDashboardScreen() {
       <View style={styles.nav}>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => push(routes.storeAdminProducts(storeId))}
+          onPress={() => push(`/store/${storeId}/admin/products`)}
         >
           <Text style={{ color: colors.text.primary }}>{t('admin.manageProducts')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => push(routes.storeAdminOrders(storeId))}
+          onPress={() => push(`/store/${storeId}/admin/orders`)}
         >
           <Text style={{ color: colors.text.primary }}>{t('admin.viewOrders')}</Text>
         </TouchableOpacity>
