@@ -17,10 +17,11 @@ export default function ScrollArea({
 }: ScrollAreaProps) {
   return (
     <ScrollView
-      style={[backgroundColor ? { backgroundColor } : null, style]}
+      style={[backgroundColor ? { backgroundColor } : null, { flex: 1 }, style]}
       {...rest}
       contentContainerStyle={[
         padding ? { padding: spacing[padding] } : null,
+        { flexGrow: 1 },
         contentContainerStyle,
       ]}
     >
