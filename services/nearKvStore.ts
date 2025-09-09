@@ -1,7 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Readable } from 'stream';
-import { Client as S3Client } from 'minio';
 
 import { assertNearChain } from './chain';
 import { initLake } from './nearLake';
@@ -9,7 +8,8 @@ import { initLake } from './nearLake';
 assertNearChain();
 
 let lakeStarted = false;
-let s3: S3Client | null = null;
+let S3Client: typeof import('minio').Client | null = null;
+let s3: import('minio').Client | null = null;
 const bucket = process.env.NEAR_LAKE_BUCKET;
 const region = process.env.NEAR_LAKE_REGION || 'eu-central-1';
 
@@ -55,7 +55,13 @@ function ensureLake() {
         opts.accessKey = process.env.AWS_ACCESS_KEY_ID;
         opts.secretKey = process.env.AWS_SECRET_ACCESS_KEY;
       }
-      s3 = new S3Client(opts);
+      if (!useMemoryStore && !S3Client) {
+        const { Client } = require('minio');
+        S3Client = Client;
+      }
+      if (S3Client) {
+        s3 = new S3Client(opts);
+      }
     }
   } catch {
     // ignore
