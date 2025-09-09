@@ -88,23 +88,34 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const applyTheme = (mode: ThemeMode, color: string) => {
     const base = mode === 'light' ? lightTokens : darkTokens;
-    setCurrentTokens(prev => ({
-      ...prev,
-      ...base,
-      colors: {
-        ...prev.colors,
-        ...base.colors,
-        gold: color,
-        interactive: {
-          ...base.colors.interactive,
-          ...prev.colors.interactive,
-          primary: color,
-          primaryHover: color,
+    setCurrentTokens(prev => {
+      const nextTokens = {
+        ...prev,
+        ...base,
+        colors: {
+          ...prev.colors,
+          ...base.colors,
+          gold: color,
+          interactive: {
+            ...base.colors.interactive,
+            ...prev.colors.interactive,
+            primary: color,
+            primaryHover: color,
+          },
+          tabBar: { ...base.colors.tabBar, ...prev.colors.tabBar, active: color },
+          border: { ...base.colors.border, ...prev.colors.border, focus: color },
         },
-        tabBar: { ...base.colors.tabBar, ...prev.colors.tabBar, active: color },
-        border: { ...base.colors.border, ...prev.colors.border, focus: color },
-      },
-    }));
+      };
+
+      if (nextTokens.colors.text.primary === nextTokens.colors.canvas) {
+        nextTokens.colors.text = {
+          ...nextTokens.colors.text,
+          primary: '#1A1A1A',
+        };
+      }
+
+      return nextTokens;
+    });
   };
 
   const setTheme = useCallback(
