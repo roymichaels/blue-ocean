@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Pencil } from 'lucide-react-native';
 import { Category } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
-import { spacing } from '@/shared/ui/tokens';
+import { spacing, radius, shadows, typography } from '@/shared/ui/tokens';
 
 interface CategoryCardProps {
   category: Category;
@@ -14,9 +14,13 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category, isStoreOwner, onPress, onEdit }: CategoryCardProps) {
   const { colors: themeColors } = useTheme();
+  const shadowStyle = Platform.select(shadows.sm);
 
   return (
-    <TouchableOpacity style={styles.categoryCard} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.categoryCard, { backgroundColor: themeColors.surface.primary }, shadowStyle]}
+      onPress={onPress}
+    >
       <View
         style={[
           styles.categoryIcon,
@@ -54,13 +58,15 @@ export default function CategoryCard({ category, isStoreOwner, onPress, onEdit }
 const styles = StyleSheet.create({
   categoryCard: {
     alignItems: 'center',
-    width: 70,
+    width: 80,
     position: 'relative',
+    padding: spacing.spacer8,
+    borderRadius: radius.lg,
   },
   categoryIcon: {
     width: 60,
     height: 60,
-    borderRadius: 30,
+    borderRadius: radius.full,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.spacer8,
@@ -70,9 +76,9 @@ const styles = StyleSheet.create({
     fontSize: 28,
   },
   categoryName: {
-    fontSize: 12,
+    ...typography.xs,
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   categoryAdminActions: {
     position: 'absolute',
@@ -81,7 +87,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   categoryAdminButton: {
-    borderRadius: 10,
+    borderRadius: radius.full,
     width: 20,
     height: 20,
     justifyContent: 'center',
