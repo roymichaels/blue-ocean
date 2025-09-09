@@ -9,6 +9,7 @@ insertConfig({
   EXPO_PUBLIC_WAKU_BOOTSTRAP: '/dns4/test.waku/tcp/443/wss/p2p/TEST',
   EXPO_PUBLIC_CHAIN: 'near',
   EXPO_PUBLIC_CONTRACT_ID: 'EQtestcontract',
+  EXPO_PUBLIC_NETWORK: 'testnet',
 });
 
 jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
@@ -24,6 +25,7 @@ beforeEach(async () => {
     ADMIN_WALLET_ADDRESS_TESTNET: 'EQtestadmin',
     EXPO_PUBLIC_CHAIN: 'near',
     EXPO_PUBLIC_CONTRACT_ID: 'EQtestcontract',
+    EXPO_PUBLIC_NETWORK: 'testnet',
   });
   const { loadTenantSettings } = await import('@/constants/tenant');
   await loadTenantSettings();
