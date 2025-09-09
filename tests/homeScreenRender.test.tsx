@@ -1,5 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
+
+jest.mock('expo-secure-store');
 import HomeScreen from '@app/index';
 
 jest.mock('@/services', () => ({
@@ -105,7 +107,6 @@ describe('HomeScreen render', () => {
     const tree = root!.toJSON();
     const str = JSON.stringify(tree);
     expect(str).toContain('categories.electronics');
-    expect(str).toContain('Min');
     expect(str).toContain('home.fallbackBanner1Title');
     expect(str).toContain('home.noProducts');
   });

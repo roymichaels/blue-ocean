@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { jest } from '@jest/globals';
 import { insertConfig } from './testUtils';
 
 insertConfig({
@@ -12,7 +13,7 @@ insertConfig({
 
 jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
 jest.mock('@/services/nearSettings');
-const { loadTenantSettings } = require('@/constants/tenant');
+jest.mock('expo-secure-store');
 
 var __DEV__ = false;
 
@@ -24,5 +25,6 @@ beforeEach(async () => {
     EXPO_PUBLIC_CHAIN: 'near',
     EXPO_PUBLIC_CONTRACT_ID: 'EQtestcontract',
   });
+  const { loadTenantSettings } = await import('@/constants/tenant');
   await loadTenantSettings();
 });
