@@ -2,14 +2,15 @@ import { startStream, types } from 'near-lake-framework';
 import dotenv from 'dotenv';
 import { promises as fs } from 'fs';
 import path from 'path';
+import type { Waku } from '@waku/sdk';
 import { getClient } from '../../../src/utils/transport';
+import { loadCheckpoint, saveCheckpoint } from './checkpoint';
 
 dotenv.config();
 
 const CONTRACT_ID = process.env.CONTRACT_ID as string;
 const LAKE_BUCKET = process.env.LAKE_BUCKET as string;
 const START_BLOCK = parseInt(process.env.START_BLOCK || '0', 10);
-const STATE_PATH = process.env.STATE_PATH || '.state/lake.json';
 const DEDUPE_PATH = process.env.DEDUPE_PATH || '.state/dedupe.json';
 const WAKU_BOOTSTRAP = (process.env.WAKU_BOOTSTRAP || '').split(',').filter(Boolean);
 const NETWORK = process.env.NETWORK || 'testnet';
@@ -35,10 +36,8 @@ async function writeJson(file: string, data: any) {
   await fs.writeFile(file, JSON.stringify(data), 'utf8');
 }
 
-async function loadState() {
-  const state = await readJson<{ height: number }>(STATE_PATH, { height: 0 });
+async function loadDedupe() {
   dedupeMem = await readJson<DedupStore>(DEDUPE_PATH, {});
-  return state;
 }
 
 function dedupeKey(tx: string, logIndex: number) {
@@ -93,12 +92,13 @@ async function handleMessage(waku: Waku, streamerMessage: types.StreamerMessage)
       }
     }
   }
-  await writeJson(STATE_PATH, { height: blockHeight });
+  await saveCheckpoint(blockHeight + 1);
   await writeJson(DEDUPE_PATH, dedupeMem);
 }
 
 async function main() {
-  const { height } = await loadState();
+  await loadDedupe();
+  const height = await loadCheckpoint();
   const startHeight = Math.max(START_BLOCK, height);
   const { Waku } = await getClient();
   const waku = await Waku.create({ bootstrap: { peers: WAKU_BOOTSTRAP } });
