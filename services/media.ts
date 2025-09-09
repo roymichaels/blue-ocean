@@ -42,6 +42,26 @@ class MediaService {
   }
 
   /**
+   * Validate a CID against Pinata's API.
+   */
+  async validateCid(cid: string): Promise<boolean> {
+    const svc = PinataService.getInstance();
+    return await svc.validateCid(cid);
+  }
+
+  /**
+   * Resolve a CID or ipfs:// URI to a gateway URL after validation.
+   * Returns null if the CID fails validation.
+   */
+  async resolveUri(uri: string): Promise<string | null> {
+    const svc = PinataService.getInstance();
+    if (!svc.isCidOrUrl(uri)) return uri;
+    const cleaned = uri.replace(/^ipfs:\/\//, '');
+    const ok = await this.validateCid(cleaned);
+    return ok ? `https://gateway.pinata.cloud/ipfs/${cleaned}` : null;
+  }
+
+  /**
    * Upload multiple media files
    */
   async uploadMultipleFiles(files: { uri: string, name: string }[]): Promise<string[]> {
