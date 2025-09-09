@@ -50,6 +50,7 @@ module.exports = {
     '<rootDir>/tests/signupLogic.test.ts',
     '<rootDir>/tests/nearKvPersistence.test.ts',
     '<rootDir>/tests/homeScreenRender.test.tsx',
+    '<rootDir>/tests/homeFallbackVisibility.test.tsx',
     '<rootDir>/tests/navigationLoop.test.tsx',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
