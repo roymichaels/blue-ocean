@@ -16,6 +16,7 @@ export function useProfileData(user?: User | null) {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
   const [storeId, setStoreId] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,14 +47,16 @@ export function useProfileData(user?: User | null) {
         const stores = await listStores();
         const store = stores.find((s: any) => s.owner === user.address);
         if (store) setStoreId(store.id);
+        setError(null);
       } catch (err) {
         errorLog('Failed to load store for user', err);
+        setError(err instanceof Error ? err : new Error('Failed to load store'));
       }
     };
     loadStore();
   }, [user?.address]);
 
-  return { ordersCount, wishlistCount, reviewCount, storeId };
+  return { ordersCount, wishlistCount, reviewCount, storeId, error };
 }
 
 export default useProfileData;

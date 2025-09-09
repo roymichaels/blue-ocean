@@ -35,6 +35,7 @@ import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useProfileData } from '@/services';
 import { routes } from '@/utils/routes';
 import { spacing } from '@/shared/ui/tokens';
+import EmptyState from '@/shared/ui/EmptyState';
 
 
 
@@ -53,7 +54,7 @@ export default function ProfileScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const { openAuthModal } = useAuthModal();
   const { push, replace } = useAppRouter();
-  const { ordersCount, wishlistCount, reviewCount, storeId } = useProfileData(user);
+  const { ordersCount, wishlistCount, reviewCount, storeId, error } = useProfileData(user);
 
   // Modal states
   const [infoModal, setInfoModal] = useState({
@@ -247,7 +248,13 @@ export default function ProfileScreen() {
         {/* Admin Menu or Create Store CTA */}
         {isLoggedIn && (
           <View style={styles.section}>
-            {isStoreOwner && storeId ? (
+            {error ? (
+              <EmptyState
+                icon={AlertTriangle}
+                title={t('common.error')}
+                message={error.message}
+              />
+            ) : isStoreOwner && storeId ? (
               <>
                 <Text style={[styles.sectionTitle, { color: colors.text.primary }]}> 
                   {t('profile.management')}
