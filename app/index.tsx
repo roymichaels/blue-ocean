@@ -4,12 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
 import { useAppRouter } from '@/services';
-import { Plus, X, ArrowUpDown, Pencil, Info } from 'lucide-react-native';
+import { Plus, ArrowUpDown, Pencil, Info } from 'lucide-react-native';
 import { Product, HeroBanner, Category } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
 import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
@@ -29,7 +28,8 @@ import BannerFormModal from '@/components/BannerFormModal';
 import { CartModal } from '@/features/cart';
 import { ProductFormModal } from '@/features/products';
 import InfoModal from '@/components/InfoModal';
-import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
+import { useHomeFilters } from '@/features/home/hooks/useHomeFilters';
+import SortModal from '@/features/home/components/SortModal';
 import { spacing } from '@/shared/ui/tokens';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { routes } from '@/utils/routes';
@@ -368,82 +368,12 @@ function HomeScreenContent() {
         />
       </Suspense>
 
-      {/* Sort Modal */}
-      <Modal
+      <SortModal
         visible={showSortModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowSortModal(false)}
-      >
-        <View
-          style={[
-            styles.sortModalOverlay,
-            { backgroundColor: themeColors.background + '80' },
-          ]}
-        >
-          <View
-            style={[
-              styles.sortModalContent,
-              {
-                backgroundColor: themeColors.surface.elevated,
-                borderColor: themeColors.border.primary,
-              },
-            ]}
-          >
-            <View style={styles.sortModalHeader}>
-              <Text
-                style={[styles.sortModalTitle, { color: themeColors.text.primary }]}
-              >
-                {t('home.sortProducts')}
-              </Text>
-              <TouchableOpacity onPress={() => setShowSortModal(false)}>
-                <X size={24} color={themeColors.text.primary} />
-              </TouchableOpacity>
-            </View>
-
-            {[
-              { key: 'newest', label: t('home.newest') },
-              { key: 'price-low', label: t('home.priceLowHigh') },
-              { key: 'price-high', label: t('home.priceHighLow') },
-              { key: 'rating', label: t('home.highRating') },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.key}
-                style={[
-                  styles.sortOption,
-                  { borderBottomColor: themeColors.border.secondary },
-                  sortBy === option.key && [
-                    styles.selectedSortOption,
-                    { backgroundColor: themeColors.interactive.secondary },
-                  ],
-                ]}
-                onPress={() => {
-                  setSortBy(option.key as SortOption);
-                  setShowSortModal(false);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.sortOptionText,
-                    { color: themeColors.text.primary },
-                    sortBy === option.key && { color: themeColors.gold },
-                  ]}
-                >
-                  {option.label}
-                </Text>
-                {sortBy === option.key && (
-                  <View
-                    style={[
-                      styles.selectedDot,
-                      { backgroundColor: themeColors.gold },
-                    ]}
-                  />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </Modal>
+        sortBy={sortBy}
+        onSelect={(option) => setSortBy(option)}
+        onClose={() => setShowSortModal(false)}
+      />
 
       <Suspense fallback={<Spinner />}>
         <InfoModal
@@ -563,46 +493,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 2,
     borderWidth: 1,
-  },
-  sortModalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  sortModalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: '50%',
-  },
-  sortModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  sortModalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  sortOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  selectedSortOption: {
-    borderRadius: 12,
-  },
-  sortOptionText: {
-    fontSize: 16,
-    textAlign: 'right',
-  },
-  selectedDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
   },
   helperText: {
     fontSize: 12,
