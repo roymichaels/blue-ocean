@@ -19,6 +19,7 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useOrders } from '@/services';
 import { requireEnv } from '@/services/config';
+import { usePathname } from 'expo-router';
 
 const OrderItem = React.memo(({ item }: { item: CartItem }) => {
   const { t } = useLanguage();
@@ -45,6 +46,7 @@ export default function OrdersScreen() {
   const { t, currentLanguage } = useLanguage();
   const { currencySymbol } = useCurrency();
   const { push, back } = useAppRouter();
+  const pathname = usePathname();
   const storeEnv = 'expo_public_default_store'.toUpperCase();
   const storeId = requireEnv(storeEnv, 'default');
   const { data: orders = [], refetch } = useOrders(storeId);
@@ -188,7 +190,9 @@ export default function OrdersScreen() {
         title={t('orders.emptyTitle') as string}
         message={t('orders.emptyMessage') as string}
         actionText={t('orders.shopNow') as string}
-        onAction={() => push('/')}
+        onAction={() => {
+          if (pathname !== '/') push('/');
+        }}
       />
     ) : (
       <EmptyState

@@ -25,6 +25,7 @@ import EmptyState from '@/shared/ui/EmptyState';
 import { Spinner, Skeleton, Text, Heading, Button } from '@/ui';
 import { spacing, radius, typography } from '@/ui/tokens';
 import { routes } from '@/utils/routes';
+import { usePathname } from 'expo-router';
 
 
 const SmartImage = lazy(() => import('@/components/SmartImage'));
@@ -45,6 +46,7 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
   const { colors } = useTheme();
   const { t } = useLanguage();
   const { push } = useAppRouter();
+  const pathname = usePathname();
   const bannerScrollRef = useRef<FlatList<HeroBanner>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -68,7 +70,10 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
       <View style={styles.heroBanner}>
         <TouchableOpacity
           style={styles.bannerTouchable}
-          onPress={() => push(routes.category(item.category))}
+          onPress={() => {
+            const dest = routes.category(item.category);
+            if (pathname !== dest) push(dest);
+          }}
         >
           <Suspense fallback={<Spinner />}>
             <SmartImage
@@ -131,7 +136,7 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
         )}
       </View>
     ),
-    [colors, isStoreOwner, onEditBanner, push, t]
+    [colors, isStoreOwner, onEditBanner, pathname, push, t]
   );
 
   const keyExtractor = useCallback((item: HeroBanner) => item.id, []);
