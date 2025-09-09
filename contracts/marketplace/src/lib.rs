@@ -1,5 +1,5 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::UnorderedMap;
+use near_sdk::collections::{UnorderedMap, UnorderedSet};
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise};
@@ -15,6 +15,19 @@ pub struct Listing {
 #[derive(BorshStorageKey, BorshSerialize)]
 enum StorageKey {
     Listings,
+    Admins,
+}
+
+#[derive(BorshDeserialize, BorshSerialize)]
+struct FeeProposal {
+    value: u16,
+    approvals: Vec<AccountId>,
+}
+
+#[derive(BorshDeserialize, BorshSerialize)]
+struct TreasuryProposal {
+    value: AccountId,
+    approvals: Vec<AccountId>,
 }
 
 /// Multi-tenant marketplace contract.
@@ -24,17 +37,82 @@ pub struct Marketplace {
     pub fee_bps: u16,
     pub treasury: AccountId,
     pub listings: UnorderedMap<(String, String), Listing>,
+    pub admins: UnorderedSet<AccountId>,
+    pub required_admins: u8,
+    pub fee_proposal: Option<FeeProposal>,
+    pub treasury_proposal: Option<TreasuryProposal>,
 }
 
 #[near_bindgen]
 impl Marketplace {
     /// Initialize the marketplace with a fee (in basis points) and treasury account.
     #[init]
-    pub fn init(fee_bps: u16, treasury: AccountId) -> Self {
+    pub fn init(
+        fee_bps: u16,
+        treasury: AccountId,
+        admins: Vec<AccountId>,
+        required_admins: u8,
+    ) -> Self {
+        let mut admin_set = UnorderedSet::new(StorageKey::Admins);
+        for a in admins {
+            admin_set.insert(&a);
+        }
         Self {
             fee_bps,
             treasury,
             listings: UnorderedMap::new(StorageKey::Listings),
+            admins: admin_set,
+            required_admins,
+            fee_proposal: None,
+            treasury_proposal: None,
+        }
+    }
+
+    fn assert_admin(&self, account: &AccountId) {
+        assert!(self.admins.contains(account), "admin only");
+    }
+
+    pub fn set_fee_bps(&mut self, fee_bps: u16) {
+        let caller = env::predecessor_account_id();
+        self.assert_admin(&caller);
+        match &mut self.fee_proposal {
+            Some(p) if p.value == fee_bps => {
+                if !p.approvals.contains(&caller) {
+                    p.approvals.push(caller.clone());
+                }
+                if p.approvals.len() as u8 >= self.required_admins {
+                    self.fee_bps = fee_bps;
+                    self.fee_proposal = None;
+                }
+            }
+            _ => {
+                self.fee_proposal = Some(FeeProposal {
+                    value: fee_bps,
+                    approvals: vec![caller],
+                });
+            }
+        }
+    }
+
+    pub fn set_treasury(&mut self, treasury: AccountId) {
+        let caller = env::predecessor_account_id();
+        self.assert_admin(&caller);
+        match &mut self.treasury_proposal {
+            Some(p) if p.value == treasury => {
+                if !p.approvals.contains(&caller) {
+                    p.approvals.push(caller.clone());
+                }
+                if p.approvals.len() as u8 >= self.required_admins {
+                    self.treasury = treasury;
+                    self.treasury_proposal = None;
+                }
+            }
+            _ => {
+                self.treasury_proposal = Some(TreasuryProposal {
+                    value: treasury,
+                    approvals: vec![caller],
+                });
+            }
         }
     }
 
@@ -113,7 +191,15 @@ mod tests {
     use near_sdk::{test_utils::VMContextBuilder, testing_env};
 
     fn init() -> Marketplace {
-        Marketplace::init(0, AccountId::new_unchecked("treasury.near".to_string()))
+        Marketplace::init(
+            0,
+            AccountId::new_unchecked("treasury.near".to_string()),
+            vec![
+                AccountId::new_unchecked("admin1.near".to_string()),
+                AccountId::new_unchecked("admin2.near".to_string()),
+            ],
+            2,
+        )
     }
 
     #[test]
@@ -157,5 +243,20 @@ mod tests {
             contract.buy_listing("nft.near".to_string(), "1".to_string());
         });
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn fee_update_requires_multiple_admins() {
+        let mut context = VMContextBuilder::new();
+        context.predecessor_account_id(AccountId::new_unchecked("admin1.near".to_string()));
+        testing_env!(context.build());
+        let mut contract = init();
+        contract.set_fee_bps(100);
+        assert_eq!(contract.fee_bps, 0);
+        let mut context = VMContextBuilder::new();
+        context.predecessor_account_id(AccountId::new_unchecked("admin2.near".to_string()));
+        testing_env!(context.build());
+        contract.set_fee_bps(100);
+        assert_eq!(contract.fee_bps, 100);
     }
 }
