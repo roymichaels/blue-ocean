@@ -350,6 +350,7 @@ near call marketplace.<you>.testnet buy_listing '{"store_id":"alpha","item_id":"
 # web
 EXPO_PUBLIC_CHAIN=near
 EXPO_PUBLIC_CONTRACT_ID=marketplace.<you>.testnet
+EXPO_PUBLIC_NETWORK=testnet
 EXPO_PUBLIC_RELAYER_URL=http://localhost:8787
 EXPO_PUBLIC_DEFAULT_STORE=alpha
 EXPO_PUBLIC_DEBUG_LOGS=1

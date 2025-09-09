@@ -4,7 +4,7 @@ import { listOrdersBySeller as nearListOrdersBySeller } from '@/services/nearOrd
 import type { ChainAdapter } from './ChainAdapter';
 
 async function getBalance(address: string): Promise<string> {
-  const network = process.env.EXPO_PUBLIC_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
+  const network = resolveNetwork();
   const rpcUrl = network === 'mainnet' ? 'https://rpc.mainnet.near.org' : 'https://rpc.testnet.near.org';
   const res = await fetch(rpcUrl, {
     method: 'POST',
