@@ -71,27 +71,37 @@ export async function ensureNode(): Promise<LightNode | null> {
   if (disabled) return null;
   if (cachedNode) return cachedNode;
   const bootstrap = getBootstraps();
-  if (strict && bootstrap.length === 0) {
-    const err: any = new Error('WAKU_BOOTSTRAP_UNCONFIGURED');
-    err.code = 'WAKU_BOOTSTRAP_UNCONFIGURED';
-    err.source = 'notifications-agent';
-    throw err;
-  }
-  getPublisherKey();
+  const end = serviceLatency.startTimer({ service: 'waku.ensureNode' });
   try {
-    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-    cachedNode = await createLightNode({ libp2p: { bootstrap } } as any);
-    if (!cachedNode) return null;
-    await cachedNode.start();
-    await waitForRemotePeer(cachedNode, [Protocols.Relay]);
+    const startNode = async () => {
+      if (strict && bootstrap.length === 0) {
+        const err: any = new Error('WAKU_BOOTSTRAP_UNCONFIGURED');
+        err.code = 'WAKU_BOOTSTRAP_UNCONFIGURED';
+        err.source = 'notifications-agent';
+        throw err;
+      }
+      getPublisherKey();
+      const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
+      const node = await createLightNode({ libp2p: { bootstrap } } as any);
+      if (!node) return null;
+      await node.start();
+      await waitForRemotePeer(node, [Protocols.Relay]);
+      return node;
+    };
+    cachedNode = await retryWithBackoff(startNode);
+    logger.info({ service: 'waku.ensureNode' }, 'Waku node started');
     return cachedNode;
   } catch (err) {
+    serviceFailures.inc({ service: 'waku.ensureNode' });
     errorLog('Failed to start Waku node', err instanceof Error ? err.message : err);
     if (err instanceof Error && err.stack) {
       errorLog(err.stack);
     }
+    logger.error({ err }, 'Failed to start Waku node');
     cachedNode = null;
     return null;
+  } finally {
+    end();
   }
 }
 
@@ -103,6 +113,7 @@ async function sendAck(topic: string, id: string): Promise<void> {
   await node.lightPush.send(encoder, {
     payload: client.utf8ToBytes(canonicalJson({ id })),
   });
+
 }
 
 export async function publish(topic: string, message: any): Promise<string> {
@@ -115,6 +126,7 @@ export async function publish(topic: string, message: any): Promise<string> {
     payload: client.utf8ToBytes(canonicalJson({ ...message, id })),
   });
   return id;
+
 }
 
 export async function subscribeWithAck(

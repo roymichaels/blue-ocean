@@ -19,12 +19,13 @@ export async function getOrderPaymentFactoryAddress(): Promise<string> {
 }
 
 async function sendNear(message: string): Promise<string> {
-  return chainAdapter.signMessage?.(message) || '';
+  return retryWithBackoff(async () => chainAdapter.signMessage?.(message) || '');
 }
 
 export async function deployOrderPayment(
   amount: number,
 ): Promise<{ contractAddress: string; txHash: string }> {
+  const end = serviceLatency.startTimer({ service: 'near.deployOrderPayment' });
   try {
     const factoryAddress = await getOrderPaymentFactoryAddress();
     const settings = await fetchSettings();
@@ -33,28 +34,47 @@ export async function deployOrderPayment(
     const txHash = await sendNear(
       `Pay:${amount}:${feeAddress}:${feeBps}`,
     );
+    logger.info({ service: 'near.deployOrderPayment', txHash }, 'Order payment deployed');
     return { contractAddress: factoryAddress, txHash };
   } catch (e) {
+    serviceFailures.inc({ service: 'near.deployOrderPayment' });
     errorLog('Failed to deploy order payment', e);
+    logger.error({ err: e }, 'Failed to deploy order payment');
     throw e;
+  } finally {
+    end();
   }
 }
 
 export async function releasePayment(contractAddress: string): Promise<string> {
+  const end = serviceLatency.startTimer({ service: 'near.releasePayment' });
   try {
-    return await sendNear(`Release:${contractAddress}`);
+    const tx = await sendNear(`Release:${contractAddress}`);
+    logger.info({ service: 'near.releasePayment', contractAddress }, 'Payment released');
+    return tx;
   } catch (e) {
+    serviceFailures.inc({ service: 'near.releasePayment' });
     errorLog('Failed to release payment', e);
+    logger.error({ err: e }, 'Failed to release payment');
     throw e;
+  } finally {
+    end();
   }
 }
 
 export async function refundPayment(contractAddress: string): Promise<string> {
+  const end = serviceLatency.startTimer({ service: 'near.refundPayment' });
   try {
-    return await sendNear(`Refund:${contractAddress}`);
+    const tx = await sendNear(`Refund:${contractAddress}`);
+    logger.info({ service: 'near.refundPayment', contractAddress }, 'Payment refunded');
+    return tx;
   } catch (e) {
+    serviceFailures.inc({ service: 'near.refundPayment' });
     errorLog('Failed to refund payment', e);
+    logger.error({ err: e }, 'Failed to refund payment');
     throw e;
+  } finally {
+    end();
   }
 }
 
@@ -62,13 +82,20 @@ export async function adminResolve(
   contractAddress: string,
   toSeller: boolean,
 ): Promise<string> {
+  const end = serviceLatency.startTimer({ service: 'near.adminResolve' });
   try {
-    return await sendNear(
+    const tx = await sendNear(
       `AdminResolve:${contractAddress}:${toSeller ? 1 : 0}`,
     );
+    logger.info({ service: 'near.adminResolve', contractAddress }, 'Dispute resolved');
+    return tx;
   } catch (e) {
+    serviceFailures.inc({ service: 'near.adminResolve' });
     errorLog('Failed to resolve dispute', e);
+    logger.error({ err: e }, 'Failed to resolve dispute');
     throw e;
+  } finally {
+    end();
   }
 }
 
