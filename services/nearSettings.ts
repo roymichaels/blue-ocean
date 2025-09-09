@@ -9,6 +9,7 @@ import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { z } from 'zod';
 import { sign } from '@noble/ed25519';
+import { canonicalJson } from '@/utils/canonicalJson';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
 assertNearChain();
@@ -100,7 +101,11 @@ async function emit(event: SettingsWriteEvent) {
       signature: '',
     };
     const msgBytes = new TextEncoder().encode(
-      JSON.stringify({ type: msg.type, payload: msg.payload, sender: msg.sender }),
+      canonicalJson({
+        type: msg.type,
+        payload: msg.payload,
+        sender: msg.sender,
+      }),
     );
     const sig = await sign(msgBytes, priv);
     msg.signature = Buffer.from(sig).toString('hex');

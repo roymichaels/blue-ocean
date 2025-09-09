@@ -39,6 +39,7 @@
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "buffer": "^6.0.3",
+    "canonicalize": "^2.1.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "ed2curve": "^0.3.0",
@@ -100,8 +101,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.27.7",
-    "@babel/plugin-transform-modules-commonjs": "^7.27.1",
     "@babel/plugin-transform-class-static-block": "^7.27.1",
+    "@babel/plugin-transform-modules-commonjs": "^7.27.1",
     "@expo/cli": "^0.22.26",
     "@faker-js/faker": "^8.4.0",
     "@types/jest": "^30.0.0",
