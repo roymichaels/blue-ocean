@@ -9,29 +9,30 @@ import type { ChainAdapter } from './ChainAdapter';
 let selector: WalletSelector | null = null;
 let initError: Error | null = null;
 
+function resolveNetwork(): 'mainnet' | 'testnet' {
+  const explicit = process.env.EXPO_PUBLIC_NETWORK;
+  if (explicit === 'mainnet' || explicit === 'testnet') return explicit;
+  const cid = process.env.EXPO_PUBLIC_CONTRACT_ID || '';
+  return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
+}
+
 async function init() {
   if (selector || initError) {
     return { selector, error: initError } as const;
   }
   try {
-    const resolveNetwork = () => {
-      const explicit = process.env.EXPO_PUBLIC_NETWORK;
-      if (explicit === 'mainnet' || explicit === 'testnet') return explicit;
-      const cid = process.env.EXPO_PUBLIC_CONTRACT_ID || '';
-      return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
-    };
+    const network = resolveNetwork();
 
     const getWalletUrl = () => {
       const override = process.env.EXPO_PUBLIC_WALLET_URL;
       if (override) return override;
-      const net = resolveNetwork();
-      return net === 'mainnet'
+      return network === 'mainnet'
         ? 'https://app.mynearwallet.com'
         : 'https://testnet.mynearwallet.com';
     };
 
     selector = await setupWalletSelector({
-      network: 'testnet',
+      network,
       modules: [setupNearWallet({ walletUrl: getWalletUrl() })],
     });
   } catch (e: any) {
@@ -95,7 +96,7 @@ function getSelector() {
 }
 
 async function getBalance(address: string): Promise<string> {
-  const network = process.env.EXPO_PUBLIC_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
+  const network = resolveNetwork();
   const rpcUrl = network === 'mainnet' ? 'https://rpc.mainnet.near.org' : 'https://rpc.testnet.near.org';
   const res = await fetch(rpcUrl, {
     method: 'POST',

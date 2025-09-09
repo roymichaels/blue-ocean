@@ -16,23 +16,23 @@ async function init() {
   if (!selector) {
     // Resolve wallet URL: prefer env override, then infer from contract/network
     const resolveNetwork = () => {
-      const explicit = requireEnv('EXPO_PUBLIC_NETWORK', '');
+      const explicit = process.env.EXPO_PUBLIC_NETWORK;
       if (explicit === 'mainnet' || explicit === 'testnet') return explicit;
       const cid = requireEnv('EXPO_PUBLIC_CONTRACT_ID', '');
       return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
     };
+    const network = resolveNetwork();
 
     const getWalletUrl = () => {
       const override = requireEnv('EXPO_PUBLIC_WALLET_URL', '');
       if (override) return override;
-      const net = resolveNetwork();
-      return net === 'mainnet'
+      return network === 'mainnet'
         ? 'https://app.mynearwallet.com'
         : 'https://testnet.mynearwallet.com';
     };
 
     selector = await setupWalletSelector({
-      network: 'testnet',
+      network,
       modules: [setupNearWallet({ walletUrl: getWalletUrl() })],
     });
   }
