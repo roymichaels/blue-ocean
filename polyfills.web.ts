@@ -28,6 +28,16 @@ try {
   if (typeof (globalThis as any).process === 'undefined') {
     (globalThis as any).process = require('process');
   }
+  // Guard util.promisify to avoid crashes when polyfilled modules are missing
+  const util = require('util');
+  const originalPromisify = util.promisify;
+  util.promisify = (fn: any) => {
+    if (typeof fn !== 'function') {
+      return async () =>
+        Promise.reject(new TypeError('The "original" argument must be of type Function'));
+    }
+    return originalPromisify(fn);
+  };
 } catch (err) {
   debugLog('ℹ️ web Buffer/process polyfill skipped:', err);
 }

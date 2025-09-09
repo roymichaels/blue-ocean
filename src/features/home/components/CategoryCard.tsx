@@ -3,7 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native
 import { Pencil } from 'lucide-react-native';
 import { Category } from '@/types';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
-import { spacing } from '@/shared/ui/tokens';
+import { spacing, radius, typography, shadows } from '@/shared/ui/tokens';
+
+const shadowStyle = Platform.select(shadows.sm);
 
         
 interface CategoryCardProps {
