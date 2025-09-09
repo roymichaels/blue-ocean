@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   RefreshControl,
   useWindowDimensions,
-  Modal,
 } from 'react-native';
 import { Plus, ArrowUpDown } from 'lucide-react-native';
 import { Product } from '@/types';
@@ -18,7 +17,6 @@ import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import HomeOptions from '@/features/home/components/HomeOptions';
-import StoreCreation from '@/features/stores/components/StoreCreation';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import CategoryCard from '@/features/home/components/CategoryCard';
 import { Spinner } from '@/ui/primitives';
@@ -44,9 +42,6 @@ function HomeScreenContent() {
     closeProductForm,
     showCartModal,
     closeCartModal,
-    storeCreationVisible,
-    openStoreCreation,
-    closeStoreCreation,
     infoModal,
     closeInfoModal,
   } = useHomeModals(error);
@@ -135,7 +130,7 @@ function HomeScreenContent() {
           maxPrice={maxPrice}
           setMaxPrice={setMaxPrice}
         />
-        <HomeOptions onCreateStore={openStoreCreation} />
+          <HomeOptions />
 
         {/* Categories Section */}
         <Container style={styles.section}>
@@ -267,16 +262,6 @@ function HomeScreenContent() {
           visible={showCartModal}
           onClose={closeCartModal}
         />
-      </Suspense>
-
-      <Suspense fallback={<Spinner />}>
-        <Modal
-          visible={storeCreationVisible}
-          animationType="slide"
-          onRequestClose={closeStoreCreation}
-        >
-          <StoreCreation />
-        </Modal>
       </Suspense>
 
     </>
