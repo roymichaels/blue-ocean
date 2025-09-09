@@ -1,5 +1,7 @@
 # Architecture
 
+Blue Ocean is an underground gadgets platform for web3, privacy, and security services. This document describes the agents and data flows that make store creation and other capabilities possible.
+
 ## Service Boundaries
 - **settings-agent** – subscribes to `/blue-ocean/{tenantId}/settings/1`, validates admin senders, and updates in-memory config.
 - **users-agent** – listens on `/blue-ocean/{tenantId}/users/1` to register users and roles, rejecting unauthenticated or duplicate roles.
