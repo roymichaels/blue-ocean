@@ -92,7 +92,7 @@ export default function ProductFormModal({
       initForm();
       loadPricingTiers();
     }
-  }, [visible, product, address]);
+  }, [visible, product?.id]);
 
   useEffect(() => {
     const category = categories.find(c => c.id === editingProduct.category);
