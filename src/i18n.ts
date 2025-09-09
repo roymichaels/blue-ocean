@@ -1,11 +1,26 @@
 import enTranslations from '@/translations/en.json';
 
+// Current translation table. Defaults to English.
+let translations: Record<string, any> = enTranslations;
+
+/**
+ * Override the active translation dictionary.
+ */
+export const setTranslations = (dict: Record<string, any>) => {
+  translations = dict;
+};
+
+/**
+ * Translate a key using the active translation dictionary. If the key is not
+ * found, a console warning is emitted and the key itself is returned so
+ * developers can easily spot missing translations.
+ */
 export let t = (
   key: string,
   options?: Record<string, string | number> | string,
 ): string => {
   const keys = key.split('.');
-  let value: any = enTranslations;
+  let value: any = translations;
   for (const k of keys) {
     value = value?.[k];
   }
@@ -15,6 +30,7 @@ export let t = (
     }
     return value;
   }
+  console.warn(`Missing translation for key: ${key}`);
   return typeof options === 'string' ? options : key;
 };
 
