@@ -57,7 +57,7 @@ export default function SubcategoryPicker({
                 >
                   <View style={styles.itemContent}>
                     <Text style={styles.itemIcon}>{sub.icon}</Text>
-                    <Text style={[styles.itemText, { color: colors.text.primary }]}>{sub.name}</Text>
+                    <Text style={[styles.itemText, { color: colors.text.primary }]}>{t(sub.name)}</Text>
                   </View>
                   <Text style={[styles.itemId, { color: colors.text.tertiary }]}>{sub.id}</Text>
                 </TouchableOpacity>
