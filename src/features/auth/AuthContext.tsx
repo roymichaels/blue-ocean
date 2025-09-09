@@ -66,7 +66,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const chatPublicKey = Buffer.from(publicKey).toString('hex');
 
       if (profile) {
-        if (profile.chatPublicKey !== chatPublicKey) {
+        const roleChanged = user?.role !== profile.role;
+        if (profile.chatPublicKey !== chatPublicKey || roleChanged) {
           profile = { ...profile, chatPublicKey };
           await setChainUser(profile);
           await usersAgent.update(profile);

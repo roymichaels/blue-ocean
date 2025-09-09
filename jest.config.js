@@ -69,6 +69,8 @@ module.exports = {
     '<rootDir>/tests/priceRange.test.tsx',
     '<rootDir>/tests/wallet/**/*.test.ts',
     '<rootDir>/tests/indexers/**/*.test.ts',
+    '<rootDir>/tests/auth/**/*.test.ts',
+    '<rootDir>/tests/auth/**/*.test.tsx',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],

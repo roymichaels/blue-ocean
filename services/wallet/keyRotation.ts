@@ -22,7 +22,7 @@ export async function rotateKey(
   });
   const account = await near.account(accountId);
   const newKeyPair = KeyPair.fromRandom('ed25519');
-  await account.addKey(newKeyPair.publicKey.toString());
+  await account.addKey(newKeyPair.getPublicKey().toString());
   if (oldPublicKey) {
     try {
       await account.deleteKey(oldPublicKey);
