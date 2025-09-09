@@ -3,6 +3,8 @@ import os from 'os';
 import path from 'path';
 import { spawnSync } from 'child_process';
 
+// nearKvStore uses a lightweight MinIO client for S3 access.
+// These tests exercise the filesystem fallback without touching S3.
 const tmpDir = path.join(os.tmpdir(), 'near-kv-store-test');
 
 function runScript(code: string): string {
