@@ -27,7 +27,7 @@ export default function Probe() {
           onPress={() => push('/categories') /* eslint-disable-line no-restricted-syntax */}
           style={{ color: colors.gold, fontWeight: '700' }}
         >
-          Open Tabs → Categories
+          Open Categories
         </Text>
       </View>
     </ErrorBoundary>

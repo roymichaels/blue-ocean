@@ -1,1 +1,1 @@
-export { default } from '@/layout/TabsLayout';
+export { default } from '@/layout/RootLayout';

@@ -22,6 +22,7 @@ import CategoryChips from '@/features/home/components/CategoryChips';
 import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
 import BannerArea from '@/features/home/components/BannerArea';
 import ProductGrid from '@/features/home/components/ProductGrid';
+import CategoryCard from '@/features/home/components/CategoryCard';
 import { Spinner } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
 import BannerFormModal from '@/components/BannerFormModal';
@@ -249,7 +250,12 @@ function HomeScreenContent() {
             >
               {categoriesToShow.slice(0, 4).map((item) => (
                 <View key={item.id} style={styles.categoryWrapper}>
-                  {renderCategory({ item })}
+                  <CategoryCard
+                    category={item}
+                    isStoreOwner={isStoreOwner}
+                    onPress={() => handleCategoryPress(item.id)}
+                    onEdit={() => handleCategoryPress(item.id)}
+                  />
                 </View>
               ))}
             </ScrollArea>
