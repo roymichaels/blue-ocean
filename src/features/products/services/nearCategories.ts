@@ -6,6 +6,7 @@ import {
 } from '@/services/nearKvStore';
 import { Category } from '@/types';
 import { assertNearChain } from '@/services/chain';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
@@ -17,7 +18,7 @@ export async function getCategory(id: string): Promise<Category | null> {
 }
 
 export async function setCategory(category: Category) {
-  await setValue(ADDRESS, category.id, JSON.stringify(category));
+  await setValue(ADDRESS, category.id, canonicalJson(category));
 }
 
 export async function removeCategory(id: string) {

@@ -1,26 +1,28 @@
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import { errorLog } from '@/utils/logger';
+import config from '@/config';
+import { canonicalJson } from '@/utils/serialization';
 
 const isProd = process.env.NODE_ENV === 'production';
-const strict = (process.env.WAKU_STRICT ?? (isProd ? '1' : '0')) === '1';
+const strict = (config.WAKU_STRICT || (isProd ? '1' : '0')) === '1';
 const disabled =
-  process.env.WAKU_DISABLE === '1' ||
-  process.env.EXPO_PUBLIC_WAKU_DISABLE === '1';
+  config.WAKU_DISABLE === '1' ||
+  config.EXPO_PUBLIC_WAKU_DISABLE === '1';
 
 export function isWakuDisabled(): boolean {
   return disabled;
 }
 
 const PUB =
-  process.env.WAKU_PUBLISHER_KEY ||
-  process.env.EXPO_PUBLIC_WAKU_PUBLISHER_KEY ||
+  config.WAKU_PUBLISHER_KEY ||
+  config.EXPO_PUBLIC_WAKU_PUBLISHER_KEY ||
   '';
 const BOOT = (
-  process.env.WAKU_BOOTSTRAP ||
-  process.env.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
+  config.WAKU_BOOTSTRAP ||
+  config.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
   ''
-)
+) 
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
@@ -99,7 +101,7 @@ async function sendAck(topic: string, id: string): Promise<void> {
   const client = await getClient();
   const encoder = client.createEncoder({ contentTopic: `${topic}/ack` });
   await node.lightPush.send(encoder, {
-    payload: client.utf8ToBytes(JSON.stringify({ id })),
+    payload: client.utf8ToBytes(canonicalJson({ id })),
   });
 }
 
@@ -110,7 +112,7 @@ export async function publish(topic: string, message: any): Promise<string> {
   const id = message?.id || Date.now().toString();
   const encoder = client.createEncoder({ contentTopic: topic });
   await node.lightPush.send(encoder, {
-    payload: client.utf8ToBytes(JSON.stringify({ ...message, id })),
+    payload: client.utf8ToBytes(canonicalJson({ ...message, id })),
   });
   return id;
 }

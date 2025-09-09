@@ -4,6 +4,7 @@ import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 import { errorLog } from '@/utils/logger';
 import { productSchema } from '@/schemas/waku';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
@@ -18,7 +19,7 @@ function ensureSeed() {
     const data = require('@/assets/seed/seed-data.json');
     if (data?.products) {
       for (const p of data.products as Product[]) {
-        void setValue(ADDRESS, `${p.storeId}:${p.id}`, JSON.stringify({
+        void setValue(ADDRESS, `${p.storeId}:${p.id}`, canonicalJson({
           ...p,
           pricingTier: p.pricingTier,
           variants: p.variants || [],
@@ -55,7 +56,7 @@ export async function setProduct(storeId: string, product: Product) {
   await setValue(
     ADDRESS,
     `${sid}:${validated.id}`,
-    JSON.stringify({
+    canonicalJson({
       ...validated,
       pricingTier: validated.pricingTier,
       variants: validated.variants || [],
@@ -109,7 +110,7 @@ export async function setProductBatch(storeId: string, products: Product[]) {
 }
 
 export async function estimateSetProductBatch(products: Product[]): Promise<number> {
-  const payload = products.map(p => JSON.stringify(p)).join('');
+  const payload = products.map(p => canonicalJson(p)).join('');
   return payload.length;
 }
 

@@ -1,11 +1,12 @@
 import { Buffer } from 'buffer';
 import { ProductIndexItem } from '@/types';
 import { chainAdapter, assertNearChain } from '@/services/chain';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
 export function encodeProductIndexItem(item: ProductIndexItem): string {
-  return JSON.stringify(item);
+  return canonicalJson(item);
 }
 
 export function decodeProductIndexItem(
@@ -17,7 +18,7 @@ export function decodeProductIndexItem(
 }
 
 function buildBatch(items: ProductIndexItem[]): string {
-  return JSON.stringify(items);
+  return canonicalJson(items);
 }
 
 export async function setProductBatch(

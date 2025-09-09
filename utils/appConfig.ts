@@ -1,61 +1,9 @@
-// Configuration values are loaded from environment variables.
-// Only a minimal set of keys is supported at runtime.
+import config, { reloadConfig } from '@/config';
 
-// Only enforce NEAR contracts when running in NEAR mode.
-const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || '').toLowerCase();
-const NEAR_REQUIRED_ENV_KEYS: string[] = [];
-const REQUIRED_ENV_KEYS: string[] = CHAIN === 'near' ? NEAR_REQUIRED_ENV_KEYS : [];
-
-const ENV_KEYS = [
-  'EXPO_PUBLIC_DEBUG_LOGS',
-  'EXPO_PUBLIC_WAKU_BOOTSTRAP',
-  'EXPO_PUBLIC_CHAIN',
-  'ADMIN_WALLET_ADDRESS_MAINNET',
-  'ADMIN_WALLET_ADDRESS_TESTNET',
-  'NEAR_NETWORK',
-
-  ...REQUIRED_ENV_KEYS,
-  'NEAR_RPC_URL',
-  'NEAR_RPC_FALLBACK_URLS',
-  'ENABLE_UNSAFE_NEAR_PRIVATE_KEY',
-  'EXPO_PUBLIC_PINATA_API_KEY',
-  'EXPO_PUBLIC_PINATA_SECRET_API_KEY',
-  'EXPO_PUBLIC_PINATA_JWT',
-];
-
-function loadConfig(): Record<string, string> {
-  const cfg: Record<string, string> = {};
-  for (const key of ENV_KEYS) {
-    const value = process.env[key];
-    if (value !== undefined) {
-      if (
-        key === 'ENABLE_UNSAFE_NEAR_PRIVATE_KEY' &&
-        process.env.NODE_ENV === 'production'
-      ) {
-        continue;
-      }
-      cfg[key] = value;
-    } else if (REQUIRED_ENV_KEYS.includes(key)) {
-      throw new Error(`Missing required environment variable: ${key}`);
-    }
-  }
-  return cfg;
-}
-
-const config: Record<string, string> = loadConfig();
-
-export function reloadConfig(): void {
-  const fresh = loadConfig();
-  for (const key of Object.keys(config)) {
-    delete config[key];
-  }
-  Object.assign(config, fresh);
-}
+export { reloadConfig };
 
 export function getWakuBootstrapNodes(): string[] {
-  const override =
-    config.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
-    process.env.EXPO_PUBLIC_WAKU_BOOTSTRAP;
+  const override = config.EXPO_PUBLIC_WAKU_BOOTSTRAP;
   if (override) {
     return override
       .split(',')
@@ -72,8 +20,8 @@ export function getWakuBootstrapNodes(): string[] {
   return [];
 }
 
-export function requireEnv(key: string): string {
-  const value = config[key] || process.env[key];
+export function requireEnv(key: keyof typeof config): string {
+  const value = config[key];
   if (!value) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
@@ -88,9 +36,8 @@ export function getNearRpcUrls(): string[] {
     tenantRpc = tenant.AppConfig?.rpcUrl || '';
     tenantFallbacks = tenant.AppConfig?.rpcFallbackUrls || [];
   } catch {}
-  const envPrimary = config.NEAR_RPC_URL || process.env.NEAR_RPC_URL || '';
-  const envFallbackRaw =
-    config.NEAR_RPC_FALLBACK_URLS || process.env.NEAR_RPC_FALLBACK_URLS || '';
+  const envPrimary = config.NEAR_RPC_URL;
+  const envFallbackRaw = config.NEAR_RPC_FALLBACK_URLS;
   const envFallbacks = envFallbackRaw
     .split(',')
     .map((u) => u.trim())

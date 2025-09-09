@@ -16,6 +16,7 @@ import { getProduct, setProduct } from '@/features/products/services/nearProduct
 import { chainAdapter } from '@/services/chain';
 import { adminResolve, deployOrderPayment } from './nearContract';
 import config from '../utils/appConfig';
+import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
@@ -140,7 +141,7 @@ class OrderService {
     const orderId = uuid();
     const timestamp = new Date().toISOString();
     const itemsHash = Buffer.from(
-      sha256(Buffer.from(JSON.stringify(items)))
+      sha256(Buffer.from(canonicalJson(items)))
     ).toString('hex');
     const feeInfo =
       pay?.method === 'card' ? await calculateCardFees(total) : undefined;
@@ -293,18 +294,12 @@ class OrderService {
     const order = await ordersAgent.get(orderId);
     if (!order || !order.escrowAddr) return;
     const actor = chainAdapter.getAccountId();
-    const network =
-      (config.NEAR_NETWORK || process.env.NEAR_NETWORK || 'mainnet').toLowerCase();
-    const legacy =
-      config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
+    const network = (config.NEAR_NETWORK || 'mainnet').toLowerCase();
+    const legacy = config.ADMIN_WALLET_ADDRESS || '';
     const admin =
       network === 'testnet'
-        ? config.ADMIN_WALLET_ADDRESS_TESTNET ||
-          process.env.ADMIN_WALLET_ADDRESS_TESTNET ||
-          legacy
-        : config.ADMIN_WALLET_ADDRESS_MAINNET ||
-          process.env.ADMIN_WALLET_ADDRESS_MAINNET ||
-          legacy;
+        ? config.ADMIN_WALLET_ADDRESS_TESTNET || legacy
+        : config.ADMIN_WALLET_ADDRESS_MAINNET || legacy;
     if (admin && (!actor || actor !== admin)) {
       throw new Error('Admin wallet address required');
     }

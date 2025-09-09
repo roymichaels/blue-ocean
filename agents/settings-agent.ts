@@ -11,6 +11,7 @@ import {
 } from '@/services/nearSettings';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
@@ -127,7 +128,7 @@ class SettingsAgent {
 
   async setRpcUrls(rpcUrl: string, rpcFallbackUrls: string[]): Promise<void> {
     await this.set('rpcUrl', rpcUrl);
-    await this.set('rpcFallbackUrls', JSON.stringify(rpcFallbackUrls));
+    await this.set('rpcFallbackUrls', canonicalJson(rpcFallbackUrls));
   }
 
   async getPaymentFactoryAddress(): Promise<string | null> {

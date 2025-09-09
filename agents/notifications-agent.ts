@@ -15,6 +15,7 @@ import { ensureNode, isWakuDisabled } from '@/services/waku';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';
+import { canonicalJson } from '@/utils/serialization';
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
@@ -84,7 +85,7 @@ class NotificationsAgent {
       const client = await getClient();
       const encoder = client.createEncoder({ contentTopic: topic });
       await node.lightPush.send(encoder, {
-        payload: client.utf8ToBytes(JSON.stringify({ type: event, ...payload })),
+        payload: client.utf8ToBytes(canonicalJson({ type: event, ...payload })),
       });
     } catch (err) {
       errorLog('Failed to broadcast analytics event', err);
@@ -106,7 +107,7 @@ class NotificationsAgent {
         ? { type: event, notification: item }
         : item;
       await node.lightPush.send(encoder, {
-        payload: client.utf8ToBytes(JSON.stringify(payload)),
+        payload: client.utf8ToBytes(canonicalJson(payload)),
       });
     } catch (err) {
       errorLog('Failed to broadcast notification', err);

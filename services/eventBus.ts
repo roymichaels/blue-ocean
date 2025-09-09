@@ -5,6 +5,8 @@ import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { uuid } from '../utils/uuid';
 import { sha256 } from '@noble/hashes/sha256';
 import { chainAdapter } from '@/services/chain';
+import config from '@/config';
+import { canonicalJson } from '@/utils/serialization';
 
 const STABLE_BOOTSTRAP = [
   '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP',
@@ -19,7 +21,7 @@ let node: LightNode | null = null;
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
-    if ((process.env.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
+    if ((config.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
       // In HTTP mode, disable Waku analytics
       return null;
     }
@@ -59,7 +61,7 @@ export async function publish(
       ...payload,
     };
     await n.lightPush.send(encoder, {
-      payload: client.utf8ToBytes(JSON.stringify(event)),
+      payload: client.utf8ToBytes(canonicalJson(event)),
     });
   } catch (err) {
     errorLog('Failed to publish event', err);

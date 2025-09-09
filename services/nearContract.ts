@@ -2,6 +2,7 @@ import { errorLog } from '@/utils/logger';
 import { chainAdapter } from '@/services/chain';
 import { fetchSettings } from './nearSettings';
 import { assertNearChain } from './chain';
+import config from '@/config';
 
 assertNearChain();
 
@@ -12,7 +13,7 @@ export async function getOrderPaymentFactoryAddress(): Promise<string> {
     const settings = await fetchSettings();
     ORDER_PAYMENT_FACTORY_ADDRESS =
       settings.paymentFactoryAddress ||
-      process.env.EXPO_PUBLIC_CONTRACT_ID || '';
+      config.EXPO_PUBLIC_CONTRACT_ID || '';
   }
   return ORDER_PAYMENT_FACTORY_ADDRESS;
 }

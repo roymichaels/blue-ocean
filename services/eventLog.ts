@@ -5,6 +5,8 @@ import { getClient } from '@/utils/transport';
 import { uuid } from '../utils/uuid';
 import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { OrderStatus } from '../types';
+import config from '@/config';
+import { canonicalJson } from '@/utils/serialization';
 
 export type OrderEventType =
   | 'order.created'
@@ -30,7 +32,7 @@ let node: LightNode | null = null;
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
-    if ((process.env.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
+    if ((config.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
       return null;
     }
     const bootstrap = getWakuBootstrapNodes();
@@ -58,7 +60,7 @@ export async function logOrderEvent(
     const client = await getClient();
     const encoder = client.createEncoder({ contentTopic: ORDER_TOPIC });
     await n.lightPush.send(encoder, {
-      payload: client.utf8ToBytes(JSON.stringify(eventWithId)),
+      payload: client.utf8ToBytes(canonicalJson(eventWithId)),
     });
   } catch (err) {
     errorLog('Failed to log order event', err);

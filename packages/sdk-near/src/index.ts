@@ -23,8 +23,10 @@ export interface BuyListingArgs {
   amountYocto: string;
 }
 
-function requireEnv(name: 'EXPO_PUBLIC_RELAYER_URL' | 'EXPO_PUBLIC_INDEXER_URL' | 'EXPO_PUBLIC_TRANSPORT'): string {
-  const value = process.env[name];
+function requireEnv(
+  name: 'EXPO_PUBLIC_RELAYER_URL' | 'EXPO_PUBLIC_INDEXER_URL' | 'EXPO_PUBLIC_TRANSPORT',
+): string {
+  const value = (config as Record<string, string>)[name];
   if (!value) {
     throw new Error(`${name} is not configured`);
   }
@@ -33,10 +35,12 @@ function requireEnv(name: 'EXPO_PUBLIC_RELAYER_URL' | 'EXPO_PUBLIC_INDEXER_URL' 
 
 /** Fetch all listings from the indexer service. */
 import { requireStoreId } from '@blue-ocean/utils';
+import { canonicalJson } from '../../utils/serialization';
+import config from '../../config';
 
 export async function getListings(storeId: string): Promise<Listing[]> {
   const sid = requireStoreId(storeId);
-  const transport = process.env.EXPO_PUBLIC_TRANSPORT || 'http';
+  const transport = config.EXPO_PUBLIC_TRANSPORT || 'http';
   if (transport === 'waku') {
     // dynamic import to keep SDK usable without Waku
     const mod = await import('./waku/index').catch(() => null as any);
@@ -61,7 +65,7 @@ export async function addListing(args: AddListingArgs): Promise<any> {
   const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    body: canonicalJson({
       storeId: sid,
       action: 'add_listing',
       args: { id: args.itemId, seller: '', price: 0, metadata: args.metadata, priceYocto: args.priceYocto },
@@ -84,7 +88,7 @@ export async function buyListing(args: BuyListingArgs): Promise<any> {
   const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ storeId: sid, action: 'buy_listing', args }),
+    body: canonicalJson({ storeId: sid, action: 'buy_listing', args }),
   });
   if (!res.ok) {
     throw new Error(`Failed to buy listing: ${res.status} ${res.statusText}`);

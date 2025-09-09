@@ -1,13 +1,14 @@
 import { setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { Report } from '@/types';
 import { assertNearChain } from '@/services/chain';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
 const ADDRESS = 'reports';
 
 export async function addReport(report: Report) {
-  await setValue(ADDRESS, report.id, JSON.stringify(report));
+  await setValue(ADDRESS, report.id, canonicalJson(report));
 }
 
 export async function listReports(): Promise<Report[]> {

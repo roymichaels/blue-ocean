@@ -1,6 +1,6 @@
 import { getPublicKey, sign, utils } from '@noble/ed25519';
 import { verifyMessageSignature } from '../utils/verifyMessageSignature';
-import { canonicalJson } from '../utils/canonicalJson';
+import { canonicalJson } from '../utils/serialization';
 import type { WakuMessage } from '../types/waku';
 
 describe('verifyMessageSignature', () => {

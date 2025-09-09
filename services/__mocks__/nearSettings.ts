@@ -1,3 +1,5 @@
+import { canonicalJson } from '@/utils/serialization';
+
 const store: Record<string, string> = {};
 
 export async function getSetting(key: string): Promise<string | null> {
@@ -13,7 +15,7 @@ export async function getAdmins(): Promise<string[]> {
 }
 
 export async function setAdmins(admins: string[]): Promise<void> {
-  store['admins'] = JSON.stringify(admins);
+  store['admins'] = canonicalJson(admins);
 }
 
 export async function fetchSettings() {

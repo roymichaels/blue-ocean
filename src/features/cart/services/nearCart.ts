@@ -1,6 +1,7 @@
 import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { CartItem } from '@/types';
 import { assertNearChain } from '@/services/chain';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
@@ -12,7 +13,7 @@ export async function getCartItem(id: string): Promise<CartItem | null> {
 }
 
 export async function setCartItem(item: CartItem) {
-  await setValue(ADDRESS, item.id, JSON.stringify(item));
+  await setValue(ADDRESS, item.id, canonicalJson(item));
 }
 
 export async function removeCartItem(id: string) {

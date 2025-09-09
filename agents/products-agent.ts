@@ -17,7 +17,7 @@ import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
 import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
 import { sign } from '@noble/ed25519';
-import { canonicalJson } from '@/utils/canonicalJson';
+import { canonicalJson } from '@/utils/serialization';
 import type { WakuMessage } from '@/types/waku';
 import { errorLog } from '@/utils/logger';
 import { buildTopic } from '@/utils/wakuTopics';
@@ -157,7 +157,7 @@ class ProductsAgent {
         contentTopic: buildProductTopic(product.storeId),
       });
       await n.lightPush.send(encoder, {
-        payload: client.utf8ToBytes(JSON.stringify(msg)),
+        payload: client.utf8ToBytes(canonicalJson(msg)),
       });
     } catch (err) {
       errorLog('Failed to broadcast product update', err);

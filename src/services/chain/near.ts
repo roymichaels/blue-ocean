@@ -2,6 +2,7 @@ import { init, signIn, signMessage, useAccount, useAccountId, getAccountId, getP
 import { payPrivately as nearPayPrivately } from '@blue-ocean/sdk-near';
 import { listOrdersBySeller as nearListOrdersBySeller } from '@/services/nearOrders';
 import type { ChainAdapter } from './ChainAdapter';
+import { canonicalJson } from '@/utils/serialization';
 
 async function getBalance(address: string): Promise<string> {
   const network = resolveNetwork();
@@ -9,7 +10,7 @@ async function getBalance(address: string): Promise<string> {
   const res = await fetch(rpcUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    body: canonicalJson({
       jsonrpc: '2.0',
       id: 'dontcare',
       method: 'query',

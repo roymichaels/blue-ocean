@@ -1,7 +1,8 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { assertNearChain } from './chain';
 import { getValue, setValue, listValues } from './nearKvStore';
-import config, { getWakuBootstrapNodes } from '../utils/appConfig';
+import config from '@/config';
+import { getWakuBootstrapNodes } from '../utils/appConfig';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import type { SettingsWriteEvent, WakuMessage } from '../types/waku';
@@ -9,7 +10,7 @@ import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { z } from 'zod';
 import { sign } from '@noble/ed25519';
-import { canonicalJson } from '@/utils/canonicalJson';
+import { canonicalJson } from '@/utils/serialization';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
 
 assertNearChain();
@@ -17,18 +18,10 @@ assertNearChain();
 const ADDRESS = 'settings';
 
 const TEST_ADMIN = 'testadmin.near';
-const NETWORK =
-  (config.NEAR_NETWORK || process.env.NEAR_NETWORK || 'mainnet').toLowerCase();
-const legacyAdmin =
-  config.ADMIN_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS || '';
-const ADMIN_MAIN =
-  config.ADMIN_WALLET_ADDRESS_MAINNET ||
-  process.env.ADMIN_WALLET_ADDRESS_MAINNET ||
-  legacyAdmin;
-const ADMIN_TEST =
-  config.ADMIN_WALLET_ADDRESS_TESTNET ||
-  process.env.ADMIN_WALLET_ADDRESS_TESTNET ||
-  legacyAdmin;
+const NETWORK = (config.NEAR_NETWORK || 'mainnet').toLowerCase();
+const legacyAdmin = config.ADMIN_WALLET_ADDRESS || '';
+const ADMIN_MAIN = config.ADMIN_WALLET_ADDRESS_MAINNET || legacyAdmin;
+const ADMIN_TEST = config.ADMIN_WALLET_ADDRESS_TESTNET || legacyAdmin;
 const ADMIN_ADDRESS =
   NETWORK === 'testnet'
     ? ADMIN_TEST || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '')
@@ -68,7 +61,7 @@ let node: LightNode | null = null;
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
-    if ((process.env.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
+    if ((config.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
       return null;
     }
     const bootstrap = getWakuBootstrapNodes();
@@ -113,7 +106,7 @@ async function emit(event: SettingsWriteEvent) {
     const client = await getClient();
     const encoder = client.createEncoder({ contentTopic: '/blue-ocean/settings/1' });
     await n.lightPush.send(encoder, {
-      payload: client.utf8ToBytes(JSON.stringify(msg)),
+      payload: client.utf8ToBytes(canonicalJson(msg)),
     });
   } catch (err) {
     errorLog('Failed to broadcast settings.write', err);
@@ -182,7 +175,7 @@ export async function fetchSettings(): Promise<NearSettings> {
   for (const { key, value } of entries) {
     map[key] = value;
   }
-  const envFiat = process.env.EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY;
+  const envFiat = config.EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY;
   if (envFiat) {
     map['fiatKey'] = envFiat;
   }
@@ -240,7 +233,7 @@ export async function getAdmins(): Promise<string[]> {
 }
 
 export async function setAdmins(admins: string[], actor: string): Promise<void> {
-  await setSetting('admins', JSON.stringify(admins), actor);
+  await setSetting('admins', canonicalJson(admins), actor);
 }
 
 export async function getAdminPublicKeys(): Promise<string[]> {
@@ -256,7 +249,7 @@ export async function setAdminPublicKeys(
   keys: string[],
   actor: string,
 ): Promise<void> {
-  await setSetting('adminPublicKeys', JSON.stringify(keys), actor);
+  await setSetting('adminPublicKeys', canonicalJson(keys), actor);
 }
 
 export async function getPaymentFactoryAddress(): Promise<string> {
