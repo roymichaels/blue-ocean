@@ -1,12 +1,9 @@
 # Blue Ocean
 
-Blue Ocean is a decentralized e‑commerce demo built with React Native and the Expo Router.
-Autonomous agents communicate over the Waku peer‑to‑peer network, keep their state in
-memory, and hydrate from message history on boot. Configuration such as debug logging or
-Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment variables, but
-defaults are provided for a zero‑config experience. All data is replicated via Waku topics
-and NEAR smart contracts; the app does not use a local SQLite database. When configured,
-the key‑value store writes to an S3‑compatible bucket using the lightweight `minio` client.
+Blue Ocean is an underground gadgets platform for web3, privacy, and security services. It lets communities spin up stores to trade devices and accessories without centralized oversight.
+Autonomous agents communicate over the Waku peer‑to‑peer network, keep their state in memory, and hydrate from message history on boot. Configuration such as debug logging or Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment variables, but defaults are provided for a zero‑config experience. All data is replicated via Waku topics and NEAR smart contracts; the app does not use a local SQLite database. When configured, the key‑value store writes to an S3‑compatible bucket using the lightweight `minio` client.
+
+Upcoming roles include a driver network and other specialized agents that extend supply‑chain coverage. These additions align with Blue Ocean’s strategic goals for 2025 to grow into a resilient, privacy‑preserving marketplace.
 
 See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview and [docs/routes.md](docs/routes.md) for route and role details.
 
