@@ -3,6 +3,8 @@ import renderer from 'react-test-renderer';
 import { Text } from 'react-native';
 import HomeScreen from '@app/index';
 
+const InfoModalMock: jest.Mock = jest.fn();
+
 jest.mock('@/services', () => ({
   useAppRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
 }));
@@ -24,10 +26,14 @@ jest.mock('@/ui/ThemeProvider', () => ({
   useLanguage: () => ({ t: (s: string) => s }),
   useTheme: () => ({ colors: { background: '#fff', text: { primary: '#000', secondary: '#333' } } }),
 }));
+let homeHeaderThrows = true;
 jest.mock('@features/home/components/HomeHeader', () => {
   const React = require('react');
   return () => {
-    throw new Error('boom');
+    if (homeHeaderThrows) {
+      throw new Error('boom');
+    }
+    return null;
   };
 });
 jest.mock('@features/home/components/CategoryChips', () => () => null);
@@ -38,23 +44,37 @@ jest.mock('@/components/BannerFormModal', () => () => null);
 jest.mock('@features/cart', () => ({ CartModal: () => null }));
 jest.mock('@features/products', () => ({ ProductFormModal: () => null }));
 jest.mock('@/components/SmartImage', () => () => null);
-jest.mock('@/components/InfoModal', () => () => null);
+jest.mock('@/components/InfoModal', () => (props: any) => {
+  InfoModalMock(props);
+  return null;
+});
 jest.mock('@/services/database', () => ({}));
 jest.mock('@/services/chain', () => 'near');
 jest.mock('@features/products/services/nearCategories', () => ({
   listCategories: jest.fn().mockResolvedValue([]),
 }));
-jest.mock('@features/home/hooks/useHome', () => ({
-  useHome: () => ({
-    products: [],
-    categories: [],
-    refreshing: false,
-    refresh: jest.fn(),
-    upsertProduct: jest.fn(),
-    removeProduct: jest.fn(),
-    error: null,
-  }),
-}));
+let homeErrorList: (Error | null)[] = [null];
+jest.mock('@features/home/hooks/useHome', () => {
+  const React = require('react');
+  return {
+    useHome: () => {
+      const [index, setIndex] = React.useState(0);
+      const refresh = () => {
+        setIndex((i: number) => Math.min(i + 1, homeErrorList.length - 1));
+        return Promise.resolve();
+      };
+      return {
+        products: [],
+        categories: [],
+        refreshing: false,
+        refresh,
+        upsertProduct: jest.fn(),
+        removeProduct: jest.fn(),
+        error: homeErrorList[index],
+      };
+    },
+  };
+});
 jest.mock('@features/home/hooks/useHomeBanners', () => ({
   useHomeBanners: () => ({
     heroBanners: [],
@@ -85,6 +105,8 @@ jest.mock('@features/home/hooks/useHomeFilters', () => ({
 
 describe('HomeScreen error handling', () => {
   it('shows fallback and keeps app shell when child throws', () => {
+    homeHeaderThrows = true;
+    homeErrorList = [null];
     const App = () => (
       <>
         <HomeScreen />
@@ -97,5 +119,21 @@ describe('HomeScreen error handling', () => {
     expect(str).toContain('Something went wrong');
     expect(str).toContain('App shell');
     expect(str).toContain('Retry');
+  });
+
+  it('reopens InfoModal when a new error occurs', async () => {
+    homeHeaderThrows = false;
+    homeErrorList = [new Error('first'), new Error('second')];
+    InfoModalMock.mockClear();
+    renderer.create(<HomeScreen />);
+    const firstCall = InfoModalMock.mock.calls[0] as any[];
+    expect(firstCall[0].visible).toBe(true);
+    await renderer.act(async () => {
+      firstCall[0].onClose();
+    });
+    const visibilities = (InfoModalMock.mock.calls as any[]).map(
+      (c: any[]) => c[0].visible,
+    );
+    expect(visibilities).toEqual([true, false, true]);
   });
 });

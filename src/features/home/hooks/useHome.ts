@@ -1,9 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Product, Category } from '@/types';
 import { useProducts } from '@/services/useProducts';
 import { useCategories } from '@/services/useCategories';
 import { requireEnv } from '@/services/config';
-import { errorLog } from '@/utils/logger';
+import { errorLog, debugLog } from '@/utils/logger';
 
 export function useHome() {
   const defaultStore = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
@@ -12,9 +12,8 @@ export function useHome() {
 
   const [products, setProducts] = useState<Product[]>(productsQuery.data ?? []);
   const [categories, setCategories] = useState<Category[]>(categoriesQuery.data ?? []);
-  const [error, setError] = useState<Error | null>(
-    (productsQuery.error || categoriesQuery.error) as Error | null,
-  );
+  const [error, setError] = useState<Error | null>(null);
+  const lastErrorRef = useRef<Error | null>(null);
 
   useEffect(() => {
     if (productsQuery.data) {
@@ -31,7 +30,11 @@ export function useHome() {
   useEffect(() => {
     if (productsQuery.error || categoriesQuery.error) {
       const err = (productsQuery.error || categoriesQuery.error) as Error;
-      setError(err);
+      if (lastErrorRef.current !== err) {
+        lastErrorRef.current = err;
+        setError(err);
+      }
+      debugLog('useHome initial load failed', err);
       errorLog('useHome initial load failed', err);
     }
   }, [productsQuery.error, categoriesQuery.error]);
@@ -43,13 +46,24 @@ export function useHome() {
         categoriesQuery.refetch(),
       ]);
       const err = (productsRes.error || categoriesRes.error) as Error | null;
-      setError(err);
       if (err) {
+        if (lastErrorRef.current !== err) {
+          lastErrorRef.current = err;
+          setError(err);
+        }
+        debugLog('useHome refresh failed', err);
         errorLog('useHome refresh failed', err);
+      } else {
+        lastErrorRef.current = null;
+        setError(null);
       }
     } catch (err) {
       const error = err as Error;
-      setError(error);
+      if (lastErrorRef.current !== error) {
+        lastErrorRef.current = error;
+        setError(error);
+      }
+      debugLog('useHome refresh failed', error);
       errorLog('useHome refresh failed', error);
     }
   }, [productsQuery, categoriesQuery]);

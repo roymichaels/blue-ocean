@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import { HeroBanner } from '@/types';
-import { errorLog } from '@/utils/logger';
+import { errorLog, debugLog } from '@/utils/logger';
 
 export function useHomeBanners() {
   const { data, refetch, isLoading, error: queryError } = useQuery({
@@ -12,6 +12,7 @@ export function useHomeBanners() {
         const db = DatabaseService.getInstance();
         return await db.getHeroBanners();
       } catch (err) {
+        debugLog('useHomeBanners query failed', err);
         errorLog('useHomeBanners query failed', err);
         throw err;
       }
@@ -26,11 +27,16 @@ export function useHomeBanners() {
     }
   }, [data]);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<Error | null>(queryError ?? null);
+  const [error, setError] = useState<Error | null>(null);
+  const lastErrorRef = useRef<Error | null>(null);
 
   useEffect(() => {
     if (queryError) {
-      setError(queryError as Error);
+      if (lastErrorRef.current !== queryError) {
+        lastErrorRef.current = queryError as Error;
+        setError(queryError as Error);
+      }
+      debugLog('useHomeBanners initial load failed', queryError);
       errorLog('useHomeBanners initial load failed', queryError);
     }
   }, [queryError]);
@@ -42,15 +48,26 @@ export function useHomeBanners() {
       if (res.data) {
         setHeroBanners(res.data);
       }
-      if (res.error) {
-        errorLog('useHomeBanners refresh failed', res.error);
-        setError(res.error as Error);
+      const err = res.error as Error | null;
+      if (err) {
+        if (lastErrorRef.current !== err) {
+          lastErrorRef.current = err;
+          setError(err);
+        }
+        debugLog('useHomeBanners refresh failed', err);
+        errorLog('useHomeBanners refresh failed', err);
       } else {
+        lastErrorRef.current = null;
         setError(null);
       }
     } catch (err) {
-      errorLog('useHomeBanners refresh failed', err);
-      setError(err as Error);
+      const error = err as Error;
+      if (lastErrorRef.current !== error) {
+        lastErrorRef.current = error;
+        setError(error);
+      }
+      debugLog('useHomeBanners refresh failed', error);
+      errorLog('useHomeBanners refresh failed', error);
     } finally {
       setRefreshing(false);
     }
