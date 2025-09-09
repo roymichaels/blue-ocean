@@ -109,7 +109,12 @@ async function main() {
     s3RegionName: 'eu-central-1',
     startBlockHeight: startHeight,
   };
-  await startStream(lakeConfig, (msg) => handleMessage(waku, msg));
+  try {
+    await startStream(lakeConfig, (msg) => handleMessage(waku, msg));
+  } catch (err) {
+    console.error('NEAR Lake stream failed', err);
+    throw err;
+  }
 }
 
 main().catch((err) => {
