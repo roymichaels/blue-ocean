@@ -60,11 +60,19 @@ export default function ReviewsScreen() {
   };
 
   // Modal states
-  const [infoModal, setInfoModal] = useState({
+  const [infoModal, setInfoModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    buttonText?: string;
+    onClose?: () => void;
+    autoClose?: boolean;
+  }>({
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning'
+    type: 'info',
   });
 
   // Confirmation modal for delete
@@ -95,11 +103,15 @@ export default function ReviewsScreen() {
       }
     } catch (error) {
       errorLog('Error loading reviews:', error);
+      const message = error instanceof Error ? error.message : 'טעינת הביקורות נכשלה';
       setInfoModal({
         visible: true,
         title: 'שגיאה',
-        message: 'טעינת הביקורות נכשלה',
-        type: 'error'
+        message,
+        type: 'error',
+        buttonText: 'נסה שוב',
+        autoClose: false,
+        onClose: () => loadData(),
       });
     } finally {
       setLoading(false);
@@ -852,7 +864,13 @@ export default function ReviewsScreen() {
         title={infoModal.title}
         message={infoModal.message}
         type={infoModal.type}
-        onClose={() => setInfoModal({...infoModal, visible: false})}
+        buttonText={infoModal.buttonText}
+        autoClose={infoModal.autoClose}
+        onClose={() => {
+          const callback = infoModal.onClose;
+          setInfoModal(prev => ({ ...prev, visible: false }));
+          callback?.();
+        }}
       />
 
       {/* Delete Confirmation Modal */}
