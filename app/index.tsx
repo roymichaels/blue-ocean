@@ -301,7 +301,7 @@ function HomeScreenContent() {
                       borderColor: themeColors.gold,
                     },
                   ]}
-                    onPress={openProductForm}
+                    onPress={() => openProductForm()}
                 >
                   <Plus size={16} color={themeColors.gold} />
                 </TouchableOpacity>
