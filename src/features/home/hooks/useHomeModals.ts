@@ -26,6 +26,10 @@ export function useHomeModals(error?: Error | null) {
   const [showCartModal, setShowCartModal] = useState(false);
   const closeCartModal = useCallback(() => setShowCartModal(false), []);
 
+  const [storeCreationVisible, setStoreCreationVisible] = useState(false);
+  const openStoreCreation = useCallback(() => setStoreCreationVisible(true), []);
+  const closeStoreCreation = useCallback(() => setStoreCreationVisible(false), []);
+
   const [infoModal, setInfoModal] = useState({
     visible: false,
     title: '',
@@ -67,6 +71,9 @@ export function useHomeModals(error?: Error | null) {
     closeProductForm,
     showCartModal,
     closeCartModal,
+    storeCreationVisible,
+    openStoreCreation,
+    closeStoreCreation,
     infoModal,
     closeInfoModal,
   } as const;

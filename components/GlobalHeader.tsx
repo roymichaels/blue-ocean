@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, TextInput } from 'react-native';
 import { Text, Button } from '@/ui';
 import SmartImage from './SmartImage';
-import { Heart, Search, Star } from 'lucide-react-native';
+import { Heart, Search } from 'lucide-react-native';
 import { useAppRouter } from '@/services';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
@@ -33,12 +33,6 @@ export default function GlobalHeader({
   const wishlistItemsCount = useWishlistCount();
   const pathname = usePathname();
 
-  const navigateToReviews = () => {
-    if (pathname !== '/reviews') {
-      push('/reviews');
-    }
-  };
-
   return (
     <>
       <View style={[styles.header, { backgroundColor: colors.background }]}>
@@ -61,15 +55,6 @@ export default function GlobalHeader({
             </Text>
           </Pressable>
           <View style={styles.headerIcons}>
-            <Button
-              style={[
-                styles.iconButton,
-                { backgroundColor: colors.surface.primary },
-              ]}
-              onPress={navigateToReviews}
-            >
-              <Star size={24} color={colors.text.primary} />
-            </Button>
             <Button
               style={[
                 styles.iconButton,

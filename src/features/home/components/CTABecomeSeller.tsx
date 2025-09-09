@@ -1,20 +1,20 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { useLanguage } from '@/ui/ThemeProvider';
-import { useAppRouter } from '@/services';
 import { Button } from '@/ui';
-import { usePathname } from 'expo-router';
 
-export default function CTABecomeSeller() {
+interface Props {
+  onPress?: () => void;
+}
+
+export default function CTABecomeSeller({ onPress }: Props) {
   const { t } = useLanguage();
-  const { push } = useAppRouter();
-  const pathname = usePathname();
 
   return (
     <Button
       title={t('home.becomeSeller')}
-      onPress={() => pathname !== '/stores/create' && push('/stores/create')}
-      accessibilityRole="link"
+      onPress={onPress}
+      accessibilityRole="button"
       style={styles.button}
     />
   );

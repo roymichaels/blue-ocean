@@ -11,12 +11,8 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { spacing, typography } from '@/shared/ui/tokens';
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { href: '/', title: 'navigation.home', icon: 'Home' },
-  { href: '/stores', title: 'navigation.stores', icon: 'Store' },
-  { href: '/cart', title: 'navigation.cart', icon: 'ShoppingCart' },
-  { href: '/orders', title: 'navigation.orders', icon: 'Package' },
-  { href: '/profile', title: 'navigation.profile', icon: 'User' },
 ] as const;
 
 const SIDEBAR_WIDTH = 80;
@@ -33,7 +29,15 @@ export default function RootLayout() {
   const showSearch = pathname === '/' || pathname === '/index';
   const showCartWidget = showSearch;
 
-  const navItems = useMemo(() => NAV_ITEMS, []);
+  const navItems = useMemo(() => {
+    if (pathname.startsWith('/store/')) {
+      return [
+        ...BASE_NAV_ITEMS,
+        { href: pathname, title: 'navigation.store', icon: 'Store' as const },
+      ];
+    }
+    return BASE_NAV_ITEMS;
+  }, [pathname]);
 
   const NavBar = (
     <View

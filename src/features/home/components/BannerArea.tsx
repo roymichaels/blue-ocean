@@ -20,12 +20,9 @@ import { Plus, Pencil } from 'lucide-react-native';
 import { HeroBanner } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
-import { useAppRouter } from '@/services';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Spinner, Skeleton, Text, Heading, Button } from '@/ui';
 import { spacing, radius, typography } from '@/ui/tokens';
-import { routes } from '@/utils/routes';
-import { usePathname } from 'expo-router';
 
 
 const SmartImage = lazy(() => import('@/components/SmartImage'));
@@ -40,13 +37,12 @@ interface BannerAreaProps {
   onAddBanner: () => void;
   onEditBanner: (banner: HeroBanner) => void;
   loading?: boolean;
+  onSelectCategory?: (category: string) => void;
 }
 
-function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, loading }: BannerAreaProps) {
+function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, loading, onSelectCategory }: BannerAreaProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
-  const { push } = useAppRouter();
-  const pathname = usePathname();
   const bannerScrollRef = useRef<FlatList<HeroBanner>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const rotationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,8 +86,7 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
         <TouchableOpacity
           style={styles.bannerTouchable}
           onPress={() => {
-            const dest = routes.category(item.category);
-            if (pathname !== dest) push(dest);
+            onSelectCategory?.(item.category);
           }}
         >
           <Suspense fallback={<Spinner />}>
