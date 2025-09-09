@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.614.0",
     "@babel/plugin-transform-template-literals": "^7.27.1",
     "@babel/runtime": "^7.27.6",
     "@blue-ocean/sdk-near": "file:packages/sdk-near",
@@ -33,6 +34,7 @@
     "@react-navigation/bottom-tabs": "~6.5.7",
     "@react-navigation/native": "~6.1.6",
     "@react-navigation/native-stack": "~6.9.12",
+    "@shopify/flash-list": "^2.0.3",
     "@tanstack/react-query": "^5.85.6",
     "@waku/core": "0.0.33",
     "@waku/sdk": "0.0.33",
@@ -100,8 +102,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.27.7",
-    "@babel/plugin-transform-modules-commonjs": "^7.27.1",
     "@babel/plugin-transform-class-static-block": "^7.27.1",
+    "@babel/plugin-transform-modules-commonjs": "^7.27.1",
     "@expo/cli": "^0.22.26",
     "@faker-js/faker": "^8.4.0",
     "@types/jest": "^30.0.0",

@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { ProductCard, ProductCardSkeleton } from '@/features/products';
 import { Product, Category } from '@/types';
 import { useLanguage } from '@/ui/ThemeProvider';
@@ -87,10 +88,11 @@ function ProductGrid({
   }
 
   return (
-    <FlatList
+    <FlashList
       data={products}
       keyExtractor={keyExtractor}
       numColumns={2}
+      estimatedItemSize={300}
       columnWrapperStyle={columnWrapperStyle}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
