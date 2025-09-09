@@ -5,7 +5,8 @@ Autonomous agents communicate over the Waku peer‑to‑peer network, keep their
 memory, and hydrate from message history on boot. Configuration such as debug logging or
 Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment variables, but
 defaults are provided for a zero‑config experience. All data is replicated via Waku topics
-and NEAR smart contracts; the app does not use a local SQLite database.
+and NEAR smart contracts; the app does not use a local SQLite database. When configured,
+the key‑value store writes to an S3‑compatible bucket using the lightweight `minio` client.
 
 See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview and [docs/routes.md](docs/routes.md) for route and role details.
 
@@ -114,6 +115,9 @@ Common variables include:
 | -------- | -------- | ----------- |
 | `ADMIN_WALLET_ADDRESS` | yes | NEAR account granted admin rights if no on-chain list exists. |
 | `NEAR_RPC_URL` | no | Primary NEAR RPC endpoint used for blockchain calls. Overrides tenant setting. |
+| `NEAR_LAKE_BUCKET` | no | S3 bucket for NEAR Lake key-value storage. |
+| `NEAR_LAKE_REGION` | no | Region for the NEAR Lake bucket (default `eu-central-1`). |
+| `NEAR_LAKE_ENDPOINT` | no | Custom S3-compatible endpoint for NEAR Lake. |
 | `EXPO_PUBLIC_CONTRACT_ID` | yes | Marketplace contract account the app interacts with. |
 | `EXPO_PUBLIC_WAKU_BOOTSTRAP` | no | Comma-separated list of Waku peers for network bootstrap. |
 | `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |

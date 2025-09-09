@@ -1,13 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Readable } from 'stream';
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
-  ListObjectsV2Command,
-} from '@aws-sdk/client-s3';
+import { Client as S3Client } from 'minio';
 
 import { assertNearChain } from './chain';
 import { initLake } from './nearLake';
@@ -43,16 +37,25 @@ function ensureLake() {
         s3RegionName: region,
         startBlockHeight: BigInt(process.env.NEAR_LAKE_START_BLOCK || '0'),
       });
-      // The NEAR Lake bucket exposes a public, S3-compatible API, so this
-      // client works out of the box without AWS credentials. Use the
-      // `NEAR_LAKE_ENDPOINT` env var to point at a custom S3 endpoint and
-      // provide `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` if that endpoint
-      // requires authentication.
-      s3 = new S3Client({
+      const endpoint = process.env.NEAR_LAKE_ENDPOINT;
+      const opts: any = {
         region,
-        endpoint: process.env.NEAR_LAKE_ENDPOINT,
-        forcePathStyle: !!process.env.NEAR_LAKE_ENDPOINT,
-      });
+        s3ForcePathStyle: true,
+      };
+      if (endpoint) {
+        const url = new URL(endpoint);
+        opts.endPoint = url.hostname;
+        if (url.port) opts.port = parseInt(url.port, 10);
+        opts.useSSL = url.protocol === 'https:';
+      } else {
+        opts.endPoint = `s3.${region}.amazonaws.com`;
+        opts.useSSL = true;
+      }
+      if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+        opts.accessKey = process.env.AWS_ACCESS_KEY_ID;
+        opts.secretKey = process.env.AWS_SECRET_ACCESS_KEY;
+      }
+      s3 = new S3Client(opts);
     }
   } catch {
     // ignore
@@ -97,9 +100,9 @@ export async function setValue(address: string, key: string, value: string) {
   if (s3 && bucket) {
     const Key = objectKey(address, key);
     if (value === '') {
-      await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key })).catch(() => {});
+      await s3.removeObject(bucket, Key).catch(() => {});
     } else {
-      await s3.send(new PutObjectCommand({ Bucket: bucket, Key, Body: value }));
+      await s3.putObject(bucket, Key, value);
     }
     return;
   }
@@ -119,9 +122,7 @@ export async function removeValue(address: string, key: string) {
     return;
   }
   if (s3 && bucket) {
-    await s3
-      .send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey(address, key) }))
-      .catch(() => {});
+    await s3.removeObject(bucket, objectKey(address, key)).catch(() => {});
     return;
   }
   const file = localFile(address, key);
@@ -135,10 +136,8 @@ export async function getValue(address: string, key: string): Promise<string | n
   }
   if (s3 && bucket) {
     try {
-      const res = await s3.send(
-        new GetObjectCommand({ Bucket: bucket, Key: objectKey(address, key) }),
-      );
-      return await streamToString(res.Body as Readable);
+      const stream = await s3.getObject(bucket, objectKey(address, key));
+      return await streamToString(stream as Readable);
     } catch {
       return null;
     }
@@ -162,16 +161,17 @@ export async function listValues(
   }
   if (s3 && bucket) {
     const prefix = `${address}/`;
-    const res = await s3
-      .send(new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix }))
-      .catch(() => ({ Contents: [] } as any));
-    const contents = res.Contents ?? [];
     const out: { key: string; value: string }[] = [];
-    for (const obj of contents) {
-      const fullKey = obj.Key!;
-      const key = fullKey.substring(prefix.length);
-      const val = await getValue(address, key);
-      if (val !== null) out.push({ key, value: val });
+    try {
+      const stream = s3.listObjectsV2(bucket, prefix, true);
+      for await (const obj of stream as any) {
+        const fullKey = obj.name as string;
+        const key = fullKey.substring(prefix.length);
+        const val = await getValue(address, key);
+        if (val !== null) out.push({ key, value: val });
+      }
+    } catch {
+      // ignore
     }
     return out;
   }
