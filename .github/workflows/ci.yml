@@ -31,3 +31,20 @@ jobs:
       - run: yarn typecheck
       - run: yarn config:check
       - run: yarn build:web
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+      - name: Clippy
+        working-directory: contracts/marketplace
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Cargo audit
+        working-directory: contracts/marketplace
+        run: cargo audit

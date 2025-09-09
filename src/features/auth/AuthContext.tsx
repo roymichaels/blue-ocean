@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { Spinner } from '@/ui';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
-import { chainAdapter } from '@/services/chain';
+import { useWallet } from '@/contexts/WalletProvider';
 import usersAgent from '@/agents/users-agent';
 import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
@@ -45,7 +45,7 @@ export const useAuth = () => useContext(AuthContext);
 interface AuthProviderProps { children: ReactNode }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const address = chainAdapter.useAccount();
+  const { address, connect, disconnect } = useWallet();
   const [user, setUser] = useState<User | null>(null);
   const [initialized, setInitialized] = useState(false);
 
@@ -103,17 +103,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   useEffect(() => {
-    chainAdapter
-      .init()
-      .catch(() => null)
-      .finally(() => {
-        checkAuthState().finally(() => setInitialized(true));
-      });
+    checkAuthState().finally(() => setInitialized(true));
   }, [address]);
 
   const login = async () => {
     try {
-      await chainAdapter.openModal();
+      await connect();
     } catch (err: unknown) {
       errorLog(
         t('auth.walletConnectionFailed', 'Wallet connection failed'),
@@ -133,9 +128,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      const selector = chainAdapter.getSelector();
-      const wallet = await selector?.wallet();
-      await wallet?.signOut();
+      await disconnect();
     } catch (err) {
       errorLog(t('auth.logoutFailed', 'Logout failed'), err);
     }

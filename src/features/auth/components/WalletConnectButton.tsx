@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button } from '@/ui';
-import { chainAdapter } from '@/services/chain';
+import { useWallet } from '@/contexts/WalletProvider';
 
 interface WalletConnectButtonProps {
   onConnect?: () => void;
 }
 
 export default function WalletConnectButton({ onConnect }: WalletConnectButtonProps) {
-  const account = chainAdapter.useAccount();
+  const { address: account, connect } = useWallet();
 
   useEffect(() => {
     if (account) {
@@ -17,12 +17,7 @@ export default function WalletConnectButton({ onConnect }: WalletConnectButtonPr
   }, [account, onConnect]);
 
   const handleConnect = async () => {
-    const { error } = await chainAdapter.init();
-    if (error) {
-      console.error('Wallet initialization failed:', error);
-      return;
-    }
-    chainAdapter.openModal();
+    await connect();
   };
 
   return (

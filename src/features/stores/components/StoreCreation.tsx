@@ -13,6 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/ui/ThemeProvider';
 import storesAgent from '@/agents/stores-agent';
 import { chainAdapter } from '@/services/chain';
+import { useWallet } from '@/contexts/WalletProvider';
 import { errorLog } from '@/utils/logger';
 
 const StoreCreation: React.FC = () => {
@@ -21,11 +22,12 @@ const StoreCreation: React.FC = () => {
   const { t } = useLanguage();
   const { replace } = useAppRouter();
 
+  const { address: owner, connect } = useWallet();
+
   const mintStore = async () => {
     if (!name) return;
-    const owner = chainAdapter.getAccountId();
     if (!owner) {
-      await chainAdapter.openModal();
+      await connect();
       return;
     }
     try {

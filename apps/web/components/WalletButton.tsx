@@ -1,13 +1,8 @@
 import React from 'react';
-import { chainAdapter } from '@/services/chain';
+import { useWallet } from '@/contexts/WalletProvider';
 
 export default function WalletButton() {
-  const [acct, setAcct] = React.useState<string | null>(null);
-  React.useEffect(() => {
-    try {
-      setAcct(chainAdapter.getAccountId());
-    } catch {}
-  }, []);
+  const { address: acct, connect } = useWallet();
   return (
     <button
       style={{
@@ -19,8 +14,7 @@ export default function WalletButton() {
       }}
       onClick={async () => {
         try {
-          await chainAdapter.openModal();
-          setAcct(chainAdapter.getAccountId());
+          await connect();
         } catch {}
       }}
     >
