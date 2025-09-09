@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { Plus, ArrowUpDown } from 'lucide-react-native';
 import { Product } from '@/types';
@@ -19,7 +20,7 @@ import CategoryChips from '@/features/home/components/CategoryChips';
 import HomeOptions from '@/features/home/components/HomeOptions';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import CategoryCard from '@/features/home/components/CategoryCard';
-import { Spinner } from '@/ui/primitives';
+import { Spinner, Heading } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
 import { CartModal } from '@/features/cart';
 import { ProductFormModal } from '@/features/products';
@@ -27,7 +28,8 @@ import InfoModal from '@/components/InfoModal';
 import { useHomeFilters } from '@/features/home/hooks/useHomeFilters';
 import SortModal from '@/features/home/components/SortModal';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
-import { spacing } from '@/ui/tokens';
+import { spacing, typography, radius, shadows } from '@/ui/tokens';
+import HeroCallout from '@/features/home/components/HeroCallout';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
 import HomeError from '@/features/home/screens/HomeError';
 
@@ -119,6 +121,7 @@ function HomeScreenContent() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
+        <HeroCallout />
         <CategoryChips
           categories={categoriesToShow}
           selectedCategory={selectedCategory}
@@ -133,16 +136,22 @@ function HomeScreenContent() {
           <HomeOptions />
 
         {/* Categories Section */}
-        <Container style={styles.section}>
+        <Container
+          style={[
+            styles.section,
+            { backgroundColor: themeColors.surface.primary },
+            Platform.select(shadows.sm),
+          ]}
+        >
           <Stack direction="horizontal" style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
+            <Heading size="lg" style={{ color: themeColors.text.primary }}>
               {t('home.categories')}
-            </Text>
-              <TouchableOpacity onPress={() => setShowCategorySelector(true)}>
-                <Text style={[styles.seeAll, { color: themeColors.gold }]}>
-                  {t('common.viewAll')}
-                </Text>
-              </TouchableOpacity>
+            </Heading>
+            <TouchableOpacity onPress={() => setShowCategorySelector(true)}>
+              <Text style={[styles.seeAll, { color: themeColors.gold }]}>
+                {t('common.viewAll')}
+              </Text>
+            </TouchableOpacity>
           </Stack>
 
           {categoriesToShow.length > 0 ? (
@@ -172,14 +181,20 @@ function HomeScreenContent() {
         </Container>
 
         {/* Products Section */}
-        <Container style={styles.section}>
+        <Container
+          style={[
+            styles.section,
+            { backgroundColor: themeColors.surface.primary },
+            Platform.select(shadows.sm),
+          ]}
+        >
           <Stack direction="horizontal" style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
+            <Heading size="lg" style={{ color: themeColors.text.primary }}>
               {searchQuery
                 ? t('home.searchResults', { query: searchQuery })
                 : t('home.products')}
-            </Text>
-          <Stack direction="horizontal" gap="spacer8" style={styles.sectionActions}>
+            </Heading>
+            <Stack direction="horizontal" gap="spacer8" style={styles.sectionActions}>
               <TouchableOpacity
                 style={[
                   styles.sortButton,
@@ -204,7 +219,7 @@ function HomeScreenContent() {
                       borderColor: themeColors.gold,
                     },
                   ]}
-                    onPress={() => openProductForm()}
+                  onPress={() => openProductForm()}
                 >
                   <Plus size={16} color={themeColors.gold} />
                 </TouchableOpacity>
@@ -271,19 +286,17 @@ function HomeScreenContent() {
 const styles = StyleSheet.create({
   section: {
     paddingHorizontal: spacing.spacer16,
+    paddingVertical: spacing.spacer24,
     marginBottom: spacing.spacer24,
+    borderRadius: radius.lg,
   },
   sectionHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.spacer16,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   seeAll: {
-    fontSize: 14,
+    ...typography.sm,
     fontWeight: '600',
   },
   categoriesList: {
@@ -299,19 +312,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.spacer12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingVertical: spacing.spacer8,
+    borderRadius: radius.xl,
     borderWidth: 1,
   },
   sortText: {
-    fontSize: 12,
+    ...typography.xs,
     fontWeight: '500',
     marginLeft: spacing.spacer4,
   },
   addProductButton: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radius.full,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
