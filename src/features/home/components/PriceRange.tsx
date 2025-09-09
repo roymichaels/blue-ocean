@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextField } from '@/ui';
 import { spacing } from '@/shared/ui/tokens';
+import { t } from '@/i18n';
 
 interface PriceRangeProps {
   minPrice: string;
@@ -21,7 +22,7 @@ export default function PriceRange({
       <TextField
         value={minPrice}
         onChangeText={setMinPrice}
-        placeholder="Min"
+        placeholder={t('priceRange.min')}
         keyboardType="numeric"
         style={[styles.priceInput, { marginEnd: spacing.spacer8 }]}
         textAlign="right"
@@ -29,7 +30,7 @@ export default function PriceRange({
       <TextField
         value={maxPrice}
         onChangeText={setMaxPrice}
-        placeholder="Max"
+        placeholder={t('priceRange.max')}
         keyboardType="numeric"
         style={styles.priceInput}
         textAlign="right"
