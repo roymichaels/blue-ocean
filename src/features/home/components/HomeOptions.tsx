@@ -1,35 +1,51 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Alert } from 'react-native';
 import { Card, Text, Button } from '@/ui';
 import { Stack } from '@/ui/layout';
 import { spacing, radius } from '@/ui/tokens';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
+import { useAppRouter } from '@/services/useAppRouter';
+import { routes } from '@/utils/routes';
 
-interface HomeOptionsProps {
-  onCreateStore?: () => void;
-  onBecomeDriver?: () => void;
-}
-
-export default function HomeOptions({ onCreateStore, onBecomeDriver }: HomeOptionsProps) {
+export default function HomeOptions() {
   const { t } = useLanguage();
   const { colors } = useTheme();
+  const appRouter = useAppRouter();
+
+  const handleCreateStore = () => {
+    appRouter.push(routes.createStore());
+  };
+
+  const handleBecomeDriver = () => {
+    Alert.alert(t('profile.comingSoon', 'Coming Soon'));
+  };
 
   return (
     <Stack gap="spacer16" style={styles.container}>
       <Card style={styles.card}>
         <Stack gap="spacer8">
-          <Text style={[styles.title, { color: colors.text.primary }]}>
+          <Text style={[styles.title, { color: colors.text.primary }]}> 
             {t('home.createStore', 'Create a Store')}
           </Text>
-          <Button title={t('home.createStore', 'Create a Store')} onPress={onCreateStore} />
+          <Button
+            title={t('home.createStore', 'Create a Store')}
+            onPress={handleCreateStore}
+            accessibilityRole="link"
+            testID="create-store-link"
+          />
         </Stack>
       </Card>
       <Card style={styles.card}>
         <Stack gap="spacer8">
-          <Text style={[styles.title, { color: colors.text.primary }]}>
+          <Text style={[styles.title, { color: colors.text.primary }]}> 
             {t('home.becomeDriver', 'Become a Driver')}
           </Text>
-          <Button title={t('home.becomeDriver', 'Become a Driver')} onPress={onBecomeDriver} />
+          <Button
+            title={t('home.becomeDriver', 'Become a Driver')}
+            onPress={handleBecomeDriver}
+            accessibilityRole="button"
+            testID="become-driver-button"
+          />
         </Stack>
       </Card>
     </Stack>
