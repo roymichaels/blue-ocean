@@ -2,9 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Pencil } from 'lucide-react-native';
 import { Category } from '@/types';
-import { useTheme } from '@/ui/ThemeProvider';
-import { spacing, radius, shadows, typography } from '@/shared/ui/tokens';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
+import { spacing } from '@/shared/ui/tokens';
 
+        
 interface CategoryCardProps {
   category: Category;
   isStoreOwner: boolean;
@@ -14,7 +15,7 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category, isStoreOwner, onPress, onEdit }: CategoryCardProps) {
   const { colors: themeColors } = useTheme();
-  const shadowStyle = Platform.select(shadows.sm);
+  const { t } = useLanguage();
 
   return (
     <TouchableOpacity
@@ -33,7 +34,7 @@ export default function CategoryCard({ category, isStoreOwner, onPress, onEdit }
         <Text style={styles.categoryEmoji}>{category.icon}</Text>
       </View>
       <Text style={[styles.categoryName, { color: themeColors.text.primary }]}>
-        {category.name}
+        {t(category.name)}
       </Text>
       {isStoreOwner && (
         <View style={styles.categoryAdminActions}>

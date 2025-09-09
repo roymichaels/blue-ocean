@@ -74,7 +74,7 @@ function CategoryChips({
                     : colors.text.primary,
               }}
             >
-              {cat.name}
+              {t(cat.name)}
             </Text>
           </TouchableOpacity>
         ))}

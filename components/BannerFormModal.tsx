@@ -11,7 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { X, Save, Trash2 } from 'lucide-react-native';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { HeroBanner, Category } from '../types';
 import DatabaseService from '@/services/database';
 import { Spinner } from '@/ui';
@@ -36,6 +36,7 @@ export default function BannerFormModal({
   onDeleted,
 }: BannerFormModalProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [editingBanner, setEditingBanner] = useState<Partial<HeroBanner>>({});
   const [imageUrl, setImageUrl] = useState('');
   const [showCategorySelector, setShowCategorySelector] = useState(false);
@@ -281,7 +282,12 @@ export default function BannerFormModal({
                     },
                   ]}
                 >
-                  {editingBanner.category || 'בחר קטגוריה'}
+                  {editingBanner.category
+                    ? t(
+                        categories.find((c) => c.id === editingBanner.category)?.name ??
+                          editingBanner.category,
+                      )
+                    : 'בחר קטגוריה'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -392,7 +398,7 @@ export default function BannerFormModal({
                         { color: colors.text.primary },
                       ]}
                     >
-                      {c.name}
+                      {t(c.name)}
                     </Text>
                   </View>
                   <Text

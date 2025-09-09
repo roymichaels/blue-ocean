@@ -7,14 +7,14 @@ export function useHomeData() {
 
   const fallbackCategories = useMemo(
     () => [
-      { id: 'electronics', name: t('categories.electronics'), icon: String.fromCodePoint(0x1F4F1) } as Category,
-      { id: 'fashion', name: t('categories.fashion'), icon: String.fromCodePoint(0x1F457) } as Category,
-      { id: 'home', name: t('categories.home'), icon: String.fromCodePoint(0x1F3E0) } as Category,
-      { id: 'beauty', name: t('categories.beauty'), icon: String.fromCodePoint(0x1F484) } as Category,
-      { id: 'sports', name: t('categories.sports'), icon: String.fromCodePoint(0x1F3C0) } as Category,
-      { id: 'books', name: t('categories.books'), icon: String.fromCodePoint(0x1F4DA) } as Category,
+      { id: 'electronics', name: 'categories.electronics', icon: String.fromCodePoint(0x1F4F1) } as Category,
+      { id: 'fashion', name: 'categories.fashion', icon: String.fromCodePoint(0x1F457) } as Category,
+      { id: 'home', name: 'categories.home', icon: String.fromCodePoint(0x1F3E0) } as Category,
+      { id: 'beauty', name: 'categories.beauty', icon: String.fromCodePoint(0x1F484) } as Category,
+      { id: 'sports', name: 'categories.sports', icon: String.fromCodePoint(0x1F3C0) } as Category,
+      { id: 'books', name: 'categories.books', icon: String.fromCodePoint(0x1F4DA) } as Category,
     ],
-    [t]
+    []
   );
 
   const fallbackBanners = useMemo(

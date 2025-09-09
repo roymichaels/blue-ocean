@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { X, Save, Trash2, Plus } from 'lucide-react-native';
 import { Product, Subcategory, PricingTier, ProductIndexItem } from '@/types';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import DatabaseService from '@/services/database';
 import PinataService from '@/services/pinata';
@@ -54,6 +54,7 @@ export default function ProductFormModal({
   onDeleted,
 }: ProductFormModalProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const { currencySymbol } = useCurrency();
   const address = chainAdapter.useAccountId();
   const { push } = useAppRouter();
@@ -492,7 +493,10 @@ export default function ProductFormModal({
                 >
                   <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.category && { color: colors.text.tertiary }]}>
                     {editingProduct.category
-                      ? categories.find(c => c.id === editingProduct.category)?.name || editingProduct.category
+                      ? t(
+                          categories.find(c => c.id === editingProduct.category)?.name ??
+                            editingProduct.category,
+                        )
                       : 'בחר קטגוריה'}
                   </Text>
                 </TouchableOpacity>
@@ -517,7 +521,11 @@ export default function ProductFormModal({
                 >
                   <Text style={[styles.categorySelectorText, { color: colors.text.primary }, !editingProduct.subcategory && { color: colors.text.tertiary }]}>
                     {editingProduct.subcategory
-                      ? availableSubcategories.find(s => s.id === editingProduct.subcategory)?.name || editingProduct.subcategory
+                      ? t(
+                          availableSubcategories.find(
+                            s => s.id === editingProduct.subcategory,
+                          )?.name ?? editingProduct.subcategory,
+                        )
                       : 'בחר תת-קטגוריה'}
                   </Text>
                 </TouchableOpacity>
@@ -669,7 +677,9 @@ export default function ProductFormModal({
                 <TouchableOpacity key={category.id} style={[styles.categorySelectorItem, { borderBottomColor: colors.border.secondary }]} onPress={() => selectCategory(category.id)}>
                   <View style={styles.categorySelectorItemContent}>
                     <Text style={styles.categorySelectorItemIcon}>{category.icon}</Text>
-                    <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>{category.name}</Text>
+                    <Text style={[styles.categorySelectorItemText, { color: colors.text.primary }]}>
+                      {t(category.name)}
+                    </Text>
                   </View>
                   <Text style={[styles.categorySelectorItemId, { color: colors.text.tertiary }]}>{category.id}</Text>
                 </TouchableOpacity>
