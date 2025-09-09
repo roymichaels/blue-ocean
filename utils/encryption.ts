@@ -30,6 +30,23 @@ export async function deriveSharedKey(
 }
 
 /**
+ * Derive a shared 32-byte key for non-WebCrypto algorithms like xChaCha20.
+ * Returns raw key bytes instead of importing as a CryptoKey.
+ */
+export async function deriveSharedKeyRaw(
+  myPrivateEd25519: Uint8Array,
+  peerPublicEd25519Hex: string,
+  info: string,
+  salt: Uint8Array,
+): Promise<Uint8Array> {
+  const myX = ed2curve.convertSecretKey(myPrivateEd25519);
+  const peerX = ed2curve.convertPublicKey(Buffer.from(peerPublicEd25519Hex, 'hex'));
+  if (!myX || !peerX) throw new Error('key conversion failed');
+  const shared = nacl.scalarMult(myX, peerX);
+  return hkdf(sha256, shared, salt, info, 32);
+}
+
+/**
  * Derive a deterministic salt from two public ed25519 keys.
  * The keys are sorted to ensure consistent salt regardless of caller order.
  */
