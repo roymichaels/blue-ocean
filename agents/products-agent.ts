@@ -17,6 +17,7 @@ import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
 import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
 import { sign } from '@noble/ed25519';
+import { canonicalJson } from '@/utils/canonicalJson';
 import type { WakuMessage } from '@/types/waku';
 import { errorLog } from '@/utils/logger';
 import { buildTopic } from '@/utils/wakuTopics';
@@ -143,7 +144,11 @@ class ProductsAgent {
         signature: '',
       };
       const msgBytes = new TextEncoder().encode(
-        JSON.stringify({ type: msg.type, payload: msg.payload, sender: msg.sender }),
+        canonicalJson({
+          type: msg.type,
+          payload: msg.payload,
+          sender: msg.sender,
+        }),
       );
       const sig = await sign(msgBytes, priv);
       msg.signature = Buffer.from(sig).toString('hex');

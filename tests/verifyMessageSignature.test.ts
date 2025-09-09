@@ -1,5 +1,6 @@
 import { getPublicKey, sign, utils } from '@noble/ed25519';
 import { verifyMessageSignature } from '../utils/verifyMessageSignature';
+import { canonicalJson } from '../utils/canonicalJson';
 import type { WakuMessage } from '../types/waku';
 
 describe('verifyMessageSignature', () => {
@@ -15,7 +16,7 @@ describe('verifyMessageSignature', () => {
       signature: '',
     };
     const bytes = new TextEncoder().encode(
-      JSON.stringify({ type: msg.type, payload: msg.payload, sender: msg.sender }),
+      canonicalJson({ type: msg.type, payload: msg.payload, sender: msg.sender }),
     );
     const sig = await sign(bytes, priv);
     msg.signature = Buffer.from(sig).toString('hex');

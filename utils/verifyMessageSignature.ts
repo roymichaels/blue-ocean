@@ -1,5 +1,6 @@
 import { verify } from '@noble/ed25519';
 import type { WakuMessage } from '../types/waku';
+import { canonicalJson } from './canonicalJson';
 
 export async function verifyMessageSignature<T>(
   message: WakuMessage<T>,
@@ -7,7 +8,7 @@ export async function verifyMessageSignature<T>(
 ): Promise<boolean> {
   try {
     const msgBytes = new TextEncoder().encode(
-      JSON.stringify({
+      canonicalJson({
         type: message.type,
         payload: message.payload,
         sender: message.sender,
