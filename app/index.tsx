@@ -8,48 +8,36 @@ import {
   useWindowDimensions,
   Modal,
 } from 'react-native';
-import { Plus, X, ArrowUpDown, Info } from 'lucide-react-native';
-import { Product, HeroBanner, Category } from '@/types';
-import { RefreshControl } from 'react-native';
+import { Plus, ArrowUpDown } from 'lucide-react-native';
+import { Product } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
-import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
 import { useHomeModals } from '@/features/home/hooks/useHomeModals';
-import { useHomeRefresh } from '@/features/home/hooks/useHomeRefresh';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
-import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
+import HomeOptions from '@/features/home/components/HomeOptions';
 import StoreCreation from '@/features/stores/components/StoreCreation';
-import BannerArea from '@/features/home/components/BannerArea';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import CategoryCard from '@/features/home/components/CategoryCard';
 import { Spinner } from '@/ui/primitives';
-import BannerFormModal from '@/components/BannerFormModal';
+import EmptyState from '@/shared/ui/EmptyState';
 import { CartModal } from '@/features/cart';
 import { ProductFormModal } from '@/features/products';
 import InfoModal from '@/components/InfoModal';
 import { useHomeFilters } from '@/features/home/hooks/useHomeFilters';
 import SortModal from '@/features/home/components/SortModal';
-import { ScrollArea } from '@/ui/layout';
+import { ScrollArea, Container, Stack } from '@/ui/layout';
+import { spacing } from '@/ui/tokens';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
-import HomeBanners from '@/features/home/screens/HomeBanners';
-import HomeCategories from '@/features/home/screens/HomeCategories';
-import HomeProducts from '@/features/home/screens/HomeProducts';
-import HomeAdminActions from '@/features/home/screens/HomeAdminActions';
 import HomeError from '@/features/home/screens/HomeError';
 
 
 function HomeScreenContent() {
   const home = useHome();
-  const banners = useHomeBanners();
-  const { refreshing, refresh, error } = useHomeRefresh(home, banners);
+  const { refreshing, refresh, error } = home;
   const {
-    bannerFormVisible,
-    editingBanner,
-    openBannerForm,
-    closeBannerForm,
     productFormVisible,
     productToEdit,
     openProductForm,
@@ -65,17 +53,37 @@ function HomeScreenContent() {
   const { isStoreOwner } = useAuth();
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
-
   const { products, categories, upsertProduct, removeProduct, loading: productsLoading } = home;
 
-  const { heroBanners, upsertBanner, removeBanner, loading: bannersLoading } = banners;
-
-  const { fallbackCategories, fallbackBanners } = useHomeData();
+  const { fallbackCategories } = useHomeData();
   const categoriesToShow = categories.length ? categories : fallbackCategories;
-  const heroBannersToShow = heroBanners.length ? heroBanners : fallbackBanners;
 
   const { filteredProducts, searchQuery, selectedCategory, setSelectedCategory, minPrice, setMinPrice, maxPrice, setMaxPrice, sortBy, setSortBy, showSortModal, setShowSortModal } = useHomeFilters(products);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
+  const { width: windowWidth } = useWindowDimensions();
+
+  const getProductItemWidth = () => {
+    if (windowWidth >= 1024) {
+      return '23.5%';
+    } else if (windowWidth >= 768) {
+      return '32%';
+    }
+    return '48%';
+  };
+
+  const getSortLabel = () => {
+    switch (sortBy) {
+      case 'price-low':
+        return t('home.priceLowHigh');
+      case 'price-high':
+        return t('home.priceHighLow');
+      case 'rating':
+        return t('home.highRating');
+      case 'newest':
+      default:
+        return t('home.newest');
+    }
+  };
 
   const handleCategoryPress = useCallback(
     (id: string) => setSelectedCategory(id),
@@ -99,14 +107,6 @@ function HomeScreenContent() {
       />
     );
   }
-
-  const handleBannerSaved = (b: HeroBanner, isNew: boolean) => {
-    upsertBanner(b, isNew);
-  };
-
-  const handleBannerDeleted = (id: string) => {
-    removeBanner(id);
-  };
 
   const handleProductSaved = (p: Product, isNew: boolean) => {
     upsertProduct(p, isNew);
@@ -135,15 +135,7 @@ function HomeScreenContent() {
           maxPrice={maxPrice}
           setMaxPrice={setMaxPrice}
         />
-      <CTABecomeSeller onPress={openStoreCreation} />
-      <BannerArea
-        heroBanners={heroBannersToShow}
-        isStoreOwner={isStoreOwner}
-        onAddBanner={openBannerForm}
-        onEditBanner={openBannerForm}
-        loading={bannersLoading}
-        onSelectCategory={setSelectedCategory}
-      />
+        <HomeOptions onCreateStore={openStoreCreation} />
 
         {/* Categories Section */}
         <Container style={styles.section}>
@@ -241,16 +233,6 @@ function HomeScreenContent() {
       </ScrollArea>
 
       <Suspense fallback={<Spinner />}>
-        <BannerFormModal
-          visible={bannerFormVisible}
-          onClose={closeBannerForm}
-          banner={editingBanner || undefined}
-          categories={categoriesToShow}
-          onSaved={handleBannerSaved}
-          onDeleted={handleBannerDeleted}
-        />
-      </Suspense>
-      <Suspense fallback={<Spinner />}>
         <ProductFormModal
           visible={productFormVisible}
           onClose={closeProductForm}
@@ -300,6 +282,56 @@ function HomeScreenContent() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  section: {
+    paddingHorizontal: spacing.spacer16,
+    marginBottom: spacing.spacer24,
+  },
+  sectionHeader: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.spacer16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  seeAll: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  categoriesList: {
+    paddingLeft: spacing.spacer16,
+  },
+  categoryWrapper: {
+    marginLeft: spacing.spacer20,
+  },
+  sectionActions: {
+    alignItems: 'center',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.spacer12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  sortText: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginLeft: spacing.spacer4,
+  },
+  addProductButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+});
 
 export default function HomeScreen() {
   return (

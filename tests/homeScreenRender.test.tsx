@@ -107,7 +107,8 @@ describe('HomeScreen render', () => {
     const tree = root!.toJSON();
     const str = JSON.stringify(tree);
     expect(str).toContain('categories.electronics');
-    expect(str).toContain('home.fallbackBanner1Title');
+    expect(str).toContain('home.createStore');
+    expect(str).toContain('home.becomeDriver');
     expect(str).toContain('home.noProducts');
   });
 });
