@@ -13,7 +13,11 @@ import productsAgent, {
 import ordersAgent from '../agents/orders-agent';
 import SettingsAgent from '../agents/settings-agent';
 import reviewAgent from '../agents/review-agent';
-import chain from '@/services/chain';
+import chain, { chainAdapter } from '@/services/chain';
+import { getPrivateKey } from '@/services/localIdentity';
+import { aesEncrypt, aesDecrypt } from '@/utils/encryption';
+import { sha256 } from '@noble/hashes/sha256';
+import { Buffer } from 'buffer';
 
 let listAllReviews: (() => Promise<Review[]>) | undefined;
 if (chain === 'near') {
@@ -40,6 +44,7 @@ import {
 
 const CHAT_MESSAGE_LIMIT = 50;
 const CHAT_STORAGE_PREFIX = 'chat_messages_';
+const WISHLIST_STORAGE_PREFIX = 'wishlist_';
 
 class DatabaseService {
   private static instance: DatabaseService;
@@ -64,6 +69,60 @@ class DatabaseService {
 
   private constructor() {}
 
+  /**
+   * Derive a symmetric key from the device's private identity key and the
+   * current wallet/account. This prevents one wallet from reading another
+   * wallet's data on the same device.
+   */
+  private async getEncryptionKey(scope?: string): Promise<CryptoKey> {
+    const priv = await getPrivateKey();
+    const acct = scope || chainAdapter.getAccountId() || 'anon';
+    const material = sha256(
+      Buffer.concat([Buffer.from(priv), Buffer.from(acct)]),
+    );
+    return crypto.subtle.importKey(
+      'raw',
+      material,
+      { name: 'AES-GCM' },
+      false,
+      ['encrypt', 'decrypt'],
+    );
+  }
+
+  private async loadWishlist(userId: string): Promise<WishlistItem[]> {
+    if (!this.wishlist[userId]) {
+      try {
+        const raw = await AsyncStorage.getItem(
+          `${WISHLIST_STORAGE_PREFIX}${userId}`,
+        );
+        if (raw) {
+          const key = await this.getEncryptionKey(userId);
+          const dec = await aesDecrypt(raw, key);
+          this.wishlist[userId] = JSON.parse(dec) as WishlistItem[];
+        } else {
+          this.wishlist[userId] = [];
+        }
+      } catch {
+        this.wishlist[userId] = [];
+      }
+    }
+    return this.wishlist[userId];
+  }
+
+  private async persistWishlist(userId: string): Promise<void> {
+    const list = this.wishlist[userId] || [];
+    try {
+      const key = await this.getEncryptionKey(userId);
+      const enc = await aesEncrypt(JSON.stringify(list), key);
+      await AsyncStorage.setItem(
+        `${WISHLIST_STORAGE_PREFIX}${userId}`,
+        enc,
+      );
+    } catch (err) {
+      errorLog('Failed to persist wishlist', err);
+    }
+  }
+
   private async cacheChatMessages(
     roomId: string,
     msgs: ChatMessage[],
@@ -71,10 +130,9 @@ class DatabaseService {
     const trimmed = msgs.slice(-CHAT_MESSAGE_LIMIT);
     this.chatMessages.set(roomId, trimmed);
     try {
-      await AsyncStorage.setItem(
-        `${CHAT_STORAGE_PREFIX}${roomId}`,
-        JSON.stringify(trimmed),
-      );
+      const key = await this.getEncryptionKey();
+      const payload = await aesEncrypt(JSON.stringify(trimmed), key);
+      await AsyncStorage.setItem(`${CHAT_STORAGE_PREFIX}${roomId}`, payload);
     } catch (err) {
       errorLog('Failed to persist chat messages', err);
     }
@@ -377,10 +435,14 @@ class DatabaseService {
     let msgs = this.chatMessages.get(roomId);
     if (!msgs) {
       try {
-        const raw = await AsyncStorage.getItem(
-          `${CHAT_STORAGE_PREFIX}${roomId}`,
-        );
-        msgs = raw ? (JSON.parse(raw) as ChatMessage[]) : [];
+        const raw = await AsyncStorage.getItem(`${CHAT_STORAGE_PREFIX}${roomId}`);
+        if (raw) {
+          const key = await this.getEncryptionKey();
+          const dec = await aesDecrypt(raw, key);
+          msgs = JSON.parse(dec) as ChatMessage[];
+        } else {
+          msgs = [];
+        }
       } catch {
         msgs = [];
       }
@@ -418,11 +480,11 @@ class DatabaseService {
 
   // Wishlist
   async getWishlistItems(userId: string): Promise<WishlistItem[]> {
-    return this.wishlist[userId] || [];
+    return this.loadWishlist(userId);
   }
 
   async addWishlistItem(userId: string, productId: string): Promise<void> {
-    const list = this.wishlist[userId] || [];
+    const list = await this.loadWishlist(userId);
     if (list.some((w) => w.productId === productId)) return;
     const product = await fetchProduct(productId);
     if (!product) return;
@@ -433,11 +495,13 @@ class DatabaseService {
       addedAt: new Date().toISOString(),
     });
     this.wishlist[userId] = list;
+    await this.persistWishlist(userId);
   }
 
   async removeWishlistItem(userId: string, productId: string): Promise<void> {
-    const list = this.wishlist[userId] || [];
+    const list = await this.loadWishlist(userId);
     this.wishlist[userId] = list.filter((w) => w.productId !== productId);
+    await this.persistWishlist(userId);
   }
 
   // Delivery jobs
