@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback } from 'react';
+import React, { Suspense, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,7 @@ import {
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import { useAppRouter } from '@/services';
-import { Plus, X, ArrowUpDown, Pencil, Info } from 'lucide-react-native';
+import { Plus, X, ArrowUpDown, Info } from 'lucide-react-native';
 import { Product, HeroBanner, Category } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
 import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
@@ -32,13 +31,10 @@ import InfoModal from '@/components/InfoModal';
 import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
 import { spacing } from '@/shared/ui/tokens';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
-import { routes } from '@/utils/routes';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
-import { usePathname } from 'expo-router';
 
 
 function HomeScreenContent() {
-  const { push } = useAppRouter();
   const { width: windowWidth } = useWindowDimensions();
   const home = useHome();
   const banners = useHomeBanners();
@@ -60,7 +56,6 @@ function HomeScreenContent() {
   const { isStoreOwner } = useAuth();
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
-  const pathname = usePathname();
 
   const {
     products,
@@ -95,6 +90,7 @@ function HomeScreenContent() {
     showSortModal,
     setShowSortModal,
   } = useHomeFilters(products);
+  const [showCategorySelector, setShowCategorySelector] = useState(false);
 
   const handleReload = useCallback(() => {
     closeInfoModal();
@@ -155,13 +151,10 @@ function HomeScreenContent() {
   };
 
   const renderCategory = ({ item }: { item: Category }) => (
-      <TouchableOpacity
-        style={[styles.categoryCard]}
-        onPress={() => {
-          const dest = routes.category(item.id);
-          if (pathname !== dest) push(dest);
-        }}
-      >
+    <TouchableOpacity
+      style={[styles.categoryCard]}
+      onPress={() => setSelectedCategory(item.id)}
+    >
       <View
         style={[
           styles.categoryIcon,
@@ -173,28 +166,9 @@ function HomeScreenContent() {
       >
         <Text style={styles.categoryEmoji}>{item.icon}</Text>
       </View>
-      <Text style={[styles.categoryName, { color: themeColors.text.primary }]}>
+      <Text style={[styles.categoryName, { color: themeColors.text.primary }]}> 
         {item.name}
       </Text>
-      {isStoreOwner && (
-        <View style={styles.categoryAdminActions}>
-            <TouchableOpacity
-              style={[
-                styles.categoryAdminButton,
-                {
-                  backgroundColor: themeColors.background,
-                  borderColor: themeColors.gold,
-                },
-              ]}
-              onPress={() => {
-                const dest = routes.category(item.id);
-                if (pathname !== dest) push(dest);
-              }}
-            >
-            <Pencil size={10} color={themeColors.gold} />
-          </TouchableOpacity>
-        </View>
-      )}
     </TouchableOpacity>
   );
 
@@ -260,15 +234,11 @@ function HomeScreenContent() {
             <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
               {t('home.categories')}
             </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  if (pathname !== '/categories') push('/categories');
-                }}
-              >
-              <Text style={[styles.seeAll, { color: themeColors.gold }]}>
-                {t('common.viewAll')}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowCategorySelector(true)}>
+                <Text style={[styles.seeAll, { color: themeColors.gold }]}>
+                  {t('common.viewAll')}
+                </Text>
+              </TouchableOpacity>
           </Stack>
 
           {categoriesToShow.length > 0 ? (
@@ -367,6 +337,107 @@ function HomeScreenContent() {
           onDeleted={handleProductDeleted}
         />
       </Suspense>
+
+      {/* Category Selector Modal */}
+      <Modal
+        visible={showCategorySelector}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowCategorySelector(false)}
+      >
+        <View
+          style={[
+            styles.categorySelectorOverlay,
+            { backgroundColor: themeColors.background + '80' },
+          ]}
+        >
+          <View
+            style={[
+              styles.categorySelectorContent,
+              {
+                backgroundColor: themeColors.surface.elevated,
+                borderColor: themeColors.border.primary,
+              },
+            ]}
+          >
+            <View style={styles.categorySelectorHeader}>
+              <Text
+                style={[
+                  styles.categorySelectorTitle,
+                  { color: themeColors.text.primary },
+                ]}
+              >
+                {t('home.categories')}
+              </Text>
+              <TouchableOpacity onPress={() => setShowCategorySelector(false)}>
+                <X size={24} color={themeColors.text.primary} />
+              </TouchableOpacity>
+            </View>
+            <ScrollArea style={styles.categorySelectorList}>
+              <TouchableOpacity
+                style={[
+                  styles.categorySelectorItem,
+                  { borderBottomColor: themeColors.border.secondary },
+                  selectedCategory === null && {
+                    backgroundColor: themeColors.interactive.secondary,
+                  },
+                ]}
+                onPress={() => {
+                  setSelectedCategory(null);
+                  setShowCategorySelector(false);
+                }}
+              >
+                <View style={styles.categorySelectorItemContent}>
+                  <Text
+                    style={[
+                      styles.categorySelectorItemText,
+                      { color: themeColors.text.primary },
+                    ]}
+                  >
+                    {t('categories.all')}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              {categoriesToShow.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.categorySelectorItem,
+                    { borderBottomColor: themeColors.border.secondary },
+                    selectedCategory === cat.id && {
+                      backgroundColor: themeColors.interactive.secondary,
+                    },
+                  ]}
+                  onPress={() => {
+                    setSelectedCategory(cat.id);
+                    setShowCategorySelector(false);
+                  }}
+                >
+                  <View style={styles.categorySelectorItemContent}>
+                    <Text style={styles.categorySelectorItemIcon}>{cat.icon}</Text>
+                    <Text
+                      style={[
+                        styles.categorySelectorItemText,
+                        { color: themeColors.text.primary },
+                      ]}
+                    >
+                      {cat.name}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.categorySelectorItemId,
+                      { color: themeColors.text.secondary },
+                    ]}
+                  >
+                    {cat.id}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollArea>
+          </View>
+        </View>
+      </Modal>
 
       {/* Sort Modal */}
       <Modal
@@ -548,21 +619,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     fontWeight: '500',
-  },
-  categoryAdminActions: {
-    position: 'absolute',
-    top: -4,
-    start: -4,
-    flexDirection: 'row',
-  },
-  categoryAdminButton: {
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 2,
-    borderWidth: 1,
   },
   sortModalOverlay: {
     flex: 1,
