@@ -2,7 +2,7 @@ import { getPublicKey, sign, utils } from '@noble/ed25519';
 import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
 import { wakuMessageSchema } from '../schemas/waku';
 import { z } from 'zod';
-import { canonicalJson } from '../utils/canonicalJson';
+import { canonicalJson } from '../utils/serialization';
 import type { WakuMessage } from '../types/waku';
 
 describe('verifyBeforeWrite', () => {

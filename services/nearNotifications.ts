@@ -1,6 +1,7 @@
 import { getValue, setValue, listValues, removeValue } from './nearKvStore';
 import { Notification } from '../types';
 import { assertNearChain } from './chain';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
@@ -12,7 +13,7 @@ export async function getNotification(id: string): Promise<Notification | null> 
 }
 
 export async function setNotification(notification: Notification) {
-  await setValue(ADDRESS, notification.id, JSON.stringify(notification));
+  await setValue(ADDRESS, notification.id, canonicalJson(notification));
 }
 
 export async function removeNotification(id: string) {

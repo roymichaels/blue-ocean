@@ -2,6 +2,7 @@ import { getValue, setValue, listValues, removeValue } from './nearKvStore';
 import { Order } from '../types';
 import { assertNearChain } from './chain';
 import { requireStoreId } from '@blue-ocean/utils';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
@@ -15,7 +16,7 @@ export async function getOrder(storeId: string, id: string): Promise<Order | nul
 
 export async function setOrder(storeId: string, order: Order) {
   const sid = requireStoreId(storeId);
-  await setValue(ADDRESS, `${sid}:${order.id}`, JSON.stringify(order));
+  await setValue(ADDRESS, `${sid}:${order.id}`, canonicalJson(order));
 }
 
 export async function removeOrder(storeId: string, id: string) {

@@ -6,6 +6,7 @@ import {
 } from '@/services/nearKvStore';
 import { User } from '@/types';
 import { assertNearChain } from '@/services/chain';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
@@ -17,7 +18,7 @@ export async function getUser(id: string): Promise<User | null> {
 }
 
 export async function setUser(user: User) {
-  await setValue(ADDRESS, user.id, JSON.stringify(user));
+  await setValue(ADDRESS, user.id, canonicalJson(user));
 }
 
 export async function removeUser(id: string) {

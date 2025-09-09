@@ -1,4 +1,5 @@
 import { sha256 } from '@noble/hashes/sha256';
+import { canonicalJson } from '@/utils/serialization';
 
 class IpfsService {
   private static instance: IpfsService;
@@ -17,7 +18,7 @@ class IpfsService {
   }
 
   async pinJson(data: any): Promise<string> {
-    const hash = Buffer.from(sha256(Buffer.from(JSON.stringify(data)))).toString('hex');
+    const hash = Buffer.from(sha256(Buffer.from(canonicalJson(data)))).toString('hex');
     return `ipfs://${hash}`;
   }
 }

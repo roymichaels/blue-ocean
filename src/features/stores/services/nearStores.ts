@@ -7,6 +7,7 @@ import {
 import { Store } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
+import { canonicalJson } from '@/utils/serialization';
 
 assertNearChain();
 
@@ -25,14 +26,14 @@ function ensureSeed() {
       for (const s of data.stores as Store[]) {
         if (s.id === 'alpha') hasAlpha = true;
         // Index under a shared namespace so listStores('default') works
-        void setValue(ADDRESS, `default:${s.id}`, JSON.stringify(s));
+        void setValue(ADDRESS, `default:${s.id}`, canonicalJson(s));
         // And index under its own namespace so getStore(id, id) resolves
-        void setValue(ADDRESS, `${s.id}:${s.id}`, JSON.stringify(s));
+        void setValue(ADDRESS, `${s.id}:${s.id}`, canonicalJson(s));
       }
       if (!hasAlpha) {
         const alpha: Store = { id: 'alpha', name: 'Alpha Store', owner: 'demo', nftId: '', reputation: 0 } as Store;
-        void setValue(ADDRESS, `default:${alpha.id}`, JSON.stringify(alpha));
-        void setValue(ADDRESS, `${alpha.id}:${alpha.id}`, JSON.stringify(alpha));
+        void setValue(ADDRESS, `default:${alpha.id}`, canonicalJson(alpha));
+        void setValue(ADDRESS, `${alpha.id}:${alpha.id}`, canonicalJson(alpha));
       }
     }
   } catch {}
@@ -60,7 +61,7 @@ export async function getStore(storeId: string, id: string): Promise<Store | nul
 
 export async function setStore(storeId: string, store: Store) {
   const sid = requireStoreId(storeId);
-  await setValue(ADDRESS, `${sid}:${store.id}`, JSON.stringify(store));
+  await setValue(ADDRESS, `${sid}:${store.id}`, canonicalJson(store));
 }
 
 export async function removeStore(storeId: string, id: string) {

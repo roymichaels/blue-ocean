@@ -1,6 +1,6 @@
 import { verify } from '@noble/ed25519';
 import type { WakuMessage } from '../types/waku';
-import { canonicalJson } from './canonicalJson';
+import { canonicalJson } from './serialization';
 
 export async function verifyMessageSignature<T>(
   message: WakuMessage<T>,

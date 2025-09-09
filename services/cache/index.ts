@@ -1,9 +1,10 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import config from '@/config';
 
-const CACHE_DIR = process.env.CACHE_DIR || path.join(process.cwd(), '.cache');
-const SECRET = process.env.CACHE_SECRET || 'blue-ocean';
+const CACHE_DIR = config.CACHE_DIR || path.join(process.cwd(), '.cache');
+const SECRET = config.CACHE_SECRET || 'blue-ocean';
 const KEY = crypto.createHash('sha256').update(SECRET).digest();
 
 function filePath(key: string): string {

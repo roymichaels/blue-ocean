@@ -35,6 +35,7 @@ import { orderStatusMessageSchema } from '../schemas/waku/order.status';
 import { buildTopic } from '../utils/wakuTopics';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import AgentError from '@/types/AgentError';
+import { canonicalJson } from '@/utils/serialization';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found'],
@@ -219,7 +220,7 @@ class OrdersAgent {
     // ensure integrity of items by hashing their serialized form
     if (!toStore.itemsHash) {
       toStore.itemsHash = Buffer.from(
-        sha256(Buffer.from(JSON.stringify(enriched.items)))
+        sha256(Buffer.from(canonicalJson(enriched.items)))
       ).toString('hex');
     }
     // encrypt shipping address for seller-only visibility

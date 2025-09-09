@@ -4,14 +4,15 @@ import { Readable } from 'stream';
 
 import { assertNearChain } from './chain';
 import { initLake } from './nearLake';
+import config from '@/config';
 
 assertNearChain();
 
 let lakeStarted = false;
 let S3Client: typeof import('minio').Client | null = null;
 let s3: import('minio').Client | null = null;
-const bucket = process.env.NEAR_LAKE_BUCKET;
-const region = process.env.NEAR_LAKE_REGION || 'eu-central-1';
+const bucket = config.NEAR_LAKE_BUCKET;
+const region = config.NEAR_LAKE_REGION || 'eu-central-1';
 
 // React Native and some web runtimes provide a `process` shim where `cwd`
 // is either missing or not a function. Accessing it directly causes the
@@ -22,7 +23,7 @@ const useMemoryStore =
 
 // Only resolve a local directory when running in a Node environment.
 const localDir =
-  process.env.NEAR_LAKE_DIR || (!useMemoryStore ? path.join(process.cwd(), '.near-lake') : '');
+  config.NEAR_LAKE_DIR || (!useMemoryStore ? path.join(process.cwd(), '.near-lake') : '');
 
 // Simple in-memory map for environments without filesystem access.
 const memStore = new Map<string, Map<string, string>>();
@@ -45,9 +46,9 @@ async function ensureLake() {
       initLake({
         s3BucketName: bucketName,
         s3RegionName: region,
-        startBlockHeight: BigInt(process.env.NEAR_LAKE_START_BLOCK || '0'),
+        startBlockHeight: BigInt(config.NEAR_LAKE_START_BLOCK || '0'),
       });
-      const endpoint = process.env.NEAR_LAKE_ENDPOINT;
+      const endpoint = config.NEAR_LAKE_ENDPOINT;
       const opts: any = {
         region,
         s3ForcePathStyle: true,
@@ -61,9 +62,9 @@ async function ensureLake() {
         opts.endPoint = `s3.${region}.amazonaws.com`;
         opts.useSSL = true;
       }
-      if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-        opts.accessKey = process.env.AWS_ACCESS_KEY_ID;
-        opts.secretKey = process.env.AWS_SECRET_ACCESS_KEY;
+      if (config.AWS_ACCESS_KEY_ID && config.AWS_SECRET_ACCESS_KEY) {
+        opts.accessKey = config.AWS_ACCESS_KEY_ID;
+        opts.secretKey = config.AWS_SECRET_ACCESS_KEY;
       }
       if (!useMemoryStore && !S3Client) {
         const { Client } = require('minio');

@@ -1,6 +1,6 @@
 import { debugLog } from '@/utils/logger';
 import isCidOrUrl from '@/utils/isCidOrUrl';
-import config from '@/utils/appConfig';
+import config from '@/config';
 import { aesEncrypt } from '@/utils/encryption';
 import { getPrivateKey } from './localIdentity';
 import { sha256 } from '@noble/hashes/sha256';
@@ -48,13 +48,9 @@ class PinataService {
       return uri;
     }
 
-    const jwt =
-      config.EXPO_PUBLIC_PINATA_JWT || process.env.EXPO_PUBLIC_PINATA_JWT;
-    const apiKey =
-      config.EXPO_PUBLIC_PINATA_API_KEY || process.env.EXPO_PUBLIC_PINATA_API_KEY;
-    const secret =
-      config.EXPO_PUBLIC_PINATA_SECRET_API_KEY ||
-      process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
+    const jwt = config.EXPO_PUBLIC_PINATA_JWT;
+    const apiKey = config.EXPO_PUBLIC_PINATA_API_KEY;
+    const secret = config.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
 
     const form = new FormData();
 
@@ -131,13 +127,9 @@ class PinataService {
       return true;
     }
 
-    const jwt =
-      config.EXPO_PUBLIC_PINATA_JWT || process.env.EXPO_PUBLIC_PINATA_JWT;
-    const apiKey =
-      config.EXPO_PUBLIC_PINATA_API_KEY || process.env.EXPO_PUBLIC_PINATA_API_KEY;
-    const secret =
-      config.EXPO_PUBLIC_PINATA_SECRET_API_KEY ||
-      process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
+    const jwt = config.EXPO_PUBLIC_PINATA_JWT;
+    const apiKey = config.EXPO_PUBLIC_PINATA_API_KEY;
+    const secret = config.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
 
     const headers: Record<string, string> = {};
     if (jwt) {
@@ -161,13 +153,9 @@ class PinataService {
   }
 
   public async isPinataConfigured(): Promise<boolean> {
-    const jwt =
-      config.EXPO_PUBLIC_PINATA_JWT || process.env.EXPO_PUBLIC_PINATA_JWT;
-    const apiKey =
-      config.EXPO_PUBLIC_PINATA_API_KEY || process.env.EXPO_PUBLIC_PINATA_API_KEY;
-    const secret =
-      config.EXPO_PUBLIC_PINATA_SECRET_API_KEY ||
-      process.env.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
+    const jwt = config.EXPO_PUBLIC_PINATA_JWT;
+    const apiKey = config.EXPO_PUBLIC_PINATA_API_KEY;
+    const secret = config.EXPO_PUBLIC_PINATA_SECRET_API_KEY;
     return Boolean(jwt || (apiKey && secret));
   }
 }

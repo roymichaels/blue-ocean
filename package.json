@@ -13,7 +13,8 @@
     "fix": "node scripts/waku-shim.js",
     "postinstall": "node scripts/waku-shim.js",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "config:check": "node scripts/check-config.cjs"
   },
   "dependencies": {
     "@babel/plugin-transform-template-literals": "^7.27.1",
