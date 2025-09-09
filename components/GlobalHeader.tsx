@@ -11,6 +11,7 @@ import { useRoadmap } from '../contexts/RoadmapContext';
 import UserAvatar from './UserAvatar';
 import { WishlistModal, useWishlistCount } from '@/features/cart';
 import { spacing, radius, typography } from '@/ui/tokens';
+import { usePathname } from 'expo-router';
 
 interface GlobalHeaderProps {
   searchQuery?: string;
@@ -30,9 +31,12 @@ export default function GlobalHeader({
   const { push } = useAppRouter();
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const wishlistItemsCount = useWishlistCount();
+  const pathname = usePathname();
 
   const navigateToReviews = () => {
-    push('/reviews');
+    if (pathname !== '/reviews') {
+      push('/reviews');
+    }
   };
 
   return (
@@ -41,7 +45,9 @@ export default function GlobalHeader({
         <View style={styles.headerTop}>
           <Pressable
             style={styles.logo}
-            onPress={() => push('/')}
+            onPress={() => {
+              if (pathname !== '/') push('/');
+            }}
           >
             {logoCid ? (
               <SmartImage uri={logoCid} width={50} height={50} style={styles.logoImage} contentFit="contain" />

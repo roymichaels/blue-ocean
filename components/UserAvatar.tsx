@@ -7,6 +7,7 @@ import { useAppRouter } from '@/services';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { Menu, Avatar, type MenuItem } from '@/ui';
+import { usePathname } from 'expo-router';
 
 export default function UserAvatar() {
   const { isLoggedIn, user, logout } = useAuth();
@@ -16,6 +17,7 @@ export default function UserAvatar() {
   const { push, replace } = useAppRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
+  const pathname = usePathname();
 
   const getInitials = () => {
     if (!user?.displayName && !user?.username) return 'G';
@@ -37,7 +39,9 @@ export default function UserAvatar() {
 
   const handleProfile = () => {
     setMenuOpen(false);
-    push('/profile');
+    if (pathname !== '/profile') {
+      push('/profile');
+    }
   };
 
   const handleLogin = () => {

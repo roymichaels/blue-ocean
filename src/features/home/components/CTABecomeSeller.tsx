@@ -3,15 +3,17 @@ import { StyleSheet } from 'react-native';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import { Button } from '@/ui';
+import { usePathname } from 'expo-router';
 
 export default function CTABecomeSeller() {
   const { t } = useLanguage();
   const { push } = useAppRouter();
+  const pathname = usePathname();
 
   return (
     <Button
       title={t('home.becomeSeller')}
-      onPress={() => push('/stores/create')}
+      onPress={() => pathname !== '/stores/create' && push('/stores/create')}
       accessibilityRole="link"
       style={styles.button}
     />

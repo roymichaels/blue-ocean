@@ -34,6 +34,7 @@ import { spacing } from '@/shared/ui/tokens';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { routes } from '@/utils/routes';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
+import { usePathname } from 'expo-router';
 
 
 function HomeScreenContent() {
@@ -59,6 +60,7 @@ function HomeScreenContent() {
   const { isStoreOwner } = useAuth();
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
+  const pathname = usePathname();
 
   const {
     products,
@@ -153,10 +155,13 @@ function HomeScreenContent() {
   };
 
   const renderCategory = ({ item }: { item: Category }) => (
-    <TouchableOpacity
-      style={[styles.categoryCard]}
-      onPress={() => push(routes.category(item.id))}
-    >
+      <TouchableOpacity
+        style={[styles.categoryCard]}
+        onPress={() => {
+          const dest = routes.category(item.id);
+          if (pathname !== dest) push(dest);
+        }}
+      >
       <View
         style={[
           styles.categoryIcon,
@@ -173,16 +178,19 @@ function HomeScreenContent() {
       </Text>
       {isStoreOwner && (
         <View style={styles.categoryAdminActions}>
-          <TouchableOpacity
-            style={[
-              styles.categoryAdminButton,
-              {
-                backgroundColor: themeColors.background,
-                borderColor: themeColors.gold,
-              },
-            ]}
-            onPress={() => push(routes.category(item.id))}
-          >
+            <TouchableOpacity
+              style={[
+                styles.categoryAdminButton,
+                {
+                  backgroundColor: themeColors.background,
+                  borderColor: themeColors.gold,
+                },
+              ]}
+              onPress={() => {
+                const dest = routes.category(item.id);
+                if (pathname !== dest) push(dest);
+              }}
+            >
             <Pencil size={10} color={themeColors.gold} />
           </TouchableOpacity>
         </View>
@@ -252,7 +260,11 @@ function HomeScreenContent() {
             <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
               {t('home.categories')}
             </Text>
-            <TouchableOpacity onPress={() => push('/categories')}>
+              <TouchableOpacity
+                onPress={() => {
+                  if (pathname !== '/categories') push('/categories');
+                }}
+              >
               <Text style={[styles.seeAll, { color: themeColors.gold }]}>
                 {t('common.viewAll')}
               </Text>
