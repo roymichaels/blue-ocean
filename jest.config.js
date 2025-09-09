@@ -13,6 +13,7 @@ module.exports = {
     '\\.(png|jpg|jpeg|gif|svg)$': '<rootDir>/tests/__mocks__/fileMock.js',
     '^expo-file-system$': '<rootDir>/tests/__mocks__/expo-file-system.js',
     '^expo-asset$': '<rootDir>/tests/__mocks__/expo-asset.js',
+    '^expo-secure-store$': '<rootDir>/tests/__mocks__/expo-secure-store.js',
     '^react-native$': '<rootDir>/tests/__mocks__/react-native.js',
     '^@app/(.*)$': '<rootDir>/app/$1',
     '^@features/(.*)$': '<rootDir>/src/features/$1',
