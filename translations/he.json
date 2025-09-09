@@ -24,6 +24,7 @@
     "info": "מידע",
     "understood": "הבנתי",
     "reload": "טען מחדש",
+    "comingSoon": "בקרוב",
     "goHome": "חזור לבית",
     "route": "נתיב:"
   },
@@ -100,7 +101,8 @@
     "priceHighLow": "מחיר: גבוה לנמוך",
     "highRating": "דירוג גבוה",
     "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש.",
-    "becomeSeller": "הפוך למוכר"
+    "createStore": "צור חנות",
+    "becomeDriver": "הפוך לשליח"
   },
   "categories": {
     "all": "הכל",

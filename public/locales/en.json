@@ -23,7 +23,8 @@
     "premium": "Premium",
     "info": "Information",
     "understood": "Understood",
-    "reload": "Reload"
+    "reload": "Reload",
+    "comingSoon": "Coming Soon"
   },
   "navigation": {
     "home": "Home",
@@ -91,7 +92,8 @@
     "priceHighLow": "Price: High to Low",
     "highRating": "High Rating",
     "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload.",
-    "becomeSeller": "Become a Seller"
+    "createStore": "Create a Store",
+    "becomeDriver": "Become a Driver"
   },
   "categories": {
     "all": "All"
