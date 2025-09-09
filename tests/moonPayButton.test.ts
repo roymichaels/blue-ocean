@@ -16,6 +16,10 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   useAccountId: jest.fn(() => 'addr'),
 }));
 
+jest.mock('@/contexts/WalletProvider', () => ({
+  useWallet: () => ({ address: 'addr', connect: jest.fn() }),
+}));
+
 const modalMock = jest.fn(({ visible, amountNEAR, amountUSD }: any) =>
   visible ? React.createElement('MoonPayModal', { amountNEAR, amountUSD }) : null,
 );

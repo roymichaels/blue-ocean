@@ -17,6 +17,10 @@ Two metrics are exported:
 
 Prometheus alert thresholds are provided in [`scripts/monitoring/alerts.yml`](../scripts/monitoring/alerts.yml) for latency and failure rates.
 
+## Service Hooks
+
+Use `withMonitoring` from [`services/monitoring.ts`](../services/monitoring.ts) to wrap asynchronous service calls. The helper records latency, increments the failure counter on errors and emits structured logs via the shared logger.
+
 ## Retry Middleware
 
 Network calls to Waku and NEAR RPC use a retry-with-exponential-backoff helper defined in [`utils/retry.ts`](../utils/retry.ts).

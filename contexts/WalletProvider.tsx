@@ -28,6 +28,11 @@ export function WalletProvider({ children }: Props) {
   const address = chainAdapter.useAccount();
 
   const connect = useCallback(async () => {
+    const { error } = await chainAdapter.init();
+    if (error) {
+      console.error('Wallet initialization failed:', error);
+      return;
+    }
     await chainAdapter.openModal();
   }, []);
 

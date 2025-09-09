@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/ui';
 import { chainAdapter } from '@/services/chain';
+import { useWallet } from '@/contexts/WalletProvider';
 
 interface PayPrivatelyButtonProps {
   listingId: number;
@@ -9,12 +10,12 @@ interface PayPrivatelyButtonProps {
 }
 
 export default function PayPrivatelyButton({ listingId, amountYocto, onComplete }: PayPrivatelyButtonProps) {
-  const accountId = chainAdapter.useAccount();
+  const { address: accountId, connect } = useWallet();
   const [loading, setLoading] = useState(false);
 
   const handlePress = async () => {
     if (!accountId) {
-      await chainAdapter.openModal();
+      await connect();
       return;
     }
     try {

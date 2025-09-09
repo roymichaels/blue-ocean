@@ -4,6 +4,7 @@ import { WalletProvider, useWallet } from '@/contexts/WalletProvider';
 
 jest.mock('@/services/chain', () => ({
   chainAdapter: {
+    init: jest.fn().mockResolvedValue({ error: null }),
     useAccount: () => 'alice.testnet',
     openModal: jest.fn().mockResolvedValue(undefined),
     signMessage: jest.fn().mockResolvedValue('signed'),

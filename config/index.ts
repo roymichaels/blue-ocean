@@ -1,6 +1,8 @@
 import { config as loadEnv } from 'dotenv';
 import { z } from 'zod';
+import { loadVaultEnv } from './vault';
 
+loadVaultEnv();
 loadEnv();
 
 const envSchema = z.object({
