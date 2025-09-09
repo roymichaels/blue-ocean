@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback } from 'react';
+import React, { Suspense, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,7 @@ import {
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import { useAppRouter } from '@/services';
-import { Plus, ArrowUpDown, Pencil, Info } from 'lucide-react-native';
+import { Plus, X, ArrowUpDown, Info } from 'lucide-react-native';
 import { Product, HeroBanner, Category } from '@/types';
 import { useHome } from '@/features/home/hooks/useHome';
 import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
@@ -22,6 +21,7 @@ import CategoryChips from '@/features/home/components/CategoryChips';
 import CTABecomeSeller from '@/features/home/components/CTABecomeSeller';
 import BannerArea from '@/features/home/components/BannerArea';
 import ProductGrid from '@/features/home/components/ProductGrid';
+import CategoryCard from '@/features/home/components/CategoryCard';
 import { Spinner } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
 import BannerFormModal from '@/components/BannerFormModal';
@@ -32,13 +32,10 @@ import { useHomeFilters } from '@/features/home/hooks/useHomeFilters';
 import SortModal from '@/features/home/components/SortModal';
 import { spacing } from '@/shared/ui/tokens';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
-import { routes } from '@/utils/routes';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
-import { usePathname } from 'expo-router';
 
 
 function HomeScreenContent() {
-  const { push } = useAppRouter();
   const { width: windowWidth } = useWindowDimensions();
   const home = useHome();
   const banners = useHomeBanners();
@@ -60,7 +57,6 @@ function HomeScreenContent() {
   const { isStoreOwner } = useAuth();
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
-  const pathname = usePathname();
 
   const {
     products,
@@ -95,6 +91,7 @@ function HomeScreenContent() {
     showSortModal,
     setShowSortModal,
   } = useHomeFilters(products);
+  const [showCategorySelector, setShowCategorySelector] = useState(false);
 
   const handleReload = useCallback(() => {
     closeInfoModal();
@@ -155,13 +152,10 @@ function HomeScreenContent() {
   };
 
   const renderCategory = ({ item }: { item: Category }) => (
-      <TouchableOpacity
-        style={[styles.categoryCard]}
-        onPress={() => {
-          const dest = routes.category(item.id);
-          if (pathname !== dest) push(dest);
-        }}
-      >
+    <TouchableOpacity
+      style={[styles.categoryCard]}
+      onPress={() => setSelectedCategory(item.id)}
+    >
       <View
         style={[
           styles.categoryIcon,
@@ -173,28 +167,9 @@ function HomeScreenContent() {
       >
         <Text style={styles.categoryEmoji}>{item.icon}</Text>
       </View>
-      <Text style={[styles.categoryName, { color: themeColors.text.primary }]}>
+      <Text style={[styles.categoryName, { color: themeColors.text.primary }]}> 
         {item.name}
       </Text>
-      {isStoreOwner && (
-        <View style={styles.categoryAdminActions}>
-            <TouchableOpacity
-              style={[
-                styles.categoryAdminButton,
-                {
-                  backgroundColor: themeColors.background,
-                  borderColor: themeColors.gold,
-                },
-              ]}
-              onPress={() => {
-                const dest = routes.category(item.id);
-                if (pathname !== dest) push(dest);
-              }}
-            >
-            <Pencil size={10} color={themeColors.gold} />
-          </TouchableOpacity>
-        </View>
-      )}
     </TouchableOpacity>
   );
 
@@ -260,15 +235,11 @@ function HomeScreenContent() {
             <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
               {t('home.categories')}
             </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  if (pathname !== '/categories') push('/categories');
-                }}
-              >
-              <Text style={[styles.seeAll, { color: themeColors.gold }]}>
-                {t('common.viewAll')}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowCategorySelector(true)}>
+                <Text style={[styles.seeAll, { color: themeColors.gold }]}>
+                  {t('common.viewAll')}
+                </Text>
+              </TouchableOpacity>
           </Stack>
 
           {categoriesToShow.length > 0 ? (
@@ -279,7 +250,12 @@ function HomeScreenContent() {
             >
               {categoriesToShow.slice(0, 4).map((item) => (
                 <View key={item.id} style={styles.categoryWrapper}>
-                  {renderCategory({ item })}
+                  <CategoryCard
+                    category={item}
+                    isStoreOwner={isStoreOwner}
+                    onPress={() => handleCategoryPress(item.id)}
+                    onEdit={() => handleCategoryPress(item.id)}
+                  />
                 </View>
               ))}
             </ScrollArea>
