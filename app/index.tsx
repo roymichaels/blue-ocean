@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
@@ -29,7 +28,8 @@ import BannerFormModal from '@/components/BannerFormModal';
 import { CartModal } from '@/features/cart';
 import { ProductFormModal } from '@/features/products';
 import InfoModal from '@/components/InfoModal';
-import { useHomeFilters, SortOption } from '@/features/home/hooks/useHomeFilters';
+import { useHomeFilters } from '@/features/home/hooks/useHomeFilters';
+import SortModal from '@/features/home/components/SortModal';
 import { spacing } from '@/shared/ui/tokens';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
@@ -344,183 +344,12 @@ function HomeScreenContent() {
         />
       </Suspense>
 
-      {/* Category Selector Modal */}
-      <Modal
-        visible={showCategorySelector}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setShowCategorySelector(false)}
-      >
-        <View
-          style={[
-            styles.categorySelectorOverlay,
-            { backgroundColor: themeColors.background + '80' },
-          ]}
-        >
-          <View
-            style={[
-              styles.categorySelectorContent,
-              {
-                backgroundColor: themeColors.surface.elevated,
-                borderColor: themeColors.border.primary,
-              },
-            ]}
-          >
-            <View style={styles.categorySelectorHeader}>
-              <Text
-                style={[
-                  styles.categorySelectorTitle,
-                  { color: themeColors.text.primary },
-                ]}
-              >
-                {t('home.categories')}
-              </Text>
-              <TouchableOpacity onPress={() => setShowCategorySelector(false)}>
-                <X size={24} color={themeColors.text.primary} />
-              </TouchableOpacity>
-            </View>
-            <ScrollArea style={styles.categorySelectorList}>
-              <TouchableOpacity
-                style={[
-                  styles.categorySelectorItem,
-                  { borderBottomColor: themeColors.border.secondary },
-                  selectedCategory === null && {
-                    backgroundColor: themeColors.interactive.secondary,
-                  },
-                ]}
-                onPress={() => {
-                  setSelectedCategory(null);
-                  setShowCategorySelector(false);
-                }}
-              >
-                <View style={styles.categorySelectorItemContent}>
-                  <Text
-                    style={[
-                      styles.categorySelectorItemText,
-                      { color: themeColors.text.primary },
-                    ]}
-                  >
-                    {t('categories.all')}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              {categoriesToShow.map((cat) => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={[
-                    styles.categorySelectorItem,
-                    { borderBottomColor: themeColors.border.secondary },
-                    selectedCategory === cat.id && {
-                      backgroundColor: themeColors.interactive.secondary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedCategory(cat.id);
-                    setShowCategorySelector(false);
-                  }}
-                >
-                  <View style={styles.categorySelectorItemContent}>
-                    <Text style={styles.categorySelectorItemIcon}>{cat.icon}</Text>
-                    <Text
-                      style={[
-                        styles.categorySelectorItemText,
-                        { color: themeColors.text.primary },
-                      ]}
-                    >
-                      {cat.name}
-                    </Text>
-                  </View>
-                  <Text
-                    style={[
-                      styles.categorySelectorItemId,
-                      { color: themeColors.text.secondary },
-                    ]}
-                  >
-                    {cat.id}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollArea>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Sort Modal */}
-      <Modal
+      <SortModal
         visible={showSortModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowSortModal(false)}
-      >
-        <View
-          style={[
-            styles.sortModalOverlay,
-            { backgroundColor: themeColors.background + '80' },
-          ]}
-        >
-          <View
-            style={[
-              styles.sortModalContent,
-              {
-                backgroundColor: themeColors.surface.elevated,
-                borderColor: themeColors.border.primary,
-              },
-            ]}
-          >
-            <View style={styles.sortModalHeader}>
-              <Text
-                style={[styles.sortModalTitle, { color: themeColors.text.primary }]}
-              >
-                {t('home.sortProducts')}
-              </Text>
-              <TouchableOpacity onPress={() => setShowSortModal(false)}>
-                <X size={24} color={themeColors.text.primary} />
-              </TouchableOpacity>
-            </View>
-
-            {[
-              { key: 'newest', label: t('home.newest') },
-              { key: 'price-low', label: t('home.priceLowHigh') },
-              { key: 'price-high', label: t('home.priceHighLow') },
-              { key: 'rating', label: t('home.highRating') },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.key}
-                style={[
-                  styles.sortOption,
-                  { borderBottomColor: themeColors.border.secondary },
-                  sortBy === option.key && [
-                    styles.selectedSortOption,
-                    { backgroundColor: themeColors.interactive.secondary },
-                  ],
-                ]}
-                onPress={() => {
-                  setSortBy(option.key as SortOption);
-                  setShowSortModal(false);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.sortOptionText,
-                    { color: themeColors.text.primary },
-                    sortBy === option.key && { color: themeColors.gold },
-                  ]}
-                >
-                  {option.label}
-                </Text>
-                {sortBy === option.key && (
-                  <View
-                    style={[
-                      styles.selectedDot,
-                      { backgroundColor: themeColors.gold },
-                    ]}
-                  />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </Modal>
+        sortBy={sortBy}
+        onSelect={(option) => setSortBy(option)}
+        onClose={() => setShowSortModal(false)}
+      />
 
       <Suspense fallback={<Spinner />}>
         <InfoModal
@@ -626,45 +455,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
-  sortModalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  sortModalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: '50%',
-  },
-  sortModalHeader: {
+  categoryAdminActions: {
+    position: 'absolute',
+    top: -4,
+    start: -4,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+  },
+  categoryAdminButton: {
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  sortModalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  sortOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  selectedSortOption: {
-    borderRadius: 12,
-  },
-  sortOptionText: {
-    fontSize: 16,
-    textAlign: 'right',
-  },
-  selectedDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    marginRight: 2,
+    borderWidth: 1,
   },
   helperText: {
     fontSize: 12,
