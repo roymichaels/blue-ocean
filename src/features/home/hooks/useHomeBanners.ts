@@ -5,9 +5,9 @@ import { HeroBanner } from '@/types';
 import { errorLog, debugLog } from '@/utils/logger';
 
 export function useHomeBanners() {
-  const { data, refetch, isLoading, error: queryError } = useQuery({
+  const { data, refetch, isLoading, error: queryError } = useQuery<HeroBanner[]>({
     queryKey: ['homeBanners'],
-    queryFn: async () => {
+    queryFn: async (): Promise<HeroBanner[]> => {
       try {
         const db = DatabaseService.getInstance();
         return await db.getHeroBanners();
@@ -17,7 +17,6 @@ export function useHomeBanners() {
         throw err;
       }
     },
-    suspense: false,
   });
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>(data ?? []);
 
