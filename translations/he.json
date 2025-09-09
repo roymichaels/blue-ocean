@@ -89,6 +89,10 @@
     "productsComingSoon": "מוצרים יתווספו בקרוב",
     "noResults": "לא נמצאו תוצאות",
     "tryDifferentSearch": "נסה לחפש משהו אחר",
+    "fallbackBanner1Title": "צור את הבאנר הראשון שלך",
+    "fallbackBanner1Subtitle": "באנרים עוזרים להדגיש מבצעים",
+    "fallbackBanner2Title": "אין עדיין באנרים",
+    "fallbackBanner2Subtitle": "הוסף באנרים כדי לשדרג את דף הבית",
     "addBanner": "הוסף באנר",
     "sortBy": "מיון לפי",
     "newest": "החדשים ביותר",
@@ -99,7 +103,16 @@
     "becomeSeller": "הפוך למוכר"
   },
   "categories": {
-    "all": "הכל"
+    "all": "הכל",
+    "electronics": "אלקטרוניקה",
+    "fashion": "אופנה",
+    "home": "בית",
+    "beauty": "יופי",
+    "sports": "ספורט",
+    "books": "ספרים"
+  },
+  "banner": {
+    "addBanner": "הוסף באנר"
   },
   "product": {
     "inStock": "במלאי ({count})",
