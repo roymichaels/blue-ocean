@@ -55,7 +55,7 @@ module.exports = {
     '<rootDir>/tests/navigationLoop.test.tsx',
     '<rootDir>/tests/themeContrast.test.tsx',
     '<rootDir>/tests/priceRange.test.tsx',
-    '<rootDir>/tests/waku/*.test.ts',
+    '<rootDir>/tests/indexers/**/*.test.ts',
   ],
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],
