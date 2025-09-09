@@ -14,7 +14,7 @@ import { useAppInfo } from '@/contexts/AppInfoContext';
 import { configureRTL } from '@/utils/rtl';
 import enTranslations from '@/translations/en.json';
 import heTranslations from '@/translations/he.json';
-import { setT, t as defaultT } from '@/i18n';
+import { setT, t as defaultT, setTranslations as setGlobalTranslations } from '@/i18n';
 
 // -----------------
 // Theme context
@@ -180,7 +180,7 @@ const LANGUAGE_STORAGE_KEY = 'app_language';
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('he');
-  const [translations, setTranslations] = useState(heTranslations);
+  const [translations, setTranslationsState] = useState(heTranslations);
   const [isRTL, setIsRTL] = useState(true);
 
   useEffect(() => {
@@ -207,19 +207,24 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     try {
       setCurrentLanguage(language);
 
-      if (language === 'en') {
-        setTranslations(enTranslations);
-        setIsRTL(false);
-      } else {
-        setTranslations(heTranslations);
-        setIsRTL(true);
-      }
-      configureRTL(language === 'he');
+      // Attempt to clone the translation object; if the JSON is malformed this
+      // will throw and be caught below.
+      const raw = language === 'en' ? enTranslations : heTranslations;
+      const parsed = JSON.parse(JSON.stringify(raw));
 
+      setTranslationsState(parsed);
+      setGlobalTranslations(parsed);
+      const rtl = language === 'he';
+      setIsRTL(rtl);
+      configureRTL(rtl);
       await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
     } catch (error) {
+      // Any IO or JSON parse errors default the app back to English so the UI
+      // remains usable.
       errorLog(error);
-      setTranslations(enTranslations);
+      const fallback = JSON.parse(JSON.stringify(enTranslations));
+      setTranslationsState(fallback);
+      setGlobalTranslations(fallback);
       setIsRTL(false);
       setCurrentLanguage('en');
       configureRTL(false);
@@ -265,6 +270,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       return value;
     }
 
+    console.warn(`Missing translation for key: ${key}`);
     return fallback || key;
   };
 
