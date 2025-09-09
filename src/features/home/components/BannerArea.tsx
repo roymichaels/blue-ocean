@@ -47,22 +47,41 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
   const { push } = useAppRouter();
   const bannerScrollRef = useRef<FlatList<HeroBanner>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const rotationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rotateRef = useRef<() => void>();
 
   useEffect(() => {
-    if (heroBanners.length > 1) {
-      const bannerInterval = setInterval(() => {
-        setCurrentIndex((prevIndex) => {
-          const nextIndex = (prevIndex + 1) % heroBanners.length;
-          bannerScrollRef.current?.scrollToOffset({
-            offset: nextIndex * (width - 32),
-            animated: true,
-          });
-          return nextIndex;
+    rotateRef.current = () => {
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % heroBanners.length;
+        bannerScrollRef.current?.scrollToOffset({
+          offset: nextIndex * (width - 32),
+          animated: true,
         });
+        return nextIndex;
+      });
+    };
+  }, [heroBanners.length]);
+
+  const scheduleNextRotation = useCallback(() => {
+    if (heroBanners.length > 1) {
+      if (rotationTimeoutRef.current) {
+        clearTimeout(rotationTimeoutRef.current);
+      }
+      rotationTimeoutRef.current = setTimeout(() => {
+        rotateRef.current?.();
       }, 5000);
-      return () => clearInterval(bannerInterval);
     }
   }, [heroBanners.length]);
+
+  useEffect(() => {
+    scheduleNextRotation();
+    return () => {
+      if (rotationTimeoutRef.current) {
+        clearTimeout(rotationTimeoutRef.current);
+      }
+    };
+  }, [scheduleNextRotation]);
   const renderBanner = useCallback(
     ({ item }: { item: HeroBanner }) => (
       <View style={styles.heroBanner}>
@@ -140,8 +159,9 @@ function BannerArea({ heroBanners, isStoreOwner, onAddBanner, onEditBanner, load
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const newIndex = Math.round(event.nativeEvent.contentOffset.x / (width - 32));
       setCurrentIndex(newIndex);
+      scheduleNextRotation();
     },
-    []
+    [scheduleNextRotation]
   );
 
   if (loading) {
