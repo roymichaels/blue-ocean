@@ -58,3 +58,19 @@ function runScript(code: string): string {
   });
 });
 
+describe('path_segment_validation', () => {
+  it('rejects absolute paths in Node environment', () => {
+    const out = runScript(
+      "const kv=require('./services/nearKvStore'); (async()=>{try{await kv.setValue('addr','/foo','bar'); console.log('ok');}catch{console.log('err');}})();",
+    );
+    expect(out).toBe('err');
+  });
+
+  it('rejects absolute paths without path.isAbsolute', () => {
+    const out = runScript(
+      "const path=require('path'); const kv=require('./services/nearKvStore'); path.isAbsolute=undefined; (async()=>{try{await kv.setValue('addr','/foo','bar'); console.log('ok');}catch{console.log('err');}})();",
+    );
+    expect(out).toBe('err');
+  });
+});
+

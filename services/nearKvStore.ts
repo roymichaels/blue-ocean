@@ -28,7 +28,11 @@ const localDir =
 const memStore = new Map<string, Map<string, string>>();
 
 function validateSegment(seg: string) {
-  if (seg.includes('..') || seg.includes('/') || seg.includes('\\') || path.isAbsolute(seg)) {
+  const isAbs =
+    typeof path.isAbsolute === 'function'
+      ? path.isAbsolute(seg)
+      : /^(?:[\\/]|[A-Za-z]:)/.test(seg);
+  if (seg.includes('..') || seg.includes('/') || seg.includes('\\') || isAbs) {
     throw new Error('Invalid path segment');
   }
 }
