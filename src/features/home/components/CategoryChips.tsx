@@ -1,8 +1,7 @@
 import React, { useCallback } from 'react';
 import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Category } from '@/types';
-import { useTheme } from '@/ui/ThemeProvider';
-import { useLanguage } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 
 interface CategoryChipsProps {
   categories: Category[];
