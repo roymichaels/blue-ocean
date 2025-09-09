@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 import { connect, keyStores, utils } from 'near-api-js';
 import dotenv from 'dotenv';
+import { Buffer } from 'buffer';
 
 dotenv.config();
 
@@ -27,6 +28,8 @@ const rateLimitRps = Math.max(1, parseInt(RATE_LIMIT_RPS || '10', 10));
 const Body = z.object({
   action: z.enum(['add_listing', 'buy_listing']),
   args: z.record(z.any()),
+  publicKey: z.string(),
+  signature: z.string(),
 });
 
 // Minimal in-memory rate limiter
@@ -95,11 +98,16 @@ app.post('/meta-tx', async (req, res) => {
   metrics.total++;
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-  const { action, args } = parsed.data as any;
+  const { action, args, publicKey, signature } = parsed.data as any;
   try {
     // Guardrails
     requireStoreId(args);
     assertDepositCaps(action, args);
+    // Verify signature
+    const msg = new TextEncoder().encode(JSON.stringify({ action, args }));
+    const pk = utils.PublicKey.fromString(publicKey);
+    const sig = Buffer.from(signature, 'base64');
+    if (!pk.verify(msg, sig)) throw new Error('invalid signature');
     // Allowlist enforced by zod enum
     const tx = await callFunction(action, args);
     metrics.ok++;

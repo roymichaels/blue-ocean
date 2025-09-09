@@ -17,6 +17,7 @@ const NETWORK = process.env.NETWORK || 'testnet';
 
 type DedupStore = { [key: string]: number };
 let dedupeMem: DedupStore = {};
+let lastHeight = 0;
 
 async function ensureDir(filePath: string) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
@@ -55,6 +56,11 @@ function topicFor(storeId: string, type: 'listings' | 'orders') {
 
 async function handleMessage(waku: Waku, streamerMessage: types.StreamerMessage) {
   const blockHeight = streamerMessage.block.header.height;
+  if (blockHeight <= lastHeight) {
+    // Possible reorg, reset dedupe cache
+    dedupeMem = {};
+  }
+  lastHeight = blockHeight;
   for (const shard of streamerMessage.shards) {
     for (const reo of shard.receiptExecutionOutcomes) {
       if (reo.receipt?.receiverId !== CONTRACT_ID) continue;
@@ -100,6 +106,7 @@ async function main() {
   await loadDedupe();
   const height = await loadCheckpoint();
   const startHeight = Math.max(START_BLOCK, height);
+  lastHeight = startHeight;
   const { Waku } = await getClient();
   const waku = await Waku.create({ bootstrap: { peers: WAKU_BOOTSTRAP } });
   await waku.waitForConnectedPeer();
