@@ -13,3 +13,17 @@ Use `requireEnv(key, fallback?)` from `src/services/config.ts` to read environme
 | `NEAR_LAKE_ENDPOINT` | Override S3 endpoint used for NEAR Lake | none |
 | `AWS_ACCESS_KEY_ID` | Access key for custom S3 endpoints | none |
 | `AWS_SECRET_ACCESS_KEY` | Secret key for custom S3 endpoints | none |
+
+## IAM Permissions
+
+The NEAR Lake key-value store expects an IAM principal with permission to:
+
+- `s3:PutObject`
+- `s3:GetObject`
+- `s3:DeleteObject`
+- `s3:ListBucket`
+- `s3:PutBucketEncryption`
+- `s3:PutBucketPolicy`
+
+Some providers may also require the corresponding `Get*` actions to read bucket
+settings.

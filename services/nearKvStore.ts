@@ -27,7 +27,13 @@ const localDir =
 // Simple in-memory map for environments without filesystem access.
 const memStore = new Map<string, Map<string, string>>();
 
-function ensureLake() {
+function validateSegment(seg: string) {
+  if (seg.includes('..') || seg.includes('/') || seg.includes('\\') || path.isAbsolute(seg)) {
+    throw new Error('Invalid path segment');
+  }
+}
+
+async function ensureLake() {
   if (lakeStarted || useMemoryStore) return;
   try {
     const bucketName = bucket;
@@ -56,6 +62,29 @@ function ensureLake() {
         opts.secretKey = process.env.AWS_SECRET_ACCESS_KEY;
       }
       s3 = new S3Client(opts);
+      try {
+        await s3.setBucketEncryption(bucketName);
+      } catch {
+        // ignore
+      }
+      try {
+        const policy = {
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Sid: 'DenyPublicRead',
+              Effect: 'Deny',
+              Principal: '*',
+              Action: ['s3:GetObject'],
+              Resource: [`arn:aws:s3:::${bucketName}/*`],
+              Condition: { StringEquals: { 'aws:PrincipalType': 'Anonymous' } },
+            },
+          ],
+        };
+        await s3.setBucketPolicy(bucketName, JSON.stringify(policy));
+      } catch {
+        // ignore
+      }
     }
   } catch {
     // ignore
@@ -64,10 +93,14 @@ function ensureLake() {
 }
 
 function objectKey(address: string, key: string): string {
+  validateSegment(address);
+  validateSegment(key);
   return `${address}/${key}`;
 }
 
 function localFile(address: string, key: string): string {
+  validateSegment(address);
+  validateSegment(key);
   return path.join(localDir, address, key);
 }
 
@@ -83,7 +116,9 @@ async function streamToString(stream: Readable | Uint8Array | string | undefined
 }
 
 export async function setValue(address: string, key: string, value: string) {
-  ensureLake();
+  validateSegment(address);
+  validateSegment(key);
+  await ensureLake();
   if (useMemoryStore) {
     let addrStore = memStore.get(address);
     if (!addrStore) {
@@ -116,7 +151,9 @@ export async function setValue(address: string, key: string, value: string) {
 }
 
 export async function removeValue(address: string, key: string) {
-  ensureLake();
+  validateSegment(address);
+  validateSegment(key);
+  await ensureLake();
   if (useMemoryStore) {
     memStore.get(address)?.delete(key);
     return;
@@ -130,7 +167,9 @@ export async function removeValue(address: string, key: string) {
 }
 
 export async function getValue(address: string, key: string): Promise<string | null> {
-  ensureLake();
+  validateSegment(address);
+  validateSegment(key);
+  await ensureLake();
   if (useMemoryStore) {
     return memStore.get(address)?.get(key) ?? null;
   }
@@ -153,7 +192,8 @@ export async function getValue(address: string, key: string): Promise<string | n
 export async function listValues(
   address: string,
 ): Promise<{ key: string; value: string }[]> {
-  ensureLake();
+  validateSegment(address);
+  await ensureLake();
   if (useMemoryStore) {
     const addrStore = memStore.get(address);
     if (!addrStore) return [];
