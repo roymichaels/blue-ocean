@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useCallback } from 'react';
 import {
   View,
   Text,
@@ -94,10 +94,10 @@ function HomeScreenContent() {
     setShowSortModal,
   } = useHomeFilters(products);
 
-  const handleReload = () => {
+  const handleReload = useCallback(() => {
     closeInfoModal();
     refresh();
-  };
+  }, [closeInfoModal, refresh]);
 
   if (error) {
     return (

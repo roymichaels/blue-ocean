@@ -38,11 +38,19 @@ export function useHome() {
 
   const refresh = useCallback(async () => {
     try {
-      await Promise.all([productsQuery.refetch(), categoriesQuery.refetch()]);
-      setError(null);
+      const [productsRes, categoriesRes] = await Promise.all([
+        productsQuery.refetch(),
+        categoriesQuery.refetch(),
+      ]);
+      const err = (productsRes.error || categoriesRes.error) as Error | null;
+      setError(err);
+      if (err) {
+        errorLog('useHome refresh failed', err);
+      }
     } catch (err) {
-      setError(err as Error);
-      errorLog('useHome refresh failed', err);
+      const error = err as Error;
+      setError(error);
+      errorLog('useHome refresh failed', error);
     }
   }, [productsQuery, categoriesQuery]);
 

@@ -10,7 +10,7 @@ export function useHomeRefresh(
   const refresh = useCallback(async () => {
     await Promise.all([data.refresh(), banners.refresh()]);
   }, [data, banners]);
-  const error = data.error || banners.error;
+  const error = data.error ?? banners.error;
   return { refreshing, refresh, error } as const;
 }
 

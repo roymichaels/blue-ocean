@@ -31,6 +31,7 @@ export function useHomeBanners() {
   useEffect(() => {
     if (queryError) {
       setError(queryError as Error);
+      errorLog('useHomeBanners initial load failed', queryError);
     }
   }, [queryError]);
 
@@ -41,7 +42,12 @@ export function useHomeBanners() {
       if (res.data) {
         setHeroBanners(res.data);
       }
-      setError(null);
+      if (res.error) {
+        errorLog('useHomeBanners refresh failed', res.error);
+        setError(res.error as Error);
+      } else {
+        setError(null);
+      }
     } catch (err) {
       errorLog('useHomeBanners refresh failed', err);
       setError(err as Error);
