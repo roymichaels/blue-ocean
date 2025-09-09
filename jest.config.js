@@ -15,6 +15,7 @@ module.exports = {
     '^expo-asset$': '<rootDir>/tests/__mocks__/expo-asset.js',
     '^expo-secure-store$': '<rootDir>/tests/__mocks__/expo-secure-store.js',
     '^react-native$': '<rootDir>/tests/__mocks__/react-native.js',
+    '^@shopify/flash-list$': '<rootDir>/tests/__mocks__/@shopify/flash-list.js',
     '^@app/(.*)$': '<rootDir>/app/$1',
     '^@features/(.*)$': '<rootDir>/src/features/$1',
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
