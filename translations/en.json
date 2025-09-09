@@ -543,5 +543,9 @@
     "file": "File",
     "gallery": "Gallery",
     "camera": "Camera"
+  },
+  "priceRange": {
+    "min": "Min",
+    "max": "Max"
   }
 }

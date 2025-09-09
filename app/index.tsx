@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Plus, X, ArrowUpDown, Info } from 'lucide-react-native';
 import { Product, HeroBanner, Category } from '@/types';
+import { RefreshControl } from 'react-native';
 import { useHome } from '@/features/home/hooks/useHome';
 import { useHomeBanners } from '@/features/home/hooks/useHomeBanners';
 import { useHomeModals } from '@/features/home/hooks/useHomeModals';
@@ -25,20 +26,22 @@ import BannerArea from '@/features/home/components/BannerArea';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import CategoryCard from '@/features/home/components/CategoryCard';
 import { Spinner } from '@/ui/primitives';
-import EmptyState from '@/shared/ui/EmptyState';
 import BannerFormModal from '@/components/BannerFormModal';
 import { CartModal } from '@/features/cart';
 import { ProductFormModal } from '@/features/products';
 import InfoModal from '@/components/InfoModal';
 import { useHomeFilters } from '@/features/home/hooks/useHomeFilters';
 import SortModal from '@/features/home/components/SortModal';
-import { spacing } from '@/shared/ui/tokens';
-import { ScrollArea, Container, Stack } from '@/ui/layout';
+import { ScrollArea } from '@/ui/layout';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
+import HomeBanners from '@/features/home/screens/HomeBanners';
+import HomeCategories from '@/features/home/screens/HomeCategories';
+import HomeProducts from '@/features/home/screens/HomeProducts';
+import HomeAdminActions from '@/features/home/screens/HomeAdminActions';
+import HomeError from '@/features/home/screens/HomeError';
 
 
 function HomeScreenContent() {
-  const { width: windowWidth } = useWindowDimensions();
   const home = useHome();
   const banners = useHomeBanners();
   const { refreshing, refresh, error } = useHomeRefresh(home, banners);
@@ -63,39 +66,15 @@ function HomeScreenContent() {
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
 
-  const {
-    products,
-    categories,
-    upsertProduct,
-    removeProduct,
-    loading: productsLoading,
-  } = home;
+  const { products, categories, upsertProduct, removeProduct, loading: productsLoading } = home;
 
-  const {
-    heroBanners,
-    upsertBanner,
-    removeBanner,
-    loading: bannersLoading,
-  } = banners;
+  const { heroBanners, upsertBanner, removeBanner, loading: bannersLoading } = banners;
 
   const { fallbackCategories, fallbackBanners } = useHomeData();
   const categoriesToShow = categories.length ? categories : fallbackCategories;
   const heroBannersToShow = heroBanners.length ? heroBanners : fallbackBanners;
 
-  const {
-    filteredProducts,
-    searchQuery,
-    selectedCategory,
-    setSelectedCategory,
-    minPrice,
-    setMinPrice,
-    maxPrice,
-    setMaxPrice,
-    sortBy,
-    setSortBy,
-    showSortModal,
-    setShowSortModal,
-  } = useHomeFilters(products);
+  const { filteredProducts, searchQuery, selectedCategory, setSelectedCategory, minPrice, setMinPrice, maxPrice, setMaxPrice, sortBy, setSortBy, showSortModal, setShowSortModal } = useHomeFilters(products);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
 
   const handleCategoryPress = useCallback(
@@ -110,38 +89,14 @@ function HomeScreenContent() {
 
   if (error) {
     return (
-      <>
-        <ScrollArea
-          testID="home-root"
-          backgroundColor={themeColors.canvas}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={refresh} />
-          }
-        >
-          <EmptyState
-            icon={Info}
-            title={t('common.error')}
-            message={t('home.loadErrorMessage')}
-            actionText={t('common.reload')}
-            onAction={handleReload}
-          />
-        </ScrollArea>
-        <Suspense fallback={<Spinner />}>
-          <InfoModal
-            visible={infoModal.visible}
-            title={infoModal.title}
-            message={infoModal.message}
-            type={infoModal.type}
-            buttonText={infoModal.buttonText}
-            onClose={handleReload}
-            autoClose={false}
-          />
-        </Suspense>
-        <Suspense fallback={<Spinner />}>
-          <CartModal visible={showCartModal} onClose={closeCartModal} />
-        </Suspense>
-      </>
+      <HomeError
+        refreshing={refreshing}
+        refresh={refresh}
+        handleReload={handleReload}
+        infoModal={infoModal}
+        showCartModal={showCartModal}
+        closeCartModal={closeCartModal}
+      />
     );
   }
 
@@ -161,56 +116,6 @@ function HomeScreenContent() {
     removeProduct(id);
   };
 
-  const renderCategory = ({ item }: { item: Category }) => (
-    <TouchableOpacity
-      style={[styles.categoryCard]}
-      onPress={() => setSelectedCategory(item.id)}
-    >
-      <View
-        style={[
-          styles.categoryIcon,
-          {
-            backgroundColor: themeColors.interactive.secondary,
-            borderColor: themeColors.gold,
-          },
-        ]}
-      >
-        <Text style={styles.categoryEmoji}>{item.icon}</Text>
-      </View>
-      <Text style={[styles.categoryName, { color: themeColors.text.primary }]}> 
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  // Function to determine product item width based on screen size
-  const getProductItemWidth = () => {
-    if (windowWidth >= 1024) {
-      // Large screens - 4 columns with spacing
-      return '23.5%'; // 4 columns with small gap
-    } else if (windowWidth >= 768) {
-      // Medium screens - 3 columns with spacing
-      return '32%'; // 3 columns with small gap
-    } else {
-      // Small screens - 2 columns with spacing
-      return '48%'; // 2 columns with small gap
-    }
-  };
-
-  const getSortLabel = () => {
-    switch (sortBy) {
-      case 'price-low':
-        return t('home.priceLowHigh');
-      case 'price-high':
-        return t('home.priceHighLow');
-      case 'rating':
-        return t('home.highRating');
-      case 'newest':
-      default:
-        return t('home.newest');
-    }
-  };
-
   return (
     <>
       <ScrollArea
@@ -219,12 +124,12 @@ function HomeScreenContent() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
-      <CategoryChips
-        categories={categoriesToShow}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-      />
-      <PriceRange
+        <CategoryChips
+          categories={categoriesToShow}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+        />
+        <PriceRange
           minPrice={minPrice}
           setMinPrice={setMinPrice}
           maxPrice={maxPrice}
@@ -405,170 +310,3 @@ export default function HomeScreen() {
     </ErrorBoundary>
   );
 }
-
-const styles = StyleSheet.create({
-  section: {
-    paddingHorizontal: spacing.spacer16,
-    marginBottom: spacing.spacer24,
-  },
-  sectionHeader: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.spacer16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  sectionActions: {
-    alignItems: 'center',
-  },
-  seeAll: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  sortButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.spacer12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  sortText: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginLeft: spacing.spacer4,
-  },
-  addProductButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  categoriesList: {
-    paddingLeft: spacing.spacer16,
-  },
-  categoryWrapper: {
-    marginLeft: spacing.spacer20,
-  },
-  categoryCard: {
-    alignItems: 'center',
-    width: 70,
-    position: 'relative',
-  },
-  categoryIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.spacer8,
-    borderWidth: 1,
-  },
-  categoryEmoji: {
-    fontSize: 28,
-  },
-  categoryName: {
-    fontSize: 12,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  categoryAdminActions: {
-    position: 'absolute',
-    top: -4,
-    start: -4,
-    flexDirection: 'row',
-  },
-  categoryAdminButton: {
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 2,
-    borderWidth: 1,
-  },
-  helperText: {
-    fontSize: 12,
-    marginTop: spacing.spacer4,
-    textAlign: 'right',
-  },
-  adminActionsContainer: {
-    padding: spacing.spacer16,
-    marginBottom: spacing.spacer24,
-  },
-  clearDataButton: {
-    borderRadius: 12,
-    paddingVertical: spacing.spacer12,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  clearDataText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: spacing.spacer8,
-  },
-  categorySelector: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: spacing.spacer16,
-    paddingVertical: spacing.spacer12,
-  },
-  categorySelectorText: {
-    fontSize: 16,
-    textAlign: 'right',
-  },
-  categorySelectorOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  categorySelectorContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: '80%',
-  },
-  categorySelectorHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  categorySelectorTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  categorySelectorList: {
-    maxHeight: 400,
-  },
-  categorySelectorItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.spacer12,
-    paddingHorizontal: spacing.spacer16,
-    borderBottomWidth: 1,
-  },
-  categorySelectorItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  categorySelectorItemIcon: {
-    fontSize: 24,
-    marginRight: spacing.spacer12,
-  },
-  categorySelectorItemText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  categorySelectorItemId: {
-    fontSize: 12,
-  },
-  buttonSpinner: {
-    marginRight: spacing.spacer8,
-  },
-});
