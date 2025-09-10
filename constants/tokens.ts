@@ -31,17 +31,26 @@ export const shadows = {
   sm: {
     ios: { elevation: 2 },
     android: { elevation: 2 },
-    web: { boxShadow: `0px 2px 4px rgba(0,0,0,0.1)` },
+    macos: { elevation: 2 },
+    windows: { elevation: 2 },
+    native: { elevation: 2 },
+    web: { elevation: 2, boxShadow: `0px 2px 4px rgba(0,0,0,0.1)` },
   },
   md: {
     ios: { elevation: 5 },
     android: { elevation: 5 },
-    web: { boxShadow: `0px 4px 12px rgba(0,0,0,0.15)` },
+    macos: { elevation: 5 },
+    windows: { elevation: 5 },
+    native: { elevation: 5 },
+    web: { elevation: 5, boxShadow: `0px 4px 12px rgba(0,0,0,0.15)` },
   },
   lg: {
     ios: { elevation: 12 },
     android: { elevation: 12 },
-    web: { boxShadow: `0px 4px 8px rgba(0,0,0,0.3)` },
+    macos: { elevation: 12 },
+    windows: { elevation: 12 },
+    native: { elevation: 12 },
+    web: { elevation: 12, boxShadow: `0px 4px 8px rgba(0,0,0,0.3)` },
   },
 };
 
