@@ -1,27 +1,38 @@
 import pino from 'pino';
 import { collectDefaultMetrics, Counter, Histogram, register } from 'prom-client';
-import http from 'http';
+import type { IncomingMessage, ServerResponse } from 'http';
 
 export const logger = pino();
 
-collectDefaultMetrics();
+if (typeof process?.cwd === 'function') {
+  collectDefaultMetrics();
+}
 
-export const serviceLatency = new Histogram({
-  name: 'service_latency_seconds',
-  help: 'Service call latency in seconds',
-  labelNames: ['service'],
-});
+export const serviceLatency =
+  typeof process?.cwd === 'function'
+    ? new Histogram({
+        name: 'service_latency_seconds',
+        help: 'Service call latency in seconds',
+        labelNames: ['service'],
+      })
+    : { startTimer: () => () => {} };
 
-export const serviceFailures = new Counter({
-  name: 'service_failures_total',
-  help: 'Total number of service call failures',
-  labelNames: ['service'],
-});
+export const serviceFailures =
+  typeof process?.cwd === 'function'
+    ? new Counter({
+        name: 'service_failures_total',
+        help: 'Total number of service call failures',
+        labelNames: ['service'],
+      })
+    : { inc: () => {} };
 
 let metricsStarted = false;
-export function startMetricsServer(port = Number(process.env.METRICS_PORT || 9464)) {
+export function startMetricsServer(
+  port = Number(process.env.METRICS_PORT || 9464)
+) {
   if (metricsStarted || typeof window !== 'undefined') return;
-  const server = http.createServer(async (req, res) => {
+  const http = require('http');
+  const server = http.createServer(async (req: IncomingMessage, res: ServerResponse) => {
     if (req.url === '/metrics') {
       res.setHeader('Content-Type', register.contentType);
       res.end(await register.metrics());
@@ -34,4 +45,6 @@ export function startMetricsServer(port = Number(process.env.METRICS_PORT || 946
   metricsStarted = true;
 }
 
-startMetricsServer();
+if (typeof process?.cwd === 'function') {
+  startMetricsServer();
+}
