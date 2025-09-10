@@ -24,10 +24,12 @@ export default function HeroCallout() {
         style={{ justifyContent: 'space-between' }}
       >
         <View style={styles.textContainer}>
-          <Heading size="xl" style={{ color: colors.text.primary }}>
+          <Heading size="lg" style={{ color: colors.text.primary }}>
             {t('home.heroTitle')}
           </Heading>
-          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
+          <Text
+            style={[typography.sm, { color: colors.text.secondary, marginTop: spacing.spacer8 }]}
+          >
             {t('home.heroSubtitle')}
           </Text>
         </View>
@@ -40,10 +42,6 @@ export default function HeroCallout() {
 const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
-  },
-  subtitle: {
-    ...typography.md,
-    marginTop: spacing.spacer8,
   },
 });
 

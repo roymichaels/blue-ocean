@@ -1,36 +1,56 @@
 import React from 'react';
-import { AccessibilityRole } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Card, Text } from '@/ui';
+import { Stack } from '@/ui/layout';
+import { radius, typography } from '@/ui/tokens';
 import { useTheme } from '@/ui/ThemeProvider';
-import PromoCard from './PromoCard';
 
 interface ServiceCardProps {
-  icon: React.ReactNode;
   title: string;
+  icon: React.ReactNode;
   onPress: () => void;
-  backgroundColor?: string;
+  accessibilityRole?: 'button' | 'link';
   testID?: string;
-  accessibilityRole?: AccessibilityRole;
 }
 
 export default function ServiceCard({
-  icon,
   title,
+  icon,
   onPress,
-  backgroundColor,
+  accessibilityRole = 'button',
   testID,
-  accessibilityRole,
 }: ServiceCardProps) {
   const { colors } = useTheme();
 
   return (
-    <PromoCard
-      backgroundColor={backgroundColor ?? colors.surface.primary}
-      icon={icon}
-      title={title}
-      onPress={onPress}
-      testID={testID}
-      accessibilityRole={accessibilityRole}
-    />
+    <Card style={[styles.card, { backgroundColor: colors.surface.secondary }]}>
+      <TouchableOpacity
+        style={styles.touch}
+        onPress={onPress}
+        accessibilityRole={accessibilityRole}
+        testID={testID}
+      >
+        <Stack gap="spacer8" style={styles.content}>
+          {icon}
+          <Text style={[typography.sm, { color: colors.text.primary }]}>{title}</Text>
+        </Stack>
+      </TouchableOpacity>
+    </Card>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    flex: 1,
+    borderRadius: radius.lg,
+  },
+  touch: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    alignItems: 'center',
+  },
+});
 
