@@ -13,10 +13,6 @@ jest.mock('@/features/home/hooks/useHome', () => ({
   useHome: (tenantId: string) => mockUseHome(tenantId),
 }));
 
-const mockUseHomeBanners = jest.fn();
-jest.mock('@/features/home/hooks/useHomeBanners', () => ({
-  useHomeBanners: (tenantId: string) => mockUseHomeBanners(tenantId),
-}));
 
 const mockCategoryChips = jest.fn(() => null);
 jest.mock('@/features/home/components/CategoryChips', () => ({
@@ -119,8 +115,7 @@ describe('HomeScreen render', () => {
     expect(str).toContain('home.createStore');
     expect(mockCategoryChips).not.toHaveBeenCalled();
     expect(mockProductGrid).not.toHaveBeenCalled();
-    expect(mockUseHome).not.toHaveBeenCalled();
-    expect(mockUseHomeBanners).not.toHaveBeenCalled();
+    expect(mockUseHome).toHaveBeenCalledWith(null);
   });
 
   it('renders tenant mode with scoped queries', async () => {
@@ -135,15 +130,6 @@ describe('HomeScreen render', () => {
       upsertProduct: jest.fn(),
       removeProduct: jest.fn(),
     });
-    mockUseHomeBanners.mockReturnValue({
-      heroBanners: [],
-      loading: false,
-      refreshing: false,
-      error: null,
-      refresh: jest.fn(),
-      upsertBanner: jest.fn(),
-      removeBanner: jest.fn(),
-    });
 
     let root: renderer.ReactTestRenderer;
     await act(async () => {
@@ -154,6 +140,5 @@ describe('HomeScreen render', () => {
     expect(mockCategoryChips).toHaveBeenCalled();
     expect(mockProductGrid).toHaveBeenCalled();
     expect(mockUseHome).toHaveBeenCalledWith('tenant1');
-    expect(mockUseHomeBanners).toHaveBeenCalledWith('tenant1');
   });
 });

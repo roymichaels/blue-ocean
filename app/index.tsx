@@ -47,35 +47,10 @@ const getNetworkCardWidth = (width: number) => {
 };
 
 function HomeScreenContent() {
-  const { storeId: tenantId } = useTenant();
-  const isNetwork = !tenantId;
+  const { tenantId, isNetwork } = useTenant();
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
-  const appRouter = useAppRouter();
-  const { width: windowWidth } = useWindowDimensions();
-  const [actionsLoading, setActionsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setActionsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleCreateStore = () => {
-    appRouter.push(routes.createStore());
-  };
-
-  const handleComingSoon = () => {
-    Alert.alert(t('common.comingSoon'));
-  };
-
-  const networkActions = [
-    { key: 'create', label: t('home.createStore'), onPress: handleCreateStore },
-    { key: 'driver', label: t('home.becomeDriver'), onPress: handleComingSoon },
-    { key: 'business', label: t('home.businessLogin'), onPress: handleComingSoon },
-    { key: 'docs', label: t('home.docsApi'), onPress: handleComingSoon },
-  ];
-
-  const networkItemWidth = getNetworkCardWidth(windowWidth);
+  const home = useHome(tenantId);
 
   if (isNetwork) {
     return (
@@ -119,7 +94,6 @@ function HomeScreenContent() {
     );
   }
 
-  const home = useHome(tenantId);
   const { refreshing, refresh, error } = home;
   const {
     productFormVisible,
@@ -202,7 +176,6 @@ function HomeScreenContent() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
-        <HeroCallout />
         <CategoryChips
           categories={categoriesToShow}
           selectedCategory={selectedCategory}
