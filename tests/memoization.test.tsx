@@ -1,7 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import ProductGrid from '@features/home/components/ProductGrid';
-import { Product, Category } from '@/types';
+import { Product } from '@/types';
 
 jest.mock('@/ui/ThemeProvider', () => ({
   useLanguage: () => ({ t: (s: string) => s }),
@@ -42,10 +42,8 @@ describe('memoization', () => {
       storeId: 's',
       stock: 1,
     };
-    const categories: Category[] = [];
     const props = {
       products: [product],
-      categories,
       isStoreOwner: false,
       onEdit: () => {},
       getItemWidth: () => '50%',
