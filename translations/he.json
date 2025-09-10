@@ -109,7 +109,8 @@
     "becomeDriver": "הפוך לשליח",
     "businessLogin": "כניסת עסקים",
     "docs": "תיעוד",
-    "apiDocs": "ממשק API"
+    "apiDocs": "ממשק API",
+    "docsApi": "מסמכים & API"
   },
   "categories": {
     "all": "הכל",
