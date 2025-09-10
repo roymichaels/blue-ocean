@@ -2,7 +2,33 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 
 jest.mock('expo-secure-store');
-import HomeScreen from '@app/index';
+
+const mockUseTenant = jest.fn();
+jest.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => mockUseTenant(),
+}));
+
+const mockUseHome = jest.fn();
+jest.mock('@/features/home/hooks/useHome', () => ({
+  useHome: (tenantId: string) => mockUseHome(tenantId),
+}));
+
+const mockUseHomeBanners = jest.fn();
+jest.mock('@/features/home/hooks/useHomeBanners', () => ({
+  useHomeBanners: (tenantId: string) => mockUseHomeBanners(tenantId),
+}));
+
+const mockCategoryChips = jest.fn(() => null);
+jest.mock('@/features/home/components/CategoryChips', () => ({
+  __esModule: true,
+  default: (props: any) => mockCategoryChips(props),
+}));
+
+const mockProductGrid = jest.fn(() => null);
+jest.mock('@/features/home/components/ProductGrid', () => ({
+  __esModule: true,
+  default: (props: any) => mockProductGrid(props),
+}));
 
 jest.mock('@/services', () => ({
   useAppRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
@@ -54,31 +80,6 @@ jest.mock('@features/products', () => ({
 jest.mock('@/components/InfoModal', () => () => null);
 jest.mock('@/components/SmartImage', () => () => null);
 
-jest.mock('@/features/home/hooks/useHome', () => ({
-  useHome: () => ({
-    products: [],
-    categories: [],
-    loading: false,
-    refreshing: false,
-    error: null,
-    refresh: jest.fn(),
-    upsertProduct: jest.fn(),
-    removeProduct: jest.fn(),
-  }),
-}));
-
-jest.mock('@/features/home/hooks/useHomeBanners', () => ({
-  useHomeBanners: () => ({
-    heroBanners: [],
-    loading: false,
-    refreshing: false,
-    error: null,
-    refresh: jest.fn(),
-    upsertBanner: jest.fn(),
-    removeBanner: jest.fn(),
-  }),
-}));
-
 jest.mock('@/features/home/hooks/useHomeFilters', () => ({
   useHomeFilters: () => ({
     filteredProducts: [],
@@ -97,19 +98,62 @@ jest.mock('@/features/home/hooks/useHomeFilters', () => ({
   }),
 }));
 
+import HomeScreen from '@app/index';
+
 describe('HomeScreen render', () => {
-  it('uses fallback data when hooks return empty', async () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders network mode with hero cards only', async () => {
+    mockUseTenant.mockReturnValue({ tenantId: null, isNetwork: true });
+
     let root: renderer.ReactTestRenderer;
     await act(async () => {
       root = renderer.create(<HomeScreen />);
     });
     await act(async () => {});
+
     const tree = root!.toJSON();
     const str = JSON.stringify(tree);
-    expect(str).toContain('categories.electronics');
     expect(str).toContain('home.createStore');
-    expect(str).toContain('home.becomeDriver');
-    expect(str).toContain('home.noProducts');
+    expect(mockCategoryChips).not.toHaveBeenCalled();
+    expect(mockProductGrid).not.toHaveBeenCalled();
+    expect(mockUseHome).not.toHaveBeenCalled();
+    expect(mockUseHomeBanners).not.toHaveBeenCalled();
+  });
+
+  it('renders tenant mode with scoped queries', async () => {
+    mockUseTenant.mockReturnValue({ tenantId: 'tenant1', isNetwork: false });
+    mockUseHome.mockReturnValue({
+      products: [],
+      categories: [],
+      loading: false,
+      refreshing: false,
+      error: null,
+      refresh: jest.fn(),
+      upsertProduct: jest.fn(),
+      removeProduct: jest.fn(),
+    });
+    mockUseHomeBanners.mockReturnValue({
+      heroBanners: [],
+      loading: false,
+      refreshing: false,
+      error: null,
+      refresh: jest.fn(),
+      upsertBanner: jest.fn(),
+      removeBanner: jest.fn(),
+    });
+
+    let root: renderer.ReactTestRenderer;
+    await act(async () => {
+      root = renderer.create(<HomeScreen />);
+    });
+    await act(async () => {});
+
+    expect(mockCategoryChips).toHaveBeenCalled();
+    expect(mockProductGrid).toHaveBeenCalled();
+    expect(mockUseHome).toHaveBeenCalledWith('tenant1');
+    expect(mockUseHomeBanners).toHaveBeenCalledWith('tenant1');
   });
 });
-
