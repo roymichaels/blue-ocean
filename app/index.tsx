@@ -15,6 +15,7 @@ import { useHomeModals } from '@/features/home/hooks/useHomeModals';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
+import { useTenant } from '@/contexts/TenantContext';
 import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import HomeOptions from '@/features/home/components/HomeOptions';
@@ -30,11 +31,55 @@ import SortModal from '@/features/home/components/SortModal';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { spacing, typography, radius, shadows } from '@/ui/tokens';
 import HeroCallout from '@/features/home/components/HeroCallout';
+import PromoCard from '@/features/home/components/PromoCard';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
 import HomeError from '@/features/home/screens/HomeError';
 
 
 function HomeScreenContent() {
+  const { storeId: tenantId } = useTenant();
+  const isNetwork = !tenantId;
+  const { t } = useLanguage();
+  const { colors: themeColors } = useTheme();
+
+  if (isNetwork) {
+    return (
+      <ScrollArea
+        testID="home-root"
+        backgroundColor={themeColors.canvas}
+        showsVerticalScrollIndicator={false}
+      >
+        <HeroCallout />
+        <ScrollArea
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.networkCards}
+        >
+          <PromoCard
+            backgroundColor={themeColors.surface.primary}
+            title={t('home.createStore')}
+          />
+          <PromoCard
+            backgroundColor={themeColors.surface.primary}
+            title={t('home.becomeDriver')}
+          />
+          <PromoCard
+            backgroundColor={themeColors.surface.primary}
+            title={t('home.businessLogin')}
+          />
+          <PromoCard
+            backgroundColor={themeColors.surface.primary}
+            title={t('home.docs')}
+          />
+          <PromoCard
+            backgroundColor={themeColors.surface.primary}
+            title={t('home.apiDocs')}
+          />
+        </ScrollArea>
+      </ScrollArea>
+    );
+  }
+
   const home = useHome();
   const { refreshing, refresh, error } = home;
   const {
@@ -48,8 +93,6 @@ function HomeScreenContent() {
     closeInfoModal,
   } = useHomeModals(error);
   const { isStoreOwner } = useAuth();
-  const { t } = useLanguage();
-  const { colors: themeColors } = useTheme();
   const { products, categories, upsertProduct, removeProduct, loading: productsLoading } = home;
 
   const { fallbackCategories } = useHomeData();
@@ -327,6 +370,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
+  },
+  networkCards: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.spacer16,
+    gap: spacing.spacer16,
+    marginBottom: spacing.spacer24,
   },
 });
 

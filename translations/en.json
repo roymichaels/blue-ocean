@@ -106,7 +106,10 @@
     "highRating": "High Rating",
     "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload.",
     "createStore": "Create a Store",
-    "becomeDriver": "Become a Driver"
+    "becomeDriver": "Become a Driver",
+    "businessLogin": "Business Login",
+    "docs": "Docs",
+    "apiDocs": "API Docs"
   },
   "categories": {
     "all": "All",

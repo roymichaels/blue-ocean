@@ -106,7 +106,10 @@
     "highRating": "דירוג גבוה",
     "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש.",
     "createStore": "צור חנות",
-    "becomeDriver": "הפוך לשליח"
+    "becomeDriver": "הפוך לשליח",
+    "businessLogin": "כניסת עסקים",
+    "docs": "תיעוד",
+    "apiDocs": "ממשק API"
   },
   "categories": {
     "all": "הכל",
