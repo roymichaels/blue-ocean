@@ -33,6 +33,8 @@ function CategoryChips({
         style={styles.categoriesScroll}
       >
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={t('categories.all')}
           style={[
             styles.categoryChip,
             {
@@ -56,6 +58,8 @@ function CategoryChips({
         </TouchableOpacity>
         {categories.map((cat) => (
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={t(cat.name)}
             key={cat.id}
             style={[
               styles.categoryChip,
