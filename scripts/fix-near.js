@@ -1,7 +1,9 @@
 /*
   Synchronizes NEAR dependencies across the repo and verifies hoisting.
-  - Sets near-api-js to 6.2.6 if present
-  - Sets @near-wallet-selector/* to 9.3.0 if present
+  - Sets near-api-js to 2.1.4 if present
+  - Sets @near-wallet-selector/core to 8.10.2 if present
+  - Sets @near-wallet-selector/near-wallet to 8.9.3 if present
+  - Sets use-latest-callback to 0.1.7 if present
   - Ensures root package.json resolutions include these pins
   - Rewrites leftover legacy constants or URLs to their NEAR equivalents
   - Prints a summary and next steps
@@ -25,8 +27,9 @@ const EXTRA_FILES = ['.env', '.env.example']
   .filter((p) => fs.existsSync(p));
 
 const NEAR_JS_VERSION = '2.1.4';
-const SELECTOR_VERSION = '8.9.3';
-const LATEST_CB_VERSION = '0.2.4';
+const SELECTOR_CORE_VERSION = '8.10.2';
+const NEAR_WALLET_VERSION = '8.9.3';
+const LATEST_CB_VERSION = '0.1.7';
 const LEGACY = ['T', 'O', 'N'].join('');
 
 let changed = 0;
@@ -54,22 +57,14 @@ for (const pkgPath of TARGETS) {
   let localChanged = false;
 
   localChanged |= setDep(data, 'near-api-js', `${NEAR_JS_VERSION}`);
-  localChanged |= setDep(data, '@near-wallet-selector/core', SELECTOR_VERSION);
-  localChanged |= setDep(data, '@near-wallet-selector/near-wallet', SELECTOR_VERSION);
+  localChanged |= setDep(data, '@near-wallet-selector/core', SELECTOR_CORE_VERSION);
+  localChanged |= setDep(data, '@near-wallet-selector/near-wallet', NEAR_WALLET_VERSION);
   localChanged |= setDep(data, 'use-latest-callback', LATEST_CB_VERSION);
 
   if (pkgPath.endsWith('package.json')) {
     data.resolutions = data.resolutions || {};
     if (data.resolutions['near-api-js'] !== NEAR_JS_VERSION) {
       data.resolutions['near-api-js'] = NEAR_JS_VERSION;
-      localChanged = true;
-    }
-    if (data.resolutions['@near-wallet-selector/core'] !== SELECTOR_VERSION) {
-      data.resolutions['@near-wallet-selector/core'] = SELECTOR_VERSION;
-      localChanged = true;
-    }
-    if (data.resolutions['@near-wallet-selector/near-wallet'] !== SELECTOR_VERSION) {
-      data.resolutions['@near-wallet-selector/near-wallet'] = SELECTOR_VERSION;
       localChanged = true;
     }
     if (data.resolutions['use-latest-callback'] !== LATEST_CB_VERSION) {
