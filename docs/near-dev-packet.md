@@ -393,7 +393,7 @@ BlueOcean
 ├─ App Shell
 │  ├─ Global Layout (Header, Footer, Toasts, Modals, Theme)
 │  ├─ WalletConnect (NEAR Wallet Selector)
-│  ├─ TenantContext (storeId, slug, config)
+│  ├─ TenantContext (tenantId, network mode, config)
 │  ├─ AuthContext (accountId, roles, session)
 │  ├─ FeatureFlags (CHAIN='near', WALLET_ENABLED, DEBUG_LOGS)
 │  └─ Polyfills (web/native) + HMR
@@ -465,7 +465,7 @@ BlueOcean
 │  └─ Feedback: Toast, Modal, Spinner, EmptyState
 │
 ├─ Hooks & State
-│  ├─ useTenant()           (storeId + slug logic)
+│  ├─ useTenant()           (tenantId + network mode logic)
 │  ├─ useWallet()           (NEAR wallet state + connect)
 │  ├─ useRelayer()          (Meta-tx status)
 │  ├─ useCart()             (price calc + items)
