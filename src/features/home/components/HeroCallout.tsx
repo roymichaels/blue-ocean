@@ -1,16 +1,38 @@
 import React from 'react';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  useWindowDimensions,
+  type NativeSyntheticEvent,
+  type KeyboardEvent,
+} from 'react-native';
+import { router } from 'expo-router';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Button, Heading, Text } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
 import { spacing, typography } from '@/ui/tokens';
+import { requireEnv } from '@/services/config';
 import PromoCard from './PromoCard';
+
+const SHOP_TENANT_ID = requireEnv('SHOP_TENANT_ID');
 
 export default function HeroCallout() {
   const { t } = useLanguage();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
+
+  const handlePress = () => {
+    router.push(`/store/${SHOP_TENANT_ID}`);
+  };
+
+  const handleKeyDown = (e: NativeSyntheticEvent<KeyboardEvent>) => {
+    const key = e.nativeEvent.key;
+    if (key === 'Enter' || key === ' ') {
+      e.preventDefault();
+      handlePress();
+    }
+  };
 
   return (
     <PromoCard
@@ -33,7 +55,12 @@ export default function HeroCallout() {
             {t('home.heroSubtitle')}
           </Text>
         </View>
-        <Button title={t('home.heroAction')} />
+        <Button
+          title={t('home.heroAction')}
+          onPress={handlePress}
+          accessibilityRole="link"
+          onKeyDown={handleKeyDown}
+        />
       </Stack>
     </PromoCard>
   );
