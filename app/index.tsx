@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   RefreshControl,
   useWindowDimensions,
   Platform,
+  Alert,
 } from 'react-native';
 import { Plus, ArrowUpDown } from 'lucide-react-native';
 import { Product } from '@/types';
@@ -21,7 +22,7 @@ import CategoryChips from '@/features/home/components/CategoryChips';
 import HomeOptions from '@/features/home/components/HomeOptions';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import CategoryCard from '@/features/home/components/CategoryCard';
-import { Spinner, Heading } from '@/ui/primitives';
+import { Spinner, Heading, Card, Button, Skeleton } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
 import { CartModal } from '@/features/cart';
 import { ProductFormModal } from '@/features/products';
@@ -31,10 +32,19 @@ import SortModal from '@/features/home/components/SortModal';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { spacing, typography, radius, shadows } from '@/ui/tokens';
 import HeroCallout from '@/features/home/components/HeroCallout';
-import PromoCard from '@/features/home/components/PromoCard';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
 import HomeError from '@/features/home/screens/HomeError';
+import { useAppRouter } from '@/services/useAppRouter';
+import { routes } from '@/utils/routes';
 
+const getNetworkCardWidth = (width: number) => {
+  if (width >= 1024) {
+    return '23.5%';
+  } else if (width >= 768) {
+    return '32%';
+  }
+  return '48%';
+};
 
 function HomeScreenContent() {
   const { tenantId, isNetwork } = useTenant();
@@ -50,32 +60,36 @@ function HomeScreenContent() {
         showsVerticalScrollIndicator={false}
       >
         <HeroCallout />
-        <ScrollArea
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.networkCards}
-        >
-          <PromoCard
-            backgroundColor={themeColors.surface.primary}
-            title={t('home.createStore')}
-          />
-          <PromoCard
-            backgroundColor={themeColors.surface.primary}
-            title={t('home.becomeDriver')}
-          />
-          <PromoCard
-            backgroundColor={themeColors.surface.primary}
-            title={t('home.businessLogin')}
-          />
-          <PromoCard
-            backgroundColor={themeColors.surface.primary}
-            title={t('home.docs')}
-          />
-          <PromoCard
-            backgroundColor={themeColors.surface.primary}
-            title={t('home.apiDocs')}
-          />
-        </ScrollArea>
+        {actionsLoading ? (
+          <View style={styles.networkGrid}>
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <Card key={idx} style={[styles.networkCard, { width: networkItemWidth }]}> 
+                <Skeleton height={20} style={{ marginBottom: spacing.spacer8 }} />
+                <Skeleton height={40} borderRadius={radius.md} />
+              </Card>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.networkGrid}>
+            {networkActions.map((action) => (
+              <Card key={action.key} style={[styles.networkCard, { width: networkItemWidth }]}> 
+                <Stack gap="spacer8">
+                  <Text style={[styles.networkTitle, { color: themeColors.text.primary }]}> 
+                    {action.label}
+                  </Text>
+                  <Button
+                    title={action.label}
+                    onPress={action.onPress}
+                    style={({ hovered, focused }) => [
+                      hovered && { backgroundColor: themeColors.interactive.primaryHover },
+                      focused && { borderColor: themeColors.border.focus, borderWidth: 1 },
+                    ]}
+                  />
+                </Stack>
+              </Card>
+            ))}
+          </View>
+        )}
       </ScrollArea>
     );
   }
@@ -99,7 +113,6 @@ function HomeScreenContent() {
 
   const { filteredProducts, searchQuery, selectedCategory, setSelectedCategory, minPrice, setMinPrice, maxPrice, setMaxPrice, sortBy, setSortBy, showSortModal, setShowSortModal } = useHomeFilters(products);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
-  const { width: windowWidth } = useWindowDimensions();
 
   const getProductItemWidth = () => {
     if (windowWidth >= 1024) {
@@ -369,11 +382,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
   },
-  networkCards: {
+  networkGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.spacer16,
     gap: spacing.spacer16,
     marginBottom: spacing.spacer24,
+  },
+  networkCard: {
+    borderRadius: radius.lg,
+  },
+  networkTitle: {
+    fontWeight: '600',
   },
 });
 

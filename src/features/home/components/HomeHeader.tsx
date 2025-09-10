@@ -1,7 +1,7 @@
 import React from 'react';
-import GlobalHeader from '@/components/GlobalHeader';
+import TopBar from '@/components/TopBar';
 
 export default function HomeHeader() {
-  return <GlobalHeader showSearch={false} />;
+  return <TopBar showSearch={false} />;
 }
 
