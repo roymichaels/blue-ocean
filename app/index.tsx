@@ -51,6 +51,34 @@ function HomeScreenContent() {
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
   const home = useHome(tenantId);
+  const router = useAppRouter();
+  const { width: windowWidth } = useWindowDimensions();
+
+  const actionsLoading = false;
+  const networkActions = [
+    {
+      key: 'create-store',
+      label: t('home.createStore'),
+      onPress: () => router.push(routes.createStore()),
+    },
+    {
+      key: 'become-driver',
+      label: t('home.becomeDriver'),
+      onPress: () => router.push('/driver'),
+    },
+    {
+      key: 'business-login',
+      label: t('home.businessLogin'),
+      onPress: () => router.push('/login'),
+    },
+    {
+      key: 'docs-api',
+      label: t('home.docsApi'),
+      onPress: () => router.push('/docs'),
+    },
+  ];
+
+  const networkItemWidth = getNetworkCardWidth(windowWidth);
 
   if (isNetwork) {
     return (
@@ -111,17 +139,17 @@ function HomeScreenContent() {
   const { fallbackCategories } = useHomeData();
   const categoriesToShow = categories.length ? categories : fallbackCategories;
 
-  const { filteredProducts, searchQuery, selectedCategory, setSelectedCategory, minPrice, setMinPrice, maxPrice, setMaxPrice, sortBy, setSortBy, showSortModal, setShowSortModal } = useHomeFilters(products);
-  const [showCategorySelector, setShowCategorySelector] = useState(false);
+    const { filteredProducts, searchQuery, selectedCategory, setSelectedCategory, minPrice, setMinPrice, maxPrice, setMaxPrice, sortBy, setSortBy, showSortModal, setShowSortModal } = useHomeFilters(products);
+    const [showCategorySelector, setShowCategorySelector] = useState(false);
 
-  const getProductItemWidth = () => {
-    if (windowWidth >= 1024) {
-      return '23.5%';
-    } else if (windowWidth >= 768) {
-      return '32%';
-    }
-    return '48%';
-  };
+    const getProductItemWidth = () => {
+      if (windowWidth >= 1024) {
+        return '23.5%';
+      } else if (windowWidth >= 768) {
+        return '32%';
+      }
+      return '48%';
+    };
 
   const getSortLabel = () => {
     switch (sortBy) {

@@ -26,7 +26,8 @@
     "reload": "Reload",
     "comingSoon": "Coming Soon",
     "goHome": "Go Home",
-    "route": "Route:"
+    "route": "Route:",
+    "language": "Language"
   },
   "app": {
     "routerDisabled": "Router disabled"
@@ -40,6 +41,12 @@
     "notifications": "Notifications",
     "reviews": "Reviews",
     "profile": "Profile"
+  },
+  "commandPalette": {
+    "navigate": "Navigate",
+    "actions": "Actions",
+    "products": "Products",
+    "orders": "Orders"
   },
   "auth": {
     "login": "Login",

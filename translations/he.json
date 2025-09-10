@@ -26,7 +26,8 @@
     "reload": "טען מחדש",
     "comingSoon": "בקרוב",
     "goHome": "חזור לבית",
-    "route": "נתיב:"
+    "route": "נתיב:",
+    "language": "שפה"
   },
   "app": {
     "routerDisabled": "הנתב מושבת"
@@ -40,6 +41,12 @@
     "notifications": "התראות",
     "reviews": "ביקורות",
     "profile": "פרופיל"
+  },
+  "commandPalette": {
+    "navigate": "ניווט",
+    "actions": "פעולות",
+    "products": "מוצרים",
+    "orders": "הזמנות"
   },
   "auth": {
     "login": "התחבר",
