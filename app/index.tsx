@@ -37,10 +37,10 @@ import HomeError from '@/features/home/screens/HomeError';
 
 
 function HomeScreenContent() {
-  const { storeId: tenantId } = useTenant();
-  const isNetwork = !tenantId;
+  const { tenantId, isNetwork } = useTenant();
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
+  const home = useHome(tenantId);
 
   if (isNetwork) {
     return (
@@ -80,7 +80,6 @@ function HomeScreenContent() {
     );
   }
 
-  const home = useHome(tenantId);
   const { refreshing, refresh, error } = home;
   const {
     productFormVisible,
@@ -164,7 +163,6 @@ function HomeScreenContent() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
-        <HeroCallout />
         <CategoryChips
           categories={categoriesToShow}
           selectedCategory={selectedCategory}

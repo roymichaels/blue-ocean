@@ -6,18 +6,16 @@ import { loadTenantSettings } from '@/constants/tenant';
 interface TenantContextType {
   tenantId: string | null;
   setTenantId: (id: string | null) => void;
-  isNetwork: boolean;
 }
 
 const TenantContext = createContext<TenantContextType>({
   tenantId: null,
   setTenantId: () => {},
-  isNetwork: true,
 });
 
 export function useTenant() {
-  const { tenantId, isNetwork } = useContext(TenantContext);
-  return { tenantId, isNetwork } as const;
+  const { tenantId } = useContext(TenantContext);
+  return { tenantId, isNetwork: !tenantId } as const;
 }
 
 interface Props {
@@ -54,10 +52,8 @@ export function TenantProvider({ children }: Props) {
     loadTenantSettings();
   }, [tenantId]);
 
-  const isNetwork = !tenantId;
-
   return (
-    <TenantContext.Provider value={{ tenantId, setTenantId, isNetwork }}>
+    <TenantContext.Provider value={{ tenantId, setTenantId }}>
       {children}
     </TenantContext.Provider>
   );

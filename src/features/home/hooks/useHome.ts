@@ -4,10 +4,9 @@ import { useProducts } from '@/services/useProducts';
 import { useCategories } from '@/services/useCategories';
 import { errorLog, debugLog } from '@/utils/logger';
 
-export function useHome() {
-  const defaultStore = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
-  const productsQuery = useProducts(defaultStore);
-  const categoriesQuery = useCategories(defaultStore);
+export function useHome(tenantId: string | null) {
+  const productsQuery = useProducts(tenantId);
+  const categoriesQuery = useCategories(tenantId);
 
   const [products, setProducts] = useState<Product[]>(productsQuery.data ?? []);
   const [categories, setCategories] = useState<Category[]>(categoriesQuery.data ?? []);
@@ -15,38 +14,17 @@ export function useHome() {
   const lastErrorRef = useRef<Error | null>(null);
 
   useEffect(() => {
-    if (productsQuery.data) {
-      setProducts(productsQuery.data);
-    }
-  }, [productsQuery.data]);
+    if (!tenantId || !productsQuery.data) return;
+    setProducts(productsQuery.data);
+  }, [tenantId, productsQuery.data]);
 
   useEffect(() => {
-    if (categoriesQuery.data) {
-      setCategories(categoriesQuery.data);
-    }
-  }, [categoriesQuery.data]);
+    if (!tenantId || !categoriesQuery.data) return;
+    setCategories(categoriesQuery.data);
+  }, [tenantId, categoriesQuery.data]);
 
   useEffect(() => {
-    if (productsQuery.error || categoriesQuery.error) {
-      const err = (productsQuery.error || categoriesQuery.error) as Error;
-      if (lastErrorRef.current !== err) {
-        lastErrorRef.current = err;
-        setError(err);
-      }
-
-  useEffect(() => {
-    if (productsQuery.data) {
-      setProducts(productsQuery.data);
-    }
-  }, [productsQuery.data]);
-
-  useEffect(() => {
-    if (categoriesQuery.data) {
-      setCategories(categoriesQuery.data);
-    }
-  }, [categoriesQuery.data]);
-
-  useEffect(() => {
+    if (!tenantId) return;
     if (productsQuery.error || categoriesQuery.error) {
       const err = (productsQuery.error || categoriesQuery.error) as Error;
       if (lastErrorRef.current !== err) {
@@ -56,9 +34,10 @@ export function useHome() {
       debugLog('useHome initial load failed', err);
       errorLog('useHome initial load failed', err);
     }
-  }, [productsQuery.error, categoriesQuery.error]);
+  }, [tenantId, productsQuery.error, categoriesQuery.error]);
 
   const refresh = useCallback(async () => {
+    if (!tenantId) return;
     try {
       const [productsRes, categoriesRes] = await Promise.all([
         productsQuery.refetch(),
@@ -85,31 +64,29 @@ export function useHome() {
       debugLog('useHome refresh failed', error);
       errorLog('useHome refresh failed', error);
     }
-  }, [productsQuery, categoriesQuery]);
+  }, [tenantId, productsQuery, categoriesQuery]);
 
   const upsertProduct = useCallback((p: Product, isNew: boolean) => {
-    setProducts((prev) =>
-      isNew ? [...prev, p] : prev.map((prod) => (prod.id === p.id ? p : prod)),
-    );
+    setProducts(prev => (isNew ? [...prev, p] : prev.map(prod => (prod.id === p.id ? p : prod))));
   }, []);
 
   const removeProduct = useCallback((id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    setProducts(prev => prev.filter(p => p.id !== id));
   }, []);
 
-  const loading = productsQuery.isLoading || categoriesQuery.isLoading;
-  const refreshing = productsQuery.isFetching || categoriesQuery.isFetching;
+  const loading = tenantId ? productsQuery.isLoading || categoriesQuery.isLoading : false;
+  const refreshing = tenantId ? productsQuery.isFetching || categoriesQuery.isFetching : false;
 
   return {
-    products,
-    categories,
+    products: tenantId ? products : [],
+    categories: tenantId ? categories : [],
     loading,
     refreshing,
-    error,
+    error: tenantId ? error : null,
     refresh,
     upsertProduct,
     removeProduct,
-  };
+  } as const;
 }
 
 export type UseHomeReturn = ReturnType<typeof useHome>;

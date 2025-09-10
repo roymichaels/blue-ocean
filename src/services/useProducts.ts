@@ -5,10 +5,10 @@ import { Product } from '@/types';
 import invariant from '@/utils/invariant';
 
 export function useProducts(tenantId: string | null) {
-  invariant(tenantId, 'tenantId required');
   return useQuery({
     queryKey: ['products', tenantId],
     queryFn: async () => {
+      if (!tenantId) return [] as Product[];
       const db = DatabaseService.getInstance();
       let data = await db.getProducts();
       data = data.filter((p) => p.storeId === tenantId);
