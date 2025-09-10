@@ -24,15 +24,15 @@ export default function HomeServices() {
   return (
     <Stack direction="horizontal" gap="spacer16" style={styles.container}>
       <ServiceCard
-        icon={<Store size={32} color={colors.gold} />}
         title={t('home.createStore')}
+        icon={<Store size={32} color={colors.gold} />}
         onPress={handleCreateStore}
         accessibilityRole="link"
         testID="create-store-link"
       />
       <ServiceCard
-        icon={<Truck size={32} color={colors.gold} />}
         title={t('home.becomeDriver')}
+        icon={<Truck size={32} color={colors.gold} />}
         onPress={handleBecomeDriver}
         accessibilityRole="button"
         testID="become-driver-button"
@@ -43,7 +43,7 @@ export default function HomeServices() {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: spacing.spacer16,
+    paddingHorizontal: spacing.spacer16,
     marginBottom: spacing.spacer16,
   },
 });

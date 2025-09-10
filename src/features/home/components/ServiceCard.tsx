@@ -1,21 +1,23 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Pressable, StyleSheet, AccessibilityRole, Image, ImageSourcePropType } from 'react-native';
 import { Card, Text } from '@/ui';
 import { Stack } from '@/ui/layout';
-import { radius, typography } from '@/ui/tokens';
 import { useTheme } from '@/ui/ThemeProvider';
+import { radius } from '@/ui/tokens';
 
 interface ServiceCardProps {
   title: string;
-  icon: React.ReactNode;
-  onPress: () => void;
-  accessibilityRole?: 'button' | 'link';
+  icon?: React.ReactNode;
+  image?: ImageSourcePropType;
+  onPress?: () => void;
+  accessibilityRole?: AccessibilityRole;
   testID?: string;
 }
 
 export default function ServiceCard({
   title,
   icon,
+  image,
   onPress,
   accessibilityRole = 'button',
   testID,
@@ -23,34 +25,46 @@ export default function ServiceCard({
   const { colors } = useTheme();
 
   return (
-    <Card style={[styles.card, { backgroundColor: colors.surface.secondary }]}>
-      <TouchableOpacity
-        style={styles.touch}
+    <Card style={styles.card}>
+      <Pressable
+        android_ripple={{ color: colors.interactive.secondary }}
+        style={({ pressed }) => [styles.pressable, pressed && styles.pressed]}
         onPress={onPress}
         accessibilityRole={accessibilityRole}
         testID={testID}
       >
-        <Stack gap="spacer8" style={styles.content}>
-          {icon}
-          <Text style={[typography.sm, { color: colors.text.primary }]}>{title}</Text>
+   <Stack gap="spacer8" style={styles.content}>
+          {image ? <Image source={image} style={styles.image} /> : icon}
+          <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
         </Stack>
-      </TouchableOpacity>
+      </Pressable>
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
+    width: 200,
     borderRadius: radius.lg,
   },
-  touch: {
+  pressable: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   content: {
     alignItems: 'center',
+  },
+  title: {
+    fontWeight: '600',
+  },
+  image: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.md,
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });
 
