@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import TopBar from '@/components/TopBar';
+import GlobalHeader from '@/components/GlobalHeader';
 import { Pressable } from 'react-native';
 
 const mockPush = jest.fn();
@@ -45,7 +45,7 @@ describe('navigation loop prevention', () => {
 
   it('does not push to current path', () => {
     mockUsePathname.mockReturnValue('/');
-    const tree = renderer.create(React.createElement(TopBar));
+    const tree = renderer.create(React.createElement(GlobalHeader));
     const pressables = tree.root.findAllByType(Pressable);
     pressables[0].props.onPress();
     expect(mockPush).not.toHaveBeenCalled();

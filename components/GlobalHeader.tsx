@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,15 +14,16 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import UserAvatar from './UserAvatar';
+import CommandPalette from './CommandPalette';
 import { spacing, radius, typography } from '@/ui/tokens';
 import { usePathname } from 'expo-router';
 import { useNotificationState } from './NotificationContext';
 
-interface TopBarProps {
+interface GlobalHeaderProps {
   showSearch?: boolean;
 }
 
-export default function TopBar({ showSearch = true }: TopBarProps) {
+export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const { t, isRTL, currentLanguage, setLanguage } = useLanguage();
   const { colors } = useTheme();
   const { appName, logoCid } = useAppInfo();
@@ -31,6 +32,19 @@ export default function TopBar({ showSearch = true }: TopBarProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const toggleLanguage = async () => {
     const next = currentLanguage === 'he' ? 'en' : 'he';
@@ -182,6 +196,10 @@ export default function TopBar({ showSearch = true }: TopBarProps) {
 
         <UserAvatar />
       </View>
+      <CommandPalette
+        visible={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+      />
     </View>
   );
 }
