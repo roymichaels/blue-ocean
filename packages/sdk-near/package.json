@@ -1,10 +1,14 @@
 {
   "name": "@blue-ocean/sdk-near",
-  "version": "0.1.0",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "version": "0.1.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
   "dependencies": {
     "buffer": "^6.0.3",
-    "@blue-ocean/utils": "file:../utils"
+    "@blue-ocean/utils": "file:../utils",
+    "canonicalize": "^2.1.0"
   }
 }

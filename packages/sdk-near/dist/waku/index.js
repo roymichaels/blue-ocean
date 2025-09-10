@@ -1,0 +1,89 @@
+// Basic helpers for reading data from the Waku store. These functions intentionally
+// avoid depending on the rest of the application so that the SDK can be used on
+// its own. The logic here mirrors the higher level Waku utilities found in the
+// app source but is trimmed down for size and to avoid React dependencies.
+import { Buffer } from 'buffer';
+import { topicFor } from '@blue-ocean/utils';
+// In-memory cache of messages keyed by topic. Each topic also tracks a set of
+// previously seen payloads to avoid duplications when `hydrateMessages` is called
+// multiple times.
+const messageCache = new Map();
+const seenCache = new Map();
+let node = null;
+async function ensureNode() {
+    if (node)
+        return node;
+    try {
+        const bootstrap = (process.env.WAKU_BOOTSTRAP ||
+            process.env.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
+            '')
+            .split(String.fromCharCode(44))
+            .map((s) => s.trim())
+            .filter(Boolean);
+        const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
+        node = await createLightNode({ libp2p: { bootstrap } });
+        if (!node)
+            return null;
+        await node.start();
+        // The Store protocol is required to query historical messages.
+        await waitForRemotePeer(node, [Protocols.Store]);
+        return node;
+    }
+    catch {
+        node = null;
+        return null;
+    }
+}
+/**
+ * Fetch and cache all historical messages for a given topic.
+ * Subsequent calls only append new unseen messages, preventing duplicates.
+ */
+export async function hydrateMessages(topic) {
+    const n = await ensureNode();
+    if (!n)
+        return messageCache.get(topic) || [];
+    const { createDecoder } = await import('@waku/sdk');
+    const decoder = createDecoder(topic);
+    const existing = messageCache.get(topic) || [];
+    const seen = seenCache.get(topic) || new Set();
+    for await (const batch of n.store.queryGenerator({ decoder })) {
+        for (const msg of (batch.messages || [])) {
+            if (!msg.payload)
+                continue;
+            const key = Buffer.from(msg.payload).toString('hex');
+            if (seen.has(key))
+                continue;
+            seen.add(key);
+            try {
+                const parsed = JSON.parse(Buffer.from(msg.payload).toString('utf8'));
+                existing.push(parsed);
+            }
+            catch {
+                // ignore unparsable messages
+            }
+        }
+    }
+    seenCache.set(topic, seen);
+    messageCache.set(topic, existing);
+    return existing;
+}
+// Convenience function used by the SDK's `getListings` method. It hydrates the
+// listings topic for the given store and returns the cached messages formatted
+// as Listing objects.
+export async function getListingsFromWaku(storeId) {
+    try {
+        const network = process.env.EXPO_PUBLIC_NETWORK || 'testnet';
+        const topic = topicFor(network, storeId, 'listings');
+        const msgs = await hydrateMessages(topic);
+        return msgs.map((m) => ({
+            id: Number(m.itemId ?? 0),
+            seller: m.seller || '',
+            price: Number(m.priceYocto ?? 0),
+        }));
+    }
+    catch (e) {
+        console.warn('sdk-near', 'waku', 'get_listings_failed', e);
+        return [];
+    }
+}
+export default { getListingsFromWaku, hydrateMessages };

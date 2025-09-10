@@ -4,7 +4,6 @@
 // app source but is trimmed down for size and to avoid React dependencies.
 
 import type { LightNode } from '@waku/sdk';
-import { getClient } from '../../../../src/utils/transport';
 import { Buffer } from 'buffer';
 import { topicFor } from '@blue-ocean/utils';
 
@@ -26,7 +25,7 @@ async function ensureNode(): Promise<LightNode | null> {
         .split(String.fromCharCode(44))
         .map((s) => s.trim())
       .filter(Boolean);
-    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
+    const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
     node = await createLightNode({ libp2p: { bootstrap } } as any);
     if (!node) return null;
     await node.start();
@@ -46,7 +45,7 @@ async function ensureNode(): Promise<LightNode | null> {
 export async function hydrateMessages(topic: string): Promise<any[]> {
   const n = await ensureNode();
   if (!n) return messageCache.get(topic) || [];
-  const { createDecoder } = await getClient();
+  const { createDecoder } = await import('@waku/sdk');
   const decoder = createDecoder(topic);
   const existing = messageCache.get(topic) || [];
   const seen = seenCache.get(topic) || new Set<string>();

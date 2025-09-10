@@ -35,8 +35,8 @@ function requireEnv(
 
 /** Fetch all listings from the indexer service. */
 import { requireStoreId } from '@blue-ocean/utils';
-import { canonicalJson } from '../../utils/serialization';
-import config from '../../config';
+import { canonicalJson } from './utils/serialization';
+import config from './config';
 
 export async function getListings(storeId: string): Promise<Listing[]> {
   const sid = requireStoreId(storeId);
