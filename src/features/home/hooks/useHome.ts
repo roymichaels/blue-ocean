@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Product, Category } from '@/types';
 import { useProducts } from '@/services/useProducts';
 import { useCategories } from '@/services/useCategories';
-import { requireEnv } from '@/services/config';
 import { errorLog, debugLog } from '@/utils/logger';
 
 export function useHome() {
@@ -14,6 +13,26 @@ export function useHome() {
   const [categories, setCategories] = useState<Category[]>(categoriesQuery.data ?? []);
   const [error, setError] = useState<Error | null>(null);
   const lastErrorRef = useRef<Error | null>(null);
+
+  useEffect(() => {
+    if (productsQuery.data) {
+      setProducts(productsQuery.data);
+    }
+  }, [productsQuery.data]);
+
+  useEffect(() => {
+    if (categoriesQuery.data) {
+      setCategories(categoriesQuery.data);
+    }
+  }, [categoriesQuery.data]);
+
+  useEffect(() => {
+    if (productsQuery.error || categoriesQuery.error) {
+      const err = (productsQuery.error || categoriesQuery.error) as Error;
+      if (lastErrorRef.current !== err) {
+        lastErrorRef.current = err;
+        setError(err);
+      }
 
   useEffect(() => {
     if (productsQuery.data) {

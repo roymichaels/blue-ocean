@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import chain from '@/services/chain';
 import { Category } from '@/types';
+import invariant from '@/utils/invariant';
 
-let listCategories: (() => Promise<Category[]>) | undefined;
+let listCategories: ((storeId: string) => Promise<Category[]>) | undefined;
 if (chain === 'near') {
   ({ listCategories } = require('@/features/products/services/nearCategories'));
 }

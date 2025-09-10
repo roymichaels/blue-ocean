@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import chain from '@/services/chain';
 import type { Category, Subcategory } from '@/types';
+import invariant from '@/utils/invariant';
 
-let getCategory: ((id: string) => Promise<Category | null>) | undefined;
-let setCategory: ((category: Category) => Promise<void>) | undefined;
+let getCategory: ((storeId: string, id: string) => Promise<Category | null>) | undefined;
+let setCategory: ((storeId: string, category: Category) => Promise<void>) | undefined;
 if (chain === 'near') {
   ({ getCategory, setCategory } = require('@/features/products/services/nearCategories'));
 }

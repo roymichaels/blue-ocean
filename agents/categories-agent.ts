@@ -16,45 +16,45 @@ class CategoriesAgent {
     await ensureNearWallet('Please connect your NEAR wallet to manage categories.');
   }
 
-  async add(item: Category): Promise<void> {
+  async add(storeId: string, item: Category): Promise<void> {
     await this.ensureWallet();
     const normalized = normalizeMessage<Category>('Category', item);
-    await setCategory(normalized);
+    await setCategory(storeId, normalized);
   }
 
-  async update(item: Category): Promise<void> {
+  async update(storeId: string, item: Category): Promise<void> {
     await this.ensureWallet();
     const normalized = normalizeMessage<Category>('Category', item);
-    await setCategory(normalized);
+    await setCategory(storeId, normalized);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(storeId: string, id: string): Promise<void> {
     await this.ensureWallet();
-    await removeCategory(id);
+    await removeCategory(storeId, id);
   }
 
   /**
    * Returns a defensive copy of a category by id.
    */
-  async selectCategory(id: string): Promise<Category | null> {
-    const cat = await getCategory(id);
+  async selectCategory(storeId: string, id: string): Promise<Category | null> {
+    const cat = await getCategory(storeId, id);
     return cat ? JSON.parse(JSON.stringify(cat)) : null;
   }
 
   /**
    * Returns defensive copies of all categories.
    */
-  async getCategories(): Promise<Category[]> {
-    const list = await listCategories();
+  async getCategories(storeId: string): Promise<Category[]> {
+    const list = await listCategories(storeId);
     return list.map((c) => JSON.parse(JSON.stringify(c)));
   }
 }
 
 const categoriesAgent = new CategoriesAgent();
 
-export const getCategories = (): Promise<Category[]> =>
-  categoriesAgent.getCategories();
-export const selectCategory = (id: string): Promise<Category | null> =>
-  categoriesAgent.selectCategory(id);
+export const getCategories = (storeId: string): Promise<Category[]> =>
+  categoriesAgent.getCategories(storeId);
+export const selectCategory = (storeId: string, id: string): Promise<Category | null> =>
+  categoriesAgent.selectCategory(storeId, id);
 
 export default categoriesAgent;
