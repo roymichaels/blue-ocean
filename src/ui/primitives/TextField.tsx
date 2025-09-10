@@ -9,9 +9,10 @@ interface TextFieldProps {
   placeholder?: string;
   style?: StyleProp<TextStyle>;
   secureTextEntry?: boolean;
+  keyboardType?: string;
 }
 
-export default function TextField({ value, onChangeText, placeholder, style, secureTextEntry }: TextFieldProps) {
+export default function TextField({ value, onChangeText, placeholder, style, secureTextEntry, keyboardType }: TextFieldProps) {
   const { colors } = useTheme();
   return (
     <TextInput
@@ -20,6 +21,7 @@ export default function TextField({ value, onChangeText, placeholder, style, sec
       placeholder={placeholder}
       placeholderTextColor={colors.text.tertiary}
       secureTextEntry={secureTextEntry}
+      keyboardType={keyboardType as any}
       style={[
         {
           backgroundColor: colors.surface.primary,

@@ -33,7 +33,8 @@ export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) 
     };
 
     const handleFocus = (e: FocusEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const element = menuRef.current as any;
+      if (element && !element.contains(e.target as Node)) {
         onOpenChange(false);
       }
     };

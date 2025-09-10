@@ -55,21 +55,22 @@ export const shadows = {
 };
 
 const dark = {
-  canvas: darkColors.canvas,
-  surface: darkColors.surface.primary,
+  ...darkColors,
   primary: darkColors.interactive.primary,
   muted: darkColors.text.secondary,
+  // Flatten commonly used color tokens for easy access
+  canvas: darkColors.canvas,
+  surface: darkColors.surface.primary,
   border: darkColors.border.secondary,
-  ...darkColors,
 };
 
 const light = {
-  canvas: LightColors.canvas,
-  surface: LightColors.surface.primary,
+  ...LightColors,
   primary: LightColors.interactive.primary,
   muted: LightColors.text.secondary,
+  canvas: LightColors.canvas,
+  surface: LightColors.surface.primary,
   border: LightColors.border.secondary,
-  ...LightColors,
 };
 
 export const colors = dark;

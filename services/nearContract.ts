@@ -3,6 +3,8 @@ import { chainAdapter } from '@/services/chain';
 import { fetchSettings } from './nearSettings';
 import { assertNearChain } from './chain';
 import config from '@/config';
+import { retryWithBackoff } from '@/utils/retry';
+import { logger, serviceLatency, serviceFailures } from '@/utils/observability';
 
 assertNearChain();
 
