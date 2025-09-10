@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import GlobalHeader from '@/components/GlobalHeader';
+import TopBar from '@/components/TopBar';
 import { Pressable } from 'react-native';
 
 const mockPush = jest.fn();
@@ -18,20 +18,15 @@ jest.mock('@/contexts/AppInfoContext', () => ({
   useAppInfo: () => ({ appName: 'Blue', logoCid: null })
 }));
 
-jest.mock('@/contexts/RoadmapContext', () => ({
-  useRoadmap: () => ({ progress: 0 })
-}));
-
-jest.mock('@/features/cart', () => ({
-  WishlistModal: () => null,
-  useWishlistCount: () => 0
-}));
-
 jest.mock('@/components/SmartImage', () => () => null);
 
 jest.mock('@/ui/ThemeProvider', () => ({
-  useLanguage: () => ({ t: (s: string) => s }),
-  useTheme: () => ({ colors: { background: '#fff', surface: { primary: '#fff' }, text: { primary: '#000', inverse: '#fff' }, gold: '#FFD700', border: { primary: '#000' } } })
+  useLanguage: () => ({ t: (s: string) => s, isRTL: false, currentLanguage: 'en', setLanguage: jest.fn() }),
+  useTheme: () => ({ colors: { background: '#fff', surface: { primary: '#fff' }, text: { primary: '#000', inverse: '#fff' }, gold: '#FFD700', border: { primary: '#000', focus: '#000' } } })
+}));
+
+jest.mock('@/components/NotificationContext', () => ({
+  useNotificationState: () => ({ unreadCount: 0, refreshNotifications: jest.fn() }),
 }));
 
 jest.mock('@/ui', () => {
@@ -50,7 +45,7 @@ describe('navigation loop prevention', () => {
 
   it('does not push to current path', () => {
     mockUsePathname.mockReturnValue('/');
-    const tree = renderer.create(React.createElement(GlobalHeader));
+    const tree = renderer.create(React.createElement(TopBar));
     const pressables = tree.root.findAllByType(Pressable);
     pressables[0].props.onPress();
     expect(mockPush).not.toHaveBeenCalled();
