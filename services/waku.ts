@@ -6,10 +6,9 @@ import { canonicalJson } from '@/utils/serialization';
 import { retryWithBackoff } from '@/utils/retry';
 import { enqueue, flush } from '@/utils/wakuStore';
 import { encrypt, decrypt } from '@/utils/wakuCrypto';
+import { serviceLatency, serviceFailures } from '@/utils/observability';
 
 declare const logger: any;
-declare const serviceLatency: any;
-declare const serviceFailures: any;
 
 const isProd = process.env.NODE_ENV === 'production';
 const strict = (config.WAKU_STRICT || (isProd ? '1' : '0')) === '1';

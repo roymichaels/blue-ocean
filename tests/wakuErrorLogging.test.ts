@@ -10,7 +10,9 @@ jest.mock('@/utils/transport', () => ({
 }));
 
 jest.mock('@/utils/logger', () => ({ errorLog: jest.fn() }));
+jest.mock('@/utils/observability', () => require('@/tests/__mocks__/utils/observability'));
 
+;(global as any).logger = { info: jest.fn(), error: jest.fn() };
 import { ensureNode } from '@/services/waku';
 import { errorLog } from '@/utils/logger';
 

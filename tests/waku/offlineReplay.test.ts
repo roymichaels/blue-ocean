@@ -8,10 +8,9 @@ jest.mock('@/utils/transport', () => ({
     createDecoder: () => ({}),
   })),
 }));
+jest.mock('@/utils/observability', () => require('@/tests/__mocks__/utils/observability'));
 
 ;(global as any).logger = { info: jest.fn(), error: jest.fn() };
-(global as any).serviceLatency = { startTimer: () => () => {} };
-(global as any).serviceFailures = { inc: jest.fn() };
 import { publish } from '@/services/waku';
 import { snapshot, flush } from '@/utils/wakuStore';
 
