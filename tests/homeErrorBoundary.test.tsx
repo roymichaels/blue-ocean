@@ -22,6 +22,9 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('@features/auth/AuthContext', () => ({
   useAuth: () => ({ isStoreOwner: false }),
 }));
+jest.mock('@/contexts/WalletProvider', () => ({
+  useWallet: () => ({ address: 'test', connect: jest.fn() }),
+}));
 jest.mock('@/ui/ThemeProvider', () => ({
   useLanguage: () => ({ t: (s: string) => s }),
   useTheme: () => ({ colors: { background: '#fff', text: { primary: '#000', secondary: '#333' } } }),

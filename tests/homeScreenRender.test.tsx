@@ -42,6 +42,9 @@ jest.mock('react-native-safe-area-context', () => {
     SafeAreaView: ({ children }: any) => React.createElement(React.Fragment, null, children),
   };
 });
+jest.mock('@/contexts/WalletProvider', () => ({
+  useWallet: () => ({ address: 'test', connect: jest.fn() }),
+}));
 
 jest.mock('@features/auth/AuthContext', () => ({
   useAuth: () => ({ isStoreOwner: false }),
