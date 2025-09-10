@@ -3,15 +3,15 @@ import renderer from 'react-test-renderer';
 import GlobalHeader from '@/components/GlobalHeader';
 import { Pressable } from 'react-native';
 
-const pushMock = jest.fn();
-const usePathnameMock = jest.fn();
+const mockPush = jest.fn();
+const mockUsePathname = jest.fn();
 
 jest.mock('@/services', () => ({
-  useAppRouter: () => ({ push: pushMock })
+  useAppRouter: () => ({ push: mockPush })
 }));
 
 jest.mock('expo-router', () => ({
-  usePathname: () => usePathnameMock()
+  usePathname: () => mockUsePathname()
 }));
 
 jest.mock('@/contexts/AppInfoContext', () => ({
@@ -45,15 +45,15 @@ jest.mock('@/ui', () => {
 
 describe('navigation loop prevention', () => {
   beforeEach(() => {
-    pushMock.mockClear();
+    mockPush.mockClear();
   });
 
   it('does not push to current path', () => {
-    usePathnameMock.mockReturnValue('/');
+    mockUsePathname.mockReturnValue('/');
     const tree = renderer.create(React.createElement(GlobalHeader));
     const pressables = tree.root.findAllByType(Pressable);
     pressables[0].props.onPress();
-    expect(pushMock).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
 });

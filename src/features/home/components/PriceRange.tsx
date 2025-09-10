@@ -24,16 +24,14 @@ export default function PriceRange({
         onChangeText={setMinPrice}
         placeholder={t('priceRange.min')}
         keyboardType="numeric"
-        style={[styles.priceInput, { marginEnd: spacing.spacer8 }]}
-        textAlign="right"
+        style={[styles.priceInput, { marginEnd: spacing.spacer8, textAlign: 'right' }]}
       />
       <TextField
         value={maxPrice}
         onChangeText={setMaxPrice}
         placeholder={t('priceRange.max')}
         keyboardType="numeric"
-        style={styles.priceInput}
-        textAlign="right"
+        style={[styles.priceInput, { textAlign: 'right' }]}
       />
     </View>
   );

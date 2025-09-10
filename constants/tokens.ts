@@ -60,8 +60,6 @@ const dark = {
   muted: darkColors.text.secondary,
   // Flatten commonly used color tokens for easy access
   canvas: darkColors.canvas,
-  surface: darkColors.surface.primary,
-  border: darkColors.border.secondary,
 };
 
 const light = {
@@ -69,8 +67,6 @@ const light = {
   primary: LightColors.interactive.primary,
   muted: LightColors.text.secondary,
   canvas: LightColors.canvas,
-  surface: LightColors.surface.primary,
-  border: LightColors.border.secondary,
 };
 
 export const colors = dark;
