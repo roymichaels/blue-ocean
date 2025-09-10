@@ -36,10 +36,13 @@ jest.mock('@/features/products/services/nearProducts', () => ({ listProducts: je
 
 jest.mock('@/features/auth/AuthContext', () => ({ useAuth: jest.fn() }));
 
-jest.mock('@/features/stores/components/OrderRevenueMetrics', () => ({
-  __esModule: true,
-  default: () => React.createElement('OrderRevenueMetrics', null, 'metrics'),
-}));
+jest.mock('@/features/stores/components/OrderRevenueMetrics', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    default: () => React.createElement('OrderRevenueMetrics', null, 'metrics'),
+  };
+});
 
 describe('StoreDashboardScreen', () => {
   const { useLocalSearchParams } = require('expo-router');

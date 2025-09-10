@@ -1,9 +1,9 @@
-const createLightNode = jest.fn(async () => {
+const mockCreateLightNode = jest.fn(async () => {
   throw new Error('boom');
 });
 jest.mock('@/utils/transport', () => ({
   getClient: jest.fn(async () => ({
-    createLightNode,
+    createLightNode: mockCreateLightNode,
     waitForRemotePeer: jest.fn(),
     Protocols: { Relay: 'relay' },
   })),

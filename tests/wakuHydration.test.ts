@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 
-const queryGenerator = jest.fn(() => {
+const mockQueryGenerator = jest.fn(() => {
   return (async function* () {
     const payload1 = Buffer.from(JSON.stringify({ itemId: 1, seller: 'alice', priceYocto: '5' }));
     const payload2 = Buffer.from(JSON.stringify({ itemId: 2, seller: 'bob', priceYocto: '7' }));
@@ -12,7 +12,7 @@ jest.mock('@/utils/transport', () => ({
   getClient: jest.fn(async () => ({
     createLightNode: jest.fn(async () => ({
       start: jest.fn(),
-      store: { queryGenerator },
+      store: { queryGenerator: mockQueryGenerator },
     })),
     waitForRemotePeer: jest.fn(),
     Protocols: { Store: 'store' },
@@ -30,6 +30,6 @@ describe('hydrate_messages', () => {
     expect(first).toHaveLength(2);
     const second = await hydrateMessages(TOPIC);
     expect(second).toHaveLength(2);
-    expect(queryGenerator).toHaveBeenCalledTimes(2);
+    expect(mockQueryGenerator).toHaveBeenCalledTimes(2);
   });
 });

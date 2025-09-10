@@ -1,10 +1,10 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Readable } from 'stream';
 import { loadCheckpoint, saveCheckpoint } from '../../indexers/lake/src/checkpoint';
 
 jest.mock('minio', () => {
   const store = new Map<string, Buffer>();
+  const { Readable } = require('stream');
   class Client {
     async putObject(bucket: string, key: string, value: Buffer | string) {
       const buf = Buffer.isBuffer(value) ? value : Buffer.from(value);

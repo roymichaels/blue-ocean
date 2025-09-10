@@ -56,10 +56,11 @@ class ProductsAgent {
       const bootstrap = getWakuBootstrapNodes();
       if (bootstrap.length === 0) return null;
       const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-      this.node = await createLightNode({ libp2p: { bootstrap } as any });
-      await this.node.start();
-      await waitForRemotePeer(this.node, [Protocols.Relay]);
-      return this.node;
+      const node = await createLightNode({ libp2p: { bootstrap } as any });
+      await node.start();
+      await waitForRemotePeer(node, [Protocols.Relay]);
+      this.node = node;
+      return node;
     } catch (err) {
       errorLog('Failed to start Waku node', err);
       this.node = null;

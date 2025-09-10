@@ -20,7 +20,7 @@ export function parseWakuMessage<T>(
 ): WakuMessage<T> | null {
   const schema = wakuMessageSchema.extend({ payload: payloadSchema });
   const res = schema.safeParse(data);
-  return res.success ? res.data : null;
+  return res.success ? (res.data as WakuMessage<T>) : null;
 }
 
 export function isWakuMessage<T>(

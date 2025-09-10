@@ -1,7 +1,7 @@
 jest.mock('@/config', () => ({ default: {} }));
 jest.mock('@/utils/logger', () => ({ errorLog: jest.fn() }));
 
-const client = {
+const mockClient = {
   waitForRemotePeer: jest.fn(async () => {}),
   Protocols: { Relay: 'relay', Store: 'store' },
   utf8ToBytes: (s: string) => new TextEncoder().encode(s),
@@ -11,7 +11,7 @@ const client = {
 };
 
 jest.mock('@/utils/transport', () => ({
-  getClient: jest.fn(async () => client),
+  getClient: jest.fn(async () => mockClient),
 }));
 jest.mock('@/utils/observability', () => require('@/tests/__mocks__/utils/observability'));
 
@@ -40,8 +40,8 @@ describe('waku auto reconnect', () => {
       .mockResolvedValueOnce(node1)
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValueOnce(node2);
-    (getClient as jest.Mock).mockResolvedValueOnce({ ...client, createLightNode })
-      .mockResolvedValue({ ...client, createLightNode });
+    (getClient as jest.Mock).mockResolvedValueOnce({ ...mockClient, createLightNode })
+      .mockResolvedValue({ ...mockClient, createLightNode });
     await ensureNode();
     expect(createLightNode).toHaveBeenCalledTimes(1);
     node1.libp2p.dispatchEvent(new Event('peer:disconnect'));
