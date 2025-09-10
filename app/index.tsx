@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   Platform,
   Alert,
+  Linking,
 } from 'react-native';
 import { Plus, ArrowUpDown } from 'lucide-react-native';
 import { Product } from '@/types';
@@ -17,6 +18,7 @@ import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { useTenant } from '@/contexts/TenantContext';
+import { useWallet } from '@/contexts/WalletProvider';
 import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import HomeOptions from '@/features/home/components/HomeOptions';
@@ -53,28 +55,46 @@ function HomeScreenContent() {
   const home = useHome(tenantId);
   const router = useAppRouter();
   const { width: windowWidth } = useWindowDimensions();
+  const { address, connect } = useWallet();
 
   const actionsLoading = false;
+
+  const requireWallet = useCallback(
+    (action: () => void) => {
+      if (!address) {
+        void connect();
+        return;
+      }
+      action();
+    },
+    [address, connect],
+  );
+
   const networkActions = [
     {
       key: 'create-store',
       label: t('home.createStore'),
-      onPress: () => router.push(routes.createStore()),
+      onPress: () => requireWallet(() => router.push(routes.createStore())),
     },
     {
       key: 'become-driver',
       label: t('home.becomeDriver'),
-      onPress: () => router.push('/driver'),
+      onPress: () => requireWallet(() => router.push('/driver')),
     },
     {
       key: 'business-login',
       label: t('home.businessLogin'),
-      onPress: () => router.push('/login'),
+      onPress: () => requireWallet(() => router.push('/login')),
     },
     {
       key: 'docs-api',
       label: t('home.docsApi'),
-      onPress: () => router.push('/docs'),
+      onPress: () => {
+        const url = process.env.EXPO_PUBLIC_DOCS_URL;
+        if (url) {
+          void Linking.openURL(url);
+        }
+      },
     },
   ];
 
