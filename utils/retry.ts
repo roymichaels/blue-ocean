@@ -1,4 +1,6 @@
-import { setTimeout as sleep } from 'timers/promises';
+// A simple cross-platform sleep helper
+// Supports environments without Node's `timers/promises` module
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
