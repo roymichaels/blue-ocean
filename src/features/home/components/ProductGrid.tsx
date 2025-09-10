@@ -8,6 +8,7 @@ import { Filter, Plus } from 'lucide-react-native';
 import { spacing } from '@/shared/ui/tokens';
 
 interface ProductGridProps {
+  tenantId?: string | null;
   products: Product[];
   isStoreOwner: boolean;
   onEdit: (product: Product) => void;
@@ -29,6 +30,8 @@ const ProductRow = React.memo(({ item }: { item: Product }) => (
 ));
 
 function ProductGrid({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  tenantId,
   products,
   isStoreOwner,
   onEdit,

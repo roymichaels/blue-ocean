@@ -8,7 +8,7 @@ export function useProducts(tenantId: string | null) {
   return useQuery({
     queryKey: ['products', tenantId],
     queryFn: async () => {
-      if (!tenantId) return [] as Product[];
+      invariant(tenantId, 'tenantId required');
       const db = DatabaseService.getInstance();
       let data = await db.getProducts();
       data = data.filter((p) => p.storeId === tenantId);
