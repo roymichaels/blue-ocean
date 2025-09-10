@@ -3,7 +3,13 @@ import { z } from 'zod';
 import { loadVaultEnv } from './vault';
 
 loadVaultEnv();
-loadEnv();
+
+// `dotenv` uses `process.cwd` to locate files, which is missing in browser
+// environments (e.g. Expo web). Calling it would throw `process.cwd is not a
+// function`, so only invoke when running in Node.js where the function exists.
+if (typeof process !== 'undefined' && typeof process.cwd === 'function') {
+  loadEnv();
+}
 
 const envSchema = z.object({
   EXPO_PUBLIC_TRANSPORT: z.string().optional().default(''),
