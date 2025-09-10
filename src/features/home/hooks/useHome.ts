@@ -4,26 +4,35 @@ import { useProducts } from '@/services/useProducts';
 import { useCategories } from '@/services/useCategories';
 import { errorLog, debugLog } from '@/utils/logger';
 
-export function useHome(tenantId: string | null) {
-  if (!tenantId) {
-    return {
-      products: [] as Product[],
-      categories: [] as Category[],
-      loading: false,
-      refreshing: false,
-      error: null as Error | null,
-      refresh: async () => {},
-      upsertProduct: (_p: Product, _isNew: boolean) => {},
-      removeProduct: (_id: string) => {},
-    };
-  }
-  const productsQuery = useProducts(tenantId);
-  const categoriesQuery = useCategories(tenantId);
+export function useHome() {
+  const defaultStore = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
+  const productsQuery = useProducts(defaultStore);
+  const categoriesQuery = useCategories(defaultStore);
 
   const [products, setProducts] = useState<Product[]>(productsQuery.data ?? []);
   const [categories, setCategories] = useState<Category[]>(categoriesQuery.data ?? []);
   const [error, setError] = useState<Error | null>(null);
   const lastErrorRef = useRef<Error | null>(null);
+
+  useEffect(() => {
+    if (productsQuery.data) {
+      setProducts(productsQuery.data);
+    }
+  }, [productsQuery.data]);
+
+  useEffect(() => {
+    if (categoriesQuery.data) {
+      setCategories(categoriesQuery.data);
+    }
+  }, [categoriesQuery.data]);
+
+  useEffect(() => {
+    if (productsQuery.error || categoriesQuery.error) {
+      const err = (productsQuery.error || categoriesQuery.error) as Error;
+      if (lastErrorRef.current !== err) {
+        lastErrorRef.current = err;
+        setError(err);
+      }
 
   useEffect(() => {
     if (productsQuery.data) {

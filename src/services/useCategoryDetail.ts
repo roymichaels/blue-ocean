@@ -9,26 +9,22 @@ if (chain === 'near') {
   ({ getCategory, setCategory } = require('@/features/products/services/nearCategories'));
 }
 
-export function useCategoryDetail(id: string | undefined, tenantId: string | null) {
-  invariant(tenantId, 'tenantId required');
+export function useCategoryDetail(id?: string, tenantId?: string) {
   const queryClient = useQueryClient();
 
   const { data: category = null, isLoading } = useQuery({
-    queryKey: ['category', tenantId, id],
-    queryFn: () =>
-      id && tenantId && getCategory
-        ? getCategory(tenantId, id)
-        : Promise.resolve(null),
-    enabled: !!id && !!tenantId,
+    queryKey: ['category', id],
+    queryFn: () => (id && getCategory ? getCategory(id) : Promise.resolve(null)),
+    enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 
   const mutation = useMutation({
     mutationFn: (updated: Category) =>
-      setCategory ? setCategory(tenantId, updated) : Promise.resolve(),
+      setCategory ? setCategory(updated) : Promise.resolve(),
     onSuccess: (_data, updated) => {
-      queryClient.invalidateQueries({ queryKey: ['category', tenantId, updated.id] });
+      queryClient.invalidateQueries({ queryKey: ['category', updated.id] });
       queryClient.invalidateQueries({ queryKey: ['categories', tenantId] });
     },
   });

@@ -22,6 +22,7 @@ import PinataService from '@/services/pinata';
 import ipfsService from '@/services/ipfsService';
 import chain, { chainAdapter } from '@/services/chain';
 import { useWallet } from '@/contexts/WalletProvider';
+import { useTenant } from '@/contexts/TenantContext';
 
 let setProductBatch:
   | ((items: ProductIndexItem[]) => Promise<void>)
@@ -60,6 +61,7 @@ export default function ProductFormModal({
   const { currencySymbol } = useCurrency();
   const { address } = useWallet();
   const { push } = useAppRouter();
+  const { tenantId } = useTenant();
   const [editingProduct, setEditingProduct] = useState<Partial<Product>>({});
   const [imageUrls, setImageUrls] = useState('');
   const [videoUrls, setVideoUrls] = useState('');

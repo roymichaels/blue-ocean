@@ -8,15 +8,12 @@ if (chain === 'near') {
   ({ listCategories } = require('@/features/products/services/nearCategories'));
 }
 
-export function useCategories(tenantId: string | null) {
-  invariant(tenantId, 'tenantId required');
+export function useCategories(tenantId?: string) {
   return useQuery({
     queryKey: ['categories', tenantId],
-    queryFn: () =>
-      listCategories ? listCategories(tenantId) : Promise.resolve([]),
+    queryFn: () => (listCategories ? listCategories() : Promise.resolve([])),
     select: (data) => data ?? [],
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    enabled: !!tenantId,
   });
 }
