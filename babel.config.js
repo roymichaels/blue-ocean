@@ -7,7 +7,11 @@ module.exports = function (api) {
   process.env.EXPO_ROUTER_APP_ROOT = "./app";
 
   return {
-    presets: ["babel-preset-expo"],
+    presets: [
+      "babel-preset-expo",
+      "@babel/preset-react",
+      "@babel/preset-typescript",
+    ],
     // SDK 50+: expo-router/babel is built into the preset; don't add it here.
     // Enable support for static class blocks in dependencies like @smithy/core
     // by transforming them during compilation.
