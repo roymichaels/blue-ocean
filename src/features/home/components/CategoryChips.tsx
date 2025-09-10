@@ -1,5 +1,7 @@
 import React, { useCallback } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from '@/ui/primitives';
+import { spacing, radius } from '@/ui/tokens';
 import { Category } from '@/types';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 
@@ -86,18 +88,18 @@ export default React.memo(CategoryChips);
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: spacing.spacer16,
+    marginBottom: spacing.spacer16,
   },
   categoriesScroll: {
-    marginBottom: 8,
+    marginBottom: spacing.spacer8,
   },
   categoryChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
+    paddingVertical: spacing.spacer12 / 2,
+    paddingHorizontal: spacing.spacer12,
+    borderRadius: radius.xl,
     borderWidth: 1,
-    marginRight: 8,
+    marginEnd: spacing.spacer8,
   },
 });
 
