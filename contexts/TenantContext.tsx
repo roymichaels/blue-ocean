@@ -4,37 +4,60 @@ import { stripTabsPrefix } from '@/services/navigation';
 import { loadTenantSettings } from '@/constants/tenant';
 
 interface TenantContextType {
-  storeId: string | null;
-  setStoreId: (id: string | null) => void;
+  tenantId: string | null;
+  setTenantId: (id: string | null) => void;
+  isNetwork: boolean;
 }
 
 const TenantContext = createContext<TenantContextType>({
-  storeId: null,
-  setStoreId: () => {},
+  tenantId: null,
+  setTenantId: () => {},
+  isNetwork: true,
 });
 
-export const useTenant = () => useContext(TenantContext);
+export function useTenant() {
+  const { tenantId, isNetwork } = useContext(TenantContext);
+  return { tenantId, isNetwork } as const;
+}
 
 interface Props {
   children: React.ReactNode;
 }
 
 export function TenantProvider({ children }: Props) {
-  const [storeId, setStoreId] = useState<string | null>(null);
+  const [tenantId, setTenantId] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    const path = stripTabsPrefix(pathname) ?? pathname;
-    const match = path.match(/^\/store\/([^\/]+)/);
-    setStoreId(match ? match[1] : null);
+    let id: string | null = null;
+
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname.split('.');
+      if (host.length > 0) {
+        const sub = host[0];
+        if (sub && sub !== 'www' && sub !== 'localhost') {
+          id = decodeURIComponent(sub);
+        }
+      }
+    }
+
+    if (!id) {
+      const path = stripTabsPrefix(pathname) ?? pathname;
+      const match = path.match(/^\/store\/([^\/]+)/);
+      id = match ? decodeURIComponent(match[1]) : null;
+    }
+
+    setTenantId(id);
   }, [pathname]);
 
   useEffect(() => {
     loadTenantSettings();
-  }, [storeId]);
+  }, [tenantId]);
+
+  const isNetwork = !tenantId;
 
   return (
-    <TenantContext.Provider value={{ storeId, setStoreId }}>
+    <TenantContext.Provider value={{ tenantId, setTenantId, isNetwork }}>
       {children}
     </TenantContext.Provider>
   );
