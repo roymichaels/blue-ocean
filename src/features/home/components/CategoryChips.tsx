@@ -6,12 +6,15 @@ import { Category } from '@/types';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 
 interface CategoryChipsProps {
+  tenantId?: string | null;
   categories: Category[];
   selectedCategory: string | null;
   setSelectedCategory: (id: string | null) => void;
 }
 
 function CategoryChips({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  tenantId,
   categories,
   selectedCategory,
   setSelectedCategory,

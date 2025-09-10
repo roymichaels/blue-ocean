@@ -177,6 +177,7 @@ function HomeScreenContent() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
       >
         <CategoryChips
+          tenantId={tenantId}
           categories={categoriesToShow}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
@@ -283,6 +284,7 @@ function HomeScreenContent() {
 
           <Suspense fallback={<Spinner />}>
             <ProductGrid
+              tenantId={tenantId}
               products={filteredProducts}
               isStoreOwner={isStoreOwner}
               onEdit={openProductForm}
