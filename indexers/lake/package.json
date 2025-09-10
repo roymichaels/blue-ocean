@@ -10,7 +10,7 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "near-lake-framework": "^2.0.0",
-    "@waku/sdk": "0.0.33"
+    "@waku/sdk": "0.0.29"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
