@@ -7,9 +7,9 @@ if (chain === 'near') {
   ({ listCategories } = require('@/features/products/services/nearCategories'));
 }
 
-export function useCategories() {
+export function useCategories(tenantId?: string) {
   return useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories', tenantId],
     queryFn: () => (listCategories ? listCategories() : Promise.resolve([])),
     select: (data) => data ?? [],
     staleTime: 5 * 60 * 1000,

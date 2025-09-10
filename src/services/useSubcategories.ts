@@ -2,8 +2,8 @@ import { useCategories } from './useCategories';
 import { useCategory } from './useCategory';
 import { Subcategory } from '@/types';
 
-export function useSubcategories(categoryId?: string) {
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+export function useSubcategories(categoryId?: string, tenantId?: string) {
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories(tenantId);
   const category = categories.find((cat) => cat.id === categoryId) || null;
   const subcategories: Subcategory[] = category?.subcategories ?? [];
   const {
@@ -11,7 +11,7 @@ export function useSubcategories(categoryId?: string) {
     updateSubcategory,
     deleteSubcategory,
     isPending,
-  } = useCategory(category);
+  } = useCategory(category, tenantId);
 
   return {
     category,

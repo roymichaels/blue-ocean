@@ -8,7 +8,7 @@ import { errorLog, debugLog } from '@/utils/logger';
 export function useHome() {
   const defaultStore = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
   const productsQuery = useProducts(defaultStore);
-  const categoriesQuery = useCategories();
+  const categoriesQuery = useCategories(defaultStore);
 
   const [products, setProducts] = useState<Product[]>(productsQuery.data ?? []);
   const [categories, setCategories] = useState<Category[]>(categoriesQuery.data ?? []);

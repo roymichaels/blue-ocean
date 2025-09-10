@@ -7,14 +7,14 @@ if (chain === 'near') {
   ({ setCategory } = require('@/features/products/services/nearCategories'));
 }
 
-export function useCategory(category: Category | null) {
+export function useCategory(category: Category | null, tenantId?: string) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (updated: Category) =>
       setCategory ? setCategory(updated) : Promise.resolve(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['categories', tenantId] });
     },
   });
 

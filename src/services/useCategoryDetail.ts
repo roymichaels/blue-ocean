@@ -8,7 +8,7 @@ if (chain === 'near') {
   ({ getCategory, setCategory } = require('@/features/products/services/nearCategories'));
 }
 
-export function useCategoryDetail(id?: string) {
+export function useCategoryDetail(id?: string, tenantId?: string) {
   const queryClient = useQueryClient();
 
   const { data: category = null, isLoading } = useQuery({
@@ -24,7 +24,7 @@ export function useCategoryDetail(id?: string) {
       setCategory ? setCategory(updated) : Promise.resolve(),
     onSuccess: (_data, updated) => {
       queryClient.invalidateQueries({ queryKey: ['category', updated.id] });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['categories', tenantId] });
     },
   });
 
