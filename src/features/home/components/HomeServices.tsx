@@ -1,16 +1,24 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Stack } from '@/ui/layout';
-import { Card, Text } from '@/ui';
-import { spacing, radius } from '@/ui/tokens';
-import { useLanguage, useTheme } from '@/ui/ThemeProvider';
+import { Alert, FlatList, StyleSheet, View } from 'react-native';
+import { useLanguage } from '@/ui/ThemeProvider';
+import { spacing } from '@/ui/tokens';
 import { Store, Truck } from 'lucide-react-native';
 import { useAppRouter } from '@/services/useAppRouter';
 import { routes } from '@/utils/routes';
+import ServiceCard from './ServiceCard';
+
+interface ServiceItem {
+  key: string;
+  title: string;
+  Icon: React.ComponentType<{ size: number; color: string }>;
+  onPress: () => void;
+  accessibilityRole: 'button' | 'link';
+  testID: string;
+  subtitle?: string;
+}
 
 export default function HomeServices() {
   const { t } = useLanguage();
-  const { colors } = useTheme();
   const appRouter = useAppRouter();
 
   const handleCreateStore = () => {
@@ -21,61 +29,51 @@ export default function HomeServices() {
     Alert.alert(t('profile.comingSoon', 'Coming Soon'));
   };
 
+  const services: ServiceItem[] = [
+    {
+      key: 'createStore',
+      title: t('home.createStore'),
+      Icon: Store,
+      onPress: handleCreateStore,
+      accessibilityRole: 'link',
+      testID: 'create-store-link',
+    },
+    {
+      key: 'becomeDriver',
+      title: t('home.becomeDriver'),
+      Icon: Truck,
+      onPress: handleBecomeDriver,
+      accessibilityRole: 'button',
+      testID: 'become-driver-button',
+    },
+  ];
+
   return (
-    <Stack direction="horizontal" gap="spacer16" style={styles.container}>
-      <Card style={styles.card}>
-        <TouchableOpacity
-          style={styles.touch}
-          onPress={handleCreateStore}
-          accessibilityRole="link"
-          testID="create-store-link"
-        >
-          <Stack gap="spacer8" style={styles.content}>
-            <Store size={32} color={colors.gold} />
-            <Text style={[styles.title, { color: colors.text.primary }]}>
-              {t('home.createStore')}
-            </Text>
-          </Stack>
-        </TouchableOpacity>
-      </Card>
-      <Card style={styles.card}>
-        <TouchableOpacity
-          style={styles.touch}
-          onPress={handleBecomeDriver}
-          accessibilityRole="button"
-          testID="become-driver-button"
-        >
-          <Stack gap="spacer8" style={styles.content}>
-            <Truck size={32} color={colors.gold} />
-            <Text style={[styles.title, { color: colors.text.primary }]}>
-              {t('home.becomeDriver')}
-            </Text>
-          </Stack>
-        </TouchableOpacity>
-      </Card>
-    </Stack>
+    <FlatList
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      data={services}
+      keyExtractor={(item) => item.key}
+      renderItem={({ item }) => (
+        <ServiceCard
+          title={item.title}
+          Icon={item.Icon}
+          onPress={item.onPress}
+          accessibilityRole={item.accessibilityRole}
+          testID={item.testID}
+          subtitle={item.subtitle}
+        />
+      )}
+      ItemSeparatorComponent={() => <View style={{ width: spacing.spacer16 }} />}
+      contentContainerStyle={styles.listContent}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: spacing.spacer16,
+  listContent: {
+    paddingHorizontal: spacing.spacer16,
     marginBottom: spacing.spacer16,
-  },
-  card: {
-    flex: 1,
-    borderRadius: radius.lg,
-  },
-  touch: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    alignItems: 'center',
-  },
-  title: {
-    fontWeight: '600',
   },
 });
 

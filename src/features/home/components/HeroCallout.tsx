@@ -1,10 +1,17 @@
 import React from 'react';
-import { View, StyleSheet, useWindowDimensions, Platform } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+  TouchableOpacity,
+} from 'react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
-import { Button, Heading, Text } from '@/ui/primitives';
+import { Heading, Text } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
 import { spacing, radius, typography, shadows } from '@/ui/tokens';
+import { ShoppingBag } from 'lucide-react-native';
 
 export default function HeroCallout() {
   const { t } = useLanguage();
@@ -34,7 +41,25 @@ export default function HeroCallout() {
             {t('home.heroSubtitle')}
           </Text>
         </View>
-        <Button title={t('home.heroAction')} />
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={() => {}}
+          style={[
+            styles.actionCard,
+            {
+              backgroundColor: colors.gold,
+              alignSelf: isWide ? 'auto' : 'stretch',
+              width: isWide ? 200 : '100%',
+            },
+          ]}
+        >
+          <Stack direction="horizontal" gap="spacer8" align="center">
+            <ShoppingBag size={24} color={colors.text.inverse} />
+            <Text style={[styles.actionText, { color: colors.text.inverse }]}>
+              {t('home.heroAction')}
+            </Text>
+          </Stack>
+        </TouchableOpacity>
       </Stack>
     </View>
   );
@@ -53,6 +78,14 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.md,
     marginTop: spacing.spacer8,
+  },
+  actionCard: {
+    paddingVertical: spacing.spacer16,
+    paddingHorizontal: spacing.spacer24,
+    borderRadius: radius.md,
+  },
+  actionText: {
+    fontWeight: '600',
   },
 });
 
