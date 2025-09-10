@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, StyleSheet, useWindowDimensions, Platform } from 'react-native';
-import { useTheme } from '@/ui/ThemeProvider';
-import { useLanguage } from '@/ui/ThemeProvider';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Button, Heading, Text } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
-import { spacing, radius, typography, shadows } from '@/ui/tokens';
+import { spacing, typography } from '@/ui/tokens';
+import PromoCard from './PromoCard';
 
 export default function HeroCallout() {
   const { t } = useLanguage();
@@ -13,12 +13,9 @@ export default function HeroCallout() {
   const isWide = width >= 768;
 
   return (
-    <View
-      style={[
-        styles.wrapper,
-        { backgroundColor: colors.surface.primary },
-        Platform.select(shadows.md),
-      ]}
+    <PromoCard
+      backgroundColor={colors.surface.primary}
+      style={{ marginHorizontal: spacing.spacer16, marginBottom: spacing.spacer16 }}
     >
       <Stack
         direction={isWide ? 'horizontal' : 'vertical'}
@@ -27,32 +24,24 @@ export default function HeroCallout() {
         style={{ justifyContent: 'space-between' }}
       >
         <View style={styles.textContainer}>
-          <Heading size="xl" style={{ color: colors.text.primary }}>
+          <Heading size="lg" style={{ color: colors.text.primary }}>
             {t('home.heroTitle')}
           </Heading>
-          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
+          <Text
+            style={[typography.sm, { color: colors.text.secondary, marginTop: spacing.spacer8 }]}
+          >
             {t('home.heroSubtitle')}
           </Text>
         </View>
         <Button title={t('home.heroAction')} />
       </Stack>
-    </View>
+    </PromoCard>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    marginHorizontal: spacing.spacer16,
-    marginBottom: spacing.spacer24,
-    padding: spacing.spacer24,
-    borderRadius: radius.lg,
-  },
   textContainer: {
     flex: 1,
-  },
-  subtitle: {
-    ...typography.md,
-    marginTop: spacing.spacer8,
   },
 });
 

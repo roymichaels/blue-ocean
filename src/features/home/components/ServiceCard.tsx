@@ -33,7 +33,7 @@ export default function ServiceCard({
         accessibilityRole={accessibilityRole}
         testID={testID}
       >
-        <Stack gap="spacer8" style={styles.content}>
+   <Stack gap="spacer8" style={styles.content}>
           {image ? <Image source={image} style={styles.image} /> : icon}
           <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
         </Stack>
