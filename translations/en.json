@@ -109,7 +109,8 @@
     "becomeDriver": "Become a Driver",
     "businessLogin": "Business Login",
     "docs": "Docs",
-    "apiDocs": "API Docs"
+    "apiDocs": "API Docs",
+    "docsApi": "Docs & API"
   },
   "categories": {
     "all": "All",
