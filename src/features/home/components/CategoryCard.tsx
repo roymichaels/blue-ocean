@@ -22,6 +22,8 @@ export default function CategoryCard({ category, isStoreOwner, onPress, onEdit }
 
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={t(category.name)}
       style={[styles.categoryCard, { backgroundColor: themeColors.surface.primary }, shadowStyle]}
       onPress={onPress}
     >
@@ -42,6 +44,8 @@ export default function CategoryCard({ category, isStoreOwner, onPress, onEdit }
       {isStoreOwner && (
         <View style={styles.categoryAdminActions}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={t('category.editCategory')}
             style={[
               styles.categoryAdminButton,
               {
