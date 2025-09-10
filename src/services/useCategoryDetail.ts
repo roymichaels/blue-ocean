@@ -1,30 +1,35 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import chain from '@/services/chain';
 import type { Category, Subcategory } from '@/types';
+import invariant from '@/utils/invariant';
 
-let getCategory: ((id: string) => Promise<Category | null>) | undefined;
-let setCategory: ((category: Category) => Promise<void>) | undefined;
+let getCategory: ((storeId: string, id: string) => Promise<Category | null>) | undefined;
+let setCategory: ((storeId: string, category: Category) => Promise<void>) | undefined;
 if (chain === 'near') {
   ({ getCategory, setCategory } = require('@/features/products/services/nearCategories'));
 }
 
-export function useCategoryDetail(id?: string) {
+export function useCategoryDetail(id: string | undefined, tenantId: string | null) {
+  invariant(tenantId, 'tenantId required');
   const queryClient = useQueryClient();
 
   const { data: category = null, isLoading } = useQuery({
-    queryKey: ['category', id],
-    queryFn: () => (id && getCategory ? getCategory(id) : Promise.resolve(null)),
-    enabled: !!id,
+    queryKey: ['category', tenantId, id],
+    queryFn: () =>
+      id && tenantId && getCategory
+        ? getCategory(tenantId, id)
+        : Promise.resolve(null),
+    enabled: !!id && !!tenantId,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 
   const mutation = useMutation({
     mutationFn: (updated: Category) =>
-      setCategory ? setCategory(updated) : Promise.resolve(),
+      setCategory ? setCategory(tenantId, updated) : Promise.resolve(),
     onSuccess: (_data, updated) => {
-      queryClient.invalidateQueries({ queryKey: ['category', updated.id] });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['category', tenantId, updated.id] });
+      queryClient.invalidateQueries({ queryKey: ['categories', tenantId] });
     },
   });
 

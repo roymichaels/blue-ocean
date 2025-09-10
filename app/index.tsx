@@ -80,7 +80,7 @@ function HomeScreenContent() {
     );
   }
 
-  const home = useHome();
+  const home = useHome(tenantId);
   const { refreshing, refresh, error } = home;
   const {
     productFormVisible,
