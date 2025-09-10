@@ -1,20 +1,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import chain from '@/services/chain';
 import { Category, Subcategory } from '@/types';
+import invariant from '@/utils/invariant';
 
-let setCategory: ((category: Category) => Promise<void>) | undefined;
+let setCategory: ((storeId: string, category: Category) => Promise<void>) | undefined;
 if (chain === 'near') {
   ({ setCategory } = require('@/features/products/services/nearCategories'));
 }
 
-export function useCategory(category: Category | null) {
+export function useCategory(category: Category | null, tenantId: string | null) {
+  invariant(tenantId, 'tenantId required');
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (updated: Category) =>
-      setCategory ? setCategory(updated) : Promise.resolve(),
+      setCategory ? setCategory(tenantId, updated) : Promise.resolve(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['categories', tenantId] });
     },
   });
 

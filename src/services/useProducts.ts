@@ -2,17 +2,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DatabaseService from '@/services/database';
 import { productsAdapter } from '@/features/products/services';
 import { Product } from '@/types';
+import invariant from '@/utils/invariant';
 
-export function useProducts(storeId: string) {
+export function useProducts(tenantId: string | null) {
+  invariant(tenantId, 'tenantId required');
   return useQuery({
-    queryKey: ['products', storeId],
+    queryKey: ['products', tenantId],
     queryFn: async () => {
       const db = DatabaseService.getInstance();
       let data = await db.getProducts();
-      data = data.filter((p) => p.storeId === storeId);
+      data = data.filter((p) => p.storeId === tenantId);
       if (data.length === 0) {
         try {
-          data = await productsAdapter.listProducts(storeId);
+          data = await productsAdapter.listProducts(tenantId);
         } catch {}
       }
       return data;
@@ -20,24 +22,26 @@ export function useProducts(storeId: string) {
     select: (data) => data ?? [],
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    enabled: !!tenantId,
   });
 }
 
-export function useProductMutations(storeId: string) {
+export function useProductMutations(tenantId: string | null) {
+  invariant(tenantId, 'tenantId required');
   const queryClient = useQueryClient();
 
   const upsert = useMutation({
     mutationFn: (product: Product) =>
-      productsAdapter.setProduct(storeId, product),
+      productsAdapter.setProduct(tenantId, product),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products', storeId] });
+      queryClient.invalidateQueries({ queryKey: ['products', tenantId] });
     },
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => productsAdapter.removeProduct(storeId, id),
+    mutationFn: (id: string) => productsAdapter.removeProduct(tenantId, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products', storeId] });
+      queryClient.invalidateQueries({ queryKey: ['products', tenantId] });
     },
   });
 

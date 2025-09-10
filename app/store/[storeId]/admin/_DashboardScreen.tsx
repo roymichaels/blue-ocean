@@ -18,7 +18,7 @@ export default function StoreDashboardScreen() {
   const [productCount, setProductCount] = useState(0);
   const [authorized, setAuthorized] = useState(false);
   const { data: store } = useStore(storeId);
-  const { data: products = [] } = useProducts(storeId || '');
+  const { data: products = [] } = useProducts(storeId ?? null);
 
   useEffect(() => {
     if (!storeId || !store) return;

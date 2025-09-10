@@ -2,13 +2,23 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Product, Category } from '@/types';
 import { useProducts } from '@/services/useProducts';
 import { useCategories } from '@/services/useCategories';
-import { requireEnv } from '@/services/config';
 import { errorLog, debugLog } from '@/utils/logger';
 
-export function useHome() {
-  const defaultStore = requireEnv('EXPO_PUBLIC_DEFAULT_STORE', 'default');
-  const productsQuery = useProducts(defaultStore);
-  const categoriesQuery = useCategories();
+export function useHome(tenantId: string | null) {
+  if (!tenantId) {
+    return {
+      products: [] as Product[],
+      categories: [] as Category[],
+      loading: false,
+      refreshing: false,
+      error: null as Error | null,
+      refresh: async () => {},
+      upsertProduct: (_p: Product, _isNew: boolean) => {},
+      removeProduct: (_id: string) => {},
+    };
+  }
+  const productsQuery = useProducts(tenantId);
+  const categoriesQuery = useCategories(tenantId);
 
   const [products, setProducts] = useState<Product[]>(productsQuery.data ?? []);
   const [categories, setCategories] = useState<Category[]>(categoriesQuery.data ?? []);

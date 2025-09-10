@@ -32,7 +32,7 @@ export default function StoreProductsScreen() {
     data: initialProducts = [],
     isLoading,
     refetch,
-  } = useProducts(storeId || '');
+  } = useProducts(storeId ?? null);
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [formVisible, setFormVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
