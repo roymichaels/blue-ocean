@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Animated,
   TouchableOpacity,
@@ -11,7 +10,7 @@ import {
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { spacing, zIndex } from '@/shared/ui/tokens';
-import { Portal, Overlay } from '@/ui';
+import { Portal, Overlay, Heading, Text } from '@/ui';
 
 interface NotificationPopupProps {
   title: string;
@@ -103,8 +102,19 @@ export default function NotificationPopup({
       >
         <View style={styles.content}>
           <View style={styles.textContainer}>
-            <Text style={[styles.title, { color: colors.text.inverse }]}>{title}</Text>
-            <Text style={[styles.message, { color: colors.text.inverse }]} numberOfLines={2}>{message}</Text>
+            <Heading
+              size="md"
+              style={[styles.title, { color: colors.text.inverse }]}
+            >
+              {title}
+            </Heading>
+            <Text
+              style={[styles.message, { color: colors.text.inverse }]}
+              numberOfLines={2}
+              variant="sm"
+            >
+              {message}
+            </Text>
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={dismiss}>
             <X size={20} color={colors.text.inverse} />
@@ -135,13 +145,9 @@ const styles = StyleSheet.create({
     marginRight: spacing.spacer8,
   },
   title: {
-    fontWeight: 'bold',
-    fontSize: 16,
     marginBottom: spacing.spacer4,
   },
-  message: {
-    fontSize: 14,
-  },
+  message: {},
   closeButton: {
     padding: spacing.spacer4,
   },

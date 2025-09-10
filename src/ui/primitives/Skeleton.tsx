@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import { View, Animated, StyleProp, ViewStyle, Platform, DimensionValue } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../ThemeProvider';
+import useReducedMotion from '@/shared/hooks/useReducedMotion';
+import { radius } from '@/shared/ui/tokens';
 
 interface SkeletonProps {
   width?: DimensionValue;
@@ -14,12 +16,14 @@ export default function Skeleton({
   width = '100%',
   height = 16,
   style,
-  borderRadius = 4,
+  borderRadius = radius.sm,
 }: SkeletonProps) {
   const { colors } = useTheme();
   const shimmer = useRef(new Animated.Value(0)).current;
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
+    if (reduceMotion) return;
     const animation = Animated.loop(
       Animated.timing(shimmer, {
         toValue: 1,
@@ -29,12 +33,14 @@ export default function Skeleton({
     );
     animation.start();
     return () => animation.stop();
-  }, [shimmer]);
+  }, [shimmer, reduceMotion]);
 
-  const translateX = shimmer.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-100, 100],
-  });
+  const translateX = reduceMotion
+    ? 0
+    : shimmer.interpolate({
+        inputRange: [0, 1],
+        outputRange: [-100, 100],
+      });
 
   return (
     <View
@@ -49,18 +55,22 @@ export default function Skeleton({
         style,
       ]}
     >
-      <Animated.View style={{ flex: 1, transform: [{ translateX }] }}>
-        <LinearGradient
-          colors={[
-            colors.surface.secondary,
-            colors.surface.primary,
-            colors.surface.secondary,
-          ]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{ flex: 1 }}
-        />
-      </Animated.View>
+      {reduceMotion ? (
+        <View style={{ flex: 1 }} />
+      ) : (
+        <Animated.View style={{ flex: 1, transform: [{ translateX }] }}>
+          <LinearGradient
+            colors={[
+              colors.surface.secondary,
+              colors.surface.primary,
+              colors.surface.secondary,
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ flex: 1 }}
+          />
+        </Animated.View>
+      )}
     </View>
   );
 }
