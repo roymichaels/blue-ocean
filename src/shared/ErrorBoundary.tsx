@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
+import Heading from '@/ui/primitives/Heading';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { spacing } from '@/shared/ui/tokens';
 import Button from '@/ui/primitives/Button';
@@ -8,6 +9,7 @@ import { errorLog } from '@/utils/logger';
 
 interface Props {
   children: ReactNode;
+  onError?: (error: Error, info: React.ErrorInfo) => void;
 }
 
 interface State {
@@ -33,6 +35,7 @@ class ErrorBoundary extends React.Component<Props, State> {
       // eslint-disable-next-line no-console
       console.error(info.componentStack);
     }
+    this.props.onError?.(error, info);
     this.setState({ error });
   }
 
@@ -57,9 +60,12 @@ function ErrorFallback({ error, onRetry }: { error?: Error; onRetry: () => void 
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}> 
-      <Text style={[styles.title, { color: colors.text.primary }]}>
+      <Heading
+        style={[styles.title, { color: colors.text.primary }]}
+        size="lg"
+      >
         {t('errors.somethingWentWrong')}
-      </Text>
+      </Heading>
       {error?.message && (
         <Text style={[styles.message, { color: colors.text.secondary }]}>{error.message}</Text>
       )}
@@ -76,16 +82,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.spacer16,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: spacing.spacer8,
-    textAlign: 'center',
-  },
-  message: {
-    marginBottom: spacing.spacer8,
-    textAlign: 'center',
-  },
+  title: { marginBottom: spacing.spacer8, textAlign: 'center' },
+  message: { marginBottom: spacing.spacer8, textAlign: 'center' },
 });
 
 export default ErrorBoundary;
