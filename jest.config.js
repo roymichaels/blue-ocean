@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', { useESM: true }],
+    '^.+\\.tsx?$': ['ts-jest', { useESM: true, babelConfig: true }],
     '^.+\\.js$': 'babel-jest',
   },
   transformIgnorePatterns: [
