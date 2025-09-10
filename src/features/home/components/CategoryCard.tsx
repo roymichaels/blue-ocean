@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Pencil } from 'lucide-react-native';
 import { Category } from '@/types';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { spacing, radius, typography, shadows } from '@/shared/ui/tokens';
+import { Text } from '@/ui/primitives';
 
 const shadowStyle = Platform.select(shadows.sm);
 
@@ -61,14 +62,14 @@ export default function CategoryCard({ category, isStoreOwner, onPress, onEdit }
 const styles = StyleSheet.create({
   categoryCard: {
     alignItems: 'center',
-    width: 80,
+    width: spacing.spacer40 * 2, // 80px width ensures even grid layout
     position: 'relative',
     padding: spacing.spacer8,
     borderRadius: radius.lg,
   },
   categoryIcon: {
-    width: 60,
-    height: 60,
+    width: spacing.spacer20 * 3,
+    height: spacing.spacer20 * 3,
     borderRadius: radius.full,
     justifyContent: 'center',
     alignItems: 'center',
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   categoryEmoji: {
-    fontSize: 28,
+    fontSize: 28, // No token for emoji size; chosen for visual balance
   },
   categoryName: {
     ...typography.xs,
@@ -85,17 +86,17 @@ const styles = StyleSheet.create({
   },
   categoryAdminActions: {
     position: 'absolute',
-    top: -4,
-    start: -4,
+    top: -spacing.spacer4,
+    start: -spacing.spacer4,
     flexDirection: 'row',
   },
   categoryAdminButton: {
     borderRadius: radius.full,
-    width: 20,
-    height: 20,
+    width: spacing.spacer20,
+    height: spacing.spacer20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 2,
+    marginRight: spacing.spacer4 / 2, // Small gap; no token for 2px
     borderWidth: 1,
   },
 });
