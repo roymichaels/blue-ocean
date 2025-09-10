@@ -230,7 +230,6 @@ function HomeScreenContent() {
           <Suspense fallback={<Spinner />}>
             <ProductGrid
               products={filteredProducts}
-              categories={categoriesToShow}
               isStoreOwner={isStoreOwner}
               onEdit={openProductForm}
               getItemWidth={getProductItemWidth}

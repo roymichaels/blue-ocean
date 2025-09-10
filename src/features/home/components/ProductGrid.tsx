@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { ProductCard, ProductCardSkeleton } from '@/features/products';
-import { Product, Category } from '@/types';
+import { Product } from '@/types';
 import { useLanguage } from '@/ui/ThemeProvider';
 import EmptyState from '@/shared/ui/EmptyState';
 import { Filter, Plus } from 'lucide-react-native';
@@ -9,7 +9,6 @@ import { spacing } from '@/shared/ui/tokens';
 
 interface ProductGridProps {
   products: Product[];
-  categories: Category[];
   isStoreOwner: boolean;
   onEdit: (product: Product) => void;
   getItemWidth: () => string;
@@ -31,7 +30,6 @@ const ProductRow = React.memo(({ item }: { item: Product }) => (
 
 function ProductGrid({
   products,
-  categories,
   isStoreOwner,
   onEdit,
   getItemWidth,
@@ -107,7 +105,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   productWrapper: {
-    marginBottom: 16,
+    marginBottom: spacing.spacer16,
   },
 });
 

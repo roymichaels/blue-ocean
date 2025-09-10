@@ -6,12 +6,11 @@ import { Container, Stack } from '@/ui/layout';
 import { Spinner } from '@/ui/primitives';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import HomeServices from '@/features/home/components/HomeServices';
-import { Product, Category } from '@/types';
+import { Product } from '@/types';
 import { styles } from './HomeProducts.styles';
 
 type Props = {
   products: Product[];
-  categories: Category[];
   searchQuery: string;
   isStoreOwner: boolean;
   loading: boolean;
@@ -23,7 +22,6 @@ type Props = {
 
 export default function HomeProducts({
   products,
-  categories,
   searchQuery,
   isStoreOwner,
   loading,
@@ -100,7 +98,6 @@ export default function HomeProducts({
         <Suspense fallback={<Spinner />}>
           <ProductGrid
             products={products}
-            categories={categories}
             isStoreOwner={isStoreOwner}
             onEdit={onEditProduct}
             getItemWidth={getProductItemWidth}
