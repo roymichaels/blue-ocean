@@ -37,7 +37,6 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
 import { useCategories } from '@/services';
-import { useTenant } from '@/contexts/TenantContext';
 import { useAppRouter } from '@/services';
 import { Spinner } from '@/ui/primitives';
 
@@ -69,7 +68,6 @@ export default function ProductFormModal({
   const [videoError, setVideoError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
-  const { tenantId } = useTenant();
   const { data: categories = [] } = useCategories(tenantId);
   const pinata = PinataService.getInstance();
 
