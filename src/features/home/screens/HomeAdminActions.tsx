@@ -14,18 +14,19 @@ export default function HomeAdminActions({ onClearData, loading = false }: Props
   const { t } = useLanguage();
   const { colors } = useTheme();
 
+  if (!__DEV__) {
+    return null;
+  }
+
   return (
     <Container style={styles.container}>
       <TouchableOpacity
-        style={[
-          styles.clearDataButton,
-          { backgroundColor: colors.interactive.secondary, borderColor: colors.gold, borderWidth: 1 },
-        ]}
+        style={styles.clearDataLink}
         onPress={onClearData}
         disabled={loading}
       >
         {loading && <Spinner style={styles.buttonSpinner} />}
-        <Text style={[styles.clearDataText, { color: colors.gold }]}>
+        <Text style={[styles.clearDataText, { color: colors.text.secondary }]}>
           {t('home.clearLocalData')}
         </Text>
       </TouchableOpacity>

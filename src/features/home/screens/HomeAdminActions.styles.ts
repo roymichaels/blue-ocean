@@ -6,17 +6,16 @@ export const styles = StyleSheet.create({
     padding: spacing.spacer16,
     marginBottom: spacing.spacer24,
   },
-  clearDataButton: {
-    borderRadius: 12,
-    paddingVertical: spacing.spacer12,
+  clearDataLink: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
+    alignSelf: 'flex-end',
+    paddingVertical: spacing.spacer4,
   },
   clearDataText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: spacing.spacer8,
+    fontSize: 12,
+    textDecorationLine: 'underline',
+    marginLeft: spacing.spacer4,
   },
   helperText: {
     fontSize: 12,
@@ -24,6 +23,6 @@ export const styles = StyleSheet.create({
     textAlign: 'right',
   },
   buttonSpinner: {
-    marginRight: spacing.spacer8,
+    marginRight: spacing.spacer4,
   },
 });
