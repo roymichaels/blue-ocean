@@ -452,7 +452,7 @@ BlueOcean
 │  └─ /admin/settings             (Flags, Feature toggles)
 │
 ├─ UI Components (reusable)
-│  ├─ Navigation: TopBar, SideBar, Breadcrumbs, TenantSwitcher
+│  ├─ Navigation: GlobalHeader, SideBar, Breadcrumbs, TenantSwitcher
 │  ├─ Wallet: NEARConnectButton, AccountBadge
 │  ├─ Catalog: ProductCard, ProductGrid, VariantSelector
 │  ├─ Cart: CartDrawer, LineItem, QuantityPicker

@@ -3,7 +3,7 @@ import { View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Slot, usePathname } from 'expo-router';
-import TopBar from '@/components/TopBar';
+import GlobalHeader from '@/components/GlobalHeader';
 import { FloatingCartWidget } from '@/features/cart';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
@@ -39,7 +39,7 @@ export default function RootLayout() {
     <ErrorBoundary>
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}>
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.canvas} />
-        <TopBar showSearch={showSearch} />
+        <GlobalHeader showSearch={showSearch} />
         <View style={{ flex: 1, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
           {isLargeScreen && <SidebarTabBar items={navItems} isSidebar />}
           <View style={{ flex: 1 }}>
