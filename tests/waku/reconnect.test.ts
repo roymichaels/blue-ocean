@@ -13,10 +13,9 @@ const client = {
 jest.mock('@/utils/transport', () => ({
   getClient: jest.fn(async () => client),
 }));
+jest.mock('@/utils/observability', () => require('@/tests/__mocks__/utils/observability'));
 
 (global as any).logger = { info: jest.fn(), error: jest.fn() };
-(global as any).serviceLatency = { startTimer: () => () => {} };
-(global as any).serviceFailures = { inc: jest.fn() };
 import { ensureNode } from '@/services/waku';
 import { getClient } from '@/utils/transport';
 
