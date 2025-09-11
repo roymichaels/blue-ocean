@@ -6,7 +6,7 @@ import {
   TextInput,
   Platform,
 } from 'react-native';
-import { Text } from '@/ui';
+import { Text, Chip } from '@/ui';
 import SmartImage from './SmartImage';
 import { Search, Bell, Globe } from 'lucide-react-native';
 import { useAppRouter } from '@/services';
@@ -18,6 +18,7 @@ import CommandPalette from './CommandPalette';
 import { spacing, radius, typography } from '@/ui/tokens';
 import { usePathname } from 'expo-router';
 import { useNotificationState } from './NotificationContext';
+import { useWallet } from '@/contexts/WalletProvider';
 
 interface GlobalHeaderProps {
   showSearch?: boolean;
@@ -29,6 +30,7 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const { appName, logoCid } = useAppInfo();
   const { push } = useAppRouter();
   const { unreadCount, refreshNotifications } = useNotificationState();
+  const { address, connect, disconnect } = useWallet();
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -54,6 +56,15 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const handleSearchSubmit = () => {
     setSearchOpen(false);
     if (pathname !== '/' && pathname !== '/index') push('/');
+  };
+
+  const walletLabel = address || t('wallet.connect', 'Connect Wallet');
+  const handleWalletPress = async () => {
+    if (address) {
+      await disconnect();
+    } else {
+      await connect();
+    }
   };
 
   return (
@@ -193,6 +204,13 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         >
           <Globe size={24} color={colors.text.primary} />
         </Pressable>
+
+        <Chip
+          label={walletLabel}
+          onPress={handleWalletPress}
+          style={{ flexShrink: 1 }}
+          textStyle={{ textAlign: isRTL ? 'right' : 'left' }}
+        />
 
         <UserAvatar />
       </View>
