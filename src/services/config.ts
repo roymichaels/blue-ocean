@@ -9,6 +9,65 @@ export function requireEnv(key: string, fallback?: string): string {
   return value;
 }
 
+export interface NearConfig {
+  networkId: string;
+  contractId: string;
+  walletUrl: string;
+  rpcUrl: string;
+  helperUrl: string;
+  redirectUrl: string;
+}
+
+export function nearConfig(): NearConfig {
+  const networkId =
+    process.env.EXPO_PUBLIC_NETWORK ||
+    process.env.EXPO_PUBLIC_NETWORK_ID ||
+    process.env.EXPO_PUBLIC_NEAR_NETWORK_ID ||
+    process.env.NEAR_NETWORK_ID ||
+    process.env.NETWORK_ID ||
+    'testnet';
+
+  const contractId =
+    process.env.EXPO_PUBLIC_CONTRACT_ID ||
+    process.env.CONTRACT_ID ||
+    '';
+
+  const walletUrl =
+    process.env.EXPO_PUBLIC_NEAR_WALLET_URL ||
+    process.env.NEAR_WALLET_URL ||
+    (networkId === 'mainnet'
+      ? 'https://app.mynearwallet.com'
+      : 'https://testnet.mynearwallet.com');
+
+  const rpcUrl =
+    process.env.EXPO_PUBLIC_NEAR_RPC_URL ||
+    process.env.NEAR_RPC_URL ||
+    (networkId === 'mainnet'
+      ? 'https://rpc.mainnet.near.org'
+      : 'https://rpc.testnet.near.org');
+
+  const helperUrl =
+    process.env.EXPO_PUBLIC_NEAR_HELPER_URL ||
+    process.env.NEAR_HELPER_URL ||
+    (networkId === 'mainnet'
+      ? 'https://helper.mainnet.near.org'
+      : 'https://helper.testnet.near.org');
+
+  const redirectUrl =
+    process.env.EXPO_PUBLIC_NEAR_WALLET_REDIRECT_URL ||
+    process.env.NEAR_WALLET_REDIRECT_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : '');
+
+  return {
+    networkId,
+    contractId,
+    walletUrl,
+    rpcUrl,
+    helperUrl,
+    redirectUrl,
+  };
+}
+
 export function getShopTenantId(): string {
   return (
     process.env.EXPO_PUBLIC_SHOP_TENANT_ID ||

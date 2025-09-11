@@ -26,13 +26,13 @@ export const queryClient =
  * Composes the core providers used across the app.
  *
  * Provider order is important:
- * 1. `AppInfoProvider` – supplies branding and app configuration to theming.
- * 2. `ConfigProvider` – exposes static runtime configuration.
- * 3. `ErrorBoundary` – captures errors from all descendants.
- * 4. `ThemeProvider` – applies theming before any UI renders.
- * 5. `LanguageProvider` – sets up i18n and text direction.
- * 6. `CheckedQueryClientProvider` – enforces a single React Query client.
- * 7. `WalletProvider` – supplies wallet context for network layers.
+ * 1. `ThemeProvider` – applies theming before any UI renders.
+ * 2. `LanguageProvider` – sets up i18n and text direction.
+ * 3. `CheckedQueryClientProvider` – enforces a single React Query client.
+ * 4. `WalletProvider` – supplies wallet context for network layers.
+ * 5. `AppInfoProvider` – supplies branding and app configuration.
+ * 6. `ConfigProvider` – exposes static runtime configuration.
+ * 7. `ErrorBoundary` – captures errors from all descendants.
  * 8. `WakuProvider` – depends on the wallet and query client.
  * 9. `AuthProvider` – manages authentication state.
  * 10. `AuthModalProvider` – handles auth modal display.
@@ -42,13 +42,13 @@ export const queryClient =
 export default function AppProviders({ children }: React.PropsWithChildren) {
   const toast = useToast();
   return (
-    <AppInfoProvider>
-      <ConfigProvider>
-        <ErrorBoundary onError={(e) => toast.showError(e.message)}>
-          <ThemeProvider>
-            <LanguageProvider>
-              <CheckedQueryClientProvider client={queryClient}>
-                <WalletProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <CheckedQueryClientProvider client={queryClient}>
+          <WalletProvider>
+            <AppInfoProvider>
+              <ConfigProvider>
+                <ErrorBoundary onError={(e) => toast.showError(e.message)}>
                   <WakuProvider>
                     <AuthProvider>
                       <AuthModalProvider>
@@ -58,12 +58,12 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
                       </AuthModalProvider>
                     </AuthProvider>
                   </WakuProvider>
-                </WalletProvider>
-              </CheckedQueryClientProvider>
-            </LanguageProvider>
-          </ThemeProvider>
-        </ErrorBoundary>
-      </ConfigProvider>
-    </AppInfoProvider>
+                </ErrorBoundary>
+              </ConfigProvider>
+            </AppInfoProvider>
+          </WalletProvider>
+        </CheckedQueryClientProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
