@@ -1,8 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
 import { Text } from 'react-native';
-import HomeScreen from '@app/index';
-
 const InfoModalMock: jest.Mock = jest.fn();
 
 jest.mock('@/services', () => ({
@@ -29,17 +27,22 @@ jest.mock('@/ui/ThemeProvider', () => ({
   useLanguage: () => ({ t: (s: string) => s }),
   useTheme: () => ({ colors: { background: '#fff', text: { primary: '#000', secondary: '#333' } } }),
 }));
-let homeHeaderThrows = true;
-jest.mock('@features/home/components/HomeHeader', () => {
+jest.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({ tenantId: 'tenant1', isNetwork: false }),
+}));
+jest.mock('@/contexts/AppInfoContext', () => ({
+  useAppInfo: () => ({ appName: 'Test', logoCid: null }),
+}));
+let categoryChipsThrows = true;
+jest.mock('@features/home/components/CategoryChips', () => {
   const React = require('react');
   return () => {
-    if (homeHeaderThrows) {
+    if (categoryChipsThrows) {
       throw new Error('boom');
     }
     return null;
   };
 });
-jest.mock('@features/home/components/CategoryChips', () => () => null);
 jest.mock('@features/home/components/ProductGrid', () => () => null);
 jest.mock('@ui/primitives', () => ({ Spinner: () => null }));
 jest.mock('@shared/ui/EmptyState', () => () => null);
@@ -106,9 +109,11 @@ jest.mock('@features/home/hooks/useHomeFilters', () => ({
   }),
 }));
 
+const HomeScreen = require('@app/index').default;
+
 describe('HomeScreen error handling', () => {
   it('shows fallback and keeps app shell when child throws', () => {
-    homeHeaderThrows = true;
+    categoryChipsThrows = true;
     homeErrorList = [null];
     const App = () => (
       <>
@@ -125,7 +130,7 @@ describe('HomeScreen error handling', () => {
   });
 
   it('reopens InfoModal when a new error occurs', async () => {
-    homeHeaderThrows = false;
+    categoryChipsThrows = false;
     homeErrorList = [new Error('first'), new Error('second')];
     InfoModalMock.mockClear();
     renderer.create(<HomeScreen />);

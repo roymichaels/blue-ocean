@@ -13,6 +13,10 @@ jest.mock('@/features/home/hooks/useHome', () => ({
   useHome: (tenantId: string) => mockUseHome(tenantId),
 }));
 
+jest.mock('@/contexts/AppInfoContext', () => ({
+  useAppInfo: () => ({ appName: 'Test', logoCid: null }),
+}));
+
 
 const mockCategoryChips = jest.fn(() => null);
 jest.mock('@/features/home/components/CategoryChips', () => ({
@@ -104,7 +108,7 @@ describe('HomeScreen render', () => {
     jest.clearAllMocks();
   });
 
-  it('renders network mode with hero cards only', async () => {
+  it('renders network mode with hero only', async () => {
     mockUseTenant.mockReturnValue({ tenantId: null, isNetwork: true });
 
     let root: renderer.ReactTestRenderer;
@@ -115,7 +119,7 @@ describe('HomeScreen render', () => {
 
     const tree = root!.toJSON();
     const str = JSON.stringify(tree);
-    expect(str).toContain('home.createStore');
+    expect(str).toContain('home.heroTitle');
     expect(mockCategoryChips).not.toHaveBeenCalled();
     expect(mockProductGrid).not.toHaveBeenCalled();
     expect(mockUseHome).toHaveBeenCalledWith(null);
