@@ -11,6 +11,7 @@ import ErrorBoundary from '@/shared/ErrorBoundary';
 import SidebarTabBar, { NavItem } from '@/components/SidebarTabBar';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
+import { getShopTenantId } from '@/services/config';
 
 interface NavItemConfig extends NavItem {
   requiresAuth?: boolean;
@@ -20,7 +21,11 @@ interface NavItemConfig extends NavItem {
 
 const NAV_ITEMS: readonly NavItemConfig[] = [
   { href: '/', title: 'navigation.home', icon: 'Home' },
-  { href: '/store', title: 'navigation.shopNow', icon: 'Store' },
+  {
+    href: `/store/${getShopTenantId()}`,
+    title: 'navigation.shopNow',
+    icon: 'Store',
+  },
   {
     href: '/messages',
     title: 'navigation.messages',
@@ -28,24 +33,18 @@ const NAV_ITEMS: readonly NavItemConfig[] = [
     requiresAuth: true,
   },
   {
-    href: '/profile',
+    href: '/me',
     title: 'navigation.profile',
     icon: 'User',
     requiresAuth: true,
   },
   {
-    href: '/dashboard',
+    href: '/store/[storeId]/admin',
     title: 'navigation.dashboard',
     icon: 'LayoutDashboard',
     requiresAuth: true,
     requiresStoreOwner: true,
     requiresTenant: true,
-  },
-  {
-    href: '/orders',
-    title: 'navigation.orders',
-    icon: 'Package',
-    requiresAuth: true,
   },
   {
     href: '/settings',
@@ -75,7 +74,10 @@ export default function RootLayout() {
         if (item.requiresStoreOwner && !isStoreOwner) return false;
         if (item.requiresTenant && !tenantId) return false;
         return true;
-      }),
+      }).map((item) => ({
+        ...item,
+        href: item.href.replace('[storeId]', tenantId ?? ''),
+      })),
     [isLoggedIn, isStoreOwner, tenantId],
   );
 

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Pressable, Text, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Lucide from 'lucide-react-native';
@@ -14,7 +14,8 @@ export interface NavItem {
   badge?: number;
 }
 
-const SIDEBAR_WIDTH = 80;
+const SIDEBAR_WIDTH = 200;
+const SIDEBAR_COLLAPSED_WIDTH = 80;
 
 interface SidebarTabBarProps {
   items: readonly NavItem[];
@@ -27,28 +28,32 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar }
   const { push } = useAppRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const [collapsed, setCollapsed] = useState(false);
+  const itemRefs = useRef<Array<React.ComponentRef<typeof Pressable> | null>>([]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     const handler = (e: KeyboardEvent) => {
       const n = parseInt(e.key, 10);
       if (!isNaN(n) && n >= 1 && n <= items.length) {
-        push(items[n - 1].href);
+        const el = itemRefs.current[n - 1] as any;
+        el?.focus?.();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [items, push]);
+  }, [items]);
 
   return (
     <View
       style={
         isSidebar
           ? {
-              width: SIDEBAR_WIDTH,
+              width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH,
               backgroundColor: colors.tabBar.background,
               paddingTop: insets.top,
               paddingBottom: insets.bottom,
+              justifyContent: 'space-between',
             }
           : {
               flexDirection: 'row',
@@ -58,88 +63,109 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar }
             }
       }
     >
-      {items.map((item) => {
-        const Icon = (Lucide as any)[item.icon] as React.ComponentType<{ size: number; color: string }>;
-        const focused = pathname === item.href;
-        const color = focused ? colors.tabBar.active : colors.tabBar.inactive;
-        return (
-          <Pressable
-            key={item.href}
-            onPress={() => push(item.href)}
-            accessibilityLabel={t(item.title)}
-            accessibilityRole="button"
-            focusable
-            {...(Platform.OS === 'web' ? { title: t(item.title) } : {})}
-            style={({ focused: isFocused }) => [
-              {
-                alignItems: 'center',
-                justifyContent: 'center',
-                flex: isSidebar ? undefined : 1,
-                paddingVertical: spacing.spacer16,
-                position: 'relative',
-              },
-              isSidebar && focused && { backgroundColor: colors.surface.primary },
-              isFocused && {
-                borderColor: colors.border.focus,
-                borderWidth: 2,
-                borderRadius: radius.md,
-              },
-            ]}
-          >
-            {isSidebar && focused && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  bottom: 0,
-                  [isRTL ? 'right' : 'left']: 0,
-                  width: 4,
-                  backgroundColor: colors.tabBar.active,
-                }}
-              />
-            )}
-            {Icon && <Icon size={24} color={color} />}
-            {!isSidebar && (
-              <Text
-                style={{
-                  color,
-                  fontSize: typography.xs.fontSize,
-                  fontWeight: '500',
-                  marginTop: spacing.spacer4,
-                }}
-              >
-                {t(item.title)}
-              </Text>
-            )}
-            {item.badge && item.badge > 0 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: spacing.spacer4,
-                  right: spacing.spacer4,
-                  backgroundColor: colors.gold,
-                  borderRadius: radius.full,
-                  minWidth: spacing.spacer16,
-                  height: spacing.spacer16,
+      <View>
+        {items.map((item, index) => {
+          const Icon = (Lucide as any)[item.icon] as React.ComponentType<{ size: number; color: string }>;
+          const focused = pathname === item.href;
+          const color = focused ? colors.gold : colors.tabBar.inactive;
+          return (
+            <Pressable
+              key={item.href}
+              ref={(el) => (itemRefs.current[index] = el)}
+              onPress={() => push(item.href)}
+              accessibilityLabel={t(item.title)}
+              accessibilityRole="button"
+              focusable
+              {...(Platform.OS === 'web' && collapsed ? { title: t(item.title) } : {})}
+              style={({ focused: isFocused }) => [
+                {
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: spacing.spacer4,
-                }}
-              >
+                  justifyContent: 'flex-start',
+                  flex: isSidebar ? undefined : 1,
+                  paddingVertical: spacing.spacer16,
+                  paddingHorizontal: isSidebar && !collapsed ? spacing.spacer8 : 0,
+                  position: 'relative',
+                  flexDirection: isSidebar && !collapsed ? 'row' : 'column',
+                },
+                isSidebar && focused && { backgroundColor: colors.surface.primary },
+                isFocused && {
+                  borderColor: colors.border.focus,
+                  borderWidth: 2,
+                  borderRadius: radius.md,
+                },
+              ]}
+            >
+              {isSidebar && focused && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    [isRTL ? 'right' : 'left']: 0,
+                    width: 4,
+                    backgroundColor: colors.gold,
+                  }}
+                />
+              )}
+              {Icon && <Icon size={24} color={color} />}
+              {!isSidebar || !collapsed ? (
                 <Text
                   style={{
-                    color: colors.text.inverse,
+                    color,
                     fontSize: typography.xs.fontSize,
-                    fontWeight: 'bold',
+                    fontWeight: '500',
+                    marginLeft: isSidebar && !collapsed ? spacing.spacer8 : 0,
+                    marginTop: !isSidebar ? spacing.spacer4 : 0,
                   }}
                 >
-                  {item.badge}
+                  {t(item.title)}
                 </Text>
-              </View>
-            )}
-          </Pressable>
-        );
-      })}
+              ) : null}
+              {item.badge && item.badge > 0 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: spacing.spacer4,
+                    right: spacing.spacer4,
+                    backgroundColor: colors.gold,
+                    borderRadius: radius.full,
+                    minWidth: spacing.spacer16,
+                    height: spacing.spacer16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: spacing.spacer4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.text.inverse,
+                      fontSize: typography.xs.fontSize,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {item.badge}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+      {isSidebar && (
+        <Pressable
+          onPress={() => setCollapsed((c) => !c)}
+          accessibilityLabel={collapsed ? t('navigation.expand') : t('navigation.collapse')}
+          accessibilityRole="button"
+          {...(Platform.OS === 'web' ? { title: collapsed ? t('navigation.expand') : t('navigation.collapse') } : {})}
+          style={{ alignItems: 'center', paddingVertical: spacing.spacer16 }}
+        >
+          {collapsed ? (
+            <Lucide.ChevronRight size={24} color={colors.tabBar.inactive} />
+          ) : (
+            <Lucide.ChevronLeft size={24} color={colors.tabBar.inactive} />
+          )}
+        </Pressable>
+      )}
     </View>
   );
 };
