@@ -78,7 +78,7 @@
     "lucide-react-native": "^0.543.0",
     "minio": "^8.0.5",
     "multiformats": "13.4.0",
-    "near-api-js": "2.1.4",
+    "near-api-js": "^5.1.1",
     "near-lake-framework": "^2.0.0",
     "pg": "^8.16.3",
     "pino": "^9.9.5",
@@ -152,7 +152,7 @@
     "@react-navigation/bottom-tabs": "6.5.7",
     "@react-navigation/native-stack": "6.9.12",
     "use-latest-callback": "0.2.4",
-    "near-api-js": "2.1.4",
+    "near-api-js": "^5.1.1",
     "@waku/core": "0.0.38",
     "@waku/sdk": "0.0.34"
   },
