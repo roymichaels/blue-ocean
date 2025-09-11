@@ -61,7 +61,9 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
     if (pathname !== '/' && pathname !== '/index') push('/');
   };
 
-  const walletLabel = address || t('wallet.connect', 'Connect Wallet');
+  const walletLabel = address
+    ? `@${address}`
+    : t('wallet.connect', 'Connect Wallet');
   const handleWalletPress = async () => {
     if (address) {
       await disconnect();

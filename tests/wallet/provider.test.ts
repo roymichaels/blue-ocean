@@ -2,10 +2,12 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { WalletProvider, useWallet } from '@/contexts/WalletProvider';
 
+const mockUseAccount = jest.fn().mockReturnValue('alice.testnet');
+
 jest.mock('@/services/chain', () => ({
   chainAdapter: {
     init: jest.fn().mockResolvedValue({ error: null }),
-    useAccount: () => 'alice.testnet',
+    useAccount: mockUseAccount,
     openModal: jest.fn().mockResolvedValue(undefined),
     signMessage: jest.fn().mockResolvedValue('signed'),
     getAccountId: jest.fn().mockReturnValue('alice.testnet'),
@@ -71,5 +73,22 @@ describe('WalletProvider', () => {
     });
     expect(getUser).toHaveBeenCalledWith('alice.testnet');
     expect(role).toBe('admin');
+  });
+
+  it('initializes address from adapter on mount', async () => {
+    const { chainAdapter } = require('@/services/chain');
+    mockUseAccount.mockReturnValueOnce(null);
+    chainAdapter.getAccountId.mockReturnValueOnce('alice.testnet');
+    let addr: string | null = null;
+    const Grabber = () => {
+      const wallet = useWallet();
+      addr = wallet.address;
+      return null;
+    };
+    renderer.create(
+      React.createElement(WalletProvider, null, React.createElement(Grabber)),
+    );
+    await act(async () => {});
+    expect(addr).toBe('alice.testnet');
   });
 });
