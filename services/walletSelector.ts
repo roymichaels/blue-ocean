@@ -4,12 +4,7 @@ import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import '@near-wallet-selector/wallet-utils';
 import { Buffer } from 'buffer';
 import { useEffect, useState } from 'react';
-import {
-  getContractId,
-  getNetworkId,
-  getNearWalletUrl,
-  getNearHelperUrl,
-} from '@/services/config';
+import { nearConfig } from '@/services/config';
 
 // Exported for test overrides
 export let selector: WalletSelector | null = null;
@@ -20,19 +15,14 @@ async function init() {
     return { selector: selector || undefined, error: initError } as const;
   }
   try {
-    const networkId = getNetworkId();
-    const cid = getContractId();
-    if (cid && (networkId === 'testnet') !== cid.endsWith('.testnet')) {
-      console.error(`CONTRACT_ID (${cid}) does not match network ${networkId}`);
+    const { networkId, contractId, walletUrl, rpcUrl, helperUrl } = nearConfig();
+    if (contractId && (networkId === 'testnet') !== contractId.endsWith('.testnet')) {
+      console.error(`CONTRACT_ID (${contractId}) does not match network ${networkId}`);
     }
-    const walletUrl = getNearWalletUrl();
-    const helperUrl = getNearHelperUrl();
     selector = await setupWalletSelector({
       network: {
         networkId,
-        nodeUrl: networkId === 'mainnet'
-          ? 'https://rpc.mainnet.near.org'
-          : 'https://rpc.testnet.near.org',
+        nodeUrl: rpcUrl,
         walletUrl,
         helperUrl,
       },
@@ -48,14 +38,12 @@ async function signIn(): Promise<void> {
   const { selector, error } = await init();
   if (!selector) throw (error || new Error('Wallet initialization failed'));
   const wallet = await selector.wallet('near-wallet');
-  const contractId = getContractId();
-  const baseUrl = typeof window !== 'undefined'
-    ? window.location.origin
-    : undefined;
+  const { contractId, redirectUrl } = nearConfig();
+  if (!contractId) throw new Error('CONTRACT_ID required');
   await wallet.signIn({
     contractId,
     methodNames: [],
-    ...(baseUrl ? { successUrl: baseUrl, failureUrl: baseUrl } : {}),
+    ...(redirectUrl ? { successUrl: redirectUrl, failureUrl: redirectUrl } : {}),
   });
 }
 
