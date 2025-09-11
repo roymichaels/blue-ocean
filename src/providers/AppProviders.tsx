@@ -31,8 +31,8 @@ export const queryClient =
  * 3. `ErrorBoundary` – captures errors from all descendants.
  * 4. `ThemeProvider` – applies theming before any UI renders.
  * 5. `LanguageProvider` – sets up i18n and text direction.
- * 6. `WalletProvider` – supplies wallet context for network layers.
- * 7. `CheckedQueryClientProvider` – enforces a single React Query client.
+ * 6. `CheckedQueryClientProvider` – enforces a single React Query client.
+ * 7. `WalletProvider` – supplies wallet context for network layers.
  * 8. `WakuProvider` – depends on the wallet and query client.
  * 9. `AuthProvider` – manages authentication state.
  * 10. `AuthModalProvider` – handles auth modal display.
@@ -47,8 +47,8 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
         <ErrorBoundary onError={(e) => toast.showError(e.message)}>
           <ThemeProvider>
             <LanguageProvider>
-              <WalletProvider>
-                <CheckedQueryClientProvider client={queryClient}>
+              <CheckedQueryClientProvider client={queryClient}>
+                <WalletProvider>
                   <WakuProvider>
                     <AuthProvider>
                       <AuthModalProvider>
@@ -58,8 +58,8 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
                       </AuthModalProvider>
                     </AuthProvider>
                   </WakuProvider>
-                </CheckedQueryClientProvider>
-              </WalletProvider>
+                </WalletProvider>
+              </CheckedQueryClientProvider>
             </LanguageProvider>
           </ThemeProvider>
         </ErrorBoundary>
