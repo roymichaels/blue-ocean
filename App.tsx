@@ -7,8 +7,9 @@ import { ctx } from './router-ctx.web';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui';
 import AppProviders from '@/providers/AppProviders';
+import { isRouterEnabled } from '@/services/config';
 
-const USE_ROUTER = (process.env.EXPO_PUBLIC_USE_ROUTER ?? '1') === '1';
+const USE_ROUTER = isRouterEnabled();
 
 function RouterApp() {
   return <ExpoRoot context={ctx} />;

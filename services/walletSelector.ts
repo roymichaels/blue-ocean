@@ -4,45 +4,16 @@ import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import '@near-wallet-selector/wallet-utils';
 import { Buffer } from 'buffer';
 import { useEffect, useState } from 'react';
-import { getContractId, getNetworkId } from '@/services/config';
+import {
+  getContractId,
+  getNetworkId,
+  getNearWalletUrl,
+  getNearHelperUrl,
+} from '@/services/config';
 
 // Exported for test overrides
 export let selector: WalletSelector | null = null;
 let initError: Error | null = null;
-
-function getWalletUrl(): string {
-  const override =
-    process.env.EXPO_PUBLIC_NEAR_WALLET_URL ||
-    process.env.NEAR_WALLET_URL;
-  if (override) {
-    const net = getNetworkId();
-    if (override.includes('testnet') !== (net === 'testnet')) {
-      console.error(`NEAR_WALLET_URL (${override}) does not match network ${net}`);
-    }
-    return override;
-  }
-  const net = getNetworkId();
-  return net === 'mainnet'
-    ? 'https://app.mynearwallet.com'
-    : 'https://testnet.mynearwallet.com';
-}
-
-function getHelperUrl(): string {
-  const override =
-    process.env.EXPO_PUBLIC_NEAR_HELPER_URL ||
-    process.env.NEAR_HELPER_URL;
-  if (override) {
-    const net = getNetworkId();
-    if (override.includes('testnet') !== (net === 'testnet')) {
-      console.error(`NEAR_HELPER_URL (${override}) does not match network ${net}`);
-    }
-    return override;
-  }
-  const net = getNetworkId();
-  return net === 'mainnet'
-    ? 'https://helper.mainnet.near.org'
-    : 'https://helper.testnet.near.org';
-}
 
 async function init() {
   if (selector || initError) {
@@ -54,8 +25,8 @@ async function init() {
     if (cid && (networkId === 'testnet') !== cid.endsWith('.testnet')) {
       console.error(`CONTRACT_ID (${cid}) does not match network ${networkId}`);
     }
-    const walletUrl = getWalletUrl();
-    const helperUrl = getHelperUrl();
+    const walletUrl = getNearWalletUrl();
+    const helperUrl = getNearHelperUrl();
     selector = await setupWalletSelector({
       network: {
         networkId,
