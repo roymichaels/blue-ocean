@@ -75,7 +75,7 @@ export default function PromoCard({
 const styles = StyleSheet.create({
   card: {
     padding: spacing.spacer16,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     ...Platform.select(shadows.md),
   },
   touch: {

@@ -1,9 +1,16 @@
 import React from 'react';
-import { Pressable, StyleSheet, AccessibilityRole, Image, ImageSourcePropType } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  AccessibilityRole,
+  Image,
+  ImageSourcePropType,
+  Platform,
+} from 'react-native';
 import { Card, Text } from '@/ui';
 import { Stack } from '@/ui/layout';
 import { useTheme } from '@/ui/ThemeProvider';
-import { radius } from '@/ui/tokens';
+import { radius, shadows } from '@/ui/tokens';
 
 interface ServiceCardProps {
   title: string;
@@ -45,7 +52,8 @@ export default function ServiceCard({
 const styles = StyleSheet.create({
   card: {
     width: 200,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
+    ...Platform.select(shadows.md),
   },
   pressable: {
     flex: 1,

@@ -90,7 +90,6 @@ export default function RootLayout() {
             <Slot />
           </View>
         </View>
-        {!isLargeScreen && <SidebarTabBar items={navItems} />}
         {showCartWidget && <FloatingCartWidget />}
       </SafeAreaView>
     </ErrorBoundary>
