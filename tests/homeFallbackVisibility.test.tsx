@@ -12,6 +12,13 @@ jest.mock('@/ui/layout/ScrollArea', () => {
     ReactMock.createElement('ScrollArea', { style, contentContainerStyle, ...props }, children);
 });
 
+jest.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({ tenantId: 'tenant1', isNetwork: false }),
+}));
+jest.mock('@/contexts/AppInfoContext', () => ({
+  useAppInfo: () => ({ appName: 'Test', logoCid: null }),
+}));
+
 const HomeScreen = require('@app/index').default;
 
 jest.mock('@/services', () => ({
