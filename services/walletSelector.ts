@@ -16,23 +16,59 @@ async function init() {
   }
   try {
     const resolveNetwork = () => {
-      const explicit = requireEnv('EXPO_PUBLIC_NETWORK', '');
-      if (explicit === 'mainnet' || explicit === 'testnet') return explicit;
-      const cid = requireEnv('EXPO_PUBLIC_CONTRACT_ID', '');
+      const explicit = requireEnv('NEAR_NETWORK_ID', '');
+      const cid = requireEnv('CONTRACT_ID', '');
+      if (explicit === 'mainnet' || explicit === 'testnet') {
+        if (cid && (explicit === 'testnet') !== cid.endsWith('.testnet')) {
+          console.error(`CONTRACT_ID (${cid}) does not match NEAR_NETWORK_ID ${explicit}`);
+        }
+        return explicit;
+      }
+      if (explicit) console.error(`Invalid NEAR_NETWORK_ID: ${explicit}`);
+      if (!cid) console.error('Missing CONTRACT_ID to infer network');
       return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
     };
 
     const getWalletUrl = () => {
-      const override = requireEnv('EXPO_PUBLIC_WALLET_URL', '');
-      if (override) return override;
+      const override = requireEnv('NEAR_WALLET_URL', '');
+      if (override) {
+        const net = resolveNetwork();
+        if (override.includes('testnet') !== (net === 'testnet')) {
+          console.error(`NEAR_WALLET_URL (${override}) does not match network ${net}`);
+        }
+        return override;
+      }
       const net = resolveNetwork();
       return net === 'mainnet'
         ? 'https://app.mynearwallet.com'
         : 'https://testnet.mynearwallet.com';
     };
 
+    const getHelperUrl = () => {
+      const override = requireEnv('NEAR_HELPER_URL', '');
+      if (override) {
+        const net = resolveNetwork();
+        if (override.includes('testnet') !== (net === 'testnet')) {
+          console.error(`NEAR_HELPER_URL (${override}) does not match network ${net}`);
+        }
+        return override;
+      }
+      const net = resolveNetwork();
+      return net === 'mainnet'
+        ? 'https://helper.mainnet.near.org'
+        : 'https://helper.testnet.near.org';
+    };
+
+    const networkId = resolveNetwork();
     selector = await setupWalletSelector({
-      network: 'testnet',
+      network: {
+        networkId,
+        nodeUrl: networkId === 'mainnet'
+          ? 'https://rpc.mainnet.near.org'
+          : 'https://rpc.testnet.near.org',
+        walletUrl: getWalletUrl(),
+        helperUrl: getHelperUrl(),
+      },
       modules: [setupNearWallet({ walletUrl: getWalletUrl() })],
     });
   } catch (e: any) {
@@ -45,9 +81,14 @@ async function signIn(): Promise<void> {
   const { selector, error } = await init();
   if (!selector) throw (error || new Error('Wallet initialization failed'));
   const wallet = await selector.wallet('near-wallet');
-  const contractId = requireEnv('EXPO_PUBLIC_CONTRACT_ID', 'example.testnet');
+  const contractId = requireEnv('CONTRACT_ID', '');
+  if (!contractId) {
+    const msg = 'Missing CONTRACT_ID for wallet sign-in';
+    console.error(msg);
+    throw new Error(msg);
+  }
   const baseUrl = typeof window !== 'undefined'
-    ? window.location.origin + (window.location.pathname || '/')
+    ? window.location.origin
     : undefined;
   await wallet.signIn({
     contractId,
