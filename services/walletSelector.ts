@@ -4,67 +4,68 @@ import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import '@near-wallet-selector/wallet-utils';
 import { Buffer } from 'buffer';
 import { useEffect, useState } from 'react';
-import { requireEnv, getContractId, getNetworkId } from '@/services/config';
+import { getContractId, getNetworkId } from '@/services/config';
 
 // Exported for test overrides
 export let selector: WalletSelector | null = null;
 let initError: Error | null = null;
+
+function getWalletUrl(): string {
+  const override =
+    process.env.EXPO_PUBLIC_NEAR_WALLET_URL ||
+    process.env.NEAR_WALLET_URL;
+  if (override) {
+    const net = getNetworkId();
+    if (override.includes('testnet') !== (net === 'testnet')) {
+      console.error(`NEAR_WALLET_URL (${override}) does not match network ${net}`);
+    }
+    return override;
+  }
+  const net = getNetworkId();
+  return net === 'mainnet'
+    ? 'https://app.mynearwallet.com'
+    : 'https://testnet.mynearwallet.com';
+}
+
+function getHelperUrl(): string {
+  const override =
+    process.env.EXPO_PUBLIC_NEAR_HELPER_URL ||
+    process.env.NEAR_HELPER_URL;
+  if (override) {
+    const net = getNetworkId();
+    if (override.includes('testnet') !== (net === 'testnet')) {
+      console.error(`NEAR_HELPER_URL (${override}) does not match network ${net}`);
+    }
+    return override;
+  }
+  const net = getNetworkId();
+  return net === 'mainnet'
+    ? 'https://helper.mainnet.near.org'
+    : 'https://helper.testnet.near.org';
+}
 
 async function init() {
   if (selector || initError) {
     return { selector: selector || undefined, error: initError } as const;
   }
   try {
-    const resolveNetwork = () => {
-      const net = getNetworkId();
-      const cid = getContractId();
-      if (cid && (net === 'testnet') !== cid.endsWith('.testnet')) {
-        console.error(`CONTRACT_ID (${cid}) does not match network ${net}`);
-      }
-      return net;
-    };
-
-    const getWalletUrl = () => {
-      const override = requireEnv('NEAR_WALLET_URL', '');
-      if (override) {
-        const net = resolveNetwork();
-        if (override.includes('testnet') !== (net === 'testnet')) {
-          console.error(`NEAR_WALLET_URL (${override}) does not match network ${net}`);
-        }
-        return override;
-      }
-      const net = resolveNetwork();
-      return net === 'mainnet'
-        ? 'https://app.mynearwallet.com'
-        : 'https://testnet.mynearwallet.com';
-    };
-
-    const getHelperUrl = () => {
-      const override = requireEnv('NEAR_HELPER_URL', '');
-      if (override) {
-        const net = resolveNetwork();
-        if (override.includes('testnet') !== (net === 'testnet')) {
-          console.error(`NEAR_HELPER_URL (${override}) does not match network ${net}`);
-        }
-        return override;
-      }
-      const net = resolveNetwork();
-      return net === 'mainnet'
-        ? 'https://helper.mainnet.near.org'
-        : 'https://helper.testnet.near.org';
-    };
-
-    const networkId = resolveNetwork();
+    const networkId = getNetworkId();
+    const cid = getContractId();
+    if (cid && (networkId === 'testnet') !== cid.endsWith('.testnet')) {
+      console.error(`CONTRACT_ID (${cid}) does not match network ${networkId}`);
+    }
+    const walletUrl = getWalletUrl();
+    const helperUrl = getHelperUrl();
     selector = await setupWalletSelector({
       network: {
         networkId,
         nodeUrl: networkId === 'mainnet'
           ? 'https://rpc.mainnet.near.org'
           : 'https://rpc.testnet.near.org',
-        walletUrl: getWalletUrl(),
-        helperUrl: getHelperUrl(),
+        walletUrl,
+        helperUrl,
       },
-      modules: [setupNearWallet({ walletUrl: getWalletUrl() })],
+      modules: [setupNearWallet({ walletUrl })],
     });
   } catch (e: any) {
     initError = e instanceof Error ? e : new Error(String(e));
