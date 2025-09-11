@@ -37,7 +37,11 @@ export default function HeroCallout() {
   return (
     <PromoCard
       backgroundColor={colors.surface.primary}
-      style={{ marginHorizontal: spacing.spacer16, marginBottom: spacing.spacer16 }}
+      style={{
+        marginHorizontal: spacing.spacer16,
+        marginBottom: spacing.spacer24,
+        height: isWide ? 112 : 96,
+      }}
     >
       <Stack
         direction={isWide ? 'horizontal' : 'vertical'}
@@ -46,7 +50,7 @@ export default function HeroCallout() {
         style={{ justifyContent: 'space-between' }}
       >
         <View style={styles.textContainer}>
-          <Heading size="lg" style={{ color: colors.text.primary }}>
+          <Heading size="xl" style={{ color: colors.text.primary }}>
             {t('home.heroTitle')}
           </Heading>
           <Text
