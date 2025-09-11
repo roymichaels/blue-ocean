@@ -68,6 +68,14 @@ export function getTransport(): string {
   );
 }
 
+export function getDocsUrl(): string {
+  return (
+    process.env.EXPO_PUBLIC_DOCS_URL ||
+    process.env.DOCS_URL ||
+    ''
+  );
+}
+
 export function getNearWalletUrl(): string {
   const override =
     process.env.EXPO_PUBLIC_NEAR_WALLET_URL ||

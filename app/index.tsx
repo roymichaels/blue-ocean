@@ -53,6 +53,7 @@ function HomeScreenContent() {
         showsVerticalScrollIndicator={false}
       >
         <HeroCallout />
+        <HomeOptions />
       </ScrollArea>
     );
   }

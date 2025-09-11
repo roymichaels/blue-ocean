@@ -1,5 +1,11 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import {
+  StyleSheet,
+  Pressable,
+  Linking,
+  type NativeSyntheticEvent,
+  type KeyboardEvent,
+} from 'react-native';
 import { Card, Text, Button } from '@/ui';
 import { Stack } from '@/ui/layout';
 import { spacing, radius } from '@/ui/tokens';
@@ -7,6 +13,7 @@ import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services/useAppRouter';
 import { routes } from '@/utils/routes';
 import { useWallet } from '@/contexts/WalletProvider';
+import { getShopTenantId, getDocsUrl } from '@/services/config';
 
 export default function HomeOptions() {
   const { t } = useLanguage();
@@ -14,7 +21,18 @@ export default function HomeOptions() {
   const appRouter = useAppRouter();
   const { address: walletAddress, connect } = useWallet();
 
-  const handleCreateStore = () => {
+  const SHOP_TENANT_ID = getShopTenantId();
+  const DOCS_URL = getDocsUrl();
+  const walletTooltip = t(
+    'home.connectWalletToContinue',
+    'Connect wallet to continue',
+  );
+
+  const handleCreateStore = async () => {
+    if (!walletAddress) {
+      await connect();
+      return;
+    }
     appRouter.push(routes.createStore());
   };
 
@@ -26,32 +44,117 @@ export default function HomeOptions() {
     appRouter.push(routes.driver());
   };
 
+  const handleBusinessLogin = async () => {
+    if (!walletAddress) {
+      await connect();
+      return;
+    }
+    appRouter.push(`/store/${SHOP_TENANT_ID}/admin`);
+  };
+
+  const handleDocs = () => {
+    if (DOCS_URL) {
+      Linking.openURL(DOCS_URL);
+    }
+  };
+
+  const handleKeyDown = (
+    e: NativeSyntheticEvent<KeyboardEvent>,
+    action: () => void,
+  ) => {
+    const key = e.nativeEvent.key;
+    if (key === 'Enter' || key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  };
+
   return (
     <Stack gap="spacer16" style={styles.container}>
       <Card style={styles.card}>
         <Stack gap="spacer8">
-          <Text style={[styles.title, { color: colors.text.primary }]}> 
+          <Text style={[styles.title, { color: colors.text.primary }]}>
             {t('home.createStore', 'Create a Store')}
           </Text>
-          <Button
-            title={t('home.createStore', 'Create a Store')}
+          <Pressable
             onPress={handleCreateStore}
+            onKeyDown={(e) => handleKeyDown(e, handleCreateStore)}
             accessibilityRole="link"
-            testID="create-store-link"
-          />
+            title={walletAddress ? undefined : walletTooltip}
+            style={styles.fullWidth}
+          >
+            <Button
+              title={t('home.createStore', 'Create a Store')}
+              disabled={!walletAddress}
+              pointerEvents="none"
+              testID="create-store-link"
+            />
+          </Pressable>
         </Stack>
       </Card>
+
       <Card style={styles.card}>
         <Stack gap="spacer8">
-          <Text style={[styles.title, { color: colors.text.primary }]}> 
+          <Text style={[styles.title, { color: colors.text.primary }]}>
             {t('home.becomeDriver', 'Become a Driver')}
           </Text>
-          <Button
-            title={t('home.becomeDriver', 'Become a Driver')}
+          <Pressable
             onPress={handleBecomeDriver}
+            onKeyDown={(e) => handleKeyDown(e, handleBecomeDriver)}
             accessibilityRole="link"
-            testID="become-driver-button"
-          />
+            title={walletAddress ? undefined : walletTooltip}
+            style={styles.fullWidth}
+          >
+            <Button
+              title={t('home.becomeDriver', 'Become a Driver')}
+              disabled={!walletAddress}
+              pointerEvents="none"
+              testID="become-driver-button"
+            />
+          </Pressable>
+        </Stack>
+      </Card>
+
+      <Card style={styles.card}>
+        <Stack gap="spacer8">
+          <Text style={[styles.title, { color: colors.text.primary }]}>
+            {t('home.businessLogin', 'Business Login')}
+          </Text>
+          <Pressable
+            onPress={handleBusinessLogin}
+            onKeyDown={(e) => handleKeyDown(e, handleBusinessLogin)}
+            accessibilityRole="link"
+            title={walletAddress ? undefined : walletTooltip}
+            style={styles.fullWidth}
+          >
+            <Button
+              title={t('home.businessLogin', 'Business Login')}
+              disabled={!walletAddress}
+              pointerEvents="none"
+              testID="business-login-button"
+            />
+          </Pressable>
+        </Stack>
+      </Card>
+
+      <Card style={styles.card}>
+        <Stack gap="spacer8">
+          <Text style={[styles.title, { color: colors.text.primary }]}>
+            {t('home.docsApi', 'Docs & API')}
+          </Text>
+          <Pressable
+            onPress={handleDocs}
+            onKeyDown={(e) => handleKeyDown(e, handleDocs)}
+            accessibilityRole="link"
+            title={DOCS_URL}
+            style={styles.fullWidth}
+          >
+            <Button
+              title={t('home.docsApi', 'Docs & API')}
+              pointerEvents="none"
+              testID="docs-api-button"
+            />
+          </Pressable>
         </Stack>
       </Card>
     </Stack>
@@ -69,5 +172,7 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: '600',
   },
+  fullWidth: {
+    width: '100%',
+  },
 });
-
