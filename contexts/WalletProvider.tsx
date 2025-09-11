@@ -1,4 +1,11 @@
-import React, { createContext, useCallback, useContext, useMemo } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { chainAdapter } from '@/services/chain';
 import { getUser } from '@/features/auth/services/nearUsers';
 
@@ -25,7 +32,20 @@ interface Props {
 }
 
 export function WalletProvider({ children }: Props) {
-  const address = chainAdapter.useAccount();
+  const account = chainAdapter.useAccount();
+  const [address, setAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAddress(account);
+  }, [account]);
+
+  useEffect(() => {
+    (async () => {
+      await chainAdapter.init();
+      const id = chainAdapter.getAccountId();
+      if (id) setAddress(id);
+    })();
+  }, []);
 
   const connect = useCallback(async () => {
     const { error } = await chainAdapter.init();
