@@ -4,7 +4,7 @@ import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import '@near-wallet-selector/wallet-utils';
 import { Buffer } from 'buffer';
 import { useEffect, useState } from 'react';
-import { requireEnv } from '@/services/config';
+import { requireEnv, getContractId, getNetworkId } from '@/services/config';
 
 // Exported for test overrides
 export let selector: WalletSelector | null = null;
@@ -16,17 +16,12 @@ async function init() {
   }
   try {
     const resolveNetwork = () => {
-      const explicit = requireEnv('NEAR_NETWORK_ID', '');
-      const cid = requireEnv('CONTRACT_ID', '');
-      if (explicit === 'mainnet' || explicit === 'testnet') {
-        if (cid && (explicit === 'testnet') !== cid.endsWith('.testnet')) {
-          console.error(`CONTRACT_ID (${cid}) does not match NEAR_NETWORK_ID ${explicit}`);
-        }
-        return explicit;
+      const net = getNetworkId();
+      const cid = getContractId();
+      if (cid && (net === 'testnet') !== cid.endsWith('.testnet')) {
+        console.error(`CONTRACT_ID (${cid}) does not match network ${net}`);
       }
-      if (explicit) console.error(`Invalid NEAR_NETWORK_ID: ${explicit}`);
-      if (!cid) console.error('Missing CONTRACT_ID to infer network');
-      return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
+      return net;
     };
 
     const getWalletUrl = () => {
@@ -81,12 +76,7 @@ async function signIn(): Promise<void> {
   const { selector, error } = await init();
   if (!selector) throw (error || new Error('Wallet initialization failed'));
   const wallet = await selector.wallet('near-wallet');
-  const contractId = requireEnv('CONTRACT_ID', '');
-  if (!contractId) {
-    const msg = 'Missing CONTRACT_ID for wallet sign-in';
-    console.error(msg);
-    throw new Error(msg);
-  }
+  const contractId = getContractId();
   const baseUrl = typeof window !== 'undefined'
     ? window.location.origin
     : undefined;

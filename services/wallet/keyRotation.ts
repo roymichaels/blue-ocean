@@ -1,5 +1,5 @@
 import { connect, keyStores, KeyPair } from 'near-api-js';
-import { requireEnv } from '@/services/config';
+import { getNetworkId } from '@/services/config';
 
 /**
  * Rotate the access key for an account. Generates a new key pair,
@@ -9,7 +9,7 @@ export async function rotateKey(
   accountId: string,
   oldPublicKey: string,
 ): Promise<KeyPair> {
-  const network = requireEnv('EXPO_PUBLIC_NETWORK', 'testnet');
+  const network = getNetworkId();
   const nodeUrl =
     network === 'mainnet'
       ? 'https://rpc.mainnet.near.org'
