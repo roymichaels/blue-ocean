@@ -6,7 +6,7 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { spacing, radius, typography, shadows } from '@/shared/ui/tokens';
 import { Text } from '@/ui/primitives';
 
-const shadowStyle = Platform.select(shadows.sm);
+const shadowStyle = Platform.select(shadows.md);
 
         
 interface CategoryCardProps {
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     width: spacing.spacer40 * 2, // 80px width ensures even grid layout
     position: 'relative',
     padding: spacing.spacer8,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
   },
   categoryIcon: {
     width: spacing.spacer20 * 3,

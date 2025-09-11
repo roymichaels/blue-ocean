@@ -5,6 +5,7 @@ import {
   Pressable,
   TextInput,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { Text, Chip } from '@/ui';
 import SmartImage from './SmartImage';
@@ -32,6 +33,8 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const { unreadCount, refreshNotifications } = useNotificationState();
   const { address, connect, disconnect } = useWallet();
   const pathname = usePathname();
+  const { width } = useWindowDimensions();
+  const isMd = width >= 768;
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -74,6 +77,7 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         {
           backgroundColor: colors.background,
           flexDirection: isRTL ? 'row-reverse' : 'row',
+          paddingHorizontal: isMd ? spacing.spacer24 : spacing.spacer16,
         },
       ]}
     >
@@ -208,7 +212,7 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         <Chip
           label={walletLabel}
           onPress={handleWalletPress}
-          style={{ flexShrink: 1 }}
+          style={{ flexShrink: 1, height: spacing.spacer40, justifyContent: 'center' }}
           textStyle={{ textAlign: isRTL ? 'right' : 'left' }}
         />
 
@@ -224,10 +228,10 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: spacing.spacer16,
-    paddingVertical: spacing.spacer16,
+    paddingVertical: spacing.spacer8,
     alignItems: 'center',
     justifyContent: 'space-between',
+    height: spacing.spacer16 * 4,
   },
   logo: {
     flexDirection: 'row',
@@ -250,6 +254,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.spacer12,
+    height: '100%',
   },
   iconButton: {
     position: 'relative',
