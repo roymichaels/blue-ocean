@@ -1,6 +1,8 @@
+import { isUiV2Enabled, isDataV2Enabled } from '@/services/config';
+
 export const flags = {
-  UI_V2: (process.env.EXPO_PUBLIC_FEATURE_UI_V2 ?? '0') === '1',
-  DATA_V2: (process.env.EXPO_PUBLIC_FEATURE_DATA_V2 ?? '0') === '1',
+  UI_V2: isUiV2Enabled(),
+  DATA_V2: isDataV2Enabled(),
 };
 
 export default flags;
