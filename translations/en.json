@@ -44,7 +44,8 @@
     "shopNow": "Shop Now",
     "messages": "Messages",
     "dashboard": "Dashboard",
-    "settings": "Settings"
+    "settings": "Settings",
+    "collapse": "Collapse"
   },
   "commandPalette": {
     "navigate": "Navigate",
@@ -121,7 +122,8 @@
     "businessLogin": "Business Login",
     "docs": "Docs",
     "apiDocs": "API Docs",
-    "docsApi": "Docs & API"
+    "docsApi": "Docs & API",
+    "connectWalletToContinue": "Connect wallet to continue"
   },
   "categories": {
     "all": "All",
@@ -552,6 +554,9 @@
     "noDisputes": "No disputes",
     "noEvidence": "No evidence",
     "loadingEvidence": "Loading evidence..."
+  },
+  "wallet": {
+    "connect": "Connect Wallet"
   },
   "proofUploader": {
     "permissionRequired": "Permission Required",

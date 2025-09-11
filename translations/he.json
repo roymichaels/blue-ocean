@@ -44,7 +44,8 @@
     "shopNow": "קנה עכשיו",
     "messages": "הודעות",
     "dashboard": "לוח בקרה",
-    "settings": "הגדרות"
+    "settings": "הגדרות",
+    "collapse": "צמצם"
   },
   "commandPalette": {
     "navigate": "ניווט",
@@ -121,7 +122,8 @@
     "businessLogin": "כניסת עסקים",
     "docs": "תיעוד",
     "apiDocs": "ממשק API",
-    "docsApi": "מסמכים & API"
+    "docsApi": "מסמכים & API",
+    "connectWalletToContinue": "התחבר לארנק כדי להמשיך"
   },
   "categories": {
     "all": "הכל",
@@ -546,6 +548,9 @@
       "orders": "הזמנות:",
       "revenue": "הכנסות:"
     }
+  },
+  "wallet": {
+    "connect": "התחבר לארנק"
   },
   "proofUploader": {
     "permissionRequired": "נדרשת הרשאה",
