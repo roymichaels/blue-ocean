@@ -8,6 +8,7 @@ import {
   PressableProps,
   PressableStateCallbackType,
   Animated,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../ThemeProvider';
 import { spacing, radius, typography } from '../tokens';
@@ -19,6 +20,8 @@ interface ButtonProps extends PressableProps {
   textStyle?: StyleProp<TextStyle>;
   loading?: boolean;
   children?: React.ReactNode;
+  tooltip?: string;
+  onKeyDown?: (e: any) => void;
 }
 
 const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
@@ -30,6 +33,7 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
       textStyle,
       loading = false,
       children,
+      tooltip,
       ...rest
     },
     ref,
@@ -55,15 +59,20 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
     };
 
     const isDisabled = disabled || loading;
-    const combinedStyle =
-      typeof style === 'function'
-        ? (state: PressableStateCallbackType) => [
-            styles.button(colors),
-            state.pressed && styles.pressed,
-            isDisabled && styles.disabled,
-            style(state),
-          ]
-        : [styles.button(colors), isDisabled && styles.disabled, style];
+    const combinedStyle = (state: PressableStateCallbackType) => {
+      const base = [
+        styles.button(colors),
+        state.pressed && styles.pressed,
+        state.focused && styles.focused(colors),
+        isDisabled && styles.disabled,
+      ];
+      if (typeof style === 'function') {
+        base.push(style(state));
+      } else if (style) {
+        base.push(style as any);
+      }
+      return base;
+    };
 
     return (
       <Animated.View style={{ transform: [{ scale }] }}>
@@ -73,6 +82,7 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
           style={combinedStyle}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
+          {...(Platform.OS === 'web' && tooltip ? { title: tooltip } : {})}
           {...rest}
         >
           {loading ? (
@@ -99,6 +109,8 @@ const styles = {
     paddingHorizontal: spacing.spacer16,
     borderRadius: radius.md,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
   }),
   label: (colors: any) => ({
     ...typography.md,
@@ -106,4 +118,7 @@ const styles = {
   }),
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.9 },
+  focused: (colors: any): ViewStyle => ({
+    borderColor: colors.border.focus,
+  }),
 };
