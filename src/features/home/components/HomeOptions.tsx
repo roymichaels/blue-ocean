@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   StyleSheet,
-  Pressable,
   Linking,
   type NativeSyntheticEvent,
   type KeyboardEvent,
@@ -76,20 +75,16 @@ export default function HomeOptions() {
           <Text style={[styles.title, { color: colors.text.primary }]}>
             {t('home.createStore', 'Create a Store')}
           </Text>
-          <Pressable
+          <Button
+            title={t('home.createStore', 'Create a Store')}
             onPress={handleCreateStore}
             onKeyDown={(e) => handleKeyDown(e, handleCreateStore)}
             accessibilityRole="link"
-            title={walletAddress ? undefined : walletTooltip}
+            tooltip={walletAddress ? undefined : walletTooltip}
+            disabled={!walletAddress}
             style={styles.fullWidth}
-          >
-            <Button
-              title={t('home.createStore', 'Create a Store')}
-              disabled={!walletAddress}
-              pointerEvents="none"
-              testID="create-store-link"
-            />
-          </Pressable>
+            testID="create-store-link"
+          />
         </Stack>
       </Card>
 
@@ -98,20 +93,16 @@ export default function HomeOptions() {
           <Text style={[styles.title, { color: colors.text.primary }]}>
             {t('home.becomeDriver', 'Become a Driver')}
           </Text>
-          <Pressable
+          <Button
+            title={t('home.becomeDriver', 'Become a Driver')}
             onPress={handleBecomeDriver}
             onKeyDown={(e) => handleKeyDown(e, handleBecomeDriver)}
             accessibilityRole="link"
-            title={walletAddress ? undefined : walletTooltip}
+            tooltip={walletAddress ? undefined : walletTooltip}
+            disabled={!walletAddress}
             style={styles.fullWidth}
-          >
-            <Button
-              title={t('home.becomeDriver', 'Become a Driver')}
-              disabled={!walletAddress}
-              pointerEvents="none"
-              testID="become-driver-button"
-            />
-          </Pressable>
+            testID="become-driver-button"
+          />
         </Stack>
       </Card>
 
@@ -120,20 +111,16 @@ export default function HomeOptions() {
           <Text style={[styles.title, { color: colors.text.primary }]}>
             {t('home.businessLogin', 'Business Login')}
           </Text>
-          <Pressable
+          <Button
+            title={t('home.businessLogin', 'Business Login')}
             onPress={handleBusinessLogin}
             onKeyDown={(e) => handleKeyDown(e, handleBusinessLogin)}
             accessibilityRole="link"
-            title={walletAddress ? undefined : walletTooltip}
+            tooltip={walletAddress ? undefined : walletTooltip}
+            disabled={!walletAddress}
             style={styles.fullWidth}
-          >
-            <Button
-              title={t('home.businessLogin', 'Business Login')}
-              disabled={!walletAddress}
-              pointerEvents="none"
-              testID="business-login-button"
-            />
-          </Pressable>
+            testID="business-login-button"
+          />
         </Stack>
       </Card>
 
@@ -142,19 +129,15 @@ export default function HomeOptions() {
           <Text style={[styles.title, { color: colors.text.primary }]}>
             {t('home.docsApi', 'Docs & API')}
           </Text>
-          <Pressable
+          <Button
+            title={t('home.docsApi', 'Docs & API')}
             onPress={handleDocs}
             onKeyDown={(e) => handleKeyDown(e, handleDocs)}
             accessibilityRole="link"
-            title={DOCS_URL}
+            tooltip={DOCS_URL}
             style={styles.fullWidth}
-          >
-            <Button
-              title={t('home.docsApi', 'Docs & API')}
-              pointerEvents="none"
-              testID="docs-api-button"
-            />
-          </Pressable>
+            testID="docs-api-button"
+          />
         </Stack>
       </Card>
     </Stack>

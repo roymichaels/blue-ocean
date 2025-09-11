@@ -60,6 +60,7 @@ export default function HeroCallout() {
           onPress={handlePress}
           accessibilityRole="link"
           onKeyDown={handleKeyDown}
+          tooltip={t('home.heroAction')}
         />
       </Stack>
     </PromoCard>
