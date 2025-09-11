@@ -29,12 +29,17 @@ jest.mock('@/components/NotificationContext', () => ({
   useNotificationState: () => ({ unreadCount: 0, refreshNotifications: jest.fn() }),
 }));
 
+jest.mock('@/contexts/WalletProvider', () => ({
+  useWallet: () => ({ address: null, connect: jest.fn(), disconnect: jest.fn() }),
+}));
+
 jest.mock('@/ui', () => {
   const React = require('react');
   const { Pressable, Text } = require('react-native');
   return {
     Text,
     Button: ({ onPress, children }: any) => React.createElement(Pressable, { onPress }, children),
+    Chip: ({ label, onPress }: any) => React.createElement(Pressable, { onPress }, label),
   };
 });
 
