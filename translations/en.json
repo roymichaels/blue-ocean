@@ -40,7 +40,11 @@
     "categories": "Categories",
     "notifications": "Notifications",
     "reviews": "Reviews",
-    "profile": "Profile"
+    "profile": "Profile",
+    "shopNow": "Shop Now",
+    "messages": "Messages",
+    "dashboard": "Dashboard",
+    "settings": "Settings"
   },
   "commandPalette": {
     "navigate": "Navigate",

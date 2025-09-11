@@ -40,7 +40,11 @@
     "categories": "קטגוריות",
     "notifications": "התראות",
     "reviews": "ביקורות",
-    "profile": "פרופיל"
+    "profile": "פרופיל",
+    "shopNow": "קנה עכשיו",
+    "messages": "הודעות",
+    "dashboard": "לוח בקרה",
+    "settings": "הגדרות"
   },
   "commandPalette": {
     "navigate": "ניווט",
