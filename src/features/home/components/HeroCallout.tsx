@@ -11,10 +11,10 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Button, Heading, Text } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
 import { spacing, typography } from '@/ui/tokens';
-import { requireEnv } from '@/services/config';
+import { getShopTenantId } from '@/services/config';
 import PromoCard from './PromoCard';
 
-const SHOP_TENANT_ID = requireEnv('SHOP_TENANT_ID');
+const SHOP_TENANT_ID = getShopTenantId();
 
 export default function HeroCallout() {
   const { t } = useLanguage();
