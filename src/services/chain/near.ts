@@ -5,12 +5,8 @@ import { getNetworkId } from '@/services/config';
 import type { ChainAdapter } from './ChainAdapter';
 import { canonicalJson } from '@/utils/serialization';
 
-function resolveNetwork(): 'mainnet' | 'testnet' {
-  return getNetworkId() as 'mainnet' | 'testnet';
-}
-
 async function getBalance(address: string): Promise<string> {
-  const network = resolveNetwork();
+  const network = getNetworkId() as 'mainnet' | 'testnet';
   const rpcUrl = network === 'mainnet' ? 'https://rpc.mainnet.near.org' : 'https://rpc.testnet.near.org';
   const res = await fetch(rpcUrl, {
     method: 'POST',
