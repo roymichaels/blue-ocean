@@ -9,3 +9,18 @@ const config: Record<string, string> = {
 
 export default config;
 
+export function getNetworkId(): string {
+  const explicit =
+    process.env.EXPO_PUBLIC_NETWORK ||
+    process.env.EXPO_PUBLIC_NETWORK_ID ||
+    process.env.EXPO_PUBLIC_NEAR_NETWORK_ID ||
+    process.env.NEAR_NETWORK_ID ||
+    process.env.NETWORK_ID;
+  if (explicit) return explicit;
+  const cid =
+    process.env.EXPO_PUBLIC_CONTRACT_ID ||
+    process.env.CONTRACT_ID ||
+    '';
+  return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
+}
+

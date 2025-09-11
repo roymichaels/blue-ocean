@@ -6,6 +6,7 @@
 import type { LightNode } from '@waku/sdk';
 import { Buffer } from 'buffer';
 import { topicFor } from '@blue-ocean/utils';
+import { getNetworkId } from '../config';
 
 // In-memory cache of messages keyed by topic. Each topic also tracks a set of
 // previously seen payloads to avoid duplications when `hydrateMessages` is called
@@ -18,8 +19,8 @@ async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
     const bootstrap = (
-      process.env.WAKU_BOOTSTRAP ||
       process.env.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
+      process.env.WAKU_BOOTSTRAP ||
       ''
       )
         .split(String.fromCharCode(44))
@@ -73,7 +74,7 @@ export async function hydrateMessages(topic: string): Promise<any[]> {
 // as Listing objects.
 export async function getListingsFromWaku(storeId: string) {
   try {
-    const network = process.env.EXPO_PUBLIC_NETWORK || 'testnet';
+    const network = getNetworkId();
     const topic = topicFor(network, storeId, 'listings');
     const msgs = await hydrateMessages(topic);
     return msgs.map((m) => ({
