@@ -8,10 +8,51 @@ import { FloatingCartWidget } from '@/features/cart';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import SidebarTabBar from '@/components/SidebarTabBar';
+import SidebarTabBar, { NavItem } from '@/components/SidebarTabBar';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useTenant } from '@/contexts/TenantContext';
 
-const BASE_NAV_ITEMS = [
+interface NavItemConfig extends NavItem {
+  requiresAuth?: boolean;
+  requiresStoreOwner?: boolean;
+  requiresTenant?: boolean;
+}
+
+const NAV_ITEMS: readonly NavItemConfig[] = [
   { href: '/', title: 'navigation.home', icon: 'Home' },
+  { href: '/store', title: 'navigation.shopNow', icon: 'Store' },
+  {
+    href: '/messages',
+    title: 'navigation.messages',
+    icon: 'MessageCircle',
+    requiresAuth: true,
+  },
+  {
+    href: '/profile',
+    title: 'navigation.profile',
+    icon: 'User',
+    requiresAuth: true,
+  },
+  {
+    href: '/dashboard',
+    title: 'navigation.dashboard',
+    icon: 'LayoutDashboard',
+    requiresAuth: true,
+    requiresStoreOwner: true,
+    requiresTenant: true,
+  },
+  {
+    href: '/orders',
+    title: 'navigation.orders',
+    icon: 'Package',
+    requiresAuth: true,
+  },
+  {
+    href: '/settings',
+    title: 'navigation.settings',
+    icon: 'Settings',
+    requiresAuth: true,
+  },
 ] as const;
 
 const LARGE_SCREEN = 768;
@@ -21,19 +62,22 @@ export default function RootLayout() {
   const { isRTL } = useLanguage();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
+  const { isLoggedIn, isStoreOwner } = useAuth();
+  const { tenantId } = useTenant();
   const isLargeScreen = width >= LARGE_SCREEN;
   const showSearch = pathname === '/' || pathname === '/index';
   const showCartWidget = showSearch;
 
-  const navItems = useMemo(() => {
-    if (pathname.startsWith('/store/')) {
-      return [
-        ...BASE_NAV_ITEMS,
-        { href: pathname, title: 'navigation.store', icon: 'Store' as const },
-      ];
-    }
-    return BASE_NAV_ITEMS;
-  }, [pathname]);
+  const navItems = useMemo(
+    () =>
+      NAV_ITEMS.filter((item) => {
+        if (item.requiresAuth && !isLoggedIn) return false;
+        if (item.requiresStoreOwner && !isStoreOwner) return false;
+        if (item.requiresTenant && !tenantId) return false;
+        return true;
+      }),
+    [isLoggedIn, isStoreOwner, tenantId],
+  );
 
   return (
     <ErrorBoundary>
