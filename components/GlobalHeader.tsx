@@ -1,3 +1,4 @@
+// TOUCHPOINT: components/GlobalHeader.tsx renders in production — Fix Pack v2
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -209,7 +210,6 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         <Globe size={24} color={colors.text.primary} />
         </Pressable>
 
-        // DOCME: wallet status chip
         <Chip
           label={walletLabel}
           onPress={handleWalletPress}
@@ -295,4 +295,6 @@ const styles = StyleSheet.create({
     ...typography.md,
   },
 });
+
+// AC: Header shows exactly one wallet entry; no “Connect Wallet” text in the DOM.
 
