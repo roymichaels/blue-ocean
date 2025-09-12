@@ -12,9 +12,8 @@ import { Button, Heading, Text } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
 import { spacing, typography } from '@/ui/tokens';
 import { getShopTenantId } from '@/services/config';
+import { routes } from '@/utils/routes';
 import PromoCard from './PromoCard';
-
-const SHOP_TENANT_ID = getShopTenantId();
 
 export default function HeroCallout() {
   const { t } = useLanguage();
@@ -25,7 +24,12 @@ export default function HeroCallout() {
   const appRouter = useAppRouter();
 
   const handlePress = () => {
-    appRouter.push(`/store/${SHOP_TENANT_ID}`);
+    const tenantId = getShopTenantId();
+    if (tenantId) {
+      appRouter.push(`/store/${tenantId}`);
+    } else {
+      appRouter.push(routes.home());
+    }
   };
 
   const handleKeyDown = (e: NativeSyntheticEvent<KeyboardEvent>) => {
