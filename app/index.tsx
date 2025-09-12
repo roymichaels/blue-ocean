@@ -41,7 +41,6 @@ function HomeScreenContent() {
   const { tenantId, isNetwork } = useTenant();
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
-  const home = useHome(tenantId);
   const { appName, logoCid } = useAppInfo();
   const { width: windowWidth } = useWindowDimensions();
 
@@ -57,6 +56,8 @@ function HomeScreenContent() {
       </ScrollArea>
     );
   }
+
+  const home = useHome(tenantId);
 
   const { refreshing, refresh, error } = home;
   const {
