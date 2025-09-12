@@ -566,7 +566,8 @@
     "loadingEvidence": "Loading evidence..."
   },
   "wallet": {
-    "connect": "Connect Wallet"
+    "connect": "Connect Wallet",
+    "notConnected": "Not connected"
   },
   "proofUploader": {
     "permissionRequired": "Permission Required",

@@ -560,7 +560,8 @@
     }
   },
   "wallet": {
-    "connect": "התחבר לארנק"
+    "connect": "התחבר לארנק",
+    "notConnected": "לא מחובר"
   },
   "proofUploader": {
     "permissionRequired": "נדרשת הרשאה",
