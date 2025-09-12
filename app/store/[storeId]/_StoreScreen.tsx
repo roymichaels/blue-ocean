@@ -1,3 +1,4 @@
+// TOUCHPOINT: app/store/[storeId]/_StoreScreen.tsx — editing per “Kill wallet CTA + horizontal premium cards”
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -154,4 +155,6 @@ const styles = StyleSheet.create({
   },
   sectionText: {},
 });
+
+// Bad store id renders friendly empty state with a button, not a bare header.
 

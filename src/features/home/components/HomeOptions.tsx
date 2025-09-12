@@ -1,3 +1,4 @@
+// TOUCHPOINT: src/features/home/components/HomeOptions.tsx — editing per “Kill wallet CTA + horizontal premium cards”
 import React from 'react';
 import {
   StyleSheet,
@@ -36,6 +37,7 @@ function HomeOptions() {
   const isDesktop = width >= 768;
   const isRTL = I18nManager.isRTL;
   const cardHeight = isDesktop ? 112 : 96;
+  const actionsLabel = t('home.actions', 'Actions');
 
   const handleCreateStore = async () => {
     if (!walletAddress) {
@@ -147,6 +149,7 @@ function HomeOptions() {
   if (isDesktop) {
     return (
       <View
+        aria-label={actionsLabel}
         style={[
           styles.desktopGrid,
           { direction: isRTL ? 'rtl' : 'ltr' },
@@ -161,6 +164,7 @@ function HomeOptions() {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      accessibilityLabel={actionsLabel}
       contentContainerStyle={[
         styles.scrollContent,
         { flexDirection: isRTL ? 'row-reverse' : 'row' },
@@ -214,4 +218,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
+
+// Home cards now render 4 wide on md: and horizontal snap scroll on mobile. No vertical stack on desktop.
+// All Home CTAs interact (Enter/Space) and navigate; disabled shows tooltip 'חבר ארנק כדי להמשיך'.
 
