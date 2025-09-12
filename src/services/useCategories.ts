@@ -8,17 +8,17 @@ if (chain === 'near') {
   ({ listCategories } = require('@/features/products/services/nearCategories'));
 }
 
-export function useCategories(tenantId: string | null) {
+export function useCategories(storeId: string | null) {
   return useQuery({
-    queryKey: ['categories', tenantId],
+    queryKey: ['categories', storeId],
     queryFn: () => {
-      invariant(tenantId, 'tenantId required');
+      invariant(storeId, 'storeId required');
       if (!listCategories) return Promise.resolve([] as Category[]);
-      return listCategories(tenantId);
+      return listCategories(storeId);
     },
     select: (data) => data ?? [],
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    enabled: !!tenantId,
+    enabled: !!storeId,
   });
 }

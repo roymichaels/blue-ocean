@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/ui/ThemeProvider';
 import StoreHeader from '@/features/stores/components/store/StoreHeader';
 import StoreTabs from '@/features/stores/components/store/StoreTabs';
 import { ProductGrid } from '@/features/products';
-import { useStoreData } from '@/services/useStoreData';
+import { useProducts, useCategories, useStoreReviews } from '@/services';
+import { selectStore } from '@/agents/stores-agent';
+import type { Store } from '@/types';
 
 export default function StoreScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
-  const { store, products, score } = useStoreData(storeId);
+  const [store, setStore] = useState<Store | null>(null);
+  const { data: products = [] } = useProducts(storeId);
+  const { data: _categories = [] } = useCategories(storeId);
+  const { data: { score } = { score: 0 } } = useStoreReviews(storeId);
   const [tab, setTab] = useState<'products' | 'about' | 'reviews'>('products');
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      if (!storeId) return;
+      const s = await selectStore(storeId);
+      if (active) setStore(s);
+    };
+    void load();
+    return () => {
+      active = false;
+    };
+  }, [storeId]);
 
   if (!store) {
     return (

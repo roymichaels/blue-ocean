@@ -4,17 +4,17 @@ import { productsAdapter } from '@/features/products/services';
 import { Product } from '@/types';
 import invariant from '@/utils/invariant';
 
-export function useProducts(tenantId: string | null) {
+export function useProducts(storeId: string | null) {
   return useQuery({
-    queryKey: ['products', tenantId],
+    queryKey: ['products', storeId],
     queryFn: async () => {
-      invariant(tenantId, 'tenantId required');
+      invariant(storeId, 'storeId required');
       const db = DatabaseService.getInstance();
       let data = await db.getProducts();
-      data = data.filter((p) => p.storeId === tenantId);
+      data = data.filter((p) => p.storeId === storeId);
       if (data.length === 0) {
         try {
-          data = await productsAdapter.listProducts(tenantId);
+          data = await productsAdapter.listProducts(storeId);
         } catch {}
       }
       return data;
@@ -22,26 +22,26 @@ export function useProducts(tenantId: string | null) {
     select: (data) => data ?? [],
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    enabled: !!tenantId,
+    enabled: !!storeId,
   });
 }
 
-export function useProductMutations(tenantId: string | null) {
-  invariant(tenantId, 'tenantId required');
+export function useProductMutations(storeId: string | null) {
+  invariant(storeId, 'storeId required');
   const queryClient = useQueryClient();
 
   const upsert = useMutation({
     mutationFn: (product: Product) =>
-      productsAdapter.setProduct(tenantId, product),
+      productsAdapter.setProduct(storeId, product),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['products', storeId] });
     },
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => productsAdapter.removeProduct(tenantId, id),
+    mutationFn: (id: string) => productsAdapter.removeProduct(storeId, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['products', storeId] });
     },
   });
 
