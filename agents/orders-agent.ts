@@ -100,7 +100,7 @@ class OrdersAgent {
       if (bootstrap.length === 0) return null;
       const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
       this.node = await createLightNode({ libp2p: { bootstrap } as any });
-      await this.node.start();
+      await this.node!.start();
       await waitForRemotePeer(this.node, [Protocols.Relay]);
       return this.node;
     } catch (err) {

@@ -59,7 +59,7 @@ class PinataService {
       const path = uri.startsWith('file://') ? uri.replace('file://', '') : uri;
       const buffer = await fs.readFile(path);
       await this.secureDelete(path);
-      (form as any).append('file', new Blob([buffer.buffer]), name);
+      (form as any).append('file', new Blob([buffer]), name);
     } else {
       form.append('file', { uri, name, type: 'application/octet-stream' } as any);
     }

@@ -150,13 +150,6 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     await AsyncStorage.setItem(NAME_KEY, name);
     const tenantSvc = SettingsAgent.getInstance();
     try {
-      await tenantSvc.whenReady();
-    } catch (e) {
-      Alert.alert('שגיאה', 'התחברות לשירות ההגדרת נכשלה');
-      errorLog('Failed initializing SettingsAgent:', e);
-      throw e;
-    }
-    try {
       await tenantSvc.updateSettingValue('appName', name);
       scheduleLoadInfo();
     } catch (e) {
@@ -177,13 +170,6 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       throw e;
     }
     const tenantSvc = SettingsAgent.getInstance();
-    try {
-      await tenantSvc.whenReady();
-    } catch (e) {
-      Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
-      errorLog('Failed initializing SettingsAgent:', e);
-      throw e;
-    }
     try {
       await tenantSvc.updateSettingValue('brand.logoCid', logo);
       scheduleLoadInfo();
@@ -206,13 +192,6 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
     }
     const tenantSvc = SettingsAgent.getInstance();
     try {
-      await tenantSvc.whenReady();
-    } catch (e) {
-      Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
-      errorLog('Failed initializing SettingsAgent:', e);
-      throw e;
-    }
-    try {
       await tenantSvc.updateSettingValue('theme.primary', color);
       scheduleLoadInfo();
     } catch (e) {
@@ -233,13 +212,6 @@ export function AppInfoProvider({ children }: AppInfoProviderProps) {
       throw e;
     }
     const tenantSvc = SettingsAgent.getInstance();
-    try {
-      await tenantSvc.whenReady();
-    } catch (e) {
-      Alert.alert('שגיאה', 'התחברות לשירות ההגדרות נכשלה');
-      errorLog('Failed initializing SettingsAgent:', e);
-      throw e;
-    }
     try {
       await tenantSvc.updateSettingValue('fiatKey', key);
       scheduleLoadInfo();

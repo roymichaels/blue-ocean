@@ -63,7 +63,7 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
       const base = [
         styles.button(colors),
         state.pressed && styles.pressed,
-        state.focused && styles.focused(colors),
+        (state as any).focused && styles.focused(colors),
         isDisabled && styles.disabled,
       ];
       if (typeof style === 'function') {

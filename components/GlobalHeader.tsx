@@ -151,10 +151,10 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
               {...(Platform.OS === 'web'
                 ? { title: t('home.searchPlaceholder') }
                 : {})}
-              style={({ focused }) => [
+              style={(state) => [
                 styles.iconButton,
                 { backgroundColor: colors.surface.primary },
-                focused && {
+                (state as any).focused && {
                   borderColor: colors.border.focus,
                   borderWidth: 2,
                 },
@@ -173,10 +173,10 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
           {...(Platform.OS === 'web'
             ? { title: t('notifications.notifications') }
             : {})}
-          style={({ focused }) => [
+          style={(state) => [
             styles.iconButton,
             { backgroundColor: colors.surface.primary },
-            focused && {
+            (state as any).focused && {
               borderColor: colors.border.focus,
               borderWidth: 2,
             },
@@ -202,10 +202,10 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
           {...(Platform.OS === 'web'
             ? { title: t('common.language', 'Language') }
             : {})}
-          style={({ focused }) => [
+          style={(state) => [
             styles.iconButton,
             { backgroundColor: colors.surface.primary },
-            focused && {
+            (state as any).focused && {
               borderColor: colors.border.focus,
               borderWidth: 2,
             },
