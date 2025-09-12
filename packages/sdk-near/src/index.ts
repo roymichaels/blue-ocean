@@ -103,14 +103,20 @@ export async function buyListing(args: BuyListingArgs): Promise<any> {
 /**
  * Pay for a listing while attempting to preserve privacy.
  * Tries to route the payment through an external mixer service.
- * If the mixer is misconfigured or fails, falls back to a normal
- * `buyListing` request so the user can still complete the purchase.
+ * If the primary mixer is unavailable, attempts any configured fallback
+ * mixer services before ultimately throwing an error.
  */
 export async function payPrivately(args: BuyListingArgs): Promise<any> {
   const sid = requireStoreId(args.storeId);
-  const mixerUrl = config.EXPO_PUBLIC_MIXER_URL;
-  if (!mixerUrl) return buyListing(args);
-  try {
+  const mixers = [
+    config.EXPO_PUBLIC_MIXER_URL,
+    config.EXPO_PUBLIC_MIXER_FALLBACK_URL,
+  ].filter(Boolean) as string[];
+  if (mixers.length === 0) {
+    throw new Error('Mixer service not configured');
+  }
+
+  const attempt = async (mixerUrl: string) => {
     // Step 1: request a proof from the mixer for this payment
     const proofRes = await fetch(`${mixerUrl}/proof`, {
       method: 'POST',
@@ -128,7 +134,11 @@ export async function payPrivately(args: BuyListingArgs): Promise<any> {
     const mixRes = await fetch(`${mixerUrl}/mix`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: canonicalJson({ storeId: sid, proof, args: { itemId: args.itemId, amountYocto: args.amountYocto } }),
+      body: canonicalJson({
+        storeId: sid,
+        proof,
+        args: { itemId: args.itemId, amountYocto: args.amountYocto },
+      }),
     });
     if (!mixRes.ok) {
       throw new Error(`Mixer payment failed: ${mixRes.status} ${mixRes.statusText}`);
@@ -138,10 +148,18 @@ export async function payPrivately(args: BuyListingArgs): Promise<any> {
       throw new Error(mixJson.error.message || 'Mixer error');
     }
     return mixJson;
-  } catch (err) {
-    console.warn('payPrivately mixer failed, falling back to buyListing', err);
-    return buyListing(args);
+  };
+
+  let lastError: any;
+  for (const url of mixers) {
+    try {
+      return await attempt(url);
+    } catch (err) {
+      console.warn(`payPrivately mixer failed at ${url}`, err);
+      lastError = err;
+    }
   }
+  throw lastError;
 }
 
 export default { getListings, addListing, buyListing, payPrivately };

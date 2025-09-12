@@ -6,6 +6,7 @@ const config: Record<string, string> = {
   EXPO_PUBLIC_INDEXER_URL: process.env.EXPO_PUBLIC_INDEXER_URL || '',
   EXPO_PUBLIC_TRANSPORT: process.env.EXPO_PUBLIC_TRANSPORT || '',
   EXPO_PUBLIC_MIXER_URL: process.env.EXPO_PUBLIC_MIXER_URL || '',
+  EXPO_PUBLIC_MIXER_FALLBACK_URL: process.env.EXPO_PUBLIC_MIXER_FALLBACK_URL || '',
 };
 
 export default config;
