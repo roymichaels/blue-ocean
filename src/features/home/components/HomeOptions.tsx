@@ -26,8 +26,8 @@ function HomeOptions() {
   const appRouter = useAppRouter();
   const { address: walletAddress, connect } = useWallet();
 
-  const SHOP_TENANT_ID = getShopTenantId();
-  const DOCS_URL = getDocsUrl();
+  const shopTenantId = getShopTenantId();
+  const docsUrl = getDocsUrl();
 
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
@@ -43,12 +43,12 @@ function HomeOptions() {
   });
 
   const handleBusinessLogin = guard(walletAddress, connect, () => {
-    appRouter.push(`/store/${SHOP_TENANT_ID}/admin`);
+    appRouter.push(`/store/${shopTenantId}/admin`);
   });
 
   const handleDocs = () => {
-    if (DOCS_URL) {
-      Linking.openURL(DOCS_URL);
+    if (docsUrl) {
+      Linking.openURL(docsUrl);
     }
   };
 
@@ -86,7 +86,7 @@ function HomeOptions() {
       key: 'docs-api',
       title: t('home.docsApi', 'Docs & API'),
       action: handleDocs,
-      tooltip: DOCS_URL,
+      tooltip: docsUrl,
       testID: 'docs-api-button',
     },
   ];

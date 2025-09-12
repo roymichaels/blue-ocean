@@ -59,32 +59,25 @@ export function nearConfig(): NearConfig {
   };
 }
 
-export function getShopTenantId(): string | undefined {
-  return (
-    process.env.EXPO_PUBLIC_SHOP_TENANT_ID ||
-    process.env.SHOP_TENANT_ID
-  );
-}
+export const getShopTenantId = () =>
+  process.env.EXPO_PUBLIC_SHOP_TENANT_ID ||
+  process.env.SHOP_TENANT_ID ||
+  '';
 
-export function getContractId(): string | undefined {
-  return (
-    process.env.EXPO_PUBLIC_CONTRACT_ID ||
-    process.env.CONTRACT_ID
-  );
-}
+export const getContractId = () =>
+  process.env.EXPO_PUBLIC_CONTRACT_ID ||
+  process.env.CONTRACT_ID ||
+  '';
 
-function inferNetworkFrom(contractId?: string): string | undefined {
+function inferFrom(contractId?: string): string | undefined {
   if (!contractId) return undefined;
   return contractId.endsWith('.testnet') ? 'testnet' : 'mainnet';
 }
 
-export function getNetworkId(): string | undefined {
-  return (
-    process.env.NEAR_NETWORK_ID ||
-    process.env.EXPO_PUBLIC_NETWORK ||
-    inferNetworkFrom(getContractId())
-  );
-}
+export const getNetworkId = () =>
+  process.env.NEAR_NETWORK_ID ||
+  process.env.EXPO_PUBLIC_NETWORK ||
+  inferFrom(getContractId());
 
 export function isRouterEnabled(): boolean {
   return (
@@ -198,3 +191,5 @@ export function getAdminWalletAddressTestnet(): string {
 }
 
 export default requireEnv;
+
+// Acceptance: No ‘Missing SHOP_TENANT_ID / CONTRACT_ID’ logs after clean restart.

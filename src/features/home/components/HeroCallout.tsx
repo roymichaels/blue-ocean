@@ -28,9 +28,9 @@ export default function HeroCallout() {
   const { address, connect } = useWallet();
 
   const action = guard(address, connect, () => {
-    const tenantId = getShopTenantId();
-    if (tenantId) {
-      appRouter.push(`/store/${tenantId}`);
+    const shopTenantId = getShopTenantId();
+    if (shopTenantId) {
+      appRouter.push(`/store/${shopTenantId}`);
     } else {
       appRouter.push(routes.home());
     }

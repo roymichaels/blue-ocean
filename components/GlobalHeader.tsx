@@ -12,6 +12,7 @@ import { Text, Chip } from '@/ui';
 import SmartImage from './SmartImage';
 import { Search, Bell, Globe } from 'lucide-react-native';
 import { useAppRouter } from '@/services';
+import { getShopTenantId } from '@/services/config';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';
@@ -39,6 +40,7 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const shopTenantId = getShopTenantId();
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -83,7 +85,9 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
       <Pressable
         style={styles.logo}
         onPress={() => {
-          if (pathname !== '/') push('/');
+          if (pathname !== '/' && pathname !== '/index') {
+            push(shopTenantId ? `/store/${shopTenantId}` : '/');
+          }
         }}
         accessibilityRole="button"
       >
