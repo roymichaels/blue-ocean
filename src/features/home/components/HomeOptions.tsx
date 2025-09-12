@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   Linking,
@@ -7,10 +7,8 @@ import {
   Platform,
   View,
   ScrollView,
-  TouchableOpacity,
   I18nManager,
   useWindowDimensions,
-  type NativeScrollEvent,
 } from 'react-native';
 import { Card, Text, Button } from '@/ui';
 import { Stack } from '@/ui/layout';
@@ -20,9 +18,8 @@ import { useAppRouter } from '@/services/useAppRouter';
 import { routes } from '@/utils/routes';
 import { useWallet } from '@/contexts/WalletProvider';
 import { getShopTenantId, getDocsUrl } from '@/services/config';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 
-export default function HomeOptions() {
+function HomeOptions() {
   const { t } = useLanguage();
   const { colors } = useTheme();
   const appRouter = useAppRouter();
@@ -38,23 +35,7 @@ export default function HomeOptions() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
   const isRTL = I18nManager.isRTL;
-
-  const scrollRef = useRef<ScrollView>(null);
-  const scrollPos = useRef(0);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [contentWidth, setContentWidth] = useState(0);
-  const [showPrev, setShowPrev] = useState(false);
-  const [showNext, setShowNext] = useState(false);
-
-  const scrollAmount = 260 + spacing.spacer16;
-
-  useEffect(() => {
-    if (!isDesktop && containerWidth && contentWidth) {
-      const max = contentWidth - containerWidth;
-      setShowPrev(false);
-      setShowNext(max > 0);
-    }
-  }, [containerWidth, contentWidth, isDesktop]);
+  const cardHeight = isDesktop ? 112 : 96;
 
   const handleCreateStore = async () => {
     if (!walletAddress) {
@@ -85,34 +66,6 @@ export default function HomeOptions() {
       Linking.openURL(DOCS_URL);
     }
   };
-
-  const handleScroll = (
-    e: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
-    const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
-    const x = contentOffset.x;
-    scrollPos.current = x;
-    const max = contentSize.width - layoutMeasurement.width;
-    setShowPrev(isRTL ? x < max : x > 0);
-    setShowNext(isRTL ? x > 0 : x < max);
-  };
-
-  const scrollPrev = () => {
-    const newX = isRTL
-      ? scrollPos.current + scrollAmount
-      : scrollPos.current - scrollAmount;
-    scrollRef.current?.scrollTo({ x: newX, animated: true });
-  };
-
-  const scrollNext = () => {
-    const newX = isRTL
-      ? scrollPos.current - scrollAmount
-      : scrollPos.current + scrollAmount;
-    scrollRef.current?.scrollTo({ x: newX, animated: true });
-  };
-
-  const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
-  const NextIcon = isRTL ? ChevronLeft : ChevronRight;
 
   const handleKeyDown = (
     e: NativeSyntheticEvent<KeyboardEvent>,
@@ -172,6 +125,7 @@ export default function HomeOptions() {
       key={key}
       style={[
         styles.card,
+        { height: cardHeight },
         isDesktop ? styles.cardDesktop : styles.cardMobile,
       ]}
     >
@@ -194,8 +148,8 @@ export default function HomeOptions() {
     return (
       <View
         style={[
-          styles.desktopRow,
-          { flexDirection: isRTL ? 'row-reverse' : 'row' },
+          styles.desktopGrid,
+          { direction: isRTL ? 'rtl' : 'ltr' },
         ]}
       >
         {options.map(renderCard)}
@@ -204,66 +158,28 @@ export default function HomeOptions() {
   }
 
   return (
-    <View
-      style={{ position: 'relative' }}
-      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={[
+        styles.scrollContent,
+        { flexDirection: isRTL ? 'row-reverse' : 'row' },
+      ]}
+      style={styles.scroll}
     >
-      <ScrollView
-        horizontal
-        ref={scrollRef}
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        snapToInterval={scrollAmount}
-        decelerationRate="fast"
-        onContentSizeChange={(w) => setContentWidth(w)}
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { flexDirection: isRTL ? 'row-reverse' : 'row' },
-        ]}
-      >
-        {options.map(renderCard)}
-      </ScrollView>
-
-      {showPrev && (
-        <TouchableOpacity
-          style={[
-            styles.chevron,
-            styles.leftChevron,
-            { backgroundColor: colors.surface.primary },
-          ]}
-          onPress={scrollPrev}
-          accessibilityRole="button"
-        >
-          <PrevIcon size={24} color={colors.text.primary} />
-        </TouchableOpacity>
-      )}
-
-      {showNext && (
-        <TouchableOpacity
-          style={[
-            styles.chevron,
-            styles.rightChevron,
-            { backgroundColor: colors.surface.primary },
-          ]}
-          onPress={scrollNext}
-          accessibilityRole="button"
-        >
-          <NextIcon size={24} color={colors.text.primary} />
-        </TouchableOpacity>
-      )}
-    </View>
+      {options.map(renderCard)}
+    </ScrollView>
   );
 }
 
-const CARD_WIDTH = 260;
-const CARD_HEIGHT = 100;
+export default HomeOptions; // DOCME: premium action cards
 
 const styles = StyleSheet.create({
-  desktopRow: {
-    flexDirection: 'row',
+  desktopGrid: {
+    display: 'grid',
     gap: spacing.spacer16,
+    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+    paddingHorizontal: spacing.spacer16,
   },
   scroll: {
     ...Platform.select({
@@ -276,7 +192,6 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radius.xl,
-    height: CARD_HEIGHT,
     justifyContent: 'space-between',
     ...Platform.select(shadows.md),
     ...Platform.select({
@@ -284,10 +199,10 @@ const styles = StyleSheet.create({
     }),
   },
   cardDesktop: {
-    flex: 1,
+    width: '100%',
   },
   cardMobile: {
-    width: CARD_WIDTH,
+    width: 260,
   },
   title: {
     fontWeight: '600',
@@ -298,18 +213,5 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.5,
   },
-  chevron: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  leftChevron: {
-    left: 0,
-  },
-  rightChevron: {
-    right: 0,
-  },
 });
+
