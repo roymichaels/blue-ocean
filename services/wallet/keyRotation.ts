@@ -9,7 +9,7 @@ export async function rotateKey(
   accountId: string,
   oldPublicKey: string,
 ): Promise<KeyPair> {
-  const network = getNetworkId();
+  const network = getNetworkId() || 'testnet';
   const nodeUrl =
     network === 'mainnet'
       ? 'https://rpc.mainnet.near.org'

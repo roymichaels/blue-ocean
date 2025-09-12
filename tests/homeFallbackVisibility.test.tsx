@@ -73,6 +73,11 @@ jest.mock('@features/products', () => ({
 }));
 jest.mock('@/components/InfoModal', () => () => null);
 jest.mock('@/components/SmartImage', () => () => null);
+jest.mock('lucide-react-native', () => ({
+  __esModule: true,
+  Plus: () => null,
+  ArrowUpDown: () => null,
+}));
 
 jest.mock('@/features/home/hooks/useHome', () => ({
   useHome: () => ({

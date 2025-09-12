@@ -27,7 +27,7 @@ export interface TenantSettings {
 
 const initialAdmin =
   (() => {
-    const network = (config.NEAR_NETWORK || getNetworkId()).toLowerCase();
+    const network = (config.NEAR_NETWORK || getNetworkId() || '').toLowerCase();
     const legacy = config.ADMIN_WALLET_ADDRESS || getAdminWalletAddress();
     const main =
       config.ADMIN_WALLET_ADDRESS_MAINNET ||

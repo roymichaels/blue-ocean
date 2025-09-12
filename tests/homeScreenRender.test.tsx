@@ -18,13 +18,13 @@ jest.mock('@/contexts/AppInfoContext', () => ({
 }));
 
 
-const mockCategoryChips = jest.fn(() => null);
+const mockCategoryChips = jest.fn((props: any) => null);
 jest.mock('@/features/home/components/CategoryChips', () => ({
   __esModule: true,
   default: (props: any) => mockCategoryChips(props),
 }));
 
-const mockProductGrid = jest.fn(() => null);
+const mockProductGrid = jest.fn((props: any) => null);
 jest.mock('@/features/home/components/ProductGrid', () => ({
   __esModule: true,
   default: (props: any) => mockProductGrid(props),

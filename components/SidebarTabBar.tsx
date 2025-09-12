@@ -79,7 +79,7 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar, 
               accessibilityRole="button"
               focusable
               {...(Platform.OS === 'web' && collapsed ? { title: t(item.title) } : {})}
-              style={({ focused: isFocused }) => [
+              style={(state) => [
                 {
                   alignItems: 'center',
                   justifyContent: 'flex-start',
@@ -90,7 +90,7 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar, 
                   flexDirection: isSidebar && !collapsed ? 'row' : 'column',
                 },
                 isSidebar && focused && { backgroundColor: colors.surface.primary },
-                isFocused && {
+                (state as any).focused && {
                   borderColor: colors.border.focus,
                   borderWidth: 2,
                   borderRadius: radius.md,
