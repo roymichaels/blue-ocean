@@ -82,8 +82,8 @@ export default function HomeOptions() {
             onKeyDown={(e) => handleKeyDown(e, handleCreateStore)}
             accessibilityRole="link"
             tooltip={walletAddress ? undefined : walletTooltip}
-            disabled={!walletAddress}
-            style={styles.fullWidth}
+            style={[styles.fullWidth, !walletAddress && styles.disabled]}
+            accessibilityState={{ disabled: !walletAddress }}
             testID="create-store-link"
           />
         </Stack>
@@ -100,8 +100,8 @@ export default function HomeOptions() {
             onKeyDown={(e) => handleKeyDown(e, handleBecomeDriver)}
             accessibilityRole="link"
             tooltip={walletAddress ? undefined : walletTooltip}
-            disabled={!walletAddress}
-            style={styles.fullWidth}
+            style={[styles.fullWidth, !walletAddress && styles.disabled]}
+            accessibilityState={{ disabled: !walletAddress }}
             testID="become-driver-button"
           />
         </Stack>
@@ -118,8 +118,8 @@ export default function HomeOptions() {
             onKeyDown={(e) => handleKeyDown(e, handleBusinessLogin)}
             accessibilityRole="link"
             tooltip={walletAddress ? undefined : walletTooltip}
-            disabled={!walletAddress}
-            style={styles.fullWidth}
+            style={[styles.fullWidth, !walletAddress && styles.disabled]}
+            accessibilityState={{ disabled: !walletAddress }}
             testID="business-login-button"
           />
         </Stack>
@@ -159,5 +159,8 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: '100%',
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });
