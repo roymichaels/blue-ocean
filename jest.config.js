@@ -63,6 +63,7 @@ module.exports = {
     '<rootDir>/tests/smoke.test.ts',
     '<rootDir>/tests/navigation.test.ts',
     '<rootDir>/tests/CheckedQueryClientProvider.test.tsx',
+    '<rootDir>/tests/appProvidersSingleQueryClient.test.tsx',
     '<rootDir>/tests/signupLogic.test.ts',
     '<rootDir>/tests/nearKvPersistence.test.ts',
     '<rootDir>/tests/homeScreenRender.test.tsx',
