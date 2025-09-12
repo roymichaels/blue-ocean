@@ -21,6 +21,8 @@
 
 - `ThemeProvider` and `LanguageProvider` must appear before any component that uses theming or i18n.
 - `CheckedQueryClientProvider` must wrap providers that rely on React Query, including the `WalletProvider`.
+- `CheckedQueryClientProvider` is the **only** `QueryClientProvider` in the app. If a component needs direct access to the
+  query client, use the `useQueryClient()` hook rather than adding another provider.
 - `WalletProvider` supplies wallet state for network layers and comes before providers that require it, such as `WakuProvider`.
 - `ErrorBoundary` wraps the remaining providers to surface runtime errors.
 
