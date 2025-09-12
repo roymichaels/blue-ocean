@@ -114,6 +114,7 @@ function HomeScreenContent() {
         testID="home-root"
         backgroundColor={themeColors.canvas}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 0 }}
       >
         <Container
           style={{

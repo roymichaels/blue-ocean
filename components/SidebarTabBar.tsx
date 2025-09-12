@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Pressable, Text, Platform } from 'react-native';
+import { View, Pressable, Text, Platform, StyleProp, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Lucide from 'lucide-react-native';
 import { usePathname } from 'expo-router';
@@ -20,9 +20,10 @@ const SIDEBAR_COLLAPSED_WIDTH = 80;
 interface SidebarTabBarProps {
   items: readonly NavItem[];
   isSidebar?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
-export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar }) => {
+export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar, style }) => {
   const { colors } = useTheme();
   const { t, isRTL } = useLanguage();
   const { push } = useAppRouter();
@@ -46,7 +47,7 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar }
 
   return (
     <View
-      style={
+      style={[
         isSidebar
           ? {
               width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH,
@@ -60,8 +61,9 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar }
               backgroundColor: colors.tabBar.background,
               paddingBottom: insets.bottom,
               height: spacing.spacer24 * 3,
-            }
-      }
+            },
+        style,
+      ]}
     >
       <View>
         {items.map((item, index) => {
