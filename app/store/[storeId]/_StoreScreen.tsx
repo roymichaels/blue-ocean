@@ -19,7 +19,7 @@ export default function StoreScreen() {
   const { colors } = useTheme();
   const { t, isRTL } = useLanguage();
   const [store, setStore] = useState<Store | null>(null);
-  const router = useAppRouter();
+  const appRouter = useAppRouter();
   const {
     data: products = [],
     isLoading: productsLoading,
@@ -53,15 +53,16 @@ export default function StoreScreen() {
     };
   }, [storeId]);
 
+  // DOCME: store not-found i18n
   if (!store) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <EmptyState
           icon={Info}
-          title=''
-          message='החנות לא נמצאה'
-          actionText='חזור לדף הבית'
-          onAction={() => router.replace('/')}
+          title=""
+          message={t('stores.notFound')}
+          actionText={t('common.backToHome')}
+          onAction={() => appRouter.replace('/')}
         />
       </View>
     );
