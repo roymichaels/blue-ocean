@@ -97,9 +97,11 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         ) : (
           <View style={[styles.logoIcon, { backgroundColor: colors.gold }]} />
         )}
-        <Text style={[styles.logoText, { color: colors.gold }]}>
-          {appName || t('ageVerification.platformName')}
-        </Text>
+        {isMd && (
+          <Text style={[styles.logoText, { color: colors.gold }]}> 
+            {appName || t('ageVerification.platformName')}
+          </Text>
+        )}
       </Pressable>
       <View
         style={[
