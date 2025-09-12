@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { X } from 'lucide-react-native';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import { Spinner } from '@/ui/primitives';
 
@@ -23,6 +23,7 @@ interface UserProfileModalProps {
 
 export default function UserProfileModal({ visible, userId, onClose, isAdmin = false, onMessage }: UserProfileModalProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<{ username: string; displayName: string; exists: boolean } | null>(null);
   const [orders, setOrders] = useState<{ id: string; total: number; status: string; createdAt: string }[]>([]);
@@ -86,12 +87,12 @@ export default function UserProfileModal({ visible, userId, onClose, isAdmin = f
                     ]}
                   >
                     <Text style={[styles.tagText, { color: colors.text.inverse }]}>
-                      {profile.exists ? 'Exists locally' : 'Matrix only'}
+                      {profile.exists ? t('chat.existsLocally') : t('chat.wakuOnly')}
                     </Text>
                   </View>
                   {isAdmin && orders.length > 0 && (
                     <View style={styles.ordersSection}>
-                      <Text style={[styles.ordersTitle, { color: colors.text.primary }]}>Previous Orders</Text>
+                      <Text style={[styles.ordersTitle, { color: colors.text.primary }]}>{t('profile.orders')}</Text>
                       {orders.slice(0, 5).map((o) => (
                         <View key={o.id} style={styles.orderItem}>
                           <Text style={[styles.orderId, { color: colors.text.primary }]}>#{o.id.slice(-6)}</Text>
@@ -105,12 +106,12 @@ export default function UserProfileModal({ visible, userId, onClose, isAdmin = f
                       style={[styles.messageButton, { backgroundColor: colors.gold }]}
                       onPress={() => onMessage(userId, profile.displayName)}
                     >
-                      <Text style={[styles.messageButtonText, { color: colors.text.inverse }]}>Message</Text>
+                      <Text style={[styles.messageButtonText, { color: colors.text.inverse }]}>{t('navigation.messages')}</Text>
                     </TouchableOpacity>
                   )}
                 </>
               ) : (
-                <Text style={[styles.displayName, { color: colors.text.primary }]}>User not found</Text>
+                <Text style={[styles.displayName, { color: colors.text.primary }]}>{t('chat.noUsersFound')}</Text>
               )}
             </View>
           </TouchableWithoutFeedback>
