@@ -565,6 +565,13 @@
     "connect": "התחבר לארנק",
     "notConnected": "לא מחובר"
   },
+  "store": {
+    "not_found": "החנות לא נמצאה",
+    "not_found_sub": "לא מצאנו את החנות הזו."
+  },
+  "cta": {
+    "back_home": "חזרה לדף הבית"
+  },
   "proofUploader": {
     "permissionRequired": "נדרשת הרשאה",
     "permissionMessage": "אנא אפשר גישה למדיה במכשיר.",
