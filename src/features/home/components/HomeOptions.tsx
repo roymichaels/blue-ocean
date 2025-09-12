@@ -32,7 +32,7 @@ export default function HomeOptions() {
   const DOCS_URL = getDocsUrl();
   const walletTooltip = t(
     'home.connectWalletToContinue',
-    'Connect wallet to continue',
+    'חבר ארנק כדי להמשיך',
   );
 
   const { width } = useWindowDimensions();
@@ -184,7 +184,6 @@ export default function HomeOptions() {
           accessibilityRole="link"
           tooltip={tooltip}
           style={[styles.fullWidth, disabled && styles.disabled]}
-          accessibilityState={disabled ? { disabled: true } : undefined}
           testID={testID}
         />
       </Stack>
