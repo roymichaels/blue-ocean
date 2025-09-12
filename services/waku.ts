@@ -1,4 +1,5 @@
 import type { LightNode } from '@waku/sdk';
+import { types } from 'near-lake-framework';
 import { getClient } from '@/utils/transport';
 import { errorLog } from '@/utils/logger';
 import config from '@/config';
@@ -7,6 +8,9 @@ import { retryWithBackoff } from '@/utils/retry';
 import { enqueue, flush } from '@/utils/wakuStore';
 import { encrypt, decrypt } from '@/utils/wakuCrypto';
 import { serviceLatency, serviceFailures } from '@/utils/observability';
+import { initLake } from './nearLake';
+import { topicFor } from '@blue-ocean/utils';
+import { getNetworkId, getContractId } from '@/services/config';
 
 declare const logger: any;
 
@@ -40,6 +44,7 @@ const DEFAULT_BOOTSTRAPS: string[] = [
 let cachedNode: LightNode | null = null;
 const receivedIds = new Set<string>();
 let reconnectAttempt = 0;
+let lakeStarted = false;
 
 function getPublisherKey(): string {
   if (PUB) return PUB;
@@ -98,6 +103,19 @@ async function startNode(): Promise<LightNode | null> {
     await node.lightPush.send(encoder, { payload });
   });
   reconnectAttempt = 0;
+  if (!lakeStarted && config.NEAR_LAKE_BUCKET) {
+    try {
+      initLake({
+        s3BucketName: config.NEAR_LAKE_BUCKET,
+        s3RegionName: config.NEAR_LAKE_REGION || 'eu-central-1',
+        startBlockHeight: BigInt(config.NEAR_LAKE_START_BLOCK || '0'),
+        onBlock: handleLakeBlock,
+      });
+      lakeStarted = true;
+    } catch (err) {
+      logger.error({ err }, 'Failed to start NEAR Lake');
+    }
+  }
   return node;
 }
 
@@ -221,6 +239,56 @@ export async function fetchHistory(
     }
     if (!res.next) break;
     cursor = res.next;
+  }
+}
+
+const dedupe = new Set<string>();
+let lastHeight = 0;
+
+function dedupeKey(tx: string, i: number) {
+  return `${tx}:${i}`;
+}
+
+async function handleLakeBlock(msg: types.StreamerMessage) {
+  const network = getNetworkId() || 'testnet';
+  const contract = getContractId();
+  const blockHeight = msg.block.header.height;
+  if (blockHeight <= lastHeight) dedupe.clear();
+  lastHeight = blockHeight;
+  for (const shard of msg.shards) {
+    for (const reo of shard.receiptExecutionOutcomes) {
+      if (contract && reo.receipt?.receiverId !== contract) continue;
+      const tx = reo.executionOutcome.id;
+      const logs = reo.executionOutcome.outcome.logs || [];
+      for (let i = 0; i < logs.length; i++) {
+        const key = dedupeKey(tx, i);
+        if (dedupe.has(key)) continue;
+        try {
+          const evt = JSON.parse(logs[i]);
+          if (!evt?.event || !evt.storeId) continue;
+          const base = {
+            v: 1,
+            storeId: evt.storeId,
+            itemId: evt.itemId,
+            seller: evt.seller,
+            buyer: evt.buyer,
+            priceYocto: evt.price ?? undefined,
+            amount: evt.amount ?? undefined,
+            tx,
+            ts: Date.now(),
+            event: evt.event,
+          };
+          if (evt.event === 'listing_added') {
+            await publish(topicFor(network, base.storeId, 'listings'), base);
+          } else if (evt.event === 'order_paid') {
+            await publish(topicFor(network, base.storeId, 'orders'), base);
+          }
+          dedupe.add(key);
+        } catch {
+          /* ignore malformed log */
+        }
+      }
+    }
   }
 }
 
