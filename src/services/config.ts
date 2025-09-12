@@ -19,18 +19,9 @@ export interface NearConfig {
 }
 
 export function nearConfig(): NearConfig {
-  const networkId =
-    process.env.EXPO_PUBLIC_NETWORK ||
-    process.env.EXPO_PUBLIC_NETWORK_ID ||
-    process.env.EXPO_PUBLIC_NEAR_NETWORK_ID ||
-    process.env.NEAR_NETWORK_ID ||
-    process.env.NETWORK_ID ||
-    'testnet';
+  const networkId = getNetworkId() || 'testnet';
 
-  const contractId =
-    process.env.EXPO_PUBLIC_CONTRACT_ID ||
-    process.env.CONTRACT_ID ||
-    '';
+  const contractId = getContractId() || '';
 
   const walletUrl =
     process.env.EXPO_PUBLIC_NEAR_WALLET_URL ||
@@ -68,32 +59,31 @@ export function nearConfig(): NearConfig {
   };
 }
 
-export function getShopTenantId(): string {
+export function getShopTenantId(): string | undefined {
   return (
     process.env.EXPO_PUBLIC_SHOP_TENANT_ID ||
-    process.env.SHOP_TENANT_ID ||
-    requireEnv('SHOP_TENANT_ID')
+    process.env.SHOP_TENANT_ID
   );
 }
 
-export function getContractId(): string {
+export function getContractId(): string | undefined {
   return (
     process.env.EXPO_PUBLIC_CONTRACT_ID ||
-    process.env.CONTRACT_ID ||
-    requireEnv('CONTRACT_ID')
+    process.env.CONTRACT_ID
   );
 }
 
-export function getNetworkId(): string {
-  const explicit =
-    process.env.EXPO_PUBLIC_NETWORK ||
-    process.env.EXPO_PUBLIC_NETWORK_ID ||
-    process.env.EXPO_PUBLIC_NEAR_NETWORK_ID ||
+function inferNetworkFrom(contractId?: string): string | undefined {
+  if (!contractId) return undefined;
+  return contractId.endsWith('.testnet') ? 'testnet' : 'mainnet';
+}
+
+export function getNetworkId(): string | undefined {
+  return (
     process.env.NEAR_NETWORK_ID ||
-    process.env.NETWORK_ID;
-  if (explicit) return explicit;
-  const cid = getContractId();
-  return cid.endsWith('.testnet') ? 'testnet' : 'mainnet';
+    process.env.EXPO_PUBLIC_NETWORK ||
+    inferNetworkFrom(getContractId())
+  );
 }
 
 export function isRouterEnabled(): boolean {
