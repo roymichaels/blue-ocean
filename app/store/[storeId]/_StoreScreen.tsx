@@ -14,7 +14,7 @@ import { spacing } from '@/shared/ui/tokens';
 export default function StoreScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [store, setStore] = useState<Store | null>(null);
   const {
     data: products = [],
@@ -91,17 +91,32 @@ export default function StoreScreen() {
       )}
       {tab === 'about' && (
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.text.primary, textAlign: isRTL ? 'right' : 'left' },
+            ]}
+          >
             {t('stores.about')}
           </Text>
-          <Text style={[styles.sectionText, { color: colors.text.secondary }]}>
+          <Text
+            style={[
+              styles.sectionText,
+              { color: colors.text.secondary, textAlign: isRTL ? 'right' : 'left' },
+            ]}
+          >
             {t('stores.aboutDescription')}
           </Text>
         </View>
       )}
       {tab === 'reviews' && (
         <View style={styles.section}>
-          <Text style={[styles.sectionText, { color: colors.text.secondary }]}>
+          <Text
+            style={[
+              styles.sectionText,
+              { color: colors.text.secondary, textAlign: isRTL ? 'right' : 'left' },
+            ]}
+          >
             {t('stores.reviewsComingSoon')}
           </Text>
         </View>
