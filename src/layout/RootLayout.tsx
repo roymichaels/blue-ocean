@@ -20,10 +20,12 @@ interface NavItemConfig extends NavItem {
   requiresTenant?: boolean;
 }
 
+const SHOP_TENANT_ID = getShopTenantId();
+
 const NAV_ITEMS: readonly NavItemConfig[] = [
   { href: '/', title: 'navigation.home', icon: 'Home' },
   {
-    href: `/store/${getShopTenantId()}`,
+    href: `/store/${SHOP_TENANT_ID}`,
     title: 'navigation.shopNow',
     icon: 'Store',
   },
