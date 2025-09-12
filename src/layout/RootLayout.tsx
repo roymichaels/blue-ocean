@@ -1,6 +1,7 @@
+// Touchpoint: Ensure bottom navigation remains sticky on mobile devices
 import React, { useMemo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Slot, usePathname } from 'expo-router';
 import GlobalHeader from '@/components/GlobalHeader';
@@ -12,7 +13,6 @@ import SidebarTabBar, { NavItem } from '@/components/SidebarTabBar';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { getShopTenantId } from '@/services/config';
-import { spacing } from '@/shared/ui/tokens';
 
 interface NavItemConfig extends NavItem {
   requiresAuth?: boolean;
@@ -62,7 +62,6 @@ export default function RootLayout() {
   const { isRTL } = useLanguage();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
   const { isLoggedIn, isStoreOwner } = useAuth();
   const { tenantId } = useTenant();
   const isLargeScreen = width >= LARGE_SCREEN;
@@ -92,23 +91,23 @@ export default function RootLayout() {
           style={{
             flex: 1,
             flexDirection: isRTL ? 'row-reverse' : 'row',
-            paddingBottom: isLargeScreen ? 0 : spacing.spacer24 * 3 + insets.bottom,
           }}
         >
           {isLargeScreen && <SidebarTabBar items={navItems} isSidebar />}
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1 }} className="pb-20 md:pb-0">
             <Slot />
           </View>
         </View>
         {!isLargeScreen && (
-          <SidebarTabBar
-            items={navItems}
-            style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
-          />
+          <footer className="md:hidden fixed inset-x-0 bottom-0 z-40">
+            <SidebarTabBar items={navItems} />
+          </footer>
         )}
         {showCartWidget && <FloatingCartWidget />}
       </SafeAreaView>
     </ErrorBoundary>
   );
 }
+
+// Acceptance: Bottom navigation is mobile-only and content has padding to avoid overlap
 
