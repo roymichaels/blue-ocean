@@ -1,6 +1,6 @@
-# Testing Matrix
+# Testing Checklist
 
-The following matrix outlines mandatory test scenarios that must be exercised before shipping changes.
+The following checklist outlines mandatory test scenarios that must be exercised before shipping changes.
 
 | Area | Scenarios | Tools |
 | --- | --- | --- |
