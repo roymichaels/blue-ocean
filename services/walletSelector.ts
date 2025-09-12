@@ -2,9 +2,17 @@
 import { setupWalletSelector, WalletSelector } from '@near-wallet-selector/core';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 import '@near-wallet-selector/wallet-utils';
+import * as nearAPI from 'near-api-js';
 import { Buffer } from 'buffer';
 import { useEffect, useState } from 'react';
 import { nearConfig } from '@/services/config';
+
+// Ensure FailoverRpcProvider is available as a constructor
+const providers: any = (nearAPI as any).providers;
+if (providers && typeof providers.FailoverRpcProvider !== 'function') {
+  providers.FailoverRpcProvider =
+    providers.FailoverRpcProvider?.default || providers.JsonRpcProvider;
+}
 
 // Exported for test overrides
 export let selector: WalletSelector | null = null;
