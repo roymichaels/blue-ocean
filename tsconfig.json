@@ -92,5 +92,5 @@
     "types/**/*.d.ts"
   ],
   "exclude": ["tests"],
-  "extends": "expo/tsconfig.base"
+  "extends": "expo/tsconfig.base.json"
 }
