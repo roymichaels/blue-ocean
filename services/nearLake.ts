@@ -6,13 +6,14 @@ export interface LakeInitConfig {
   s3RegionName: string;
   startBlockHeight: bigint;
   onError?: (err: unknown) => void;
+  onBlock?: (msg: types.StreamerMessage) => Promise<void> | void;
 }
 
 const lakeMonitor = new EventEmitter();
 
 /**
  * Initialize NEAR Lake stream.
- * The handler is a no-op; callers can extend this later.
+ * Accepts an optional block handler for processing each block.
  */
 export function initLake(config: LakeInitConfig): void {
   const lakeConfig: types.LakeConfig = {
@@ -23,7 +24,9 @@ export function initLake(config: LakeInitConfig): void {
 
   (async () => {
     try {
-      await startStream(lakeConfig, async () => {});
+      await startStream(lakeConfig, async (msg) => {
+        await config.onBlock?.(msg);
+      });
     } catch (err) {
       console.error('NEAR Lake stream failed', err);
       lakeMonitor.emit('error', err);
