@@ -206,9 +206,10 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
             },
           ]}
         >
-          <Globe size={24} color={colors.text.primary} />
+        <Globe size={24} color={colors.text.primary} />
         </Pressable>
 
+        // DOCME: wallet status chip
         <Chip
           label={walletLabel}
           onPress={handleWalletPress}
