@@ -7,7 +7,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import type { LightNode } from '@waku/sdk';
+import type { LightNode, DecodedMessage, IDecoder, QueryRequestParams } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import { encryptMessage, decryptMessage, encryptTopic } from '@/utils/chatCrypto';
 import { enqueue, flush } from '@/utils/wakuStore';
@@ -152,8 +152,8 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     if (!nodeRef.current) return () => {};
     const client = await getClient();
     const topic = await chatTopic(roomId, peerPublicKey);
-    const decoder = client.createDecoder(topic);
-    const handler = async (wakuMsg: any) => {
+    const decoder = client.createDecoder({ contentTopic: topic });
+    const handler = async (wakuMsg: DecodedMessage) => {
       if (!wakuMsg.payload) return;
       try {
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
@@ -198,17 +198,17 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     if (!nodeRef.current) return 0;
     const client = await getClient();
     const topic = await chatTopic(roomId, peerPublicKey);
-    const decoder = client.createDecoder(topic);
-    const options: any = { decoder };
+    const decoder: IDecoder<DecodedMessage> = client.createDecoder({ contentTopic: topic });
+    const options: Partial<QueryRequestParams> = {};
     if (after || before) {
-      options.timeFilter = {};
-      if (after) options.timeFilter.startTime = new Date(after + 1);
-      if (before) options.timeFilter.endTime = new Date(before - 1);
+      if (after) options.timeStart = new Date(after + 1);
+      if (before) options.timeEnd = new Date(before - 1);
     }
     let count = 0;
-    for await (const msgs of nodeRef.current.store.queryGenerator(options)) {
-      for (const wakuMsg of msgs.messages) {
-        if (!wakuMsg.payload) continue;
+    for await (const page of nodeRef.current.store.queryGenerator([decoder], options)) {
+      for await (const wakuMsgPromise of page) {
+        const wakuMsg = await wakuMsgPromise;
+        if (!wakuMsg?.payload) continue;
         try {
           const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
           const schema = wakuMessageSchema.extend({ payload: z.string() });
@@ -256,8 +256,8 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
   const subscribeSystem = useCallback(async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
     const client = await getClient();
-    const decoder = client.createDecoder(SYSTEM_TOPIC);
-    const handler = async (wakuMsg: any) => {
+    const decoder = client.createDecoder({ contentTopic: SYSTEM_TOPIC });
+    const handler = async (wakuMsg: DecodedMessage) => {
       if (!wakuMsg.payload) return;
       try {
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
@@ -287,8 +287,8 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
   const subscribeOrders = useCallback(async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
     const client = await getClient();
-    const decoder = client.createDecoder(ORDER_TOPIC);
-    const handler = async (wakuMsg: any) => {
+    const decoder = client.createDecoder({ contentTopic: ORDER_TOPIC });
+    const handler = async (wakuMsg: DecodedMessage) => {
       if (!wakuMsg.payload) return;
       try {
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
