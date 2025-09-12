@@ -375,13 +375,31 @@ RELAYER_PRIVATE_KEY=ed25519:...
 
 ---
 
-## 9) Optional: Privacy Stub (Mixer Button)
+## 9) Privacy: Mixer-Based Payments
+
+The SDK exposes `payPrivately` which attempts to send the payment through a
+configured NEAR mixer service. It will try the primary mixer first and fall
+back to a secondary mixer if provided. If all mixers fail the call will throw.
+
+Required environment variables:
+
+```bash
+EXPO_PUBLIC_MIXER_URL=https://mixer.example
+EXPO_PUBLIC_MIXER_FALLBACK_URL=https://fallback-mixer.example
+```
+
+Usage:
 
 ```ts
-export async function payPrivately({ storeId, itemId, amountYocto }: any) {
-  // TODO: integrate mixer; for now fallback to normal buy
-  return buyListing({ storeId, itemId, amountYocto });
-}
+import { payPrivately } from '@blue-ocean/sdk-near';
+
+await payPrivately({ storeId, itemId, amountYocto });
+```
+
+Testing:
+
+```bash
+yarn test tests/payPrivatelyButton.test.tsx
 ```
 
 ---

@@ -59,6 +59,7 @@ describe('payPrivately mixer integration', () => {
     process.env = {
       ...OLD_ENV,
       EXPO_PUBLIC_MIXER_URL: 'https://mixer.example',
+      EXPO_PUBLIC_MIXER_FALLBACK_URL: 'https://fallback-mixer.example',
       EXPO_PUBLIC_RELAYER_URL: 'https://relayer.example',
     } as any;
   });
@@ -80,16 +81,20 @@ describe('payPrivately mixer integration', () => {
     expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://mixer.example/mix', expect.any(Object));
   });
 
-  it('falls back to buyListing on mixer failure', async () => {
+  it('falls back to secondary mixer on failure', async () => {
     const fetchMock = jest
       .fn()
+      // primary mixer proof call fails
       .mockRejectedValueOnce(new Error('mixer down'))
+      // fallback mixer proof succeeds
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ proof: 'abc' }) })
+      // fallback mixer mix succeeds
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
     (global as any).fetch = fetchMock;
-    const sdk = await import('@blue-ocean/sdk-near');
-    const buySpy = jest.spyOn(sdk, 'buyListing').mockResolvedValue('fallback');
-    const res = await sdk.payPrivately({ storeId: 's1', itemId: 1, amountYocto: '5' });
-    expect(buySpy).toHaveBeenCalled();
-    expect(res).toBe('fallback');
+    const { payPrivately } = await import('@blue-ocean/sdk-near');
+    await payPrivately({ storeId: 's1', itemId: 1, amountYocto: '5' });
+    expect(fetchMock).toHaveBeenNthCalledWith(1, 'https://mixer.example/proof', expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://fallback-mixer.example/proof', expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, 'https://fallback-mixer.example/mix', expect.any(Object));
   });
 });
