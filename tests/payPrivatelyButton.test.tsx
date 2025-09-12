@@ -50,3 +50,46 @@ describe('PayPrivatelyButton', () => {
     });
   });
 });
+
+describe('payPrivately mixer integration', () => {
+  const OLD_ENV = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = {
+      ...OLD_ENV,
+      EXPO_PUBLIC_MIXER_URL: 'https://mixer.example',
+      EXPO_PUBLIC_RELAYER_URL: 'https://relayer.example',
+    } as any;
+  });
+
+  afterEach(() => {
+    process.env = OLD_ENV;
+    (global as any).fetch = undefined;
+  });
+
+  it('invokes mixer API when configured', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ proof: 'abc' }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
+    (global as any).fetch = fetchMock;
+    const { payPrivately } = await import('@blue-ocean/sdk-near');
+    await payPrivately({ storeId: 's1', itemId: 1, amountYocto: '5' });
+    expect(fetchMock).toHaveBeenNthCalledWith(1, 'https://mixer.example/proof', expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://mixer.example/mix', expect.any(Object));
+  });
+
+  it('falls back to buyListing on mixer failure', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('mixer down'))
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
+    (global as any).fetch = fetchMock;
+    const sdk = await import('@blue-ocean/sdk-near');
+    const buySpy = jest.spyOn(sdk, 'buyListing').mockResolvedValue('fallback');
+    const res = await sdk.payPrivately({ storeId: 's1', itemId: 1, amountYocto: '5' });
+    expect(buySpy).toHaveBeenCalled();
+    expect(res).toBe('fallback');
+  });
+});

@@ -102,11 +102,46 @@ export async function buyListing(args: BuyListingArgs): Promise<any> {
 
 /**
  * Pay for a listing while attempting to preserve privacy.
- * TODO: integrate with mixer for on-chain privacy once available.
+ * Tries to route the payment through an external mixer service.
+ * If the mixer is misconfigured or fails, falls back to a normal
+ * `buyListing` request so the user can still complete the purchase.
  */
 export async function payPrivately(args: BuyListingArgs): Promise<any> {
-  // For MVP, private payment falls back to the same relayer path.
-  return buyListing(args);
+  const sid = requireStoreId(args.storeId);
+  const mixerUrl = config.EXPO_PUBLIC_MIXER_URL;
+  if (!mixerUrl) return buyListing(args);
+  try {
+    // Step 1: request a proof from the mixer for this payment
+    const proofRes = await fetch(`${mixerUrl}/proof`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: canonicalJson({ storeId: sid, itemId: args.itemId, amountYocto: args.amountYocto }),
+    });
+    if (!proofRes.ok) {
+      throw new Error(`Proof request failed: ${proofRes.status} ${proofRes.statusText}`);
+    }
+    const proofJson = await proofRes.json();
+    const proof = proofJson.proof;
+    if (!proof) throw new Error('Mixer proof missing');
+
+    // Step 2: submit the mixed payment with the proof
+    const mixRes = await fetch(`${mixerUrl}/mix`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: canonicalJson({ storeId: sid, proof, args: { itemId: args.itemId, amountYocto: args.amountYocto } }),
+    });
+    if (!mixRes.ok) {
+      throw new Error(`Mixer payment failed: ${mixRes.status} ${mixRes.statusText}`);
+    }
+    const mixJson = await mixRes.json();
+    if (mixJson.error) {
+      throw new Error(mixJson.error.message || 'Mixer error');
+    }
+    return mixJson;
+  } catch (err) {
+    console.warn('payPrivately mixer failed, falling back to buyListing', err);
+    return buyListing(args);
+  }
 }
 
 export default { getListings, addListing, buyListing, payPrivately };
