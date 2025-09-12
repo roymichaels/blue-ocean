@@ -119,7 +119,7 @@ describe('HomeScreen render', () => {
 
     const tree = root!.toJSON();
     const str = JSON.stringify(tree);
-    expect(str).toContain('home.heroTitle');
+    expect(str).toContain('home.hero_title');
     expect(mockCategoryChips).not.toHaveBeenCalled();
     expect(mockProductGrid).not.toHaveBeenCalled();
     expect(mockUseHome).toHaveBeenCalledWith(null);

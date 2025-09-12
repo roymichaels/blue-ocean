@@ -24,14 +24,14 @@ export default function HomeServices() {
   return (
     <Stack direction="horizontal" gap="spacer16" style={styles.container}>
       <ServiceCard
-        title={t('home.createStore')}
+        title={t('cta.create_store')}
         icon={<Store size={32} color={colors.gold} />}
         onPress={handleCreateStore}
         accessibilityRole="link"
         testID="create-store-link"
       />
       <ServiceCard
-        title={t('home.becomeDriver')}
+        title={t('cta.become_driver')}
         icon={<Truck size={32} color={colors.gold} />}
         onPress={handleBecomeDriver}
         accessibilityRole="button"
