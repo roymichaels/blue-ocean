@@ -571,6 +571,13 @@
     "connect": "Connect Wallet",
     "notConnected": "Not connected"
   },
+  "store": {
+    "not_found": "Store not found",
+    "not_found_sub": "We couldn't find that store."
+  },
+  "cta": {
+    "back_home": "Back to Home"
+  },
   "proofUploader": {
     "permissionRequired": "Permission Required",
     "permissionMessage": "Please allow access to media on the device.",

@@ -1,3 +1,4 @@
+// TOUCHPOINT: app/store/[storeId]/_StoreScreen.tsx renders in production — Fix Pack v2
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -11,7 +12,7 @@ import { selectStore } from '@/agents/stores-agent';
 import type { Store } from '@/types';
 import { spacing } from '@/shared/ui/tokens';
 import EmptyState from '@/shared/ui/EmptyState';
-import { Info } from 'lucide-react-native';
+import Button from '@/ui/primitives/Button';
 import { useAppRouter } from '@/services/useAppRouter';
 
 export default function StoreScreen() {
@@ -19,7 +20,7 @@ export default function StoreScreen() {
   const { colors } = useTheme();
   const { t, isRTL } = useLanguage();
   const [store, setStore] = useState<Store | null>(null);
-  const appRouter = useAppRouter();
+  const { push } = useAppRouter();
   const {
     data: products = [],
     isLoading: productsLoading,
@@ -53,16 +54,13 @@ export default function StoreScreen() {
     };
   }, [storeId]);
 
-  // DOCME: store not-found i18n
   if (!store) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <EmptyState
-          icon={Info}
-          title={t('stores.notFound')}
-          message=""
-          actionText={t('common.backToHome')}
-          onAction={() => appRouter.replace('/')}
+          title={t('store.not_found')}
+          description={t('store.not_found_sub')}
+          action={<Button onPress={() => push('/')}>{t('cta.back_home')}</Button>}
         />
       </View>
     );
@@ -154,4 +152,6 @@ const styles = StyleSheet.create({
   },
   sectionText: {},
 });
+
+// AC: Missing store renders friendly EmptyState with Back to Home button.
 
