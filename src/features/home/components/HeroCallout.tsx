@@ -6,7 +6,7 @@ import {
   type NativeSyntheticEvent,
   type KeyboardEvent,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useAppRouter } from '@/services/useAppRouter';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Button, Heading, Text } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
@@ -22,8 +22,10 @@ export default function HeroCallout() {
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
 
+  const appRouter = useAppRouter();
+
   const handlePress = () => {
-    router.push(`/store/${SHOP_TENANT_ID}`);
+    appRouter.push(`/store/${SHOP_TENANT_ID}`);
   };
 
   const handleKeyDown = (e: NativeSyntheticEvent<KeyboardEvent>) => {
@@ -38,8 +40,6 @@ export default function HeroCallout() {
     <PromoCard
       backgroundColor={colors.surface.primary}
       style={{
-        marginHorizontal: spacing.spacer16,
-        marginBottom: spacing.spacer24,
         height: isWide ? 112 : 96,
       }}
     >
