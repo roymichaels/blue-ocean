@@ -140,11 +140,11 @@ try {
     let content = fs.readFileSync(envSerializer, 'utf8');
     const replaced = content
       .replace(
-        'require("metro/src/lib/CountingSet")',
+        /require\(["']metro\/src\/lib\/CountingSet(?:\.js)?["']\)/g,
         'require("@expo/metro/metro/lib/CountingSet")'
       )
       .replace(
-        'require("metro/src/lib/countLines")',
+        /require\(["']metro\/src\/lib\/countLines(?:\.js)?["']\)/g,
         'require("@expo/metro/metro/lib/countLines")'
       );
     if (replaced !== content) {
@@ -156,15 +156,15 @@ try {
     let content = fs.readFileSync(baseBundle, 'utf8');
     const replaced = content
       .replace(
-        'require("metro/src/lib/CountingSet")',
+        /require\(["']metro\/src\/lib\/CountingSet(?:\.js)?["']\)/g,
         'require("@expo/metro/metro/lib/CountingSet")'
       )
       .replace(
-        'require("metro/src/lib/countLines")',
+        /require\(["']metro\/src\/lib\/countLines(?:\.js)?["']\)/g,
         'require("@expo/metro/metro/lib/countLines")'
       )
       .replace(
-        'require("metro/src/lib/getAppendScripts")',
+        /require\(["']metro\/src\/lib\/getAppendScripts(?:\.js)?["']\)/g,
         'require("@expo/metro/metro/lib/getAppendScripts")'
       );
     if (replaced !== content) {
