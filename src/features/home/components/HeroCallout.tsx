@@ -1,3 +1,4 @@
+// TOUCHPOINT: src/features/home/components/HeroCallout.tsx renders in production — Fix Pack v2
 import React from 'react';
 import {
   View,
@@ -13,6 +14,8 @@ import { Stack } from '@/ui/layout';
 import { spacing, typography } from '@/ui/tokens';
 import { getShopTenantId } from '@/services/config';
 import { routes } from '@/utils/routes';
+import { useWallet } from '@/contexts/WalletProvider';
+import guard from '@/utils/guard';
 import PromoCard from './PromoCard';
 
 export default function HeroCallout() {
@@ -22,21 +25,22 @@ export default function HeroCallout() {
   const isWide = width >= 768;
 
   const appRouter = useAppRouter();
+  const { address, connect } = useWallet();
 
-  const handlePress = () => {
+  const action = guard(address, connect, () => {
     const tenantId = getShopTenantId();
     if (tenantId) {
       appRouter.push(`/store/${tenantId}`);
     } else {
       appRouter.push(routes.home());
     }
-  };
+  });
 
   const handleKeyDown = (e: NativeSyntheticEvent<KeyboardEvent>) => {
     const key = e.nativeEvent.key;
     if (key === 'Enter' || key === ' ') {
       e.preventDefault();
-      handlePress();
+      action();
     }
   };
 
@@ -65,7 +69,7 @@ export default function HeroCallout() {
         </View>
         <Button
           title={t('home.heroAction')}
-          onPress={handlePress}
+          onPress={action}
           accessibilityRole="link"
           onKeyDown={handleKeyDown}
           tooltip={t('home.heroAction')}

@@ -1,3 +1,4 @@
+// TOUCHPOINT: app/index.tsx renders in production — Fix Pack v2
 import React, { Suspense, useCallback, useState } from 'react';
 import {
   View,
@@ -101,34 +102,21 @@ function HomeScreenContent() {
 
   // DOCME: network-only home options
   if (isNetwork) {
-    const containerPaddingHorizontal =
-      windowWidth >= 1024
-        ? spacing.spacer32
-        : windowWidth >= 768
-          ? spacing.spacer24
-          : spacing.spacer16;
-    const containerPaddingVertical =
-      windowWidth >= 768 ? spacing.spacer32 : spacing.spacer24;
-
     return (
       <ScrollArea
         testID="home-root"
         backgroundColor={themeColors.canvas}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 0 }}
+        contentContainerStyle={{ flexGrow: 1 }}
       >
-        <Container
-          style={{
-            maxWidth: 1200,
-            paddingHorizontal: containerPaddingHorizontal,
-            paddingVertical: containerPaddingVertical,
-          }}
-        >
-          <Stack gap="spacer24">
+        <main className="mx-auto max-w-screen-xl p-6 space-y-6">
+          <section>
             <HeroCallout />
+          </section>
+          <section className="overflow-x-auto scroll-snap-x mandatory">
             <HomeOptions />
-          </Stack>
-        </Container>
+          </section>
+        </main>
       </ScrollArea>
     );
   }
@@ -396,3 +384,5 @@ export default function HomeScreen() {
     </ErrorBoundary>
   );
 }
+
+// AC: Cards are 4-wide on md+; on mobile they scroll horizontally with snap; hero no longer overlaps; page has no white bottom.

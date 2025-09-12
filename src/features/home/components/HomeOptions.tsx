@@ -1,3 +1,4 @@
+// TOUCHPOINT: src/features/home/components/HomeOptions.tsx renders in production — Fix Pack v2
 import React from 'react';
 import {
   StyleSheet,
@@ -6,7 +7,6 @@ import {
   type KeyboardEvent,
   Platform,
   View,
-  ScrollView,
   I18nManager,
   useWindowDimensions,
 } from 'react-native';
@@ -17,6 +17,7 @@ import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services/useAppRouter';
 import { routes } from '@/utils/routes';
 import { useWallet } from '@/contexts/WalletProvider';
+import guard from '@/utils/guard';
 import { getShopTenantId, getDocsUrl } from '@/services/config';
 
 function HomeOptions() {
@@ -27,39 +28,23 @@ function HomeOptions() {
 
   const SHOP_TENANT_ID = getShopTenantId();
   const DOCS_URL = getDocsUrl();
-  const walletTooltip = t(
-    'home.connectWalletToContinue',
-    'חבר ארנק כדי להמשיך',
-  );
 
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
   const isRTL = I18nManager.isRTL;
   const cardHeight = isDesktop ? 112 : 96;
 
-  const handleCreateStore = async () => {
-    if (!walletAddress) {
-      await connect();
-      return;
-    }
+  const handleCreateStore = guard(walletAddress, connect, () => {
     appRouter.push(routes.createStore());
-  };
+  });
 
-  const handleBecomeDriver = async () => {
-    if (!walletAddress) {
-      await connect();
-      return;
-    }
+  const handleBecomeDriver = guard(walletAddress, connect, () => {
     appRouter.push(routes.driver());
-  };
+  });
 
-  const handleBusinessLogin = async () => {
-    if (!walletAddress) {
-      await connect();
-      return;
-    }
+  const handleBusinessLogin = guard(walletAddress, connect, () => {
     appRouter.push(`/store/${SHOP_TENANT_ID}/admin`);
-  };
+  });
 
   const handleDocs = () => {
     if (DOCS_URL) {
@@ -83,25 +68,19 @@ function HomeOptions() {
       key: 'create-store',
       title: t('home.createStore', 'Create a Store'),
       action: handleCreateStore,
-      tooltip: walletAddress ? undefined : walletTooltip,
       testID: 'create-store-link',
-      disabled: !walletAddress,
     },
     {
       key: 'become-driver',
       title: t('home.becomeDriver', 'Become a Driver'),
       action: handleBecomeDriver,
-      tooltip: walletAddress ? undefined : walletTooltip,
       testID: 'become-driver-button',
-      disabled: !walletAddress,
     },
     {
       key: 'business-login',
       title: t('home.businessLogin', 'Business Login'),
       action: handleBusinessLogin,
-      tooltip: walletAddress ? undefined : walletTooltip,
       testID: 'business-login-button',
-      disabled: !walletAddress,
     },
     {
       key: 'docs-api',
@@ -109,7 +88,6 @@ function HomeOptions() {
       action: handleDocs,
       tooltip: DOCS_URL,
       testID: 'docs-api-button',
-      disabled: false,
     },
   ];
 
@@ -119,7 +97,6 @@ function HomeOptions() {
     action,
     tooltip,
     testID,
-    disabled,
   }: (typeof options)[number]) => (
     <Card
       key={key}
@@ -137,7 +114,7 @@ function HomeOptions() {
           onKeyDown={(e) => handleKeyDown(e, action)}
           accessibilityRole="link"
           tooltip={tooltip}
-          style={[styles.fullWidth, disabled && styles.disabled]}
+          style={styles.fullWidth}
           testID={testID}
         />
       </Stack>
@@ -158,17 +135,14 @@ function HomeOptions() {
   }
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={[
-        styles.scrollContent,
+    <View
+      style={[
+        styles.mobileRow,
         { flexDirection: isRTL ? 'row-reverse' : 'row' },
       ]}
-      style={styles.scroll}
     >
       {options.map(renderCard)}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -181,12 +155,7 @@ const styles = StyleSheet.create({
     gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
     paddingHorizontal: spacing.spacer16,
   },
-  scroll: {
-    ...Platform.select({
-      web: { scrollSnapType: 'x mandatory' as any },
-    }),
-  },
-  scrollContent: {
+  mobileRow: {
     paddingHorizontal: spacing.spacer16,
     gap: spacing.spacer16,
   },
@@ -209,9 +178,6 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: '100%',
-  },
-  disabled: {
-    opacity: 0.5,
   },
 });
 
