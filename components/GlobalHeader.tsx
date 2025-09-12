@@ -31,7 +31,7 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const { appName, logoCid } = useAppInfo();
   const { push } = useAppRouter();
   const { unreadCount, refreshNotifications } = useNotificationState();
-  const { address, connect, disconnect } = useWallet();
+  const { address, connect } = useWallet();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const isMd = width >= 768;
@@ -63,13 +63,9 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
 
   const walletLabel = address
     ? `@${address}`
-    : t('wallet.connect', 'Connect Wallet');
+    : t('wallet.notConnected', 'Not connected');
   const handleWalletPress = async () => {
-    if (address) {
-      await disconnect();
-    } else {
-      await connect();
-    }
+    await connect();
   };
 
   return (
