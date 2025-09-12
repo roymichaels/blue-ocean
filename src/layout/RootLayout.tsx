@@ -90,6 +90,7 @@ export default function RootLayout() {
           {isLargeScreen && <SidebarTabBar items={navItems} isSidebar />}
           <View style={{ flex: 1 }}>
             <Slot />
+            {!isLargeScreen && <SidebarTabBar items={navItems} />}
           </View>
         </View>
         {showCartWidget && <FloatingCartWidget />}
