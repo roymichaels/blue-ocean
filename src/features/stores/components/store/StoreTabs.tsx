@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 
 type TabKey = 'products' | 'about' | 'reviews';
 
@@ -12,15 +12,16 @@ export default function StoreTabs({
   onChange: (key: TabKey) => void;
 }) {
   const { colors } = useTheme();
+  const { t, isRTL } = useLanguage();
   const tabs: { key: TabKey; label: string }[] = [
-    { key: 'products', label: 'Products' },
-    { key: 'about', label: 'About' },
-    { key: 'reviews', label: 'Reviews' },
+    { key: 'products', label: t('stores.tabs.products') },
+    { key: 'about', label: t('stores.tabs.about') },
+    { key: 'reviews', label: t('stores.tabs.reviews') },
   ];
   return (
     <View
       style={{
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         gap: 8,
         paddingHorizontal: 16,
         paddingTop: 8,
@@ -40,6 +41,7 @@ export default function StoreTabs({
               style={{
                 color: isActive ? colors.text.primary : colors.text.secondary,
                 fontWeight: isActive ? ('700' as any) : '500',
+                textAlign: isRTL ? 'right' : 'left',
               }}
             >
               {t.label}

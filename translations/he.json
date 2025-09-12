@@ -548,6 +548,12 @@
     "about": "אודות החנות",
     "aboutDescription": "חנות מבוזרת ב‑NEAR. מנוהלת על ידי הבעלים עם עדכוני P2P דרך Waku.",
     "reviewsComingSoon": "ביקורות בקרוב.",
+    "reputation": "מוניטין:",
+    "tabs": {
+      "products": "מוצרים",
+      "about": "אודות",
+      "reviews": "ביקורות"
+    },
     "metrics": {
       "orders": "הזמנות:",
       "revenue": "הכנסות:"

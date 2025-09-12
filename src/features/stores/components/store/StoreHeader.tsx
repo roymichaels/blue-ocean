@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, Platform } from 'react-native';
-import { useTheme } from '@/ui/ThemeProvider';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 
 interface Props {
   name: string;
@@ -12,6 +12,7 @@ interface Props {
 
 export default function StoreHeader({ name, reputation = 0, bannerUri, avatarUri, tagline }: Props) {
   const { colors } = useTheme();
+  const { t, isRTL } = useLanguage();
   return (
     <View>
       <View style={{ width: '100%', height: 160, backgroundColor: colors.surface.secondary }}>
@@ -19,7 +20,15 @@ export default function StoreHeader({ name, reputation = 0, bannerUri, avatarUri
           <Image source={{ uri: bannerUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
         ) : null}
       </View>
-      <View style={{ marginTop: -28, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <View
+        style={{
+          marginTop: -28,
+          paddingHorizontal: 16,
+          flexDirection: isRTL ? 'row-reverse' : 'row',
+          alignItems: 'center',
+          gap: 12,
+        }}
+      >
         <View
           style={{
             width: 56,
@@ -39,12 +48,21 @@ export default function StoreHeader({ name, reputation = 0, bannerUri, avatarUri
               color: colors.text.primary,
               fontSize: 22,
               fontWeight: Platform.OS === 'web' ? ('700' as any) : '700',
+              textAlign: isRTL ? 'right' : 'left',
             }}
           >
             {name}
           </Text>
-          <Text style={{ color: colors.text.secondary }}>Reputation: {reputation.toFixed(1)}</Text>
-          {!!tagline && <Text style={{ color: colors.text.tertiary }}>{tagline}</Text>}
+          <Text
+            style={{ color: colors.text.secondary, textAlign: isRTL ? 'right' : 'left' }}
+          >
+            {t('stores.reputation')} {reputation.toFixed(1)}
+          </Text>
+          {!!tagline && (
+            <Text style={{ color: colors.text.tertiary, textAlign: isRTL ? 'right' : 'left' }}>
+              {tagline}
+            </Text>
+          )}
         </View>
       </View>
       <View style={{ height: 8 }} />

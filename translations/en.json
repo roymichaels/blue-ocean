@@ -548,6 +548,12 @@
     "about": "About this store",
     "aboutDescription": "Decentralized store on NEAR. Owner-managed with P2P updates via Waku.",
     "reviewsComingSoon": "Reviews coming soon.",
+    "reputation": "Reputation:",
+    "tabs": {
+      "products": "Products",
+      "about": "About",
+      "reviews": "Reviews"
+    },
     "metrics": {
       "orders": "Orders:",
       "revenue": "Revenue:"
