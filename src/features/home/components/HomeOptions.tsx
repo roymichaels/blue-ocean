@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { Card, Text, Button } from '@/ui';
 import { Stack } from '@/ui/layout';
-import { spacing, radius, shadows } from '@/ui/tokens';
+import { radius, shadows } from '@/ui/tokens';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services/useAppRouter';
 import { routes } from '@/utils/routes';
@@ -70,7 +70,7 @@ export default function HomeOptions() {
   };
 
   return (
-    <Stack gap="spacer16" style={styles.container}>
+    <Stack gap="spacer16">
       <Card style={styles.card}>
         <Stack gap="spacer8">
           <Text style={[styles.title, { color: colors.text.primary }]}>
@@ -146,10 +146,6 @@ export default function HomeOptions() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: spacing.spacer16,
-    marginBottom: spacing.spacer16,
-  },
   card: {
     borderRadius: radius.xl,
     ...Platform.select(shadows.md),

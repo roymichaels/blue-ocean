@@ -44,19 +44,6 @@ function HomeScreenContent() {
   const { appName, logoCid } = useAppInfo();
   const { width: windowWidth } = useWindowDimensions();
 
-  if (isNetwork) {
-    return (
-      <ScrollArea
-        testID="home-root"
-        backgroundColor={themeColors.canvas}
-        showsVerticalScrollIndicator={false}
-      >
-        <HeroCallout />
-        <HomeOptions />
-      </ScrollArea>
-    );
-  }
-
   const home = useHome(tenantId);
 
   const { refreshing, refresh, error } = home;
@@ -111,6 +98,38 @@ function HomeScreenContent() {
     closeInfoModal();
     refresh();
   }, [closeInfoModal, refresh]);
+
+  if (isNetwork) {
+    const containerPaddingHorizontal =
+      windowWidth >= 1024
+        ? spacing.spacer32
+        : windowWidth >= 768
+          ? spacing.spacer24
+          : spacing.spacer16;
+    const containerPaddingVertical =
+      windowWidth >= 768 ? spacing.spacer32 : spacing.spacer24;
+
+    return (
+      <ScrollArea
+        testID="home-root"
+        backgroundColor={themeColors.canvas}
+        showsVerticalScrollIndicator={false}
+      >
+        <Container
+          style={{
+            maxWidth: 1200,
+            paddingHorizontal: containerPaddingHorizontal,
+            paddingVertical: containerPaddingVertical,
+          }}
+        >
+          <Stack gap="spacer24">
+            <HeroCallout />
+            <HomeOptions />
+          </Stack>
+        </Container>
+      </ScrollArea>
+    );
+  }
 
   if (error) {
     return (
