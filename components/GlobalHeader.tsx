@@ -1,3 +1,4 @@
+// TOUCHPOINT: components/GlobalHeader.tsx — editing per “Kill wallet CTA + horizontal premium cards”
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -295,4 +296,6 @@ const styles = StyleSheet.create({
     ...typography.md,
   },
 });
+
+// Header now has exactly ONE wallet entry point. No text 'Connect Wallet' is rendered.
 

@@ -1,3 +1,4 @@
+// TOUCHPOINT: app/index.tsx — editing per “Kill wallet CTA + horizontal premium cards”
 import React, { Suspense, useCallback, useState } from 'react';
 import {
   View,
@@ -396,3 +397,5 @@ export default function HomeScreen() {
     </ErrorBoundary>
   );
 }
+
+// HomeOptions only rendered on network home; tenant pages show categories and product grid.
