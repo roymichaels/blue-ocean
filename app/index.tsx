@@ -99,6 +99,7 @@ function HomeScreenContent() {
     refresh();
   }, [closeInfoModal, refresh]);
 
+  // DOCME: network-only home options
   if (isNetwork) {
     const containerPaddingHorizontal =
       windowWidth >= 1024
@@ -190,8 +191,6 @@ function HomeScreenContent() {
           maxPrice={maxPrice}
           setMaxPrice={setMaxPrice}
         />
-          <HomeOptions />
-
         {/* Categories Section */}
         <Container
           style={[
