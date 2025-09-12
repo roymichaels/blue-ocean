@@ -59,8 +59,8 @@ export default function StoreScreen() {
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <EmptyState
           icon={Info}
-          title=""
-          message={t('stores.notFound')}
+          title={t('stores.notFound')}
+          message=""
           actionText={t('common.backToHome')}
           onAction={() => appRouter.replace('/')}
         />
