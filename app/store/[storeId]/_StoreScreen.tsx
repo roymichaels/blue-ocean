@@ -10,12 +10,16 @@ import { useProducts, useCategories, useStoreReviews } from '@/services';
 import { selectStore } from '@/agents/stores-agent';
 import type { Store } from '@/types';
 import { spacing } from '@/shared/ui/tokens';
+import EmptyState from '@/shared/ui/EmptyState';
+import { Info } from 'lucide-react-native';
+import { useAppRouter } from '@/services/useAppRouter';
 
 export default function StoreScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const { t, isRTL } = useLanguage();
   const [store, setStore] = useState<Store | null>(null);
+  const router = useAppRouter();
   const {
     data: products = [],
     isLoading: productsLoading,
@@ -52,7 +56,13 @@ export default function StoreScreen() {
   if (!store) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <StoreHeader name={t('stores.notFound')} reputation={0} />
+        <EmptyState
+          icon={Info}
+          title=''
+          message='החנות לא נמצאה'
+          actionText='חזור לדף הבית'
+          onAction={() => router.replace('/')}
+        />
       </View>
     );
   }
