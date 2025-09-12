@@ -19,24 +19,22 @@ export default function Container({
     width >= 768 ? spacing.spacer24 : spacing.spacer16;
 
   return (
-    <View style={{ width: '100%', alignItems: 'center' }}>
-      <View
-        style={[
-          {
-            width: '100%',
-            maxWidth: 1280,
-            paddingVertical: 32,
-            paddingHorizontal: basePaddingHorizontal,
-          },
-          padding ? { padding: spacing[padding] } : null,
-          backgroundColor ? { backgroundColor } : null,
-          style,
-        ]}
-        {...rest}
-      >
-        {children}
-      </View>
+    <View
+      style={[
+        {
+          width: '100%',
+          maxWidth: 1280,
+          paddingVertical: 32,
+          paddingHorizontal: basePaddingHorizontal,
+          alignSelf: 'center',
+        },
+        padding ? { padding: spacing[padding] } : null,
+        backgroundColor ? { backgroundColor } : null,
+        style,
+      ]}
+      {...rest}
+    >
+      {children}
     </View>
   );
 }
-
