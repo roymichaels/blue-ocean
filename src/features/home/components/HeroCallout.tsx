@@ -59,20 +59,20 @@ export default function HeroCallout() {
       >
         <View style={styles.textContainer}>
           <Heading size="xl" style={{ color: colors.text.primary }}>
-            {t('home.heroTitle')}
+            {t('home.hero_title')}
           </Heading>
           <Text
             style={[typography.sm, { color: colors.text.secondary, marginTop: spacing.spacer8 }]}
           >
-            {t('home.heroSubtitle')}
+            {t('home.hero_subtitle')}
           </Text>
         </View>
         <Button
-          title={t('home.heroAction')}
+          title={t('home.hero_action')}
           onPress={action}
           accessibilityRole="link"
           onKeyDown={handleKeyDown}
-          tooltip={t('home.heroAction')}
+          tooltip={t('home.hero_action')}
         />
       </Stack>
     </PromoCard>

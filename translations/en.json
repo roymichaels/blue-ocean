@@ -1,3 +1,4 @@
+// TOUCHPOINT: translations/en.json updated with new i18n keys — Fix Pack v2
 {
   "common": {
     "save": "Save",
@@ -86,7 +87,8 @@
     "fullNamePlaceholder": "Enter your full name",
     "createPasswordPlaceholder": "Create password",
     "confirmPasswordPlaceholder": "Confirm your password",
-    "logoutConfirm": "Are you sure you want to logout?"
+    "logoutConfirm": "Are you sure you want to logout?",
+    "not_connected": "Not connected"
   },
   "home": {
     "searchPlaceholder": "Search products...",
@@ -97,9 +99,9 @@
     "noBanners": "No banners",
     "addBanners": "Add banners to get started",
     "bannersComingSoon": "Banners coming soon",
-    "heroTitle": "Discover unique products",
-    "heroSubtitle": "Experience decentralized shopping",
-    "heroAction": "Shop now",
+    "hero_title": "Discover unique products",
+    "hero_subtitle": "Experience decentralized shopping",
+    "hero_action": "Shop now",
     "noCategories": "No categories",
     "categoriesComingSoon": "Categories coming soon",
     "noProducts": "No products",
@@ -118,13 +120,13 @@
     "priceHighLow": "Price: High to Low",
     "highRating": "High Rating",
     "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload.",
-    "createStore": "Create a Store",
-    "becomeDriver": "Become a Driver",
-    "businessLogin": "Business Login",
-    "docs": "Docs",
-    "apiDocs": "API Docs",
-    "docsApi": "Docs & API",
     "connectWalletToContinue": "Connect wallet to continue"
+  },
+  "cta": {
+    "create_store": "Create a Store",
+    "become_driver": "Become a Driver",
+    "business_login": "Business Login",
+    "docs_api": "Docs & API"
   },
   "categories": {
     "all": "All",
@@ -538,6 +540,28 @@
     "notFoundMessage": "We couldn't find that order",
     "statusUpdated": "Order status updated",
     "updateStatusFailed": "Failed to update status"
+  },
+  "store": {
+    "store_name": "Store Name",
+    "mint_store": "Mint Store",
+    "transaction_failed": "Transaction failed",
+    "insufficient_funds": "Insufficient funds to deploy the store",
+    "transaction_cancelled": "Transaction cancelled",
+    "create_success": "Store created successfully",
+    "not_found": "Store not found",
+    "about": "About this store",
+    "about_description": "Decentralized store on NEAR. Owner-managed with P2P updates via Waku.",
+    "reviews_coming_soon": "Reviews coming soon.",
+    "reputation": "Reputation:",
+    "tabs": {
+      "products": "Products",
+      "about": "About",
+      "reviews": "Reviews"
+    },
+    "metrics": {
+      "orders": "Orders:",
+      "revenue": "Revenue:"
+    }
   },
   "stores": {
     "storeName": "Store Name",

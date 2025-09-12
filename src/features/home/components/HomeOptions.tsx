@@ -66,25 +66,25 @@ function HomeOptions() {
   const options = [
     {
       key: 'create-store',
-      title: t('home.createStore', 'Create a Store'),
+      title: t('cta.create_store', 'Create a Store'),
       action: handleCreateStore,
       testID: 'create-store-link',
     },
     {
       key: 'become-driver',
-      title: t('home.becomeDriver', 'Become a Driver'),
+      title: t('cta.become_driver', 'Become a Driver'),
       action: handleBecomeDriver,
       testID: 'become-driver-button',
     },
     {
       key: 'business-login',
-      title: t('home.businessLogin', 'Business Login'),
+      title: t('cta.business_login', 'Business Login'),
       action: handleBusinessLogin,
       testID: 'business-login-button',
     },
     {
       key: 'docs-api',
-      title: t('home.docsApi', 'Docs & API'),
+      title: t('cta.docs_api', 'Docs & API'),
       action: handleDocs,
       tooltip: docsUrl,
       testID: 'docs-api-button',

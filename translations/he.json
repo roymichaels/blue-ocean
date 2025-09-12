@@ -1,3 +1,4 @@
+// TOUCHPOINT: translations/he.json updated with new i18n keys — Fix Pack v2
 {
   "common": {
     "save": "שמור",
@@ -86,7 +87,8 @@
     "fullNamePlaceholder": "הכנס את שמך המלא",
     "createPasswordPlaceholder": "צור סיסמה",
     "confirmPasswordPlaceholder": "אשר את הסיסמה",
-    "logoutConfirm": "האם אתה בטוח שברצונך להתנתק?"
+    "logoutConfirm": "האם אתה בטוח שברצונך להתנתק?",
+    "not_connected": "לא מחובר"
   },
   "home": {
     "searchPlaceholder": "חיפוש מוצרים...",
@@ -97,9 +99,9 @@
     "noBanners": "אין באנרים",
     "addBanners": "הוסף באנרים כדי להתחיל",
     "bannersComingSoon": "באנרים יתווספו בקרוב",
-    "heroTitle": "גלה מוצרים ייחודיים",
-    "heroSubtitle": "קנה ישירות מחנויות מבוזרות",
-    "heroAction": "קנה עכשיו",
+    "hero_title": "גלה מוצרים ייחודיים",
+    "hero_subtitle": "קנה ישירות מחנויות מבוזרות",
+    "hero_action": "קנה עכשיו",
     "noCategories": "אין קטגוריות",
     "categoriesComingSoon": "קטגוריות יתווספו בקרוב",
     "noProducts": "אין מוצרים",
@@ -118,13 +120,13 @@
     "priceHighLow": "מחיר: גבוה לנמוך",
     "highRating": "דירוג גבוה",
     "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש.",
-    "createStore": "צור חנות",
-    "becomeDriver": "הפוך לשליח",
-    "businessLogin": "כניסת עסקים",
-    "docs": "תיעוד",
-    "apiDocs": "ממשק API",
-    "docsApi": "מסמכים & API",
     "connectWalletToContinue": "חבר ארנק כדי להמשיך"
+  },
+  "cta": {
+    "create_store": "צור חנות",
+    "become_driver": "הפוך לשליח",
+    "business_login": "כניסת עסקים",
+    "docs_api": "מסמכים & API"
   },
   "categories": {
     "all": "הכל",
@@ -538,6 +540,28 @@
     "notFoundMessage": "לא הצלחנו למצוא את ההזמנה הזו",
     "statusUpdated": "סטטוס ההזמנה עודכן",
     "updateStatusFailed": "עדכון הסטטוס נכשל"
+  },
+  "store": {
+    "store_name": "שם החנות",
+    "mint_store": "צור חנות",
+    "transaction_failed": "העסקה נכשלה",
+    "insufficient_funds": "אין מספיק כספים לפריסת החנות",
+    "transaction_cancelled": "העסקה בוטלה",
+    "create_success": "החנות נוצרה בהצלחה",
+    "not_found": "החנות לא נמצאה",
+    "about": "אודות החנות",
+    "about_description": "חנות מבוזרת ב‑NEAR. מנוהלת על ידי הבעלים עם עדכוני P2P דרך Waku.",
+    "reviews_coming_soon": "ביקורות בקרוב.",
+    "reputation": "מוניטין:",
+    "tabs": {
+      "products": "מוצרים",
+      "about": "אודות",
+      "reviews": "ביקורות"
+    },
+    "metrics": {
+      "orders": "הזמנות:",
+      "revenue": "הכנסות:"
+    }
   },
   "stores": {
     "storeName": "שם החנות",
