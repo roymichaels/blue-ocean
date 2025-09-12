@@ -544,6 +544,10 @@
     "insufficientFunds": "Insufficient funds to deploy the store",
     "transactionCancelled": "Transaction cancelled",
     "createSuccess": "Store created successfully",
+    "notFound": "Store not found",
+    "about": "About this store",
+    "aboutDescription": "Decentralized store on NEAR. Owner-managed with P2P updates via Waku.",
+    "reviewsComingSoon": "Reviews coming soon.",
     "metrics": {
       "orders": "Orders:",
       "revenue": "Revenue:"

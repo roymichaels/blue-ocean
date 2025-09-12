@@ -544,6 +544,10 @@
     "insufficientFunds": "אין מספיק כספים לפריסת החנות",
     "transactionCancelled": "העסקה בוטלה",
     "createSuccess": "החנות נוצרה בהצלחה",
+    "notFound": "החנות לא נמצאה",
+    "about": "אודות החנות",
+    "aboutDescription": "חנות מבוזרת ב‑NEAR. מנוהלת על ידי הבעלים עם עדכוני P2P דרך Waku.",
+    "reviewsComingSoon": "ביקורות בקרוב.",
     "metrics": {
       "orders": "הזמנות:",
       "revenue": "הכנסות:"
