@@ -23,7 +23,8 @@ export default function Container({
       style={[
         {
           maxWidth: 1280,
-          marginHorizontal: 'auto' as any,
+          width: '100%',
+          alignSelf: 'center',
           paddingVertical: 32,
           paddingHorizontal: basePaddingHorizontal,
         },
