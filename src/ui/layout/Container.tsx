@@ -22,10 +22,11 @@ export default function Container({
     <View
       style={[
         {
+          width: '100%',
           maxWidth: 1280,
-          marginHorizontal: 'auto' as any,
           paddingVertical: 32,
           paddingHorizontal: basePaddingHorizontal,
+          alignSelf: 'center',
         },
         padding ? { padding: spacing[padding] } : null,
         backgroundColor ? { backgroundColor } : null,
