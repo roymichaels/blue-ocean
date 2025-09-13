@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, TextInput, Pressable } from 'react-native';
+import { View, StyleSheet, TextInput, Pressable, Platform } from 'react-native';
 import { Text, Portal, Overlay } from '@/ui';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
@@ -97,7 +97,7 @@ export default function CommandPalette({ visible, onClose }: CommandPaletteProps
             value={query}
             onChangeText={setQuery}
             autoFocus
-            onKeyDown={handleKeyDown}
+            {...(Platform.OS === 'web' ? ({ onKeyDown: handleKeyDown } as any) : {})}
             placeholder={t('home.searchPlaceholder')}
             placeholderTextColor={colors.text.tertiary}
             style={[

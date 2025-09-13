@@ -4,8 +4,7 @@ import {
   View,
   StyleSheet,
   useWindowDimensions,
-  type NativeSyntheticEvent,
-  type KeyboardEvent,
+  Platform,
 } from 'react-native';
 import { useAppRouter } from '@/services/useAppRouter';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
@@ -36,10 +35,10 @@ export default function HeroCallout() {
     }
   });
 
-  const handleKeyDown = (e: NativeSyntheticEvent<KeyboardEvent>) => {
-    const key = e.nativeEvent.key;
+  const handleKeyDown = (e: any) => {
+    const key = e?.nativeEvent?.key || e?.key;
     if (key === 'Enter' || key === ' ') {
-      e.preventDefault();
+      e?.preventDefault?.();
       action();
     }
   };
@@ -48,7 +47,7 @@ export default function HeroCallout() {
     <PromoCard
       backgroundColor={colors.surface.primary}
       style={{
-        height: isWide ? 112 : 96,
+        minHeight: isWide ? 112 : 96,
       }}
     >
       <Stack
@@ -64,15 +63,15 @@ export default function HeroCallout() {
           <Text
             style={[typography.sm, { color: colors.text.secondary, marginTop: spacing.spacer8 }]}
           >
-            {t('home.hero_subtitle')}
+            {t('home.hero_sub')}
           </Text>
         </View>
         <Button
-          title={t('home.hero_action')}
+          title={t('home.shop_now')}
           onPress={action}
           accessibilityRole="link"
-          onKeyDown={handleKeyDown}
-          tooltip={t('home.hero_action')}
+          {...(Platform.OS === 'web' ? ({ onKeyDown: handleKeyDown } as any) : {})}
+          tooltip={t('home.shop_now')}
         />
       </Stack>
     </PromoCard>

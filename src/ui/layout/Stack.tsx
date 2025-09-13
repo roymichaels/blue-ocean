@@ -7,11 +7,14 @@ interface StackProps extends ViewProps {
   direction?: 'vertical' | 'horizontal';
   /** spacing key from tokens */
   gap?: keyof typeof spacing;
+  /** align-items value */
+  align?: 'flex-start' | 'center' | 'flex-end' | 'stretch' | 'baseline';
 }
 
 export default function Stack({
   direction = 'vertical',
   gap,
+  align,
   style,
   children,
   ...rest
@@ -19,7 +22,11 @@ export default function Stack({
   return (
     <View
       style={[
-        { flexDirection: direction === 'horizontal' ? 'row' : 'column', gap: gap ? spacing[gap] : undefined },
+        {
+          flexDirection: direction === 'horizontal' ? 'row' : 'column',
+          gap: gap ? spacing[gap] : undefined,
+          alignItems: align,
+        },
         style,
       ]}
       {...rest}

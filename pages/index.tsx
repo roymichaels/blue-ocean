@@ -1,44 +1,36 @@
+// TOUCHPOINT: pages/index.tsx — MVP network homepage (hero + 4 cards)
 import React, { Suspense } from 'react';
-import { ActivityIndicator, Button, Text, View } from 'react-native';
-
-const HomeCards = React.lazy(() => import('../components/HomeCards'));
-
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View>
-          <Text>Something went wrong.</Text>
-          <Button title="Retry" onPress={() => this.setState({ hasError: false })} />
-        </View>
-      );
-    }
-    return this.props.children;
-  }
-}
+import { View, StyleSheet } from 'react-native';
+import { ScrollArea, Stack } from '@/ui/layout';
+import { Spinner } from '@/ui/primitives';
+import HeroCallout from '@/features/home/components/HeroCallout';
+import HomeOptions from '@/features/home/components/HomeOptions';
+import { useTheme } from '@/ui/ThemeProvider';
+import ErrorBoundary from '@/shared/ErrorBoundary';
 
 export default function IndexPage() {
-  React.useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      const swUrl = new URL('service-worker.js', window.location.origin);
-      navigator.serviceWorker.register(swUrl.toString()).catch(() => undefined);
-    }
-  }, []);
-
+  const { colors } = useTheme();
   return (
     <ErrorBoundary>
-      <Suspense fallback={<ActivityIndicator />}>
-        <HomeCards />
-      </Suspense>
+      <ScrollArea backgroundColor={colors.canvas}>
+        <View style={[styles.wrapper, { backgroundColor: colors.canvas }]}>
+          <Stack gap="spacer24">
+            <Suspense fallback={<Spinner />}>
+              <HeroCallout />
+            </Suspense>
+            <Suspense fallback={<Spinner />}>
+              <HomeOptions />
+            </Suspense>
+          </Stack>
+        </View>
+      </ScrollArea>
     </ErrorBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  wrapper: {
+    minHeight: '100vh' as any,
+    paddingVertical: 24,
+  },
+});

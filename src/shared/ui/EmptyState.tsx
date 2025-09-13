@@ -10,32 +10,44 @@ import { spacing } from './tokens';
 type IconComponent = React.ComponentType<LucideProps>;
 
 interface EmptyStateProps {
-  icon: IconComponent;
+  icon?: IconComponent; // optional — when omitted, no icon renders
   title: string;
-  message: string;
+  message?: string; // semantic alias for description
+  description?: string;
   actionText?: string;
   onAction?: () => void;
+  action?: React.ReactNode; // advanced: custom action node
 }
 
 export default function EmptyState({
   icon: Icon,
   title,
   message,
+  description,
   actionText,
   onAction,
+  action,
 }: EmptyStateProps) {
   const { getColor } = useTheme();
 
   return (
     <View style={styles.container}>
-      <Icon size={80} color={getColor('interactive.disabled')} />
+      {Icon ? (
+        <Icon size={80} color={getColor('interactive.disabled')} />
+      ) : null}
       <Heading style={[styles.title, { color: getColor('text.primary') }]} size="lg">
         {title}
       </Heading>
-      <Text style={[styles.message, { color: getColor('text.secondary') }]}>{message}</Text>
-      {actionText && onAction && (
-        <Button title={actionText} onPress={onAction} />
+      {(message || description) && (
+        <Text style={[styles.message, { color: getColor('text.secondary') }]}>
+          {message ?? description}
+        </Text>
       )}
+      {action
+        ? action
+        : actionText && onAction
+        ? <Button title={actionText} onPress={onAction} />
+        : null}
     </View>
   );
 }

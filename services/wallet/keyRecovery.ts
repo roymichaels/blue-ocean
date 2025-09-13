@@ -12,11 +12,11 @@ interface RecoveryOptions {
  */
 export async function recoverKey(options: RecoveryOptions): Promise<KeyPair> {
   if (options.backupKey) {
-    return KeyPair.fromString(options.backupKey);
+    return KeyPair.fromString(options.backupKey as any);
   }
   if (options.socialRecovery) {
     const key = await options.socialRecovery();
-    return KeyPair.fromString(key);
+    return KeyPair.fromString(key as any);
   }
   throw new Error('No recovery method provided');
 }

@@ -45,6 +45,11 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar, 
     return () => window.removeEventListener('keydown', handler);
   }, [items]);
 
+  // Choose a readable inactive color for dark canvases
+  const inactiveColor = (colors as any)?.tabBar?.inactive || colors.text.secondary;
+
+  const MOBILE_BAR_HEIGHT = 72;
+
   return (
     <View
       style={[
@@ -57,19 +62,32 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar, 
               justifyContent: 'space-between',
             }
           : {
-              flexDirection: 'row',
               backgroundColor: colors.tabBar.background,
               paddingBottom: insets.bottom,
-              height: spacing.spacer24 * 3,
+              height: MOBILE_BAR_HEIGHT,
+              alignItems: 'center',
+              overflow: 'hidden',
             },
         style,
       ]}
     >
-      <View>
+      <View
+        style={[
+          isSidebar
+            ? { flexDirection: 'column' }
+            : {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-around',
+                width: '100%',
+                height: MOBILE_BAR_HEIGHT,
+              },
+        ]}
+      >
         {items.map((item, index) => {
           const Icon = (Lucide as any)[item.icon] as React.ComponentType<{ size: number; color: string }>;
           const focused = pathname === item.href;
-          const color = focused ? colors.gold : colors.tabBar.inactive;
+          const color = focused ? colors.gold : inactiveColor || colors.text.secondary;
           return (
             <Pressable
               key={item.href}
@@ -84,6 +102,8 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar, 
                   alignItems: 'center',
                   justifyContent: 'flex-start',
                   flex: isSidebar ? undefined : 1,
+                  flexBasis: isSidebar ? undefined : 0,
+                  minWidth: isSidebar ? undefined : 0,
                   paddingVertical: spacing.spacer16,
                   paddingHorizontal: isSidebar && !collapsed ? spacing.spacer8 : 0,
                   position: 'relative',
@@ -119,6 +139,7 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar, 
                     marginLeft: isSidebar && !collapsed ? spacing.spacer8 : 0,
                     marginTop: !isSidebar ? spacing.spacer4 : 0,
                   }}
+                  numberOfLines={1}
                 >
                   {t(item.title)}
                 </Text>

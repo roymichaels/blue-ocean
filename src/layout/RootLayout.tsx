@@ -1,7 +1,7 @@
 // Touchpoint: Ensure bottom navigation remains sticky on mobile devices
 import React, { useMemo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Slot, usePathname } from 'expo-router';
 import GlobalHeader from '@/components/GlobalHeader';
@@ -10,6 +10,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import SidebarTabBar, { NavItem } from '@/components/SidebarTabBar';
+import { Portal } from '@/ui/primitives';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { getShopTenantId } from '@/services/config';
@@ -58,6 +59,7 @@ const NAV_ITEMS: readonly NavItemConfig[] = [
 ] as const;
 
 const LARGE_SCREEN = 768;
+const BOTTOM_BAR_HEIGHT = 72; // ~ spacing.spacer24 * 3
 
 export default function RootLayout() {
   const { theme, colors } = useTheme();
@@ -66,6 +68,7 @@ export default function RootLayout() {
   const { width } = useWindowDimensions();
   const { isLoggedIn, isStoreOwner } = useAuth();
   const { tenantId } = useTenant();
+  const insets = useSafeAreaInsets();
   const isLargeScreen = width >= LARGE_SCREEN;
   const showSearch = pathname === '/' || pathname === '/index';
   const showCartWidget = showSearch;
@@ -96,14 +99,40 @@ export default function RootLayout() {
           }}
         >
           {isLargeScreen && <SidebarTabBar items={navItems} isSidebar />}
-          <View style={{ flex: 1 }} className="pb-20 md:pb-0">
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.canvas,
+              paddingBottom: isLargeScreen ? 0 : BOTTOM_BAR_HEIGHT + insets.bottom,
+            }}
+          >
             <Slot />
           </View>
         </View>
         {!isLargeScreen && (
-          <footer className="md:hidden fixed inset-x-0 bottom-0 z-40">
-            <SidebarTabBar items={navItems} />
-          </footer>
+          <Portal>
+            <View
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 1000,
+                height: BOTTOM_BAR_HEIGHT + insets.bottom,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: colors.tabBar.background,
+                  borderTopColor: colors.border.primary,
+                  borderTopWidth: 1,
+                  height: BOTTOM_BAR_HEIGHT + insets.bottom,
+                }}
+              >
+                <SidebarTabBar items={navItems} />
+              </View>
+            </View>
+          </Portal>
         )}
         {showCartWidget && <FloatingCartWidget />}
       </SafeAreaView>

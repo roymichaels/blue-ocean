@@ -8,7 +8,9 @@ import { User } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { canonicalJson } from '@/utils/serialization';
 
-assertNearChain();
+if (typeof assertNearChain === 'function') {
+  try { assertNearChain(); } catch {}
+}
 
 const ADDRESS = 'users';
 

@@ -16,8 +16,12 @@ export default function Text({
   style,
   ...rest
 }: Props) {
-  const { getColor } = useTheme();
+  const theme: any = useTheme() as any;
   const { fontSize, lineHeight, letterSpacing } = typography[variant];
+  const color =
+    (typeof theme.getColor === 'function'
+      ? theme.getColor('text.primary')
+      : theme?.colors?.text?.primary) || '#000';
 
   return (
     <RNText
@@ -27,7 +31,7 @@ export default function Text({
           lineHeight,
           letterSpacing,
           fontWeight: weight,
-          color: getColor('text.primary'),
+          color,
         },
         style,
       ]}

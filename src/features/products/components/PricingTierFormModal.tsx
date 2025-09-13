@@ -172,7 +172,7 @@ export default function PricingTierFormModal({
                 value={formData.id}
                 onChangeText={text => setFormData({ ...formData, id: text })}
                 placeholder="הכנס מזהה מדרג (באנגלית, לדוגמה: bulk_discount)"
-                textAlign="start"
+                textAlign="right"
                 editable={!editingTier}
               />
             </View>

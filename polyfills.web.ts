@@ -28,6 +28,12 @@ try {
   if (typeof (globalThis as any).process === 'undefined') {
     (globalThis as any).process = require('process');
   }
+  // Some compiled libs (e.g., expo-router build output) may be transformed
+  // with the classic JSX runtime and expect a global React identifier.
+  // Ensure React is available as a global on web to avoid ReferenceError.
+  if (typeof (globalThis as any).React === 'undefined') {
+    (globalThis as any).React = require('react');
+  }
   // Guard util.promisify to avoid crashes when polyfilled modules are missing
   const util = require('util');
   const originalPromisify = util.promisify;

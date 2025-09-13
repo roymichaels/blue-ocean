@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import Text from '@/ui/primitives/Text';
 import Heading from '@/ui/primitives/Heading';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
+import { t as i18nT } from '@/i18n';
 import { spacing } from '@/shared/ui/tokens';
 import Button from '@/ui/primitives/Button';
 import { errorLog } from '@/utils/logger';
@@ -53,7 +54,15 @@ class ErrorBoundary extends React.Component<Props, State> {
 
 function ErrorFallback({ error, onRetry }: { error?: Error; onRetry: () => void }) {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  // Avoid hard dependency on LanguageProvider in tests; gracefully fall back
+  // to the global i18n translator or key passthrough.
+  let t: (key: string, opts?: any) => string = (k, opts) => i18nT(k, typeof opts === 'string' ? opts : k);
+  try {
+    if (typeof (useLanguage as unknown) === 'function') {
+      const lang: any = (useLanguage as unknown as () => any)();
+      if (lang && typeof lang.t === 'function') t = lang.t.bind(lang);
+    }
+  } catch {}
   const handleRetry = () => {
     onRetry();
   };

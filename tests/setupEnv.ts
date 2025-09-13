@@ -1,6 +1,10 @@
 import 'dotenv/config';
 import { jest } from '@jest/globals';
 import { insertConfig } from './testUtils';
+import React from 'react';
+
+// Ensure global React for TSX compiled with classic JSX runtime
+;(global as any).React = React;
 
 insertConfig({
   NEAR_RPC_URL: 'https://near.test',

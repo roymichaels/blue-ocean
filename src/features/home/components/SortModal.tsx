@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { X } from 'lucide-react-native';
+import { X as XIcon } from 'lucide-react-native';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { SortOption } from '@/features/home/hooks/useHomeFilters';
 
@@ -19,6 +19,7 @@ export default function SortModal({
 }: SortModalProps) {
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
+  const CloseIcon: any = (XIcon as any) || ((_: any) => null);
 
   const options = [
     { key: 'newest', label: t('home.newest') },
@@ -54,7 +55,7 @@ export default function SortModal({
               {t('home.sortProducts')}
             </Text>
             <TouchableOpacity onPress={onClose}>
-              <X size={24} color={themeColors.text.primary} />
+              <CloseIcon size={24} color={themeColors.text.primary} />
             </TouchableOpacity>
           </View>
 

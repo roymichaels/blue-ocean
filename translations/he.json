@@ -1,4 +1,3 @@
-// TOUCHPOINT: translations/he.json updated with new i18n keys — Fix Pack v2
 {
   "common": {
     "save": "שמור",
@@ -102,6 +101,16 @@
     "hero_title": "גלה מוצרים ייחודיים",
     "hero_subtitle": "קנה ישירות מחנויות מבוזרות",
     "hero_action": "קנה עכשיו",
+    "hero_sub": "מסחר ולוגיסטיקה, מבוזרים.",
+    "shop_now": "קנה עכשיו",
+    "create_store": "צור חנות",
+    "create_store_sub": "הקם חנות עצמאית.",
+    "become_driver": "הפוך לשליח",
+    "become_driver_sub": "הצטרף לרשת השליחים.",
+    "business_login": "כניסת עסקים",
+    "business_login_sub": "ניהול הזמנות ותשלומים.",
+    "docs_api": "מסמכים & API",
+    "docs_api_sub": "מדריכים ואינטגרציות.",
     "noCategories": "אין קטגוריות",
     "categoriesComingSoon": "קטגוריות יתווספו בקרוב",
     "noProducts": "אין מוצרים",
@@ -126,8 +135,14 @@
     "create_store": "צור חנות",
     "become_driver": "הפוך לשליח",
     "business_login": "כניסת עסקים",
-    "docs_api": "מסמכים & API"
+    "docs_api": "מסמכים & API",
+    "start": "התחל",
+    "apply": "הגש",
+    "login": "התחבר",
+    "view": "צפה",
+    "back_home": "חזרה לבית"
   },
+  
   "categories": {
     "all": "הכל",
     "electronics": "אלקטרוניקה",
@@ -549,6 +564,7 @@
     "transaction_cancelled": "העסקה בוטלה",
     "create_success": "החנות נוצרה בהצלחה",
     "not_found": "החנות לא נמצאה",
+    "not_found_sub": "בדוק את הכתובת או חזור לדף הבית.",
     "about": "אודות החנות",
     "about_description": "חנות מבוזרת ב‑NEAR. מנוהלת על ידי הבעלים עם עדכוני P2P דרך Waku.",
     "reviews_coming_soon": "ביקורות בקרוב.",
@@ -588,13 +604,6 @@
   "wallet": {
     "connect": "התחבר לארנק",
     "notConnected": "לא מחובר"
-  },
-  "store": {
-    "not_found": "החנות לא נמצאה",
-    "not_found_sub": "לא מצאנו את החנות הזו."
-  },
-  "cta": {
-    "back_home": "חזרה לדף הבית"
   },
   "proofUploader": {
     "permissionRequired": "נדרשת הרשאה",

@@ -18,3 +18,14 @@ export function replace(...args: Parameters<typeof router.replace>) {
   (router as any).replace(...args);
 }
 
+export function back(): void {
+  if (typeof (router as any).back === 'function') (router as any).back();
+}
+
+export function canGoBack(): boolean {
+  return (
+    typeof (router as any).canGoBack === 'function' &&
+    (router as any).canGoBack()
+  );
+}
+

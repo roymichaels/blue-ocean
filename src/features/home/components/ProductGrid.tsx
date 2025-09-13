@@ -61,7 +61,7 @@ function ProductGrid({
     return (
       <View style={styles.productsGrid}>
         {Array.from({ length: 4 }).map((_, idx) => (
-          <View key={idx} style={[styles.productWrapper, { width: getItemWidth() }]}>
+          <View key={idx} style={[styles.productWrapper, { width: getItemWidth() as any }]}>
             <ProductCardSkeleton />
           </View>
         ))}

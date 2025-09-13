@@ -26,14 +26,14 @@ function ensureSeed() {
       for (const s of data.stores as Store[]) {
         if (s.id === 'alpha') hasAlpha = true;
         // Index under a shared namespace so listStores('default') works
-        void setValue(ADDRESS, `default:${s.id}`, canonicalJson(s));
+        void setValue(ADDRESS, `${ADDRESS}:default:${s.id}`, canonicalJson(s));
         // And index under its own namespace so getStore(id, id) resolves
-        void setValue(ADDRESS, `${s.id}:${s.id}`, canonicalJson(s));
+        void setValue(ADDRESS, `${ADDRESS}:${s.id}:${s.id}`, canonicalJson(s));
       }
       if (!hasAlpha) {
         const alpha: Store = { id: 'alpha', name: 'Alpha Store', owner: 'demo', nftId: '', reputation: 0 } as Store;
-        void setValue(ADDRESS, `default:${alpha.id}`, canonicalJson(alpha));
-        void setValue(ADDRESS, `${alpha.id}:${alpha.id}`, canonicalJson(alpha));
+        void setValue(ADDRESS, `${ADDRESS}:default:${alpha.id}`, canonicalJson(alpha));
+        void setValue(ADDRESS, `${ADDRESS}:${alpha.id}:${alpha.id}`, canonicalJson(alpha));
       }
     }
   } catch {}
@@ -43,7 +43,7 @@ function ensureSeed() {
 export async function getStore(storeId: string, id: string): Promise<Store | null> {
   ensureSeed();
   const sid = requireStoreId(storeId);
-  const res = await getValue(ADDRESS, `${sid}:${id}`);
+  const res = await getValue(ADDRESS, `${ADDRESS}:${sid}:${id}`);
   if (res) return JSON.parse(res) as Store;
   if (DISABLED) {
 
@@ -61,18 +61,18 @@ export async function getStore(storeId: string, id: string): Promise<Store | nul
 
 export async function setStore(storeId: string, store: Store) {
   const sid = requireStoreId(storeId);
-  await setValue(ADDRESS, `${sid}:${store.id}`, canonicalJson(store));
+  await setValue(ADDRESS, `${ADDRESS}:${sid}:${store.id}`, canonicalJson(store));
 }
 
 export async function removeStore(storeId: string, id: string) {
   const sid = requireStoreId(storeId);
-  await removeValue(ADDRESS, `${sid}:${id}`);
+  await removeValue(ADDRESS, `${ADDRESS}:${sid}:${id}`);
 }
 export async function listStores(storeId: string): Promise<Store[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
   const items = await listValues(ADDRESS);
   return items
-    .filter((i) => i.key.startsWith(`${sid}:`))
+    .filter((i) => i.key.startsWith(`${ADDRESS}:${sid}:`))
     .map((i) => JSON.parse(i.value) as Store);
 }

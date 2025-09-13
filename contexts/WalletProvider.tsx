@@ -32,7 +32,9 @@ interface Props {
 }
 
 export function WalletProvider({ children }: Props) {
-  const account = chainAdapter.useAccount();
+  const account = typeof (chainAdapter as any).useAccount === 'function'
+    ? (chainAdapter as any).useAccount()
+    : null;
   const [address, setAddress] = useState<string | null>(null);
 
   useEffect(() => {

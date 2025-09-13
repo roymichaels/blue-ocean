@@ -14,7 +14,7 @@ export function useCategoryDetail(id?: string, tenantId?: string) {
 
   const { data: category = null, isLoading } = useQuery({
     queryKey: ['category', id],
-    queryFn: () => (id && getCategory ? getCategory(id) : Promise.resolve(null)),
+    queryFn: () => (id && getCategory ? getCategory(tenantId ?? 'default', id) : Promise.resolve(null)),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -22,7 +22,7 @@ export function useCategoryDetail(id?: string, tenantId?: string) {
 
   const mutation = useMutation({
     mutationFn: (updated: Category) =>
-      setCategory ? setCategory(updated) : Promise.resolve(),
+      setCategory ? setCategory(tenantId ?? 'default', updated) : Promise.resolve(),
     onSuccess: (_data, updated) => {
       queryClient.invalidateQueries({ queryKey: ['category', updated.id] });
       queryClient.invalidateQueries({ queryKey: ['categories', tenantId] });

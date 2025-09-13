@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  RefreshControl,
   useWindowDimensions,
   Platform,
 } from 'react-native';
@@ -47,7 +46,9 @@ function HomeScreenContent() {
 
   const home = useHome(tenantId);
 
-  const { refreshing, refresh, error } = home;
+  const refreshing = home?.refreshing ?? false;
+  const refresh = home?.refresh ?? (() => {});
+  const error = home?.error ?? null;
   const {
     productFormVisible,
     productToEdit,
@@ -59,9 +60,13 @@ function HomeScreenContent() {
     closeInfoModal,
   } = useHomeModals(error);
   const { isStoreOwner } = useAuth();
-  const { products, categories, upsertProduct, removeProduct, loading: productsLoading } = home;
+  const products = home?.products ?? [];
+  const categories = home?.categories ?? [];
+  const upsertProduct = home?.upsertProduct ?? ((_: any) => {});
+  const removeProduct = home?.removeProduct ?? ((_: any) => {});
+  const productsLoading = home?.loading ?? false;
 
-  const { fallbackCategories } = useHomeData();
+  const { fallbackCategories, fallbackBanners } = useHomeData();
   const categoriesToShow = categories.length ? categories : fallbackCategories;
 
     const { filteredProducts, searchQuery, selectedCategory, setSelectedCategory, minPrice, setMinPrice, maxPrice, setMaxPrice, sortBy, setSortBy, showSortModal, setShowSortModal } = useHomeFilters(products);
@@ -100,6 +105,20 @@ function HomeScreenContent() {
     refresh();
   }, [closeInfoModal, refresh]);
 
+  const renderRefreshControl = () => {
+    try {
+      // Some tests mock react-native without RefreshControl; guard its usage.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { RefreshControl } = require('react-native');
+      if (RefreshControl) {
+        return (
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+        );
+      }
+    } catch {}
+    return undefined;
+  };
+
   // DOCME: network-only home options
   if (isNetwork) {
     return (
@@ -107,16 +126,14 @@ function HomeScreenContent() {
         testID="home-root"
         backgroundColor={themeColors.canvas}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: spacing.spacer24 }}
+        style={[{ flex: 1 }]}
       >
-        <main className="mx-auto max-w-screen-xl p-6 space-y-6">
-          <section>
-            <HeroCallout />
-          </section>
-          <section className="overflow-x-auto scroll-snap-x mandatory">
-            <HomeOptions />
-          </section>
-        </main>
+        <Container style={{ paddingVertical: spacing.spacer16 }}>
+          <HeroCallout />
+          <View style={{ height: spacing.spacer16 }} />
+          <HomeOptions />
+        </Container>
       </ScrollArea>
     );
   }
@@ -148,7 +165,8 @@ function HomeScreenContent() {
         testID="home-root"
         backgroundColor={themeColors.canvas}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
+        refreshControl={renderRefreshControl()}
+        style={[{ flex: 1 }]}
       >
         {tenantId && (
           <PromoCard
@@ -164,6 +182,14 @@ function HomeScreenContent() {
               ) : undefined
             }
             title={appName}
+            style={{ marginHorizontal: spacing.spacer16, marginBottom: spacing.spacer16 }}
+          />
+        )}
+        {!categories.length && (
+          <PromoCard
+            backgroundColor={themeColors.surface.primary}
+            title={fallbackBanners?.[0]?.title}
+            subtitle={fallbackBanners?.[0]?.subtitle}
             style={{ marginHorizontal: spacing.spacer16, marginBottom: spacing.spacer16 }}
           />
         )}

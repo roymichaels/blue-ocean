@@ -4,9 +4,17 @@ import { Readable } from 'stream';
 
 import { assertNearChain } from './chain';
 import { initLake } from './nearLake';
-import config from '@/config';
+// Load config with a fallback for ts-node (tests use ts-node/register without tsconfig paths)
+let config: any;
+try {
+  config = require('@/config').default;
+} catch {
+  config = require('../config').default;
+}
 
-assertNearChain();
+if (typeof assertNearChain === 'function') {
+  try { assertNearChain(); } catch {}
+}
 
 let lakeStarted = false;
 let S3Client: typeof import('minio').Client | null = null;

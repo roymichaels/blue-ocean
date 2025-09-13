@@ -19,7 +19,7 @@ function ensureSeed() {
     const data = require('@/assets/seed/seed-data.json');
     if (data?.products) {
       for (const p of data.products as Product[]) {
-        void setValue(ADDRESS, `${p.storeId}:${p.id}`, canonicalJson({
+        void setValue(ADDRESS, `${ADDRESS}:${p.storeId}:${p.id}`, canonicalJson({
           ...p,
           pricingTier: p.pricingTier,
           variants: p.variants || [],
@@ -34,7 +34,7 @@ function ensureSeed() {
 export async function getProduct(storeId: string, id: string): Promise<Product | null> {
   ensureSeed();
   const sid = requireStoreId(storeId);
-  const res = await getValue(ADDRESS, `${sid}:${id}`);
+  const res = await getValue(ADDRESS, `${ADDRESS}:${sid}:${id}`);
   if (!res) return null;
   try {
     const parsed = productSchema.parse(JSON.parse(res));
@@ -55,7 +55,7 @@ export async function setProduct(storeId: string, product: Product) {
   const validated = productSchema.parse(product);
   await setValue(
     ADDRESS,
-    `${sid}:${validated.id}`,
+    `${ADDRESS}:${sid}:${validated.id}`,
     canonicalJson({
       ...validated,
       pricingTier: validated.pricingTier,
@@ -67,7 +67,7 @@ export async function setProduct(storeId: string, product: Product) {
 
 export async function removeProduct(storeId: string, id: string) {
   const sid = requireStoreId(storeId);
-  await removeValue(ADDRESS, `${sid}:${id}`);
+  await removeValue(ADDRESS, `${ADDRESS}:${sid}:${id}`);
 }
 export async function listProducts(storeId: string): Promise<Product[]> {
   ensureSeed();
@@ -75,7 +75,7 @@ export async function listProducts(storeId: string): Promise<Product[]> {
   const items = await listValues(ADDRESS);
   const res: Product[] = [];
   for (const i of items) {
-    if (!i.key.startsWith(`${sid}:`)) continue;
+    if (!i.key.startsWith(`${ADDRESS}:${sid}:`)) continue;
     try {
       const parsed = productSchema.parse(JSON.parse(i.value));
       res.push({

@@ -33,7 +33,15 @@ let metricsStarted = false;
 export function startMetricsServer(
   port = Number(process.env.METRICS_PORT || 9464)
 ) {
-  if (metricsStarted || typeof window !== 'undefined' || !prom) return;
+  // Do not start during tests or in the browser
+  if (
+    metricsStarted ||
+    typeof window !== 'undefined' ||
+    !prom ||
+    process.env.NODE_ENV === 'test' ||
+    process.env.JEST_WORKER_ID
+  )
+    return;
   const http = require('http');
   const server = http.createServer(async (req: IncomingMessage, res: ServerResponse) => {
     if (req.url === '/metrics') {
@@ -43,6 +51,11 @@ export function startMetricsServer(
       res.statusCode = 404;
       res.end();
     }
+  });
+  server.on('error', (err: any) => {
+    // Avoid crashing tests if the port is already taken
+    if (err && err.code === 'EADDRINUSE') return;
+    throw err;
   });
   server.listen(port);
   metricsStarted = true;

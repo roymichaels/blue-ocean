@@ -9,7 +9,7 @@ module.exports = function (api) {
   return {
     presets: [
       "babel-preset-expo",
-      "@babel/preset-react",
+      ["@babel/preset-react", { runtime: "automatic" }],
       "@babel/preset-typescript",
     ],
     // SDK 50+: expo-router/babel is built into the preset; don't add it here.

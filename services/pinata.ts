@@ -59,7 +59,8 @@ class PinataService {
       const path = uri.startsWith('file://') ? uri.replace('file://', '') : uri;
       const buffer = await fs.readFile(path);
       await this.secureDelete(path);
-      (form as any).append('file', new Blob([buffer]), name);
+      const bytes = new Uint8Array(buffer);
+      (form as any).append('file', new Blob([bytes]), name);
     } else {
       form.append('file', { uri, name, type: 'application/octet-stream' } as any);
     }
@@ -92,9 +93,10 @@ class PinataService {
   private async getEncryptionKey(): Promise<CryptoKey> {
     const priv = await getPrivateKey();
     const material = sha256(Buffer.from(priv));
+    const data = material.buffer.slice(material.byteOffset, material.byteOffset + material.byteLength) as ArrayBuffer;
     return crypto.subtle.importKey(
       'raw',
-      material,
+      data,
       { name: 'AES-GCM' },
       false,
       ['encrypt'],

@@ -1,8 +1,6 @@
 import { Redirect, Stack } from 'expo-router';
 import { useAppRouter } from '@/services';
-import { StyleSheet, View } from 'react-native';
-import Text from '@/ui/primitives/Text';
-import Button from '@/ui/primitives/Button';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import { useLanguage } from '@/ui/ThemeProvider';
 
 export default function NotFoundScreen() {
@@ -17,7 +15,11 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: '404' }} />
       <View style={styles.container}>
         <Text style={styles.text}>{t('errors.pageNotFound')}</Text>
-        <Button title={t('common.goHome')} onPress={() => replace('/')} />
+        <TouchableOpacity accessibilityRole="button" onPress={() => replace('/')}
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>{t('common.goHome')}</Text>
+        </TouchableOpacity>
       </View>
     </>
   );
@@ -32,6 +34,17 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 20,
+    fontWeight: '600',
+  },
+  button: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#000',
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#fff',
     fontWeight: '600',
   },
 });

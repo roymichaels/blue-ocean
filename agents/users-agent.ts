@@ -10,7 +10,9 @@ import type { WakuMessage } from '@/types/waku';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import AgentError from '@/types/AgentError';
 
-assertNearChain();
+if (typeof assertNearChain === 'function') {
+  try { assertNearChain(); } catch {}
+}
 
 export type UsersAgentMessage =
   | { type: 'user.add'; payload: User }

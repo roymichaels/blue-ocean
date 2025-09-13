@@ -1,4 +1,3 @@
-// TOUCHPOINT: translations/en.json updated with new i18n keys — Fix Pack v2
 {
   "common": {
     "save": "Save",
@@ -102,6 +101,16 @@
     "hero_title": "Discover unique products",
     "hero_subtitle": "Experience decentralized shopping",
     "hero_action": "Shop now",
+    "hero_sub": "Experience decentralized shopping",
+    "shop_now": "Shop now",
+    "create_store": "Create a Store",
+    "create_store_sub": "Launch your storefront.",
+    "become_driver": "Become a Driver",
+    "become_driver_sub": "Join the courier network.",
+    "business_login": "Business Login",
+    "business_login_sub": "Manage orders & payments.",
+    "docs_api": "Docs & API",
+    "docs_api_sub": "Guides and integrations.",
     "noCategories": "No categories",
     "categoriesComingSoon": "Categories coming soon",
     "noProducts": "No products",
@@ -126,7 +135,16 @@
     "create_store": "Create a Store",
     "become_driver": "Become a Driver",
     "business_login": "Business Login",
-    "docs_api": "Docs & API"
+    "docs_api": "Docs & API",
+    "start": "Start",
+    "apply": "Apply",
+    "login": "Login",
+    "view": "View",
+    "back_home": "Back to Home"
+  },
+  "store": {
+    "not_found": "Store not found",
+    "not_found_sub": "Check the address or go back to the homepage."
   },
   "categories": {
     "all": "All",

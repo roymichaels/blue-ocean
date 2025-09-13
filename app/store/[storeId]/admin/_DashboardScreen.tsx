@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useAppRouter, useProducts } from '@/services';
+import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import OrderRevenueMetrics from '@/features/stores/components/OrderRevenueMetrics';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useStore } from '@/features/products';
+import { getStore as getNearStore } from '@/features/stores/services/nearStores';
+import { listProducts as listNearProducts } from '@/features/products/services/nearProducts';
 import { routes } from '@/utils/routes';
 
 export default function StoreDashboardScreen() {
+  console.debug('SD: mount');
   const { replace, push } = useAppRouter();
   const { storeId, impersonate } = useLocalSearchParams<{ storeId: string; impersonate?: string }>();
   const { colors } = useTheme();
@@ -17,8 +19,24 @@ export default function StoreDashboardScreen() {
   const { user } = useAuth();
   const [productCount, setProductCount] = useState(0);
   const [authorized, setAuthorized] = useState(false);
-  const { data: store } = useStore(storeId);
-  const { data: products = [] } = useProducts(storeId ?? null);
+  const [store, setStore] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      if (!storeId) return;
+      try {
+        console.debug('SD: fetch store', storeId);
+        const s = await getNearStore(storeId, storeId);
+        setStore(s);
+      } catch {}
+      try {
+        console.debug('SD: fetch products', storeId);
+        const ps = await listNearProducts(storeId);
+        setProducts(ps || []);
+      } catch {}
+    })();
+  }, [storeId]);
 
   useEffect(() => {
     if (!storeId || !store) return;
@@ -29,10 +47,11 @@ export default function StoreDashboardScreen() {
     }
     setAuthorized(true);
     setProductCount(products.filter((p) => p.storeId === storeId).length);
-  }, [storeId, store, user?.address, products]);
+  }, [storeId, store, user?.address, products, impersonate]);
   
 
   if (!authorized) {
+    console.debug('SD: not authorized yet');
     return null;
   }
 

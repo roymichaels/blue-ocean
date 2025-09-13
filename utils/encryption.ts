@@ -20,9 +20,11 @@ export async function deriveSharedKey(
   if (!myX || !peerX) throw new Error('key conversion failed');
   const shared = nacl.scalarMult(myX, peerX);
   const derived = hkdf(sha256, shared, salt, info, 32);
+  // Ensure a strict ArrayBuffer for TS DOM types
+  const data = derived.buffer.slice(derived.byteOffset, derived.byteOffset + derived.byteLength) as ArrayBuffer;
   return crypto.subtle.importKey(
     'raw',
-    derived,
+    data,
     { name: 'AES-GCM' },
     false,
     ['encrypt', 'decrypt'],

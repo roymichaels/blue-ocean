@@ -16,7 +16,6 @@ export function useNotifications() {
       return user ? notificationService.getNotifications(user.id) : [];
     },
     enabled: isLoggedIn && !!user,
-    suspense: true,
     initialData: [],
   });
 

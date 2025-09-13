@@ -74,6 +74,19 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
       return base;
     };
 
+    let content: React.ReactNode = null;
+    if (loading) {
+      content = <Spinner color={colors.text.inverse} />;
+    } else if (children !== undefined && children !== null) {
+      if (typeof children === 'string' || typeof children === 'number') {
+        content = <Text style={[styles.label(colors), textStyle]}>{children}</Text>;
+      } else {
+        content = children;
+      }
+    } else {
+      content = <Text style={[styles.label(colors), textStyle]}>{title}</Text>;
+    }
+
     return (
       <Animated.View style={{ transform: [{ scale }] }}>
         <Pressable
@@ -85,13 +98,7 @@ const Button = forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
           {...(Platform.OS === 'web' && tooltip ? { title: tooltip } : {})}
           {...rest}
         >
-          {loading ? (
-            <Spinner color={colors.text.inverse} />
-          ) : children ? (
-            children
-          ) : (
-            <Text style={[styles.label(colors), textStyle]}>{title}</Text>
-          )}
+          {content}
         </Pressable>
       </Animated.View>
     );

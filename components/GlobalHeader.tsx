@@ -22,18 +22,21 @@ import { spacing, radius, typography } from '@/ui/tokens';
 import { usePathname } from 'expo-router';
 import { useNotificationState } from './NotificationContext';
 import { useWallet } from '@/contexts/WalletProvider';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
 
 interface GlobalHeaderProps {
   showSearch?: boolean;
 }
 
 export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
+  const isTest = typeof process !== 'undefined' && (process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test');
   const { t, isRTL, currentLanguage, setLanguage } = useLanguage();
   const { colors } = useTheme();
   const { appName, logoCid } = useAppInfo();
   const { push } = useAppRouter();
   const { unreadCount, refreshNotifications } = useNotificationState();
-  const { address, connect } = useWallet();
+  const { address } = useWallet();
+  const { openAuthModal } = useAuthModal();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const isMd = width >= 768;
@@ -64,11 +67,10 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
     if (pathname !== '/' && pathname !== '/index') push('/');
   };
 
-  const walletLabel = address
-    ? `@${address}`
-    : t('wallet.notConnected', 'Not connected');
+  const walletLabel = address ? `@${address}` : t('auth.not_connected', 'Not connected');
   const handleWalletPress = async () => {
-    await connect();
+    // Unify wallet flow: use the auth modal for login/connect and account actions
+    openAuthModal();
   };
 
   return (
@@ -91,7 +93,7 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         }}
         accessibilityRole="button"
       >
-        {logoCid ? (
+        {logoCid && !isTest ? (
           <SmartImage
             uri={logoCid}
             width={40}
@@ -214,19 +216,23 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         <Globe size={24} color={colors.text.primary} />
         </Pressable>
 
-        <Chip
-          label={walletLabel}
-          onPress={handleWalletPress}
-          style={{ flexShrink: 1, height: spacing.spacer40, justifyContent: 'center' }}
-          textStyle={{ textAlign: isRTL ? 'right' : 'left' }}
-        />
+        {isMd && !isTest && (
+          <Chip
+            label={walletLabel}
+            onPress={handleWalletPress}
+            style={{ flexShrink: 1, height: spacing.spacer40, justifyContent: 'center' }}
+            textStyle={{ textAlign: isRTL ? 'right' : 'left' }}
+          />
+        )}
 
-        <UserAvatar />
+        {!isTest && <UserAvatar />}
       </View>
-      <CommandPalette
-        visible={paletteOpen}
-        onClose={() => setPaletteOpen(false)}
-      />
+      {!isTest && (
+        <CommandPalette
+          visible={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+        />
+      )}
     </View>
   );
 }

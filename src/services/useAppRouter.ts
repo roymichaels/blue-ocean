@@ -1,10 +1,11 @@
 /* eslint-disable no-restricted-syntax */
 import { useCallback } from 'react';
-import { useRouter } from 'expo-router';
 import { debugLog } from '@/utils/logger';
 import {
   push as navigationPush,
   replace as navigationReplace,
+  back as navigationBack,
+  canGoBack as navigationCanGoBack,
 } from '@/services/navigation';
 
 function warnGroupPath(path: unknown) {
@@ -14,7 +15,6 @@ function warnGroupPath(path: unknown) {
 }
 
 export function useAppRouter() {
-  const router = useRouter();
 
   const push = useCallback(
     (...args: Parameters<typeof navigationPush>) => {
@@ -36,12 +36,12 @@ export function useAppRouter() {
 
   const back = useCallback(() => {
     debugLog('[router] back');
-    router.back();
-  }, [router]);
+    navigationBack();
+  }, []);
 
   const canGoBack = useCallback(() => {
-    return typeof (router as any).canGoBack === 'function' && (router as any).canGoBack();
-  }, [router]);
+    return navigationCanGoBack();
+  }, []);
 
   return { push, replace, back, canGoBack };
 }

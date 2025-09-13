@@ -7,6 +7,7 @@ import type { LightNode } from '@waku/sdk';
 import { Buffer } from 'buffer';
 import { topicFor } from '@blue-ocean/utils';
 import { getNetworkId } from '../config';
+import { getClient } from '@/utils/transport';
 
 // In-memory cache of messages keyed by topic. Each topic also tracks a set of
 // previously seen payloads to avoid duplications when `hydrateMessages` is called
@@ -18,16 +19,18 @@ let node: LightNode | null = null;
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
-    const bootstrap = (
+    const raw =
       process.env.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
       process.env.WAKU_BOOTSTRAP ||
-      ''
-      )
-        .split(String.fromCharCode(44))
-        .map((s) => s.trim())
+      '';
+    let bootstrap = raw
+      .split(String.fromCharCode(44))
+      .map((s) => s.trim())
       .filter(Boolean);
-    const { createLightNode, waitForRemotePeer, Protocols } = await import('@waku/sdk');
-    node = await createLightNode({ libp2p: { bootstrap } } as any);
+    // Treat 'auto' (or empty) as: let SDK pick defaults (don't pass manual bootstrap)
+    const useAuto = bootstrap.length === 0 || bootstrap.some((s) => s.toLowerCase() === 'auto');
+    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
+    node = await createLightNode(useAuto ? ({} as any) : ({ libp2p: { bootstrap } } as any));
     if (!node) return null;
     await node.start();
     // The Store protocol is required to query historical messages.
@@ -46,8 +49,9 @@ async function ensureNode(): Promise<LightNode | null> {
 export async function hydrateMessages(topic: string): Promise<any[]> {
   const n = await ensureNode();
   if (!n) return messageCache.get(topic) || [];
-  const { createDecoder } = await import('@waku/sdk');
-  const decoder = createDecoder(topic);
+  const client: any = await getClient();
+  // createDecoder signature may require routing info in newer versions; provide minimal arg
+  const decoder = client.createDecoder(topic, {});
   const existing = messageCache.get(topic) || [];
   const seen = seenCache.get(topic) || new Set<string>();
   for await (const batch of (n.store.queryGenerator as any)({ decoder })) {

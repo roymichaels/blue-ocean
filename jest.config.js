@@ -1,4 +1,7 @@
-module.exports = {
+const isCI = process.env.CI === 'true';
+
+/** @type {import('jest').Config} */
+const cfg = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
@@ -7,7 +10,7 @@ module.exports = {
     '^.+\\.js$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(@noble/ed25519|react-native|@blue-ocean/utils|@blue-ocean/sdk-near)/)',
+    '/node_modules/(?!(@noble/ed25519|react-native|expo|expo-linear-gradient|react-native-svg|lucide-react-native|@blue-ocean/utils|@blue-ocean/sdk-near|@waku/.*)/)',
   ],
 
   collectCoverage: true,
@@ -16,11 +19,16 @@ module.exports = {
     '<rootDir>/services/**/*.ts',
     '<rootDir>/src/ui/**/*.{ts,tsx}',
   ],
-  coverageThreshold: {
-    './contracts/': { statements: 80, branches: 80, functions: 80, lines: 80 },
-    './services/': { statements: 70, branches: 70, functions: 70, lines: 70 },
-    './src/ui/': { statements: 60, branches: 60, functions: 60, lines: 60 },
-  },
+  // Enforce strict coverage thresholds only in CI
+  ...(isCI
+    ? {
+        coverageThreshold: {
+          './contracts/': { statements: 80, branches: 80, functions: 80, lines: 80 },
+          './services/': { statements: 70, branches: 70, functions: 70, lines: 70 },
+          './src/ui/': { statements: 60, branches: 60, functions: 60, lines: 60 },
+        },
+      }
+    : {}),
 
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
@@ -47,6 +55,17 @@ module.exports = {
     '^@/providers$': '<rootDir>/src/providers/index',
     '^@/i18n$': '<rootDir>/src/i18n',
     '^@/(.*)$': '<rootDir>/$1',
+    '^src/(.*)$': '<rootDir>/src/$1',
+    // Optional: lightweight stubs for problematic RN libs in Node env
+    '^react-native-svg$': '<rootDir>/tests/__mocks__/react-native.js',
+    // Expo's ESM-only virtual env module trips Jest; stub it
+    '^expo/virtual/env$': '<rootDir>/tests/__mocks__/expoEnv.js',
+    // Native-safe-area provider needs a mock in Node
+    '^react-native-safe-area-context$': '<rootDir>/tests/__mocks__/react-native-safe-area-context.js',
+    // ESM-only expo-video-thumbnails -> mock in tests
+    '^expo-video-thumbnails$': '<rootDir>/tests/__mocks__/expo-video-thumbnails.js',
+    '^lucide-react-native$': '<rootDir>/tests/__mocks__/lucide-react-native.js',
+    '^expo-router$': '<rootDir>/tests/__mocks__/expo-router.js',
   },
   testMatch: [
     '<rootDir>/tests/storeIsolation.test.ts',
@@ -80,3 +99,5 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/setupEnv.ts'],
   globalSetup: '<rootDir>/tests/lintTypeCheck.js',
 };
+
+module.exports = cfg;

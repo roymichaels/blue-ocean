@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Card, Text, Button } from '@/ui';
+import { ScrollView } from 'react-native';
 import { Stack } from '@/ui/layout';
 import { radius, shadows, spacing } from '@/ui/tokens';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
@@ -33,6 +34,12 @@ function HomeOptions() {
   const isDesktop = width >= 768;
   const isRTL = I18nManager.isRTL;
   const cardHeight = isDesktop ? 112 : 96;
+  const horizontalPadding = spacing.spacer16;
+  const gapPx = spacing.spacer16;
+  const desktopCols = width >= 1280 ? 4 : width >= 1024 ? 3 : 4; // prefer 4 at md per spec
+  const desktopItemWidth = isDesktop
+    ? Math.max(160, (width - horizontalPadding * 2 - gapPx * (desktopCols - 1)) / desktopCols)
+    : 260;
 
   const handleCreateStore = guard(walletAddress, connect, () => {
     appRouter.push(routes.createStore());
@@ -52,39 +59,38 @@ function HomeOptions() {
     }
   };
 
-  const handleKeyDown = (
-    e: NativeSyntheticEvent<KeyboardEvent>,
-    action: () => void,
-  ) => {
-    const key = e.nativeEvent.key;
+  const handleKeyDown = (e: any, action: () => void) => {
+    const key = e?.nativeEvent?.key || e?.key;
     if (key === 'Enter' || key === ' ') {
-      e.preventDefault();
+      e?.preventDefault?.();
       action();
     }
   };
 
+  const gateTip = t('home.connectWalletToContinue', 'חבר ארנק כדי להמשיך');
+
   const options = [
     {
       key: 'create-store',
-      title: t('cta.create_store', 'Create a Store'),
+      title: t('home.create_store', 'Create a Store'),
       action: handleCreateStore,
       testID: 'create-store-link',
     },
     {
       key: 'become-driver',
-      title: t('cta.become_driver', 'Become a Driver'),
+      title: t('home.become_driver', 'Become a Driver'),
       action: handleBecomeDriver,
       testID: 'become-driver-button',
     },
     {
       key: 'business-login',
-      title: t('cta.business_login', 'Business Login'),
+      title: t('home.business_login', 'Business Login'),
       action: handleBusinessLogin,
       testID: 'business-login-button',
     },
     {
       key: 'docs-api',
-      title: t('cta.docs_api', 'Docs & API'),
+      title: t('home.docs_api', 'Docs & API'),
       action: handleDocs,
       tooltip: docsUrl,
       testID: 'docs-api-button',
@@ -98,35 +104,36 @@ function HomeOptions() {
     tooltip,
     testID,
   }: (typeof options)[number]) => (
-    <Card
-      key={key}
-      style={[
-        styles.card,
-        { height: cardHeight },
-        isDesktop ? styles.cardDesktop : styles.cardMobile,
-      ]}
-    >
-      <Stack gap="spacer8">
-        <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
-        <Button
-          title={title}
-          onPress={action}
-          onKeyDown={(e) => handleKeyDown(e, action)}
-          accessibilityRole="link"
-          tooltip={tooltip}
-          style={styles.fullWidth}
-          testID={testID}
-        />
-      </Stack>
-    </Card>
+    <View key={key} style={[isDesktop ? { width: desktopItemWidth } : null]}>
+      <Card
+        style={[
+          styles.card,
+          { height: cardHeight, width: isDesktop ? '100%' : desktopItemWidth },
+          isDesktop ? styles.cardDesktop : styles.cardMobile,
+        ]}
+      >
+        <Stack gap="spacer8">
+          <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
+          <Button
+            title={title}
+            onPress={action}
+            {...(Platform.OS === 'web' ? ({ onKeyDown: (e: any) => handleKeyDown(e, action) } as any) : {})}
+            accessibilityRole="link"
+            tooltip={tooltip ?? (!walletAddress ? gateTip : undefined)}
+            style={styles.fullWidth}
+            testID={testID}
+          />
+        </Stack>
+      </Card>
+    </View>
   );
 
   if (isDesktop) {
     return (
       <View
         style={[
-          styles.desktopGrid,
-          { direction: isRTL ? 'rtl' : 'ltr' },
+          styles.desktopRow,
+          { flexDirection: isRTL ? 'row-reverse' : 'row' },
         ]}
       >
         {options.map(renderCard)}
@@ -135,29 +142,32 @@ function HomeOptions() {
   }
 
   return (
-    <View
-      style={[
-        styles.mobileRow,
-        { flexDirection: isRTL ? 'row-reverse' : 'row' },
-      ]}
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      decelerationRate="fast"
+      snapToAlignment="start"
+      snapToInterval={desktopItemWidth + gapPx}
+      contentContainerStyle={styles.mobileRow}
     >
       {options.map(renderCard)}
-    </View>
+    </ScrollView>
   );
 }
 
 export default HomeOptions; // DOCME: premium action cards
 
 const styles = StyleSheet.create({
-  desktopGrid: {
-    display: 'grid',
-    gap: spacing.spacer16,
-    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+  desktopRow: {
     paddingHorizontal: spacing.spacer16,
+    gap: spacing.spacer16,
+    justifyContent: 'space-between',
+    alignItems: 'stretch',
   },
   mobileRow: {
     paddingHorizontal: spacing.spacer16,
     gap: spacing.spacer16,
+    alignItems: 'stretch',
   },
   card: {
     borderRadius: radius.xl,
@@ -167,9 +177,7 @@ const styles = StyleSheet.create({
       web: { scrollSnapAlign: 'start' as any },
     }),
   },
-  cardDesktop: {
-    width: '100%',
-  },
+  cardDesktop: {},
   cardMobile: {
     width: 260,
   },

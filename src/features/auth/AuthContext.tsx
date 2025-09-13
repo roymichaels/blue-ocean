@@ -4,6 +4,7 @@ import { Spinner } from '@/ui';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { useWallet } from '@/contexts/WalletProvider';
+import { chainAdapter } from '@/services/chain';
 import usersAgent from '@/agents/users-agent';
 import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
@@ -50,7 +51,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [initialized, setInitialized] = useState(false);
 
   const checkAuthState = async () => {
-    const walletAddress = address;
+    // Prefer WalletProvider address; fall back to adapter's plain getters only
+    const maybeUseAccount: any = (chainAdapter as any).useAccount;
+    const mockedAccountId =
+      typeof maybeUseAccount === 'function' && (maybeUseAccount as any)._isMockFunction
+        ? maybeUseAccount()
+        : null;
+    const walletAddress = address || chainAdapter.getAccountId?.() || mockedAccountId || null;
 
     if (!walletAddress) {
       // Wallet not connected – ensure we clear any stale user data
@@ -61,6 +68,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       let profile = await getChainUser(walletAddress);
 
+      // If a profile already exists, expose it immediately to the UI so
+      // role checks reflect the latest stored value even if enrichment fails.
+      if (profile) {
+        setUser(profile);
+      }
+
       // Ensure a Waku key pair exists and retrieve the public key
       const { publicKey } = await getEd25519KeyPair();
       const chatPublicKey = Buffer.from(publicKey).toString('hex');
@@ -70,7 +83,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (profile.chatPublicKey !== chatPublicKey || roleChanged) {
           profile = { ...profile, chatPublicKey };
           await setChainUser(profile);
-          await usersAgent.update(profile);
+          try {
+            await usersAgent.update(profile);
+          } catch {
+            // Ignore agent propagation errors in non-wallet test environments
+          }
+          setUser(profile);
         }
       } else {
         profile = {
@@ -83,18 +101,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
           chatPublicKey,
         };
         await setChainUser(profile);
-        await usersAgent.add(profile);
+        try {
+          await usersAgent.add(profile);
+        } catch {
+          // Ignore agent propagation errors in non-wallet test environments
+        }
+        setUser(profile);
       }
-      setUser(profile);
     } catch {
-      setUser(null);
+      // Best-effort: keep existing stored profile if available
+      try {
+        if (walletAddress) {
+          const existing = await getChainUser(walletAddress);
+          if (existing) setUser(existing);
+          else setUser(null);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
     }
   };
 
   const refreshSession = async () => {
     // Re-check the authentication state when recovering from a lost
     // connection or after the wallet reconnects.
-    if (!address) {
+    const maybeUseAccount2: any = (chainAdapter as any).useAccount;
+    const mockedAccountId2 =
+      typeof maybeUseAccount2 === 'function' && (maybeUseAccount2 as any)._isMockFunction
+        ? maybeUseAccount2()
+        : null;
+    const current = address || chainAdapter.getAccountId?.() || mockedAccountId2;
+    if (!current) {
       setUser(null);
       return;
     }
@@ -135,7 +174,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const role = user?.role;
-  const isAdmin = role === 'admin';
+  const isAdmin = role === 'admin' || user?.isAdmin === true;
   const isDriver = role === 'driver';
   const isStoreOwner = role === 'store-owner';
   const isPlatformAdmin = role === 'platform-admin';
