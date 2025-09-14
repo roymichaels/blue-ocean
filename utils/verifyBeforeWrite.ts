@@ -10,17 +10,17 @@ export async function verifyBeforeWrite<T>(
 ): Promise<WakuMessage<T> | null> {
   const res = schema.safeParse(data);
   if (!res.success) {
-    errorLog('Invalid Waku message', res.error.flatten());
+    errorLog('Invalid Waku message');
     return null;
   }
   const msg = res.data;
   const ok = await verifyMessageSignature(msg, msg.sender.publicKey);
   if (!ok) {
-    errorLog('Invalid message signature', msg);
+    errorLog('E_SIGNATURE_INVALID');
     return null;
   }
   if (allowedPublicKeys && !allowedPublicKeys.includes(msg.sender.publicKey)) {
-    errorLog('Unauthorized sender', msg.sender.publicKey);
+    errorLog('E_UNAUTHORIZED');
     return null;
   }
   return msg;
