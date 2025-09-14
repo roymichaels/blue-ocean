@@ -29,6 +29,15 @@ export const serviceFailures =
       })
     : { inc: () => {} };
 
+export const adminTransactionIntegrity =
+  prom
+    ? new prom.Counter({
+        name: 'admin_transaction_integrity_total',
+        help: 'Admin transaction results',
+        labelNames: ['action', 'result'],
+      })
+    : { inc: () => {} };
+
 let metricsStarted = false;
 export function startMetricsServer(
   port = Number(process.env.METRICS_PORT || 9464)
