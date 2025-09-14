@@ -1,4 +1,8 @@
 import { EventEmitter } from 'events';
+import {
+  cacheHitRatioGauge,
+  cacheHydrationHistogram,
+} from '@/services/monitoring';
 import { fetchHistory, subscribeWithAck } from '@/services/waku';
 
 export const E_STALE_DATA = 'E_STALE_DATA';
@@ -25,6 +29,15 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   let synced = false;
   let stale = false;
   const buffer: DiffMessage<T>[] = [];
+  let hits = 0;
+  let misses = 0;
+
+  const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
+
+  function updateHitRatio(): void {
+    const total = hits + misses;
+    cacheHitRatioGauge.set({ cache: topic }, total ? hits / total : 0);
+  }
 
   function apply(msg: DiffMessage<T>): void {
     const current = store.get(msg.id);
@@ -51,11 +64,13 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
       buffer.forEach(apply);
       buffer.length = 0;
       synced = true;
+      endHydration();
       emitter.emit('cache.synced');
       // expose unsubscribe on emitter
       (emitter as any).unsub = unsub;
     } catch (err) {
       stale = true;
+      endHydration();
       emitter.emit('error', { code: E_STALE_DATA, err });
     }
   })();
@@ -63,7 +78,11 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   return {
     getById(id: string) {
       if (stale) throw { code: E_STALE_DATA };
-      return store.get(id)?.value;
+      const value = store.get(id)?.value;
+      if (value !== undefined) hits++;
+      else misses++;
+      updateHitRatio();
+      return value;
     },
     subscribe(filter, cb) {
       const handler = (id: string, value: T | undefined) => {

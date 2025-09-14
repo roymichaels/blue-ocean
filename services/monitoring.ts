@@ -61,6 +61,20 @@ export const adminCountGauge = new Gauge({
   registers: [registry],
 });
 
+export const cacheHydrationHistogram = new Histogram({
+  name: 'cache_hydration_time_seconds',
+  help: 'Time to hydrate cache',
+  labelNames: ['cache'],
+  registers: [registry],
+});
+
+export const cacheHitRatioGauge = new Gauge({
+  name: 'cache_hit_ratio',
+  help: 'Cache hit ratio (hits/total)',
+  labelNames: ['cache'],
+  registers: [registry],
+});
+
 export async function withMonitoring<T>(
   service: string,
   fn: () => Promise<T>,
