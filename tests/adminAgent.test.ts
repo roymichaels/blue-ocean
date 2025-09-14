@@ -67,6 +67,17 @@ describe('AdminAgent', () => {
     expect(pending).toHaveLength(1);
   });
 
+  it('rejects admin requests with invalid signatures', async () => {
+    const priv = utils.randomPrivateKey();
+    const pub = await getPublicKey(priv);
+    const msg = await createSignedMessage('admin.request', { address: 'addr1' }, priv, pub);
+    // Corrupt signature
+    msg.signature = '00';
+    await expect(agent.requestAdmin(msg)).rejects.toMatchObject({
+      code: 'E_SIGNATURE_INVALID',
+    });
+  });
+
   it('approves queued requests with existing admin', async () => {
     const priv1 = utils.randomPrivateKey();
     const pub1 = await getPublicKey(priv1);
@@ -141,5 +152,28 @@ describe('AdminAgent', () => {
     await expect(agent.approveAdmin(approve)).rejects.toMatchObject({
       code: 'E_SIGNATURE_INVALID',
     });
+  });
+
+  it('ignores replayed admin requests even with clock skew', async () => {
+    jest.useFakeTimers();
+
+    const priv = utils.randomPrivateKey();
+    const pub = await getPublicKey(priv);
+    const msg = await createSignedMessage('admin.request', { address: 'addr1' }, priv, pub);
+
+    // initial request at time t
+    jest.setSystemTime(new Date('2024-01-01T00:00:00Z'));
+    await agent.requestAdmin(msg);
+
+    // replay the same signed message after significant time skew
+    jest.setSystemTime(new Date('2024-01-01T01:00:00Z'));
+    await agent.requestAdmin(msg);
+
+    const admins = await agent.getAdmins();
+    expect(admins).toHaveLength(1);
+    const pending = await agent.getPendingRequests();
+    expect(pending).toHaveLength(0);
+
+    jest.useRealTimers();
   });
 });
