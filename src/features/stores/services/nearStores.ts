@@ -10,6 +10,13 @@ import { canonicalJson } from '@/utils/serialization';
 import { nearConfig } from '@/services/config';
 import { getSelector } from '@/services/walletSelector';
 import { Buffer } from 'buffer';
+import {
+  getValue,
+  setValue,
+  listValues,
+  removeValue,
+} from '@/services/nearKvStore';
+import { errorLog } from '@/utils/logger';
 
 assertNearChain();
 
@@ -117,32 +124,37 @@ async function sendTx(action: string, data: any) {
 
 export async function selectStore(
   arg1: string,
-  arg2?: string
+  arg2?: string,
 ): Promise<Store | null> {
   ensureSeed();
   const id = arg2 ?? arg1;
-  const sid = arg2 ? requireStoreId(arg1) : requireStoreId(id);
-  const res = await getValue(ADDRESS, storeKey(id, sid));
-  if (res) return JSON.parse(res) as Store;
-  if (DISABLED) {
-    const fallback: Store = {
-      id,
-      name: `Store ${id}`,
-      owner: 'demo',
-      nftId: '',
-      reputation: 0,
-    } as Store;
-    return fallback;
-  }
+  const key = arg2
+    ? storeKey(id, requireStoreId(arg1))
+    : indexKey(id);
+  const res = await getValue(ADDRESS, key);
+  if (!res) return null;
   try {
-    const chainRes = await contractGetStore({ id });
-    if (chainRes) {
-      const store = fromChain(chainRes);
-      await persistStore(store, sid);
-      return store;
-    }
-  } catch {}
-  return null;
+    return JSON.parse(res) as Store;
+  } catch (err) {
+    errorLog('Invalid store data', err);
+    return null;
+  }
+}
+
+export async function setStore(storeId: string, store: Store) {
+  const sid = requireStoreId(storeId);
+  await persistStore(store, sid);
+}
+
+export async function removeStore(
+  arg1: string,
+  arg2?: string,
+): Promise<void> {
+  const id = arg2 ?? arg1;
+  const sid = arg2 ? requireStoreId(arg1) : requireStoreId(id);
+  await sendTx('remove', { id });
+  await removeValue(ADDRESS, storeKey(id, sid));
+  await removeValue(ADDRESS, indexKey(id));
 }
 
 export async function listStores(storeId: string): Promise<Store[]> {
@@ -166,7 +178,9 @@ export async function listStores(storeId: string): Promise<Store[]> {
     return mapped;
   } catch {
     return res;
+
   }
+  return res;
 }
 
 export async function addStore(store: Store, sid?: string): Promise<void> {
