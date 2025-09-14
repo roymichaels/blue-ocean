@@ -3,6 +3,11 @@ import { __clear } from './nearKvMock';
 import { sign, getPublicKey, utils } from '@noble/ed25519';
 import { canonicalJson } from '@/utils/serialization';
 import type { WakuMessage } from '@/types/waku';
+import {
+  adminCountGauge,
+  adminUnauthorizedAttempts,
+} from '@/services/monitoring';
+import '@/polyfills.web';
 
 jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
 
@@ -31,6 +36,8 @@ describe('AdminAgent', () => {
 
   beforeEach(() => {
     __clear();
+    adminUnauthorizedAttempts.reset();
+    adminCountGauge.set(0);
     agent = new AdminAgent();
   });
 
@@ -45,6 +52,7 @@ describe('AdminAgent', () => {
     await expect(event).resolves.toEqual({ address: 'addr1' });
     const admins = await agent.getAdmins();
     expect(admins).toHaveLength(1);
+    expect(adminCountGauge.hashMap[''].value).toBe(1);
   });
 
   it('queues subsequent admin requests for approval', async () => {
@@ -126,9 +134,12 @@ describe('AdminAgent', () => {
       priv3,
       pub3,
     );
+    const start = adminUnauthorizedAttempts.hashMap['']?.value || 0;
     await expect(agent.approveAdmin(badApprove)).rejects.toMatchObject({
       code: 'E_UNAUTHORIZED',
     });
+    const end = adminUnauthorizedAttempts.hashMap['']?.value || 0;
+    expect(end).toBe(start + 1);
   });
 
   it('rejects approvals with bad signatures', async () => {
