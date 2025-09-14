@@ -48,11 +48,19 @@ describe('notificationsAgent.broadcast', () => {
 
     await notificationsAgent.broadcast('order.created', item, 's1');
 
-    expect(createEncoderMock).toHaveBeenCalledWith({ contentTopic: '/blue-ocean/orders/s1' });
-    expect(sendMock).toHaveBeenCalledTimes(1);
-    const [encoderArg, { payload }] = sendMock.mock.calls[0];
-    expect(encoderArg).toEqual({ contentTopic: '/blue-ocean/orders/s1' });
-    const decoded = JSON.parse(Buffer.from(payload).toString());
+    expect(createEncoderMock).toHaveBeenNthCalledWith(1, {
+      contentTopic: '/blue-ocean/notifications/s1',
+    });
+    expect(createEncoderMock).toHaveBeenNthCalledWith(2, {
+      contentTopic: '/blue-ocean/orders/s1',
+    });
+    expect(sendMock).toHaveBeenCalledTimes(2);
+    const [encoderNotif, { payload: notifPayload }] = sendMock.mock.calls[0];
+    expect(encoderNotif).toEqual({ contentTopic: '/blue-ocean/notifications/s1' });
+    expect(JSON.parse(Buffer.from(notifPayload).toString())).toEqual(item);
+    const [encoderOrder, { payload: orderPayload }] = sendMock.mock.calls[1];
+    expect(encoderOrder).toEqual({ contentTopic: '/blue-ocean/orders/s1' });
+    const decoded = JSON.parse(Buffer.from(orderPayload).toString());
     expect(decoded).toEqual({ type: 'order.created', notification: item });
   });
 
