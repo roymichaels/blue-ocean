@@ -5,6 +5,8 @@ import {
   setSetting,
   getAdmins as fetchAdmins,
   setAdmins as storeAdmins,
+  getAdminScopes as fetchAdminScopes,
+  setAdminScopes as storeAdminScopes,
   getAdminPublicKeys as fetchAdminPublicKeys,
   setAdminPublicKeys as storeAdminPublicKeys,
   subscribeToSettingsWrites,
@@ -12,6 +14,8 @@ import {
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { canonicalJson } from '@/utils/serialization';
+import type { AdminScope } from '@/types';
+import { ALL_ADMIN_SCOPES } from '@/types';
 
 // In tests, the chain module may be partially mocked. Avoid hard-failing on import.
 if (typeof assertNearChain === 'function') {
@@ -37,6 +41,8 @@ class SettingsAgent {
   private adminsFetchedAt = 0;
   private adminPublicKeys: string[] = [];
   private adminPublicKeysFetchedAt = 0;
+  private adminScopes: Record<string, AdminScope[]> = {};
+  private adminScopesFetchedAt = 0;
   private static ADMIN_CACHE_TTL = 60000; // 1 minute
 
   private constructor() {
@@ -48,6 +54,10 @@ class SettingsAgent {
       if (evt.key === 'adminPublicKeys') {
         this.adminPublicKeys = [];
         this.adminPublicKeysFetchedAt = 0;
+      }
+      if (evt.key === 'adminScopes') {
+        this.adminScopes = {};
+        this.adminScopesFetchedAt = 0;
       }
     });
   }
@@ -75,6 +85,9 @@ class SettingsAgent {
   }
 
   async getAdmins(): Promise<string[]> {
+    await this.loadAdminScopes();
+    const scoped = Object.keys(this.adminScopes);
+    if (scoped.length > 0) return scoped;
     const now = Date.now();
     if (
       this.admins.length === 0 ||
@@ -86,12 +99,56 @@ class SettingsAgent {
     return this.admins;
   }
 
+  private async loadAdminScopes() {
+    const now = Date.now();
+    if (
+      Object.keys(this.adminScopes).length === 0 ||
+      now - this.adminScopesFetchedAt > SettingsAgent.ADMIN_CACHE_TTL
+    ) {
+      this.adminScopes = await fetchAdminScopes();
+      this.adminScopesFetchedAt = now;
+    }
+  }
+
+  async getAdminsWithScope(scope: AdminScope): Promise<string[]> {
+    await this.loadAdminScopes();
+    return Object.keys(this.adminScopes).filter((a) =>
+      this.adminScopes[a]?.includes(scope),
+    );
+  }
+
+  async hasAdminScope(address: string, scope: AdminScope): Promise<boolean> {
+    await this.loadAdminScopes();
+    return this.adminScopes[address]?.includes(scope) ?? false;
+  }
+
   async setAdmins(admins: string[]): Promise<void> {
     await this.ensureWallet();
     const actor = nearAuth.getAccountId()!;
     const normalized = normalizeMessage<string[]>('Admins', admins as any);
     await storeAdmins(normalized, actor);
     this.admins = normalized;
+    this.adminsFetchedAt = Date.now();
+    const scopes: Record<string, AdminScope[]> = {};
+    normalized.forEach((a) => {
+      scopes[a] = ALL_ADMIN_SCOPES;
+    });
+    await storeAdminScopes(scopes, actor);
+    this.adminScopes = scopes;
+    this.adminScopesFetchedAt = Date.now();
+  }
+
+  async setAdminScopes(scopes: Record<string, AdminScope[]>): Promise<void> {
+    await this.ensureWallet();
+    const actor = nearAuth.getAccountId()!;
+    const normalized = normalizeMessage<Record<string, AdminScope[]>>(
+      'AdminScopes',
+      scopes as any,
+    );
+    await storeAdminScopes(normalized, actor);
+    this.adminScopes = normalized;
+    this.adminScopesFetchedAt = Date.now();
+    this.admins = Object.keys(normalized);
     this.adminsFetchedAt = Date.now();
   }
 

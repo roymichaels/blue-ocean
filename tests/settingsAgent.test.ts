@@ -55,7 +55,7 @@ describe('SettingsAgent NEAR integration', () => {
   });
 
   it('refreshes admin list on settings write event', async () => {
-    const getSpy = jest.spyOn(nearSettings, 'getAdmins');
+    const getSpy = jest.spyOn(nearSettings, 'getAdminScopes');
     const agent = SettingsAgent.getInstance();
     await agent.setAdmins(['addr_admin']);
 
@@ -94,7 +94,7 @@ describe('SettingsAgent NEAR integration', () => {
   });
 
   it('resets admin cache TTL after setAdmins', async () => {
-    const getSpy = jest.spyOn(nearSettings, 'getAdmins');
+    const getSpy = jest.spyOn(nearSettings, 'getAdminScopes');
     const agent = SettingsAgent.getInstance();
     await agent.setAdmins(['addr_admin']);
     jest.advanceTimersByTime(20);

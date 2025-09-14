@@ -35,9 +35,16 @@ class UsersAgent {
   async add(user: User): Promise<void> {
     const normalized = normalizeMessage<User>('User', user);
     const { address, publicKey } = await this.ensureWallet();
-    const admins = await SettingsAgent.getInstance().getAdmins();
-    if (address !== normalized.address && !admins.includes(address)) {
-      throw new AgentError('UNAUTHORIZED', 'Only the user or an admin can add this user', 'users-agent');
+    const hasScope = await SettingsAgent.getInstance().hasAdminScope(
+      address,
+      'admin:users',
+    );
+    if (address !== normalized.address && !hasScope) {
+      throw new AgentError(
+        'UNAUTHORIZED',
+        'Only the user or an admin with scope admin:users can add this user',
+        'users-agent',
+      );
     }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = {
@@ -55,9 +62,16 @@ class UsersAgent {
   async update(user: User): Promise<void> {
     const normalized = normalizeMessage<User>('User', user);
     const { address, publicKey } = await this.ensureWallet();
-    const admins = await SettingsAgent.getInstance().getAdmins();
-    if (address !== normalized.address && !admins.includes(address)) {
-      throw new AgentError('UNAUTHORIZED', 'Only the user or an admin can update this user', 'users-agent');
+    const hasScope = await SettingsAgent.getInstance().hasAdminScope(
+      address,
+      'admin:users',
+    );
+    if (address !== normalized.address && !hasScope) {
+      throw new AgentError(
+        'UNAUTHORIZED',
+        'Only the user or an admin with scope admin:users can update this user',
+        'users-agent',
+      );
     }
     const chatPublicKey = await getPublicKeyHex();
     const enriched: User = {
@@ -76,9 +90,16 @@ class UsersAgent {
     const { address } = await this.ensureWallet();
     const user = await getUser(id);
     if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
-    const admins = await SettingsAgent.getInstance().getAdmins();
-    if (address !== user.address && !admins.includes(address)) {
-      throw new AgentError('UNAUTHORIZED', 'Only the user or an admin can remove this user', 'users-agent');
+    const hasScope = await SettingsAgent.getInstance().hasAdminScope(
+      address,
+      'admin:users',
+    );
+    if (address !== user.address && !hasScope) {
+      throw new AgentError(
+        'UNAUTHORIZED',
+        'Only the user or an admin with scope admin:users can remove this user',
+        'users-agent',
+      );
     }
     await removeUser(id);
   }
@@ -88,9 +109,16 @@ class UsersAgent {
     const { address, publicKey } = await this.ensureWallet();
     const user = await getUser(userId);
     if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
-    const admins = await SettingsAgent.getInstance().getAdmins();
-    if (address !== user.address && !admins.includes(address)) {
-      throw new AgentError('UNAUTHORIZED', 'Only the user or an admin can request KYC', 'users-agent');
+    const hasScope = await SettingsAgent.getInstance().hasAdminScope(
+      address,
+      'admin:users',
+    );
+    if (address !== user.address && !hasScope) {
+      throw new AgentError(
+        'UNAUTHORIZED',
+        'Only the user or an admin with scope admin:users can request KYC',
+        'users-agent',
+      );
     }
     const enriched: User = normalizeMessage<User>('User', {
       ...user,
@@ -110,9 +138,16 @@ class UsersAgent {
     adminId?: string,
   ): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
-    const admins = await SettingsAgent.getInstance().getAdmins();
-    if (!admins.includes(address)) {
-      throw new AgentError('UNAUTHORIZED', 'Only admins can update KYC', 'users-agent');
+    const hasScope = await SettingsAgent.getInstance().hasAdminScope(
+      address,
+      'admin:users',
+    );
+    if (!hasScope) {
+      throw new AgentError(
+        'UNAUTHORIZED',
+        'Only admins with scope admin:users can update KYC',
+        'users-agent',
+      );
     }
     const user = await getUser(userId);
     if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');

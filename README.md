@@ -153,8 +153,10 @@ additional guidance.
 
 Admin privileges are controlled by a list of wallet addresses stored in the
 on-chain settings contract. Use the **Admin → Settings** screen or
-`SettingsAgent.setAdmins()` to add or remove addresses. Only wallets in this
-allowlist can manage users, products or other system settings.
+`SettingsAgent.setAdmins()` to add or remove addresses. Each admin is assigned
+explicit scopes such as `admin:settings`, `admin:users`, or `admin:orders`
+to limit privileges. Only wallets in this allowlist with the proper scope can
+manage the associated resources.
 
 ### Credit Card Checkout
 
