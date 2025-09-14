@@ -1,8 +1,8 @@
+import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { Store } from '@/types';
 import { chainAdapter, assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 import {
-  mintStore as contractMintStore,
   getStore as contractGetStore,
   listStores as contractListStores,
 } from '@/services/nearStoreContract';
@@ -12,6 +12,27 @@ import { getSelector } from '@/services/walletSelector';
 import { Buffer } from 'buffer';
 
 assertNearChain();
+
+const ADDRESS = 'stores';
+const DISABLED = false;
+let SEEDED = false;
+
+function ensureSeed() {
+  if (!DISABLED || SEEDED) return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const data = require('@/assets/seed/seed-data.json');
+    if (data?.stores) {
+      for (const s of data.stores as Store[]) {
+        const sid = requireStoreId(s.id);
+        const json = canonicalJson(s);
+        void setValue(ADDRESS, storeKey(s.id, sid), json);
+        void setValue(ADDRESS, indexKey(s.id), json);
+      }
+    }
+  } catch {}
+  SEEDED = true;
+}
 
 function fromChain(data: any): Store {
   return {
@@ -26,9 +47,9 @@ function fromChain(data: any): Store {
   } as Store;
 }
 
-
-
-export async function mintStore(name: string): Promise<{ id: string; nftId: string; txHash: string }> {
+export async function mintStore(
+  name: string
+): Promise<{ id: string; nftId: string; txHash: string }> {
   const { contractId } = nearConfig();
   if (!contractId) throw new Error('CONTRACT_ID required');
   const selector = getSelector();
@@ -80,8 +101,7 @@ function indexKey(id: string): string {
   return `${ADDRESS}:default:${id}`;
 }
 
-async function persistStore(store: Store) {
-  const sid = requireStoreId(store.id);
+async function persistStore(store: Store, sid: string) {
   const json = canonicalJson(store);
   await setValue(ADDRESS, storeKey(store.id, sid), json);
   await setValue(ADDRESS, indexKey(store.id), json);
@@ -95,7 +115,10 @@ async function sendTx(action: string, data: any) {
   }
 }
 
-export async function selectStore(arg1: string, arg2?: string): Promise<Store | null> {
+export async function selectStore(
+  arg1: string,
+  arg2?: string
+): Promise<Store | null> {
   ensureSeed();
   const id = arg2 ?? arg1;
   const sid = arg2 ? requireStoreId(arg1) : requireStoreId(id);
@@ -111,46 +134,49 @@ export async function selectStore(arg1: string, arg2?: string): Promise<Store | 
     } as Store;
     return fallback;
   }
-}
-
-
-export async function setStore(storeId: string, store: Store) {
-  requireStoreId(storeId);
   try {
-    await contractMintStore({
-      id: store.id,
-      name: store.name,
-      owner_id: store.owner,
-      nft_id: store.nftId,
-      reputation: store.reputation,
-    });
-  } catch (e: any) {
-    throw new Error(`Failed to mint store ${store.id}: ${e.message || e}`);
-  }
-}
-
-export async function removeStore(_storeId: string, _id: string) {
-  throw new Error('removeStore is not supported on-chain');
+    const chainRes = await contractGetStore({ id });
+    if (chainRes) {
+      const store = fromChain(chainRes);
+      await persistStore(store, sid);
+      return store;
+    }
+  } catch {}
+  return null;
 }
 
 export async function listStores(storeId: string): Promise<Store[]> {
-  requireStoreId(storeId);
+  ensureSeed();
+  const sid = requireStoreId(storeId);
+  const items = await listValues(ADDRESS);
+  const res: Store[] = [];
+  for (const i of items) {
+    if (!i.key.startsWith(`${ADDRESS}:${sid}:`)) continue;
+    try {
+      res.push(JSON.parse(i.value) as Store);
+    } catch {}
+  }
+  if (res.length > 0 || DISABLED) return res;
   try {
-    const res = await contractListStores();
-    return res.map(fromChain);
-  } catch (e: any) {
-    throw new Error(`Failed to list stores: ${e.message || e}`);
+    const chainRes = await contractListStores();
+    const mapped = chainRes.map(fromChain);
+    for (const s of mapped) {
+      await persistStore(s, requireStoreId(s.id));
+    }
+    return mapped;
+  } catch {
+    return res;
   }
 }
 
-export async function addStore(store: Store): Promise<void> {
+export async function addStore(store: Store, sid?: string): Promise<void> {
   await sendTx('add', { store });
-  await persistStore(store);
+  await persistStore(store, sid ?? requireStoreId(store.id));
 }
 
-export async function updateStore(store: Store): Promise<void> {
+export async function updateStore(store: Store, sid?: string): Promise<void> {
   await sendTx('update', { store });
-  await persistStore(store);
+  await persistStore(store, sid ?? requireStoreId(store.id));
 }
 
 export async function removeStore(arg1: string, arg2?: string): Promise<void> {
@@ -163,12 +189,11 @@ export async function removeStore(arg1: string, arg2?: string): Promise<void> {
 
 export const getStore = selectStore;
 
-export async function setStore(_storeId: string, store: Store) {
-  const existing = await selectStore(store.id);
+export async function setStore(storeId: string, store: Store) {
+  const existing = await selectStore(storeId, store.id);
   if (existing) {
-    await updateStore(store);
+    await updateStore(store, storeId);
   } else {
-    await addStore(store);
+    await addStore(store, storeId);
   }
 }
-
