@@ -6,6 +6,7 @@ import * as nearAPI from 'near-api-js';
 import { Buffer } from 'buffer';
 import { useEffect, useState } from 'react';
 import { nearConfig } from '@/services/config';
+import { getNearRpcUrls } from '@/utils/appConfig';
 
 // Ensure FailoverRpcProvider is available as a constructor
 const providers: any = (nearAPI as any).providers;
@@ -23,7 +24,9 @@ async function init() {
     return { selector: selector || undefined, error: initError } as const;
   }
   try {
-    const { networkId, contractId, walletUrl, rpcUrl, helperUrl } = nearConfig();
+    const { networkId, contractId, walletUrl, helperUrl } = nearConfig();
+    const rpcUrls = getNearRpcUrls();
+    const rpcUrl = await getHealthyRpcUrl(rpcUrls);
     if (contractId && (networkId === 'testnet') !== contractId.endsWith('.testnet')) {
       console.error(`CONTRACT_ID (${contractId}) does not match network ${networkId}`);
     }
@@ -40,6 +43,22 @@ async function init() {
     initError = e instanceof Error ? e : new Error(String(e));
   }
   return { selector: selector || undefined, error: initError } as const;
+}
+
+async function checkRpcHealth(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${url}/status`);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function getHealthyRpcUrl(urls: string[]): Promise<string> {
+  for (const url of urls) {
+    if (await checkRpcHealth(url)) return url;
+  }
+  throw new Error('No healthy RPC URL available');
 }
 
 async function signIn(): Promise<void> {
