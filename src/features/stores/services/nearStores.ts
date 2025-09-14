@@ -8,6 +8,9 @@ import { Store } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
 import { canonicalJson } from '@/utils/serialization';
+import { nearConfig } from '@/services/config';
+import { getSelector } from '@/services/walletSelector';
+import { Buffer } from 'buffer';
 
 assertNearChain();
 
@@ -38,6 +41,50 @@ function ensureSeed() {
     }
   } catch {}
   SEEDED = true;
+}
+
+export async function mintStore(name: string): Promise<{ id: string; nftId: string; txHash: string }> {
+  const { contractId } = nearConfig();
+  if (!contractId) throw new Error('CONTRACT_ID required');
+  const selector = getSelector();
+  if (!selector) throw new Error('Wallet not initialized');
+  const wallet = await selector.wallet();
+  const res: any = await wallet.signAndSendTransactions({
+    transactions: [
+      {
+        receiverId: contractId,
+        actions: [
+          {
+            type: 'FunctionCall',
+            params: {
+              methodName: 'mint_store',
+              args: { name },
+              gas: '30000000000000',
+              deposit: '0',
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  const outcome = Array.isArray(res) ? res[0] : res;
+  const txHash: string = outcome?.transaction?.hash || '';
+  let id = '';
+  let nftId = '';
+  try {
+    const val =
+      outcome?.status?.SuccessValue ||
+      outcome?.transaction_outcome?.outcome?.status?.SuccessValue;
+    if (val) {
+      const decoded = Buffer.from(val, 'base64').toString();
+      const parsed = JSON.parse(decoded);
+      id = parsed.store_id || parsed.storeId || parsed.id || '';
+      nftId = parsed.nft_id || parsed.nftId || '';
+    }
+  } catch {}
+  if (!id) throw new Error('mint_store failed');
+  return { id, nftId, txHash };
 }
 
 export async function getStore(storeId: string, id: string): Promise<Store | null> {
