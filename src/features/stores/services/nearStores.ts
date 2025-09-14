@@ -1,17 +1,39 @@
 import { Store } from '@/types';
 import { chainAdapter, assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
-import {
-  mintStore as contractMintStore,
-  getStore as contractGetStore,
-  listStores as contractListStores,
-} from '@/services/nearStoreContract';
 import { canonicalJson } from '@/utils/serialization';
 import { nearConfig } from '@/services/config';
 import { getSelector } from '@/services/walletSelector';
 import { Buffer } from 'buffer';
+import {
+  getValue,
+  setValue,
+  listValues,
+  removeValue,
+} from '@/services/nearKvStore';
+import { errorLog } from '@/utils/logger';
 
 assertNearChain();
+
+const ADDRESS = 'stores';
+const DISABLED = false;
+let SEEDED = false;
+
+function ensureSeed() {
+  if (!DISABLED || SEEDED) return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const data = require('@/assets/seed/seed-data.json');
+    if (data?.stores) {
+      for (const s of data.stores as Store[]) {
+        const json = canonicalJson(s);
+        void setValue(ADDRESS, storeKey(s.id, 'default'), json);
+        void setValue(ADDRESS, indexKey(s.id), json);
+      }
+    }
+  } catch {}
+  SEEDED = true;
+}
 
 function fromChain(data: any): Store {
   return {
@@ -26,9 +48,9 @@ function fromChain(data: any): Store {
   } as Store;
 }
 
-
-
-export async function mintStore(name: string): Promise<{ id: string; nftId: string; txHash: string }> {
+export async function mintStore(
+  name: string,
+): Promise<{ id: string; nftId: string; txHash: string }> {
   const { contractId } = nearConfig();
   if (!contractId) throw new Error('CONTRACT_ID required');
   const selector = getSelector();
@@ -80,8 +102,7 @@ function indexKey(id: string): string {
   return `${ADDRESS}:default:${id}`;
 }
 
-async function persistStore(store: Store) {
-  const sid = requireStoreId(store.id);
+async function persistStore(store: Store, sid: string) {
   const json = canonicalJson(store);
   await setValue(ADDRESS, storeKey(store.id, sid), json);
   await setValue(ADDRESS, indexKey(store.id), json);
@@ -95,65 +116,34 @@ async function sendTx(action: string, data: any) {
   }
 }
 
-export async function selectStore(arg1: string, arg2?: string): Promise<Store | null> {
+export async function selectStore(
+  arg1: string,
+  arg2?: string,
+): Promise<Store | null> {
   ensureSeed();
   const id = arg2 ?? arg1;
-  const sid = arg2 ? requireStoreId(arg1) : requireStoreId(id);
-  const res = await getValue(ADDRESS, storeKey(id, sid));
-  if (res) return JSON.parse(res) as Store;
-  if (DISABLED) {
-    const fallback: Store = {
-      id,
-      name: `Store ${id}`,
-      owner: 'demo',
-      nftId: '',
-      reputation: 0,
-    } as Store;
-    return fallback;
+  const key = arg2
+    ? storeKey(id, requireStoreId(arg1))
+    : indexKey(id);
+  const res = await getValue(ADDRESS, key);
+  if (!res) return null;
+  try {
+    return JSON.parse(res) as Store;
+  } catch (err) {
+    errorLog('Invalid store data', err);
+    return null;
   }
 }
-
 
 export async function setStore(storeId: string, store: Store) {
-  requireStoreId(storeId);
-  try {
-    await contractMintStore({
-      id: store.id,
-      name: store.name,
-      owner_id: store.owner,
-      nft_id: store.nftId,
-      reputation: store.reputation,
-    });
-  } catch (e: any) {
-    throw new Error(`Failed to mint store ${store.id}: ${e.message || e}`);
-  }
+  const sid = requireStoreId(storeId);
+  await persistStore(store, sid);
 }
 
-export async function removeStore(_storeId: string, _id: string) {
-  throw new Error('removeStore is not supported on-chain');
-}
-
-export async function listStores(storeId: string): Promise<Store[]> {
-  requireStoreId(storeId);
-  try {
-    const res = await contractListStores();
-    return res.map(fromChain);
-  } catch (e: any) {
-    throw new Error(`Failed to list stores: ${e.message || e}`);
-  }
-}
-
-export async function addStore(store: Store): Promise<void> {
-  await sendTx('add', { store });
-  await persistStore(store);
-}
-
-export async function updateStore(store: Store): Promise<void> {
-  await sendTx('update', { store });
-  await persistStore(store);
-}
-
-export async function removeStore(arg1: string, arg2?: string): Promise<void> {
+export async function removeStore(
+  arg1: string,
+  arg2?: string,
+): Promise<void> {
   const id = arg2 ?? arg1;
   const sid = arg2 ? requireStoreId(arg1) : requireStoreId(id);
   await sendTx('remove', { id });
@@ -161,14 +151,31 @@ export async function removeStore(arg1: string, arg2?: string): Promise<void> {
   await removeValue(ADDRESS, indexKey(id));
 }
 
-export const getStore = selectStore;
-
-export async function setStore(_storeId: string, store: Store) {
-  const existing = await selectStore(store.id);
-  if (existing) {
-    await updateStore(store);
-  } else {
-    await addStore(store);
+export async function listStores(storeId: string): Promise<Store[]> {
+  ensureSeed();
+  const sid = requireStoreId(storeId);
+  const items = await listValues(ADDRESS);
+  const res: Store[] = [];
+  for (const i of items) {
+    if (!i.key.startsWith(`${ADDRESS}:${sid}:`)) continue;
+    try {
+      res.push(JSON.parse(i.value) as Store);
+    } catch (err) {
+      errorLog('Invalid store in list', err);
+    }
   }
+  return res;
 }
+
+export async function addStore(store: Store): Promise<void> {
+  await sendTx('add', { store });
+  await persistStore(store, 'default');
+}
+
+export async function updateStore(store: Store): Promise<void> {
+  await sendTx('update', { store });
+  await persistStore(store, 'default');
+}
+
+export const getStore = selectStore;
 
