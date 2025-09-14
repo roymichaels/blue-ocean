@@ -1,12 +1,12 @@
 import { Store } from '@/types';
-import { assertNearChain } from '@/services/chain';
+import { chainAdapter, assertNearChain } from '@/services/chain';
 import {
-  setStore,
-  getStore,
-  listStores,
+  addStore,
+  updateStore,
   removeStore,
+  selectStore as fetchStore,
+  listStores as fetchStores,
 } from '@/features/stores/services/nearStores';
-import ensureNearWallet from '@/utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
@@ -22,21 +22,17 @@ class StoresAgent {
   private reputation: Record<string, Metrics> = {};
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
-  private async ensureWallet() {
-    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
-  }
-
   private toRecord(item: Store) {
     const { id, name, owner, nftId, reputation = 0 } = item;
     return { id, name, owner, nftId, reputation };
   }
 
-  private computeScore(id: string) {
+  private calculateScore(id: string): number {
     const m = this.reputation[id];
     const avg = m.reviewCount > 0 ? m.reviewSum / m.reviewCount : 0;
-    m.score = (avg + m.reliability * 5) / 2;
-    this.subscribers.forEach((cb) => cb(id, m.score));
+    return (avg + m.reliability * 5) / 2;
   }
+
 
   async recordReview(storeId: string, rating: number) {
     if (!this.reputation[storeId]) {
@@ -45,24 +41,44 @@ class StoresAgent {
     const m = this.reputation[storeId];
     m.reviewSum += rating;
     m.reviewCount += 1;
-    this.computeScore(storeId);
-    const store = await getStore(storeId, storeId);
+    const newScore = this.calculateScore(storeId);
+    const store = await fetchStore(storeId);
     if (store) {
-      await setStore(storeId, this.toRecord({ ...store, reputation: m.score }));
+      try {
+        await updateStore(this.toRecord({ ...store, reputation: newScore }));
+        const confirmed = await fetchStore(storeId);
+        if (confirmed) {
+          m.score = confirmed.reputation || newScore;
+          this.subscribers.forEach((cb) => cb(storeId, m.score));
+        }
+      } catch {
+        m.reviewSum -= rating;
+        m.reviewCount -= 1;
+      }
     }
   }
 
   async updateReputationByOwner(owner: string, reliability: number): Promise<void> {
-    const stores = await listStores('default');
+    const stores = await fetchStores('default');
     const store = stores.find((s) => s.owner === owner);
     if (store) {
       const id = store.id;
       if (!this.reputation[id]) {
         this.reputation[id] = { reviewSum: 0, reviewCount: 0, reliability: 0, score: 0 };
       }
+      const prev = this.reputation[id].reliability;
       this.reputation[id].reliability = reliability;
-      this.computeScore(id);
-      await setStore('default', this.toRecord({ ...store, reputation: this.reputation[id].score }));
+      const newScore = this.calculateScore(id);
+      try {
+        await updateStore(this.toRecord({ ...store, reputation: newScore }));
+        const confirmed = await fetchStore(id);
+        if (confirmed) {
+          this.reputation[id].score = confirmed.reputation || newScore;
+          this.subscribers.forEach((cb) => cb(id, this.reputation[id].score));
+        }
+      } catch {
+        this.reputation[id].reliability = prev;
+      }
     }
   }
 
@@ -79,27 +95,33 @@ class StoresAgent {
   }
 
   async add(item: Store): Promise<void> {
-    await this.ensureWallet();
+    if (!chainAdapter.getAccountId()) {
+      await chainAdapter.openModal();
+    }
     const normalized = normalizeMessage<Store>('Store', item);
-    await setStore(normalized.id, this.toRecord(normalized));
+    await addStore(this.toRecord(normalized));
   }
 
   async update(item: Store): Promise<void> {
-    await this.ensureWallet();
+    if (!chainAdapter.getAccountId()) {
+      await chainAdapter.openModal();
+    }
     const normalized = normalizeMessage<Store>('Store', item);
-    await setStore(normalized.id, this.toRecord(normalized));
+    await updateStore(this.toRecord(normalized));
   }
 
   async remove(id: string): Promise<void> {
-    await this.ensureWallet();
-    await removeStore(id, id);
+    if (!chainAdapter.getAccountId()) {
+      await chainAdapter.openModal();
+    }
+    await removeStore(id);
   }
 
   /**
    * Returns a defensive copy of a store by id.
    */
   async selectStore(id: string): Promise<Store | null> {
-    const store = await getStore(id, id);
+    const store = await fetchStore(id);
     return store ? JSON.parse(JSON.stringify(store)) : null;
   }
 
@@ -107,7 +129,7 @@ class StoresAgent {
    * Returns defensive copies of all stores.
    */
   async getStores(): Promise<Store[]> {
-    const list = await listStores('default');
+    const list = await fetchStores('default');
     return list.map((s) => JSON.parse(JSON.stringify(s)));
   }
 }
