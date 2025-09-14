@@ -1,4 +1,7 @@
-import { createWarmCache, E_STALE_DATA, DiffMessage } from '@/services/warmCache';
+import type { DiffMessage } from '@/services/warmCache';
+
+let createWarmCache: any;
+let E_STALE_DATA: string;
 
 let history: DiffMessage<any>[] = [];
 let liveHandler: ((msg: DiffMessage<any>) => void) | null = null;
@@ -16,6 +19,11 @@ jest.mock('@/services/waku', () => ({
 }));
 
 beforeEach(() => {
+  process.env.EXPO_PUBLIC_WARM_CACHE = 'true';
+  delete process.env.EXPO_PUBLIC_WARM_CACHE_CANARY_ADMINS;
+  delete process.env.EXPO_PUBLIC_WARM_CACHE_ROLLBACK;
+  jest.resetModules();
+  ({ createWarmCache, E_STALE_DATA } = require('@/services/warmCache'));
   history = [
     { id: '1', rev: 1, op: 'set', value: { name: 'a' } },
     { id: '2', rev: 1, op: 'set', value: { name: 'b' } },
@@ -66,6 +74,21 @@ describe('warmCache', () => {
     const cache = createWarmCache<any>('topic');
     await new Promise((res) => setTimeout(res, 0));
     expect(() => cache.getById('1')).toThrowErrorMatchingObject({ code: E_STALE_DATA });
+  });
+
+  it('processes canary reconcilers only for allowed admins', async () => {
+    const flags = require('@/config/featureFlags');
+    flags.default.canaryAdmins = ['0xabc'];
+    const cache = createWarmCache<any>('topic');
+    await new Promise((res) => cache.onSynced(res));
+    const hitsA: any[] = [];
+    const hitsB: any[] = [];
+    cache.registerReconciler('0xAbC', (id, value) => hitsA.push({ id, value }));
+    cache.registerReconciler('0xdef', (id, value) => hitsB.push({ id, value }));
+    liveHandler &&
+      liveHandler({ id: '1', rev: 2, op: 'set', value: { name: 'a2' } });
+    expect(hitsA).toEqual([{ id: '1', value: { name: 'a2' } }]);
+    expect(hitsB).toEqual([]);
   });
 });
 
