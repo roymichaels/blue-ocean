@@ -30,18 +30,6 @@ const PUB =
   config.WAKU_PUBLISHER_KEY ||
   config.EXPO_PUBLIC_WAKU_PUBLISHER_KEY ||
   '';
-const BOOT = (
-  config.WAKU_BOOTSTRAP ||
-  config.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
-  ''
-)
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-const DEFAULT_BOOTSTRAPS: string[] = [
-  // use your repo’s existing defaults; if none, keep array empty
-];
 
 let cachedNode: LightNode | null = null;
 const receivedIds = new Set<string>();
@@ -70,30 +58,12 @@ function getPublisherKey(): string {
   }
 }
 
-function getBootstraps(): string[] {
-  if (isWakuDisabled()) return [];
-  if (
-    BOOT.length === 0 ||
-    (BOOT.length === 1 && ['auto', 'default'].includes(BOOT[0].toLowerCase()))
-  ) {
-    return DEFAULT_BOOTSTRAPS;
-  }
-  return BOOT;
-}
-
 async function startNode(): Promise<LightNode | null> {
-  const bootstrap = getBootstraps();
-  if (strict && bootstrap.length === 0) {
-    const err: any = new Error('WAKU_BOOTSTRAP_UNCONFIGURED');
-    err.code = 'WAKU_BOOTSTRAP_UNCONFIGURED';
-    err.source = 'notifications-agent';
-    throw err;
-  }
   getPublisherKey();
   const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
   let node: LightNode | null = null;
   try {
-    node = await createLightNode({ libp2p: { bootstrap } } as any);
+    node = await createLightNode({} as any);
   } catch (err) {
     errorLog('Failed to start Waku node', err instanceof Error ? err.message : err);
     if (err instanceof Error && err.stack) errorLog(err.stack);

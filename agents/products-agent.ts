@@ -12,8 +12,7 @@ import { getStore } from '@/features/stores/services/nearStores';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
-import { getWakuBootstrapNodes } from '@/utils/appConfig';
-import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';
+import { verifyBeforeWrite } from '@/utils/verifyMessageSignature';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
 import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
 import { sign } from '@noble/ed25519';
@@ -53,10 +52,8 @@ class ProductsAgent {
   private async ensureNode(): Promise<LightNode | null> {
     if (this.node) return this.node;
     try {
-      const bootstrap = getWakuBootstrapNodes();
-      if (bootstrap.length === 0) return null;
       const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-      const node = await createLightNode({ libp2p: { bootstrap } as any });
+      const node = await createLightNode({} as any);
       await node.start();
       await waitForRemotePeer(node, [Protocols.Relay]);
       this.node = node;

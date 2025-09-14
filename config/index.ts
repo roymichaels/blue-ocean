@@ -14,8 +14,6 @@ if (typeof process !== 'undefined' && typeof process.cwd === 'function') {
 const envSchema = z.object({
   EXPO_PUBLIC_TRANSPORT: z.string().optional().default(''),
   EXPO_PUBLIC_CONTRACT_ID: z.string().optional().default(''),
-  EXPO_PUBLIC_WAKU_BOOTSTRAP: z.string().optional().default(''),
-  WAKU_BOOTSTRAP: z.string().optional().default(''),
   WAKU_PUBLISHER_KEY: z.string().optional().default(''),
   EXPO_PUBLIC_WAKU_PUBLISHER_KEY: z.string().optional().default(''),
   WAKU_DISABLE: z.string().optional().default(''),
@@ -26,8 +24,6 @@ const envSchema = z.object({
   EXPO_PUBLIC_DEBUG_LOGS: z.string().optional().default(''),
   EXPO_PUBLIC_CHAIN: z.string().optional().default(''),
   ADMIN_WALLET_ADDRESS: z.string().optional().default(''),
-  ADMIN_WALLET_ADDRESS_MAINNET: z.string().optional().default(''),
-  ADMIN_WALLET_ADDRESS_TESTNET: z.string().optional().default(''),
   NEAR_NETWORK: z.string().optional().default(''),
   NEAR_RPC_URL: z.string().optional().default(''),
   NEAR_RPC_FALLBACK_URLS: z.string().optional().default(''),

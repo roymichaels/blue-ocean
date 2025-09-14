@@ -174,22 +174,6 @@ export function getAdminWalletAddress(): string {
   );
 }
 
-export function getAdminWalletAddressMainnet(): string {
-  return (
-    process.env.EXPO_PUBLIC_ADMIN_WALLET_ADDRESS_MAINNET ||
-    process.env.ADMIN_WALLET_ADDRESS_MAINNET ||
-    getAdminWalletAddress()
-  );
-}
-
-export function getAdminWalletAddressTestnet(): string {
-  return (
-    process.env.EXPO_PUBLIC_ADMIN_WALLET_ADDRESS_TESTNET ||
-    process.env.ADMIN_WALLET_ADDRESS_TESTNET ||
-    getAdminWalletAddress()
-  );
-}
-
 export default requireEnv;
 
 // Acceptance: No ‘Missing SHOP_TENANT_ID / CONTRACT_ID’ logs after clean restart.

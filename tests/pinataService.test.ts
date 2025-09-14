@@ -8,8 +8,7 @@ describe('PinataService', () => {
   beforeEach(async () => {
     insertConfig({
       NEAR_RPC_URL: 'https://near.example',
-      ADMIN_WALLET_ADDRESS_MAINNET: undefined,
-      ADMIN_WALLET_ADDRESS_TESTNET: undefined,
+      ADMIN_WALLET_ADDRESS: undefined,
       EXPO_PUBLIC_PINATA_API_KEY: undefined,
       EXPO_PUBLIC_PINATA_SECRET_API_KEY: undefined,
       EXPO_PUBLIC_PINATA_JWT: undefined,

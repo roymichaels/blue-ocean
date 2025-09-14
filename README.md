@@ -118,7 +118,6 @@ Common variables include:
 | `NEAR_LAKE_REGION` | no | Region for the NEAR Lake bucket (default `eu-central-1`). |
 | `NEAR_LAKE_ENDPOINT` | no | Custom S3-compatible endpoint for NEAR Lake. |
 | `EXPO_PUBLIC_CONTRACT_ID` | yes | Marketplace contract account the app interacts with. |
-| `EXPO_PUBLIC_WAKU_BOOTSTRAP` | no | Comma-separated list of Waku peers for network bootstrap. |
 | `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
 | `EXPO_PUBLIC_PINATA_API_KEY` | no | Pinata API key for authenticated uploads. |
 | `EXPO_PUBLIC_PINATA_SECRET_API_KEY` | no | Pinata API secret for authenticated uploads. |
@@ -133,7 +132,6 @@ The OrderPayment factory contract address is configured by admins through the
 - `NEAR_RPC_URL` – primary NEAR RPC endpoint used for blockchain calls (optional; overrides tenant setting)
 - `EXPO_PUBLIC_CONTRACT_ID` – marketplace contract account the app interacts with (required)
 - `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default `false`)
-- `EXPO_PUBLIC_WAKU_BOOTSTRAP` – comma-separated list of Waku peers (optional override)
 - `EXPO_PUBLIC_PINATA_API_KEY` – Pinata API key for uploads (optional)
 - `EXPO_PUBLIC_PINATA_SECRET_API_KEY` – Pinata secret API key for uploads (optional)
 - `EXPO_PUBLIC_PINATA_JWT` – Pinata JWT used by `scripts/pinata-upload.ts` to pin assets (optional)
@@ -151,18 +149,12 @@ committing secrets to source control. See
 [`docs/secure-key-management.md`](docs/secure-key-management.md) for
 additional guidance.
 
-### Wallet Allowlist & Waku Bootstrap
+### Wallet Allowlist
 
 Admin privileges are controlled by a list of wallet addresses stored in the
 on-chain settings contract. Use the **Admin → Settings** screen or
 `SettingsAgent.setAdmins()` to add or remove addresses. Only wallets in this
 allowlist can manage users, products or other system settings.
-
-The app connects to the peer‑to‑peer network through a built‑in list of Waku
-bootstrap nodes. Developers can override this by setting
-`EXPO_PUBLIC_WAKU_BOOTSTRAP` (for example in a `.env` file) with a
-comma‑separated list of multiaddrs. Providing an empty value disables Waku
-connectivity entirely.
 
 ### Credit Card Checkout
 

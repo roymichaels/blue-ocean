@@ -12,7 +12,6 @@ const CONTRACT_ID = process.env.CONTRACT_ID as string;
 const LAKE_BUCKET = process.env.LAKE_BUCKET as string;
 const START_BLOCK = parseInt(process.env.START_BLOCK || '0', 10);
 const DEDUPE_PATH = process.env.DEDUPE_PATH || '.state/dedupe.json';
-const WAKU_BOOTSTRAP = (process.env.WAKU_BOOTSTRAP || '').split(',').filter(Boolean);
 const NETWORK = process.env.NETWORK || 'testnet';
 
 type DedupStore = { [key: string]: number };
@@ -108,7 +107,7 @@ async function main() {
   const startHeight = Math.max(START_BLOCK, height);
   lastHeight = startHeight;
   const { Waku } = await getClient();
-  const waku = await Waku.create({ bootstrap: { peers: WAKU_BOOTSTRAP } });
+  const waku = await Waku.create({});
   await waku.waitForConnectedPeer();
 
   const lakeConfig: types.LakeConfig = {

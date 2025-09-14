@@ -3,7 +3,6 @@ import { errorLog } from '@/utils/logger';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import { uuid } from '../utils/uuid';
-import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { OrderStatus } from '../types';
 import config from '@/config';
 import { canonicalJson } from '@/utils/serialization';
@@ -35,10 +34,8 @@ async function ensureNode(): Promise<LightNode | null> {
     if ((config.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
       return null;
     }
-    const bootstrap = getWakuBootstrapNodes();
-    if (bootstrap.length === 0) return null;
     const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-    node = await createLightNode({ libp2p: { bootstrap } });
+    node = await createLightNode({});
     if (!node) return null;
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);

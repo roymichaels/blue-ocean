@@ -30,9 +30,7 @@ describe('BulkProductUploader processRecords', () => {
     estimateSetProductBatchMock.mockClear();
     insertConfig({
       NEAR_RPC_URL: 'http://localhost',
-      ADMIN_WALLET_ADDRESS_MAINNET: undefined,
-      ADMIN_WALLET_ADDRESS_TESTNET: undefined,
-
+      ADMIN_WALLET_ADDRESS: undefined,
     });
     await loadTenantSettings();
   });

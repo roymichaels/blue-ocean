@@ -13,8 +13,7 @@ import { encryptMessage, decryptMessage, encryptTopic } from '@/utils/chatCrypto
 import { enqueue, flush } from '@/utils/wakuStore';
 import DatabaseService from '@/services/database';
 import { ChatMessage } from '@/types';
-import { getWakuBootstrapNodes } from '@/utils/appConfig';
-import { verifyBeforeWrite } from '@/utils/verifyBeforeWrite';
+import { verifyBeforeWrite } from '@/utils/verifyMessageSignature';
 import { wakuMessageSchema } from '@/schemas/waku';
 import { z } from 'zod';
 import { errorLog } from '@/utils/logger';
@@ -76,14 +75,8 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
   const connect = useCallback(async () => {
     try {
       setStatus('connecting');
-      const bootstrap = getWakuBootstrapNodes();
-      if (bootstrap.length === 0) {
-        nodeRef.current = undefined;
-        setStatus('disconnected');
-        return;
-      }
       const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-      const node = await createLightNode({ libp2p: { bootstrap } });
+      const node = await createLightNode({});
       node.libp2p.addEventListener('peer:disconnect', () => {
         setStatus('disconnected');
       });
