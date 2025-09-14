@@ -2,6 +2,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import config from '@/config';
+import AgentError from '@/types/AgentError';
+import { E_STALE_DATA } from '@/schemas/cache';
 
 const CACHE_DIR = config.CACHE_DIR || path.join(process.cwd(), '.cache');
 const SECRET = config.CACHE_SECRET || 'blue-ocean';
@@ -37,9 +39,14 @@ export async function loadSnapshot<T>(key: string, expectedHash: string): Promis
     decipher.setAuthTag(tag);
     const json = Buffer.concat([decipher.update(enc), decipher.final()]);
     const hash = crypto.createHash('sha256').update(json).digest('hex');
-    if (hash !== expectedHash) return null;
+    if (hash !== expectedHash)
+      throw Object.assign(
+        new AgentError(E_STALE_DATA, 'Snapshot hash mismatch', 'cache'),
+        { expected: expectedHash, actual: hash },
+      );
     return JSON.parse(json.toString('utf8')) as T;
-  } catch {
+  } catch (err) {
+    if (err instanceof AgentError) throw err;
     return null;
   }
 }
