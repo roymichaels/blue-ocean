@@ -1,4 +1,8 @@
 import { EventEmitter } from 'events';
+import {
+  cacheHitRatioGauge,
+  cacheHydrationHistogram,
+} from '@/services/monitoring';
 import { fetchHistory, subscribeWithAck } from '@/services/waku';
 import { isWarmCacheEnabled } from '@/config/featureFlags';
 
@@ -32,6 +36,7 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   const buffer: DiffMessage<T>[] = [];
   const reconcilers = new Map<string, (id: string, value: T | undefined) => void>();
 
+
   function apply(msg: DiffMessage<T>): void {
     const current = store.get(msg.id);
     if (current && msg.rev !== current.rev + 1) {
@@ -61,11 +66,13 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
       buffer.forEach(apply);
       buffer.length = 0;
       synced = true;
+      endHydration();
       emitter.emit('cache.synced');
       // expose unsubscribe on emitter
       (emitter as any).unsub = unsub;
     } catch (err) {
       stale = true;
+      endHydration();
       emitter.emit('error', { code: E_STALE_DATA, err });
     }
   })();
