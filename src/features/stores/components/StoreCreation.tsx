@@ -11,8 +11,7 @@ import {
 import { useAppRouter } from '@/services';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/ui/ThemeProvider';
-import storesAgent from '@/agents/stores-agent';
-import { chainAdapter } from '@/services/chain';
+import { mintStore as mintStoreOnChain, getStore } from '@/features/stores/services/nearStores';
 import { useWallet } from '@/contexts/WalletProvider';
 import { errorLog } from '@/utils/logger';
 
@@ -31,11 +30,10 @@ const StoreCreation: React.FC = () => {
       return;
     }
     try {
-      const id = Date.now().toString();
-      await chainAdapter.signMessage?.(`MintStore:${id}`);
-      await storesAgent.add({ id, name, owner, nftId: id });
+      const { id, txHash } = await mintStoreOnChain(name);
+      await getStore(id, id);
       setName('');
-      Alert.alert(t('common.success'), t('stores.createSuccess'));
+      Alert.alert(t('common.success'), `${t('stores.createSuccess')}` + `\n${txHash}`);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['home'] }),
         queryClient.invalidateQueries({ queryKey: ['store'] }),
@@ -46,7 +44,7 @@ const StoreCreation: React.FC = () => {
       if (err?.message?.toLowerCase().includes('insufficient')) {
         Alert.alert(t('stores.transactionFailed'), t('stores.insufficientFunds'));
       } else {
-        Alert.alert(t('stores.transactionCancelled'));
+        Alert.alert(t('stores.transactionFailed'), err?.message || t('stores.transactionCancelled'));
       }
       errorLog('mint', 'shop', 'fail', err);
     }
