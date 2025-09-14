@@ -1,11 +1,7 @@
 {
   "expo": {
     "entryPoint": "./index.js",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "platforms": ["ios", "android", "web"],
     "name": "blue-ocean",
     "slug": "blue-ocean",
     "version": "1.0.0",
@@ -22,7 +18,11 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "expo-audio",
+      "expo-secure-store",
+      "expo-video",
+      "expo-web-browser"
     ],
     "extra": {
       "router": {

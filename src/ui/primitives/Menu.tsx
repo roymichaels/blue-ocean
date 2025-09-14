@@ -21,7 +21,7 @@ interface MenuProps {
 
 export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const menuRef = useRef<View>(null);
 
@@ -54,7 +54,12 @@ export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) 
       {open && (
         <Portal>
             <Pressable
-              style={styles.overlay}
+              style={[
+                styles.overlay,
+                isRTL
+                  ? { alignItems: 'flex-start', paddingLeft: 16, paddingRight: 0 }
+                  : { alignItems: 'flex-end', paddingRight: 16, paddingLeft: 0 },
+              ]}
               onPress={() => onOpenChange(false)}
               accessibilityRole="button"
               accessibilityLabel={t('common.close')}
@@ -68,6 +73,7 @@ export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) 
                   backgroundColor: colors.surface.primary,
                   borderColor: colors.border.primary,
                 },
+                isRTL ? { alignSelf: 'flex-start' } : { alignSelf: 'flex-end' },
               ]}
             >
               {items.map((item, index) => (
@@ -80,6 +86,7 @@ export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) 
                   onBlur={() => setFocusedIndex(null)}
                   style={[
                     styles.item,
+                    isRTL ? { flexDirection: 'row-reverse' } : null,
                     focusedIndex === index && {
                       borderColor: colors.border.focus,
                       borderWidth: 2,
@@ -99,6 +106,7 @@ export default function Menu({ trigger, open, onOpenChange, items }: MenuProps) 
                           ? colors.status.error
                           : colors.text.primary,
                       },
+                      isRTL ? { marginRight: spacing.spacer12, marginLeft: 0 } : null,
                     ]}
                   >
                     {item.label}
@@ -117,7 +125,6 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-start',
-    alignItems: 'flex-end',
     paddingTop: 60,
     paddingRight: 16,
     minHeight: 44,

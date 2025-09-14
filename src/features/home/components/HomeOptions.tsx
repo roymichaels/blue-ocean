@@ -1,5 +1,5 @@
 // TOUCHPOINT: src/features/home/components/HomeOptions.tsx renders in production — Fix Pack v2
-import React from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   StyleSheet,
   Linking,
@@ -7,19 +7,21 @@ import {
   type KeyboardEvent,
   Platform,
   View,
+  Pressable,
   I18nManager,
   useWindowDimensions,
 } from 'react-native';
-import { Card, Text, Button } from '@/ui';
-import { ScrollView } from 'react-native';
+import { Card, Text } from '@/ui';
 import { Stack } from '@/ui/layout';
 import { radius, shadows, spacing } from '@/ui/tokens';
+import { Store, Truck, Briefcase, Code2 } from 'lucide-react-native';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services/useAppRouter';
 import { routes } from '@/utils/routes';
 import { useWallet } from '@/contexts/WalletProvider';
 import guard from '@/utils/guard';
 import { getShopTenantId, getDocsUrl } from '@/services/config';
+import { prefetchStoreBundle } from '@/features/stores/services/prefetch';
 
 function HomeOptions() {
   const { t } = useLanguage();
@@ -33,13 +35,26 @@ function HomeOptions() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
   const isRTL = I18nManager.isRTL;
-  const cardHeight = isDesktop ? 112 : 96;
+  const gapPx = width >= 768 ? spacing.spacer16 : spacing.spacer12;
   const horizontalPadding = spacing.spacer16;
-  const gapPx = spacing.spacer16;
-  const desktopCols = width >= 1280 ? 4 : width >= 1024 ? 3 : 4; // prefer 4 at md per spec
-  const desktopItemWidth = isDesktop
-    ? Math.max(160, (width - horizontalPadding * 2 - gapPx * (desktopCols - 1)) / desktopCols)
-    : 260;
+
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  // Always render 4 columns; tiles shrink/expand as needed
+  const cols = 4;
+
+  const tileSize = useMemo(() => {
+    const cw = (containerWidth || width) - horizontalPadding * 2;
+    const totalGaps = gapPx * Math.max(0, cols - 1);
+    const raw = (cw - totalGaps) / cols;
+    // Keep 4 columns by allowing tiles to shrink freely
+    return Math.max(1, Math.floor(raw));
+  }, [containerWidth, width, gapPx]);
+
+  const onLayoutGrid = useCallback((e: any) => {
+    const w = e?.nativeEvent?.layout?.width;
+    if (typeof w === 'number' && w > 0) setContainerWidth(w);
+  }, []);
 
   const handleCreateStore = guard(walletAddress, connect, () => {
     appRouter.push(routes.createStore());
@@ -50,6 +65,7 @@ function HomeOptions() {
   });
 
   const handleBusinessLogin = guard(walletAddress, connect, () => {
+    if (shopTenantId) void prefetchStoreBundle(shopTenantId);
     appRouter.push(`/store/${shopTenantId}/admin`);
   });
 
@@ -73,85 +89,91 @@ function HomeOptions() {
     {
       key: 'create-store',
       title: t('home.create_store', 'Create a Store'),
+      icon: <Store size={24} color={colors.gold} />,
       action: handleCreateStore,
       testID: 'create-store-link',
     },
     {
       key: 'become-driver',
       title: t('home.become_driver', 'Become a Driver'),
+      icon: <Truck size={24} color={colors.gold} />,
       action: handleBecomeDriver,
       testID: 'become-driver-button',
     },
     {
       key: 'business-login',
       title: t('home.business_login', 'Business Login'),
+      icon: <Briefcase size={24} color={colors.gold} />,
       action: handleBusinessLogin,
       testID: 'business-login-button',
     },
     {
       key: 'docs-api',
       title: t('home.docs_api', 'Docs & API'),
+      icon: <Code2 size={24} color={colors.gold} />,
       action: handleDocs,
       tooltip: docsUrl,
       testID: 'docs-api-button',
     },
   ];
 
-  const renderCard = ({
-    key,
-    title,
-    action,
-    tooltip,
-    testID,
-  }: (typeof options)[number]) => (
-    <View key={key} style={[isDesktop ? { width: desktopItemWidth } : null]}>
+  const renderCard = ({ key, title, icon, action, testID }: (typeof options)[number]) => (
+    <View key={key} style={{ width: tileSize }}>
       <Card
         style={[
           styles.card,
-          { height: cardHeight, width: isDesktop ? '100%' : desktopItemWidth },
+          // Square tile on desktop: width controlled by parent, height via aspectRatio
+          { width: tileSize, height: tileSize },
           isDesktop ? styles.cardDesktop : styles.cardMobile,
         ]}
       >
-        <Stack gap="spacer8">
-          <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
-          <Button
-            title={title}
-            onPress={action}
-            {...(Platform.OS === 'web' ? ({ onKeyDown: (e: any) => handleKeyDown(e, action) } as any) : {})}
-            accessibilityRole="link"
-            tooltip={tooltip ?? (!walletAddress ? gateTip : undefined)}
-            style={styles.fullWidth}
-            testID={testID}
-          />
-        </Stack>
+        <Pressable
+          onPress={action}
+          onPressIn={() => {
+            if (key === 'business-login' && shopTenantId) {
+              void prefetchStoreBundle(shopTenantId);
+            }
+          }}
+          {...(Platform.OS === 'web'
+            ? ({
+                onMouseEnter: () => {
+                  if (key === 'business-login' && shopTenantId) {
+                    void prefetchStoreBundle(shopTenantId);
+                  }
+                },
+              } as any)
+            : {})}
+          accessibilityRole="button"
+          {...(Platform.OS === 'web' ? ({ onKeyDown: (e: any) => handleKeyDown(e, action) } as any) : {})}
+          style={({ pressed }) => [styles.tilePressable, { padding: spacing.spacer12 }, pressed && styles.pressed]}
+          testID={testID}
+        >
+          <Stack gap="spacer8" style={styles.tileContent}>
+            {icon}
+            <Text style={[styles.title, { color: colors.text.primary, textAlign: 'center', fontSize: 14 }]}>{title}</Text>
+          </Stack>
+        </Pressable>
       </Card>
     </View>
   );
 
-  if (isDesktop) {
-    return (
-      <View
-        style={[
-          styles.desktopRow,
-          { flexDirection: isRTL ? 'row-reverse' : 'row' },
-        ]}
-      >
-        {options.map(renderCard)}
-      </View>
-    );
-  }
-
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      decelerationRate="fast"
-      snapToAlignment="start"
-      snapToInterval={desktopItemWidth + gapPx}
-      contentContainerStyle={styles.mobileRow}
+    <View
+      onLayout={onLayoutGrid}
+      style={[
+        styles.desktopRow,
+        {
+          flexDirection: isRTL ? 'row-reverse' : 'row',
+          flexWrap: 'wrap',
+          gap: gapPx,
+          paddingHorizontal: horizontalPadding,
+          // Keep content clear of the sticky bottom tab bar but minimize scroll
+          paddingBottom: 72,
+        },
+      ]}
     >
       {options.map(renderCard)}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -164,28 +186,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'stretch',
   },
-  mobileRow: {
-    paddingHorizontal: spacing.spacer16,
-    gap: spacing.spacer16,
-    alignItems: 'stretch',
-  },
   card: {
     borderRadius: radius.xl,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     ...Platform.select(shadows.md),
     ...Platform.select({
       web: { scrollSnapAlign: 'start' as any },
     }),
   },
   cardDesktop: {},
-  cardMobile: {
-    width: 260,
-  },
+  cardMobile: {},
   title: {
     fontWeight: '600',
   },
-  fullWidth: {
-    width: '100%',
+  tilePressable: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.spacer16,
   },
+  tileContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: { opacity: 0.9 },
 });
 

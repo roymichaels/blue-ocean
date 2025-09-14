@@ -8,6 +8,12 @@ import {
   listStores as fetchStores,
 } from '@/features/stores/services/nearStores';
 import { normalizeMessage } from '../lib/normalizeMessage';
+import { publish } from '@/services/waku';
+import { buildTopic } from '@/utils/wakuTopics';
+import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
+import { sign } from '@noble/ed25519';
+import { canonicalJson } from '@/utils/serialization';
+import type { WakuMessage } from '@/types/waku';
 
 assertNearChain();
 
@@ -23,8 +29,8 @@ class StoresAgent {
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
   private toRecord(item: Store) {
-    const { id, name, owner, nftId, reputation = 0 } = item;
-    return { id, name, owner, nftId, reputation };
+    const { id, name, owner, nftId, reputation = 0, plan, createdAt } = item;
+    return { id, name, owner, nftId, reputation, plan, createdAt } as Store;
   }
 
   private calculateScore(id: string): number {
@@ -99,7 +105,17 @@ class StoresAgent {
       await chainAdapter.openModal();
     }
     const normalized = normalizeMessage<Store>('Store', item);
+<<<<<<< Updated upstream
     await addStore(this.toRecord(normalized));
+=======
+    const record = this.toRecord({
+      createdAt: normalized.createdAt || new Date().toISOString(),
+      ...normalized,
+    });
+    await setStore(record.id, record);
+    await setStore('default', record);
+    await this.broadcastCreated(record);
+>>>>>>> Stashed changes
   }
 
   async update(item: Store): Promise<void> {
@@ -107,6 +123,7 @@ class StoresAgent {
       await chainAdapter.openModal();
     }
     const normalized = normalizeMessage<Store>('Store', item);
+<<<<<<< Updated upstream
     await updateStore(this.toRecord(normalized));
   }
 
@@ -115,6 +132,17 @@ class StoresAgent {
       await chainAdapter.openModal();
     }
     await removeStore(id);
+=======
+    const rec = this.toRecord(normalized);
+    await setStore(rec.id, rec);
+    await setStore('default', rec);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.ensureWallet();
+    await removeStore(id, id);
+    await removeStore('default', id);
+>>>>>>> Stashed changes
   }
 
   /**
@@ -132,6 +160,15 @@ class StoresAgent {
     const list = await fetchStores('default');
     return list.map((s) => JSON.parse(JSON.stringify(s)));
   }
+
+  private async broadcastCreated(store: Store): Promise<void> {
+    try {
+      const msg = await makeSignedMessage('store.created', store);
+      await publish(buildTopic('stores', '1'), msg);
+    } catch {
+      // non-fatal
+    }
+  }
 }
 
 const storesAgent = new StoresAgent();
@@ -141,3 +178,20 @@ export const selectStore = (id: string): Promise<Store | null> =>
   storesAgent.selectStore(id);
 
 export default storesAgent;
+
+async function makeSignedMessage(type: string, payload: any): Promise<WakuMessage<any>> {
+  const priv = await getPrivateKey();
+  const pub = await getPublicKeyHex();
+  const msg: WakuMessage<any> = {
+    type,
+    payload,
+    sender: { publicKey: pub, role: 'store-owner' },
+    signature: '',
+  };
+  const toSign = new TextEncoder().encode(
+    canonicalJson({ type: msg.type, payload: msg.payload, sender: msg.sender }),
+  );
+  const sig = await sign(toSign, priv);
+  msg.signature = Buffer.from(sig).toString('hex');
+  return msg;
+}

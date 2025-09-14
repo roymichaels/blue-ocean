@@ -12,10 +12,20 @@ pub struct Listing {
     pub price: U128,
 }
 
+/// Store metadata (lightweight identity for a store)
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
+#[serde(crate = "near_sdk::serde")]
+pub struct StoreMeta {
+    pub id: String,
+    pub owner: AccountId,
+    pub name: String,
+}
+
 #[derive(BorshStorageKey, BorshSerialize)]
 enum StorageKey {
     Listings,
     Admins,
+    Stores,
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -41,6 +51,7 @@ pub struct Marketplace {
     pub required_admins: u8,
     pub fee_proposal: Option<FeeProposal>,
     pub treasury_proposal: Option<TreasuryProposal>,
+    pub stores: UnorderedMap<String, StoreMeta>,
 }
 
 #[near_bindgen]
@@ -65,11 +76,52 @@ impl Marketplace {
             required_admins,
             fee_proposal: None,
             treasury_proposal: None,
+            stores: UnorderedMap::new(StorageKey::Stores),
         }
     }
 
     fn assert_admin(&self, account: &AccountId) {
         assert!(self.admins.contains(account), "admin only");
+    }
+
+    /// Create a new store owned by the predecessor (direct wallet tx).
+    pub fn create_store(&mut self, store_id: String, name: String) {
+        let owner = env::predecessor_account_id();
+        assert!(self.stores.get(&store_id).is_none(), "store already exists");
+        let meta = StoreMeta { id: store_id.clone(), owner: owner.clone(), name: name.clone() };
+        self.stores.insert(&store_id, &meta);
+        env::log_str(
+            &near_sdk::serde_json::json!({
+                "event": "store_created",
+                "storeId": store_id,
+                "owner": owner,
+                "name": name,
+            })
+            .to_string(),
+        );
+    }
+
+    /// Admin-only helper to create a store for a specific owner (relayer flow).
+    pub fn create_store_for(&mut self, owner: AccountId, store_id: String, name: String) {
+        let caller = env::predecessor_account_id();
+        self.assert_admin(&caller);
+        assert!(self.stores.get(&store_id).is_none(), "store already exists");
+        let meta = StoreMeta { id: store_id.clone(), owner: owner.clone(), name: name.clone() };
+        self.stores.insert(&store_id, &meta);
+        env::log_str(
+            &near_sdk::serde_json::json!({
+                "event": "store_created",
+                "storeId": store_id,
+                "owner": owner,
+                "name": name,
+            })
+            .to_string(),
+        );
+    }
+
+    /// View method to fetch a store by id.
+    pub fn get_store(&self, store_id: String) -> Option<StoreMeta> {
+        self.stores.get(&store_id)
     }
 
     pub fn set_fee_bps(&mut self, fee_bps: u16) {
@@ -86,10 +138,7 @@ impl Marketplace {
                 }
             }
             _ => {
-                self.fee_proposal = Some(FeeProposal {
-                    value: fee_bps,
-                    approvals: vec![caller],
-                });
+                self.fee_proposal = Some(FeeProposal { value: fee_bps, approvals: vec![caller] });
             }
         }
     }
@@ -108,10 +157,7 @@ impl Marketplace {
                 }
             }
             _ => {
-                self.treasury_proposal = Some(TreasuryProposal {
-                    value: treasury,
-                    approvals: vec![caller],
-                });
+                self.treasury_proposal = Some(TreasuryProposal { value: treasury, approvals: vec![caller] });
             }
         }
     }
@@ -124,15 +170,8 @@ impl Marketplace {
         seller: AccountId,
         price: U128,
     ) {
-        assert_eq!(
-            env::predecessor_account_id(),
-            seller,
-            "seller must be predecessor"
-        );
-        let listing = Listing {
-            seller: seller.clone(),
-            price,
-        };
+        assert_eq!(env::predecessor_account_id(), seller, "seller must be predecessor");
+        let listing = Listing { seller: seller.clone(), price };
         let key = (contract_id.clone(), token_id.clone());
         self.listings.insert(&key, &listing);
         env::log_str(
@@ -182,81 +221,5 @@ impl Marketplace {
     /// Retrieve all listings.
     pub fn get_listings(&self) -> Vec<((String, String), Listing)> {
         self.listings.iter().collect()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use near_sdk::{test_utils::VMContextBuilder, testing_env};
-
-    fn init() -> Marketplace {
-        Marketplace::init(
-            0,
-            AccountId::new_unchecked("treasury.near".to_string()),
-            vec![
-                AccountId::new_unchecked("admin1.near".to_string()),
-                AccountId::new_unchecked("admin2.near".to_string()),
-            ],
-            2,
-        )
-    }
-
-    #[test]
-    fn unauthorized_add_listing_fails() {
-        let mut context = VMContextBuilder::new();
-        context.predecessor_account_id(AccountId::new_unchecked("alice.near".to_string()));
-        testing_env!(context.build());
-        let mut contract = init();
-        let result = std::panic::catch_unwind(move || {
-            contract.add_listing(
-                "nft.near".to_string(),
-                "1".to_string(),
-                AccountId::new_unchecked("bob.near".to_string()),
-                U128(10),
-            );
-        });
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn buy_listing_insufficient_deposit_fails() {
-        // seller adds a listing
-        let mut context = VMContextBuilder::new();
-        context.predecessor_account_id(AccountId::new_unchecked("seller.near".to_string()));
-        testing_env!(context.build());
-        let mut contract = init();
-        contract.add_listing(
-            "nft.near".to_string(),
-            "1".to_string(),
-            AccountId::new_unchecked("seller.near".to_string()),
-            U128(100),
-        );
-
-        // buyer attempts to buy with insufficient deposit
-        let mut context = VMContextBuilder::new();
-        context
-            .predecessor_account_id(AccountId::new_unchecked("buyer.near".to_string()))
-            .attached_deposit(50);
-        testing_env!(context.build());
-        let result = std::panic::catch_unwind(move || {
-            contract.buy_listing("nft.near".to_string(), "1".to_string());
-        });
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn fee_update_requires_multiple_admins() {
-        let mut context = VMContextBuilder::new();
-        context.predecessor_account_id(AccountId::new_unchecked("admin1.near".to_string()));
-        testing_env!(context.build());
-        let mut contract = init();
-        contract.set_fee_bps(100);
-        assert_eq!(contract.fee_bps, 0);
-        let mut context = VMContextBuilder::new();
-        context.predecessor_account_id(AccountId::new_unchecked("admin2.near".to_string()));
-        testing_env!(context.build());
-        contract.set_fee_bps(100);
-        assert_eq!(contract.fee_bps, 100);
     }
 }

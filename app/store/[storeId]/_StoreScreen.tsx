@@ -20,6 +20,7 @@ export default function StoreScreen() {
   const { colors } = useTheme();
   const { t, isRTL } = useLanguage();
   const [store, setStore] = useState<Store | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const { push } = useAppRouter();
   const {
     data: products = [],
@@ -47,6 +48,7 @@ export default function StoreScreen() {
       if (!storeId) return;
       const s = await selectStore(storeId);
       if (active) setStore(s);
+      if (active) setLoaded(true);
     };
     void load();
     return () => {
@@ -54,6 +56,13 @@ export default function StoreScreen() {
     };
   }, [storeId]);
 
+  if (!loaded) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+        <ProductCardSkeleton />
+      </View>
+    );
+  }
   if (!store) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>

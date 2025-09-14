@@ -2,12 +2,15 @@ import { init, signIn, signMessage, useAccount, useAccountId, getAccountId, getP
 import { payPrivately as nearPayPrivately } from '@blue-ocean/sdk-near';
 import { listOrdersBySeller as nearListOrdersBySeller } from '@/services/nearOrders';
 import { getNetworkId } from '@/services/config';
+import config from '@/config';
 import type { ChainAdapter } from './ChainAdapter';
 import { canonicalJson } from '@/utils/serialization';
 
 async function getBalance(address: string): Promise<string> {
   const network = getNetworkId() as 'mainnet' | 'testnet';
-  const rpcUrl = network === 'mainnet' ? 'https://rpc.mainnet.near.org' : 'https://rpc.testnet.near.org';
+  // Prefer relay proxy (avoids CORS + 429 headers missing ACAO)
+  const proxy = (config.EXPO_PUBLIC_RELAYER_URL || '').trim();
+  const rpcUrl = proxy ? `${proxy.replace(/\/$/, '')}/rpc` : (network === 'mainnet' ? 'https://rpc.mainnet.near.org' : 'https://rpc.testnet.near.org');
   const res = await fetch(rpcUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -11,6 +11,7 @@ import { serviceLatency, serviceFailures } from '@/utils/observability';
 import { initLake } from './nearLake';
 import { topicFor } from '@blue-ocean/utils';
 import { getNetworkId, getContractId } from '@/services/config';
+import { setStore as persistStore } from '@/features/stores/services/nearStores';
 
 declare const logger: any;
 
@@ -312,6 +313,17 @@ async function handleLakeBlock(msg: types.StreamerMessage) {
             await publish(topicFor(network, base.storeId, 'listings'), base);
           } else if (evt.event === 'order_paid') {
             await publish(topicFor(network, base.storeId, 'orders'), base);
+          } else if (evt.event === 'store_created') {
+            try {
+              const storeId = evt.storeId || base.storeId;
+              const owner = evt.owner;
+              const name = evt.name || `Store ${storeId}`;
+              if (storeId && owner) {
+                const store = { id: storeId, name, owner, nftId: storeId, reputation: 0 } as any;
+                await persistStore('default', store);
+                await persistStore(storeId, store);
+              }
+            } catch {}
           }
           dedupe.add(key);
         } catch {

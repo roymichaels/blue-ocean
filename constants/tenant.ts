@@ -36,7 +36,7 @@ const initialAdmin =
     const test =
       config.ADMIN_WALLET_ADDRESS_TESTNET ||
       getAdminWalletAddressTestnet() ||
-      legacy;
+      legacy || 'theunderground.testnet';
     return network === 'testnet' ? test : main;
   })() || '';
 

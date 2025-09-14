@@ -37,7 +37,7 @@ class SettingsAgent {
   private adminsFetchedAt = 0;
   private adminPublicKeys: string[] = [];
   private adminPublicKeysFetchedAt = 0;
-  private static ADMIN_CACHE_TTL = 60_000; // 1 minute
+  private static ADMIN_CACHE_TTL = 60000; // 1 minute
 
   private constructor() {
     void subscribeToSettingsWrites((evt) => {

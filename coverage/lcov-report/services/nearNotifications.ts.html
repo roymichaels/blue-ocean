@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">32.14% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/28</span>
+                <span class='fraction'>0/17</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">47.36% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/19</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
@@ -89,29 +89,29 @@
 <a name='L24'></a><a href='#L24'>24</a>
 <a name='L25'></a><a href='#L25'>25</a>
 <a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
+<a name='L27'></a><a href='#L27'>27</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -120,27 +120,27 @@ import { Notification } from '../types';
 import { assertNearChain } from './chain';
 import { canonicalJson } from '@/utils/serialization';
 &nbsp;
-assertNearChain();
+<span class="cstat-no" title="statement not covered" >assertNearChain();</span>
 &nbsp;
-const ADDRESS = 'notifications';
+const ADDRESS = <span class="cstat-no" title="statement not covered" >'notifications';</span>
 &nbsp;
-export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >g</span>etNotification<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>i</span></span>d: string): Promise&lt;Notification | null&gt; {</span>
+export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >g</span>etNotification<span class="cstat-no" title="statement not covered" >(</span>i</span>d: string): Promise&lt;Notification | null&gt; {
   const res<span class="cstat-no" title="statement not covered" > = await getValue(ADDRESS, id);</span>
 <span class="cstat-no" title="statement not covered" >  return res ? (JSON.parse(res) as Notification) : null;</span>
-}<span class="cstat-no" title="statement not covered" ></span>
+}<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ></span></span>
 &nbsp;
-export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >s</span>etNotification<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>n</span></span>otification: Notification) {</span>
+export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >s</span>etNotification<span class="cstat-no" title="statement not covered" >(</span>n</span>otification: Notification) {
 <span class="cstat-no" title="statement not covered" >  await setValue(ADDRESS, notification.id, canonicalJson(notification));</span>
-}<span class="cstat-no" title="statement not covered" ></span>
+}<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ></span></span>
 &nbsp;
-export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >r</span>emoveNotification<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>i</span></span>d: string) {</span>
+export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >r</span>emoveNotification<span class="cstat-no" title="statement not covered" >(</span>i</span>d: string) {
 <span class="cstat-no" title="statement not covered" >  await removeValue(ADDRESS, id);</span>
-}<span class="cstat-no" title="statement not covered" ></span>
+}<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ></span></span>
 &nbsp;
-export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >l</span>istNotifications<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>): Promise&lt;Notification[]&gt; {</span></span></span>
+export <span class="fstat-no" title="function not covered" >async function <span class="fstat-no" title="function not covered" >l</span>istNotifications<span class="cstat-no" title="statement not covered" >(</span>): Promise&lt;Notification[]&gt; {</span>
   const items<span class="cstat-no" title="statement not covered" > = await listValues(ADDRESS);</span>
 <span class="cstat-no" title="statement not covered" >  return items.map(<span class="fstat-no" title="function not covered" >(i<span class="cstat-no" title="statement not covered" ></span>) =&gt; JSON.parse(i.value) as Notification);</span></span>
-}<span class="cstat-no" title="statement not covered" ></span>
+}<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ></span></span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -148,7 +148,7 @@ export <span class="fstat-no" title="function not covered" >async function <span
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-13T21:28:00.891Z
+                at 2025-09-14T03:04:22.290Z
             </div>
         <script src="../prettify.js"></script>
         <script>

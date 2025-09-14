@@ -9,6 +9,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { getStore as getNearStore } from '@/features/stores/services/nearStores';
 import { listProducts as listNearProducts } from '@/features/products/services/nearProducts';
 import { routes } from '@/utils/routes';
+import { Spinner } from '@/ui/primitives';
 
 export default function StoreDashboardScreen() {
   console.debug('SD: mount');
@@ -21,21 +22,31 @@ export default function StoreDashboardScreen() {
   const [authorized, setAuthorized] = useState(false);
   const [store, setStore] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       if (!storeId) return;
       try {
         console.debug('SD: fetch store', storeId);
         const s = await getNearStore(storeId, storeId);
-        setStore(s);
-      } catch {}
+        if (active) setStore(s);
+      } catch {
+        // ignore
+      }
       try {
         console.debug('SD: fetch products', storeId);
         const ps = await listNearProducts(storeId);
-        setProducts(ps || []);
-      } catch {}
+        if (active) setProducts(ps || []);
+      } catch {
+        // ignore
+      }
+      if (active) setLoading(false);
     })();
+    return () => {
+      active = false;
+    };
   }, [storeId]);
 
   useEffect(() => {
@@ -52,7 +63,11 @@ export default function StoreDashboardScreen() {
 
   if (!authorized) {
     console.debug('SD: not authorized yet');
-    return null;
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Spinner />
+      </View>
+    );
   }
 
   return (

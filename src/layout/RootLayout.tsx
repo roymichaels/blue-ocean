@@ -1,6 +1,6 @@
 // Touchpoint: Ensure bottom navigation remains sticky on mobile devices
 import React, { useMemo } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Slot, usePathname } from 'expo-router';
@@ -12,6 +12,7 @@ import ErrorBoundary from '@/shared/ErrorBoundary';
 import SidebarTabBar, { NavItem } from '@/components/SidebarTabBar';
 import { Portal } from '@/ui/primitives';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { getShopTenantId } from '@/services/config';
 
@@ -73,19 +74,35 @@ export default function RootLayout() {
   const showSearch = pathname === '/' || pathname === '/index';
   const showCartWidget = showSearch;
 
-  const navItems = useMemo(
-    () =>
-      NAV_ITEMS.filter((item) => {
-        if (item.requiresAuth && !isLoggedIn) return false;
-        if (item.requiresStoreOwner && !isStoreOwner) return false;
-        if (item.requiresTenant && !tenantId) return false;
-        return true;
-      }).map((item) => ({
-        ...item,
-        href: item.href.replace('[storeId]', tenantId ?? ''),
-      })),
-    [isLoggedIn, isStoreOwner, tenantId],
-  );
+  const { openAuthModal } = useAuthModal();
+
+  const navItems = useMemo(() => {
+    const replaced = NAV_ITEMS.map((item) => ({
+      ...item,
+      href: item.href.replace('[storeId]', tenantId ?? ''),
+    }));
+    // Do not hide tabs; gate navigation per item instead.
+    return replaced.map((item) => {
+      const needsAuth = !!item.requiresAuth;
+      const needsOwner = !!item.requiresStoreOwner;
+      const needsTenant = !!item.requiresTenant;
+      const guardedOnPress = () => {
+        if ((needsAuth && !isLoggedIn) || (needsOwner && !isStoreOwner)) {
+          openAuthModal();
+          return;
+        }
+        if (needsTenant && !tenantId) {
+          // Missing tenant context; ignore tap for now
+          return;
+        }
+        // Normal navigation happens in SidebarTabBar when onPress isn't set.
+      };
+      // Only attach onPress when gating applies and conditions not met
+      const shouldIntercept =
+        (needsAuth && !isLoggedIn) || (needsOwner && !isStoreOwner) || (needsTenant && !tenantId);
+      return shouldIntercept ? ({ ...item, onPress: guardedOnPress } as NavItem) : (item as NavItem);
+    });
+  }, [isLoggedIn, isStoreOwner, tenantId, openAuthModal]);
 
   return (
     <ErrorBoundary>
@@ -113,7 +130,7 @@ export default function RootLayout() {
           <Portal>
             <View
               style={{
-                position: 'absolute',
+                position: Platform.OS === 'web' ? 'fixed' : 'absolute',
                 left: 0,
                 right: 0,
                 bottom: 0,

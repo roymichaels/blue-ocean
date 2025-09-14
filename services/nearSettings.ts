@@ -21,7 +21,9 @@ const TEST_ADMIN = 'testadmin.near';
 const NETWORK = (config.NEAR_NETWORK || 'mainnet').toLowerCase();
 const legacyAdmin = config.ADMIN_WALLET_ADDRESS || '';
 const ADMIN_MAIN = config.ADMIN_WALLET_ADDRESS_MAINNET || legacyAdmin;
-const ADMIN_TEST = config.ADMIN_WALLET_ADDRESS_TESTNET || legacyAdmin;
+// Default the testnet admin to theunderground.testnet when not explicitly configured
+const ADMIN_TEST =
+  config.ADMIN_WALLET_ADDRESS_TESTNET || legacyAdmin || 'theunderground.testnet';
 const ADMIN_ADDRESS =
   NETWORK === 'testnet'
     ? ADMIN_TEST || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '')
@@ -190,6 +192,8 @@ export async function fetchSettings(): Promise<NearSettings> {
       feeBps = parsed;
     }
   }
+  const admins = map['admins'] ? JSON.parse(map['admins']) : [];
+  const finalAdmins = admins.length > 0 ? admins : [ADMIN_ADDRESS].filter(Boolean);
   return {
     tenantId: map['tenantId'] ?? 'blue-ocean',
     appName: map['appName'] ?? 'Blue Ocean',
@@ -198,7 +202,7 @@ export async function fetchSettings(): Promise<NearSettings> {
     fiatKey: map['fiatKey'],
     feeAddress: map['feeAddress'] ?? '',
     feeBps,
-    admins: map['admins'] ? JSON.parse(map['admins']) : [],
+    admins: finalAdmins,
     adminPublicKeys: map['adminPublicKeys']
       ? JSON.parse(map['adminPublicKeys'])
       : [],

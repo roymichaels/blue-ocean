@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { ScrollArea, Container } from '@/ui/layout';
 import { Heading, Text } from '@/ui/primitives';
+import ProfileOverview from '@/features/profile/components/ProfileOverview';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 
 export default function ProfileScreen() {
@@ -11,10 +12,9 @@ export default function ProfileScreen() {
     <ScrollArea backgroundColor={colors.canvas}>
       <Container>
         <Heading size="xl">{t('navigation.profile', 'Profile')}</Heading>
-        <View style={{ height: 8 }} />
-        <Text>{t('common.comingSoon', 'Coming Soon')}</Text>
+        <View style={{ height: 16 }} />
+        <ProfileOverview />
       </Container>
     </ScrollArea>
   );
 }
-

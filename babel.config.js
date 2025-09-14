@@ -4,17 +4,20 @@ module.exports = function (api) {
 
   // Tell expo-router where /app lives every time, on any OS/command
   process.env.EXPO_PROJECT_ROOT = __dirname;
-  process.env.EXPO_ROUTER_APP_ROOT = "./app";
+  process.env.EXPO_ROUTER_APP_ROOT = './app';
 
   return {
     presets: [
-      "babel-preset-expo",
-      ["@babel/preset-react", { runtime: "automatic" }],
-      "@babel/preset-typescript",
+      'babel-preset-expo',
+      ['@babel/preset-react', { runtime: 'automatic' }],
+      '@babel/preset-typescript',
     ],
     // SDK 50+: expo-router/babel is built into the preset; don't add it here.
     // Enable support for static class blocks in dependencies like @smithy/core
     // by transforming them during compilation.
-    plugins: ["@babel/plugin-transform-class-static-block"],
+    plugins: [
+      '@babel/plugin-transform-class-static-block',
+      'react-native-worklets/plugin',
+    ],
   };
 };

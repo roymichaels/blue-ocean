@@ -35,6 +35,9 @@ const localDir =
 
 // Simple in-memory map for environments without filesystem access.
 const memStore = new Map<string, Map<string, string>>();
+// On the web, persist to localStorage for dev so data survives reloads
+const hasLocalStorage = (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined');
+function lsKey(address: string, key: string): string { return `kv:${address}:${key}`; }
 
 function validateSegment(seg: string) {
   const isAbs =
@@ -122,11 +125,7 @@ export async function setValue(address: string, key: string, value: string) {
       addrStore = new Map();
       memStore.set(address, addrStore);
     }
-    if (value === '') {
-      addrStore.delete(key);
-    } else {
-      addrStore.set(key, value);
-    }
+    if (value === '') { addrStore.delete(key); if (hasLocalStorage) { try { window.localStorage.removeItem(lsKey(address, key)); } catch {} } } else { addrStore.set(key, value); if (hasLocalStorage) { try { window.localStorage.setItem(lsKey(address, key), value); } catch {} } }
     return;
   }
   if (s3 && bucket) {
@@ -152,7 +151,7 @@ export async function removeValue(address: string, key: string) {
   validateSegment(key);
   await ensureLake();
   if (useMemoryStore) {
-    memStore.get(address)?.delete(key);
+    memStore.get(address)?.delete(key); if (hasLocalStorage) { try { window.localStorage.removeItem(lsKey(address, key)); } catch {} }
     return;
   }
   if (s3 && bucket) {
@@ -168,7 +167,7 @@ export async function getValue(address: string, key: string): Promise<string | n
   validateSegment(key);
   await ensureLake();
   if (useMemoryStore) {
-    return memStore.get(address)?.get(key) ?? null;
+    const cached = memStore.get(address)?.get(key); if (cached != null) return cached; if (hasLocalStorage) { try { const v = window.localStorage.getItem(lsKey(address, key)); if (v != null) { let addrStore = memStore.get(address); if (!addrStore) { addrStore = new Map(); memStore.set(address, addrStore); } addrStore.set(key, v); return v; } } catch {} } return null;
   }
   if (s3 && bucket) {
     try {
@@ -191,11 +190,7 @@ export async function listValues(
 ): Promise<{ key: string; value: string }[]> {
   validateSegment(address);
   await ensureLake();
-  if (useMemoryStore) {
-    const addrStore = memStore.get(address);
-    if (!addrStore) return [];
-    return Array.from(addrStore.entries()).map(([key, value]) => ({ key, value }));
-  }
+  if (useMemoryStore) { const addrStore = memStore.get(address); const fromMem = addrStore ? Array.from(addrStore.entries()).map(([key, value]) => ({ key, value })) : []; if (hasLocalStorage) { const out: { key: string; value: string }[] = []; try { for (let i = 0; i < window.localStorage.length; i++) { const k = window.localStorage.key(i)!; const prefix = `kv:${address}:`; if (!k.startsWith(prefix)) continue; const logical = k.substring(prefix.length); const v = window.localStorage.getItem(k); if (v != null) out.push({ key: logical, value: v }); } } catch {} const seen = new Set(out.map((e) => e.key)); for (const e of fromMem) if (!seen.has(e.key)) out.push(e); return out; } return fromMem; }
   if (s3 && bucket) {
     const prefix = `${address}/`;
     const out: { key: string; value: string }[] = [];
@@ -226,4 +221,6 @@ export async function listValues(
     return [];
   }
 }
+
+
 

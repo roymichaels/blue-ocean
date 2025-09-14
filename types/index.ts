@@ -45,6 +45,8 @@ export interface Store {
   owner: string;
   nftId: string;
   reputation?: number;
+  plan?: 'free' | 'premium';
+  createdAt?: string;
 }
 
 export interface Category {

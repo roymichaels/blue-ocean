@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { User, LogOut } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';
@@ -13,7 +13,7 @@ export default function UserAvatar() {
   const { t } = useLanguage();
   const { getColor } = useTheme();
   const { openAuthModal } = useAuthModal();
-  const { replace } = useAppRouter();
+  const { replace, push } = useAppRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
 
@@ -51,22 +51,33 @@ export default function UserAvatar() {
     setLogoutConfirmVisible(false);
   };
 
-  const items: MenuItem[] = isLoggedIn
-    ? [
-        {
-          label: t('auth.logout'),
-          icon: <LogOut size={20} color={getColor('status.error')} />,
-          onPress: handleLogout,
-          destructive: true,
-        },
-      ]
-    : [
+  const items: MenuItem[] = useMemo(() => {
+    if (!isLoggedIn) {
+      return [
         {
           label: t('auth.login'),
           icon: <User size={20} color={getColor('text.primary')} />,
           onPress: handleLogin,
         },
       ];
+    }
+    return [
+      {
+        label: t('navigation.profile', 'Profile'),
+        icon: <User size={20} color={getColor('text.primary')} />,
+        onPress: () => {
+          setMenuOpen(false);
+          push('/me');
+        },
+      },
+      {
+        label: t('auth.logout'),
+        icon: <LogOut size={20} color={getColor('status.error')} />,
+        onPress: handleLogout,
+        destructive: true,
+      },
+    ];
+  }, [isLoggedIn, t, getColor]);
 
   return (
     <>

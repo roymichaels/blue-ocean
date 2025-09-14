@@ -12,6 +12,7 @@ export interface NavItem {
   title: string;
   icon: string;
   badge?: number;
+  onPress?: () => void;
 }
 
 const SIDEBAR_WIDTH = 200;
@@ -92,7 +93,7 @@ export const SidebarTabBar: React.FC<SidebarTabBarProps> = ({ items, isSidebar, 
             <Pressable
               key={item.href}
               ref={(el) => (itemRefs.current[index] = el)}
-              onPress={() => push(item.href)}
+              onPress={() => (typeof item.onPress === 'function' ? item.onPress() : push(item.href))}
               accessibilityLabel={t(item.title)}
               accessibilityRole="button"
               focusable

@@ -16,7 +16,7 @@ const MAX_ROOM_KEYS = 100;
 // Track failed derivations to avoid hammering key generation when it previously
 // failed. After a cooldown, we allow another attempt.
 const failedDerivations = new Map<string, number>();
-const DERIVATION_COOLDOWN_MS = 60_000;
+const DERIVATION_COOLDOWN_MS = 60000;
 
 export async function getRoomKey(
   roomId: string,

@@ -347,7 +347,14 @@
     "logoutSuccess": "Logged out successfully",
     "logoutError": "Logout failed",
     "createStore": "Create your store",
-    "loadSettingsError": "Error loading settings",
+    "wallet": "Wallet",
+    "balance": "Balance",
+    "myStores": "My Stores",
+    "noStores": "No stores yet",
+    "reputation": "Reputation",
+    "reputationScore": "Average store reputation",
+    "resetDevData": "Reset Dev Data",
+"loadSettingsError": "Error loading settings",
     "saveNotificationsError": "Error saving notifications setting"
   },
   "admin": {
@@ -584,6 +591,10 @@
   "stores": {
     "storeName": "Store Name",
     "mintStore": "Mint Store",
+    "mintPremiumStore": "Create Premium Store",
+    "plan": "Plan",
+    "planFree": "Free",
+    "planPremium": "Premium",
     "transactionFailed": "Transaction failed",
     "insufficientFunds": "Insufficient funds to deploy the store",
     "transactionCancelled": "Transaction cancelled",
@@ -637,3 +648,8 @@
     "max": "Max"
   }
 }
+
+
+
+
+

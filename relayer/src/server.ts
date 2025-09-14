@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { z } from 'zod';
 import { connect, keyStores, utils } from 'near-api-js';
 import dotenv from 'dotenv';
@@ -26,10 +27,11 @@ const rateLimitRps = Math.max(1, parseInt(RATE_LIMIT_RPS || '10', 10));
 
 // Zod schema
 const Body = z.object({
-  action: z.enum(['add_listing', 'buy_listing']),
+  action: z.enum(['add_listing', 'buy_listing', 'create_store']),
   args: z.record(z.any()),
   publicKey: z.string(),
   signature: z.string(),
+  ownerId: z.string().optional(), // required for create_store
 });
 
 // Minimal in-memory rate limiter
@@ -46,6 +48,7 @@ function takeToken() {
 
 // Express app
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // Healthz & metrics
@@ -59,6 +62,21 @@ app.get('/healthz', (_req, res) => {
     failCount: metrics.fail,
     contractId: CONTRACT_ID,
   });
+});
+
+// Simple JSON-RPC proxy to avoid browser CORS limits when hitting NEAR RPC directly
+app.post('/rpc', async (req, res) => {
+  try {
+    const r = await fetch(NEAR_RPC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body ?? {}),
+    });
+    const text = await r.text();
+    res.status(r.status).type('application/json').send(text);
+  } catch (e: any) {
+    res.status(502).json({ error: e?.message || 'rpc proxy error' });
+  }
 });
 
 async function callFunction(methodName: string, args: Record<string, unknown>) {
@@ -88,7 +106,7 @@ function assertDepositCaps(action: string, args: any) {
     if (!('amountYocto' in args)) throw new Error('amountYocto required');
     const amount = BigInt(String(args.amountYocto));
     const max = BigInt(String(MAX_DEPOSIT_YOCTO));
-    if (amount <= 0n) throw new Error('amountYocto must be > 0');
+    if (amount <= BigInt(0)) throw new Error('amountYocto must be > 0');
     if (amount > max) throw new Error('amountYocto exceeds MAX_DEPOSIT_YOCTO');
   }
 }
@@ -98,10 +116,17 @@ app.post('/meta-tx', async (req, res) => {
   metrics.total++;
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-  const { action, args, publicKey, signature } = parsed.data as any;
+  const { action, args, publicKey, signature, ownerId } = parsed.data as any;
   try {
     // Guardrails
-    requireStoreId(args);
+    if (action !== 'create_store') {
+      // create_store is validated by contract; still require a store id in args for consistency
+      requireStoreId(args);
+    } else {
+      // allow either camelCase or snake_case
+      const sid = (args as any).store_id ?? (args as any).storeId;
+      if (!sid) throw new Error('storeId/store_id is required');
+    }
     assertDepositCaps(action, args);
     // Verify signature
     const msg = new TextEncoder().encode(JSON.stringify({ action, args }));
@@ -109,7 +134,25 @@ app.post('/meta-tx', async (req, res) => {
     const sig = Buffer.from(signature, 'base64');
     if (!pk.verify(msg, sig)) throw new Error('invalid signature');
     // Allowlist enforced by zod enum
-    const tx = await callFunction(action, args);
+    // Verify ownership for create_store via access key lookup
+    let method = action;
+    let finalArgs = args as any;
+    if (action === 'create_store') {
+      if (!ownerId) throw new Error('ownerId required');
+      // Verify publicKey belongs to ownerId
+      const near = await connect({ networkId: 'testnet', nodeUrl: NEAR_RPC_URL, keyStore: new keyStores.InMemoryKeyStore() as any });
+      const acct = await near.account(ownerId);
+      const keys = await acct.getAccessKeys();
+      const ok = keys.some((k: any) => (k.public_key || k.publicKey) === publicKey);
+      if (!ok) throw new Error('publicKey does not belong to ownerId');
+      method = 'create_store_for';
+      finalArgs = {
+        owner: ownerId,
+        store_id: (args as any).store_id ?? (args as any).storeId,
+        name: (args as any).name,
+      };
+    }
+    const tx = await callFunction(method, finalArgs);
     metrics.ok++;
     res.json({ tx });
   } catch (e: any) {

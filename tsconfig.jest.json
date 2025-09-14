@@ -1,0 +1,43 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["jest", "node"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@app/*": ["app/*"],
+
+      "@features/*": ["src/features/*"],
+      "@shared/*": ["src/shared/*"],
+      "@ui/*": ["src/ui/*"],
+      "@providers/*": ["src/providers/*"],
+
+      "@/*": ["*"],
+
+      "@/features/*": ["src/features/*"],
+      "@/shared/*": ["src/shared/*"],
+      "@/ui/*": ["src/ui/*"],
+      "@/ui": ["src/ui/index"],
+      "@/layout/*": ["src/layout/*"],
+      "@/services": ["src/services/index"],
+      "@/services/*": ["src/services/*", "services/*"],
+      "@/utils/*": ["src/utils/*", "utils/*"],
+      "@/providers/*": ["src/providers/*"],
+      "@/providers": ["src/providers/index"],
+      "@/i18n": ["src/i18n"],
+      "@/constants/*": ["constants/*"],
+      "src/*": ["src/*"]
+    },
+    "moduleResolution": "Bundler"
+  },
+  "include": [
+    "tests",
+    "src",
+    "services",
+    "app",
+    "constants",
+    "types",
+    "scripts",
+    "jest.config.js"
+  ]
+}

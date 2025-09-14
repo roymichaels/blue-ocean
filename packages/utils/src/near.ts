@@ -1,6 +1,6 @@
 import { Account, Near, connect, keyStores } from 'near-api-js';
 
-const DEFAULT_GAS = 150_000_000_000_000n; // 150 Tgas
+const DEFAULT_GAS = BigInt('150000000000000'); // 150 Tgas
 
 /**
  * Create a NEAR connection using near-api-js.
@@ -49,7 +49,7 @@ export async function callFunction(
   args: object = {},
   options: CallOptions = {},
 ) {
-  const { gas = DEFAULT_GAS, deposit = 0n } = options;
+  const { gas = DEFAULT_GAS, deposit = BigInt(0) } = options;
   return account.functionCall({
     contractId,
     methodName,
