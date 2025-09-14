@@ -2,15 +2,16 @@ import { failureCounter, latencyHistogram, withMonitoring } from '@/services/mon
 
 describe('monitoring hooks', () => {
   it('records latency and failures', async () => {
-    const startCount = failureCounter.hashMap['service:test']?.value || 0;
+    const key = 'service:service:test,';
+    const start = failureCounter.hashMap[key]?.value || 0;
     await expect(
       withMonitoring('service:test', async () => {
         throw new Error('boom');
       }),
     ).rejects.toThrow('boom');
-    const endCount = failureCounter.hashMap['service:test']?.value || 0;
-    expect(endCount).toBe(startCount + 1);
-    const metric = latencyHistogram.hashMap['service:test'];
+    const end = failureCounter.hashMap[key]?.value || 0;
+    expect(end).toBe(start + 1);
+    const metric = latencyHistogram.hashMap[key];
     expect(metric).toBeDefined();
   });
 });

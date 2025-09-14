@@ -4,6 +4,10 @@ import { canonicalJson } from '@/utils/serialization';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 import AgentError from '@/types/AgentError';
 import type { WakuMessage } from '@/types/waku';
+import {
+  adminCountGauge,
+  adminUnauthorizedAttempts,
+} from '@/services/monitoring';
 
 interface AdminRecord {
   address: string;
@@ -40,6 +44,7 @@ export class AdminAgent extends EventEmitter {
     const admins = await this.getAdmins();
     admins.push(record);
     await writeRecords(ADMINS_KEY, admins);
+    adminCountGauge.set(admins.length);
   }
 
   private async queueRequest(record: AdminRecord): Promise<void> {
@@ -98,6 +103,7 @@ export class AdminAgent extends EventEmitter {
     const admins = await this.getAdmins();
     const isAdmin = admins.some((a) => a.publicKey === msg.sender.publicKey);
     if (!isAdmin) {
+      adminUnauthorizedAttempts.inc();
       throw new AgentError('E_UNAUTHORIZED', 'Only admins can approve', 'admin-agent');
     }
     const pending = await this.removeRequest(msg.payload.address);

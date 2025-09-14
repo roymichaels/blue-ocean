@@ -6,6 +6,7 @@ import pino from 'pino';
 let Counter: any;
 let Histogram: any;
 let Registry: any;
+let Gauge: any;
 
 if (
   typeof process !== 'undefined' &&
@@ -16,15 +17,18 @@ if (
   Counter = promClient.Counter;
   Histogram = promClient.Histogram;
   Registry = promClient.Registry;
+  Gauge = promClient.Gauge;
 } else {
   class NoopMetric {
     startTimer() {
       return () => {};
     }
     inc() {}
+    set() {}
   }
   Counter = class extends NoopMetric {};
   Histogram = class extends NoopMetric {};
+  Gauge = class extends NoopMetric {};
   Registry = class {};
 }
 
@@ -42,6 +46,18 @@ export const failureCounter = new Counter({
   name: 'service_failures_total',
   help: 'Service call failures',
   labelNames: ['service'],
+  registers: [registry],
+});
+
+export const adminUnauthorizedAttempts = new Counter({
+  name: 'admin_unauthorized_attempts_total',
+  help: 'Unauthorized admin actions',
+  registers: [registry],
+});
+
+export const adminCountGauge = new Gauge({
+  name: 'admin_count',
+  help: 'Number of registered admins',
   registers: [registry],
 });
 
