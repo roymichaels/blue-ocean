@@ -4,6 +4,8 @@ import { canonicalJson } from './serialization';
 import { z } from 'zod';
 import { errorLog } from './logger';
 
+export const TIMESTAMP_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes
+
 export async function verifyMessageSignature<T>(
   message: WakuMessage<T>,
   publicKey: string,
@@ -43,6 +45,14 @@ export async function verifyBeforeWrite<T>(
   if (!ok) {
     errorLog('E_SIGNATURE_INVALID');
     return null;
+  }
+  const ts = (msg.payload as any)?.timestamp;
+  if (typeof ts === 'number') {
+    const skew = Math.abs(Date.now() - ts);
+    if (skew > TIMESTAMP_TOLERANCE_MS) {
+      errorLog('E_TIMESTAMP_SKEW');
+      return null;
+    }
   }
   if (allowedPublicKeys && !allowedPublicKeys.includes(msg.sender.publicKey)) {
     errorLog('E_UNAUTHORIZED');
