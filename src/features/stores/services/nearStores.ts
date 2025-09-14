@@ -6,6 +6,10 @@ import {
   getStore as contractGetStore,
   listStores as contractListStores,
 } from '@/services/nearStoreContract';
+import { canonicalJson } from '@/utils/serialization';
+import { nearConfig } from '@/services/config';
+import { getSelector } from '@/services/walletSelector';
+import { Buffer } from 'buffer';
 
 assertNearChain();
 
@@ -22,16 +26,66 @@ function fromChain(data: any): Store {
   } as Store;
 }
 
-export async function getStore(
-  storeId: string,
-  id: string,
-): Promise<Store | null> {
-  requireStoreId(storeId);
+
+export async function mintStore(name: string): Promise<{ id: string; nftId: string; txHash: string }> {
+  const { contractId } = nearConfig();
+  if (!contractId) throw new Error('CONTRACT_ID required');
+  const selector = getSelector();
+  if (!selector) throw new Error('Wallet not initialized');
+  const wallet = await selector.wallet();
+  const res: any = await wallet.signAndSendTransactions({
+    transactions: [
+      {
+        receiverId: contractId,
+        actions: [
+          {
+            type: 'FunctionCall',
+            params: {
+              methodName: 'mint_store',
+              args: { name },
+              gas: '30000000000000',
+              deposit: '0',
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  const outcome = Array.isArray(res) ? res[0] : res;
+  const txHash: string = outcome?.transaction?.hash || '';
+  let id = '';
+  let nftId = '';
   try {
-    const res = await contractGetStore(id);
-    return res ? fromChain(res) : null;
-  } catch (e: any) {
-    throw new Error(`Failed to get store ${id}: ${e.message || e}`);
+    const val =
+      outcome?.status?.SuccessValue ||
+      outcome?.transaction_outcome?.outcome?.status?.SuccessValue;
+    if (val) {
+      const decoded = Buffer.from(val, 'base64').toString();
+      const parsed = JSON.parse(decoded);
+      id = parsed.store_id || parsed.storeId || parsed.id || '';
+      nftId = parsed.nft_id || parsed.nftId || '';
+    }
+  } catch {}
+  if (!id) throw new Error('mint_store failed');
+  return { id, nftId, txHash };
+}
+
+export async function getStore(storeId: string, id: string): Promise<Store | null> {
+  ensureSeed();
+  const sid = requireStoreId(storeId);
+  const res = await getValue(ADDRESS, `${ADDRESS}:${sid}:${id}`);
+  if (res) return JSON.parse(res) as Store;
+  if (DISABLED) {
+
+    const fallback: Store = {
+      id,
+      name: `Store ${id}`,
+      owner: 'demo',
+      nftId: '',
+      reputation: 0,
+    } as Store;
+    return fallback;
   }
 }
 
