@@ -2,12 +2,11 @@ import { debugLog, errorLog } from '@/utils/logger';
 import { assertNearChain } from './chain';
 import { getValue, setValue, listValues } from './nearKvStore';
 import config from '@/config';
-import { getWakuBootstrapNodes } from '../utils/appConfig';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import type { SettingsWriteEvent, WakuMessage } from '../types/waku';
 import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
-import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
+import { verifyBeforeWrite } from '../utils/verifyMessageSignature';
 import { z } from 'zod';
 import { sign } from '@noble/ed25519';
 import { canonicalJson } from '@/utils/serialization';
@@ -19,15 +18,10 @@ const ADDRESS = 'settings';
 
 const TEST_ADMIN = 'testadmin.near';
 const NETWORK = (config.NEAR_NETWORK || 'mainnet').toLowerCase();
-const legacyAdmin = config.ADMIN_WALLET_ADDRESS || '';
-const ADMIN_MAIN = config.ADMIN_WALLET_ADDRESS_MAINNET || legacyAdmin;
-// Default the testnet admin to theunderground.testnet when not explicitly configured
-const ADMIN_TEST =
-  config.ADMIN_WALLET_ADDRESS_TESTNET || legacyAdmin || 'theunderground.testnet';
 const ADMIN_ADDRESS =
-  NETWORK === 'testnet'
-    ? ADMIN_TEST || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '')
-    : ADMIN_MAIN || (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '');
+  config.ADMIN_WALLET_ADDRESS ||
+  (NETWORK === 'testnet' ? 'theunderground.testnet' : '') ||
+  (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '');
 
 function assertAdmin(actor: string): void {
   if (!ADMIN_ADDRESS) {
@@ -50,7 +44,6 @@ export interface NearSettings {
   adminPublicKeys: string[];
   rpcUrl: string;
   rpcFallbackUrls?: string[];
-  wakuBootstrap?: string[];
   paymentFactoryAddress?: string;
 }
 
@@ -66,12 +59,8 @@ async function ensureNode(): Promise<LightNode | null> {
     if ((config.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
       return null;
     }
-    const bootstrap = getWakuBootstrapNodes();
-    if (bootstrap.length === 0) {
-      return null;
-    }
     const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-    node = await createLightNode({ libp2p: { bootstrap } as any });
+    node = await createLightNode({} as any);
     if (!node) return null;
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);
@@ -209,9 +198,6 @@ export async function fetchSettings(): Promise<NearSettings> {
     rpcUrl: map['rpcUrl'] ?? '',
     rpcFallbackUrls: map['rpcFallbackUrls']
       ? JSON.parse(map['rpcFallbackUrls'])
-      : [],
-    wakuBootstrap: map['wakuBootstrap']
-      ? JSON.parse(map['wakuBootstrap'])
       : [],
     paymentFactoryAddress: map['paymentFactoryAddress'] ?? '',
   };

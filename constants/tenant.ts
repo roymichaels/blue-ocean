@@ -2,12 +2,7 @@ import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../utils/appConfig';
 import { fetchSettings } from '@/services/nearSettings';
-import {
-  getNetworkId,
-  getAdminWalletAddress,
-  getAdminWalletAddressMainnet,
-  getAdminWalletAddressTestnet,
-} from '@/services/config';
+import { getNetworkId, getAdminWalletAddress } from '@/services/config';
 
 export let TENANT = 'blue-ocean';
 
@@ -21,7 +16,6 @@ export interface TenantSettings {
   admins?: string[];
   rpcUrl: string;
   rpcFallbackUrls?: string[];
-  wakuBootstrap?: string[];
   paymentFactoryAddress?: string;
 }
 
@@ -29,15 +23,7 @@ const initialAdmin =
   (() => {
     const network = (config.NEAR_NETWORK || getNetworkId() || '').toLowerCase();
     const legacy = config.ADMIN_WALLET_ADDRESS || getAdminWalletAddress();
-    const main =
-      config.ADMIN_WALLET_ADDRESS_MAINNET ||
-      getAdminWalletAddressMainnet() ||
-      legacy;
-    const test =
-      config.ADMIN_WALLET_ADDRESS_TESTNET ||
-      getAdminWalletAddressTestnet() ||
-      legacy || 'theunderground.testnet';
-    return network === 'testnet' ? test : main;
+    return legacy || (network === 'testnet' ? 'theunderground.testnet' : '');
   })() || '';
 
 
@@ -50,7 +36,6 @@ export let AppConfig: TenantSettings = {
   admins: initialAdmin ? [initialAdmin] : [],
   rpcUrl: '',
   rpcFallbackUrls: [],
-  wakuBootstrap: [],
   paymentFactoryAddress: '',
 };
 
@@ -65,7 +50,6 @@ export async function loadTenantSettings(): Promise<void> {
   const ADMINS_KEY = 'app_admins';
   const RPC_URL_KEY = 'app_rpc_url';
   const RPC_FALLBACK_KEY = 'app_rpc_fallback_urls';
-  const WAKU_BOOTSTRAP_KEY = 'app_waku_bootstrap';
   const PAYMENT_FACTORY_KEY = 'app_payment_factory_address';
 
   try {
@@ -80,7 +64,6 @@ export async function loadTenantSettings(): Promise<void> {
       admins,
       rpc,
       rpcFallback,
-      waku,
       paymentFactory,
     ] = await AsyncStorage.multiGet([
       TENANT_KEY,
@@ -93,7 +76,6 @@ export async function loadTenantSettings(): Promise<void> {
       ADMINS_KEY,
       RPC_URL_KEY,
       RPC_FALLBACK_KEY,
-      WAKU_BOOTSTRAP_KEY,
       PAYMENT_FACTORY_KEY,
     ]);
 
@@ -108,7 +90,6 @@ export async function loadTenantSettings(): Promise<void> {
       admins: admins?.[1] ? JSON.parse(admins[1]) : [],
       rpcUrl: rpc?.[1] || '',
       rpcFallbackUrls: rpcFallback?.[1] ? JSON.parse(rpcFallback[1]) : [],
-      wakuBootstrap: waku?.[1] ? JSON.parse(waku[1]) : [],
       paymentFactoryAddress: paymentFactory?.[1] || '',
     };
 
@@ -124,7 +105,6 @@ export async function loadTenantSettings(): Promise<void> {
       admins: remote.admins ?? [],
       rpcUrl: remote.rpcUrl,
       rpcFallbackUrls: remote.rpcFallbackUrls ?? [],
-      wakuBootstrap: remote.wakuBootstrap ?? [],
       paymentFactoryAddress: remote.paymentFactoryAddress ?? '',
     };
 
@@ -139,7 +119,6 @@ export async function loadTenantSettings(): Promise<void> {
       [ADMINS_KEY, JSON.stringify(remote.admins ?? [])],
       [RPC_URL_KEY, remote.rpcUrl],
       [RPC_FALLBACK_KEY, JSON.stringify(remote.rpcFallbackUrls ?? [])],
-      [WAKU_BOOTSTRAP_KEY, JSON.stringify(remote.wakuBootstrap ?? [])],
       [PAYMENT_FACTORY_KEY, remote.paymentFactoryAddress ?? ''],
     ]);
   } catch (e) {

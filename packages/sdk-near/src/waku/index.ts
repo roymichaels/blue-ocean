@@ -19,18 +19,8 @@ let node: LightNode | null = null;
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
-    const raw =
-      process.env.EXPO_PUBLIC_WAKU_BOOTSTRAP ||
-      process.env.WAKU_BOOTSTRAP ||
-      '';
-    let bootstrap = raw
-      .split(String.fromCharCode(44))
-      .map((s) => s.trim())
-      .filter(Boolean);
-    // Treat 'auto' (or empty) as: let SDK pick defaults (don't pass manual bootstrap)
-    const useAuto = bootstrap.length === 0 || bootstrap.some((s) => s.toLowerCase() === 'auto');
     const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-    node = await createLightNode(useAuto ? ({} as any) : ({ libp2p: { bootstrap } } as any));
+    node = await createLightNode({} as any);
     if (!node) return null;
     await node.start();
     // The Store protocol is required to query historical messages.

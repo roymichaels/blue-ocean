@@ -1,6 +1,8 @@
 import { verify } from '@noble/ed25519';
 import type { WakuMessage } from '../types/waku';
 import { canonicalJson } from './serialization';
+import { z } from 'zod';
+import { errorLog } from './logger';
 
 export async function verifyMessageSignature<T>(
   message: WakuMessage<T>,
@@ -24,4 +26,27 @@ export async function verifyMessageSignature<T>(
   } catch {
     return false;
   }
+}
+
+export async function verifyBeforeWrite<T>(
+  data: unknown,
+  schema: z.ZodType<WakuMessage<T>>,
+  allowedPublicKeys?: string[],
+): Promise<WakuMessage<T> | null> {
+  const res = schema.safeParse(data);
+  if (!res.success) {
+    errorLog('Invalid Waku message');
+    return null;
+  }
+  const msg = res.data;
+  const ok = await verifyMessageSignature(msg, msg.sender.publicKey);
+  if (!ok) {
+    errorLog('E_SIGNATURE_INVALID');
+    return null;
+  }
+  if (allowedPublicKeys && !allowedPublicKeys.includes(msg.sender.publicKey)) {
+    errorLog('E_UNAUTHORIZED');
+    return null;
+  }
+  return msg;
 }

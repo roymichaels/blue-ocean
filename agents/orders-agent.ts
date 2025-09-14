@@ -29,8 +29,7 @@ import eventBus from '@/services/eventBus';
 import { errorLog, warnLog } from '../utils/logger';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
-import { getWakuBootstrapNodes } from '../utils/appConfig';
-import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
+import { verifyBeforeWrite } from '../utils/verifyMessageSignature';
 import { orderStatusMessageSchema } from '../schemas/waku/order.status';
 import { buildTopic } from '../utils/wakuTopics';
 import { normalizeMessage } from '../lib/normalizeMessage';
@@ -96,10 +95,8 @@ class OrdersAgent {
   private async ensureNode(): Promise<LightNode | null> {
     if (this.node) return this.node;
     try {
-      const bootstrap = getWakuBootstrapNodes();
-      if (bootstrap.length === 0) return null;
       const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-      this.node = await createLightNode({ libp2p: { bootstrap } as any });
+      this.node = await createLightNode({} as any);
       await this.node!.start();
       await waitForRemotePeer(this.node, [Protocols.Relay]);
       return this.node;

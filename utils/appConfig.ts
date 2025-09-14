@@ -2,24 +2,6 @@ import config, { reloadConfig } from '@/config';
 
 export { reloadConfig };
 
-export function getWakuBootstrapNodes(): string[] {
-  const override = config.EXPO_PUBLIC_WAKU_BOOTSTRAP;
-  if (override) {
-    return override
-      .split(',')
-      .map((addr) => addr.trim())
-      .filter(Boolean);
-  }
-  try {
-    const tenant = require('@/constants/tenant');
-    const list = tenant.AppConfig?.wakuBootstrap || [];
-    if (Array.isArray(list) && list.length > 0) {
-      return list;
-    }
-  } catch {}
-  return [];
-}
-
 export function requireEnv(key: keyof typeof config): string {
   const value = config[key];
   if (!value) {

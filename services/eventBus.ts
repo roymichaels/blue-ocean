@@ -2,18 +2,12 @@ import { errorLog } from '@/utils/logger';
 import { withMonitoring } from './monitoring';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
-import { getWakuBootstrapNodes } from '../utils/appConfig';
 import { uuid } from '../utils/uuid';
 import { sha256 } from '@noble/hashes/sha256';
 import { chainAdapter } from '@/services/chain';
 import config from '@/config';
 import { canonicalJson } from '@/utils/serialization';
 
-const STABLE_BOOTSTRAP = [
-  '/dns4/node.waku.nodes.status.im/tcp/443/wss/p2p/16Uiu2HAmSWvkpawuUxEe7dBDEu79SU1YEYTbSsfXrVvjJAnGqsRP',
-  '/dns4/node-01.do-ams3.wakuv2.prod.status.im/tcp/443/wss/p2p/16Uiu2HAm67ShxB2S7RMyCV2wAPYp4nX3UX77DpDhmPEwAE8XEq8y',
-  '/dns4/node-01.gc-us-central1-a.wakuv2.prod.status.im/tcp/443/wss/p2p/16Uiu2HAkwpZJYG1ChB7FAuoCd8ohgfqNynFUsBpt7NrodpAt4E7X',
-];
 const ANALYTICS_TOPIC = '/blue-ocean/analytics/1';
 const sessionId = uuid();
 
@@ -26,11 +20,8 @@ async function ensureNode(): Promise<LightNode | null> {
       // In HTTP mode, disable Waku analytics
       return null;
     }
-    let bootstrap = getWakuBootstrapNodes();
-    if (bootstrap.length === 0) bootstrap = STABLE_BOOTSTRAP;
-    if (bootstrap.length === 0) return null;
     const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-    node = await createLightNode({ libp2p: { bootstrap } } as any);
+    node = await createLightNode({} as any);
     if (!node) return null;
     await node.start();
     await waitForRemotePeer(node, [Protocols.Relay]);

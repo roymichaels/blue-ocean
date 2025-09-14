@@ -1,5 +1,5 @@
 import { getPublicKey, sign, utils } from '@noble/ed25519';
-import { verifyBeforeWrite } from '../utils/verifyBeforeWrite';
+import { verifyBeforeWrite } from '../utils/verifyMessageSignature';
 import { wakuMessageSchema } from '../schemas/waku';
 import { z } from 'zod';
 import { canonicalJson } from '../utils/serialization';

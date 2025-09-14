@@ -309,7 +309,6 @@ export interface TenantSettings {
   fiatKey?: string | null;
   rpcUrl?: string | null;
   rpcFallbackUrls?: string[] | null;
-  wakuBootstrap?: string[] | null;
   feeAddress?: string | null;
   feeBps?: number | null;
   admins?: string[] | null;

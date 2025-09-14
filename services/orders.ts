@@ -295,11 +295,9 @@ class OrderService {
     if (!order || !order.escrowAddr) return;
     const actor = chainAdapter.getAccountId();
     const network = (config.NEAR_NETWORK || 'mainnet').toLowerCase();
-    const legacy = config.ADMIN_WALLET_ADDRESS || '';
     const admin =
-      network === 'testnet'
-        ? config.ADMIN_WALLET_ADDRESS_TESTNET || legacy
-        : config.ADMIN_WALLET_ADDRESS_MAINNET || legacy;
+      config.ADMIN_WALLET_ADDRESS ||
+      (network === 'testnet' ? 'theunderground.testnet' : '');
     if (admin && (!actor || actor !== admin)) {
       throw new Error('Admin wallet address required');
     }
