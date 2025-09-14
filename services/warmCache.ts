@@ -4,6 +4,7 @@ import {
   cacheHydrationHistogram,
 } from '@/services/monitoring';
 import { fetchHistory, subscribeWithAck } from '@/services/waku';
+import { isWarmCacheEnabled } from '@/config/featureFlags';
 
 export const E_STALE_DATA = 'E_STALE_DATA';
 
@@ -21,6 +22,10 @@ export interface WarmCache<T> {
     cb: (id: string, value: T | undefined) => void,
   ): () => void;
   onSynced(cb: () => void): () => void;
+  registerReconciler(
+    address: string,
+    fn: (id: string, value: T | undefined) => void,
+  ): () => void;
 }
 
 export function createWarmCache<T>(topic: string): WarmCache<T> {
@@ -29,15 +34,8 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   let synced = false;
   let stale = false;
   const buffer: DiffMessage<T>[] = [];
-  let hits = 0;
-  let misses = 0;
+  const reconcilers = new Map<string, (id: string, value: T | undefined) => void>();
 
-  const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
-
-  function updateHitRatio(): void {
-    const total = hits + misses;
-    cacheHitRatioGauge.set({ cache: topic }, total ? hits / total : 0);
-  }
 
   function apply(msg: DiffMessage<T>): void {
     const current = store.get(msg.id);
@@ -51,7 +49,11 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
     } else if (msg.value !== undefined) {
       store.set(msg.id, { value: msg.value, rev: msg.rev });
     }
-    emitter.emit('update', msg.id, store.get(msg.id)?.value);
+    const value = store.get(msg.id)?.value;
+    emitter.emit('update', msg.id, value);
+    reconcilers.forEach((fn, addr) => {
+      if (isWarmCacheEnabled(addr)) fn(msg.id, value);
+    });
   }
 
   (async () => {
@@ -77,12 +79,8 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
 
   return {
     getById(id: string) {
-      if (stale) throw { code: E_STALE_DATA };
-      const value = store.get(id)?.value;
-      if (value !== undefined) hits++;
-      else misses++;
-      updateHitRatio();
-      return value;
+      if (stale || !isWarmCacheEnabled()) throw { code: E_STALE_DATA };
+      return store.get(id)?.value;
     },
     subscribe(filter, cb) {
       const handler = (id: string, value: T | undefined) => {
@@ -95,6 +93,11 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
       if (synced) cb();
       emitter.on('cache.synced', cb);
       return () => emitter.off('cache.synced', cb);
+    },
+    registerReconciler(address, fn) {
+      const key = address.toLowerCase();
+      reconcilers.set(key, fn);
+      return () => reconcilers.delete(key);
     },
   };
 }
