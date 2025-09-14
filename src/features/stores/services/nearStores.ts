@@ -1,12 +1,11 @@
-import {
-  getValue,
-  setValue,
-  listValues,
-  removeValue,
-} from '@/services/nearKvStore';
 import { Store } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
+import {
+  mintStore as contractMintStore,
+  getStore as contractGetStore,
+  listStores as contractListStores,
+} from '@/services/nearStoreContract';
 import { canonicalJson } from '@/utils/serialization';
 import { nearConfig } from '@/services/config';
 import { getSelector } from '@/services/walletSelector';
@@ -14,34 +13,19 @@ import { Buffer } from 'buffer';
 
 assertNearChain();
 
-const ADDRESS = 'stores';
-const DISABLED = false;
-let SEEDED = false;
-
-function ensureSeed() {
-  if (!DISABLED || SEEDED) return;
-  try {
-
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const data = require('@/assets/seed/seed-data.json');
-    if (data?.stores) {
-      let hasAlpha = false;
-      for (const s of data.stores as Store[]) {
-        if (s.id === 'alpha') hasAlpha = true;
-        // Index under a shared namespace so listStores('default') works
-        void setValue(ADDRESS, `${ADDRESS}:default:${s.id}`, canonicalJson(s));
-        // And index under its own namespace so getStore(id, id) resolves
-        void setValue(ADDRESS, `${ADDRESS}:${s.id}:${s.id}`, canonicalJson(s));
-      }
-      if (!hasAlpha) {
-        const alpha: Store = { id: 'alpha', name: 'Alpha Store', owner: 'demo', nftId: '', reputation: 0 } as Store;
-        void setValue(ADDRESS, `${ADDRESS}:default:${alpha.id}`, canonicalJson(alpha));
-        void setValue(ADDRESS, `${ADDRESS}:${alpha.id}:${alpha.id}`, canonicalJson(alpha));
-      }
-    }
-  } catch {}
-  SEEDED = true;
+function fromChain(data: any): Store {
+  return {
+    id: data.id ?? data.store_id ?? '',
+    name: data.name ?? '',
+    owner: data.owner_id ?? data.owner ?? '',
+    nftId: data.nft_id ?? data.nftId ?? '',
+    reputation:
+      typeof data.reputation === 'string'
+        ? Number(data.reputation)
+        : data.reputation,
+  } as Store;
 }
+
 
 export async function mintStore(name: string): Promise<{ id: string; nftId: string; txHash: string }> {
   const { contractId } = nearConfig();
@@ -103,23 +87,33 @@ export async function getStore(storeId: string, id: string): Promise<Store | nul
     } as Store;
     return fallback;
   }
-  return null;
 }
 
 export async function setStore(storeId: string, store: Store) {
-  const sid = requireStoreId(storeId);
-  await setValue(ADDRESS, `${ADDRESS}:${sid}:${store.id}`, canonicalJson(store));
+  requireStoreId(storeId);
+  try {
+    await contractMintStore({
+      id: store.id,
+      name: store.name,
+      owner_id: store.owner,
+      nft_id: store.nftId,
+      reputation: store.reputation,
+    });
+  } catch (e: any) {
+    throw new Error(`Failed to mint store ${store.id}: ${e.message || e}`);
+  }
 }
 
-export async function removeStore(storeId: string, id: string) {
-  const sid = requireStoreId(storeId);
-  await removeValue(ADDRESS, `${ADDRESS}:${sid}:${id}`);
+export async function removeStore(_storeId: string, _id: string) {
+  throw new Error('removeStore is not supported on-chain');
 }
+
 export async function listStores(storeId: string): Promise<Store[]> {
-  ensureSeed();
-  const sid = requireStoreId(storeId);
-  const items = await listValues(ADDRESS);
-  return items
-    .filter((i) => i.key.startsWith(`${ADDRESS}:${sid}:`))
-    .map((i) => JSON.parse(i.value) as Store);
+  requireStoreId(storeId);
+  try {
+    const res = await contractListStores();
+    return res.map(fromChain);
+  } catch (e: any) {
+    throw new Error(`Failed to list stores: ${e.message || e}`);
+  }
 }
