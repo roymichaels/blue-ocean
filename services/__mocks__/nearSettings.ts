@@ -1,4 +1,6 @@
 import { canonicalJson } from '@/utils/serialization';
+import { ALL_ADMIN_SCOPES } from '@/types';
+import type { AdminScope } from '@/types';
 
 const store: Record<string, string> = {};
 
@@ -16,6 +18,19 @@ export async function getAdmins(): Promise<string[]> {
 
 export async function setAdmins(admins: string[]): Promise<void> {
   store['admins'] = canonicalJson(admins);
+  const scopes: Record<string, AdminScope[]> = {};
+  admins.forEach((a) => {
+    scopes[a] = ALL_ADMIN_SCOPES;
+  });
+  store['adminScopes'] = canonicalJson(scopes);
+}
+
+export async function getAdminScopes(): Promise<Record<string, AdminScope[]>> {
+  return store['adminScopes'] ? JSON.parse(store['adminScopes']) : {};
+}
+
+export async function setAdminScopes(scopes: Record<string, AdminScope[]>): Promise<void> {
+  store['adminScopes'] = canonicalJson(scopes);
 }
 
 export async function fetchSettings() {
@@ -28,6 +43,7 @@ export async function fetchSettings() {
     feeAddress: store['feeAddress'] ?? '',
     feeBps: store['feeBps'] ? Number(store['feeBps']) : 0,
     admins: store['admins'] ? JSON.parse(store['admins']) : [],
+    adminScopes: store['adminScopes'] ? JSON.parse(store['adminScopes']) : {},
     rpcUrl: store['rpcUrl'] ?? '',
     rpcFallbackUrls: store['rpcFallbackUrls']
       ? JSON.parse(store['rpcFallbackUrls'])

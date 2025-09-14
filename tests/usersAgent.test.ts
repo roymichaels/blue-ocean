@@ -1,4 +1,5 @@
 import usersAgent from '../agents/users-agent';
+import SettingsAgent from '../agents/settings-agent';
 
 jest.mock('../utils/validateNearAddress', () => ({
   __esModule: true,
@@ -16,13 +17,18 @@ jest.mock('@/services/localIdentity', () => ({
 }));
 
 jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
-import { __clear } from './nearKvMock';
-import { setAdmins } from '@/services/nearSettings';
+import { __clear, setValue } from './nearKvMock';
 
 describe('UsersAgent NEAR integration', () => {
   beforeEach(() => {
     __clear();
-    void setAdmins(['addr_admin'], 'addr_admin');
+    (SettingsAgent as any).instance = undefined;
+    setValue('settings', 'admins', JSON.stringify(['addr_admin']));
+    setValue(
+      'settings',
+      'adminScopes',
+      JSON.stringify({ addr_admin: ['admin:settings', 'admin:users', 'admin:orders'] }),
+    );
   });
 
   it('adds and retrieves users via NEAR service', async () => {
@@ -74,5 +80,21 @@ describe('UsersAgent NEAR integration', () => {
       publicKey: '',
     };
     await expect(usersAgent.add(user)).rejects.toThrow('Invalid NEAR address');
+  });
+
+  it('denies admin without users scope', async () => {
+    const user: any = {
+      id: 'u4',
+      username: 'dave',
+      displayName: 'Dave',
+      role: 'user',
+      address: '',
+      publicKey: '',
+    };
+    await usersAgent.add(user);
+    setValue('settings', 'adminScopes', JSON.stringify({ addr_admin: ['admin:settings'] }));
+    await expect(usersAgent.updateKyc('u4', 'verified')).rejects.toThrow(
+      'Only admins',
+    );
   });
 });

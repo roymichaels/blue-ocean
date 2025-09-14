@@ -126,6 +126,12 @@ export interface ChatRoom {
 export type KycStatus = 'none' | 'pending' | 'verified' | 'rejected';
 export type CustomerTier = 'new' | 'regular' | 'vip' | 'banned';
 export type UserRole = 'user' | 'driver' | 'admin' | 'store-owner' | 'platform-admin';
+export type AdminScope = 'admin:settings' | 'admin:users' | 'admin:orders';
+export const ALL_ADMIN_SCOPES: AdminScope[] = [
+  'admin:settings',
+  'admin:users',
+  'admin:orders',
+];
 
 export interface User {
   id: string;

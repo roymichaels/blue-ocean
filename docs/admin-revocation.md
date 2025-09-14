@@ -1,22 +1,15 @@
-# Admin Revocation Policy
+# Admin Revocation Procedure
 
-Administrators are tracked in the `admins` setting. Any wallet listed there may approve new
-admins and manage privileged settings. Removing a wallet from this list immediately revokes
-its admin powers across the network.
+Compromised administrators must be removed quickly to prevent abuse. Follow these steps:
 
-## Revoking an Admin
+1. **Broadcast Revocation**
+   - An authorized admin with `admin:settings` scope sends an updated `adminScopes` map removing the compromised address.
+   - Optionally, remove the address from the `admins` list entirely.
+2. **Propagate Update**
+   - All nodes listening to `/blue-ocean/settings/1` receive the `settings.write` event and refresh cached admin scopes.
+3. **Invalidate Sessions**
+   - Purge any local sessions or keys associated with the revoked admin.
+4. **Audit**
+   - Record the revocation event and monitor for any further activity from the compromised key.
 
-1. An existing admin opens the settings dashboard.
-2. The admin updates the `admins` list, removing the target wallet address.
-3. A signed `settings.write` event is broadcast so other peers prune the revoked admin.
-
-## Recovery
-
-* **Re‑approval:** A revoked wallet can broadcast a new `admin.request`. Another active admin
-  must approve the request to restore access.
-* **Lost all admins:** If the admin list becomes empty, the next valid `admin.request` is
-  automatically registered as the first admin. Operators can also set
-  `ADMIN_WALLET_ADDRESS` and restart the node to bootstrap a recovery wallet.
-
-Follow these steps to ensure admin privileges can be safely revoked and restored without
-compromising network integrity.
+Revocation takes effect once the settings update is processed across the network.

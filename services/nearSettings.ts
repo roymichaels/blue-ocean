@@ -11,6 +11,8 @@ import { z } from 'zod';
 import { sign } from '@noble/ed25519';
 import { canonicalJson } from '@/utils/serialization';
 import { getPrivateKey, getPublicKeyHex } from './localIdentity';
+import type { AdminScope } from '@/types';
+import { ALL_ADMIN_SCOPES } from '@/types';
 
 assertNearChain();
 
@@ -41,6 +43,7 @@ export interface NearSettings {
   feeAddress?: string;
   feeBps?: number;
   admins: string[];
+  adminScopes: Record<string, AdminScope[]>;
   adminPublicKeys: string[];
   rpcUrl: string;
   rpcFallbackUrls?: string[];
@@ -183,6 +186,12 @@ export async function fetchSettings(): Promise<NearSettings> {
   }
   const admins = map['admins'] ? JSON.parse(map['admins']) : [];
   const finalAdmins = admins.length > 0 ? admins : [ADMIN_ADDRESS].filter(Boolean);
+  const adminScopes = map['adminScopes'] ? JSON.parse(map['adminScopes']) : {};
+  if (Object.keys(adminScopes).length === 0) {
+    finalAdmins.forEach((a) => {
+      adminScopes[a] = ALL_ADMIN_SCOPES;
+    });
+  }
   return {
     tenantId: map['tenantId'] ?? 'blue-ocean',
     appName: map['appName'] ?? 'Blue Ocean',
@@ -192,6 +201,7 @@ export async function fetchSettings(): Promise<NearSettings> {
     feeAddress: map['feeAddress'] ?? '',
     feeBps,
     admins: finalAdmins,
+    adminScopes,
     adminPublicKeys: map['adminPublicKeys']
       ? JSON.parse(map['adminPublicKeys'])
       : [],
@@ -222,8 +232,29 @@ export async function getAdmins(): Promise<string[]> {
   }
 }
 
+export async function getAdminScopes(): Promise<Record<string, AdminScope[]>> {
+  const raw = await getSetting('adminScopes');
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export async function setAdminScopes(
+  scopes: Record<string, AdminScope[]>,
+  actor: string,
+): Promise<void> {
+  await setSetting('adminScopes', canonicalJson(scopes), actor);
+}
+
 export async function setAdmins(admins: string[], actor: string): Promise<void> {
   await setSetting('admins', canonicalJson(admins), actor);
+  const scopes: Record<string, AdminScope[]> = {};
+  admins.forEach((a) => {
+    scopes[a] = ALL_ADMIN_SCOPES;
+  });
+  await setAdminScopes(scopes, actor);
 }
 
 export async function getAdminPublicKeys(): Promise<string[]> {

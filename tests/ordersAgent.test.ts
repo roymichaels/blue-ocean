@@ -20,10 +20,12 @@ jest.mock('@/services/nearOrders', () => ({
 jest.mock('../agents/notifications-agent', () => ({ broadcast: jest.fn() }));
 jest.mock('../agents/stores-agent', () => ({ updateReputationByOwner: jest.fn() }));
 
-const getAdminsMock = jest.fn().mockResolvedValue(['admin']);
+const getAdminsWithScopeMock = jest.fn().mockResolvedValue(['admin']);
 jest.mock('../agents/settings-agent', () => ({
   __esModule: true,
-  default: { getInstance: () => ({ getAdmins: getAdminsMock }) },
+  default: {
+    getInstance: () => ({ getAdminsWithScope: getAdminsWithScopeMock }),
+  },
 }));
 
 jest.mock('@/services/nearContract', () => ({

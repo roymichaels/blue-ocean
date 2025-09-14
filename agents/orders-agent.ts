@@ -190,7 +190,9 @@ class OrdersAgent {
       order.driverAddress,
     ].filter(Boolean) as string[];
     if (!address || !allowed.includes(address)) {
-      const admins = await SettingsAgent.getInstance().getAdmins();
+      const admins = await SettingsAgent.getInstance().getAdminsWithScope(
+        'admin:orders',
+      );
       allowed = allowed.concat(admins);
       if (!address || !allowed.includes(address)) {
         throw new AgentError('UNAUTHORIZED', 'Unauthorized order update', 'orders-agent');
