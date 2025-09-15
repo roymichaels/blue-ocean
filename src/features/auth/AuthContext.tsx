@@ -10,6 +10,8 @@ import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
 import { Buffer } from 'buffer';
 import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
+import { requestScopes } from '@/services/session';
+import { uuid } from '@/utils/uuid';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -19,6 +21,7 @@ interface AuthContextType {
   isPlatformAdmin: boolean;
   user: User | null;
   loading: boolean;
+  sessionToken: string | null;
   login: () => Promise<void>;
   signup: () => Promise<void>;
   logout: () => Promise<void>;
@@ -34,6 +37,7 @@ const AuthContext = createContext<AuthContextType>({
   isPlatformAdmin: false,
   user: null,
   loading: false,
+  sessionToken: null,
   login: async () => {},
   signup: async () => {},
   logout: async () => {},
@@ -49,6 +53,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { address, connect, disconnect } = useWallet();
   const [user, setUser] = useState<User | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
   const checkAuthState = async () => {
     // Prefer WalletProvider address; fall back to adapter's plain getters only
@@ -148,6 +153,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async () => {
     try {
       await connect();
+      const { token } = requestScopes(['write'], () => uuid());
+      setSessionToken(token);
     } catch (err: unknown) {
       errorLog(
         t('auth.walletConnectionFailed', 'Wallet connection failed'),
@@ -168,6 +175,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async () => {
     try {
       await disconnect();
+      setSessionToken(null);
     } catch (err) {
       errorLog(t('auth.logoutFailed', 'Logout failed'), err);
     }
@@ -193,6 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isPlatformAdmin,
         user,
         loading: false,
+        sessionToken,
         login,
         signup,
         logout,

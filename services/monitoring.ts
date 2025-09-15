@@ -93,6 +93,13 @@ export const authInvalidScopeCounter = new Counter({
   registers: [registry],
 });
 
+export const checkoutTokenIntegrity = new Counter({
+  name: 'checkout_token_integrity_total',
+  help: 'Checkout attempts labeled by token validity and success',
+  labelNames: ['token_valid', 'success'],
+  registers: [registry],
+});
+
 export async function withMonitoring<T>(
   service: string,
   fn: () => Promise<T>,

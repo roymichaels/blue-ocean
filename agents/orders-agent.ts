@@ -63,6 +63,7 @@ class OrdersAgent {
       storeId: order.items?.[0]?.product?.storeId || '',
       buyerAddress: order.buyerAddress,
       sellerAddress: order.sellerAddress,
+      sessionToken: order.sessionToken,
       payment: {
         method: order.paymentMethod,
         contractAddress: order.paymentContractAddress,

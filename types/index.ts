@@ -251,6 +251,7 @@ export interface Order {
   buyerAddress?: string;
   sellerAddress?: string;
   driverAddress?: string;
+  sessionToken?: string;
   paymentContractAddress?: string;
   escrowAddr?: string;
   disputeEvidenceUri?: string;

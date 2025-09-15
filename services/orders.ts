@@ -19,18 +19,24 @@ import config from '../utils/appConfig';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
 import { validateToken } from '@/services/session';
+import { checkoutTokenIntegrity } from '@/services/monitoring';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
 const LOW_STOCK_THRESHOLD = 5;
 
-export async function emitOrderEvents(order: Order, storeId: string) {
+export async function emitOrderEvents(
+  order: Order,
+  storeId: string,
+  sessionToken?: string,
+) {
   const baseEvent = {
     id: order.id,
     orderId: order.id,
     storeId,
     buyerAddress: order.buyerAddress,
     sellerAddress: order.sellerAddress,
+    sessionToken,
     payment: {
       method: order.paymentMethod,
       contractAddress: order.paymentContractAddress,
@@ -160,6 +166,7 @@ class OrderService {
       paymentMethod: pay?.method ?? 'cash_on_delivery',
       buyerAddress: pay?.buyerAddress,
       sellerAddress: pay?.sellerAddress,
+      sessionToken,
       paymentContractAddress: pay?.contractAddress,
       escrowAddr: pay?.contractAddress,
       paymentTxHash: pay?.txHash,
@@ -190,6 +197,7 @@ class OrderService {
         tokenValid: false,
         success: false,
       });
+      checkoutTokenIntegrity.inc({ token_valid: 'false', success: 'false' });
       throw err;
     }
     try {
@@ -228,19 +236,21 @@ class OrderService {
           payment,
           sessionToken,
         );
-        await emitOrderEvents(order, storeId);
+        await emitOrderEvents(order, storeId, sessionToken);
         orders.push(order);
       }
       void eventBus.track('checkout.token_integrity', {
         tokenValid: true,
         success: true,
       });
+      checkoutTokenIntegrity.inc({ token_valid: 'true', success: 'true' });
       return orders;
     } catch (err) {
       void eventBus.track('checkout.token_integrity', {
         tokenValid: true,
         success: false,
       });
+      checkoutTokenIntegrity.inc({ token_valid: 'true', success: 'false' });
       throw err;
     }
   }
