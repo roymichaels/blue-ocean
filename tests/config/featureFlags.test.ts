@@ -59,3 +59,34 @@ describe('scoped tokens feature flag', () => {
     expect(mod.isScopedTokensEnabled('near-wallet')).toBe(false);
   });
 });
+
+describe('notifications pipeline feature flag', () => {
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE;
+    delete process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_CANARY_USERS;
+    delete process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_ROLLBACK;
+    jest.resetModules();
+  });
+
+  it('is disabled by default', () => {
+    const { isNotificationsPipelineEnabled } = require('@/config/featureFlags');
+    expect(isNotificationsPipelineEnabled('u1')).toBe(false);
+  });
+
+  it('allows canary users', () => {
+    process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_CANARY_USERS = 'u1,u2';
+    jest.resetModules();
+    const { isNotificationsPipelineEnabled } = require('@/config/featureFlags');
+    expect(isNotificationsPipelineEnabled('u1')).toBe(true);
+    expect(isNotificationsPipelineEnabled('u3')).toBe(false);
+  });
+
+  it('rollback disables feature', () => {
+    process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE = 'true';
+    jest.resetModules();
+    const mod = require('@/config/featureFlags');
+    expect(mod.isNotificationsPipelineEnabled('u1')).toBe(true);
+    mod.triggerNotificationsPipelineRollback();
+    expect(mod.isNotificationsPipelineEnabled('u1')).toBe(false);
+  });
+});

@@ -13,6 +13,12 @@ const envSchema = z.object({
     .optional()
     .default(''),
   EXPO_PUBLIC_SCOPED_TOKENS_ROLLBACK: z.string().optional().default('false'),
+  EXPO_PUBLIC_NOTIFICATIONS_PIPELINE: z.string().optional().default('false'),
+  EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_CANARY_USERS: z
+    .string()
+    .optional()
+    .default(''),
+  EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_ROLLBACK: z.string().optional().default('false'),
 });
 
 const env = envSchema.parse(process.env);
@@ -47,6 +53,21 @@ const scopedTokensFlag: ScopedTokensFeatureFlag = {
   rollback: env.EXPO_PUBLIC_SCOPED_TOKENS_ROLLBACK === 'true',
 };
 
+export interface NotificationsPipelineFeatureFlag {
+  enabled: boolean;
+  canaryUsers: string[];
+  rollback: boolean;
+}
+
+const notificationsPipelineFlag: NotificationsPipelineFeatureFlag = {
+  enabled: env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE === 'true',
+  canaryUsers: env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_CANARY_USERS
+    .split(',')
+    .map((u) => u.trim().toLowerCase())
+    .filter(Boolean),
+  rollback: env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_ROLLBACK === 'true',
+};
+
 export function isWarmCacheEnabled(address?: string): boolean {
   if (warmCacheFlag.rollback) return false;
   if (warmCacheFlag.enabled) return true;
@@ -69,5 +90,17 @@ export function triggerScopedTokensRollback(): void {
   scopedTokensFlag.rollback = true;
 }
 export { scopedTokensFlag };
+
+export function isNotificationsPipelineEnabled(userId?: string): boolean {
+  if (notificationsPipelineFlag.rollback) return false;
+  if (notificationsPipelineFlag.enabled) return true;
+  if (!userId) return false;
+  return notificationsPipelineFlag.canaryUsers.includes(userId.toLowerCase());
+}
+
+export function triggerNotificationsPipelineRollback(): void {
+  notificationsPipelineFlag.rollback = true;
+}
+export { notificationsPipelineFlag };
 
 export default warmCacheFlag;
