@@ -18,12 +18,21 @@ import ensureNearWallet from '../utils/ensureNearWallet';
 import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';
 import { canonicalJson } from '@/utils/serialization';
+import {
+  notificationsBacklog,
+  notificationDeliveryLatency,
+} from '../utils/observability';
 
 export const E_BACKLOG = 'E_BACKLOG';
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
-  private backlog: Array<{ event: NotificationEvent; item: Notification; storeId: string }> = [];
+  private backlog: Array<{
+    event: NotificationEvent;
+    item: Notification;
+    storeId: string;
+    queuedAt: number;
+  }> = [];
   private draining = false;
   private backlogLimit = 50;
 
@@ -64,7 +73,8 @@ class NotificationsAgent {
     if (this.backlog.length >= this.backlogLimit) {
       throw new AgentError(E_BACKLOG, 'Notification backlog limit exceeded', 'notifications-agent');
     }
-    this.backlog.push({ event, item, storeId });
+    this.backlog.push({ event, item, storeId, queuedAt: Date.now() });
+    notificationsBacklog.set(this.backlog.length);
     if (!this.draining) void this.drain();
   }
 
@@ -72,9 +82,12 @@ class NotificationsAgent {
     if (this.draining) return;
     this.draining = true;
     while (this.backlog.length) {
-      const { event, item, storeId } = this.backlog.shift()!;
+      const job = this.backlog.shift()!;
+      notificationsBacklog.set(this.backlog.length);
+      const { event, item, storeId, queuedAt } = job;
       try {
         await this.broadcast(event, item, storeId);
+        notificationDeliveryLatency.labels(event).observe((Date.now() - queuedAt) / 1000);
       } catch (err) {
         errorLog('Failed to process notification', err);
       }
