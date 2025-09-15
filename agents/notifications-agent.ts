@@ -39,6 +39,9 @@ class NotificationsAgent {
   private backlogLimit = 50;
   private paused = false;
   private latencyLimit = 5000; // ms
+  private delivered = new Set<string>();
+  private pollTimer: NodeJS.Timeout | null = null;
+  private pollInterval = 30000;
 
   constructor() {
     onBacklog(() => this.pause());
@@ -53,7 +56,10 @@ class NotificationsAgent {
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
     await setNotification(normalized);
-    this.subscribers.forEach((cb) => cb(normalized));
+    if (!this.delivered.has(normalized.id)) {
+      this.delivered.add(normalized.id);
+      this.subscribers.forEach((cb) => cb(normalized));
+    }
     await this.broadcastWaku(normalized, undefined, storeId);
   }
 
@@ -62,7 +68,10 @@ class NotificationsAgent {
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
     await setNotification(normalized);
-    this.subscribers.forEach((cb) => cb(normalized));
+    if (!this.delivered.has(normalized.id)) {
+      this.delivered.add(normalized.id);
+      this.subscribers.forEach((cb) => cb(normalized));
+    }
     await this.broadcastWaku(normalized, undefined, storeId);
   }
 
@@ -107,6 +116,40 @@ class NotificationsAgent {
       }
     }
     this.draining = false;
+  }
+
+  private async poll(): Promise<void> {
+    try {
+      const items = await listNotifications();
+      items.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+      let prev = 0;
+      for (const n of items) {
+        if (prev > (n.timestamp || 0)) {
+          errorLog('Out-of-order notification', {
+            prev,
+            current: n.timestamp,
+          });
+        }
+        prev = n.timestamp || 0;
+        if (this.delivered.has(n.id)) continue;
+        this.delivered.add(n.id);
+        this.subscribers.forEach((cb) => cb(n));
+      }
+    } catch (err) {
+      errorLog('Failed to poll notifications', err);
+    }
+  }
+
+  private startPolling(): void {
+    if (this.pollTimer) return;
+    void this.poll();
+    this.pollTimer = setInterval(() => void this.poll(), this.pollInterval);
+  }
+
+  private stopPolling(): void {
+    if (!this.pollTimer) return;
+    clearInterval(this.pollTimer);
+    this.pollTimer = null;
   }
 
   handleOrderEvent(
@@ -174,7 +217,10 @@ class NotificationsAgent {
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
     await setNotification(normalized);
-    this.subscribers.forEach((cb) => cb(normalized));
+    if (!this.delivered.has(normalized.id)) {
+      this.delivered.add(normalized.id);
+      this.subscribers.forEach((cb) => cb(normalized));
+    }
     // Broadcast the user-facing notification
     await this.broadcastWaku(normalized, undefined, storeId);
     // Broadcast the order event for other agents
@@ -218,12 +264,15 @@ class NotificationsAgent {
   }
 
   pause(): void {
+    if (this.paused) return;
     this.paused = true;
+    this.startPolling();
   }
 
   resume(): void {
     if (!this.paused) return;
     this.paused = false;
+    this.stopPolling();
     if (this.backlog.length && !this.draining) void this.drain();
   }
 
