@@ -21,6 +21,30 @@ export interface SessionToken {
   exp: number;
 }
 
+export type SyncSessionSigner = (message: string) => string;
+export type AsyncSessionSigner = (message: string) => Promise<string>;
+export type SessionSigner = SyncSessionSigner | AsyncSessionSigner;
+
+function isPromise<T>(value: unknown): value is Promise<T> {
+  return typeof value === 'object' && value !== null && typeof (value as any).then === 'function';
+}
+
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 120;
+const rateLimitQueue: number[] = [];
+
+function assertRateLimit(): void {
+  const now = Date.now();
+  while (rateLimitQueue.length && rateLimitQueue[0] <= now - RATE_LIMIT_WINDOW_MS) {
+    rateLimitQueue.shift();
+  }
+  if (rateLimitQueue.length >= RATE_LIMIT_MAX_REQUESTS) {
+    authRateLimitCounter.inc();
+    throw new Error('{E_RATE_LIMIT}');
+  }
+  rateLimitQueue.push(now);
+}
+
 function validateScopes(scopes: string[]): void {
   authScopeRequestCounter.inc();
   const invalid = scopes.find((s) => !POLICY.has(s));
@@ -33,17 +57,37 @@ function validateScopes(scopes: string[]): void {
 export function requestScopes(
   scopes: string[],
   signer: (message: string) => string,
+  ttlMs?: number,
+): SessionToken;
+export function requestScopes(
+  scopes: string[],
+  signer: (message: string) => Promise<string>,
+  ttlMs?: number,
+): Promise<SessionToken>;
+export function requestScopes(
+  scopes: string[],
+  signer: SessionSigner,
   ttlMs = 60 * 60 * 1000,
-): SessionToken {
+): SessionToken | Promise<SessionToken> {
   assertRateLimit();
   validateScopes(scopes);
-  const exp = Date.now() + ttlMs;
+  const now = Date.now();
+  const exp = ttlMs < 0 ? now - CLOCK_TOLERANCE_MS - 1 : now + ttlMs;
   const payload = JSON.stringify({ scopes, exp });
-  const token = signer(payload) || uuid();
-  const record: SessionToken = { token, scopes, exp };
-  store.set(token, record);
-  void saveSession(record);
-  return record;
+
+  const persist = (maybeToken: string | undefined): SessionToken => {
+    const token = maybeToken || uuid();
+    const record: SessionToken = { token, scopes, exp };
+    store.set(token, record);
+    void saveSession(record);
+    return record;
+  };
+
+  const signed = signer(payload);
+  if (isPromise<string>(signed)) {
+    return signed.then((token) => persist(token));
+  }
+  return persist(signed);
 }
 
 const store = new Map<string, SessionToken>();
@@ -70,28 +114,55 @@ export function validateToken(token: string, requiredScopes: string[]): void {
 export function refreshToken(
   token: string,
   signer: (message: string) => string,
+  ttlMs?: number,
+): SessionToken;
+export function refreshToken(
+  token: string,
+  signer: (message: string) => Promise<string>,
+  ttlMs?: number,
+): Promise<SessionToken>;
+export function refreshToken(
+  token: string,
+  signer: SessionSigner,
   ttlMs = 60 * 60 * 1000,
-): SessionToken {
+): SessionToken | Promise<SessionToken> {
   const rec = store.get(token);
   if (!rec) throw new Error('{E_EXPIRED}');
   if (Date.now() > rec.exp + CLOCK_TOLERANCE_MS) {
     store.delete(token);
     throw new Error('{E_EXPIRED}');
   }
-  const next = requestScopes(rec.scopes, signer, ttlMs);
-  store.delete(token);
-  void removeSession(token);
-  sessionEvents.emit('token.rotated', { old: token, token: next.token });
-  return next;
+
+  const handleNext = (next: SessionToken): SessionToken => {
+    store.delete(token);
+    void removeSession(token);
+    sessionEvents.emit('token.rotated', { old: token, token: next.token });
+    return next;
+  };
+
+  const next = (requestScopes as (
+    scopes: string[],
+    signer: SessionSigner,
+    ttlMs?: number,
+  ) => SessionToken | Promise<SessionToken>)(rec.scopes, signer, ttlMs);
+  if (isPromise<SessionToken>(next)) {
+    return next.then(handleNext);
+  }
+  return handleNext(next);
 }
 
 export async function requestTokenWithConsent(
   scopes: string[],
-  signer: (message: string) => string,
+  signer: SessionSigner,
   ttlMs = 60 * 60 * 1000,
 ): Promise<SessionToken> {
   const ok = await requestConsent(scopes);
   if (!ok) throw new Error('{E_DENIED}');
-  return requestScopes(scopes, signer, ttlMs);
+  const issued = (requestScopes as (
+    scopes: string[],
+    signer: SessionSigner,
+    ttlMs?: number,
+  ) => SessionToken | Promise<SessionToken>)(scopes, signer, ttlMs);
+  return await issued;
 }
 

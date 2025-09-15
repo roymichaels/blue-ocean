@@ -91,6 +91,7 @@ const cfg = {
     '^@/ui/(.*)$': '<rootDir>/src/ui/$1',
     '^@/ui$': '<rootDir>/src/ui/index',
     '^@/layout/(.*)$': '<rootDir>/src/layout/$1',
+    '^@/core/(.*)$': '<rootDir>/src/core/$1',
     '^@/services$': '<rootDir>/src/services/index',
     '^@/services/(.*)$': ['<rootDir>/src/services/$1', '<rootDir>/services/$1'],
     '^@/utils/(.*)$': ['<rootDir>/src/utils/$1', '<rootDir>/utils/$1'],

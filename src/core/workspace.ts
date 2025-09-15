@@ -1,124 +1,104 @@
-import { sign } from '@noble/ed25519';
-import { z } from 'zod';
+import { Buffer } from 'buffer';
+import { signMessage } from '@/features/auth/services/nearAuth';
+import { requestScopes, validateToken, refreshToken, SessionToken } from '@/services/session';
+import { uuid } from '@/utils/uuid';
 
-import type { WorkspaceCreatedMessage } from '@/types/waku';
-import { publish, subscribeWithAck } from '@/services/waku';
-import { decrypt, encrypt } from '@/utils/wakuCrypto';
-import { canonicalJson } from '@/utils/serialization';
-import { parseWorkspaceCreatedMessage } from '@/schemas/waku/workspace.created';
-import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
-import type { SessionToken } from '@/services/session';
+const WORKSPACE_SCOPES = ['read', 'write'] as const;
+export const DEFAULT_WORKSPACE_SESSION_TTL_MS = 60 * 60 * 1000;
+const WORKSPACE_TOKEN_ERROR = '{E_WORKSPACE_TOKEN}';
 
-export const WORKSPACE_TOPIC = '/blue-ocean/workspaces/1';
-
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-
-const sessionSchema = z.object({
-  token: z.string(),
-  scopes: z.array(z.string()),
-  exp: z.number(),
-});
-
-export type WorkspaceSessionMetadata = z.infer<typeof sessionSchema>;
-
-export interface WorkspaceMetadata {
+interface WorkspaceTokenMeta {
   workspaceId: string;
-  session: WorkspaceSessionMetadata;
-  timestamp: number;
+  signature: string;
 }
 
-function encodeSession(session: WorkspaceSessionMetadata): string {
-  const bytes = encoder.encode(canonicalJson(session));
-  const ciphertext = encrypt(WORKSPACE_TOPIC, bytes);
-  return Buffer.from(ciphertext).toString('base64');
+export interface WorkspaceSession extends SessionToken {
+  workspaceId: string;
 }
 
-export function decodeWorkspaceSession(
-  value: string,
-): WorkspaceSessionMetadata | null {
+function generateWorkspaceId(): string {
+  return `ws_${uuid().replace(/-/g, '').slice(0, 16)}`;
+}
+
+function encodeWorkspaceToken(meta: WorkspaceTokenMeta): string {
+  const json = JSON.stringify(meta);
+  const base64 = Buffer.from(json, 'utf8').toString('base64');
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/u, '');
+}
+
+function decodeWorkspaceToken(token: string): WorkspaceTokenMeta | null {
   try {
-    const raw = Uint8Array.from(Buffer.from(value, 'base64'));
-    const decrypted = decrypt(WORKSPACE_TOPIC, raw);
-    const parsed = JSON.parse(decoder.decode(decrypted));
-    const result = sessionSchema.safeParse(parsed);
-    return result.success ? result.data : null;
+    let normalized = token.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = normalized.length % 4;
+    if (pad) normalized += '='.repeat(4 - pad);
+    const json = Buffer.from(normalized, 'base64').toString('utf8');
+    const meta = JSON.parse(json) as WorkspaceTokenMeta;
+    if (
+      !meta ||
+      typeof meta.workspaceId !== 'string' ||
+      meta.workspaceId.length === 0 ||
+      typeof meta.signature !== 'string' ||
+      meta.signature.length === 0
+    ) {
+      return null;
+    }
+    return meta;
   } catch {
     return null;
   }
 }
 
-async function makeSignedMessage(
-  payload: WorkspaceCreatedMessage['payload'],
-): Promise<WorkspaceCreatedMessage> {
-  const [privKey, pubKey] = await Promise.all([
-    getPrivateKey(),
-    getPublicKeyHex(),
-  ]);
-  const message: WorkspaceCreatedMessage = {
-    type: 'workspace.created',
-    payload,
-    sender: { publicKey: pubKey, role: 'workspace' },
-    signature: '',
-  };
-  const toSign = encoder.encode(
-    canonicalJson({
-      type: message.type,
-      payload: message.payload,
-      sender: message.sender,
-    }),
+async function signWorkspacePayload(workspaceId: string, payload: string): Promise<string> {
+  const signature = await signMessage(payload);
+  if (!signature) {
+    throw new Error('{E_WORKSPACE_SIGN_FAILED}');
+  }
+  return encodeWorkspaceToken({ workspaceId, signature });
+}
+
+function requireWorkspaceMeta(token: string): WorkspaceTokenMeta {
+  const meta = decodeWorkspaceToken(token);
+  if (!meta) {
+    throw new Error(WORKSPACE_TOKEN_ERROR);
+  }
+  return meta;
+}
+
+export async function createWorkspace(
+  ttlMs = DEFAULT_WORKSPACE_SESSION_TTL_MS,
+): Promise<WorkspaceSession> {
+  const workspaceId = generateWorkspaceId();
+  const session = await requestScopes(
+    Array.from(WORKSPACE_SCOPES),
+    (payload) => signWorkspacePayload(workspaceId, payload),
+    ttlMs,
   );
-  const signature = await sign(toSign, privKey);
-  message.signature = Buffer.from(signature).toString('hex');
-  return message;
+  return { ...session, workspaceId };
 }
 
-export async function broadcastWorkspaceMetadata(
-  workspaceId: string,
-  session: SessionToken,
-  timestamp: number = Date.now(),
-): Promise<string> {
-  const payload: WorkspaceCreatedMessage['payload'] = {
-    workspaceId,
-    session: encodeSession(sessionSchema.parse(session)),
-    timestamp,
-  };
-  const message = await makeSignedMessage(payload);
-  return publish(WORKSPACE_TOPIC, message);
+export function validateWorkspaceSession(
+  token: string,
+  requiredScopes: readonly string[] = WORKSPACE_SCOPES,
+): string {
+  validateToken(token, Array.from(requiredScopes));
+  return requireWorkspaceMeta(token).workspaceId;
 }
 
-function toWorkspaceMetadata(
-  message: WorkspaceCreatedMessage,
-): WorkspaceMetadata | null {
-  const session = decodeWorkspaceSession(message.payload.session);
-  if (!session) return null;
-  return {
-    workspaceId: message.payload.workspaceId,
-    session,
-    timestamp: message.payload.timestamp,
-  };
+export async function refreshWorkspaceSession(
+  token: string,
+  ttlMs = DEFAULT_WORKSPACE_SESSION_TTL_MS,
+): Promise<WorkspaceSession> {
+  const meta = requireWorkspaceMeta(token);
+  const session = await refreshToken(
+    token,
+    (payload) => signWorkspacePayload(meta.workspaceId, payload),
+    ttlMs,
+  );
+  return { ...session, workspaceId: meta.workspaceId };
 }
 
-export type WorkspaceMetadataHandler = (
-  metadata: WorkspaceMetadata,
-  message: WorkspaceCreatedMessage,
-) => void;
-
-export async function subscribeToWorkspaceMetadata(
-  handler: WorkspaceMetadataHandler,
-): Promise<() => void> {
-  return subscribeWithAck(WORKSPACE_TOPIC, (raw) => {
-    const parsed = parseWorkspaceCreatedMessage(raw);
-    if (!parsed) return;
-    const metadata = toWorkspaceMetadata(parsed);
-    if (!metadata) return;
-    handler(metadata, parsed);
-  });
+export function getWorkspaceIdFromToken(token: string): string {
+  return requireWorkspaceMeta(token).workspaceId;
 }
 
-export function toWorkspaceSession(
-  message: WorkspaceCreatedMessage,
-): WorkspaceSessionMetadata | null {
-  return decodeWorkspaceSession(message.payload.session);
-}
-
+export { WORKSPACE_SCOPES };
