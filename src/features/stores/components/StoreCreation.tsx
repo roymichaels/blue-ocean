@@ -15,13 +15,11 @@ import storesAgent from '@/agents/stores-agent';
 import DatabaseService from '@/services/database';
 import { useNotificationActions } from '@/components/NotificationContext';
 import { createStoreOnChain } from '@/features/stores/services/nearStores';
-import { chainAdapter } from '@/services/chain';
 import { useWallet } from '@/contexts/WalletProvider';
 import { errorLog } from '@/utils/logger';
 
 const StoreCreation: React.FC = () => {
   const [name, setName] = useState('');
-  const [plan, setPlan] = useState<'free' | 'premium'>('free');
   const queryClient = useQueryClient();
   const { t } = useLanguage();
   const { replace } = useAppRouter();
@@ -57,7 +55,13 @@ const StoreCreation: React.FC = () => {
     }
 
     try {
-      await storesAgent.add({ id, name: finalName, owner, nftId: id, plan });
+      await storesAgent.add({
+        id,
+        name: finalName,
+        owner,
+        nftId: id,
+        plan: 'free',
+      });
       try {
         await DatabaseService.getInstance().updateUserRole(
           owner,
@@ -65,7 +69,6 @@ const StoreCreation: React.FC = () => {
         );
       } catch {}
       setName('');
-      setPlan('free');
       if (onChainError) {
         // Informational success with fallback note
         Alert.alert(t('common.success'), t('stores.createSuccess'));
@@ -88,25 +91,6 @@ const StoreCreation: React.FC = () => {
     <View style={styles.container}>
       <Text style={styles.label}>{t('stores.storeName')}</Text>
       <TextInput style={styles.input} value={name} onChangeText={setName} />
-      <View style={styles.planRow}>
-        <Text style={styles.label}>{t('stores.plan')}</Text>
-        <View style={styles.planButtons}>
-          <Button
-            title={t('stores.planFree', 'Free')}
-            onPress={() => setPlan('free')}
-            color={plan === 'free' ? '#0a84ff' : undefined}
-          />
-          <Button
-            title={
-              t('stores.planPremium', 'Premium') +
-              ' · ' +
-              t('common.comingSoon', 'Coming Soon')
-            }
-            onPress={() => {}}
-            disabled
-          />
-        </View>
-      </View>
       <Button title={t('stores.mintStore')} onPress={mintStore} />
     </View>
   );
@@ -125,8 +109,6 @@ const styles = StyleSheet.create({
     padding: 8,
     textAlign: I18nManager.isRTL ? 'right' : 'left',
   },
-  planRow: { gap: 8 },
-  planButtons: { flexDirection: 'row', gap: 12, justifyContent: 'flex-start' },
 });
 
 export default StoreCreation;

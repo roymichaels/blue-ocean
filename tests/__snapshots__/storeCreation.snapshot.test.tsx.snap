@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StoreCreation snapshot renders without premium plan controls 1`] = `
+<View
+  style={
+    {
+      "gap": 16,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "fontSize": 16,
+        "fontWeight": "600",
+        "textAlign": "left",
+      }
+    }
+  >
+    stores.storeName
+  </Text>
+  <TextInput
+    onChangeText={[Function]}
+    style={
+      {
+        "borderRadius": 8,
+        "borderWidth": 1,
+        "padding": 8,
+        "textAlign": "left",
+      }
+    }
+    value=""
+  />
+  <Button
+    onPress={[Function]}
+    title="stores.mintStore"
+  />
+</View>
+`;
