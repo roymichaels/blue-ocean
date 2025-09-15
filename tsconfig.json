@@ -59,6 +59,12 @@
         "src/services/*",
         "services/*"
       ],
+      "@/billing": [
+        "src/billing/index.ts"
+      ],
+      "@/billing/*": [
+        "src/billing/*"
+      ],
       "@/utils/*": [
         "src/utils/*",
         "utils/*"

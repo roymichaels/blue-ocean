@@ -18,6 +18,7 @@ import {
 } from '@/services/nearContract';
 import productsAgent from './products-agent';
 import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
+import meteredBilling from '@/billing';
 
 assertNearChain();
 import { encryptShippingInfo } from '../utils/shippingCrypto';
@@ -324,6 +325,21 @@ class OrdersAgent {
         status: normalized.status,
       });
       if (normalized.status === 'released') {
+        if (sid) {
+          void meteredBilling
+            .recordUsage({
+              tenantId: sid,
+              meterId: 'orders.released',
+              quantity: 1,
+              unitPrice: normalized.total || 0,
+              walletAddress: normalized.sellerAddress || undefined,
+              metadata: {
+                orderId: normalized.id,
+                status: normalized.status,
+              },
+            })
+            .catch((err) => errorLog('Failed to record billing usage', err));
+        }
         await this.recordSellerMetric(normalized.sellerAddress, 'completed');
       } else if (normalized.status === 'refunded') {
         await this.recordSellerMetric(normalized.sellerAddress, 'refunded');
