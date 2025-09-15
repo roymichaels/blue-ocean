@@ -11,6 +11,7 @@ import productsAgent, {
   selectProduct as fetchProduct,
 } from '../agents/products-agent';
 import ordersAgent from '../agents/orders-agent';
+import deliveryAgent from '../agents/delivery-agent';
 import SettingsAgent from '../agents/settings-agent';
 import reviewAgent from '../agents/review-agent';
 import chain, { chainAdapter } from '@/services/chain';
@@ -526,6 +527,15 @@ class DatabaseService {
       createdAt: now,
       updatedAt: now,
     });
+    const order = await ordersAgent.get(orderId);
+    const storeId = order?.items?.[0]?.product?.storeId;
+    await deliveryAgent.handleDeliveryEvent('delivery.assigned', {
+      jobId: id,
+      orderId,
+      driverId,
+      status: 'pending',
+      storeId,
+    });
     return id;
   }
 
@@ -538,6 +548,15 @@ class DatabaseService {
     job.status = status;
     job.updatedAt = new Date().toISOString();
     this.deliveryJobs.set(id, job);
+    const order = await ordersAgent.get(job.orderId);
+    const storeId = order?.items?.[0]?.product?.storeId;
+    await deliveryAgent.handleDeliveryEvent('delivery.assigned', {
+      jobId: job.id,
+      orderId: job.orderId,
+      driverId: job.driverId,
+      status,
+      storeId,
+    });
   }
 
   async updateDeliveryJobProof(id: string, uri: string): Promise<void> {

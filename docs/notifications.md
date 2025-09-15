@@ -21,6 +21,16 @@ Emitted when an order cannot be processed.
   - `code` (`string`): error code describing the failure.
   - `reason` (`string`): human readable explanation.
 
+### `{delivery.assigned}`
+Emitted when a delivery job is assigned or its status changes.
+
+- **Payload**
+  - `jobId` (`string`): delivery job identifier.
+  - `orderId` (`string`): related order identifier.
+  - `driverId` (`string`): identifier of the assigned driver.
+  - `status` (`'pending' | 'in_progress' | 'completed' | 'cancelled'`): delivery status.
+  - `storeId` (`string`): store scope for the delivery topic.
+
 ### Output Payloads
 
 #### `{notify.orderCreated}`
@@ -34,6 +44,18 @@ Broadcast when an order fails.
 
 - **Payload** (`notifyOrderFailedSchema`)
   - `notification` (`Notification`): localized title and message.
+
+#### `{notify.deliveryUpdate}`
+Broadcast delivery progress updates over Waku.
+
+- **Payload** (`deliveryUpdatePayloadSchema`)
+  - `event` (`'order.created' | 'delivery.assigned'`): source event driving the update.
+  - `orderId` (`string`): related order identifier.
+  - `jobId` (`string`, optional): delivery job identifier when available.
+  - `driverId` (`string`, optional): assigned driver identifier.
+  - `status` (`'pending' | 'in_progress' | 'completed' | 'cancelled'`): delivery status.
+  - `timestamp` (`number`): milliseconds since epoch when the update was published.
+  - `storeId` (`string`): store topic scope for subscribers.
 
 ## API Reference
 
@@ -49,7 +71,7 @@ Subscribes to notification outputs.
 Producers send order events to the network.
 
 - **Parameters**
-  - `event` (`'order.created' | 'order.failed'`)
+  - `event` (`'order.created' | 'order.failed' | 'delivery.assigned'`)
   - `payload` (matching event schema)
 - **Errors**: may reject with `{ code: 'E_BACKLOG', retryAfter: number }` when the node backlog is full.
 

@@ -7,4 +7,5 @@ export {
   type OrderStatusMessage,
   type WorkspaceCreatedMessage,
   type WorkspaceCreatedPayload,
+  type DeliveryUpdateMessage,
 } from '../schemas/waku';

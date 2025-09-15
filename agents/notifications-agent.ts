@@ -24,9 +24,8 @@ import { onBacklog, onDrained } from '@/utils/wakuStore';
 import {
   isNotificationsPipelineEnabled,
 } from '@/config/featureFlags';
-import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
 import { canonicalJson } from '@/utils/serialization';
-import { sign } from '@noble/ed25519';
+import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 
 export const E_BACKLOG = 'E_BACKLOG';
 
@@ -34,28 +33,6 @@ const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
 const MESSAGE_TYPE = 'notification.broadcast';
 type PauseReason = 'queue' | 'latency' | 'waku';
 type NotificationBroadcastPayload = NotificationWakuPayload & { storeId?: string };
-
-const textEncoder = new TextEncoder();
-
-async function makeSignedNotificationMessage(
-  payload: NotificationBroadcastPayload,
-): Promise<WakuMessage<string>> {
-  const priv = await getPrivateKey();
-  const pub = await getPublicKeyHex();
-  const serializedPayload = canonicalJson(payload);
-  const message: WakuMessage<string> = {
-    type: MESSAGE_TYPE,
-    payload: serializedPayload,
-    sender: { publicKey: pub, role: 'notifications' },
-    signature: '',
-  };
-  const toSign = textEncoder.encode(
-    canonicalJson({ type: message.type, payload: message.payload, sender: message.sender }),
-  );
-  const sig = await sign(toSign, priv);
-  message.signature = Buffer.from(sig).toString('hex');
-  return message;
-}
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
@@ -308,7 +285,11 @@ class NotificationsAgent {
         notification: item,
         storeId,
       };
-      const message = await makeSignedNotificationMessage(payload);
+      const message = await makeSignedWakuMessage(
+        MESSAGE_TYPE,
+        canonicalJson(payload),
+        'notifications',
+      );
       await publish(NOTIFICATION_TOPIC, message);
     } catch (err) {
       errorLog('Failed to broadcast notification', err);

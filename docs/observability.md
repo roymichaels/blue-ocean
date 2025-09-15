@@ -23,6 +23,7 @@ Key metrics:
 - `auth_rate_limit_total` – Counter of auth requests rejected by rate limiting.
 - `auth_scope_requests_total` – Counter of auth scope checks.
 - `auth_invalid_scope_total` – Counter of auth scope checks with invalid scopes.
+- `delivery_notifications_backlog` – Gauge tracking queued delivery updates (alerts when > 100).
 
 Use `withMonitoring` from [`services/monitoring.ts`](../services/monitoring.ts) to
 wrap asynchronous service calls. The helper records latency, increments the

@@ -13,6 +13,7 @@ Reference of Waku topics used by the notifications pipeline.
 |-------|---------|
 | `/blue-ocean/orders/1` | Order events published by the orders agent. |
 | `/blue-ocean/notifications/1` | User-facing notifications broadcast by the notifications agent. |
+| `/blue-ocean/delivery/<storeId>` | Delivery updates broadcast by the delivery agent for each store. |
 
 ## Usage
 

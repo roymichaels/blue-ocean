@@ -1,6 +1,7 @@
 import { Order, OrderStatus, OrderTrackingStep } from '../types';
 import nearAuth from '@/features/auth/services/nearAuth';
 import notificationsAgent from './notifications-agent';
+import deliveryAgent from './delivery-agent';
 import { assertNearChain } from '@/services/chain';
 import {
   setOrder,
@@ -269,6 +270,10 @@ class OrdersAgent {
     await notificationsAgent.handleOrderEvent('order.created', {
       orderId: enriched.id,
       userId: enriched.userId,
+      storeId: sid,
+    });
+    await deliveryAgent.handleOrderEvent('order.created', {
+      orderId: enriched.id,
       storeId: sid,
     });
   }

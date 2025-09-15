@@ -6,3 +6,4 @@ export * from './order.status';
 export * from './admin.requested';
 export * from './store.created';
 export * from './workspace.created';
+export * from './delivery.update';
