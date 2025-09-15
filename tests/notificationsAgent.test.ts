@@ -83,4 +83,31 @@ describe('notificationsAgent order pipeline', () => {
     await new Promise((r) => setImmediate(r));
     expect(notificationsAgent.isPaused()).toBe(true);
   });
+
+  it('falls back to polling when paused', async () => {
+    jest.useFakeTimers();
+    (notificationsAgent as any).latencyLimit = -1;
+    (notificationsAgent as any).pollInterval = 10;
+    const sub = jest.fn();
+    notificationsAgent.subscribe(sub);
+    notificationsAgent.handleOrderEvent('order.created', { orderId: 'o1', userId: 'u1' });
+    await new Promise((r) => setImmediate(r));
+    expect(notificationsAgent.isPaused()).toBe(true);
+    const polled = {
+      id: 'p1',
+      userId: 'u1',
+      title: 't',
+      message: 'm',
+      type: 'order',
+      read: false,
+      timestamp: Date.now(),
+    };
+    const list = require('@/services/nearNotifications').listNotifications as jest.Mock;
+    list.mockResolvedValueOnce([polled]);
+    jest.advanceTimersByTime(10);
+    await Promise.resolve();
+    expect(sub).toHaveBeenCalledWith(expect.objectContaining({ id: 'p1' }));
+    notificationsAgent.unsubscribe(sub);
+    jest.useRealTimers();
+  });
 });
