@@ -4,7 +4,7 @@ const logger = { info: jest.fn(), error: jest.fn() };
 const startMetricsServer = jest.fn();
 const notificationsBacklog = { set: jest.fn() };
 const notificationDeliveryLatency = {
-  labels: () => ({ observe: jest.fn() }),
+  observe: jest.fn(),
 };
 module.exports = {
   serviceLatency,

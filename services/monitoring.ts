@@ -1,110 +1,72 @@
 import pino from 'pino';
+import { LocalMetricRegistry } from '@/utils/localMetrics';
 
-// prom-client relies on Node-specific APIs like process.uptime which are not
-// available in browser/React Native environments. Dynamically load it only when
-// those APIs exist and otherwise fall back to no-op implementations.
-let Counter: any;
-let Histogram: any;
-let Registry: any;
-let Gauge: any;
+export const registry = new LocalMetricRegistry({ anonymizeLabels: true });
+export const logger = pino({ name: 'monitoring' });
 
-if (
-  typeof process !== 'undefined' &&
-  typeof (process as any).uptime === 'function'
-) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const promClient = require('prom-client');
-  Counter = promClient.Counter;
-  Histogram = promClient.Histogram;
-  Registry = promClient.Registry;
-  Gauge = promClient.Gauge;
-} else {
-  class NoopMetric {
-    startTimer() {
-      return () => {};
-    }
-    inc() {}
-    set() {}
-  }
-  Counter = class extends NoopMetric {};
-  Histogram = class extends NoopMetric {};
-  Gauge = class extends NoopMetric {};
-  Registry = class {};
-}
-
-export const registry = new Registry();
-export const logger = pino();
-
-export const latencyHistogram = new Histogram({
-  name: 'service_latency_seconds',
-  help: 'Service call latency',
+export const latencyHistogram = registry.createHistogram({
+  name: 'service_latency_ms',
+  help: 'Service call latency (ms)',
   labelNames: ['service'],
-  registers: [registry],
+  anonymizeLabels: false,
 });
 
-export const failureCounter = new Counter({
+export const failureCounter = registry.createCounter({
   name: 'service_failures_total',
   help: 'Service call failures',
   labelNames: ['service'],
-  registers: [registry],
+  anonymizeLabels: false,
 });
 
-export const adminUnauthorizedAttempts = new Counter({
+export const adminUnauthorizedAttempts = registry.createCounter({
   name: 'admin_unauthorized_attempts_total',
   help: 'Unauthorized admin actions',
-  registers: [registry],
 });
 
-export const adminCountGauge = new Gauge({
+export const adminCountGauge = registry.createGauge({
   name: 'admin_count',
   help: 'Number of registered admins',
-  registers: [registry],
 });
 
-export const cacheHydrationHistogram = new Histogram({
-  name: 'cache_hydration_time_seconds',
-  help: 'Time to hydrate cache',
+export const cacheHydrationHistogram = registry.createHistogram({
+  name: 'cache_hydration_ms',
+  help: 'Time to hydrate cache (ms)',
   labelNames: ['cache'],
-  registers: [registry],
 });
 
-export const cacheHitRatioGauge = new Gauge({
+export const cacheHitRatioGauge = registry.createGauge({
   name: 'cache_hit_ratio',
   help: 'Cache hit ratio (hits/total)',
   labelNames: ['cache'],
-  registers: [registry],
 });
 
-export const authRateLimitCounter = new Counter({
+export const authRateLimitCounter = registry.createCounter({
   name: 'auth_rate_limit_total',
   help: 'Number of auth requests rejected due to rate limiting',
-  registers: [registry],
 });
 
-export const authScopeRequestCounter = new Counter({
+export const authScopeRequestCounter = registry.createCounter({
   name: 'auth_scope_requests_total',
   help: 'Total auth scope requests',
-  registers: [registry],
 });
 
-export const authInvalidScopeCounter = new Counter({
+export const authInvalidScopeCounter = registry.createCounter({
   name: 'auth_invalid_scope_total',
   help: 'Auth scope requests with invalid scopes',
-  registers: [registry],
 });
 
-export const checkoutTokenIntegrity = new Counter({
+export const checkoutTokenIntegrity = registry.createCounter({
   name: 'checkout_token_integrity_total',
-  help: 'Checkout attempts labeled by token validity and success',
+  help: 'Checkout attempts grouped by token validity and success',
   labelNames: ['token_valid', 'success'],
-  registers: [registry],
+  anonymizeLabels: false,
 });
 
 export async function withMonitoring<T>(
   service: string,
   fn: () => Promise<T>,
 ): Promise<T> {
-  const end = latencyHistogram.startTimer({ service });
+  const timer = latencyHistogram.startTimer({ service });
   try {
     return await fn();
   } catch (err) {
@@ -112,6 +74,6 @@ export async function withMonitoring<T>(
     logger.error({ service, err }, 'service failure');
     throw err;
   } finally {
-    end();
+    timer({ service });
   }
 }

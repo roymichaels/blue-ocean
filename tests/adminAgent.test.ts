@@ -52,7 +52,7 @@ describe('AdminAgent', () => {
     await expect(event).resolves.toEqual({ address: 'addr1' });
     const admins = await agent.getAdmins();
     expect(admins).toHaveLength(1);
-    expect(adminCountGauge.hashMap[''].value).toBe(1);
+    expect(adminCountGauge.getValue()).toBe(1);
   });
 
   it('queues subsequent admin requests for approval', async () => {
@@ -134,11 +134,11 @@ describe('AdminAgent', () => {
       priv3,
       pub3,
     );
-    const start = adminUnauthorizedAttempts.hashMap['']?.value || 0;
+    const start = adminUnauthorizedAttempts.getValue();
     await expect(agent.approveAdmin(badApprove)).rejects.toMatchObject({
       code: 'E_UNAUTHORIZED',
     });
-    const end = adminUnauthorizedAttempts.hashMap['']?.value || 0;
+    const end = adminUnauthorizedAttempts.getValue();
     expect(end).toBe(start + 1);
   });
 

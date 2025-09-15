@@ -1,95 +1,45 @@
 import pino from 'pino';
-import type { IncomingMessage, ServerResponse } from 'http';
-import type promClient from 'prom-client';
+import { LocalMetricRegistry } from './localMetrics';
 
-export const logger = pino();
+export const logger = pino({ name: 'observability' });
+const registry = new LocalMetricRegistry({ anonymizeLabels: true });
 
-let prom: typeof promClient | null = null;
-if (typeof process?.cwd === 'function') {
-  const pc: typeof promClient = require('prom-client');
-  pc.collectDefaultMetrics();
-  prom = pc;
+export const serviceLatency = registry.createHistogram({
+  name: 'service_latency_ms',
+  help: 'Service call latency in milliseconds',
+  labelNames: ['service'],
+  anonymizeLabels: false,
+});
+
+export const serviceFailures = registry.createCounter({
+  name: 'service_failures_total',
+  help: 'Service call failures recorded locally',
+  labelNames: ['service'],
+  anonymizeLabels: false,
+});
+
+export const adminTransactionIntegrity = registry.createCounter({
+  name: 'admin_transaction_integrity_total',
+  help: 'Admin transaction results',
+  labelNames: ['action', 'result'],
+  anonymizeLabels: false,
+});
+
+export const notificationsBacklog = registry.createGauge({
+  name: 'notifications_backlog',
+  help: 'Number of notifications pending delivery',
+});
+
+export const notificationDeliveryLatency = registry.createHistogram({
+  name: 'notification_delivery_latency_ms',
+  help: 'Notification delivery latency in milliseconds',
+  labelNames: ['event'],
+});
+
+export function startMetricsServer(): void {
+  logger.debug('Central metrics server disabled; metrics stay local.');
 }
 
-export const serviceLatency =
-  prom
-    ? new prom.Histogram({
-        name: 'service_latency_seconds',
-        help: 'Service call latency in seconds',
-        labelNames: ['service'],
-      })
-    : { startTimer: () => () => {} };
-
-export const serviceFailures =
-  prom
-    ? new prom.Counter({
-        name: 'service_failures_total',
-        help: 'Total number of service call failures',
-        labelNames: ['service'],
-      })
-    : { inc: () => {} };
-
-export const adminTransactionIntegrity =
-  prom
-    ? new prom.Counter({
-        name: 'admin_transaction_integrity_total',
-        help: 'Admin transaction results',
-        labelNames: ['action', 'result'],
-      })
-    : { inc: () => {} };
-
-export const notificationsBacklog =
-  prom
-    ? new prom.Gauge({
-        name: 'notifications_backlog',
-        help: 'Number of notifications pending delivery',
-      })
-    : { set: () => {} };
-
-export const notificationDeliveryLatency =
-  prom
-    ? new prom.Histogram({
-        name: 'notification_delivery_latency_seconds',
-        help: 'Notification delivery latency in seconds',
-        labelNames: ['event'],
-      })
-    : {
-        labels: () => ({ observe: () => {} }),
-        observe: () => {},
-      };
-
-let metricsStarted = false;
-export function startMetricsServer(
-  port = Number(process.env.METRICS_PORT || 9464)
-) {
-  // Do not start during tests or in the browser
-  if (
-    metricsStarted ||
-    typeof window !== 'undefined' ||
-    !prom ||
-    process.env.NODE_ENV === 'test' ||
-    process.env.JEST_WORKER_ID
-  )
-    return;
-  const http = require('http');
-  const server = http.createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    if (req.url === '/metrics') {
-      res.setHeader('Content-Type', prom!.register.contentType);
-      res.end(await prom!.register.metrics());
-    } else {
-      res.statusCode = 404;
-      res.end();
-    }
-  });
-  server.on('error', (err: any) => {
-    // Avoid crashing tests if the port is already taken
-    if (err && err.code === 'EADDRINUSE') return;
-    throw err;
-  });
-  server.listen(port);
-  metricsStarted = true;
-}
-
-if (prom) {
-  startMetricsServer();
+export function snapshotObservabilityMetrics() {
+  return registry.snapshot();
 }
