@@ -5,7 +5,7 @@ Autonomous agents communicate over the Waku peer‑to‑peer network, keep their
 
 Upcoming roles include a driver network and other specialized agents that extend supply‑chain coverage. These additions align with Blue Ocean’s strategic goals for 2025 to grow into a resilient, privacy‑preserving marketplace.
 
-See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview and [docs/routes.md](docs/routes.md) for route and role details.
+See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview, [docs/routes.md](docs/routes.md) for route and role details, and [docs/onboarding.md](docs/onboarding.md) for a tenant-facing onboarding guide.
 
 ## Quickstart
 
