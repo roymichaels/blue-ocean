@@ -2,7 +2,8 @@
 
 Blue Ocean uses short-lived session tokens to authorize actions with fine-grained scopes.
 Tokens are created by signing a scope request with a user's wallet. Keys and signatures are
-never stored; issued tokens are cached in encrypted device storage for offline refresh.
+never stored; issued tokens are cached in encrypted device storage for offline refresh. On
+mobile devices, `expo-secure-store` writes tokens to the underlying Keychain or Keystore.
 
 ## Issue Token
 
@@ -44,7 +45,8 @@ The signature becomes the session token. The response contains:
 
 Clients should replace the old token with the new value and discard the previous signature.
 Persisted tokens are loaded on startup via `initSessionTokens()` so apps can refresh or
-validate sessions while offline.
+validate sessions while offline. Validation tolerates up to one minute of clock skew before
+considering a token expired so mismatched device clocks do not cause spurious failures.
 
 ## Errors
 

@@ -12,24 +12,8 @@ export const sessionEvents = new EventEmitter();
 
 const POLICY = new Set<string>(['read', 'write']);
 
-// Simple fixed-window rate limiter for scope requests
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const RATE_LIMIT_MAX = 60;
-let rateWindowStart = Date.now();
-let rateCount = 0;
-
-function assertRateLimit() {
-  const now = Date.now();
-  if (now - rateWindowStart > RATE_LIMIT_WINDOW_MS) {
-    rateWindowStart = now;
-    rateCount = 0;
-  }
-  rateCount += 1;
-  if (rateCount > RATE_LIMIT_MAX) {
-    authRateLimitCounter.inc();
-    throw new Error('{E_RATE_LIMIT}');
-  }
-}
+// Allow a small amount of clock skew when validating expirations
+const CLOCK_TOLERANCE_MS = 60 * 1000; // 1 minute
 
 export interface SessionToken {
   token: string;
@@ -74,7 +58,7 @@ export async function initSessionTokens(): Promise<void> {
 export function validateToken(token: string, requiredScopes: string[]): void {
   const rec = store.get(token);
   if (!rec) throw new Error('{E_EXPIRED}');
-  if (Date.now() > rec.exp) {
+  if (Date.now() > rec.exp + CLOCK_TOLERANCE_MS) {
     store.delete(token);
     throw new Error('{E_EXPIRED}');
   }
@@ -90,7 +74,7 @@ export function refreshToken(
 ): SessionToken {
   const rec = store.get(token);
   if (!rec) throw new Error('{E_EXPIRED}');
-  if (Date.now() > rec.exp) {
+  if (Date.now() > rec.exp + CLOCK_TOLERANCE_MS) {
     store.delete(token);
     throw new Error('{E_EXPIRED}');
   }
