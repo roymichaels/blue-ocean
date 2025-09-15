@@ -599,10 +599,6 @@
   "stores": {
     "storeName": "Store Name",
     "mintStore": "Mint Store",
-    "mintPremiumStore": "Create Premium Store",
-    "plan": "Plan",
-    "planFree": "Free",
-    "planPremium": "Premium",
     "transactionFailed": "Transaction failed",
     "insufficientFunds": "Insufficient funds to deploy the store",
     "transactionCancelled": "Transaction cancelled",

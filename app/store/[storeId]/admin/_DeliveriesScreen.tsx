@@ -109,11 +109,6 @@ export default function AdminDeliveriesScreen() {
     }
   };
 
-  const openJobChat = (job: DeliveryJob) => {
-    // Chat via Matrix is currently disabled and tracked separately.
-    // TODO: re-enable Matrix later
-  };
-
   const formatDate = (date?: string) => {
     if (!date) return '';
     return new Date(date).toLocaleString('he-IL');
@@ -214,9 +209,8 @@ export default function AdminDeliveriesScreen() {
         </View>
 
         {jobs.map((job) => (
-          <TouchableOpacity
+          <View
             key={job.id}
-            onPress={() => openJobChat(job)}
             style={[
               styles.jobCard,
               {
@@ -306,7 +300,7 @@ export default function AdminDeliveriesScreen() {
                 </TouchableOpacity>
               )}
             </View>
-          </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
       <FullScreenMediaViewer
