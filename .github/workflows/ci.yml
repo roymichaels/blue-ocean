@@ -31,6 +31,7 @@ jobs:
       - run: yarn typecheck
       - run: yarn config:check
       - run: yarn build:web
+      - run: yarn docs:build
   contracts:
     runs-on: ubuntu-latest
     steps:
@@ -48,3 +49,11 @@ jobs:
       - name: Cargo audit
         working-directory: contracts/marketplace
         run: cargo audit
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check documentation links
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: --config lychee.toml docs/**/*.md README.md
