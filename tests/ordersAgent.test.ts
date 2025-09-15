@@ -17,7 +17,6 @@ jest.mock('@/services/nearOrders', () => ({
   listOrdersBySeller: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('../agents/notifications-agent', () => ({ broadcast: jest.fn() }));
 jest.mock('../agents/stores-agent', () => ({ updateReputationByOwner: jest.fn() }));
 
 const getAdminsWithScopeMock = jest.fn().mockResolvedValue(['admin']);
@@ -52,8 +51,9 @@ const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
   publicKey: sellerKey.publicKey,
 });
 
+const notificationsAgent = require('../agents/notifications-agent').default;
+jest.spyOn(notificationsAgent, 'broadcast').mockResolvedValue(undefined);
 const ordersAgent = require('../agents/orders-agent').default;
-const notificationsAgent = require('../agents/notifications-agent');
 const nearAuth = require('@/features/auth/services/nearAuth');
 const eventBus = require('@/services/eventBus');
 
@@ -118,19 +118,24 @@ describe('ordersAgent.add', () => {
   });
 });
 
-describe('ordersAgent notification IDs', () => {
+describe('notificationsAgent ID generation', () => {
   it('generates unique IDs under rapid calls', async () => {
-    nearAuth.getAccountId.mockReturnValue('seller');
     notificationsAgent.broadcast.mockClear();
-    const order = { id: 'o1', userId: 'u1' } as any;
-    const notify = (ordersAgent as any).notifyOrderCreated.bind(ordersAgent);
     const originalNow = Date.now;
     Date.now = () => 123;
     try {
-      await Promise.all(Array.from({ length: 5 }).map(() => notify(order)));
+      await Promise.all(
+        Array.from({ length: 5 }).map(() =>
+          notificationsAgent.handleOrderEvent('order.created', {
+            orderId: 'o1',
+            userId: 'u1',
+          }),
+        ),
+      );
     } finally {
       Date.now = originalNow;
     }
+    await new Promise((r) => setImmediate(r));
     const ids = notificationsAgent.broadcast.mock.calls.map((c: any) => c[1].id);
     expect(new Set(ids).size).toBe(ids.length);
     const timestamps = notificationsAgent.broadcast.mock.calls.map((c: any) => c[1].timestamp);

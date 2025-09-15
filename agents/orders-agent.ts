@@ -1,5 +1,4 @@
-import { uuid } from '../utils/uuid';
-import { Order, OrderStatus, Notification, OrderTrackingStep } from '../types';
+import { Order, OrderStatus, OrderTrackingStep } from '../types';
 import nearAuth from '@/features/auth/services/nearAuth';
 import notificationsAgent from './notifications-agent';
 import { assertNearChain } from '@/services/chain';
@@ -174,7 +173,12 @@ class OrdersAgent {
     this.knownStores.add(sid);
     await setOrder(sid, normalized);
     this.subscribers.forEach((cb) => cb(normalized));
-    await this.notifyStatusChange(normalized);
+    await notificationsAgent.handleOrderEvent('status.updated', {
+      orderId: normalized.id,
+      userId: normalized.userId,
+      storeId: sid,
+      status: normalized.status,
+    });
   }
 
   private async ensureWallet() {
@@ -259,7 +263,12 @@ class OrdersAgent {
       timestamp: Date.now(),
     });
     this.subscribers.forEach((cb) => cb(enriched));
-    await this.notifyOrderCreated(enriched);
+    const sid = enriched.items?.[0]?.product?.storeId || '';
+    await notificationsAgent.handleOrderEvent('order.created', {
+      orderId: enriched.id,
+      userId: enriched.userId,
+      storeId: sid,
+    });
   }
 
   async update(order: Order): Promise<void> {
@@ -307,7 +316,12 @@ class OrdersAgent {
     });
     this.subscribers.forEach((cb) => cb(normalized));
     if (statusChanged) {
-      await this.notifyStatusChange(normalized);
+      await notificationsAgent.handleOrderEvent('status.updated', {
+        orderId: normalized.id,
+        userId: normalized.userId,
+        storeId: sid,
+        status: normalized.status,
+      });
       if (normalized.status === 'released') {
         await this.recordSellerMetric(normalized.sellerAddress, 'completed');
       } else if (normalized.status === 'refunded') {
@@ -319,7 +333,12 @@ class OrdersAgent {
           prevStatus: current.status,
           newStatus: normalized.status,
         });
-        await this.notifyDisputeUpdate(normalized);
+        await notificationsAgent.handleOrderEvent('dispute.updated', {
+          orderId: normalized.id,
+          userId: normalized.userId,
+          storeId: sid,
+          status: normalized.status,
+        });
       }
     }
   }
@@ -431,8 +450,17 @@ class OrdersAgent {
       )
     );
     this.subscribers.forEach((cb) => cb(normalized));
-    await this.notifyStatusChange(normalized);
-    await this.notifyPaymentReceived(normalized);
+    await notificationsAgent.handleOrderEvent('status.updated', {
+      orderId: normalized.id,
+      userId: normalized.userId,
+      storeId: sid,
+      status: normalized.status,
+    });
+    await notificationsAgent.handleOrderEvent('payment.received', {
+      orderId: normalized.id,
+      userId: normalized.userId,
+      storeId: sid,
+    });
     await this.recordSellerMetric(order.sellerAddress, 'completed');
     return hash;
   }
@@ -486,7 +514,12 @@ class OrdersAgent {
       newStatus: normalized.status,
     });
     this.subscribers.forEach((cb) => cb(normalized));
-    await this.notifyStatusChange(normalized);
+    await notificationsAgent.handleOrderEvent('status.updated', {
+      orderId: normalized.id,
+      userId: normalized.userId,
+      storeId: sid,
+      status: normalized.status,
+    });
     await this.recordSellerMetric(order.sellerAddress, 'refunded');
     return hash;
   }
@@ -497,78 +530,6 @@ class OrdersAgent {
 
   unsubscribe(cb: (o: Order) => void) {
     this.subscribers.delete(cb);
-  }
-
-  private async notifyStatusChange(order: Order) {
-    const notification: Notification = {
-      id: uuid(),
-      userId: order.userId,
-      title: 'Order status updated',
-      message: `Order ${order.id} status changed to ${order.status}`,
-      type: 'order',
-      read: false,
-      timestamp: Date.now(),
-    };
-    try {
-      const sid = order.items?.[0]?.product?.storeId || '';
-      await notificationsAgent.broadcast('status.updated', notification, sid);
-    } catch (err) {
-      errorLog('Failed to send notification', err);
-    }
-  }
-
-  private async notifyOrderCreated(order: Order) {
-    const notification: Notification = {
-      id: uuid(),
-      userId: order.userId,
-      title: 'Order created',
-      message: `Order ${order.id} has been created`,
-      type: 'order',
-      read: false,
-      timestamp: Date.now(),
-    };
-    try {
-      const sid = order.items?.[0]?.product?.storeId || '';
-      await notificationsAgent.broadcast('order.created', notification, sid);
-    } catch (err) {
-      errorLog('Failed to send notification', err);
-    }
-  }
-
-  private async notifyPaymentReceived(order: Order) {
-    const notification: Notification = {
-      id: uuid(),
-      userId: order.userId,
-      title: 'Payment received',
-      message: `Payment for order ${order.id} has been released`,
-      type: 'order',
-      read: false,
-      timestamp: Date.now(),
-    };
-    try {
-      const sid = order.items?.[0]?.product?.storeId || '';
-      await notificationsAgent.broadcast('payment.received', notification, sid);
-    } catch (err) {
-      errorLog('Failed to send notification', err);
-    }
-  }
-
-  private async notifyDisputeUpdate(order: Order) {
-    const notification: Notification = {
-      id: uuid(),
-      userId: order.userId,
-      title: 'Order dispute updated',
-      message: `Order ${order.id} dispute status: ${order.status}`,
-      type: 'order',
-      read: false,
-      timestamp: Date.now(),
-    };
-    try {
-      const sid = order.items?.[0]?.product?.storeId || '';
-      await notificationsAgent.broadcast('dispute.updated', notification, sid);
-    } catch (err) {
-      errorLog('Failed to send notification', err);
-    }
   }
 }
 
