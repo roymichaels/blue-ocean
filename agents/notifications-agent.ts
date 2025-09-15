@@ -96,21 +96,59 @@ class NotificationsAgent {
   }
 
   handleOrderEvent(
-    type: 'order.created' | 'order.failed',
-    payload: { orderId: string; userId: string; storeId?: string },
+    type:
+      | 'order.created'
+      | 'order.failed'
+      | 'status.updated'
+      | 'payment.received'
+      | 'dispute.updated',
+    payload: {
+      orderId: string;
+      userId: string;
+      storeId?: string;
+      status?: string;
+    },
   ): void {
-    const event: NotificationEvent =
-      type === 'order.created' ? 'notify.orderCreated' : 'notify.orderFailed';
+    let event: NotificationEvent;
+    let title: string;
+    let message: string;
+    switch (type) {
+      case 'order.created':
+        event = 'notify.orderCreated';
+        title = event;
+        message = event;
+        break;
+      case 'order.failed':
+        event = 'notify.orderFailed';
+        title = event;
+        message = event;
+        break;
+      case 'status.updated':
+        event = 'status.updated';
+        title = 'Order status updated';
+        message = `Order ${payload.orderId} status changed to ${payload.status}`;
+        break;
+      case 'payment.received':
+        event = 'payment.received';
+        title = 'Payment received';
+        message = `Payment for order ${payload.orderId} has been released`;
+        break;
+      case 'dispute.updated':
+        event = 'dispute.updated';
+        title = 'Order dispute updated';
+        message = `Order ${payload.orderId} dispute status: ${payload.status}`;
+        break;
+    }
     const notification: Notification = {
       id: uuid(),
       userId: payload.userId,
-      title: event,
-      message: event,
+      title,
+      message,
       type: 'order',
       read: false,
       timestamp: Date.now(),
     };
-    this.enqueue(event, notification, payload.storeId || '1');
+    this.enqueue(event!, notification, payload.storeId || '1');
   }
 
   async broadcast(

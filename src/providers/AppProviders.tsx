@@ -4,7 +4,7 @@ import { WakuProvider } from '@/contexts/WakuContext';
 import { QueryClient } from '@tanstack/react-query';
 import { CheckedQueryClientProvider } from './CheckedQueryClientProvider';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import useToast from '@/shared/useToast';
+import { useNotificationActions } from '@/components/NotificationContext';
 import { ThemeProvider, LanguageProvider } from '../ui/ThemeProvider';
 import { AppInfoProvider } from '@/contexts/AppInfoContext';
 import { ConfigProvider } from '@/contexts/ConfigContext';
@@ -40,7 +40,7 @@ export const queryClient =
  * 12. `NotificationProvider` – listens for notifications and displays popups.
  */
 export default function AppProviders({ children }: React.PropsWithChildren) {
-  const toast = useToast();
+  const { showNotification } = useNotificationActions();
   return (
     <ThemeProvider>
       <LanguageProvider>
@@ -48,7 +48,7 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
           <WalletProvider>
             <AppInfoProvider>
               <ConfigProvider>
-                <ErrorBoundary onError={(e) => toast.showError(e.message)}>
+                <ErrorBoundary onError={(e) => showNotification('Error', e.message, 'error')}>
                   <WakuProvider>
                     <AuthProvider>
                       <AuthModalProvider>
