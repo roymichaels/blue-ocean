@@ -13,7 +13,18 @@ import {
   Platform,
 } from 'react-native';
 import SmartImage from './SmartImage';
-import { X, CircleCheck as CheckCircle, Circle, Package, Truck, MapPin, Star, Phone, MessageCircle, Copy } from 'lucide-react-native';
+import {
+  X,
+  CircleCheck as CheckCircle,
+  Circle,
+  Package,
+  Truck,
+  MapPin,
+  Star,
+  Phone,
+  MessageCircle,
+  Copy,
+} from 'lucide-react-native';
 import { Order, OrderStatus } from '../types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -21,6 +32,7 @@ import OrderService from '@/services/orders';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';
+import { formatTimestamp } from '@/utils/formatTimestamp';
 
 
 
@@ -136,17 +148,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
     }
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleString('he-IL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  const formatDate = (dateString: string) => formatTimestamp(dateString);
 
   const contactCourier = () => {
     // In a real app, this would initiate a call or message to the courier
