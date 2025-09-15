@@ -36,6 +36,7 @@ Events published on `/blue-ocean/{tenantId}/analytics/1` follow this structure:
 | `cart.clear` | `{}` |
 | `checkout.start` | `{ items: number, total: number }` |
 | `checkout.complete` | `{ orderIds: string[], total: number, cacheHitRatio: number }` |
+| `checkout.token_integrity` | `{ tokenValid: boolean, success: boolean }` |
 | `chat.view` | `{ messageCount: number }` |
 | `chat.load_more` | `{ messageCount: number }` |
 
