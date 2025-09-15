@@ -19,6 +19,7 @@ Blue Ocean operates entirely peer-to-peer over the Waku network. Each domain use
 | `/blue-ocean/{tenantId}/users/1` | Registered users and roles |
 | `/blue-ocean/{tenantId}/products/1` | Product catalog |
 | `/blue-ocean/{tenantId}/stores/1` | Store registry |
+| `/blue-ocean/workspaces/1` | Workspace discovery metadata (encrypted) |
 | `/blue-ocean/{tenantId}/orders/1` | Orders and status updates |
 | `/blue-ocean/{tenantId}/notifications/1` | System notifications |
 | `/blue-ocean/{tenantId}/reviews/1` | Product reviews |

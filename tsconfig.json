@@ -49,6 +49,9 @@
       "@/layout/*": [
         "src/layout/*"
       ],
+      "@/core/*": [
+        "src/core/*"
+      ],
       "@/services": [
         "src/services/index.ts"
       ],
