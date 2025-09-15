@@ -17,6 +17,8 @@ export const notificationEventSchema = z.enum([
   'status.updated',
   'dispute.updated',
   'escrow.deployed',
+  'notify.orderCreated',
+  'notify.orderFailed',
 ]);
 
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;

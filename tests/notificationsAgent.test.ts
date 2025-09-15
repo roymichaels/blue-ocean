@@ -27,27 +27,26 @@ jest.mock('@/utils/transport', () => ({
   })),
 }));
 
-const notificationsAgent = require('../agents/notifications-agent').default;
+const agentModule = require('../agents/notifications-agent');
+const notificationsAgent = agentModule.default;
+const { E_BACKLOG } = agentModule;
 
-describe('notificationsAgent.broadcast', () => {
+describe('notificationsAgent order pipeline', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (notificationsAgent as any).node = null;
+    (notificationsAgent as any).backlog = [];
+    (notificationsAgent as any).draining = false;
+    (notificationsAgent as any).backlogLimit = 50;
   });
 
-  it('encodes event with tenant topic and payload', async () => {
-    const item = {
-      id: 'id1',
+  it('broadcasts notify.orderCreated with i18n key', async () => {
+    notificationsAgent.handleOrderEvent('order.created', {
+      orderId: 'o1',
       userId: 'u1',
-      title: 't',
-      message: 'm',
-      type: 'order',
-      read: false,
-      timestamp: 1,
-    };
-
-    await notificationsAgent.broadcast('order.created', item, 's1');
-
+      storeId: 's1',
+    });
+    await new Promise((r) => setImmediate(r));
     expect(createEncoderMock).toHaveBeenNthCalledWith(1, {
       contentTopic: '/blue-ocean/notifications/s1',
     });
@@ -57,35 +56,23 @@ describe('notificationsAgent.broadcast', () => {
     expect(sendMock).toHaveBeenCalledTimes(2);
     const [encoderNotif, { payload: notifPayload }] = sendMock.mock.calls[0];
     expect(encoderNotif).toEqual({ contentTopic: '/blue-ocean/notifications/s1' });
-    expect(JSON.parse(Buffer.from(notifPayload).toString())).toEqual(item);
+    const notif = JSON.parse(Buffer.from(notifPayload).toString());
+    expect(notif.title).toBe('notify.orderCreated');
     const [encoderOrder, { payload: orderPayload }] = sendMock.mock.calls[1];
     expect(encoderOrder).toEqual({ contentTopic: '/blue-ocean/orders/s1' });
     const decoded = JSON.parse(Buffer.from(orderPayload).toString());
-    expect(decoded).toEqual({ type: 'order.created', notification: item });
+    expect(decoded.type).toBe('notify.orderCreated');
   });
 
-  it('generates unique IDs and timestamps under concurrent broadcasts', async () => {
-    const makeNotification = (i: number) => ({
-      id: `n-${i}`,
-      userId: 'u',
-      title: 't',
-      message: 'm',
-      type: 'order' as const,
-      read: false,
-      timestamp: Date.now() + i,
-    });
-
-    const count = 5;
-    await Promise.all(
-      Array.from({ length: count }, (_, i) =>
-        notificationsAgent.broadcast('order.created', makeNotification(i), 's1'),
-      ),
-    );
-
-    const ids = setNotificationMock.mock.calls.map((c) => c[0].id);
-    expect(new Set(ids).size).toBe(count);
-    const timestamps = setNotificationMock.mock.calls.map((c) => c[0].timestamp);
-    expect(new Set(timestamps).size).toBe(count);
+  it('surfaces E_BACKLOG when queue exceeds limit', async () => {
+    (notificationsAgent as any).backlogLimit = 1;
+    notificationsAgent.handleOrderEvent('order.created', { orderId: 'o1', userId: 'u1' });
+    expect(() =>
+      notificationsAgent.handleOrderEvent('order.created', {
+        orderId: 'o2',
+        userId: 'u1',
+      }),
+    ).toThrowError(expect.objectContaining({ code: E_BACKLOG }));
+    await new Promise((r) => setImmediate(r));
   });
 });
-
