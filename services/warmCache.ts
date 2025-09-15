@@ -30,6 +30,7 @@ export interface WarmCache<T> {
 
 export function createWarmCache<T>(topic: string): WarmCache<T> {
   const store = new Map<string, { value: T; rev: number }>();
+  const revisions = new Map<string, number>();
   const emitter = new EventEmitter();
   let synced = false;
   let stale = false;
@@ -40,12 +41,19 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
 
   function apply(msg: DiffMessage<T>): void {
-    const current = store.get(msg.id);
-    if (current && msg.rev !== current.rev + 1) {
+    const currentRev = revisions.get(msg.id) ?? 0;
+    const expected = currentRev === 0 ? msg.rev : currentRev + 1;
+    if (currentRev !== 0 && msg.rev !== expected) {
       stale = true;
-      emitter.emit('error', { code: E_STALE_DATA, id: msg.id });
+      emitter.emit('error', {
+        code: E_STALE_DATA,
+        id: msg.id,
+        expected,
+        actual: msg.rev,
+      });
       return;
     }
+    revisions.set(msg.id, msg.rev);
     if (msg.op === 'delete') {
       store.delete(msg.id);
     } else if (msg.value !== undefined) {
@@ -95,7 +103,9 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
     },
     values() {
       if (stale || !isWarmCacheEnabled()) throw { code: E_STALE_DATA };
-      return Array.from(store.values()).map((v) => v.value);
+      return Array.from(store.values())
+        .map((v) => v.value)
+        .filter((value): value is T => value !== undefined);
     },
     subscribe(filter, cb) {
       const handler = (id: string, value: T | undefined) => {

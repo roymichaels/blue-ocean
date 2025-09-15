@@ -78,6 +78,18 @@ describe('warmCache', () => {
     });
   });
 
+  it('tracks revision numbers after deletes to catch stale updates', async () => {
+    const cache = createWarmCache<any>('topic');
+    await new Promise((res) => cache.onSynced(res));
+    liveHandler && liveHandler({ id: '1', rev: 2, op: 'delete' });
+    expect(cache.getById('1')).toBeUndefined();
+    liveHandler &&
+      liveHandler({ id: '1', rev: 2, op: 'set', value: { name: 'bad' } });
+    expect(() => cache.getById('1')).toThrowErrorMatchingObject({
+      code: E_STALE_DATA,
+    });
+  });
+
   it('falls back when history fails', async () => {
     failHistory = true;
     const cache = createWarmCache<any>('topic');
