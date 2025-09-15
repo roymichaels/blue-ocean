@@ -9,4 +9,4 @@ cargo build --target wasm32-unknown-unknown --manifest-path "$CONTRACT_DIR/Cargo
 WASM="$CONTRACT_DIR/target/wasm32-unknown-unknown/release/marketplace.wasm"
 
 echo "Deploying marketplace contract to testnet..."
-near deploy --wasmFile "$WASM" --accountId "${1:-example.testnet}"
+near deploy "${1:-example.testnet}" "$WASM"

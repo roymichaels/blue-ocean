@@ -2,7 +2,7 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{UnorderedMap, UnorderedSet};
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise};
+use near_sdk::{env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise, NearToken};
 
 /// A marketplace listing.
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
@@ -192,11 +192,13 @@ impl Marketplace {
         let deposit = env::attached_deposit();
         let key = (contract_id.clone(), token_id.clone());
         let listing = self.listings.remove(&key).expect("listing not found");
-        assert!(deposit >= listing.price.0, "insufficient deposit");
+        let required = NearToken::from_yoctonear(listing.price.0);
+        assert!(deposit >= required, "insufficient deposit");
         let fee = listing.price.0 * self.fee_bps as u128 / 10_000u128;
         let seller_amount = listing.price.0 - fee;
-        Promise::new(listing.seller.clone()).transfer(seller_amount);
-        Promise::new(self.treasury.clone()).transfer(fee);
+        Promise::new(listing.seller.clone())
+            .transfer(NearToken::from_yoctonear(seller_amount));
+        Promise::new(self.treasury.clone()).transfer(NearToken::from_yoctonear(fee));
         env::log_str(
             &near_sdk::serde_json::json!({
                 "event": "buy_listing",
