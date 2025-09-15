@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" role="img" aria-labelledby="title desc">
+  <title id="title">Blue Ocean Tenant Onboarding Flow</title>
+  <desc id="desc">Diagram showing the progression from wallet setup through store creation, catalog preparation, and order fulfillment.</desc>
+  <style>
+    text { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; fill: #0f172a; }
+    .step { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; rx: 16; ry: 16; }
+    .note { fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; rx: 12; ry: 12; }
+    .arrow { stroke: #0369a1; stroke-width: 3; marker-end: url(#arrowhead); }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0369a1" />
+    </marker>
+  </defs>
+  <rect class="step" x="40" y="48" width="200" height="100" />
+  <text x="140" y="90" text-anchor="middle" font-size="20">Wallet Setup</text>
+  <text x="140" y="115" text-anchor="middle" font-size="14">Connect NEAR</text>
+  <text x="140" y="135" text-anchor="middle" font-size="14">verify identity</text>
+
+  <rect class="step" x="280" y="48" width="200" height="100" />
+  <text x="380" y="90" text-anchor="middle" font-size="20">Store Creation</text>
+  <text x="380" y="115" text-anchor="middle" font-size="14">Mint tenant store</text>
+  <text x="380" y="135" text-anchor="middle" font-size="14">configure branding</text>
+
+  <rect class="step" x="520" y="48" width="200" height="100" />
+  <text x="620" y="90" text-anchor="middle" font-size="20">Product Listing</text>
+  <text x="620" y="115" text-anchor="middle" font-size="14">Upload inventory</text>
+  <text x="620" y="135" text-anchor="middle" font-size="14">publish pricing</text>
+
+  <rect class="step" x="760" y="48" width="160" height="100" />
+  <text x="840" y="90" text-anchor="middle" font-size="20">Orders</text>
+  <text x="840" y="115" text-anchor="middle" font-size="14">Process</text>
+  <text x="840" y="135" text-anchor="middle" font-size="14">Fulfill &amp; settle</text>
+
+  <line class="arrow" x1="240" y1="98" x2="280" y2="98" />
+  <line class="arrow" x1="480" y1="98" x2="520" y2="98" />
+  <line class="arrow" x1="720" y1="98" x2="760" y2="98" />
+
+  <rect class="note" x="120" y="190" width="240" height="90" />
+  <text x="240" y="230" text-anchor="middle" font-size="16">Environment checklist</text>
+  <text x="240" y="255" text-anchor="middle" font-size="13">Validate EXPO_PUBLIC_* values</text>
+
+  <rect class="note" x="440" y="190" width="240" height="90" />
+  <text x="560" y="230" text-anchor="middle" font-size="16">Contract deployment</text>
+  <text x="560" y="255" text-anchor="middle" font-size="13">Deploy NEAR marketplace</text>
+
+  <rect class="note" x="760" y="190" width="160" height="90" />
+  <text x="840" y="230" text-anchor="middle" font-size="16">Go live</text>
+  <text x="840" y="255" text-anchor="middle" font-size="13">Monitor orders &amp; Waku</text>
+</svg>
