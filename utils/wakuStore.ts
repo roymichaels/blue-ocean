@@ -1,5 +1,30 @@
 import { uuid } from './uuid';
 
+/** Event code emitted when the replay queue grows beyond the threshold. */
+export const E_BACKLOG = 'E_BACKLOG';
+
+// Default threshold before emitting the backlog event. Tests may override.
+let backlogThreshold = 1000;
+
+type BacklogListener = (code: typeof E_BACKLOG) => void;
+const backlogListeners = new Set<BacklogListener>();
+
+export function onBacklog(cb: BacklogListener): void {
+  backlogListeners.add(cb);
+}
+
+export function offBacklog(cb: BacklogListener): void {
+  backlogListeners.delete(cb);
+}
+
+export function setBacklogThreshold(n: number): void {
+  backlogThreshold = n;
+}
+
+function emitBacklog(): void {
+  backlogListeners.forEach((cb) => cb(E_BACKLOG));
+}
+
 interface QueuedMessage {
   id: string;
   topic: string;
@@ -12,6 +37,7 @@ const queue: QueuedMessage[] = [];
 export function enqueue(topic: string, payload: Uint8Array): string {
   const id = uuid();
   queue.push({ id, topic, payload });
+  if (queue.length === backlogThreshold) emitBacklog();
   return id;
 }
 

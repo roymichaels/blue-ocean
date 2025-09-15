@@ -126,6 +126,7 @@ const cfg = {
     '<rootDir>/tests/wakuHydration.test.ts',
     '<rootDir>/tests/nearAdapter.test.ts',
     '<rootDir>/tests/waku/**/*.test.ts',
+    '<rootDir>/tests/notificationsPipeline.test.ts',
     '<rootDir>/tests/i18n-offline.test.ts',
     '<rootDir>/tests/smoke.test.ts',
     '<rootDir>/tests/navigation.test.ts',
