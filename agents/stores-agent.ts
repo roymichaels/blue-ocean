@@ -1,8 +1,7 @@
 import { Store } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import {
-  addStore,
-  updateStore,
+  setStore,
   removeStore,
   selectStore as fetchStore,
   listStores as fetchStores,
@@ -29,6 +28,12 @@ class StoresAgent {
   private reputation: Record<string, Metrics> = {};
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
+  private async persistStore(store: Store): Promise<Store> {
+    const record = this.toRecord(store);
+    await setStore(record.id, record);
+    return record;
+  }
+
   private toRecord(item: Store) {
     const { id, name, owner, nftId, reputation = 0, plan, createdAt } = item;
     return { id, name, owner, nftId, reputation, plan, createdAt } as Store;
@@ -52,7 +57,7 @@ class StoresAgent {
     const store = await fetchStore(storeId);
     if (store) {
       try {
-        await updateStore(this.toRecord({ ...store, reputation: newScore }));
+        await this.persistStore({ ...store, reputation: newScore });
         const confirmed = await fetchStore(storeId);
         if (confirmed) {
           m.score = confirmed.reputation || newScore;
@@ -77,7 +82,7 @@ class StoresAgent {
       this.reputation[id].reliability = reliability;
       const newScore = this.calculateScore(id);
       try {
-        await updateStore(this.toRecord({ ...store, reputation: newScore }));
+        await this.persistStore({ ...store, reputation: newScore });
         const confirmed = await fetchStore(id);
         if (confirmed) {
           this.reputation[id].score = confirmed.reputation || newScore;
@@ -108,19 +113,17 @@ class StoresAgent {
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
-    const record = this.toRecord({
+    const record = await this.persistStore({
       createdAt: normalized.createdAt || new Date().toISOString(),
       ...normalized,
     });
-    await addStore(record);
     await this.broadcastCreated(record);
   }
 
   async update(item: Store): Promise<void> {
     await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
-    const rec = this.toRecord(normalized);
-    await updateStore(rec);
+    await this.persistStore(normalized);
   }
 
   async remove(id: string): Promise<void> {
