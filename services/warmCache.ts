@@ -16,6 +16,7 @@ export interface DiffMessage<T> {
 
 export interface WarmCache<T> {
   getById(id: string): T | undefined;
+  values(): T[];
   subscribe(
     filter: (id: string, value: T | undefined) => boolean,
     cb: (id: string, value: T | undefined) => void,
@@ -33,10 +34,10 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   let synced = false;
   let stale = false;
   const buffer: DiffMessage<T>[] = [];
-  const reconcilers = new Map<
-    string,
-    (id: string, value: T | undefined) => void
-  >();
+  const reconcilers = new Map<string, (id: string, value: T | undefined) => void>();
+  const stats = { hits: 0, total: 0 };
+  hitStats.set(topic, stats);
+  const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
 
   function apply(msg: DiffMessage<T>): void {
     const current = store.get(msg.id);
@@ -86,7 +87,15 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   return {
     getById(id: string) {
       if (stale || !isWarmCacheEnabled()) throw { code: E_STALE_DATA };
-      return store.get(id)?.value;
+      const value = store.get(id)?.value;
+      stats.total++;
+      if (value !== undefined) stats.hits++;
+      cacheHitRatioGauge.set({ cache: topic }, stats.total ? stats.hits / stats.total : 0);
+      return value;
+    },
+    values() {
+      if (stale || !isWarmCacheEnabled()) throw { code: E_STALE_DATA };
+      return Array.from(store.values()).map((v) => v.value);
     },
     subscribe(filter, cb) {
       const handler = (id: string, value: T | undefined) => {
@@ -108,4 +117,12 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   };
 }
 
-export default { createWarmCache, E_STALE_DATA };
+const hitStats = new Map<string, { hits: number; total: number }>();
+
+export function getCacheHitRatio(topic: string): number {
+  const s = hitStats.get(topic);
+  if (!s || s.total === 0) return 0;
+  return s.hits / s.total;
+}
+
+export default { createWarmCache, E_STALE_DATA, getCacheHitRatio };

@@ -5,10 +5,13 @@ import { requireStoreId } from '@blue-ocean/utils';
 import { errorLog } from '@/utils/logger';
 import { productSchema } from '@/schemas/waku';
 import { canonicalJson } from '@/utils/serialization';
+import { createWarmCache } from '@/services/warmCache';
 
 assertNearChain();
 
 const ADDRESS = 'products';
+const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
+const productCache = createWarmCache<Product>(PRODUCT_CACHE_TOPIC);
 const DISABLED = false;
 let SEEDED = false;
 
@@ -33,6 +36,10 @@ function ensureSeed() {
 
 export async function getProduct(storeId: string, id: string): Promise<Product | null> {
   ensureSeed();
+  try {
+    const cached = productCache.getById(id);
+    if (cached) return cached;
+  } catch {}
   const sid = requireStoreId(storeId);
   const res = await getValue(ADDRESS, `${ADDRESS}:${sid}:${id}`);
   if (!res) return null;
@@ -72,6 +79,10 @@ export async function removeProduct(storeId: string, id: string) {
 export async function listProducts(storeId: string): Promise<Product[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
+  try {
+    const cached = productCache.values().filter((p) => p.storeId === sid);
+    if (cached.length > 0) return cached;
+  } catch {}
   const items = await listValues(ADDRESS);
   const res: Product[] = [];
   for (const i of items) {

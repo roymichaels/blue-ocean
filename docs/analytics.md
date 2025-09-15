@@ -1,6 +1,6 @@
 # Analytics Events
 
-This app records anonymized funnel events over Waku for basic analytics.
+This app records anonymized funnel events over Waku for basic analytics. Checkout events also embed the current cache hit ratio so cache performance can be correlated with conversion rates.
 
 ## Event Schema
 
@@ -35,7 +35,7 @@ Events published on `/blue-ocean/{tenantId}/analytics/1` follow this structure:
 | `cart.update` | `{ itemId: string, quantity: number }` |
 | `cart.clear` | `{}` |
 | `checkout.start` | `{ items: number, total: number }` |
-| `checkout.complete` | `{ orderIds: string[], total: number }` |
+| `checkout.complete` | `{ orderIds: string[], total: number, cacheHitRatio: number }` |
 | `chat.view` | `{ messageCount: number }` |
 | `chat.load_more` | `{ messageCount: number }` |
 
