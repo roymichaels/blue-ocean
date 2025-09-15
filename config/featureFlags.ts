@@ -7,6 +7,12 @@ const envSchema = z.object({
     .optional()
     .default(''),
   EXPO_PUBLIC_WARM_CACHE_ROLLBACK: z.string().optional().default('false'),
+  EXPO_PUBLIC_SCOPED_TOKENS: z.string().optional().default('false'),
+  EXPO_PUBLIC_SCOPED_TOKENS_WALLET_VENDORS: z
+    .string()
+    .optional()
+    .default(''),
+  EXPO_PUBLIC_SCOPED_TOKENS_ROLLBACK: z.string().optional().default('false'),
 });
 
 const env = envSchema.parse(process.env);
@@ -26,6 +32,21 @@ const warmCacheFlag: WarmCacheFeatureFlag = {
   rollback: env.EXPO_PUBLIC_WARM_CACHE_ROLLBACK === 'true',
 };
 
+export interface ScopedTokensFeatureFlag {
+  enabled: boolean;
+  walletVendors: string[];
+  rollback: boolean;
+}
+
+const scopedTokensFlag: ScopedTokensFeatureFlag = {
+  enabled: env.EXPO_PUBLIC_SCOPED_TOKENS === 'true',
+  walletVendors: env.EXPO_PUBLIC_SCOPED_TOKENS_WALLET_VENDORS
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean),
+  rollback: env.EXPO_PUBLIC_SCOPED_TOKENS_ROLLBACK === 'true',
+};
+
 export function isWarmCacheEnabled(address?: string): boolean {
   if (warmCacheFlag.rollback) return false;
   if (warmCacheFlag.enabled) return true;
@@ -36,5 +57,17 @@ export function isWarmCacheEnabled(address?: string): boolean {
 export function triggerWarmCacheRollback(): void {
   warmCacheFlag.rollback = true;
 }
+
+export function isScopedTokensEnabled(vendor?: string): boolean {
+  if (scopedTokensFlag.rollback) return false;
+  if (scopedTokensFlag.enabled) return true;
+  if (!vendor) return false;
+  return scopedTokensFlag.walletVendors.includes(vendor);
+}
+
+export function triggerScopedTokensRollback(): void {
+  scopedTokensFlag.rollback = true;
+}
+export { scopedTokensFlag };
 
 export default warmCacheFlag;

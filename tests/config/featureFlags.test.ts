@@ -28,3 +28,34 @@ describe('warm cache feature flag', () => {
     expect(mod.isWarmCacheEnabled('0x1')).toBe(false);
   });
 });
+
+describe('scoped tokens feature flag', () => {
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_SCOPED_TOKENS;
+    delete process.env.EXPO_PUBLIC_SCOPED_TOKENS_WALLET_VENDORS;
+    delete process.env.EXPO_PUBLIC_SCOPED_TOKENS_ROLLBACK;
+    jest.resetModules();
+  });
+
+  it('is disabled by default', () => {
+    const { isScopedTokensEnabled } = require('@/config/featureFlags');
+    expect(isScopedTokensEnabled('near-wallet')).toBe(false);
+  });
+
+  it('allows canary wallet vendors', () => {
+    process.env.EXPO_PUBLIC_SCOPED_TOKENS_WALLET_VENDORS = 'near-wallet,foo-wallet';
+    jest.resetModules();
+    const { isScopedTokensEnabled } = require('@/config/featureFlags');
+    expect(isScopedTokensEnabled('near-wallet')).toBe(true);
+    expect(isScopedTokensEnabled('bar-wallet')).toBe(false);
+  });
+
+  it('rollback disables feature', () => {
+    process.env.EXPO_PUBLIC_SCOPED_TOKENS = 'true';
+    jest.resetModules();
+    const mod = require('@/config/featureFlags');
+    expect(mod.isScopedTokensEnabled('near-wallet')).toBe(true);
+    mod.triggerScopedTokensRollback();
+    expect(mod.isScopedTokensEnabled('near-wallet')).toBe(false);
+  });
+});
