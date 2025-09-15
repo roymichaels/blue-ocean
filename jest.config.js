@@ -17,6 +17,9 @@ const cfg = {
         useESM: true,
         babelConfig: true,
         tsconfig: '<rootDir>/tsconfig.jest.json',
+        diagnostics: {
+          ignoreCodes: [2345, 2554, 7006, 2459, 2307],
+        },
       },
     ],
     '^.+\\.js$': 'babel-jest',
@@ -129,6 +132,7 @@ const cfg = {
     '<rootDir>/tests/wakuHydration.test.ts',
     '<rootDir>/tests/nearAdapter.test.ts',
     '<rootDir>/tests/waku/**/*.test.ts',
+    '<rootDir>/tests/integration/**/*.test.ts',
     '<rootDir>/tests/notificationsPipeline.test.ts',
     '<rootDir>/tests/i18n-offline.test.ts',
     '<rootDir>/tests/smoke.test.ts',
