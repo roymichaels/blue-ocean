@@ -6,7 +6,7 @@ module.exports = [
   // Base rules for app code (exclude tests)
   {
     files: ['**/*.ts', '**/*.tsx'],
-    ignores: ['tests/**'],
+    ignores: ['tests/**', 'docs/.vitepress/**'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -59,6 +59,19 @@ module.exports = [
           patterns: ['../src/**', '../app/**', '../../src/**', '../../app/**'],
         },
       ],
+    },
+  },
+  {
+    files: ['docs/.vitepress/**/*.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
     },
   },
   // Feature boundaries

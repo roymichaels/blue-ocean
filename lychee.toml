@@ -1,0 +1,10 @@
+# Configuration for lychee link checker
+max_retries = 2
+timeout = "20s"
+user_agent = "github.com/blue-ocean-labs/blue-ocean"
+
+exclude = [
+  "http://localhost.*",
+  "https://localhost.*",
+  "waku://.*"
+]

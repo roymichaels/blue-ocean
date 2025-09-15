@@ -104,3 +104,8 @@ All tenants publish metrics to `/blue-ocean/{tenantId}/analytics/1`. Replace
 
 4. When running multiple listeners, prefer a single shared node and topic
    decoder to avoid reconnecting for each subscription.
+
+## Opt-in telemetry workflows
+
+Telemetry must remain optional for every tenant. Review the [opt-in guidelines](./telemetry-opt-in.md) before rolling out new
+events or dashboards so you can collect consent, expose deletion tooling, and document retention requirements.

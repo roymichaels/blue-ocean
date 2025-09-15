@@ -7,6 +7,18 @@ Upcoming roles include a driver network and other specialized agents that extend
 
 See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview, [docs/routes.md](docs/routes.md) for route and role details, and [docs/onboarding.md](docs/onboarding.md) for a tenant-facing onboarding guide.
 
+## Developer portal
+
+Blue Ocean ships with a self-hostable VitePress site under `docs/` that bundles quickstarts, operations manuals, and an interactive API playground.
+
+```sh
+yarn docs:dev       # live reload documentation during authoring
+yarn docs:build     # generate static assets in docs/.vitepress/dist
+yarn docs:preview   # preview the built site locally
+```
+
+Point a static web server at `docs/.vitepress/dist` to publish the portal under your own domain. The [API playground](docs/api-playground.md) lets you try agent endpoints with mock or live payloads, and the [opt-in telemetry guide](docs/telemetry-opt-in.md) captures the consent workflow for analytics events.
+
 ## Quickstart
 
 Use **Yarn** for dependency management and running scripts.
