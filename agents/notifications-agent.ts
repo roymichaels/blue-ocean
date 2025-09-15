@@ -149,7 +149,7 @@ class NotificationsAgent {
       try {
         await this.broadcast(event, item, storeId, { skipPersist: persisted });
         const latency = Date.now() - queuedAt;
-        notificationDeliveryLatency.labels(event).observe(latency / 1000);
+        notificationDeliveryLatency.observe({ event }, latency);
         if (latency > this.latencyLimit) {
           this.pause('latency');
           break;
