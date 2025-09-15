@@ -4,9 +4,16 @@ import NotificationService from '@/services/notification';
 import { useWaku } from '@/contexts/WakuContext';
 import { parseNotificationWakuPayload } from '@/schemas/waku';
 import { errorLog } from '@/utils/logger';
+import eventBus from '@/services/eventBus';
 
 export function useNotificationSubscription(
-  onNotification?: (title: string, message: string, type?: 'success' | 'info' | 'warning' | 'error') => void,
+  onNotification?: (
+    title: string,
+    message: string,
+    type?: 'success' | 'info' | 'warning' | 'error',
+    link?: string,
+    id?: string,
+  ) => void,
 ) {
   const [unreadCount, setUnreadCount] = useState(0);
   const { isLoggedIn, user } = useAuth();
@@ -21,8 +28,15 @@ export function useNotificationSubscription(
     }
     try {
       const notificationService = NotificationService.getInstance();
-      const count = await notificationService.getUnreadCount(user.id);
-      setUnreadCount(count);
+      const list = await notificationService.getNotifications(user.id);
+      const unread = list.filter((n) => !n.read);
+      setUnreadCount(unread.length);
+      if (unread.length) {
+        eventBus.track('notification.user_return', {
+          userId: user.id,
+          notificationIds: unread.map((n) => n.id),
+        });
+      }
     } catch (error) {
       errorLog('Error refreshing notifications:', error);
     }
@@ -61,6 +75,8 @@ export function useNotificationSubscription(
             : notification.type === 'promo' || notification.type === 'message'
               ? 'info'
               : 'info',
+          notification.link,
+          notification.id,
         );
       },
     );
@@ -86,6 +102,12 @@ export function useNotificationSubscription(
         if (!payload) return;
         const n = payload.notification;
         if (n.userId !== user.id) return;
+        eventBus.track('notification.delivered', {
+          notificationId: n.id,
+          userId: n.userId,
+          type: n.type,
+          link: n.link,
+        });
         setUnreadCount((prev) => prev + 1);
         onNotification?.(
           n.title,
@@ -95,6 +117,8 @@ export function useNotificationSubscription(
             : n.type === 'promo' || n.type === 'message'
               ? 'info'
               : 'info',
+          n.link,
+          n.id,
         );
       } catch (err) {
         errorLog('Failed to parse notification', err);

@@ -159,6 +159,7 @@ class NotificationsAgent {
       title,
       message,
       type: 'order',
+      link: `/orders/${payload.orderId}`,
       read: false,
       timestamp: Date.now(),
     };

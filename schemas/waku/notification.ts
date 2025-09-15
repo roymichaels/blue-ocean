@@ -6,6 +6,7 @@ export const notificationSchema: z.ZodType<Notification> = z.object({
   userId: z.string(),
   title: z.string(),
   message: z.string(),
+  link: z.string().optional(),
   type: z.enum(['order', 'promo', 'message', 'system']),
   read: z.boolean(),
   timestamp: z.number(),
