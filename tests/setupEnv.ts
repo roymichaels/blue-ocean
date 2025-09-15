@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { jest } from '@jest/globals';
 import React from 'react';
 import { insertConfig } from './testUtils';
+import { loadTenantSettings } from '@/constants/tenant';
 
 // Make this file a module so global augmentation works
 export {};
@@ -68,6 +69,5 @@ beforeEach(async () => {
     EXPO_PUBLIC_NETWORK: 'testnet',
   });
 
-  const { loadTenantSettings } = await import('@/constants/tenant');
   await loadTenantSettings();
 });

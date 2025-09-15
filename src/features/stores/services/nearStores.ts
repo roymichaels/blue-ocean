@@ -1,10 +1,7 @@
 import { Store } from '@/types';
 import { chainAdapter, assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
-import {
-  getStore as contractGetStore,
-  listStores as contractListStores,
-} from '@/services/nearStoreContract';
+import { listStores as contractListStores } from '@/services/nearStoreContract';
 import { canonicalJson } from '@/utils/serialization';
 import { nearConfig } from '@/services/config';
 import { getSelector } from '@/services/walletSelector';
@@ -138,20 +135,6 @@ export async function selectStore(
     return null;
   }
 }
-
-export async function setStore(storeId: string, store: Store) {
-  const sid = requireStoreId(storeId);
-  await persistStore(store, sid);
-}
-
-export async function removeStore(arg1: string, arg2?: string): Promise<void> {
-  const id = arg2 ?? arg1;
-  const sid = arg2 ? requireStoreId(arg1) : requireStoreId(id);
-  await sendTx('remove', { id });
-  await removeValue(ADDRESS, storeKey(id, sid));
-  await removeValue(ADDRESS, indexKey(id));
-}
-
 export async function listStores(storeId: string): Promise<Store[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
