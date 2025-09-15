@@ -37,6 +37,8 @@ const envSchema = z.object({
   NEAR_LAKE_DIR: z.string().optional().default(''),
   NEAR_LAKE_START_BLOCK: z.string().optional().default('0'),
   NEAR_LAKE_ENDPOINT: z.string().optional().default(''),
+  NEAR_ACCESS_KEY: z.string().optional().default(''),
+  NEAR_SECRET_KEY: z.string().optional().default(''),
   AWS_ACCESS_KEY_ID: z.string().optional().default(''),
   AWS_SECRET_ACCESS_KEY: z.string().optional().default(''),
   CACHE_DIR: z.string().optional().default(''),

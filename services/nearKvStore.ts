@@ -73,9 +73,11 @@ async function ensureLake() {
         opts.endPoint = `s3.${region}.amazonaws.com`;
         opts.useSSL = true;
       }
-      if (config.AWS_ACCESS_KEY_ID && config.AWS_SECRET_ACCESS_KEY) {
-        opts.accessKey = config.AWS_ACCESS_KEY_ID;
-        opts.secretKey = config.AWS_SECRET_ACCESS_KEY;
+      const accessKey = config.NEAR_ACCESS_KEY || config.AWS_ACCESS_KEY_ID;
+      const secretKey = config.NEAR_SECRET_KEY || config.AWS_SECRET_ACCESS_KEY;
+      if (accessKey && secretKey) {
+        opts.accessKey = accessKey;
+        opts.secretKey = secretKey;
       }
       if (!useMemoryStore && !S3Client) {
         const { Client } = require('minio');
@@ -83,7 +85,24 @@ async function ensureLake() {
       }
       if (S3Client) {
         s3 = new S3Client(opts);
-
+        lakeStarted = true;
+        if (s3) {
+          try {
+            const stream = s3.listObjectsV2(bucketName, '', true);
+            const addresses = new Set<string>();
+            for await (const obj of stream as any) {
+              const name = obj.name as string;
+              const idx = name.indexOf('/');
+              if (idx > 0) addresses.add(name.substring(0, idx));
+            }
+            for (const addr of addresses) {
+              await listValues(addr);
+            }
+          } catch {
+            // ignore hydration errors
+          }
+        }
+        return;
       }
     }
   } catch {
@@ -91,6 +110,8 @@ async function ensureLake() {
   }
   lakeStarted = true;
 }
+
+ensureLake().catch(() => {});
 
 function objectKey(address: string, key: string): string {
   validateSegment(address);
@@ -199,8 +220,19 @@ export async function listValues(
       for await (const obj of stream as any) {
         const fullKey = obj.name as string;
         const key = fullKey.substring(prefix.length);
-        const val = await getValue(address, key);
-        if (val !== null) out.push({ key, value: val });
+        try {
+          const valStream = await s3.getObject(bucket, fullKey);
+          const value = await streamToString(valStream as Readable);
+          out.push({ key, value });
+          let addrStore = memStore.get(address);
+          if (!addrStore) {
+            addrStore = new Map();
+            memStore.set(address, addrStore);
+          }
+          addrStore.set(key, value);
+        } catch {
+          // ignore individual objects
+        }
       }
     } catch {
       // ignore
