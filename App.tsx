@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text } from 'react-native';
@@ -8,6 +8,7 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui';
 import AppProviders from '@/providers/AppProviders';
 import { isRouterEnabled } from '@/services/config';
+import { initSessionTokens } from '@/services/session';
 
 const USE_ROUTER = isRouterEnabled();
 
@@ -25,6 +26,9 @@ function FallbackScreen() {
 }
 
 function MainApp() {
+  useEffect(() => {
+    initSessionTokens();
+  }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

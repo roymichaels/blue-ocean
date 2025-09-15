@@ -2,11 +2,15 @@
 
 Blue Ocean uses short-lived session tokens to authorize actions with fine-grained scopes.
 Tokens are created by signing a scope request with a user's wallet. Keys and signatures are
-never stored; only the resulting token string is kept in memory.
+never stored; issued tokens are cached in encrypted device storage for offline refresh.
 
 ## Issue Token
 
 `requestScopes(scopes, signer, ttlMs?)`
+
+For UX flows that require explicit approval, `requestTokenWithConsent(scopes, signer, ttlMs?)`
+will lazily load a lightweight consent prompt and measure the time to interactive. If the
+prompt takes longer than 2.5 s to appear, a warning is logged.
 
 The wallet signs the following payload (`ScopeRequestPayload`):
 
@@ -39,6 +43,8 @@ The signature becomes the session token. The response contains:
 ```
 
 Clients should replace the old token with the new value and discard the previous signature.
+Persisted tokens are loaded on startup via `initSessionTokens()` so apps can refresh or
+validate sessions while offline.
 
 ## Errors
 
