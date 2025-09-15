@@ -142,6 +142,7 @@ const cfg = {
     '<rootDir>/tests/indexers/**/*.test.ts',
     '<rootDir>/tests/auth/**/*.test.ts',
     '<rootDir>/tests/auth/**/*.test.tsx',
+    '<rootDir>/tests/auth/**/*.spec.ts',
   ],
 
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
