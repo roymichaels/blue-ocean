@@ -12,6 +12,7 @@ import { AuthProvider } from '@/features/auth/AuthContext';
 import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
+import { reportError } from '@/services/errorReporter';
 
 declare global {
   // React Native fast refresh re-evaluates modules; store the client globally to avoid recreation.
@@ -41,6 +42,16 @@ export const queryClient =
  */
 export default function AppProviders({ children }: React.PropsWithChildren) {
   const { showNotification } = useNotificationActions();
+  const handleBoundaryError = React.useCallback(
+    (error: Error, info: React.ErrorInfo) => {
+      showNotification('Error', error.message, 'error');
+      void reportError(error, {
+        context: 'error-boundary',
+        componentStack: info?.componentStack,
+      });
+    },
+    [showNotification],
+  );
   return (
     <ThemeProvider>
       <LanguageProvider>
@@ -48,7 +59,7 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
           <WalletProvider>
             <AppInfoProvider>
               <ConfigProvider>
-                <ErrorBoundary onError={(e) => showNotification('Error', e.message, 'error')}>
+                <ErrorBoundary onError={handleBoundaryError}>
                   <WakuProvider>
                     <AuthProvider>
                       <AuthModalProvider>

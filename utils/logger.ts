@@ -1,7 +1,30 @@
-import config from './appConfig';
+import config, { reloadConfig } from './appConfig';
 
-let DEBUG_LOGS = false;
-DEBUG_LOGS = config.EXPO_PUBLIC_DEBUG_LOGS === 'true' || config.EXPO_PUBLIC_DEBUG_LOGS === '1';
+const asBool = (value?: string) => value === 'true' || value === '1';
+
+let DEBUG_LOGS = asBool(config.EXPO_PUBLIC_DEBUG_LOGS);
+
+export function setDebugLogsEnabled(enabled: boolean): void {
+  DEBUG_LOGS = enabled;
+  if (typeof process !== 'undefined' && process?.env) {
+    process.env.EXPO_PUBLIC_DEBUG_LOGS = enabled ? 'true' : 'false';
+    try {
+      reloadConfig();
+      refreshDebugLogsFromConfig();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to reload config after toggling debug logs', err);
+    }
+  }
+}
+
+export function refreshDebugLogsFromConfig(): void {
+  DEBUG_LOGS = asBool(config.EXPO_PUBLIC_DEBUG_LOGS);
+}
+
+export function isDebugLogsEnabled(): boolean {
+  return DEBUG_LOGS;
+}
 
 function redact(value: unknown): unknown {
   if (typeof value === 'string') {
