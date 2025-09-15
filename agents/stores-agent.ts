@@ -1,7 +1,7 @@
 import { Store } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import {
-  setStore,
+  addStore,
   updateStore,
   removeStore,
   selectStore as fetchStore,
@@ -112,8 +112,7 @@ class StoresAgent {
       createdAt: normalized.createdAt || new Date().toISOString(),
       ...normalized,
     });
-    await setStore(record.id, record);
-    await setStore('default', record);
+    await addStore(record);
     await this.broadcastCreated(record);
   }
 
@@ -121,8 +120,7 @@ class StoresAgent {
     await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
     const rec = this.toRecord(normalized);
-    await setStore(rec.id, rec);
-    await setStore('default', rec);
+    await updateStore(rec);
   }
 
   async remove(id: string): Promise<void> {
