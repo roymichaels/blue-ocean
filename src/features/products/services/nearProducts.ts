@@ -6,12 +6,53 @@ import { errorLog } from '@/utils/logger';
 import { productSchema } from '@/schemas/waku';
 import { canonicalJson } from '@/utils/serialization';
 import { createWarmCache } from '@/services/warmCache';
+import type { DiffMessage } from '@/services/warmCache';
 
 assertNearChain();
 
 const ADDRESS = 'products';
 const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
-const productCache = createWarmCache<Product>(PRODUCT_CACHE_TOPIC);
+async function hydrateProductLake(): Promise<Array<DiffMessage<Product>>> {
+  try {
+    const entries = await listValues(ADDRESS);
+    const diffs: Array<DiffMessage<Product>> = [];
+    for (const entry of entries) {
+      if (!entry.key.startsWith(`${ADDRESS}:`)) continue;
+      const parts = entry.key.split(':');
+      const id = parts[parts.length - 1] || entry.key;
+      if (!id) continue;
+      try {
+        const parsed = productSchema.parse(JSON.parse(entry.value));
+        const normalized: Product = {
+          ...parsed,
+          pricingTier: parsed.pricingTier,
+          variants: parsed.variants || [],
+          colors: parsed.colors || [],
+        };
+        const tsSource =
+          (normalized.updatedAt && new Date(normalized.updatedAt).getTime()) ||
+          (normalized.createdAt && new Date(normalized.createdAt).getTime()) ||
+          Date.now();
+        const ts = Number.isFinite(tsSource) ? tsSource : Date.now();
+        const rev =
+          (typeof (normalized as any).rev === 'number' && (normalized as any).rev) ||
+          (typeof (normalized as any).version === 'number' && (normalized as any).version) ||
+          1;
+        diffs.push({ id: normalized.id || id, rev, op: 'set', value: normalized, ts });
+      } catch (err) {
+        errorLog('Invalid product snapshot', err);
+      }
+    }
+    return diffs;
+  } catch (err) {
+    errorLog('Failed to hydrate products from NEAR Lake', err);
+    return [];
+  }
+}
+
+const productCache = createWarmCache<Product>(PRODUCT_CACHE_TOPIC, {
+  hydrateLake: hydrateProductLake,
+});
 const DISABLED = false;
 let SEEDED = false;
 

@@ -33,6 +33,10 @@ await persistentStore.remove(id);
 
 On the next subscription update the cache will rehydrate the item if it still exists remotely.
 
+## Handling `E_SYNC_LAG`
+
+When `getById` throws `{ code: 'E_SYNC_LAG' }`, the cache detected that live diffs are more than three seconds behind their event timestamps. Treat the cache as stale but do not immediately clear local data. Instead, subscribe for updates and retry after the `{cache.synced}` event fires again or once a new live diff arrives.
+
 ## Timestamp-Based TTL
 
 For data that should expire, compare the `updatedAt` timestamp to a locally derived threshold. Always convert the ISO value into the user's locale to avoid timezone drift:

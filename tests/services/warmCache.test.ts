@@ -2,9 +2,12 @@ import type { DiffMessage } from '@/services/warmCache';
 
 let createWarmCache: any;
 let E_STALE_DATA: string;
+let E_SYNC_LAG: string;
 let getCacheHitRatio: (topic: string) => number;
 
 let history: DiffMessage<any>[] = [];
+let lake: DiffMessage<any>[] = [];
+let hydrateLake: jest.Mock<Promise<DiffMessage<any>[]>, []>;
 let liveHandler: ((msg: DiffMessage<any>) => void) | null = null;
 let failHistory = false;
 
@@ -28,18 +31,20 @@ beforeEach(() => {
   delete process.env.EXPO_PUBLIC_WARM_CACHE_CANARY_ADMINS;
   delete process.env.EXPO_PUBLIC_WARM_CACHE_ROLLBACK;
   jest.resetModules();
-  ({ createWarmCache, E_STALE_DATA, getCacheHitRatio } = require('@/services/warmCache'));
-  history = [
+  ({ createWarmCache, E_STALE_DATA, E_SYNC_LAG, getCacheHitRatio } = require('@/services/warmCache'));
+  lake = [
     { id: '1', rev: 1, op: 'set', value: { name: 'a' } },
     { id: '2', rev: 1, op: 'set', value: { name: 'b' } },
   ];
+  history = [];
+  hydrateLake = jest.fn(async () => lake);
   liveHandler = null;
   failHistory = false;
 });
 
 describe('warmCache', () => {
   it('warm boot matches cold boot results', async () => {
-    const warm = createWarmCache<any>('topic');
+    const warm = createWarmCache<any>('topic', { hydrateLake });
     await new Promise((res) => warm.onSynced(res));
     // apply live diff
     liveHandler &&
@@ -47,15 +52,19 @@ describe('warmCache', () => {
     expect(warm.getById('1')).toEqual({ name: 'a2' });
 
     // cold boot from combined history
-    history.push({ id: '1', rev: 2, op: 'set', value: { name: 'a2' } });
-    const cold = createWarmCache<any>('topic');
+    history = [
+      { id: '1', rev: 1, op: 'set', value: { name: 'a' } },
+      { id: '1', rev: 2, op: 'set', value: { name: 'a2' } },
+      { id: '2', rev: 1, op: 'set', value: { name: 'b' } },
+    ];
+    const cold = createWarmCache<any>('topic', { hydrateLake });
     await new Promise((res) => cold.onSynced(res));
     expect(cold.getById('1')).toEqual({ name: 'a2' });
     expect(cold.getById('2')).toEqual({ name: 'b' });
   });
 
   it('detects conflicting diffs', async () => {
-    const cache = createWarmCache<any>('topic');
+    const cache = createWarmCache<any>('topic', { hydrateLake });
     await new Promise((res) => cache.onSynced(res));
     liveHandler &&
       liveHandler({ id: '1', rev: 2, op: 'set', value: { name: 'a2' } });
@@ -69,7 +78,7 @@ describe('warmCache', () => {
   });
 
   it('throws on out-of-order diff', async () => {
-    const cache = createWarmCache<any>('topic');
+    const cache = createWarmCache<any>('topic', { hydrateLake });
     await new Promise((res) => cache.onSynced(res));
     liveHandler &&
       liveHandler({ id: '1', rev: 4, op: 'set', value: { name: 'bad' } });
@@ -79,7 +88,7 @@ describe('warmCache', () => {
   });
 
   it('tracks revision numbers after deletes to catch stale updates', async () => {
-    const cache = createWarmCache<any>('topic');
+    const cache = createWarmCache<any>('topic', { hydrateLake });
     await new Promise((res) => cache.onSynced(res));
     liveHandler && liveHandler({ id: '1', rev: 2, op: 'delete' });
     expect(cache.getById('1')).toBeUndefined();
@@ -92,9 +101,9 @@ describe('warmCache', () => {
 
   it('falls back when history fails', async () => {
     failHistory = true;
-    const cache = createWarmCache<any>('topic');
+    const cache = createWarmCache<any>('topic', { hydrateLake });
     await new Promise((res) => cache.onSynced(res));
-    expect(cache.getById('1')).toBeUndefined();
+    expect(cache.getById('1')).toEqual({ name: 'a' });
     liveHandler &&
       liveHandler({ id: '1', rev: 5, op: 'set', value: { name: 'new' } });
     expect(cache.getById('1')).toEqual({ name: 'new' });
@@ -103,7 +112,7 @@ describe('warmCache', () => {
   it('processes canary reconcilers only for allowed admins', async () => {
     const flags = require('@/config/featureFlags');
     flags.default.canaryAdmins = ['0xabc'];
-    const cache = createWarmCache<any>('topic');
+    const cache = createWarmCache<any>('topic', { hydrateLake });
     await new Promise((res) => cache.onSynced(res));
     const hitsA: any[] = [];
     const hitsB: any[] = [];
@@ -116,10 +125,25 @@ describe('warmCache', () => {
   });
 
   it('tracks hit ratio', async () => {
-    const cache = createWarmCache<any>('topic');
+    const cache = createWarmCache<any>('topic', { hydrateLake });
     await new Promise((res) => cache.onSynced(res));
     cache.getById('1');
     cache.getById('missing');
     expect(getCacheHitRatio('topic')).toBeCloseTo(0.5);
+  });
+
+  it('throws sync lag error when updates fall behind', async () => {
+    jest.useFakeTimers();
+    try {
+      const cache = createWarmCache<any>('topic', { hydrateLake, lagThresholdMs: 1000 });
+      await new Promise((res) => cache.onSynced(res));
+      jest.setSystemTime(0);
+      liveHandler &&
+        liveHandler({ id: '1', rev: 2, op: 'set', value: { name: 'late' }, ts: 0 });
+      jest.setSystemTime(2005);
+      expect(() => cache.getById('1')).toThrowErrorMatchingObject({ code: E_SYNC_LAG });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

@@ -40,6 +40,18 @@ export const cacheHitRatioGauge = registry.createGauge({
   labelNames: ['cache'],
 });
 
+export const cacheLagGauge = registry.createGauge({
+  name: 'cache_sync_lag_ms',
+  help: 'Measured lag between diff timestamp and apply time (ms)',
+  labelNames: ['cache'],
+});
+
+export const cacheLagAlertCounter = registry.createCounter({
+  name: 'cache_sync_lag_alert_total',
+  help: 'Number of times cache lag exceeded the alert threshold',
+  labelNames: ['cache'],
+});
+
 export const authRateLimitCounter = registry.createCounter({
   name: 'auth_rate_limit_total',
   help: 'Number of auth requests rejected due to rate limiting',

@@ -3,7 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import config from '@/config';
 import AgentError from '@/types/AgentError';
-import { E_STALE_DATA } from '@/schemas/cache';
+import { E_STALE_DATA, E_SYNC_LAG } from '@/schemas/cache';
 import { warnIfLowStorage } from '@/services/storage';
 
 
@@ -79,3 +79,5 @@ export async function getValidatedSnapshot<T>(
   const expected = await fetchHash();
   return loadSnapshot<T>(key, expected, version);
 }
+
+export { E_STALE_DATA, E_SYNC_LAG };
