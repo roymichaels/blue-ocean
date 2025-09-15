@@ -19,6 +19,15 @@ const envSchema = z.object({
     .optional()
     .default(''),
   EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_ROLLBACK: z.string().optional().default('false'),
+  EXPO_PUBLIC_DELIVERY_NOTIFICATIONS: z.string().optional().default('false'),
+  EXPO_PUBLIC_DELIVERY_NOTIFICATIONS_CANARY_STORES: z
+    .string()
+    .optional()
+    .default(''),
+  EXPO_PUBLIC_DELIVERY_NOTIFICATIONS_ROLLBACK: z
+    .string()
+    .optional()
+    .default('false'),
 });
 
 const env = envSchema.parse(process.env);
@@ -68,6 +77,21 @@ const notificationsPipelineFlag: NotificationsPipelineFeatureFlag = {
   rollback: env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE_ROLLBACK === 'true',
 };
 
+export interface DeliveryNotificationsFeatureFlag {
+  enabled: boolean;
+  canaryStores: string[];
+  rollback: boolean;
+}
+
+const deliveryNotificationsFlag: DeliveryNotificationsFeatureFlag = {
+  enabled: env.EXPO_PUBLIC_DELIVERY_NOTIFICATIONS === 'true',
+  canaryStores: env.EXPO_PUBLIC_DELIVERY_NOTIFICATIONS_CANARY_STORES
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean),
+  rollback: env.EXPO_PUBLIC_DELIVERY_NOTIFICATIONS_ROLLBACK === 'true',
+};
+
 export function isWarmCacheEnabled(address?: string): boolean {
   if (warmCacheFlag.rollback) return false;
   if (warmCacheFlag.enabled) return true;
@@ -102,5 +126,17 @@ export function triggerNotificationsPipelineRollback(): void {
   notificationsPipelineFlag.rollback = true;
 }
 export { notificationsPipelineFlag };
+
+export function isDeliveryNotificationsEnabled(storeId?: string): boolean {
+  if (deliveryNotificationsFlag.rollback) return false;
+  if (deliveryNotificationsFlag.enabled) return true;
+  if (!storeId) return false;
+  return deliveryNotificationsFlag.canaryStores.includes(storeId.toLowerCase());
+}
+
+export function triggerDeliveryNotificationsRollback(): void {
+  deliveryNotificationsFlag.rollback = true;
+}
+export { deliveryNotificationsFlag };
 
 export default warmCacheFlag;

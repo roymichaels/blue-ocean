@@ -19,6 +19,12 @@ jest.mock('@/services/nearOrders', () => ({
 
 jest.mock('../agents/stores-agent', () => ({ updateReputationByOwner: jest.fn() }));
 
+const deliveryAgentMock = { handleOrderEvent: jest.fn(), handleDeliveryEvent: jest.fn() };
+jest.mock('../agents/delivery-agent', () => ({
+  __esModule: true,
+  default: deliveryAgentMock,
+}));
+
 const getAdminsWithScopeMock = jest.fn().mockResolvedValue(['admin']);
 jest.mock('../agents/settings-agent', () => ({
   __esModule: true,

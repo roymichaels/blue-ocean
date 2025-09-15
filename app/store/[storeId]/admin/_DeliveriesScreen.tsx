@@ -36,9 +36,6 @@ export default function AdminDeliveriesScreen() {
   >([]);
   const [viewerVisible, setViewerVisible] = useState(false);
   const { replace, back } = useAppRouter();
-  // Matrix integration is currently disabled and tracked separately.
-  // const matrixService = MatrixService.getInstance(); // TODO: re-enable Matrix later
-
   useEffect(() => {
     if (!isStoreOwner) {
       replace('/');
@@ -87,8 +84,6 @@ export default function AdminDeliveriesScreen() {
     try {
       const db = DatabaseService.getInstance();
       await db.updateDeliveryJobStatus(jobId, status);
-      // Matrix notifications via Matrix are disabled and tracked separately.
-      // TODO: re-enable Matrix later
       loadData();
     } catch (error) {
       errorLog('Error updating job:', error);

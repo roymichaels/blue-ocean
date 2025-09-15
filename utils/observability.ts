@@ -36,6 +36,11 @@ export const notificationDeliveryLatency = registry.createHistogram({
   labelNames: ['event'],
 });
 
+export const deliveryBacklog = registry.createGauge({
+  name: 'delivery_notifications_backlog',
+  help: 'Number of delivery updates pending broadcast',
+});
+
 export function startMetricsServer(): void {
   logger.debug('Central metrics server disabled; metrics stay local.');
 }
