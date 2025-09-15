@@ -12,12 +12,10 @@ import {
 import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
-import { getClient } from '@/utils/transport';
-import { ensureNode, isWakuDisabled } from '@/services/waku';
+import { publish, isWakuDisabled } from '@/services/waku';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';
-import { canonicalJson } from '@/utils/serialization';
 import {
   notificationsBacklog,
   notificationDeliveryLatency,
@@ -158,16 +156,10 @@ class NotificationsAgent {
     event: string,
     payload: Record<string, unknown> = {},
   ): Promise<void> {
-    if (this.paused || isWakuDisabled()) return;
-    const node = await ensureNode();
-    if (!node) return;
+    if (isWakuDisabled()) return;
     try {
       const topic = buildTopic('analytics', '1');
-      const client = await getClient();
-      const encoder = client.createEncoder({ contentTopic: topic });
-      await node.lightPush.send(encoder, {
-        payload: client.utf8ToBytes(canonicalJson({ type: event, ...payload })),
-      });
+      await publish(topic, { type: event, ...payload });
     } catch (err) {
       errorLog('Failed to broadcast analytics event', err);
     }
@@ -178,20 +170,11 @@ class NotificationsAgent {
     event?: NotificationEvent,
     storeId = '1',
   ) {
-    if (this.paused) return;
-    const node = await ensureNode();
-    if (!node) return;
     try {
       const domain = event ? 'orders' : 'notifications';
       const topic = buildTopic(domain, storeId);
-      const client = await getClient();
-      const encoder = client.createEncoder({ contentTopic: topic });
-      const payload = event
-        ? { type: event, notification: item }
-        : item;
-      await node.lightPush.send(encoder, {
-        payload: client.utf8ToBytes(canonicalJson(payload)),
-      });
+      const payload = event ? { type: event, notification: item } : item;
+      await publish(topic, payload);
     } catch (err) {
       errorLog('Failed to broadcast notification', err);
     }

@@ -2,6 +2,7 @@ import type { LightNode } from '@waku/sdk';
 import { types } from 'near-lake-framework';
 import { getClient } from '@/utils/transport';
 import { errorLog } from '@/utils/logger';
+import { gzipSync } from 'zlib';
 import config from '@/config';
 import { canonicalJson } from '@/utils/serialization';
 import { retryWithBackoff } from '@/utils/retry';
@@ -35,6 +36,9 @@ let cachedNode: LightNode | null = null;
 const receivedIds = new Set<string>();
 let reconnectAttempt = 0;
 let lakeStarted = false;
+
+const MAX_GZ_PAYLOAD = 200 * 1024; // 200KB
+const PROMPT_TTI_MS = 2500; // 2.5s
 
 function getPublisherKey(): string {
   if (PUB) return PUB;
@@ -170,12 +174,21 @@ export async function publish(topic: string, message: any): Promise<string> {
   const client = await getClient();
   const id = message?.id || Date.now().toString();
   const payload = client.utf8ToBytes(canonicalJson({ ...message, id }));
+  const gzSize = gzipSync(Buffer.from(payload)).length;
+  if (gzSize > MAX_GZ_PAYLOAD) {
+    throw new Error('Payload exceeds 200KB gz limit');
+  }
   const encPayload = encrypt(topic, payload);
   try {
     const node = await ensureNode();
     if (!node) throw new Error('Waku disabled');
     const encoder = client.createEncoder({ contentTopic: topic });
-    await node.lightPush.send(encoder, { payload: encPayload });
+    await Promise.race([
+      node.lightPush.send(encoder, { payload: encPayload }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('TTI_EXCEEDED')), PROMPT_TTI_MS),
+      ),
+    ]);
   } catch {
     enqueue(topic, encPayload);
   }
