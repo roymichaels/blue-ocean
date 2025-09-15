@@ -1,5 +1,7 @@
 import { EventEmitter } from 'events';
 import { uuid } from '@/utils/uuid';
+import { saveSession, loadSessions, removeSession } from '@/services/tokenCache';
+import { requestConsent } from '@/services/consent';
 
 export const sessionEvents = new EventEmitter();
 
@@ -29,10 +31,18 @@ export function requestScopes(
   const token = signer(payload) || uuid();
   const record: SessionToken = { token, scopes, exp };
   store.set(token, record);
+  void saveSession(record);
   return record;
 }
 
 const store = new Map<string, SessionToken>();
+
+export async function initSessionTokens(): Promise<void> {
+  const records = await loadSessions();
+  for (const r of records) {
+    store.set(r.token, r);
+  }
+}
 
 export function validateToken(token: string, requiredScopes: string[]): void {
   const rec = store.get(token);
@@ -59,7 +69,18 @@ export function refreshToken(
   }
   const next = requestScopes(rec.scopes, signer, ttlMs);
   store.delete(token);
+  void removeSession(token);
   sessionEvents.emit('token.rotated', { old: token, token: next.token });
   return next;
+}
+
+export async function requestTokenWithConsent(
+  scopes: string[],
+  signer: (message: string) => string,
+  ttlMs = 60 * 60 * 1000,
+): Promise<SessionToken> {
+  const ok = await requestConsent(scopes);
+  if (!ok) throw new Error('{E_DENIED}');
+  return requestScopes(scopes, signer, ttlMs);
 }
 
