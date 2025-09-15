@@ -16,6 +16,9 @@ Key metrics:
 - `service_failures_total` – Counter of failed service calls.
 - `admin_unauthorized_attempts_total` – Counter of unauthorized admin actions.
 - `admin_count` – Gauge of currently registered admins.
+- `auth_rate_limit_total` – Counter of auth requests rejected by rate limiting.
+- `auth_scope_requests_total` – Counter of auth scope checks.
+- `auth_invalid_scope_total` – Counter of auth scope checks with invalid scopes.
 
 Prometheus alert thresholds are provided in [`scripts/monitoring/alerts.yml`](../scripts/monitoring/alerts.yml) for latency and failure rates.
 

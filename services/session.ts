@@ -2,10 +2,34 @@ import { EventEmitter } from 'events';
 import { uuid } from '@/utils/uuid';
 import { saveSession, loadSessions, removeSession } from '@/services/tokenCache';
 import { requestConsent } from '@/services/consent';
+import {
+  authRateLimitCounter,
+  authScopeRequestCounter,
+  authInvalidScopeCounter,
+} from '@/services/monitoring';
 
 export const sessionEvents = new EventEmitter();
 
 const POLICY = new Set<string>(['read', 'write']);
+
+// Simple fixed-window rate limiter for scope requests
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX = 60;
+let rateWindowStart = Date.now();
+let rateCount = 0;
+
+function assertRateLimit() {
+  const now = Date.now();
+  if (now - rateWindowStart > RATE_LIMIT_WINDOW_MS) {
+    rateWindowStart = now;
+    rateCount = 0;
+  }
+  rateCount += 1;
+  if (rateCount > RATE_LIMIT_MAX) {
+    authRateLimitCounter.inc();
+    throw new Error('{E_RATE_LIMIT}');
+  }
+}
 
 export interface SessionToken {
   token: string;
@@ -14,8 +38,10 @@ export interface SessionToken {
 }
 
 function validateScopes(scopes: string[]): void {
+  authScopeRequestCounter.inc();
   const invalid = scopes.find((s) => !POLICY.has(s));
   if (invalid) {
+    authInvalidScopeCounter.inc();
     throw new Error('{E_SCOPE}');
   }
 }
@@ -25,6 +51,7 @@ export function requestScopes(
   signer: (message: string) => string,
   ttlMs = 60 * 60 * 1000,
 ): SessionToken {
+  assertRateLimit();
   validateScopes(scopes);
   const exp = Date.now() + ttlMs;
   const payload = JSON.stringify({ scopes, exp });
