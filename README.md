@@ -25,6 +25,19 @@ The app also uses the open-source [`@shopify/flash-list`](https://github.com/Sho
 
 When the app loads you'll see the global header and bottom tab bar (Home, Stores, Cart, Orders, Profile).
 
+## Tenant Support
+
+Operational incidents and merchant requests are coordinated through our
+encrypted Signal channel. Join the group and introduce your tenant name so the
+on-call agent can provision access:
+
+- Signal: [https://signal.group/#CjQKI7jzY8p1KZmuVz9pZLZ0Gz7Qn06YwT5cFVk1osZ-cZc7b2G1o6qOaG2nP3p2qk](https://signal.group/#CjQKI7jzY8p1KZmuVz9pZLZ0Gz7Qn06YwT5cFVk1osZ-cZc7b2G1o6qOaG2nP3p2qk)
+- Fallback: send a PGP encrypted message to `support@blueocean.local` using the
+  public key in [`docs/pgp-support.asc`](docs/pgp-support.asc).
+
+Please avoid email without encryption; the Signal room is monitored 24/7 for
+urgent production issues.
+
 ## Design Tokens
 
 Shared design tokens are re-exported from `src/shared/ui/tokens.ts`. Import `spacing`, `radius`, `colors`, `zIndex`, and `shadows` to keep styles consistent across components.

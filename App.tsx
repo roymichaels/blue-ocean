@@ -9,6 +9,8 @@ import { Spinner } from '@/ui';
 import AppProviders from '@/providers/AppProviders';
 import { isRouterEnabled } from '@/services/config';
 import { initSessionTokens } from '@/services/session';
+import { initErrorReporter } from '@/services/errorReporter';
+import { setDebugLogsEnabled } from '@/utils/logger';
 
 const USE_ROUTER = isRouterEnabled();
 
@@ -27,7 +29,19 @@ function FallbackScreen() {
 
 function MainApp() {
   useEffect(() => {
-    initSessionTokens();
+    void initSessionTokens();
+  }, []);
+  useEffect(() => {
+    setDebugLogsEnabled(true);
+    const cleanupReporter = initErrorReporter({
+      tags: {
+        release: process.env.EXPO_PUBLIC_APP_REVISION || 'dev',
+      },
+      extras: {
+        nodeEnv: process.env.NODE_ENV,
+      },
+    });
+    return cleanupReporter;
   }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
