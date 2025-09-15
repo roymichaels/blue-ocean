@@ -1,5 +1,7 @@
 import { Notification } from '../types';
 import { NotificationEvent } from '../types/waku';
+import AgentError from '@/types/AgentError';
+import { uuid } from '../utils/uuid';
 import { assertNearChain } from '@/services/chain';
 import {
   setNotification,
@@ -17,8 +19,13 @@ import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';
 import { canonicalJson } from '@/utils/serialization';
 
+export const E_BACKLOG = 'E_BACKLOG';
+
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
+  private backlog: Array<{ event: NotificationEvent; item: Notification; storeId: string }> = [];
+  private draining = false;
+  private backlogLimit = 50;
 
   private async ensureWallet() {
     await ensureNearWallet('Please connect your NEAR wallet to send notifications.');
@@ -51,6 +58,46 @@ class NotificationsAgent {
 
   async getAll(): Promise<Notification[]> {
     return await listNotifications();
+  }
+
+  private enqueue(event: NotificationEvent, item: Notification, storeId: string) {
+    if (this.backlog.length >= this.backlogLimit) {
+      throw new AgentError(E_BACKLOG, 'Notification backlog limit exceeded', 'notifications-agent');
+    }
+    this.backlog.push({ event, item, storeId });
+    if (!this.draining) void this.drain();
+  }
+
+  private async drain() {
+    if (this.draining) return;
+    this.draining = true;
+    while (this.backlog.length) {
+      const { event, item, storeId } = this.backlog.shift()!;
+      try {
+        await this.broadcast(event, item, storeId);
+      } catch (err) {
+        errorLog('Failed to process notification', err);
+      }
+    }
+    this.draining = false;
+  }
+
+  handleOrderEvent(
+    type: 'order.created' | 'order.failed',
+    payload: { orderId: string; userId: string; storeId?: string },
+  ): void {
+    const event: NotificationEvent =
+      type === 'order.created' ? 'notify.orderCreated' : 'notify.orderFailed';
+    const notification: Notification = {
+      id: uuid(),
+      userId: payload.userId,
+      title: event,
+      message: event,
+      type: 'order',
+      read: false,
+      timestamp: Date.now(),
+    };
+    this.enqueue(event, notification, payload.storeId || '1');
   }
 
   async broadcast(

@@ -278,6 +278,10 @@
     "yesterday": "Yesterday",
     "daysAgo": "{days} days ago"
   },
+  "notify": {
+    "orderCreated": "Order created",
+    "orderFailed": "Order failed"
+  },
   "reviews": {
     "reviews": "Reviews",
     "writeReview": "Write Review",

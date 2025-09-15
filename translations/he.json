@@ -275,6 +275,10 @@
     "yesterday": "אתמול",
     "daysAgo": "לפני {days} ימים"
   },
+  "notify": {
+    "orderCreated": "הזמנה נוצרה",
+    "orderFailed": "הזמנה נכשלה"
+  },
   "reviews": {
     "reviews": "ביקורות",
     "writeReview": "כתוב ביקורת",
