@@ -5,8 +5,7 @@ import {
 } from '@/services/monitoring';
 import { fetchHistory, subscribeWithAck } from '@/services/waku';
 import { isWarmCacheEnabled } from '@/config/featureFlags';
-
-export const E_STALE_DATA = 'E_STALE_DATA';
+import { E_STALE_DATA } from '@/services/cache';
 
 export interface DiffMessage<T> {
   id: string;
@@ -40,7 +39,6 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   hitStats.set(topic, stats);
   const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
 
-
   function apply(msg: DiffMessage<T>): void {
     const current = store.get(msg.id);
     if (current && msg.rev !== current.rev + 1) {
@@ -61,23 +59,28 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   }
 
   (async () => {
+    let unsub: (() => void) | null = null;
     try {
-      const unsub = await subscribeWithAck(topic, (msg: DiffMessage<T>) => {
+      unsub = await subscribeWithAck(topic, (msg: DiffMessage<T>) => {
         if (!synced) buffer.push(msg);
         else apply(msg);
       });
-      await fetchHistory(topic, apply);
+      try {
+        await fetchHistory(topic, apply);
+      } catch (err) {
+        console.warn(`History unavailable for ${topic}`, err);
+      }
       buffer.forEach(apply);
       buffer.length = 0;
       synced = true;
       endHydration();
       emitter.emit('cache.synced');
-      // expose unsubscribe on emitter
-      (emitter as any).unsub = unsub;
+      if (unsub) (emitter as any).unsub = unsub;
     } catch (err) {
       stale = true;
       endHydration();
       emitter.emit('error', { code: E_STALE_DATA, err });
+      unsub?.();
     }
   })();
 

@@ -36,7 +36,10 @@ async function ensureNode(): Promise<LightNode | null> {
  * Fetch and cache all historical messages for a given topic.
  * Subsequent calls only append new unseen messages, preventing duplicates.
  */
-export async function hydrateMessages(topic: string): Promise<any[]> {
+export async function hydrateMessages(
+  topic: string,
+  timeBudgetMs = 2500,
+): Promise<any[]> {
   const n = await ensureNode();
   if (!n) return messageCache.get(topic) || [];
   const client: any = await getClient();
@@ -44,11 +47,18 @@ export async function hydrateMessages(topic: string): Promise<any[]> {
   const decoder = client.createDecoder(topic, {});
   const existing = messageCache.get(topic) || [];
   const seen = seenCache.get(topic) || new Set<string>();
+  const start = Date.now();
+  let total = 0;
+  let duplicates = 0;
   for await (const batch of (n.store.queryGenerator as any)({ decoder })) {
-    for (const msg of (batch.messages || [])) {
+    for (const msg of batch.messages || []) {
       if (!msg.payload) continue;
+      total += 1;
       const key = Buffer.from(msg.payload).toString('hex');
-      if (seen.has(key)) continue;
+      if (seen.has(key)) {
+        duplicates += 1;
+        continue;
+      }
       seen.add(key);
       try {
         const parsed = JSON.parse(Buffer.from(msg.payload).toString('utf8'));
@@ -57,9 +67,23 @@ export async function hydrateMessages(topic: string): Promise<any[]> {
         // ignore unparsable messages
       }
     }
+    if (Date.now() - start > timeBudgetMs) {
+      break;
+    }
   }
+  const duration = Date.now() - start;
   seenCache.set(topic, seen);
   messageCache.set(topic, existing);
+  if (duration > timeBudgetMs) {
+    console.warn('hydrateMessages time budget exceeded', {
+      topic,
+      duration,
+      total,
+      duplicates,
+    });
+  } else if (process.env.NODE_ENV !== 'production') {
+    console.debug('hydrateMessages', { topic, duration, total, duplicates });
+  }
   return existing;
 }
 
