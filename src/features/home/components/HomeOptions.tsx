@@ -1,5 +1,5 @@
 // TOUCHPOINT: src/features/home/components/HomeOptions.tsx renders in production — Fix Pack v2
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import {
   StyleSheet,
   Linking,
@@ -22,12 +22,15 @@ import { useWallet } from '@/contexts/WalletProvider';
 import guard from '@/utils/guard';
 import { getShopTenantId, getDocsUrl } from '@/services/config';
 import { prefetchStoreBundle } from '@/features/stores/services/prefetch';
+import { useStores } from '@/services/useStores';
+import InfoModal from '@/components/InfoModal';
 
 function HomeOptions() {
   const { t } = useLanguage();
   const { colors } = useTheme();
   const appRouter = useAppRouter();
   const { address: walletAddress, connect } = useWallet();
+  const { data: stores = [] } = useStores('default');
 
   const shopTenantId = getShopTenantId();
   const docsUrl = getDocsUrl();
@@ -39,6 +42,8 @@ function HomeOptions() {
   const horizontalPadding = spacing.spacer16;
 
   const [containerWidth, setContainerWidth] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [prompted, setPrompted] = useState(false);
 
   // Always render 4 columns; tiles shrink/expand as needed
   const cols = 4;
@@ -73,6 +78,23 @@ function HomeOptions() {
     if (docsUrl) {
       Linking.openURL(docsUrl);
     }
+  };
+
+  useEffect(() => {
+    if (prompted || !walletAddress) return;
+    const ownsStore = stores.some(
+      (s) => s.owner?.toLowerCase() === walletAddress.toLowerCase()
+    );
+    if (!ownsStore) {
+      setShowOnboarding(true);
+      setPrompted(true);
+    }
+  }, [walletAddress, stores, prompted]);
+
+  const handleOnboardingClose = () => setShowOnboarding(false);
+  const handleOnboardingConfirm = () => {
+    setShowOnboarding(false);
+    handleCreateStore();
   };
 
   const handleKeyDown = (e: any, action: () => void) => {
@@ -158,22 +180,38 @@ function HomeOptions() {
   );
 
   return (
-    <View
-      onLayout={onLayoutGrid}
-      style={[
-        styles.desktopRow,
-        {
-          flexDirection: isRTL ? 'row-reverse' : 'row',
-          flexWrap: 'wrap',
-          gap: gapPx,
-          paddingHorizontal: horizontalPadding,
-          // Keep content clear of the sticky bottom tab bar but minimize scroll
-          paddingBottom: 72,
-        },
-      ]}
-    >
-      {options.map(renderCard)}
-    </View>
+    <>
+      <InfoModal
+        visible={showOnboarding}
+        title={t('home.create_store_prompt_title', 'Create your store')}
+        message={
+          t(
+            'home.create_store_prompt_message',
+            'You have no store yet. Create one to start selling.'
+          )
+        }
+        buttonText={t('home.create_store_prompt_action', 'Create Store')}
+        onClose={handleOnboardingClose}
+        onConfirm={handleOnboardingConfirm}
+        autoClose={false}
+      />
+      <View
+        onLayout={onLayoutGrid}
+        style={[
+          styles.desktopRow,
+          {
+            flexDirection: isRTL ? 'row-reverse' : 'row',
+            flexWrap: 'wrap',
+            gap: gapPx,
+            paddingHorizontal: horizontalPadding,
+            // Keep content clear of the sticky bottom tab bar but minimize scroll
+            paddingBottom: 72,
+          },
+        ]}
+      >
+        {options.map(renderCard)}
+      </View>
+    </>
   );
 }
 

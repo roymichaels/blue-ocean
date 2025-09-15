@@ -22,6 +22,7 @@ interface InfoModalProps {
   type?: InfoType;
   buttonText?: string;
   onClose: () => void;
+  onConfirm?: () => void;
   autoClose?: boolean;
   autoCloseTime?: number;
 }
@@ -33,6 +34,7 @@ export default function InfoModal({
   type = 'info',
   buttonText,
   onClose,
+  onConfirm,
   autoClose = true,
   autoCloseTime = 3000,
 }: InfoModalProps) {
@@ -130,7 +132,7 @@ export default function InfoModal({
 
           <Button
             title={buttonLabel}
-            onPress={onClose}
+            onPress={onConfirm ?? onClose}
             style={{
               minWidth: 120,
               paddingHorizontal: spacing.spacer24,

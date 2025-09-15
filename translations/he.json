@@ -129,7 +129,10 @@
     "priceHighLow": "מחיר: גבוה לנמוך",
     "highRating": "דירוג גבוה",
     "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש.",
-    "connectWalletToContinue": "חבר ארנק כדי להמשיך"
+    "connectWalletToContinue": "חבר ארנק כדי להמשיך",
+    "create_store_prompt_title": "צור את החנות שלך",
+    "create_store_prompt_message": "אין לך עדיין חנות. צור אחת כדי להתחיל למכור.",
+    "create_store_prompt_action": "צור חנות"
   },
   "cta": {
     "create_store": "צור חנות",
