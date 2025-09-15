@@ -96,7 +96,7 @@ export function useNotificationSubscription(
       wakuUnsub.current();
       wakuUnsub.current = null;
     }
-    wakuUnsub.current = await waku.subscribeOrders((message) => {
+    wakuUnsub.current = await waku.subscribeNotifications((message) => {
       try {
         const payload = parseNotificationWakuPayload(JSON.parse(message));
         if (!payload) return;

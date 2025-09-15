@@ -75,18 +75,21 @@ describe('notifications pipeline', () => {
 
     await notificationsAgent.broadcast('order.created', item, 'store42');
 
-    expect(createEncoderMock).toHaveBeenNthCalledWith(1, {
-      contentTopic: '/blue-ocean/notifications/store42',
+    expect(createEncoderMock).toHaveBeenCalledTimes(1);
+    expect(createEncoderMock).toHaveBeenCalledWith({
+      contentTopic: '/blue-ocean/notifications/1',
     });
-    expect(createEncoderMock).toHaveBeenNthCalledWith(2, {
-      contentTopic: '/blue-ocean/orders/store42',
-    });
-    expect(sendMock).toHaveBeenCalledTimes(2);
-    const [, { payload: notifPayload }] = sendMock.mock.calls[0];
-    expect(JSON.parse(Buffer.from(notifPayload).toString())).toEqual(item);
-    const [, { payload: orderPayload }] = sendMock.mock.calls[1];
-    const decoded = JSON.parse(Buffer.from(orderPayload).toString());
-    expect(decoded).toEqual({ type: 'order.created', notification: item });
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const [, { payload: rawPayload }] = sendMock.mock.calls[0];
+    const envelope = JSON.parse(Buffer.from(rawPayload).toString());
+    expect(envelope.type).toBe('notification.broadcast');
+    expect(typeof envelope.payload).toBe('string');
+    expect(envelope.sender).toEqual(
+      expect.objectContaining({ role: 'notifications', publicKey: expect.any(String) }),
+    );
+    expect(typeof envelope.signature).toBe('string');
+    const decoded = JSON.parse(envelope.payload);
+    expect(decoded).toEqual({ type: 'order.created', notification: item, storeId: 'store42' });
   });
 
   it('emits E_BACKLOG when publish queue grows and recovers after flush', async () => {
