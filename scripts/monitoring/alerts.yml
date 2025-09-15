@@ -25,3 +25,19 @@ groups:
         annotations:
           summary: Excessive unauthorized admin attempts
           description: More than 3 unauthorized admin actions per minute.
+      - alert: AuthRateLimitSpike
+        expr: rate(auth_rate_limit_total[1m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Spike in auth rate limiting
+          description: More than 5 auth requests per minute rejected due to rate limiting.
+      - alert: InvalidAuthScope
+        expr: sum(rate(auth_invalid_scope_total[5m])) / sum(rate(auth_scope_requests_total[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High rate of invalid auth scope requests
+          description: Invalid scope requests exceed 1% of total over 5m.
