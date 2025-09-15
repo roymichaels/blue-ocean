@@ -22,6 +22,10 @@ import {
   notificationsBacklog,
   notificationDeliveryLatency,
 } from '../utils/observability';
+import { onBacklog } from '@/utils/wakuStore';
+import {
+  isNotificationsPipelineEnabled,
+} from '@/config/featureFlags';
 
 export const E_BACKLOG = 'E_BACKLOG';
 
@@ -35,12 +39,19 @@ class NotificationsAgent {
   }> = [];
   private draining = false;
   private backlogLimit = 50;
+  private paused = false;
+  private latencyLimit = 5000; // ms
+
+  constructor() {
+    onBacklog(() => this.pause());
+  }
 
   private async ensureWallet() {
     await ensureNearWallet('Please connect your NEAR wallet to send notifications.');
   }
 
   async add(item: Notification, storeId = '1'): Promise<void> {
+    if (this.paused || !isNotificationsPipelineEnabled(item.userId)) return;
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
     await setNotification(normalized);
@@ -49,6 +60,7 @@ class NotificationsAgent {
   }
 
   async update(item: Notification, storeId = '1'): Promise<void> {
+    if (this.paused || !isNotificationsPipelineEnabled(item.userId)) return;
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
     await setNotification(normalized);
@@ -70,7 +82,9 @@ class NotificationsAgent {
   }
 
   private enqueue(event: NotificationEvent, item: Notification, storeId: string) {
+    if (this.paused || !isNotificationsPipelineEnabled(item.userId)) return;
     if (this.backlog.length >= this.backlogLimit) {
+      this.pause();
       throw new AgentError(E_BACKLOG, 'Notification backlog limit exceeded', 'notifications-agent');
     }
     this.backlog.push({ event, item, storeId, queuedAt: Date.now() });
@@ -79,15 +93,17 @@ class NotificationsAgent {
   }
 
   private async drain() {
-    if (this.draining) return;
+    if (this.draining || this.paused) return;
     this.draining = true;
-    while (this.backlog.length) {
+    while (this.backlog.length && !this.paused) {
       const job = this.backlog.shift()!;
       notificationsBacklog.set(this.backlog.length);
       const { event, item, storeId, queuedAt } = job;
       try {
         await this.broadcast(event, item, storeId);
-        notificationDeliveryLatency.labels(event).observe((Date.now() - queuedAt) / 1000);
+        const latency = Date.now() - queuedAt;
+        notificationDeliveryLatency.labels(event).observe(latency / 1000);
+        if (latency > this.latencyLimit) this.pause();
       } catch (err) {
         errorLog('Failed to process notification', err);
       }
@@ -99,6 +115,7 @@ class NotificationsAgent {
     type: 'order.created' | 'order.failed',
     payload: { orderId: string; userId: string; storeId?: string },
   ): void {
+    if (this.paused || !isNotificationsPipelineEnabled(payload.userId)) return;
     const event: NotificationEvent =
       type === 'order.created' ? 'notify.orderCreated' : 'notify.orderFailed';
     const notification: Notification = {
@@ -118,6 +135,7 @@ class NotificationsAgent {
     item: Notification,
     storeId = '1',
   ): Promise<void> {
+    if (this.paused || !isNotificationsPipelineEnabled(item.userId)) return;
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
     await setNotification(normalized);
@@ -140,7 +158,7 @@ class NotificationsAgent {
     event: string,
     payload: Record<string, unknown> = {},
   ): Promise<void> {
-    if (isWakuDisabled()) return;
+    if (this.paused || isWakuDisabled()) return;
     const node = await ensureNode();
     if (!node) return;
     try {
@@ -160,6 +178,7 @@ class NotificationsAgent {
     event?: NotificationEvent,
     storeId = '1',
   ) {
+    if (this.paused) return;
     const node = await ensureNode();
     if (!node) return;
     try {
@@ -176,6 +195,20 @@ class NotificationsAgent {
     } catch (err) {
       errorLog('Failed to broadcast notification', err);
     }
+  }
+
+  pause(): void {
+    this.paused = true;
+  }
+
+  resume(): void {
+    if (!this.paused) return;
+    this.paused = false;
+    if (this.backlog.length && !this.draining) void this.drain();
+  }
+
+  isPaused(): boolean {
+    return this.paused;
   }
 }
 
