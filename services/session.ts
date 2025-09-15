@@ -15,10 +15,21 @@ const POLICY = new Set<string>(['read', 'write']);
 // Allow a small amount of clock skew when validating expirations
 const CLOCK_TOLERANCE_MS = 60 * 1000; // 1 minute
 
+export interface EncryptedScopePayload {
+  cipher: string;
+  walletPublicKey: string;
+  identityPublicKey: string;
+}
+
 export interface SessionToken {
   token: string;
   scopes: string[];
   exp: number;
+  sealed?: EncryptedScopePayload;
+}
+
+export interface ScopeRequestOptions {
+  sealed?: EncryptedScopePayload | (() => EncryptedScopePayload | undefined);
 }
 
 export type SyncSessionSigner = (message: string) => string;
@@ -58,16 +69,19 @@ export function requestScopes(
   scopes: string[],
   signer: (message: string) => string,
   ttlMs?: number,
+  options?: ScopeRequestOptions,
 ): SessionToken;
 export function requestScopes(
   scopes: string[],
   signer: (message: string) => Promise<string>,
   ttlMs?: number,
+  options?: ScopeRequestOptions,
 ): Promise<SessionToken>;
 export function requestScopes(
   scopes: string[],
   signer: SessionSigner,
   ttlMs = 60 * 60 * 1000,
+  options: ScopeRequestOptions = {},
 ): SessionToken | Promise<SessionToken> {
   assertRateLimit();
   validateScopes(scopes);
@@ -77,7 +91,11 @@ export function requestScopes(
 
   const persist = (maybeToken: string | undefined): SessionToken => {
     const token = maybeToken || uuid();
-    const record: SessionToken = { token, scopes, exp };
+    const sealed =
+      typeof options.sealed === 'function' ? options.sealed() : options.sealed;
+    const record: SessionToken = sealed
+      ? { token, scopes, exp, sealed }
+      : { token, scopes, exp };
     store.set(token, record);
     void saveSession(record);
     return record;
@@ -91,11 +109,33 @@ export function requestScopes(
 }
 
 const store = new Map<string, SessionToken>();
+const SWEEP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+let sweepTimer: ReturnType<typeof setInterval> | null = null;
+
+function purgeExpiredSessions(now = Date.now()): void {
+  for (const [token, rec] of [...store.entries()]) {
+    if (now > rec.exp + CLOCK_TOLERANCE_MS) {
+      store.delete(token);
+      void removeSession(token);
+    }
+  }
+}
 
 export async function initSessionTokens(): Promise<void> {
   const records = await loadSessions();
+  const now = Date.now();
   for (const r of records) {
+    if (now > r.exp + CLOCK_TOLERANCE_MS) {
+      void removeSession(r.token);
+      continue;
+    }
     store.set(r.token, r);
+  }
+  if (!sweepTimer) {
+    sweepTimer = setInterval(purgeExpiredSessions, SWEEP_INTERVAL_MS);
+    if (typeof (sweepTimer as any).unref === 'function') {
+      (sweepTimer as any).unref();
+    }
   }
 }
 
@@ -115,16 +155,19 @@ export function refreshToken(
   token: string,
   signer: (message: string) => string,
   ttlMs?: number,
+  options?: ScopeRequestOptions,
 ): SessionToken;
 export function refreshToken(
   token: string,
   signer: (message: string) => Promise<string>,
   ttlMs?: number,
+  options?: ScopeRequestOptions,
 ): Promise<SessionToken>;
 export function refreshToken(
   token: string,
   signer: SessionSigner,
   ttlMs = 60 * 60 * 1000,
+  options: ScopeRequestOptions = {},
 ): SessionToken | Promise<SessionToken> {
   const rec = store.get(token);
   if (!rec) throw new Error('{E_EXPIRED}');
@@ -144,7 +187,8 @@ export function refreshToken(
     scopes: string[],
     signer: SessionSigner,
     ttlMs?: number,
-  ) => SessionToken | Promise<SessionToken>)(rec.scopes, signer, ttlMs);
+    options?: ScopeRequestOptions,
+  ) => SessionToken | Promise<SessionToken>)(rec.scopes, signer, ttlMs, options);
   if (isPromise<SessionToken>(next)) {
     return next.then(handleNext);
   }
@@ -155,6 +199,7 @@ export async function requestTokenWithConsent(
   scopes: string[],
   signer: SessionSigner,
   ttlMs = 60 * 60 * 1000,
+  options: ScopeRequestOptions = {},
 ): Promise<SessionToken> {
   const ok = await requestConsent(scopes);
   if (!ok) throw new Error('{E_DENIED}');
@@ -162,7 +207,21 @@ export async function requestTokenWithConsent(
     scopes: string[],
     signer: SessionSigner,
     ttlMs?: number,
-  ) => SessionToken | Promise<SessionToken>)(scopes, signer, ttlMs);
+    options?: ScopeRequestOptions,
+  ) => SessionToken | Promise<SessionToken>)(scopes, signer, ttlMs, options);
   return await issued;
+}
+
+export function getSession(token: string): SessionToken | undefined {
+  return store.get(token);
+}
+
+export async function revokeToken(token: string): Promise<void> {
+  store.delete(token);
+  await removeSession(token);
+}
+
+export function sweepExpiredTokens(now = Date.now()): void {
+  purgeExpiredSessions(now);
 }
 

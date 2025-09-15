@@ -10,8 +10,8 @@ import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
 import { Buffer } from 'buffer';
 import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
-import { requestScopes } from '@/services/session';
-import { uuid } from '@/utils/uuid';
+import { sessionEvents, revokeToken } from '@/services/session';
+import { useWalletSessions } from '@/auth/wallet';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -51,9 +51,20 @@ interface AuthProviderProps { children: ReactNode }
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { address, connect, disconnect } = useWallet();
+  const { loginWithWallet } = useWalletSessions();
   const [user, setUser] = useState<User | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleRotation = ({ old, token }: { old: string; token: string }) => {
+      setSessionToken((current) => (current === old ? token : current));
+    };
+    sessionEvents.on('token.rotated', handleRotation);
+    return () => {
+      sessionEvents.off('token.rotated', handleRotation);
+    };
+  }, []);
 
   const checkAuthState = async () => {
     // Prefer WalletProvider address; fall back to adapter's plain getters only
@@ -153,8 +164,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async () => {
     try {
       await connect();
-      const { token } = requestScopes(['write'], () => uuid());
-      setSessionToken(token);
+      const session = await loginWithWallet(['write']);
+      setSessionToken(session.token);
     } catch (err: unknown) {
       errorLog(
         t('auth.walletConnectionFailed', 'Wallet connection failed'),
@@ -175,6 +186,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async () => {
     try {
       await disconnect();
+      if (sessionToken) {
+        await revokeToken(sessionToken);
+      }
       setSessionToken(null);
     } catch (err) {
       errorLog(t('auth.logoutFailed', 'Logout failed'), err);
