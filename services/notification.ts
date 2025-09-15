@@ -4,11 +4,16 @@ import { uuid } from '../utils/uuid';
 import { Notification } from '../types';
 import notificationsAgent from '../agents/notifications-agent';
 import type { NotificationEvent } from '../types/waku';
+import { t } from '@/i18n';
 
 class NotificationService {
   private static instance: NotificationService;
 
   private constructor() {}
+
+  private localize(n: Notification): Notification {
+    return { ...n, title: t(n.title), message: t(n.message) };
+  }
 
   public static getInstance(): NotificationService {
     if (!NotificationService.instance) {
@@ -26,7 +31,8 @@ class NotificationService {
       const list = await notificationsAgent.getAll();
       return list
         .filter((n) => n.userId === userId)
-        .sort((a, b) => b.timestamp - a.timestamp);
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .map((n) => this.localize(n));
     } catch (error) {
       errorLog('Error in getNotifications:', error);
       return [];
@@ -89,7 +95,7 @@ class NotificationService {
         timestamp: Date.now(),
       };
       await notificationsAgent.add(newNotification);
-      return newNotification;
+      return this.localize(newNotification);
     } catch (error) {
       errorLog('Error in addNotification:', error);
       return null;
@@ -114,7 +120,7 @@ class NotificationService {
   // Subscribe to real-time notifications for a specific user
   subscribeToUserNotifications(userId: string, callback: (n: Notification) => void) {
     const handler = (n: Notification) => {
-      if (n.userId === userId) callback(n);
+      if (n.userId === userId) callback(this.localize(n));
     };
     notificationsAgent.subscribe(handler);
     return handler;

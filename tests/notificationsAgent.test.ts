@@ -74,5 +74,13 @@ describe('notificationsAgent order pipeline', () => {
       }),
     ).toThrowError(expect.objectContaining({ code: E_BACKLOG }));
     await new Promise((r) => setImmediate(r));
+    expect(notificationsAgent.isPaused()).toBe(true);
+  });
+
+  it('auto-pauses on high latency', async () => {
+    (notificationsAgent as any).latencyLimit = -1;
+    notificationsAgent.handleOrderEvent('order.created', { orderId: 'o1', userId: 'u1' });
+    await new Promise((r) => setImmediate(r));
+    expect(notificationsAgent.isPaused()).toBe(true);
   });
 });
