@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../utils/appConfig';
 import { fetchSettings } from '@/services/nearSettings';
-import { getNetworkId, getAdminWalletAddress } from '@/services/config';
+import { getNetworkId } from '@/services/config';
 
 export let TENANT = 'blue-ocean';
 
@@ -19,21 +19,13 @@ export interface TenantSettings {
   paymentFactoryAddress?: string;
 }
 
-const initialAdmin =
-  (() => {
-    const network = (config.NEAR_NETWORK || getNetworkId() || '').toLowerCase();
-    const legacy = config.ADMIN_WALLET_ADDRESS || getAdminWalletAddress();
-    return legacy || (network === 'testnet' ? 'theunderground.testnet' : '');
-  })() || '';
-
-
 export let AppConfig: TenantSettings = {
   appName: 'Blue Ocean',
   primaryColor: '#B99C5A',
   logoCid: '',
   feeAddress: '',
   feeBps: 0,
-  admins: initialAdmin ? [initialAdmin] : [],
+  admins: [],
   rpcUrl: '',
   rpcFallbackUrls: [],
   paymentFactoryAddress: '',

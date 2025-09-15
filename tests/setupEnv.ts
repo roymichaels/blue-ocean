@@ -54,7 +54,6 @@ jest.mock('@/services/nearSettings');
 /** ---------------- App config for tests ---------------- */
 insertConfig({
   NEAR_RPC_URL: 'https://near.test',
-  ADMIN_WALLET_ADDRESS: 'EQtestadmin',
   EXPO_PUBLIC_CHAIN: 'near',
   EXPO_PUBLIC_CONTRACT_ID: 'EQtestcontract',
   EXPO_PUBLIC_NETWORK: 'testnet',
@@ -63,7 +62,6 @@ insertConfig({
 beforeEach(async () => {
   insertConfig({
     NEAR_RPC_URL: 'https://near.test',
-    ADMIN_WALLET_ADDRESS: 'EQtestadmin',
     EXPO_PUBLIC_CHAIN: 'near',
     EXPO_PUBLIC_CONTRACT_ID: 'EQtestcontract',
     EXPO_PUBLIC_NETWORK: 'testnet',

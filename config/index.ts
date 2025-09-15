@@ -23,7 +23,6 @@ const envSchema = z.object({
   EXPO_PUBLIC_INDEXER_URL: z.string().optional().default(''),
   EXPO_PUBLIC_DEBUG_LOGS: z.string().optional().default(''),
   EXPO_PUBLIC_CHAIN: z.string().optional().default(''),
-  ADMIN_WALLET_ADDRESS: z.string().optional().default(''),
   NEAR_NETWORK: z.string().optional().default(''),
   NEAR_RPC_URL: z.string().optional().default(''),
   NEAR_RPC_FALLBACK_URLS: z.string().optional().default(''),

@@ -2,9 +2,10 @@ import { z } from 'zod';
 import { wakuMessageSchema } from './message';
 
 export const adminJoinRequestSchema = wakuMessageSchema.extend({
-  type: z.literal('admin.requested'),
+  type: z.literal('admin.joinRequested'),
   payload: z.object({
-    wallet: z.string(),
+    address: z.string(),
+    requestedAt: z.number().optional(),
   }),
 });
 

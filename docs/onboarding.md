@@ -17,7 +17,7 @@ This playbook is intended for tenant administrators who manage their own NEAR ac
 1. **Choose a wallet.** We recommend [MyNearWallet](https://my.near.org) or another NEAR Wallet Selector compatible provider.
 2. **Secure your seed phrase.** Store the recovery phrase offline before proceeding. Require hardware-backed authentication where possible.
 3. **Fund the account.** Keep at least 3 Ⓝ available for contract deployment fees, storage staking, and initial listings.
-4. **Add the wallet to admin settings.** Set `ADMIN_WALLET_ADDRESS` in `.env.local` so the first login grants the wallet administrator privileges.
+4. **Enable admin bootstrap canary.** Set `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2=1` once your canary wallet has tested the join request flow end-to-end.
 5. **Sign in through the app.** Launch Blue Ocean (`yarn dev` or `yarn dev:web`) and use the Profile → **Connect Wallet** action to link your account. Confirm the `Admin` tab is visible before moving forward.
 
 > Tip: enable verbose logs during onboarding by setting `EXPO_PUBLIC_DEBUG_LOGS=true` so you can watch Waku agent events in the console.
@@ -112,7 +112,6 @@ Use this checklist before inviting shoppers. Mark each line once validated and r
 - [ ] `EXPO_PUBLIC_INDEXER_URL` targets your read replica or the public indexer
 - [ ] `EXPO_PUBLIC_NEAR_WALLET_URL` and `EXPO_PUBLIC_NEAR_WALLET_REDIRECT_URL` are correct for the chosen network
 - [ ] `EXPO_PUBLIC_NEAR_RPC_URL` (optional) overrides the RPC endpoint if you run your own node
-- [ ] `ADMIN_WALLET_ADDRESS` is the wallet that should receive bootstrap admin rights
 - [ ] `EXPO_PUBLIC_DEBUG_LOGS` is set appropriately for the environment (`false` in production)
 
 ### Contract deployment & relayer

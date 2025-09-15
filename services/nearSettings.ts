@@ -18,18 +18,20 @@ assertNearChain();
 
 const ADDRESS = 'settings';
 
-const TEST_ADMIN = 'testadmin.near';
-const NETWORK = (config.NEAR_NETWORK || 'mainnet').toLowerCase();
-const ADMIN_ADDRESS =
-  config.ADMIN_WALLET_ADDRESS ||
-  (NETWORK === 'testnet' ? 'theunderground.testnet' : '') ||
-  (process.env.NODE_ENV === 'test' ? TEST_ADMIN : '');
-
-function assertAdmin(actor: string): void {
-  if (!ADMIN_ADDRESS) {
+async function assertAdmin(actor: string): Promise<void> {
+  if (!actor) {
     throw new Error('Admin wallet address required');
   }
-  if (actor !== ADMIN_ADDRESS) {
+  const admins = await getAdmins();
+  if (admins.length === 0) {
+    return;
+  }
+  if (!admins.includes(actor)) {
+    throw new Error('Admin wallet address required');
+  }
+  const scopes = await getAdminScopes();
+  const allowed = scopes[actor] ?? [];
+  if (allowed.length > 0 && !allowed.includes('admin:settings')) {
     throw new Error('Admin wallet address required');
   }
 }
@@ -98,7 +100,9 @@ async function emit(event: SettingsWriteEvent) {
     msg.signature = Buffer.from(sig).toString('hex');
 
     const client = await getClient();
-    const encoder = client.createEncoder({ contentTopic: '/blue-ocean/settings/1' });
+    const encoder = client.createEncoder({
+      contentTopic: '/blue-ocean/settings/1',
+    } as any);
     await n.lightPush.send(encoder, {
       payload: client.utf8ToBytes(canonicalJson(msg)),
     });
@@ -113,7 +117,10 @@ export async function subscribeToSettingsWrites(
   const n = await ensureNode();
   if (!n) return () => {};
   const client = await getClient();
-  const decoder = client.createDecoder('/blue-ocean/settings/1');
+  const decoder = client.createDecoder(
+    '/blue-ocean/settings/1',
+    undefined as any,
+  );
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
@@ -147,7 +154,7 @@ export async function setSetting(
   value: string,
   actor: string,
 ) {
-  assertAdmin(actor);
+  await assertAdmin(actor);
   const res = await setValue(ADDRESS, key, value);
   await emit({
     type: 'settings.write',
@@ -185,10 +192,9 @@ export async function fetchSettings(): Promise<NearSettings> {
     }
   }
   const admins = map['admins'] ? JSON.parse(map['admins']) : [];
-  const finalAdmins = admins.length > 0 ? admins : [ADMIN_ADDRESS].filter(Boolean);
   const adminScopes = map['adminScopes'] ? JSON.parse(map['adminScopes']) : {};
-  if (Object.keys(adminScopes).length === 0) {
-    finalAdmins.forEach((a) => {
+  if (Object.keys(adminScopes).length === 0 && admins.length > 0) {
+    admins.forEach((a: string) => {
       adminScopes[a] = ALL_ADMIN_SCOPES;
     });
   }
@@ -200,7 +206,7 @@ export async function fetchSettings(): Promise<NearSettings> {
     fiatKey: map['fiatKey'],
     feeAddress: map['feeAddress'] ?? '',
     feeBps,
-    admins: finalAdmins,
+    admins,
     adminScopes,
     adminPublicKeys: map['adminPublicKeys']
       ? JSON.parse(map['adminPublicKeys'])

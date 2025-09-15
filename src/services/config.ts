@@ -166,12 +166,14 @@ export function isDataV2Enabled(): boolean {
   );
 }
 
-export function getAdminWalletAddress(): string {
-  return (
-    process.env.EXPO_PUBLIC_ADMIN_WALLET_ADDRESS ||
-    process.env.ADMIN_WALLET_ADDRESS ||
-    ''
-  );
+export function isAdminBootstrapV2Enabled(): boolean {
+  const raw =
+    process.env.EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2 ??
+    process.env.FEATURE_ADMIN_BOOTSTRAP_V2 ??
+    '';
+  if (raw === '0') return false;
+  if (raw === '1') return true;
+  return true;
 }
 
 export default requireEnv;
