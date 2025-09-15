@@ -75,6 +75,24 @@ export const cacheHitRatioGauge = new Gauge({
   registers: [registry],
 });
 
+export const authRateLimitCounter = new Counter({
+  name: 'auth_rate_limit_total',
+  help: 'Number of auth requests rejected due to rate limiting',
+  registers: [registry],
+});
+
+export const authScopeRequestCounter = new Counter({
+  name: 'auth_scope_requests_total',
+  help: 'Total auth scope requests',
+  registers: [registry],
+});
+
+export const authInvalidScopeCounter = new Counter({
+  name: 'auth_invalid_scope_total',
+  help: 'Auth scope requests with invalid scopes',
+  registers: [registry],
+});
+
 export async function withMonitoring<T>(
   service: string,
   fn: () => Promise<T>,

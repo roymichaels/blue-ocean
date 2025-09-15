@@ -2,6 +2,11 @@ import { EventEmitter } from 'events';
 import { uuid } from '@/utils/uuid';
 import { saveSession, loadSessions, removeSession } from '@/services/tokenCache';
 import { requestConsent } from '@/services/consent';
+import {
+  authRateLimitCounter,
+  authScopeRequestCounter,
+  authInvalidScopeCounter,
+} from '@/services/monitoring';
 
 export const sessionEvents = new EventEmitter();
 
@@ -17,8 +22,10 @@ export interface SessionToken {
 }
 
 function validateScopes(scopes: string[]): void {
+  authScopeRequestCounter.inc();
   const invalid = scopes.find((s) => !POLICY.has(s));
   if (invalid) {
+    authInvalidScopeCounter.inc();
     throw new Error('{E_SCOPE}');
   }
 }
@@ -28,6 +35,7 @@ export function requestScopes(
   signer: (message: string) => string,
   ttlMs = 60 * 60 * 1000,
 ): SessionToken {
+  assertRateLimit();
   validateScopes(scopes);
   const exp = Date.now() + ttlMs;
   const payload = JSON.stringify({ scopes, exp });

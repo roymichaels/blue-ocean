@@ -1,5 +1,6 @@
 import OrderService from '@/services/orders';
 import { CartItem, ShippingAddress } from '../types';
+import { requestScopes } from '@/services/session';
 
 const mockStore: Record<string, any> = {};
 const mockProducts: Record<string, any> = {};
@@ -89,7 +90,8 @@ describe('card checkout fee deduction', () => {
       postalCode: 'p',
     };
 
-    const orders = await svc.createOrdersFromCart('user1', items, shipping, 'card');
+    const { token } = requestScopes(['write'], () => 'sig');
+    const orders = await svc.createOrdersFromCart('user1', items, shipping, 'card', token);
     expect(orders).toHaveLength(1);
     const order = orders[0];
     expect(order.total).toBe(100);
