@@ -82,7 +82,7 @@ async function startNode(): Promise<LightNode | null> {
   await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
   const client = await getClient();
   await flush(async (topic, payload) => {
-    const encoder = client.createEncoder({ contentTopic: topic });
+    const encoder = client.createEncoder({ contentTopic: topic } as any);
     await node.lightPush.send(encoder, { payload });
   });
   reconnectAttempt = 0;
@@ -164,7 +164,9 @@ async function sendAck(topic: string, id: string): Promise<void> {
   const node = await ensureNode();
   if (!node) return;
   const client = await getClient();
-  const encoder = client.createEncoder({ contentTopic: `${topic}/ack` });
+  const encoder = client.createEncoder({
+    contentTopic: `${topic}/ack`,
+  } as any);
   await node.lightPush.send(encoder, {
     payload: client.utf8ToBytes(canonicalJson({ id })),
   });
@@ -182,7 +184,7 @@ export async function publish(topic: string, message: any): Promise<string> {
   try {
     const node = await ensureNode();
     if (!node) throw new Error('Waku disabled');
-    const encoder = client.createEncoder({ contentTopic: topic });
+    const encoder = client.createEncoder({ contentTopic: topic } as any);
     await Promise.race([
       node.lightPush.send(encoder, { payload: encPayload }),
       new Promise((_, reject) =>
@@ -202,7 +204,7 @@ export async function subscribeWithAck(
   const node = await ensureNode();
   if (!node) return () => {};
   const client = await getClient();
-  const decoder = client.createDecoder(topic);
+  const decoder = client.createDecoder(topic, undefined as any);
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
@@ -235,7 +237,7 @@ export async function fetchHistory(
   const node = await ensureNode();
   if (!node) return;
   const client = await getClient();
-  const decoder = client.createDecoder(topic);
+  const decoder = client.createDecoder(topic, undefined as any);
   let cursor: any = undefined;
   // eslint-disable-next-line no-constant-condition
   while (true) {

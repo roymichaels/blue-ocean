@@ -31,6 +31,20 @@ async function createSignedMessage<T>(
   return message;
 }
 
+async function createJoinRequest(
+  priv: Uint8Array,
+  pub: Uint8Array,
+  address: string,
+  requestedAt = Date.now(),
+) {
+  return await createSignedMessage(
+    'admin.joinRequested',
+    { address, requestedAt },
+    priv,
+    pub,
+  );
+}
+
 describe('AdminAgent', () => {
   let agent: AdminAgent;
 
@@ -44,7 +58,7 @@ describe('AdminAgent', () => {
   it('registers first wallet as admin', async () => {
     const priv = utils.randomPrivateKey();
     const pub = await getPublicKey(priv);
-    const msg = await createSignedMessage('admin.request', { address: 'addr1' }, priv, pub);
+    const msg = await createJoinRequest(priv, pub, 'addr1');
     const event = new Promise((resolve) =>
       agent.once('admin.registered', resolve as any),
     );
@@ -59,18 +73,21 @@ describe('AdminAgent', () => {
     // seed first admin
     const priv1 = utils.randomPrivateKey();
     const pub1 = await getPublicKey(priv1);
-    const first = await createSignedMessage('admin.request', { address: 'addr1' }, priv1, pub1);
+    const first = await createJoinRequest(priv1, pub1, 'addr1');
     await agent.requestAdmin(first);
 
     // second request should be queued
     const priv2 = utils.randomPrivateKey();
     const pub2 = await getPublicKey(priv2);
-    const second = await createSignedMessage('admin.request', { address: 'addr2' }, priv2, pub2);
+    const second = await createJoinRequest(priv2, pub2, 'addr2', 1700000000000);
     const event = new Promise((resolve) =>
       agent.once('admin.requested', resolve as any),
     );
     await agent.requestAdmin(second);
-    await expect(event).resolves.toEqual({ address: 'addr2' });
+    await expect(event).resolves.toEqual({
+      address: 'addr2',
+      requestedAt: 1700000000000,
+    });
     const pending = await agent.getPendingRequests();
     expect(pending).toHaveLength(1);
   });
@@ -78,7 +95,7 @@ describe('AdminAgent', () => {
   it('rejects admin requests with invalid signatures', async () => {
     const priv = utils.randomPrivateKey();
     const pub = await getPublicKey(priv);
-    const msg = await createSignedMessage('admin.request', { address: 'addr1' }, priv, pub);
+    const msg = await createJoinRequest(priv, pub, 'addr1');
     // Corrupt signature
     msg.signature = '00';
     await expect(agent.requestAdmin(msg)).rejects.toMatchObject({
@@ -89,12 +106,12 @@ describe('AdminAgent', () => {
   it('approves queued requests with existing admin', async () => {
     const priv1 = utils.randomPrivateKey();
     const pub1 = await getPublicKey(priv1);
-    const first = await createSignedMessage('admin.request', { address: 'addr1' }, priv1, pub1);
+    const first = await createJoinRequest(priv1, pub1, 'addr1');
     await agent.requestAdmin(first);
 
     const priv2 = utils.randomPrivateKey();
     const pub2 = await getPublicKey(priv2);
-    const second = await createSignedMessage('admin.request', { address: 'addr2' }, priv2, pub2);
+    const second = await createJoinRequest(priv2, pub2, 'addr2');
     await agent.requestAdmin(second);
 
     const approve = await createSignedMessage(
@@ -117,12 +134,12 @@ describe('AdminAgent', () => {
   it('rejects unauthorized approvals', async () => {
     const priv1 = utils.randomPrivateKey();
     const pub1 = await getPublicKey(priv1);
-    const first = await createSignedMessage('admin.request', { address: 'addr1' }, priv1, pub1);
+    const first = await createJoinRequest(priv1, pub1, 'addr1');
     await agent.requestAdmin(first);
 
     const priv2 = utils.randomPrivateKey();
     const pub2 = await getPublicKey(priv2);
-    const second = await createSignedMessage('admin.request', { address: 'addr2' }, priv2, pub2);
+    const second = await createJoinRequest(priv2, pub2, 'addr2');
     await agent.requestAdmin(second);
 
     // user3 tries to approve but is not admin
@@ -145,12 +162,12 @@ describe('AdminAgent', () => {
   it('rejects approvals with bad signatures', async () => {
     const priv1 = utils.randomPrivateKey();
     const pub1 = await getPublicKey(priv1);
-    const first = await createSignedMessage('admin.request', { address: 'addr1' }, priv1, pub1);
+    const first = await createJoinRequest(priv1, pub1, 'addr1');
     await agent.requestAdmin(first);
 
     const priv2 = utils.randomPrivateKey();
     const pub2 = await getPublicKey(priv2);
-    const second = await createSignedMessage('admin.request', { address: 'addr2' }, priv2, pub2);
+    const second = await createJoinRequest(priv2, pub2, 'addr2');
     await agent.requestAdmin(second);
 
     const wrongPriv = utils.randomPrivateKey();
@@ -165,12 +182,12 @@ describe('AdminAgent', () => {
     });
   });
 
-  it('ignores replayed admin requests even with clock skew', async () => {
+  it('rejects replayed admin requests even with clock skew', async () => {
     jest.useFakeTimers();
 
     const priv = utils.randomPrivateKey();
     const pub = await getPublicKey(priv);
-    const msg = await createSignedMessage('admin.request', { address: 'addr1' }, priv, pub);
+    const msg = await createJoinRequest(priv, pub, 'addr1');
 
     // initial request at time t
     jest.setSystemTime(new Date('2024-01-01T00:00:00Z'));
@@ -178,7 +195,9 @@ describe('AdminAgent', () => {
 
     // replay the same signed message after significant time skew
     jest.setSystemTime(new Date('2024-01-01T01:00:00Z'));
-    await agent.requestAdmin(msg);
+    await expect(agent.requestAdmin(msg)).rejects.toMatchObject({
+      code: 'E_DUPLICATE',
+    });
 
     const admins = await agent.getAdmins();
     expect(admins).toHaveLength(1);
@@ -186,5 +205,25 @@ describe('AdminAgent', () => {
     expect(pending).toHaveLength(0);
 
     jest.useRealTimers();
+  });
+
+  it('rejects duplicate pending requests for the same address', async () => {
+    const priv1 = utils.randomPrivateKey();
+    const pub1 = await getPublicKey(priv1);
+    await agent.requestAdmin(await createJoinRequest(priv1, pub1, 'addr1'));
+
+    const priv2 = utils.randomPrivateKey();
+    const pub2 = await getPublicKey(priv2);
+    const request = await createJoinRequest(priv2, pub2, 'addr2', 123);
+    await agent.requestAdmin(request);
+
+    await expect(agent.requestAdmin(request)).rejects.toMatchObject({
+      code: 'E_DUPLICATE',
+    });
+
+    const replay = await createJoinRequest(priv2, pub2, 'addr2', 124);
+    await expect(agent.requestAdmin(replay)).rejects.toMatchObject({
+      code: 'E_DUPLICATE',
+    });
   });
 });

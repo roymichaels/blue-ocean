@@ -2,9 +2,11 @@
 const { spawnSync } = require('child_process');
 
 const contract = process.env.EXPO_PUBLIC_CONTRACT_ID;
-const admin = process.env.ADMIN_WALLET_ADDRESS;
-if (!contract || !admin) {
-  console.error('EXPO_PUBLIC_CONTRACT_ID and ADMIN_WALLET_ADDRESS required');
+const caller = process.argv[2] || process.env.NEAR_CALLER_ACCOUNT;
+if (!contract || !caller) {
+  console.error(
+    'Usage: yarn mint:check <accountId> (or set NEAR_CALLER_ACCOUNT)',
+  );
   process.exit(1);
 }
 
@@ -12,7 +14,7 @@ const storeId = `health-${Date.now()}`;
 const args = JSON.stringify({
   store_id: storeId,
   name: 'health',
-  owner_id: admin,
+  owner_id: caller,
   nft_id: ''
 });
 
@@ -22,7 +24,7 @@ const res = spawnSync('near', [
   'mint_store',
   args,
   '--accountId',
-  admin,
+  caller,
   '--gas',
   '30000000000000',
   '--deposit',

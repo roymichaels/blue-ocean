@@ -40,6 +40,7 @@ const cfg = {
         '@blue-ocean/utils',
         '@blue-ocean/sdk-near',
         '@waku/.*',
+        'uuid',
       ].join('|') +
       ')/)',
   ],
@@ -133,6 +134,7 @@ const cfg = {
     '<rootDir>/tests/wakuErrorLogging.test.ts',
     '<rootDir>/tests/wakuHydration.test.ts',
     '<rootDir>/tests/nearAdapter.test.ts',
+    '<rootDir>/tests/adminAgent.test.ts',
     '<rootDir>/tests/waku/**/*.test.ts',
     '<rootDir>/tests/integration/**/*.test.ts',
     '<rootDir>/tests/notificationsPipeline.test.ts',

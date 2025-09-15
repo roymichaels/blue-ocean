@@ -15,11 +15,11 @@ import { getStore } from '@/features/stores/services/nearStores';
 import { getProduct, setProduct } from '@/features/products/services/nearProducts';
 import { chainAdapter } from '@/services/chain';
 import { adminResolve, deployOrderPayment } from './nearContract';
-import config from '../utils/appConfig';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
 import { validateToken } from '@/services/session';
 import { checkoutTokenIntegrity } from '@/services/monitoring';
+import SettingsAgent from '@/agents/settings-agent';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
@@ -330,11 +330,14 @@ class OrderService {
     const order = await ordersAgent.get(orderId);
     if (!order || !order.escrowAddr) return;
     const actor = chainAdapter.getAccountId();
-    const network = (config.NEAR_NETWORK || 'mainnet').toLowerCase();
-    const admin =
-      config.ADMIN_WALLET_ADDRESS ||
-      (network === 'testnet' ? 'theunderground.testnet' : '');
-    if (admin && (!actor || actor !== admin)) {
+    if (!actor) {
+      throw new Error('Admin wallet address required');
+    }
+    const hasScope = await SettingsAgent.getInstance().hasAdminScope(
+      actor,
+      'admin:orders',
+    );
+    if (!hasScope) {
       throw new Error('Admin wallet address required');
     }
     await adminResolve(order.escrowAddr, toSeller);
