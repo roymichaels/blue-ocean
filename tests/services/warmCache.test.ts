@@ -2,6 +2,7 @@ import type { DiffMessage } from '@/services/warmCache';
 
 let createWarmCache: any;
 let E_STALE_DATA: string;
+let getCacheHitRatio: (topic: string) => number;
 
 let history: DiffMessage<any>[] = [];
 let liveHandler: ((msg: DiffMessage<any>) => void) | null = null;
@@ -23,7 +24,7 @@ beforeEach(() => {
   delete process.env.EXPO_PUBLIC_WARM_CACHE_CANARY_ADMINS;
   delete process.env.EXPO_PUBLIC_WARM_CACHE_ROLLBACK;
   jest.resetModules();
-  ({ createWarmCache, E_STALE_DATA } = require('@/services/warmCache'));
+  ({ createWarmCache, E_STALE_DATA, getCacheHitRatio } = require('@/services/warmCache'));
   history = [
     { id: '1', rev: 1, op: 'set', value: { name: 'a' } },
     { id: '2', rev: 1, op: 'set', value: { name: 'b' } },
@@ -89,6 +90,14 @@ describe('warmCache', () => {
       liveHandler({ id: '1', rev: 2, op: 'set', value: { name: 'a2' } });
     expect(hitsA).toEqual([{ id: '1', value: { name: 'a2' } }]);
     expect(hitsB).toEqual([]);
+  });
+
+  it('tracks hit ratio', async () => {
+    const cache = createWarmCache<any>('topic');
+    await new Promise((res) => cache.onSynced(res));
+    cache.getById('1');
+    cache.getById('missing');
+    expect(getCacheHitRatio('topic')).toBeCloseTo(0.5);
   });
 });
 

@@ -38,6 +38,7 @@ if (chain === 'near') {
 import OrderService from '@/services/orders';
 import eventBus from '@/services/eventBus';
 import { Spinner } from '@/ui/primitives';
+import { getCacheHitRatio } from '@/services/warmCache';
 const MoonPayButton = require('@/features/payments').MoonPayButton;
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';
@@ -48,6 +49,8 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
+
+const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
 
 interface CartModalProps {
   visible: boolean;
@@ -281,6 +284,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       eventBus.track('checkout.complete', {
         orderIds: orders.map((o) => o.id),
         total: getTotal(),
+        cacheHitRatio: getCacheHitRatio(PRODUCT_CACHE_TOPIC),
       });
       setOrderIds(orders.map((o) => o.id));
       setOrderPlaced(true);
