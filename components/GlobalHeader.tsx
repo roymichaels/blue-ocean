@@ -1,5 +1,5 @@
 // TOUCHPOINT: components/GlobalHeader.tsx renders in production — Fix Pack v2
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -18,6 +18,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';
 import UserAvatar from './UserAvatar';
 import CommandPalette from './CommandPalette';
+import GadgetLabConsole from './GadgetLabConsole';
 import { spacing, radius, typography } from '@/ui/tokens';
 import { usePathname } from 'expo-router';
 import { useNotificationState } from './NotificationContext';
@@ -43,6 +44,8 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [consoleVisible, setConsoleVisible] = useState(false);
+  const tapTimesRef = useRef<number[]>([]);
   const shopTenantId = getShopTenantId();
 
   useEffect(() => {
@@ -73,6 +76,21 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
     openAuthModal();
   };
 
+  const handleLogoPress = () => {
+    const now = Date.now();
+    const taps = tapTimesRef.current.filter((ts) => now - ts < 600);
+    taps.push(now);
+    tapTimesRef.current = taps;
+    if (tapTimesRef.current.length >= 3) {
+      tapTimesRef.current = [];
+      setConsoleVisible(true);
+      return;
+    }
+    if (pathname !== '/' && pathname !== '/index') {
+      push(shopTenantId ? `/store/${shopTenantId}` : '/');
+    }
+  };
+
   return (
     <View
       style={[
@@ -86,11 +104,7 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
     >
       <Pressable
         style={styles.logo}
-        onPress={() => {
-          if (pathname !== '/' && pathname !== '/index') {
-            push(shopTenantId ? `/store/${shopTenantId}` : '/');
-          }
-        }}
+        onPress={handleLogoPress}
         accessibilityRole="button"
       >
         {logoCid && !isTest ? (
@@ -228,10 +242,16 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         {!isTest && <UserAvatar />}
       </View>
       {!isTest && (
-        <CommandPalette
-          visible={paletteOpen}
-          onClose={() => setPaletteOpen(false)}
-        />
+        <>
+          <CommandPalette
+            visible={paletteOpen}
+            onClose={() => setPaletteOpen(false)}
+          />
+          <GadgetLabConsole
+            visible={consoleVisible}
+            onClose={() => setConsoleVisible(false)}
+          />
+        </>
       )}
     </View>
   );
