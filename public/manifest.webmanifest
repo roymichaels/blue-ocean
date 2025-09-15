@@ -1,0 +1,10 @@
+{
+  "name": "Blue Ocean Gadget Lab",
+  "short_name": "GadgetLab",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0ea5e9",
+  "description": "Offline-ready operations console for Blue Ocean gadget deployments.",
+  "icons": []
+}
