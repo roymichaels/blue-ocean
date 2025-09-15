@@ -49,6 +49,8 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { requestTokenWithConsent } from '@/services/session';
+import { uuid } from '@/utils/uuid';
 
 const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
 
@@ -97,6 +99,15 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     cancelText: '',
     action: () => {},
   });
+
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+
+  const ensureSessionToken = async (): Promise<string> => {
+    if (sessionToken) return sessionToken;
+    const { token } = await requestTokenWithConsent(['write'], () => uuid());
+    setSessionToken(token);
+    return token;
+  };
 
 
   useEffect(() => {
@@ -272,6 +283,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
   const placeOrder = async () => {
     if (!validateShippingAddress()) return;
+    const token = await ensureSessionToken();
 
     setLoading(true);
     try {
@@ -279,7 +291,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         user?.id || 'guest',
         cartItems,
         shippingAddress,
-        'near'
+        'near',
+        token,
       );
       eventBus.track('checkout.complete', {
         orderIds: orders.map((o) => o.id),
@@ -297,13 +310,22 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       );
 
       setTimeout(() => onClose(), 5000);
-    } catch (error) {
-      setInfoModal({
-        visible: true,
-        title: t('common.error'),
-        message: t('cart.orderCreationError'),
-        type: 'error',
-      });
+    } catch (error: any) {
+      if (error?.message === '{E_EXPIRED}' || error?.message === '{E_SCOPE}') {
+        setInfoModal({
+          visible: true,
+          title: t('common.error'),
+          message: t('cart.invalidSession'),
+          type: 'error',
+        });
+      } else {
+        setInfoModal({
+          visible: true,
+          title: t('common.error'),
+          message: t('cart.orderCreationError'),
+          type: 'error',
+        });
+      }
     } finally {
       setLoading(false);
     }

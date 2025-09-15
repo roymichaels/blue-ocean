@@ -1,6 +1,7 @@
 import OrderService from '@/services/orders';
 import { deployOrderPayment } from '@/services/nearContract';
 import { CartItem, ShippingAddress } from '../types';
+import { requestScopes } from '@/services/session';
 
 const mockStore: Record<string, any> = {};
 const mockProducts: Record<string, any> = {};
@@ -114,7 +115,8 @@ describe('multi-seller checkout flow', () => {
       postalCode: 'p',
     };
 
-    const orders = await svc.createOrdersFromCart('user1', items, shipping, 'near');
+    const { token } = requestScopes(['write'], () => 'sig');
+    const orders = await svc.createOrdersFromCart('user1', items, shipping, 'near', token);
     expect(orders).toHaveLength(2);
     expect(deployOrderPayment).toHaveBeenCalledTimes(2);
     const totals = orders.map((o) => o.total).sort();

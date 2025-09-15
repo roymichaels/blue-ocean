@@ -18,6 +18,7 @@ import { adminResolve, deployOrderPayment } from './nearContract';
 import config from '../utils/appConfig';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
+import { validateToken } from '@/services/session';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
@@ -119,7 +120,9 @@ class OrderService {
       buyerAddress?: string;
       sellerAddress?: string;
     },
+    sessionToken: string,
   ): Promise<Order> {
+    validateToken(sessionToken, ['write']);
     const total = items.reduce((sum, item) => {
       const price = item.unitPrice ?? item.product.price;
       return sum + price * item.quantity;
@@ -178,45 +181,68 @@ class OrderService {
     cartItems: CartItem[],
     shippingAddress: ShippingAddress,
     paymentMethod: 'cash_on_delivery' | 'near' | 'card' = 'cash_on_delivery',
+    sessionToken: string,
   ): Promise<Order[]> {
-    const grouped: Record<string, CartItem[]> = {};
-    for (const item of cartItems) {
-      const storeId = item.product.storeId;
-      if (!grouped[storeId]) grouped[storeId] = [];
-      grouped[storeId].push(item);
+    try {
+      validateToken(sessionToken, ['write']);
+    } catch (err) {
+      void eventBus.track('checkout.token_integrity', {
+        tokenValid: false,
+        success: false,
+      });
+      throw err;
     }
+    try {
+      const grouped: Record<string, CartItem[]> = {};
+      for (const item of cartItems) {
+        const storeId = item.product.storeId;
+        if (!grouped[storeId]) grouped[storeId] = [];
+        grouped[storeId].push(item);
+      }
 
-    const orders: Order[] = [];
-    for (const [storeId, items] of Object.entries(grouped)) {
-      const store = await getStore(storeId, storeId);
-      const payment =
-        paymentMethod === 'near'
-          ? {
-              method: 'near' as const,
-              buyerAddress: chainAdapter.getAccountId() || undefined,
-              sellerAddress: store?.owner,
-            }
-          : paymentMethod === 'card'
-          ? {
-              method: 'card' as const,
-              buyerAddress: chainAdapter.getAccountId() || undefined,
-              sellerAddress: store?.owner,
-            }
-          : {
-              method: 'cash_on_delivery' as const,
-              buyerAddress: chainAdapter.getAccountId() || undefined,
-              sellerAddress: store?.owner,
-            };
-      const order = await this.createOrder(
-        userId,
-        items,
-        shippingAddress,
-        payment,
-      );
-      await emitOrderEvents(order, storeId);
-      orders.push(order);
+      const orders: Order[] = [];
+      for (const [storeId, items] of Object.entries(grouped)) {
+        const store = await getStore(storeId, storeId);
+        const payment =
+          paymentMethod === 'near'
+            ? {
+                method: 'near' as const,
+                buyerAddress: chainAdapter.getAccountId() || undefined,
+                sellerAddress: store?.owner,
+              }
+            : paymentMethod === 'card'
+            ? {
+                method: 'card' as const,
+                buyerAddress: chainAdapter.getAccountId() || undefined,
+                sellerAddress: store?.owner,
+              }
+            : {
+                method: 'cash_on_delivery' as const,
+                buyerAddress: chainAdapter.getAccountId() || undefined,
+                sellerAddress: store?.owner,
+              };
+        const order = await this.createOrder(
+          userId,
+          items,
+          shippingAddress,
+          payment,
+          sessionToken,
+        );
+        await emitOrderEvents(order, storeId);
+        orders.push(order);
+      }
+      void eventBus.track('checkout.token_integrity', {
+        tokenValid: true,
+        success: true,
+      });
+      return orders;
+    } catch (err) {
+      void eventBus.track('checkout.token_integrity', {
+        tokenValid: true,
+        success: false,
+      });
+      throw err;
     }
-    return orders;
   }
 
   private async decrementProductStock(items: CartItem[]): Promise<void> {

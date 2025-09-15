@@ -481,6 +481,7 @@
     "orderReceived": "Order Received",
     "ordersCreated": "Created {count} orders successfully",
     "orderCreationError": "An error occurred while creating the order",
+    "invalidSession": "Session expired. Please refresh and try again",
     "shippingAddress": "Shipping Address",
     "fullName": "Full Name *",
     "fullNamePlaceholder": "Enter full name",

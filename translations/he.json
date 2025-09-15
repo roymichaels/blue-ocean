@@ -471,6 +471,7 @@
     "orderReceived": "הזמנה התקבלה",
     "ordersCreated": "נוצרו {count} הזמנות בהצלחה",
     "orderCreationError": "אירעה שגיאה ביצירת ההזמנה",
+    "invalidSession": "אסימון הסשן פג. נא לרענן ולנסות שוב",
     "shippingAddress": "כתובת משלוח",
     "fullName": "שם מלא *",
     "fullNamePlaceholder": "הכנס שם מלא",
