@@ -12,6 +12,19 @@ const dir = process.env.STORAGE_DIR || path.join(process.cwd(), '.storage');
 
 const KEY = crypto.createHash('sha256').update(secret).digest();
 
+async function warnIfLowStorage(threshold = 0.9) {
+  try {
+    const { bfree, blocks } = await fs.statfs(dir);
+    const used = blocks - bfree;
+    if (used / blocks > threshold) {
+      const pct = ((used / blocks) * 100).toFixed(1);
+      console.warn(`[storage] usage at ${pct}% capacity`);
+    }
+  } catch {
+    // ignore unsupported platforms
+  }
+}
+
 async function ensureS3() {
   if (s3 || !bucket) return;
   const endpoint = process.env.STORAGE_ENDPOINT;
@@ -54,7 +67,9 @@ function decrypt(buf: Buffer): string {
   return out.toString('utf8');
 }
 
-async function streamToBuffer(stream: Readable | Buffer | string): Promise<Buffer> {
+async function streamToBuffer(
+  stream: Readable | Buffer | string,
+): Promise<Buffer> {
   if (Buffer.isBuffer(stream)) return stream;
   if (typeof stream === 'string') return Buffer.from(stream);
   const chunks: Uint8Array[] = [];
@@ -73,6 +88,7 @@ export async function setItem(key: string, value: string): Promise<void> {
   }
   const file = path.join(dir, key);
   await fs.mkdir(path.dirname(file), { recursive: true });
+  await warnIfLowStorage();
   await fs.writeFile(file, enc);
 }
 
@@ -105,3 +121,5 @@ export async function removeItem(key: string): Promise<void> {
   const file = path.join(dir, key);
   await fs.rm(file, { force: true }).catch(() => {});
 }
+
+export { warnIfLowStorage };
