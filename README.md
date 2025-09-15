@@ -117,6 +117,8 @@ Common variables include:
 | `NEAR_LAKE_BUCKET` | no | S3 bucket for NEAR Lake key-value storage. |
 | `NEAR_LAKE_REGION` | no | Region for the NEAR Lake bucket (default `eu-central-1`). |
 | `NEAR_LAKE_ENDPOINT` | no | Custom S3-compatible endpoint for NEAR Lake. |
+| `NEAR_ACCESS_KEY` | no | Access key for the NEAR Lake S3 bucket. |
+| `NEAR_SECRET_KEY` | no | Secret key for the NEAR Lake S3 bucket. |
 | `EXPO_PUBLIC_CONTRACT_ID` | yes | Marketplace contract account the app interacts with. |
 | `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
 | `EXPO_PUBLIC_PINATA_API_KEY` | no | Pinata API key for authenticated uploads. |
@@ -137,6 +139,16 @@ The OrderPayment factory contract address is configured by admins through the
 - `EXPO_PUBLIC_PINATA_JWT` – Pinata JWT used by `scripts/pinata-upload.ts` to pin assets (optional)
 
 These values are read at build time and cannot be changed from the UI.
+
+Run a quick persistence check with:
+
+```sh
+node -r ts-node/register scripts/kv-smoke.js
+```
+
+The script writes a test value using `nearKvStore`, spawns a new process, and
+verifies the value is still available, ensuring the S3-backed store is
+configured correctly.
 
 ### Secure Key Management
 
