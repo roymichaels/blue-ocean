@@ -38,8 +38,8 @@ export interface WakuClient {
   ) => Promise<number>;
   broadcastSystem: (message: string) => Promise<void>;
   subscribeSystem: (cb: (msg: string) => void) => Promise<() => void>;
-  broadcastOrder: (message: string) => Promise<void>;
-  subscribeOrders: (cb: (msg: string) => void) => Promise<() => void>;
+  broadcastNotification: (message: string) => Promise<void>;
+  subscribeNotifications: (cb: (msg: string) => void) => Promise<() => void>;
 }
 
 interface WakuContextValue extends WakuClient {
@@ -54,8 +54,8 @@ const defaultValue: WakuContextValue = {
   fetchHistory: async () => 0,
   broadcastSystem: noop,
   subscribeSystem: async () => () => {},
-  broadcastOrder: noop,
-  subscribeOrders: async () => () => {},
+  broadcastNotification: noop,
+  subscribeNotifications: async () => () => {},
 };
 
 const WakuContext = createContext<WakuContextValue>(defaultValue);
@@ -65,8 +65,8 @@ async function chatTopic(roomId: string, peerPublicKey: string) {
   return `/blue-ocean/chat/1/${enc}`;
 }
 
-const SYSTEM_TOPIC = '/blue-ocean/notifications/1';
-const ORDER_TOPIC = '/blue-ocean/orders/1';
+const SYSTEM_TOPIC = '/blue-ocean/system/1';
+const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
 
 export function WakuProvider({ children }: { children: React.ReactNode }) {
   const nodeRef = useRef<LightNode>();
@@ -237,10 +237,10 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const broadcastOrder = useCallback(async (message: string) => {
+  const broadcastNotification = useCallback(async (message: string) => {
     if (!nodeRef.current) return;
     const client = await getClient();
-    const encoder = client.createEncoder({ contentTopic: ORDER_TOPIC });
+    const encoder = client.createEncoder({ contentTopic: NOTIFICATION_TOPIC });
     await nodeRef.current.lightPush.send(encoder, {
       payload: client.utf8ToBytes(message),
     });
@@ -277,10 +277,10 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const subscribeOrders = useCallback(async (cb: (msg: string) => void) => {
+  const subscribeNotifications = useCallback(async (cb: (msg: string) => void) => {
     if (!nodeRef.current) return () => {};
     const client = await getClient();
-    const decoder = client.createDecoder({ contentTopic: ORDER_TOPIC });
+    const decoder = client.createDecoder({ contentTopic: NOTIFICATION_TOPIC });
     const handler = async (wakuMsg: DecodedMessage) => {
       if (!wakuMsg.payload) return;
       try {
@@ -288,12 +288,12 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
         const schema = wakuMessageSchema.extend({ payload: z.string() });
         const signed = await verifyBeforeWrite(raw, schema);
         if (!signed) {
-          errorLog('Dropping unverified order message', raw);
+          errorLog('Dropping unverified notification message', raw);
           return;
         }
         cb(signed.payload);
       } catch (err) {
-        errorLog('Malformed order message', err);
+        errorLog('Malformed notification message', err);
       }
     };
     const maybeUnsub = (nodeRef.current.relay as any).addObserver(handler, [decoder]) as
@@ -316,10 +316,19 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       fetchHistory,
       broadcastSystem,
       subscribeSystem,
-      broadcastOrder,
-      subscribeOrders,
+      broadcastNotification,
+      subscribeNotifications,
     }),
-    [status, send, subscribe, fetchHistory, broadcastSystem, subscribeSystem, broadcastOrder, subscribeOrders],
+    [
+      status,
+      send,
+      subscribe,
+      fetchHistory,
+      broadcastSystem,
+      subscribeSystem,
+      broadcastNotification,
+      subscribeNotifications,
+    ],
   );
 
   return <WakuContext.Provider value={value}>{children}</WakuContext.Provider>;

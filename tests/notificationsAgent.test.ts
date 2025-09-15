@@ -38,6 +38,8 @@ describe('notificationsAgent order pipeline', () => {
     (notificationsAgent as any).backlog = [];
     (notificationsAgent as any).draining = false;
     (notificationsAgent as any).backlogLimit = 50;
+    (notificationsAgent as any).pauseReasons = new Set();
+    (notificationsAgent as any).latencyTimer = null;
   });
 
   it('broadcasts notify.orderCreated with i18n key', async () => {
@@ -47,21 +49,19 @@ describe('notificationsAgent order pipeline', () => {
       storeId: 's1',
     });
     await new Promise((r) => setImmediate(r));
-    expect(createEncoderMock).toHaveBeenNthCalledWith(1, {
-      contentTopic: '/blue-ocean/notifications/s1',
+    expect(createEncoderMock).toHaveBeenCalledTimes(1);
+    expect(createEncoderMock).toHaveBeenCalledWith({
+      contentTopic: '/blue-ocean/notifications/1',
     });
-    expect(createEncoderMock).toHaveBeenNthCalledWith(2, {
-      contentTopic: '/blue-ocean/orders/s1',
-    });
-    expect(sendMock).toHaveBeenCalledTimes(2);
+    expect(sendMock).toHaveBeenCalledTimes(1);
     const [encoderNotif, { payload: notifPayload }] = sendMock.mock.calls[0];
-    expect(encoderNotif).toEqual({ contentTopic: '/blue-ocean/notifications/s1' });
-    const notif = JSON.parse(Buffer.from(notifPayload).toString());
-    expect(notif.title).toBe('notify.orderCreated');
-    const [encoderOrder, { payload: orderPayload }] = sendMock.mock.calls[1];
-    expect(encoderOrder).toEqual({ contentTopic: '/blue-ocean/orders/s1' });
-    const decoded = JSON.parse(Buffer.from(orderPayload).toString());
+    expect(encoderNotif).toEqual({ contentTopic: '/blue-ocean/notifications/1' });
+    const envelope = JSON.parse(Buffer.from(notifPayload).toString());
+    expect(envelope.type).toBe('notification.broadcast');
+    const decoded = JSON.parse(envelope.payload);
     expect(decoded.type).toBe('notify.orderCreated');
+    expect(decoded.storeId).toBe('s1');
+    expect(decoded.notification.title).toBe('notify.orderCreated');
   });
 
   it('surfaces E_BACKLOG when queue exceeds limit', async () => {
@@ -73,20 +73,26 @@ describe('notificationsAgent order pipeline', () => {
         userId: 'u1',
       }),
     ).toThrowError(expect.objectContaining({ code: E_BACKLOG }));
+    expect((notificationsAgent as any).pauseReasons.has('queue')).toBe(true);
     await new Promise((r) => setImmediate(r));
-    expect(notificationsAgent.isPaused()).toBe(true);
+    expect(notificationsAgent.isPaused()).toBe(false);
   });
 
   it('auto-pauses on high latency', async () => {
-    (notificationsAgent as any).latencyLimit = -1;
+    jest.useFakeTimers();
+    (notificationsAgent as any).latencyLimit = 5;
     notificationsAgent.handleOrderEvent('order.created', { orderId: 'o1', userId: 'u1' });
     await new Promise((r) => setImmediate(r));
     expect(notificationsAgent.isPaused()).toBe(true);
+    jest.advanceTimersByTime(5);
+    await Promise.resolve();
+    expect(notificationsAgent.isPaused()).toBe(false);
+    jest.useRealTimers();
   });
 
   it('falls back to polling when paused', async () => {
     jest.useFakeTimers();
-    (notificationsAgent as any).latencyLimit = -1;
+    (notificationsAgent as any).latencyLimit = 1000;
     (notificationsAgent as any).pollInterval = 10;
     const sub = jest.fn();
     notificationsAgent.subscribe(sub);

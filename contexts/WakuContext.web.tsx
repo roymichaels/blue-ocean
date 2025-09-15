@@ -23,8 +23,8 @@ export interface WakuClient {
   ) => Promise<number>;
   broadcastSystem: (message: string) => Promise<void>;
   subscribeSystem: (cb: (msg: string) => void) => Promise<() => void>;
-  broadcastOrder: (message: string) => Promise<void>;
-  subscribeOrders: (cb: (msg: string) => void) => Promise<() => void>;
+  broadcastNotification: (message: string) => Promise<void>;
+  subscribeNotifications: (cb: (msg: string) => void) => Promise<() => void>;
 }
 
 interface WakuContextValue extends WakuClient {
@@ -49,8 +49,8 @@ const defaultValue: WakuContextValue = {
   fetchHistory: async () => 0,
   broadcastSystem: async () => {},
   subscribeSystem: async () => () => {},
-  broadcastOrder: async () => {},
-  subscribeOrders: async () => () => {},
+  broadcastNotification: async () => {},
+  subscribeNotifications: async () => () => {},
 };
 
 const WakuContext = createContext<WakuContextValue>(defaultValue);

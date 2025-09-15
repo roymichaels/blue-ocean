@@ -1,5 +1,5 @@
 import { Notification } from '../types';
-import { NotificationEvent } from '../types/waku';
+import type { NotificationEvent, NotificationWakuPayload, WakuMessage } from '../types/waku';
 import AgentError from '@/types/AgentError';
 import { uuid } from '../utils/uuid';
 import { assertNearChain } from '@/services/chain';
@@ -20,12 +20,42 @@ import {
   notificationsBacklog,
   notificationDeliveryLatency,
 } from '../utils/observability';
-import { onBacklog } from '@/utils/wakuStore';
+import { onBacklog, onDrained } from '@/utils/wakuStore';
 import {
   isNotificationsPipelineEnabled,
 } from '@/config/featureFlags';
+import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
+import { canonicalJson } from '@/utils/serialization';
+import { sign } from '@noble/ed25519';
 
 export const E_BACKLOG = 'E_BACKLOG';
+
+const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
+const MESSAGE_TYPE = 'notification.broadcast';
+type PauseReason = 'queue' | 'latency' | 'waku';
+type NotificationBroadcastPayload = NotificationWakuPayload & { storeId?: string };
+
+const textEncoder = new TextEncoder();
+
+async function makeSignedNotificationMessage(
+  payload: NotificationBroadcastPayload,
+): Promise<WakuMessage<string>> {
+  const priv = await getPrivateKey();
+  const pub = await getPublicKeyHex();
+  const serializedPayload = canonicalJson(payload);
+  const message: WakuMessage<string> = {
+    type: MESSAGE_TYPE,
+    payload: serializedPayload,
+    sender: { publicKey: pub, role: 'notifications' },
+    signature: '',
+  };
+  const toSign = textEncoder.encode(
+    canonicalJson({ type: message.type, payload: message.payload, sender: message.sender }),
+  );
+  const sig = await sign(toSign, priv);
+  message.signature = Buffer.from(sig).toString('hex');
+  return message;
+}
 
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
@@ -34,17 +64,20 @@ class NotificationsAgent {
     item: Notification;
     storeId: string;
     queuedAt: number;
+    persisted: boolean;
   }> = [];
   private draining = false;
-  private backlogLimit = 50;
-  private paused = false;
-  private latencyLimit = 5000; // ms
+  private backlogLimit = 100;
+  private latencyLimit = 1000; // ms
+  private pauseReasons = new Set<PauseReason>();
   private delivered = new Set<string>();
   private pollTimer: NodeJS.Timeout | null = null;
   private pollInterval = 30000;
+  private latencyTimer: NodeJS.Timeout | null = null;
 
   constructor() {
-    onBacklog(() => this.pause());
+    onBacklog(() => this.pause('waku'));
+    onDrained(() => this.resume('waku'));
   }
 
   private async ensureWallet() {
@@ -52,7 +85,7 @@ class NotificationsAgent {
   }
 
   async add(item: Notification, storeId = '1'): Promise<void> {
-    if (this.paused || !isNotificationsPipelineEnabled(item.userId)) return;
+    if (!isNotificationsPipelineEnabled(item.userId)) return;
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
     await setNotification(normalized);
@@ -60,11 +93,11 @@ class NotificationsAgent {
       this.delivered.add(normalized.id);
       this.subscribers.forEach((cb) => cb(normalized));
     }
-    await this.broadcastWaku(normalized, undefined, storeId);
+    this.enqueue('notify.direct', normalized, storeId, { persisted: true });
   }
 
   async update(item: Notification, storeId = '1'): Promise<void> {
-    if (this.paused || !isNotificationsPipelineEnabled(item.userId)) return;
+    if (!isNotificationsPipelineEnabled(item.userId)) return;
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
     await setNotification(normalized);
@@ -88,34 +121,48 @@ class NotificationsAgent {
     return await listNotifications();
   }
 
-  private enqueue(event: NotificationEvent, item: Notification, storeId: string) {
-    if (this.paused || !isNotificationsPipelineEnabled(item.userId)) return;
+  private enqueue(
+    event: NotificationEvent,
+    item: Notification,
+    storeId: string,
+    options: { persisted?: boolean } = {},
+  ) {
+    if (!isNotificationsPipelineEnabled(item.userId)) return;
     if (this.backlog.length >= this.backlogLimit) {
-      this.pause();
+      this.pause('queue');
       throw new AgentError(E_BACKLOG, 'Notification backlog limit exceeded', 'notifications-agent');
     }
-    this.backlog.push({ event, item, storeId, queuedAt: Date.now() });
+    const persisted = options.persisted ?? false;
+    this.backlog.push({ event, item, storeId, queuedAt: Date.now(), persisted });
     notificationsBacklog.set(this.backlog.length);
     if (!this.draining) void this.drain();
   }
 
   private async drain() {
-    if (this.draining || this.paused) return;
+    if (this.draining || this.shouldHaltProcessing()) return;
     this.draining = true;
-    while (this.backlog.length && !this.paused) {
+    while (this.backlog.length) {
+      if (this.shouldHaltProcessing()) break;
       const job = this.backlog.shift()!;
       notificationsBacklog.set(this.backlog.length);
-      const { event, item, storeId, queuedAt } = job;
+      const { event, item, storeId, queuedAt, persisted } = job;
       try {
-        await this.broadcast(event, item, storeId);
+        await this.broadcast(event, item, storeId, { skipPersist: persisted });
         const latency = Date.now() - queuedAt;
         notificationDeliveryLatency.labels(event).observe(latency / 1000);
-        if (latency > this.latencyLimit) this.pause();
+        if (latency > this.latencyLimit) {
+          this.pause('latency');
+          break;
+        }
+        if (this.pauseReasons.has('queue') && this.backlog.length < this.backlogLimit) {
+          this.resume('queue');
+        }
       } catch (err) {
         errorLog('Failed to process notification', err);
       }
     }
     this.draining = false;
+    if (!this.backlog.length) this.resume('queue');
   }
 
   private async poll(): Promise<void> {
@@ -213,18 +260,18 @@ class NotificationsAgent {
     event: NotificationEvent,
     item: Notification,
     storeId = '1',
+    options: { skipPersist?: boolean } = {},
   ): Promise<void> {
-    if (this.paused || !isNotificationsPipelineEnabled(item.userId)) return;
+    if (!isNotificationsPipelineEnabled(item.userId)) return;
     await this.ensureWallet();
     const normalized = normalizeMessage<Notification>('Notification', item);
-    await setNotification(normalized);
+    if (!options.skipPersist) {
+      await setNotification(normalized);
+    }
     if (!this.delivered.has(normalized.id)) {
       this.delivered.add(normalized.id);
       this.subscribers.forEach((cb) => cb(normalized));
     }
-    // Broadcast the user-facing notification
-    await this.broadcastWaku(normalized, undefined, storeId);
-    // Broadcast the order event for other agents
     await this.broadcastWaku(normalized, event, storeId);
   }
 
@@ -254,31 +301,58 @@ class NotificationsAgent {
     event?: NotificationEvent,
     storeId = '1',
   ) {
+    if (isWakuDisabled()) return;
     try {
-      const domain = event ? 'orders' : 'notifications';
-      const topic = buildTopic(domain, storeId);
-      const payload = event ? { type: event, notification: item } : item;
-      await publish(topic, payload);
+      const payload: NotificationBroadcastPayload = {
+        type: event ?? 'notify.direct',
+        notification: item,
+        storeId,
+      };
+      const message = await makeSignedNotificationMessage(payload);
+      await publish(NOTIFICATION_TOPIC, message);
     } catch (err) {
       errorLog('Failed to broadcast notification', err);
     }
   }
 
-  pause(): void {
-    if (this.paused) return;
-    this.paused = true;
-    this.startPolling();
+  pause(reason: PauseReason = 'queue'): void {
+    const sizeBefore = this.pauseReasons.size;
+    this.pauseReasons.add(reason);
+    if (reason === 'latency') {
+      if (this.latencyTimer) clearTimeout(this.latencyTimer);
+      const delay = Math.max(this.latencyLimit, 0);
+      const resumeDelay = delay === 0 ? 1 : delay;
+      this.latencyTimer = setTimeout(() => {
+        this.latencyTimer = null;
+        this.resume('latency');
+      }, resumeDelay);
+    }
+    if (this.pauseReasons.size > 0 && sizeBefore === 0) {
+      this.startPolling();
+    }
   }
 
-  resume(): void {
-    if (!this.paused) return;
-    this.paused = false;
-    this.stopPolling();
-    if (this.backlog.length && !this.draining) void this.drain();
+  resume(reason: PauseReason = 'queue'): void {
+    if (!this.pauseReasons.has(reason)) return;
+    this.pauseReasons.delete(reason);
+    if (reason === 'latency' && this.latencyTimer) {
+      clearTimeout(this.latencyTimer);
+      this.latencyTimer = null;
+    }
+    if (this.pauseReasons.size === 0) {
+      this.stopPolling();
+    }
+    if (!this.shouldHaltProcessing() && this.backlog.length && !this.draining) {
+      void this.drain();
+    }
   }
 
   isPaused(): boolean {
-    return this.paused;
+    return this.pauseReasons.size > 0;
+  }
+
+  private shouldHaltProcessing(): boolean {
+    return this.pauseReasons.has('waku') || this.pauseReasons.has('latency');
   }
 }
 

@@ -20,6 +20,7 @@ export const notificationEventSchema = z.enum([
   'escrow.deployed',
   'notify.orderCreated',
   'notify.orderFailed',
+  'notify.direct',
 ]);
 
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;
@@ -27,6 +28,7 @@ export type NotificationEvent = z.infer<typeof notificationEventSchema>;
 export const notificationWakuPayloadSchema = z.object({
   type: notificationEventSchema,
   notification: notificationSchema,
+  storeId: z.string().optional(),
 });
 
 export type NotificationWakuPayload = z.infer<typeof notificationWakuPayloadSchema>;
