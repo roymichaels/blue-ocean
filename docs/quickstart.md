@@ -35,6 +35,22 @@ const unsubscribe = cache.subscribe({ type: 'product' }, async diff => {
 
 Remember to call `unsubscribe()` when the listener is no longer needed.
 
+## Subscribe to Localized Notifications
+
+```ts
+import { notifications } from '@blue-ocean/notifications';
+
+// Receive messages in the user's locale
+const stop = notifications.subscribe({ locale: navigator.language }, note => {
+  console.log(note.notification.title);
+});
+
+// Later when done listening
+stop();
+```
+
+Localized notifications carry translated titles and messages so the UI can render text directly without additional lookup.
+
 ## Offline-First & Timestamp Handling
 
 Persisting snapshots (e.g. with `AsyncStorage`) allows the cache to survive restarts and offline periods. Always convert ISO timestamp strings with `toLocaleString` or `Intl.DateTimeFormat` so users see values in their local timezone.
