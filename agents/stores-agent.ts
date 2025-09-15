@@ -1,7 +1,7 @@
 import { Store } from '@/types';
-import { chainAdapter, assertNearChain } from '@/services/chain';
+import { assertNearChain } from '@/services/chain';
 import {
-  addStore,
+  setStore,
   updateStore,
   removeStore,
   selectStore as fetchStore,
@@ -14,6 +14,7 @@ import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
 import { sign } from '@noble/ed25519';
 import { canonicalJson } from '@/utils/serialization';
 import type { WakuMessage } from '@/types/waku';
+import ensureNearWallet from '@/utils/ensureNearWallet';
 
 assertNearChain();
 
@@ -100,14 +101,13 @@ class StoresAgent {
     this.subscribers.delete(cb);
   }
 
+  private async ensureWallet() {
+    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
+  }
+
   async add(item: Store): Promise<void> {
-    if (!chainAdapter.getAccountId()) {
-      await chainAdapter.openModal();
-    }
+    await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
-<<<<<<< Updated upstream
-    await addStore(this.toRecord(normalized));
-=======
     const record = this.toRecord({
       createdAt: normalized.createdAt || new Date().toISOString(),
       ...normalized,
@@ -115,24 +115,11 @@ class StoresAgent {
     await setStore(record.id, record);
     await setStore('default', record);
     await this.broadcastCreated(record);
->>>>>>> Stashed changes
   }
 
   async update(item: Store): Promise<void> {
-    if (!chainAdapter.getAccountId()) {
-      await chainAdapter.openModal();
-    }
+    await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
-<<<<<<< Updated upstream
-    await updateStore(this.toRecord(normalized));
-  }
-
-  async remove(id: string): Promise<void> {
-    if (!chainAdapter.getAccountId()) {
-      await chainAdapter.openModal();
-    }
-    await removeStore(id);
-=======
     const rec = this.toRecord(normalized);
     await setStore(rec.id, rec);
     await setStore('default', rec);
@@ -140,9 +127,7 @@ class StoresAgent {
 
   async remove(id: string): Promise<void> {
     await this.ensureWallet();
-    await removeStore(id, id);
-    await removeStore('default', id);
->>>>>>> Stashed changes
+    await removeStore(id);
   }
 
   /**
