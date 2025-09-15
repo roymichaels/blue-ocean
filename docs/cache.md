@@ -3,14 +3,10 @@
 Defines the public interface for cache consumers and diff publishers.
 
 ## Message History Stream
-History hydration delivers an array of entries. Each entry includes a stable `id`, a monotonically increasing `version`, and the full object value.
-
-Schema: [`schemas/cache/history.ts`](../schemas/cache/history.ts)
+History hydration delivers an array of entries. Each entry includes a stable `id`, a monotonically increasing `version`, and the full object value. The exact format is defined internally by the cache service.
 
 ## Real‑time Diff Messages
-After hydration, updates are sent as diffs describing mutations to an entry.
-
-Schema: [`schemas/cache/diff.ts`](../schemas/cache/diff.ts)
+After hydration, updates are sent as diffs describing mutations to an entry. These diff messages share the same `id` and `version` sequencing as history entries.
 
 ## API Reference
 

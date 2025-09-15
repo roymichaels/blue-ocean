@@ -3,7 +3,8 @@ import path from 'path';
 import crypto from 'crypto';
 import config from '@/config';
 import AgentError from '@/types/AgentError';
-import { E_STALE_DATA } from '@/schemas/cache';
+
+export const E_STALE_DATA = 'E_STALE_DATA' as const;
 
 const CACHE_DIR = config.CACHE_DIR || path.join(process.cwd(), '.cache');
 const SECRET = config.CACHE_SECRET || 'blue-ocean';

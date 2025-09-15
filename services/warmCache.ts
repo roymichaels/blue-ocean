@@ -5,8 +5,7 @@ import {
 } from '@/services/monitoring';
 import { fetchHistory, subscribeWithAck } from '@/services/waku';
 import { isWarmCacheEnabled } from '@/config/featureFlags';
-
-export const E_STALE_DATA = 'E_STALE_DATA';
+import { E_STALE_DATA } from '@/services/cache';
 
 export interface DiffMessage<T> {
   id: string;
