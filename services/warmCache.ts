@@ -2,16 +2,19 @@ import { EventEmitter } from 'events';
 import {
   cacheHitRatioGauge,
   cacheHydrationHistogram,
+  cacheLagGauge,
+  cacheLagAlertCounter,
 } from '@/services/monitoring';
 import { fetchHistory, subscribeWithAck } from '@/services/waku';
 import { isWarmCacheEnabled } from '@/config/featureFlags';
-import { E_STALE_DATA } from '@/services/cache';
+import { E_STALE_DATA, E_SYNC_LAG } from '@/services/cache';
 
 export interface DiffMessage<T> {
   id: string;
   rev: number;
   op: 'set' | 'delete';
   value?: T;
+  ts?: number;
 }
 
 export interface WarmCache<T> {
@@ -28,21 +31,70 @@ export interface WarmCache<T> {
   ): () => void;
 }
 
-export function createWarmCache<T>(topic: string): WarmCache<T> {
+export interface WarmCacheOptions<T> {
+  hydrateLake?: () => Promise<Array<DiffMessage<T>>>;
+  lagThresholdMs?: number;
+}
+
+type MessageSource = 'lake' | 'history' | 'live';
+
+const DEFAULT_LAG_THRESHOLD = 3000;
+
+function normalizeMessage<T>(msg: DiffMessage<T>): DiffMessage<T> {
+  const ts = typeof msg.ts === 'number' ? msg.ts : Date.now();
+  return { ...msg, ts };
+}
+
+export function createWarmCache<T>(
+  topic: string,
+  options: WarmCacheOptions<T> = {},
+): WarmCache<T> {
   const store = new Map<string, { value: T; rev: number }>();
   const revisions = new Map<string, number>();
   const emitter = new EventEmitter();
   let synced = false;
   let stale = false;
-  const buffer: DiffMessage<T>[] = [];
+  let lagging = false;
+  let lastLagMs = 0;
+  const buffer: { msg: DiffMessage<T>; source: MessageSource }[] = [];
   const reconcilers = new Map<string, (id: string, value: T | undefined) => void>();
   const stats = { hits: 0, total: 0 };
   hitStats.set(topic, stats);
   const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
+  const lagThreshold = options.lagThresholdMs ?? DEFAULT_LAG_THRESHOLD;
+  const metricLabels = { cache: topic } as const;
+  cacheLagGauge.set(metricLabels, 0);
 
-  function apply(msg: DiffMessage<T>): void {
+  function apply(raw: DiffMessage<T>, source: MessageSource): void {
+    const msg = normalizeMessage(raw);
     const currentRev = revisions.get(msg.id) ?? 0;
     const expected = currentRev === 0 ? msg.rev : currentRev + 1;
+    if (currentRev !== 0) {
+      if (msg.rev === currentRev) {
+        if (source === 'live') {
+          stale = true;
+          emitter.emit('error', {
+            code: E_STALE_DATA,
+            id: msg.id,
+            expected: currentRev + 1,
+            actual: msg.rev,
+          });
+        }
+        return;
+      }
+      if (msg.rev < currentRev) {
+        if (source === 'live') {
+          stale = true;
+          emitter.emit('error', {
+            code: E_STALE_DATA,
+            id: msg.id,
+            expected: currentRev + 1,
+            actual: msg.rev,
+          });
+        }
+        return;
+      }
+    }
     if (currentRev !== 0 && msg.rev !== expected) {
       stale = true;
       emitter.emit('error', {
@@ -59,6 +111,24 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
     } else if (msg.value !== undefined) {
       store.set(msg.id, { value: msg.value, rev: msg.rev });
     }
+    if (synced && source === 'live') {
+      const now = Date.now();
+      const lagMs = Math.max(0, now - (msg.ts ?? now));
+      cacheLagGauge.set(metricLabels, lagMs);
+      if (lagMs > lagThreshold) {
+        if (!lagging || lagMs > lastLagMs) {
+          cacheLagAlertCounter.inc(metricLabels);
+        }
+        lagging = true;
+        lastLagMs = lagMs;
+        emitter.emit('error', { code: E_SYNC_LAG, id: msg.id, lagMs });
+      } else if (lagging) {
+        lagging = false;
+        lastLagMs = 0;
+      }
+    } else if (!synced && source !== 'live') {
+      cacheLagGauge.set(metricLabels, 0);
+    }
     const value = store.get(msg.id)?.value;
     emitter.emit('update', msg.id, value);
     reconcilers.forEach((fn, addr) => {
@@ -70,18 +140,32 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
     let unsub: (() => void) | null = null;
     try {
       unsub = await subscribeWithAck(topic, (msg: DiffMessage<T>) => {
-        if (!synced) buffer.push(msg);
-        else apply(msg);
+        const normalized = normalizeMessage(msg);
+        if (!synced) buffer.push({ msg: normalized, source: 'live' });
+        else apply(normalized, 'live');
       });
+      if (options.hydrateLake) {
+        try {
+          const lakeEntries = await options.hydrateLake();
+          for (const entry of lakeEntries) {
+            apply({ ...entry, op: entry.op ?? 'set' }, 'lake');
+          }
+        } catch (err) {
+          console.warn(`Lake hydration unavailable for ${topic}`, err);
+        }
+      }
       try {
-        await fetchHistory(topic, apply);
+        await fetchHistory(topic, (historyMsg: DiffMessage<T>) => {
+          apply(historyMsg, 'history');
+        });
       } catch (err) {
         console.warn(`History unavailable for ${topic}`, err);
       }
-      buffer.forEach(apply);
+      buffer.forEach(({ msg, source }) => apply(msg, source));
       buffer.length = 0;
       synced = true;
       endHydration();
+      cacheLagGauge.set(metricLabels, 0);
       emitter.emit('cache.synced');
       if (unsub) (emitter as any).unsub = unsub;
     } catch (err) {
@@ -95,6 +179,7 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   return {
     getById(id: string) {
       if (stale || !isWarmCacheEnabled()) throw { code: E_STALE_DATA };
+      if (lagging) throw { code: E_SYNC_LAG, lagMs: lastLagMs };
       const value = store.get(id)?.value;
       stats.total++;
       if (value !== undefined) stats.hits++;
@@ -103,6 +188,7 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
     },
     values() {
       if (stale || !isWarmCacheEnabled()) throw { code: E_STALE_DATA };
+      if (lagging) throw { code: E_SYNC_LAG, lagMs: lastLagMs };
       return Array.from(store.values())
         .map((v) => v.value)
         .filter((value): value is T => value !== undefined);
@@ -135,4 +221,6 @@ export function getCacheHitRatio(topic: string): number {
   return s.hits / s.total;
 }
 
-export default { createWarmCache, E_STALE_DATA, getCacheHitRatio };
+export { E_STALE_DATA, E_SYNC_LAG };
+
+export default { createWarmCache, E_STALE_DATA, E_SYNC_LAG, getCacheHitRatio };
