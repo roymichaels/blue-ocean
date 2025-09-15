@@ -51,6 +51,7 @@ import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { requestTokenWithConsent } from '@/services/session';
 import { uuid } from '@/utils/uuid';
+import NotificationService from '@/services/notification';
 
 const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
 
@@ -298,6 +299,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         orderIds: orders.map((o) => o.id),
         total: getTotal(),
         cacheHitRatio: getCacheHitRatio(PRODUCT_CACHE_TOPIC),
+        sourceNotificationId: NotificationService.getInstance().getLastOpenedNotificationId(),
       });
       setOrderIds(orders.map((o) => o.id));
       setOrderPlaced(true);

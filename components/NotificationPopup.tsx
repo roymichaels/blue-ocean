@@ -18,6 +18,7 @@ interface NotificationPopupProps {
   type?: 'success' | 'info' | 'warning' | 'error';
   duration?: number;
   onClose: () => void;
+  onPress?: () => void;
 }
 
 const { width } = Dimensions.get('window');
@@ -27,7 +28,8 @@ export default function NotificationPopup({
   message,
   type = 'info',
   duration = 3000,
-  onClose
+  onClose,
+  onPress,
 }: NotificationPopupProps) {
   const translateY = useRef(new Animated.Value(-100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -73,6 +75,11 @@ export default function NotificationPopup({
     });
   };
 
+  const handlePress = () => {
+    onPress?.();
+    dismiss();
+  };
+
   const getBackgroundColor = () => {
     switch (type) {
       case 'success':
@@ -90,37 +97,39 @@ export default function NotificationPopup({
   return (
     <Portal>
       <Overlay />
-      <Animated.View
-        style={[
-          styles.container,
-          {
-            transform: [{ translateY }],
-            opacity,
-            backgroundColor: getBackgroundColor()
-          }
-        ]}
-      >
-        <View style={styles.content}>
-          <View style={styles.textContainer}>
-            <Heading
-              size="md"
-              style={[styles.title, { color: colors.text.inverse }]}
-            >
-              {title}
-            </Heading>
-            <Text
-              style={[styles.message, { color: colors.text.inverse }]}
-              numberOfLines={2}
-              variant="sm"
-            >
-              {message}
-            </Text>
+      <TouchableOpacity activeOpacity={0.9} onPress={handlePress}>
+        <Animated.View
+          style={[
+            styles.container,
+            {
+              transform: [{ translateY }],
+              opacity,
+              backgroundColor: getBackgroundColor()
+            }
+          ]}
+        >
+          <View style={styles.content}>
+            <View style={styles.textContainer}>
+              <Heading
+                size="md"
+                style={[styles.title, { color: colors.text.inverse }]}
+              >
+                {title}
+              </Heading>
+              <Text
+                style={[styles.message, { color: colors.text.inverse }]}
+                numberOfLines={2}
+                variant="sm"
+              >
+                {message}
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.closeButton} onPress={dismiss}>
+              <X size={20} color={colors.text.inverse} />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.closeButton} onPress={dismiss}>
-            <X size={20} color={colors.text.inverse} />
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
+        </Animated.View>
+      </TouchableOpacity>
     </Portal>
   );
 }

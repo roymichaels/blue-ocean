@@ -163,6 +163,7 @@ export interface Notification {
   userId: string;
   title: string;
   message: string;
+  link?: string;
   type: 'order' | 'promo' | 'message' | 'system';
   read: boolean;
   timestamp: number;

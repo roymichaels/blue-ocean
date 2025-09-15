@@ -2,6 +2,10 @@ import React, { createContext, useState, useContext, ReactNode, useCallback } fr
 import NotificationPopup from './NotificationPopup';
 import AgentError from '@/types/AgentError';
 import { useNotificationSubscription } from '@/features/notifications';
+import NotificationService from '@/services/notification';
+import eventBus from '@/services/eventBus';
+import { useAppRouter } from '@/services';
+import { uuid } from '@/utils/uuid';
 
 interface NotificationState {
   unreadCount: number;
@@ -13,6 +17,8 @@ interface NotificationActions {
     title: string,
     message: string,
     type?: 'success' | 'info' | 'warning' | 'error',
+    link?: string,
+    id?: string,
   ) => void;
   showAgentError: (error: AgentError) => void;
 }
@@ -40,8 +46,10 @@ interface NotificationProviderProps {
 
 export function NotificationProvider({ children }: NotificationProviderProps) {
   const [activeNotification, setActiveNotification] = useState<{
+    id?: string;
     title: string;
     message: string;
+    link?: string;
     type: 'success' | 'info' | 'warning' | 'error';
   } | null>(null);
 
@@ -50,8 +58,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       title: string,
       message: string,
       type: 'success' | 'info' | 'warning' | 'error' = 'info',
+      link?: string,
+      id?: string,
     ) => {
-      setActiveNotification({ title, message, type });
+      setActiveNotification({ id, title, message, type, link });
     },
     [],
   );
@@ -59,6 +69,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const showAgentError = useCallback(
     (error: AgentError) => {
       setActiveNotification({
+        id: uuid(),
         title: error.source,
         message: `[${error.code}] ${error.message}`,
         type: 'error',
@@ -68,8 +79,20 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   );
 
   const { unreadCount, refreshNotifications } = useNotificationSubscription(showNotification);
+  const { push } = useAppRouter();
 
   const handleClose = () => setActiveNotification(null);
+
+  const handleNavigate = () => {
+    if (!activeNotification) return;
+    if (activeNotification.id) {
+      NotificationService.getInstance().setLastOpenedNotificationId(activeNotification.id);
+      eventBus.track('notification.opened', { notificationId: activeNotification.id });
+    }
+    if (activeNotification.link) {
+      push(activeNotification.link);
+    }
+  };
 
   return (
     <NotificationActionsContext.Provider value={{ showNotification, showAgentError }}>
@@ -81,6 +104,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             message={activeNotification.message}
             type={activeNotification.type}
             onClose={handleClose}
+            onPress={handleNavigate}
           />
         )}
       </NotificationStateContext.Provider>

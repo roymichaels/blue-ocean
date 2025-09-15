@@ -5,9 +5,12 @@ import { Notification } from '../types';
 import notificationsAgent from '../agents/notifications-agent';
 import type { NotificationEvent } from '../types/waku';
 import { t } from '@/i18n';
+import eventBus from '@/services/eventBus';
 
 class NotificationService {
   private static instance: NotificationService;
+
+  private lastOpenedNotificationId: string | null = null;
 
   private constructor() {}
 
@@ -83,6 +86,7 @@ class NotificationService {
     title: string;
     message: string;
     type: 'order' | 'promo' | 'message' | 'system';
+    link?: string;
   }): Promise<Notification | null> {
     try {
       const newNotification: Notification = {
@@ -91,6 +95,7 @@ class NotificationService {
         title: notification.title,
         message: notification.message,
         type: notification.type,
+        link: notification.link,
         read: false,
         timestamp: Date.now(),
       };
@@ -120,7 +125,15 @@ class NotificationService {
   // Subscribe to real-time notifications for a specific user
   subscribeToUserNotifications(userId: string, callback: (n: Notification) => void) {
     const handler = (n: Notification) => {
-      if (n.userId === userId) callback(this.localize(n));
+      if (n.userId === userId) {
+        eventBus.track('notification.delivered', {
+          notificationId: n.id,
+          userId: n.userId,
+          type: n.type,
+          link: n.link,
+        });
+        callback(this.localize(n));
+      }
     };
     notificationsAgent.subscribe(handler);
     return handler;
@@ -129,6 +142,14 @@ class NotificationService {
   // Unsubscribe from real-time notifications
   unsubscribeFromNotifications(subscription: any) {
     notificationsAgent.unsubscribe(subscription);
+  }
+
+  setLastOpenedNotificationId(id: string) {
+    this.lastOpenedNotificationId = id;
+  }
+
+  getLastOpenedNotificationId(): string | null {
+    return this.lastOpenedNotificationId;
   }
 }
 
