@@ -30,6 +30,7 @@ See [src/providers/README.md](src/providers/README.md) for the order and invaria
 | `/blue-ocean/users/1`    | Registered users + roles + keys     |
 | `/blue-ocean/products/1` | Product catalog                     |
 | `/blue-ocean/stores/1`   | Store registry + metadata           |
+| `/blue-ocean/workspaces/1` | Workspace discovery metadata (encrypted) |
 | `/blue-ocean/orders/1`   | Orders placed by users & status updates |
 | `/blue-ocean/notifications/1` | System-wide notifications        |
 | `/blue-ocean/reviews/1`  | Product reviews                     |
