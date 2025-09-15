@@ -19,6 +19,7 @@
       "@/ui/*": ["src/ui/*"],
       "@/ui": ["src/ui/index"],
       "@/layout/*": ["src/layout/*"],
+      "@/core/*": ["src/core/*"],
       "@/services": ["src/services/index"],
       "@/services/*": ["src/services/*", "services/*"],
       "@/utils/*": ["src/utils/*", "utils/*"],
