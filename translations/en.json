@@ -129,7 +129,10 @@
     "priceHighLow": "Price: High to Low",
     "highRating": "High Rating",
     "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload.",
-    "connectWalletToContinue": "Connect wallet to continue"
+    "connectWalletToContinue": "Connect wallet to continue",
+    "create_store_prompt_title": "Create your store",
+    "create_store_prompt_message": "You have no store yet. Create one to start selling.",
+    "create_store_prompt_action": "Create Store"
   },
   "cta": {
     "create_store": "Create a Store",
