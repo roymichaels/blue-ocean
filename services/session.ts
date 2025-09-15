@@ -7,6 +7,9 @@ export const sessionEvents = new EventEmitter();
 
 const POLICY = new Set<string>(['read', 'write']);
 
+// Allow a small amount of clock skew when validating expirations
+const CLOCK_TOLERANCE_MS = 60 * 1000; // 1 minute
+
 export interface SessionToken {
   token: string;
   scopes: string[];
@@ -47,7 +50,7 @@ export async function initSessionTokens(): Promise<void> {
 export function validateToken(token: string, requiredScopes: string[]): void {
   const rec = store.get(token);
   if (!rec) throw new Error('{E_EXPIRED}');
-  if (Date.now() > rec.exp) {
+  if (Date.now() > rec.exp + CLOCK_TOLERANCE_MS) {
     store.delete(token);
     throw new Error('{E_EXPIRED}');
   }
@@ -63,7 +66,7 @@ export function refreshToken(
 ): SessionToken {
   const rec = store.get(token);
   if (!rec) throw new Error('{E_EXPIRED}');
-  if (Date.now() > rec.exp) {
+  if (Date.now() > rec.exp + CLOCK_TOLERANCE_MS) {
     store.delete(token);
     throw new Error('{E_EXPIRED}');
   }
