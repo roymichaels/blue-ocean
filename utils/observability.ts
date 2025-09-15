@@ -38,6 +38,26 @@ export const adminTransactionIntegrity =
       })
     : { inc: () => {} };
 
+export const notificationsBacklog =
+  prom
+    ? new prom.Gauge({
+        name: 'notifications_backlog',
+        help: 'Number of notifications pending delivery',
+      })
+    : { set: () => {} };
+
+export const notificationDeliveryLatency =
+  prom
+    ? new prom.Histogram({
+        name: 'notification_delivery_latency_seconds',
+        help: 'Notification delivery latency in seconds',
+        labelNames: ['event'],
+      })
+    : {
+        labels: () => ({ observe: () => {} }),
+        observe: () => {},
+      };
+
 let metricsStarted = false;
 export function startMetricsServer(
   port = Number(process.env.METRICS_PORT || 9464)
