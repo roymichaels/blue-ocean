@@ -11,15 +11,11 @@ import {
 import { useAppRouter } from '@/services';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/ui/ThemeProvider';
-<<<<<<< Updated upstream
-import { mintStore as mintStoreOnChain, getStore } from '@/features/stores/services/nearStores';
-=======
 import storesAgent from '@/agents/stores-agent';
 import DatabaseService from '@/services/database';
 import { useNotificationActions } from '@/components/NotificationContext';
 import { createStoreOnChain } from '@/features/stores/services/nearStores';
 import { chainAdapter } from '@/services/chain';
->>>>>>> Stashed changes
 import { useWallet } from '@/contexts/WalletProvider';
 import { errorLog } from '@/utils/logger';
 
@@ -35,7 +31,11 @@ const StoreCreation: React.FC = () => {
 
   const mintStore = async () => {
     // Generate a fallback store name if none was provided to avoid a no-op
-    const finalName = (name || '').trim() || `Store ${owner?.slice(0, 6) || ''} ${Date.now().toString().slice(-4)}`.trim();
+    const finalName =
+      (name || '').trim() ||
+      `Store ${owner?.slice(0, 6) || ''} ${Date.now()
+        .toString()
+        .slice(-4)}`.trim();
     if (!owner) {
       await connect();
       return;
@@ -44,15 +44,11 @@ const StoreCreation: React.FC = () => {
     let onChainError: any = null;
     // Try on-chain first, but do not block local creation in dev
     try {
-<<<<<<< Updated upstream
-      const { id, txHash } = await mintStoreOnChain(name);
-      await getStore(id, id);
-      setName('');
-      Alert.alert(t('common.success'), `${t('stores.createSuccess')}` + `\n${txHash}`);
-=======
       const tx = await createStoreOnChain({ id, name: finalName, owner });
       if (tx) {
-        try { showNotification('Store Minted', `tx: ${tx}`, 'success'); } catch {}
+        try {
+          showNotification('Store Minted', `tx: ${tx}`, 'success');
+        } catch {}
       }
     } catch (e: any) {
       onChainError = e;
@@ -63,7 +59,10 @@ const StoreCreation: React.FC = () => {
     try {
       await storesAgent.add({ id, name: finalName, owner, nftId: id, plan });
       try {
-        await DatabaseService.getInstance().updateUserRole(owner, 'store-owner');
+        await DatabaseService.getInstance().updateUserRole(
+          owner,
+          'store-owner'
+        );
       } catch {}
       setName('');
       setPlan('free');
@@ -73,7 +72,6 @@ const StoreCreation: React.FC = () => {
       } else {
         Alert.alert(t('common.success'), t('stores.createSuccess'));
       }
->>>>>>> Stashed changes
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['home'] }),
         queryClient.invalidateQueries({ queryKey: ['store'] }),
@@ -81,15 +79,7 @@ const StoreCreation: React.FC = () => {
       ]);
       replace(`/store/${id}/admin`);
     } catch (err: any) {
-<<<<<<< Updated upstream
-      if (err?.message?.toLowerCase().includes('insufficient')) {
-        Alert.alert(t('stores.transactionFailed'), t('stores.insufficientFunds'));
-      } else {
-        Alert.alert(t('stores.transactionFailed'), err?.message || t('stores.transactionCancelled'));
-      }
-=======
       Alert.alert(t('stores.transactionCancelled'));
->>>>>>> Stashed changes
       errorLog('mint', 'shop', 'fail', err);
     }
   };
@@ -107,7 +97,11 @@ const StoreCreation: React.FC = () => {
             color={plan === 'free' ? '#0a84ff' : undefined}
           />
           <Button
-            title={t('stores.planPremium', 'Premium') + ' · ' + t('common.comingSoon', 'Coming Soon')}
+            title={
+              t('stores.planPremium', 'Premium') +
+              ' · ' +
+              t('common.comingSoon', 'Coming Soon')
+            }
             onPress={() => {}}
             disabled
           />

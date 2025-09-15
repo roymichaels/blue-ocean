@@ -1,4 +1,3 @@
-import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
 import { Store } from '@/types';
 import { chainAdapter, assertNearChain } from '@/services/chain';
 import { requireStoreId } from '@blue-ocean/utils';
@@ -7,11 +6,9 @@ import {
   listStores as contractListStores,
 } from '@/services/nearStoreContract';
 import { canonicalJson } from '@/utils/serialization';
-<<<<<<< Updated upstream
 import { nearConfig } from '@/services/config';
 import { getSelector } from '@/services/walletSelector';
 import { Buffer } from 'buffer';
-<<<<<<< Updated upstream
 import {
   getValue,
   setValue,
@@ -19,12 +16,7 @@ import {
   removeValue,
 } from '@/services/nearKvStore';
 import { errorLog } from '@/utils/logger';
-=======
-=======
 import config from '@/config';
-import { chainAdapter } from '@/services/chain';
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
 assertNearChain();
 
@@ -132,13 +124,11 @@ async function sendTx(action: string, data: any) {
 
 export async function selectStore(
   arg1: string,
-  arg2?: string,
+  arg2?: string
 ): Promise<Store | null> {
   ensureSeed();
   const id = arg2 ?? arg1;
-  const key = arg2
-    ? storeKey(id, requireStoreId(arg1))
-    : indexKey(id);
+  const key = arg2 ? storeKey(id, requireStoreId(arg1)) : indexKey(id);
   const res = await getValue(ADDRESS, key);
   if (!res) return null;
   try {
@@ -154,10 +144,7 @@ export async function setStore(storeId: string, store: Store) {
   await persistStore(store, sid);
 }
 
-export async function removeStore(
-  arg1: string,
-  arg2?: string,
-): Promise<void> {
+export async function removeStore(arg1: string, arg2?: string): Promise<void> {
   const id = arg2 ?? arg1;
   const sid = arg2 ? requireStoreId(arg1) : requireStoreId(id);
   await sendTx('remove', { id });
@@ -186,17 +173,11 @@ export async function listStores(storeId: string): Promise<Store[]> {
     return mapped;
   } catch {
     return res;
-
   }
   return res;
 }
 
-<<<<<<< Updated upstream
 export async function addStore(store: Store, sid?: string): Promise<void> {
-=======
-<<<<<<< Updated upstream
-export async function addStore(store: Store): Promise<void> {
->>>>>>> Stashed changes
   await sendTx('add', { store });
   await persistStore(store, sid ?? requireStoreId(store.id));
 }
@@ -224,16 +205,17 @@ export async function setStore(storeId: string, store: Store) {
     await addStore(store, storeId);
   }
 }
-<<<<<<< Updated upstream
-=======
 
-=======
 /**
  * Submit a meta-tx to the relayer to create a store on NEAR.
  * Requires EXPO_PUBLIC_RELAYER_URL and wallet connected (public key present).
  * Returns transaction hash if the relayer reports success.
  */
-export async function createStoreOnChain(args: { id: string; name: string; owner: string }): Promise<string> {
+export async function createStoreOnChain(args: {
+  id: string;
+  name: string;
+  owner: string;
+}): Promise<string> {
   const relayerUrl = config.EXPO_PUBLIC_RELAYER_URL;
   if (!relayerUrl) throw new Error('EXPO_PUBLIC_RELAYER_URL not configured');
   const publicKey = chainAdapter.getPublicKey();
@@ -243,7 +225,9 @@ export async function createStoreOnChain(args: { id: string; name: string; owner
     args: { store_id: args.id, name: args.name },
     ownerId: args.owner,
   } as const;
-  const toSign = new TextEncoder().encode(JSON.stringify({ action: body.action, args: body.args }));
+  const toSign = new TextEncoder().encode(
+    JSON.stringify({ action: body.action, args: body.args })
+  );
   const signature = await chainAdapter.signMessage?.(toSign);
   const res = await fetch(`${relayerUrl}/meta-tx`, {
     method: 'POST',
@@ -262,5 +246,3 @@ export async function createStoreOnChain(args: { id: string; name: string; owner
   if (json?.error) throw new Error(String(json.error));
   return json?.tx || '';
 }
->>>>>>> Stashed changes
->>>>>>> Stashed changes
