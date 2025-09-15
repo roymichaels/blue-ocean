@@ -33,8 +33,10 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   let synced = false;
   let stale = false;
   const buffer: DiffMessage<T>[] = [];
-  const reconcilers = new Map<string, (id: string, value: T | undefined) => void>();
-
+  const reconcilers = new Map<
+    string,
+    (id: string, value: T | undefined) => void
+  >();
 
   function apply(msg: DiffMessage<T>): void {
     const current = store.get(msg.id);
@@ -56,23 +58,28 @@ export function createWarmCache<T>(topic: string): WarmCache<T> {
   }
 
   (async () => {
+    let unsub: (() => void) | null = null;
     try {
-      const unsub = await subscribeWithAck(topic, (msg: DiffMessage<T>) => {
+      unsub = await subscribeWithAck(topic, (msg: DiffMessage<T>) => {
         if (!synced) buffer.push(msg);
         else apply(msg);
       });
-      await fetchHistory(topic, apply);
+      try {
+        await fetchHistory(topic, apply);
+      } catch (err) {
+        console.warn(`History unavailable for ${topic}`, err);
+      }
       buffer.forEach(apply);
       buffer.length = 0;
       synced = true;
       endHydration();
       emitter.emit('cache.synced');
-      // expose unsubscribe on emitter
-      (emitter as any).unsub = unsub;
+      if (unsub) (emitter as any).unsub = unsub;
     } catch (err) {
       stale = true;
       endHydration();
       emitter.emit('error', { code: E_STALE_DATA, err });
+      unsub?.();
     }
   })();
 

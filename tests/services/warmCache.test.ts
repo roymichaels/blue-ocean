@@ -8,14 +8,18 @@ let liveHandler: ((msg: DiffMessage<any>) => void) | null = null;
 let failHistory = false;
 
 jest.mock('@/services/waku', () => ({
-  fetchHistory: jest.fn(async (_topic: string, cb: (m: DiffMessage<any>) => void) => {
-    if (failHistory) throw new Error('history failure');
-    history.forEach(cb);
-  }),
-  subscribeWithAck: jest.fn(async (_topic: string, cb: (m: DiffMessage<any>) => void) => {
-    liveHandler = cb;
-    return () => {};
-  }),
+  fetchHistory: jest.fn(
+    async (_topic: string, cb: (m: DiffMessage<any>) => void) => {
+      if (failHistory) throw new Error('history failure');
+      history.forEach(cb);
+    },
+  ),
+  subscribeWithAck: jest.fn(
+    async (_topic: string, cb: (m: DiffMessage<any>) => void) => {
+      liveHandler = cb;
+      return () => {};
+    },
+  ),
 }));
 
 beforeEach(() => {
@@ -58,7 +62,9 @@ describe('warmCache', () => {
     // duplicate revision triggers stale state
     liveHandler &&
       liveHandler({ id: '1', rev: 2, op: 'set', value: { name: 'bad' } });
-    expect(() => cache.getById('1')).toThrowErrorMatchingObject({ code: E_STALE_DATA });
+    expect(() => cache.getById('1')).toThrowErrorMatchingObject({
+      code: E_STALE_DATA,
+    });
   });
 
   it('throws on out-of-order diff', async () => {
@@ -66,14 +72,19 @@ describe('warmCache', () => {
     await new Promise((res) => cache.onSynced(res));
     liveHandler &&
       liveHandler({ id: '1', rev: 4, op: 'set', value: { name: 'bad' } });
-    expect(() => cache.getById('1')).toThrowErrorMatchingObject({ code: E_STALE_DATA });
+    expect(() => cache.getById('1')).toThrowErrorMatchingObject({
+      code: E_STALE_DATA,
+    });
   });
 
-  it('marks cache stale when history fails', async () => {
+  it('falls back when history fails', async () => {
     failHistory = true;
     const cache = createWarmCache<any>('topic');
-    await new Promise((res) => setTimeout(res, 0));
-    expect(() => cache.getById('1')).toThrowErrorMatchingObject({ code: E_STALE_DATA });
+    await new Promise((res) => cache.onSynced(res));
+    expect(cache.getById('1')).toBeUndefined();
+    liveHandler &&
+      liveHandler({ id: '1', rev: 5, op: 'set', value: { name: 'new' } });
+    expect(cache.getById('1')).toEqual({ name: 'new' });
   });
 
   it('processes canary reconcilers only for allowed admins', async () => {
@@ -91,4 +102,3 @@ describe('warmCache', () => {
     expect(hitsB).toEqual([]);
   });
 });
-
