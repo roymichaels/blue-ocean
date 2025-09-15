@@ -22,6 +22,8 @@
       "@/core/*": ["src/core/*"],
       "@/services": ["src/services/index"],
       "@/services/*": ["src/services/*", "services/*"],
+      "@/billing": ["src/billing/index"],
+      "@/billing/*": ["src/billing/*"],
       "@/utils/*": ["src/utils/*", "utils/*"],
       "@/providers/*": ["src/providers/*"],
       "@/providers": ["src/providers/index"],

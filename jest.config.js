@@ -97,6 +97,8 @@ const cfg = {
     '^@/core/(.*)$': '<rootDir>/src/core/$1',
     '^@/services$': '<rootDir>/src/services/index',
     '^@/services/(.*)$': ['<rootDir>/src/services/$1', '<rootDir>/services/$1'],
+    '^@/billing$': '<rootDir>/src/billing/index',
+    '^@/billing/(.*)$': '<rootDir>/src/billing/$1',
     '^@/utils/(.*)$': ['<rootDir>/src/utils/$1', '<rootDir>/utils/$1'],
     '^@/providers/(.*)$': '<rootDir>/src/providers/$1',
     '^@/providers$': '<rootDir>/src/providers/index',

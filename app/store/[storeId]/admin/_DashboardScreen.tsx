@@ -5,6 +5,7 @@ import { useAppRouter } from '@/services';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import OrderRevenueMetrics from '@/features/stores/components/OrderRevenueMetrics';
+import FeeDashboard from '@/features/billing/components/FeeDashboard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getStore as getNearStore } from '@/features/stores/services/nearStores';
 import { listProducts as listNearProducts } from '@/features/products/services/nearProducts';
@@ -79,6 +80,7 @@ export default function StoreDashboardScreen() {
         </Text>
         {storeId && <OrderRevenueMetrics storeId={storeId} />}
       </View>
+      {storeId && <FeeDashboard tenantId={storeId} />}
       <View style={styles.nav}>
         <TouchableOpacity
           style={[styles.navButton, { borderColor: colors.border.primary }]}
