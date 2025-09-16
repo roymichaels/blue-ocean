@@ -56,7 +56,9 @@ export function deriveChatSalt(aHex: string, bHex: string): Uint8Array {
   const a = Buffer.from(aHex, 'hex');
   const b = Buffer.from(bHex, 'hex');
   const [first, second] = [a, b].sort(Buffer.compare);
-  return sha256(Buffer.concat([first, second]));
+  const merged = Buffer.concat([first, second]);
+  const data = new Uint8Array(merged.buffer, merged.byteOffset, merged.byteLength);
+  return sha256(data);
 }
 
 /**
