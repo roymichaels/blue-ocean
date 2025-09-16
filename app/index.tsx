@@ -23,6 +23,7 @@ import PriceRange from '@/features/home/components/PriceRange';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import HomeOptions from '@/features/home/components/HomeOptions';
 import ProductGrid from '@/features/home/components/ProductGrid';
+import FeaturedStoresCarousel from '@/features/home/components/FeaturedStoresCarousel';
 import CategoryCard from '@/features/home/components/CategoryCard';
 import SearchBar from '@/features/home/components/SearchBar';
 import { Spinner, Heading } from '@/ui/primitives';
@@ -339,6 +340,8 @@ function HomeScreenContent() {
             />
           )}
         </Container>
+
+        <FeaturedStoresCarousel />
 
         {/* Products Section */}
         <Container

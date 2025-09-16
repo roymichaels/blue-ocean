@@ -6,6 +6,7 @@ import { Container, Stack } from '@/ui/layout';
 import { Spinner } from '@/ui/primitives';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import HomeServices from '@/features/home/components/HomeServices';
+import FeaturedStoresCarousel from '@/features/home/components/FeaturedStoresCarousel';
 import { Product } from '@/types';
 import { styles } from './HomeProducts.styles';
 import { useAppRouter } from '@/services/useAppRouter';
@@ -70,6 +71,7 @@ export default function HomeProducts({
   return (
     <>
       <HomeServices />
+      <FeaturedStoresCarousel />
       <Container style={styles.section}>
         <Stack direction="horizontal" style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}> 
