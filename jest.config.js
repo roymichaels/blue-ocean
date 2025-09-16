@@ -155,7 +155,7 @@ const cfg = {
     '<rootDir>/tests/featuredStoresCarousel.test.tsx',
     '<rootDir>/tests/navigationLoop.test.tsx',
     '<rootDir>/tests/productCardAccessibility.test.tsx',
-    '<rootDir>/tests/productGalleryAccessibility.test.tsx',
+    '<rootDir>/tests/productDetail.test.tsx',
     '<rootDir>/tests/themeContrast.test.tsx',
     '<rootDir>/tests/priceRange.test.tsx',
     '<rootDir>/tests/wallet/**/*.test.ts',
