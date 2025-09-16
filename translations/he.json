@@ -132,7 +132,11 @@
     "connectWalletToContinue": "חבר ארנק כדי להמשיך",
     "create_store_prompt_title": "צור את החנות שלך",
     "create_store_prompt_message": "אין לך עדיין חנות. צור אחת כדי להתחיל למכור.",
-    "create_store_prompt_action": "צור חנות"
+    "create_store_prompt_action": "צור חנות",
+    "featuredStores": "חנויות מובילות",
+    "featuredStoresEmptyTitle": "אין עדיין חנויות מובילות",
+    "featuredStoresEmptyMessage": "חנויות נבחרות יופיעו כאן בקרוב.",
+    "unnamedStore": "חנות ללא שם"
   },
   "cta": {
     "create_store": "צור חנות",
