@@ -138,10 +138,20 @@ class OrderService {
     }
     const active = this.checkoutNonceLocks.get(sessionToken);
     if (active) {
+      void eventBus.track('checkout.duplicate_attempt', {
+        nonce,
+        activeNonce: active,
+        source: 'lock',
+      });
       throw new Error('ERR_DUPLICATE_NONCE');
     }
     const session = getSession(sessionToken);
     if (session?.checkoutNonce && session.checkoutNonce !== nonce) {
+      void eventBus.track('checkout.duplicate_attempt', {
+        nonce,
+        activeNonce: session.checkoutNonce,
+        source: 'session',
+      });
       throw new Error('ERR_DUPLICATE_NONCE');
     }
     this.checkoutNonceLocks.set(sessionToken, nonce);
@@ -310,6 +320,9 @@ class OrderService {
       sha256(Buffer.from(canonicalJson(items)))
     ).toString('hex');
 
+    const orderId = uuid();
+    const timestamp = new Date().toISOString();
+
     let pay = payment;
     if (pay?.method === 'near' && (!pay.contractAddress || !pay.txHash)) {
       if (!chainAdapter.getAccountId()) {
@@ -324,16 +337,30 @@ class OrderService {
         buyerAddress: pay?.buyerAddress,
         sellerAddress: pay?.sellerAddress,
       };
-      const { contractAddress, txHash } = await this.deployEscrow(draft);
-      pay = { ...pay, contractAddress, txHash };
+      try {
+        const { contractAddress, txHash } = await this.deployEscrow(draft);
+        void eventBus.track('escrow.success', {
+          orderId,
+          nonce: draft.nonce,
+          contractAddress,
+          txHash,
+        });
+        pay = { ...pay, contractAddress, txHash };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        void eventBus.track('escrow.failure', {
+          orderId,
+          nonce: draft.nonce,
+          message,
+        });
+        throw err;
+      }
     }
 
     if (!pay?.buyerAddress) {
       pay = { ...pay, buyerAddress: chainAdapter.getAccountId() || undefined };
     }
 
-    const orderId = uuid();
-    const timestamp = new Date().toISOString();
     const feeInfo =
       pay?.method === 'card' ? await calculateCardFees(total) : undefined;
 
