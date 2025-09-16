@@ -101,6 +101,14 @@ describe('session scope validation', () => {
     expect(mockHasAdminScope).toHaveBeenCalledWith('user.testnet', 'admin:settings');
   });
 
+  it('rejects admin scope requests for non-admin wallets with sync signer', async () => {
+    mockChainAdapter.getAccountId.mockReturnValue('user.testnet');
+    await expect(
+      Promise.resolve(requestScopes(['admin:orders'], (payload) => `sig:${payload}`)),
+    ).rejects.toThrow('{E_SCOPE}');
+    expect(mockHasAdminScope).toHaveBeenCalledWith('user.testnet', 'admin:orders');
+  });
+
   it('rejects admin scope requests without a connected wallet', async () => {
     await expect(
       requestScopes(['admin:settings'], async (payload) => `sig:${payload}`),
