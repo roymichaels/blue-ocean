@@ -2,9 +2,21 @@ import { Buffer } from 'buffer';
 import { sha256 } from '@noble/hashes/sha256';
 import { canonicalJson } from '@/utils/serialization';
 import { deriveSharedKey, deriveChatSalt, aesEncrypt } from '@/utils/encryption';
+import { cleanupTrackedKycCapturedPaths } from '@/utils/kycTemp';
 import { getEd25519KeyPair } from './localIdentity';
 import PinataService from './pinata';
 import * as FileSystem from 'expo-file-system';
+
+type ExpoFsExtras = {
+  EncodingType?: {
+    Base64?: string;
+    UTF8?: string;
+  };
+  cacheDirectory?: string;
+  temporaryDirectory?: string;
+};
+
+const expoFs = FileSystem as typeof FileSystem & ExpoFsExtras;
 
 export interface KycUploadFile {
   uri: string;
@@ -25,8 +37,9 @@ function toFilePath(uri: string): string {
 
 async function readBinary(uri: string): Promise<Buffer> {
   if (typeof FileSystem.readAsStringAsync === 'function') {
+    const base64Encoding = expoFs.EncodingType?.Base64 ?? 'base64';
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: (FileSystem.EncodingType as any)?.Base64 ?? 'base64',
+      encoding: base64Encoding as any,
     });
     return Buffer.from(base64, 'base64');
   }
@@ -45,11 +58,12 @@ function randomSuffix(): string {
 async function writeTemp(contents: string): Promise<string> {
   if (
     typeof FileSystem.writeAsStringAsync === 'function' &&
-    typeof FileSystem.cacheDirectory === 'string'
+    typeof expoFs.cacheDirectory === 'string'
   ) {
-    const path = `${FileSystem.cacheDirectory}kyc-${randomSuffix()}.json`;
+    const path = `${expoFs.cacheDirectory}kyc-${randomSuffix()}.json`;
+    const utf8Encoding = expoFs.EncodingType?.UTF8 ?? 'utf8';
     await FileSystem.writeAsStringAsync(path, contents, {
-      encoding: (FileSystem.EncodingType as any)?.UTF8 ?? 'utf8',
+      encoding: utf8Encoding as any,
     });
     return path;
   }
@@ -79,10 +93,10 @@ async function cleanupSource(uri: string): Promise<void> {
   if (!uri) return;
   if (
     typeof FileSystem.deleteAsync === 'function' &&
-    (typeof FileSystem.cacheDirectory === 'string' ||
-      typeof FileSystem.temporaryDirectory === 'string')
+    (typeof expoFs.cacheDirectory === 'string' ||
+      typeof expoFs.temporaryDirectory === 'string')
   ) {
-    const { cacheDirectory, temporaryDirectory } = FileSystem;
+    const { cacheDirectory, temporaryDirectory } = expoFs;
     if (
       (cacheDirectory && uri.startsWith(cacheDirectory)) ||
       (temporaryDirectory && uri.startsWith(temporaryDirectory))
@@ -141,8 +155,9 @@ export async function encryptForTenant(
     const name = file.name || 'document';
     const type = file.type || 'application/octet-stream';
     const buffer = await readBinary(file.uri);
-    const hash = Buffer.from(sha256(buffer)).toString('hex');
-    const base64 = buffer.toString('base64');
+    const bytes = buffer instanceof Uint8Array ? new Uint8Array(buffer) : Uint8Array.from(buffer);
+    const hash = Buffer.from(sha256(bytes)).toString('hex');
+    const base64 = Buffer.from(bytes).toString('base64');
     enriched.push({
       name,
       type,
@@ -158,7 +173,8 @@ export async function encryptForTenant(
     files: enriched.map(({ name, type, size, hash }) => ({ name, type, size, hash })),
   };
 
-  const manifestHash = Buffer.from(sha256(Buffer.from(canonicalJson(manifest)))).toString('hex');
+  const manifestBytes = Buffer.from(canonicalJson(manifest));
+  const manifestHash = Buffer.from(sha256(new Uint8Array(manifestBytes))).toString('hex');
 
   const payload = {
     ...manifest,
@@ -181,16 +197,21 @@ export async function encryptForTenant(
   try {
     const pinata = PinataService.getInstance();
     uploaded = await pinata.uploadFile(tempPath, `kyc-${Date.now()}.json`);
+
+    await cleanupTrackedKycCapturedPaths(enriched.map(({ sourceUri }) => sourceUri));
+    await Promise.all(enriched.map(({ sourceUri }) => cleanupSource(sourceUri)));
   } finally {
     await removeFile(tempPath);
-    await Promise.all(enriched.map(({ sourceUri }) => cleanupSource(sourceUri)));
   }
+
+  const encryptedBodyBytes = Buffer.from(encryptedBody);
+  const encryptedBodyHash = Buffer.from(sha256(new Uint8Array(encryptedBodyBytes))).toString('hex');
 
   let finalUri = uploaded ?? '';
   if (!uploaded || uploaded === tempPath || uploaded === `file://${tempPath}`) {
-    finalUri = `ipfs://${Buffer.from(sha256(Buffer.from(encryptedBody))).toString('hex')}`;
+    finalUri = `ipfs://${encryptedBodyHash}`;
   } else {
-    finalUri = ensureIpfs(uploaded, `ipfs://${Buffer.from(sha256(Buffer.from(encryptedBody))).toString('hex')}`);
+    finalUri = ensureIpfs(uploaded, `ipfs://${encryptedBodyHash}`);
   }
 
   return { uri: finalUri, hash: manifestHash };
