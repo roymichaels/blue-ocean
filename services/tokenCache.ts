@@ -20,9 +20,16 @@ async function writeIndex(list: string[]): Promise<void> {
 
 export async function saveSession(record: SessionToken): Promise<void> {
   try {
+    const payload = {
+      token: record.token,
+      scopes: record.scopes,
+      exp: record.exp,
+      deviceHash: record.deviceHash,
+      ...(record.sealed ? { sealed: record.sealed } : {}),
+    } satisfies SessionToken;
     await SecureStore.setItemAsync(
       `session-${record.token}`,
-      JSON.stringify(record),
+      JSON.stringify(payload),
     );
     const idx = await readIndex();
     if (!idx.includes(record.token)) {
@@ -38,7 +45,52 @@ export async function loadSessions(): Promise<SessionToken[]> {
   for (const token of idx) {
     try {
       const raw = await SecureStore.getItemAsync(`session-${token}`);
-      if (raw) out.push(JSON.parse(raw));
+      if (!raw) continue;
+      const parsed = JSON.parse(raw) as Partial<SessionToken> & {
+        token?: unknown;
+        scopes?: unknown;
+        exp?: unknown;
+        deviceHash?: unknown;
+        sealed?: unknown;
+      };
+      if (
+        parsed &&
+        typeof parsed.token === 'string' &&
+        typeof parsed.deviceHash === 'string' &&
+        parsed.deviceHash.length > 0 &&
+        Array.isArray(parsed.scopes) &&
+        parsed.scopes.every((s) => typeof s === 'string') &&
+        typeof parsed.exp === 'number'
+      ) {
+        const sealed = parsed.sealed as SessionToken['sealed'];
+        if (
+          sealed !== undefined &&
+          (
+            !sealed ||
+            typeof sealed !== 'object' ||
+            typeof sealed.cipher !== 'string' ||
+            typeof sealed.walletPublicKey !== 'string' ||
+            typeof sealed.identityPublicKey !== 'string'
+          )
+        ) {
+          continue;
+        }
+        const record: SessionToken = sealed
+          ? {
+              token: parsed.token,
+              scopes: parsed.scopes as string[],
+              exp: parsed.exp,
+              deviceHash: parsed.deviceHash,
+              sealed,
+            }
+          : {
+              token: parsed.token,
+              scopes: parsed.scopes as string[],
+              exp: parsed.exp,
+              deviceHash: parsed.deviceHash,
+            };
+        out.push(record);
+      }
     } catch {}
   }
   return out;

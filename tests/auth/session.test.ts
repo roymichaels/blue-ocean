@@ -3,6 +3,10 @@ import { requestScopes, validateToken, refreshToken, sessionEvents } from '@/ser
 describe('session token lifecycle', () => {
   const signer = (msg: string) => `sig:${msg}`;
 
+  afterEach(() => {
+    delete (globalThis as any).__DEVICE_INFO__;
+  });
+
   it('refreshToken rotates token and extends expiry', async () => {
     const { token, exp } = requestScopes(['checkout'], signer, 50);
     const events: any[] = [];
@@ -25,5 +29,12 @@ describe('session token lifecycle', () => {
     expect(next.token).not.toBe(token);
     expect(() => validateToken(next.token, ['read'])).not.toThrow();
     expect(() => validateToken(token, ['read'])).toThrow('{E_EXPIRED}');
+  });
+
+  it('prevents refresh when device hash differs', () => {
+    (globalThis as any).__DEVICE_INFO__ = 'device-a';
+    const { token } = requestScopes(['read'], signer, 1000);
+    (globalThis as any).__DEVICE_INFO__ = 'device-b';
+    expect(() => refreshToken(token, signer, 1000)).toThrow('{E_DEVICE_MISMATCH}');
   });
 });

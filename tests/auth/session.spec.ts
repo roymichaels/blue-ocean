@@ -6,6 +6,7 @@ describe('session scope validation', () => {
 
   afterEach(() => {
     scopedTokensFlag.rollback = false;
+    delete (globalThis as any).__DEVICE_INFO__;
   });
 
   it('rejects invalid scope requests', () => {
@@ -58,5 +59,12 @@ describe('session scope validation', () => {
     jest.setSystemTime(exp + 120_000);
     expect(() => validateToken(token, ['read'])).toThrow('{E_EXPIRED}');
     jest.useRealTimers();
+  });
+
+  it('rejects tokens when device hash changes', () => {
+    (globalThis as any).__DEVICE_INFO__ = 'device-a';
+    const { token } = requestScopes(['read'], signer);
+    (globalThis as any).__DEVICE_INFO__ = 'device-b';
+    expect(() => validateToken(token, ['read'])).toThrow('{E_DEVICE_MISMATCH}');
   });
 });
