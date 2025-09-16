@@ -56,8 +56,10 @@ import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import {
-  requestTokenWithConsent,
   getCheckoutRequestScopes,
+  getSession,
+  requestScopes,
+  requestTokenWithConsent,
   setSessionCheckoutNonce,
 } from '@/services/session';
 import { uuid } from '@/utils/uuid';
@@ -102,7 +104,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderIds, setOrderIds] = useState<string[]>([]);
   const [checkoutNonce, setCheckoutNonce] = useState<string | null>(null);
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, sessionToken: authSessionToken } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const { showNotification } = useNotifications();
@@ -128,17 +130,21 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     action: () => {},
   });
 
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [checkoutSessionToken, setCheckoutSessionToken] = useState<string | null>(null);
+  const [checkoutScopeGranted, setCheckoutScopeGranted] = useState(false);
+  const [checkoutScopePending, setCheckoutScopePending] = useState(false);
   const [kycRequired, setKycRequired] = useState<boolean | null>(null);
 
   const ensureSessionToken = async (): Promise<string> => {
-    await requireUnlock('checkout');
-    if (sessionToken) return sessionToken;
-    const { token } = await requestTokenWithConsent(
+    if (checkoutSessionToken) return checkoutSessionToken;
+    const { token, scopes } = await requestTokenWithConsent(
       getCheckoutRequestScopes(),
       () => uuid(),
     );
-    setSessionToken(token);
+    setCheckoutSessionToken(token);
+    if (scopes.includes('checkout')) {
+      setCheckoutScopeGranted(true);
+    }
     return token;
   };
 
@@ -159,7 +165,85 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     };
   }, [visible]);
 
-  
+
+  useEffect(() => {
+    if (!visible) {
+      setCheckoutScopePending(false);
+      return;
+    }
+    if (!isLoggedIn) {
+      setCheckoutScopeGranted(false);
+      setCheckoutScopePending(false);
+      return;
+    }
+
+    const activeScopes = new Set<string>();
+    const tokens = [authSessionToken, checkoutSessionToken].filter(
+      (value): value is string => typeof value === 'string' && value.length > 0,
+    );
+    for (const token of tokens) {
+      const session = getSession(token);
+      if (!session) continue;
+      for (const scope of session.scopes) {
+        activeScopes.add(scope);
+      }
+    }
+
+    if (activeScopes.has('checkout')) {
+      setCheckoutScopeGranted(true);
+      setCheckoutScopePending(false);
+      return;
+    }
+
+    let cancelled = false;
+    setCheckoutScopePending(true);
+
+    (async () => {
+      try {
+        void eventBus.track('checkout.scopePrompt', { status: 'requested' });
+        const issued = await requestScopes(['checkout'], () => uuid());
+        if (cancelled) return;
+        setCheckoutSessionToken(issued.token);
+        if (issued.scopes.includes('checkout')) {
+          setCheckoutScopeGranted(true);
+          void eventBus.track('checkout.scopePrompt', { status: 'granted' });
+        } else {
+          throw new Error('checkout scope missing');
+        }
+      } catch (err) {
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : String(err);
+        void eventBus.track('checkout.scopePrompt', { status: 'failed', message });
+        errorLog('Checkout scope request failed', err);
+        setCheckoutScopeGranted(false);
+        setInfoModal({
+          visible: true,
+          title: t('common.error'),
+          message: t(
+            'cart.checkoutScopeRequired',
+            'Checkout authorization is required before completing your order.',
+          ),
+          type: 'error',
+        });
+      } finally {
+        if (!cancelled) {
+          setCheckoutScopePending(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    visible,
+    isLoggedIn,
+    authSessionToken,
+    checkoutSessionToken,
+    t,
+  ]);
+
+
   useEffect(() => {
     if (visible) {
       // reset flow
@@ -338,6 +422,25 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
   const placeOrder = async () => {
     if (!validateShippingAddress()) return;
+    try {
+      await requireUnlock('checkout');
+      void eventBus.track('checkout.stepUp', { status: 'success' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      void eventBus.track('checkout.stepUp', { status: 'failed', message });
+      errorLog('Checkout step-up failed', error);
+      setInfoModal({
+        visible: true,
+        title: t('common.error'),
+        message: t(
+          'cart.checkoutStepUpFailed',
+          'Unlock verification is required before completing your order.',
+        ),
+        type: 'warning',
+      });
+      return;
+    }
+
     const token = await ensureSessionToken();
     let nonce = checkoutNonce;
     if (!nonce) {
@@ -1117,15 +1220,15 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           style={[
             styles.completeOrderButton,
             { backgroundColor: colors.gold },
-            loading && styles.buttonDisabled,
+            (loading || checkoutScopePending || !checkoutScopeGranted) && styles.buttonDisabled,
           ]}
           onPress={placeOrder}
-          disabled={loading}
+          disabled={loading || checkoutScopePending || !checkoutScopeGranted}
         >
-          {loading ? (
+          {loading || checkoutScopePending ? (
             <Spinner size="small" color={colors.text.inverse} />
           ) : (
-            <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}> 
+            <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}>
               {t('cart.completeOrder')}
             </Text>
           )}
