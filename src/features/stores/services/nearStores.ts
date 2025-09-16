@@ -14,12 +14,68 @@ import {
 } from '@/services/nearKvStore';
 import { errorLog } from '@/utils/logger';
 import config from '@/config';
+import { createWarmCache } from '@/services/warmCache';
+import type { DiffMessage } from '@/services/warmCache';
 
 assertNearChain();
 
 const ADDRESS = 'stores';
+const STORE_CACHE_TOPIC = '/blue-ocean/stores/1';
 const DISABLED = false;
 let SEEDED = false;
+
+async function hydrateStoreLake(): Promise<Array<DiffMessage<Store>>> {
+  try {
+    const entries = await listValues(ADDRESS);
+    const seen = new Map<string, DiffMessage<Store>>();
+    for (const entry of entries) {
+      try {
+        const parsed = JSON.parse(entry.value) as Store & { rev?: number; version?: number };
+        const keyParts = entry.key.split(':');
+        const id = parsed.id || keyParts[keyParts.length - 1] || entry.key;
+        if (!id) continue;
+        const tsSource =
+          (parsed.updatedAt && new Date(parsed.updatedAt).getTime()) ||
+          (parsed.createdAt && new Date(parsed.createdAt).getTime()) ||
+          Date.now();
+        const ts = Number.isFinite(tsSource) ? tsSource : Date.now();
+        const rev =
+          (typeof parsed.rev === 'number' && parsed.rev) ||
+          (typeof parsed.version === 'number' && parsed.version) ||
+          1;
+        const diff: DiffMessage<Store> = { id, rev, op: 'set', value: parsed, ts };
+        if (!seen.has(id) || entry.key.includes(`:${id}`)) {
+          seen.set(id, diff);
+        }
+      } catch (err) {
+        errorLog('Invalid store snapshot', err);
+      }
+    }
+    return Array.from(seen.values());
+  } catch (err) {
+    errorLog('Failed to hydrate stores from NEAR Lake', err);
+    return [];
+  }
+}
+
+const storeCache = createWarmCache<Store>(STORE_CACHE_TOPIC, {
+  hydrateLake: hydrateStoreLake,
+});
+
+export const storesWarmCache = {
+  getById(id: string) {
+    return storeCache.getById(id);
+  },
+  subscribe(
+    filter: (id: string, value: Store | undefined) => boolean,
+    cb: (id: string, value: Store | undefined) => void,
+  ) {
+    return storeCache.subscribe(filter, cb);
+  },
+  onSynced(cb: () => void) {
+    return storeCache.onSynced(cb);
+  },
+};
 
 function ensureSeed() {
   if (!DISABLED || SEEDED) return;
@@ -125,6 +181,10 @@ export async function selectStore(
 ): Promise<Store | null> {
   ensureSeed();
   const id = arg2 ?? arg1;
+  try {
+    const cached = storesWarmCache.getById(id);
+    if (cached) return cached;
+  } catch {}
   const key = arg2 ? storeKey(id, requireStoreId(arg1)) : indexKey(id);
   const res = await getValue(ADDRESS, key);
   if (!res) return null;
@@ -138,6 +198,12 @@ export async function selectStore(
 export async function listStores(storeId: string): Promise<Store[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
+  try {
+    const values = storeCache.values();
+    if (sid === 'default') return values;
+    const filtered = values.filter((store) => requireStoreId(store.id) === sid);
+    if (filtered.length > 0) return filtered;
+  } catch {}
   const items = await listValues(ADDRESS);
   const res: Store[] = [];
   for (const i of items) {
@@ -229,3 +295,5 @@ export async function createStoreOnChain(args: {
   if (json?.error) throw new Error(String(json.error));
   return json?.tx || '';
 }
+
+export { E_STALE_DATA, E_SYNC_LAG } from '@/services/warmCache';
