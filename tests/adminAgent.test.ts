@@ -17,15 +17,20 @@ async function createSignedMessage<T>(
   payload: T,
   priv: Uint8Array,
   pub: Uint8Array,
-): Promise<WakuMessage<T>> {
-  const message: WakuMessage<T> = {
+  meta?: { nonce?: string; ts?: number },
+): Promise<WakuMessage<T & { nonce: string; ts: number }>> {
+  const message: WakuMessage<any> = {
     type,
-    payload,
+    payload: {
+      ...payload,
+      nonce: meta?.nonce ?? Buffer.from(utils.randomPrivateKey()).toString('hex'),
+      ts: meta?.ts ?? Date.now(),
+    },
     sender: { publicKey: Buffer.from(pub).toString('hex') },
     signature: '',
   };
   const bytes = new TextEncoder().encode(
-    canonicalJson({ type: message.type, payload, sender: message.sender }),
+    canonicalJson({ type: message.type, payload: message.payload, sender: message.sender }),
   );
   const sig = await sign(bytes, priv);
   message.signature = Buffer.from(sig).toString('hex');
@@ -36,13 +41,15 @@ async function createJoinRequest(
   priv: Uint8Array,
   pub: Uint8Array,
   address: string,
-  requestedAt = Date.now(),
+  ts = Date.now(),
+  nonce?: string,
 ) {
   return await createSignedMessage(
     'admin.joinRequested',
-    { address, requestedAt },
+    { address },
     priv,
     pub,
+    { ts, nonce },
   );
 }
 
@@ -104,6 +111,16 @@ describe('AdminAgent', () => {
     });
   });
 
+  it('rejects admin requests with excessive timestamp skew', async () => {
+    const priv = utils.randomPrivateKey();
+    const pub = await getPublicKey(priv);
+    const oldTs = Date.now() - 10 * 60 * 1000;
+    const msg = await createJoinRequest(priv, pub, 'addr1', oldTs);
+    await expect(agent.requestAdmin(msg)).rejects.toMatchObject({
+      code: 'E_REPLAY',
+    });
+  });
+
   it('approves queued requests with existing admin', async () => {
     const priv1 = utils.randomPrivateKey();
     const pub1 = await getPublicKey(priv1);
@@ -130,6 +147,34 @@ describe('AdminAgent', () => {
     expect(admins.map((a) => a.address)).toEqual(['addr1', 'addr2']);
     const pending = await agent.getPendingRequests();
     expect(pending).toHaveLength(0);
+  });
+
+  it('allows existing admin to reject pending requests', async () => {
+    const priv1 = utils.randomPrivateKey();
+    const pub1 = await getPublicKey(priv1);
+    const first = await createJoinRequest(priv1, pub1, 'addr1');
+    await agent.requestAdmin(first);
+
+    const priv2 = utils.randomPrivateKey();
+    const pub2 = await getPublicKey(priv2);
+    const second = await createJoinRequest(priv2, pub2, 'addr2');
+    await agent.requestAdmin(second);
+
+    const reject = await createSignedMessage(
+      'admin.reject',
+      { address: 'addr2' },
+      priv1,
+      pub1,
+    );
+    const event = new Promise((resolve) =>
+      agent.once('admin.rejected', resolve as any),
+    );
+    await agent.rejectAdmin(reject);
+    await expect(event).resolves.toEqual({ address: 'addr2' });
+    const pending = await agent.getPendingRequests();
+    expect(pending).toHaveLength(0);
+    const admins = await agent.getAdmins();
+    expect(admins.map((a) => a.address)).toEqual(['addr1']);
   });
 
   it('rejects unauthorized approvals', async () => {
@@ -197,7 +242,7 @@ describe('AdminAgent', () => {
     // replay the same signed message after significant time skew
     jest.setSystemTime(new Date('2024-01-01T01:00:00Z'));
     await expect(agent.requestAdmin(msg)).rejects.toMatchObject({
-      code: 'E_DUPLICATE',
+      code: 'E_REPLAY',
     });
 
     const admins = await agent.getAdmins();
@@ -218,10 +263,12 @@ describe('AdminAgent', () => {
     const request = await createJoinRequest(priv2, pub2, 'addr2', 123);
     await agent.requestAdmin(request);
 
+    // replay same message -> E_REPLAY
     await expect(agent.requestAdmin(request)).rejects.toMatchObject({
-      code: 'E_DUPLICATE',
+      code: 'E_REPLAY',
     });
 
+    // new nonce but same address -> E_DUPLICATE
     const replay = await createJoinRequest(priv2, pub2, 'addr2', 124);
     await expect(agent.requestAdmin(replay)).rejects.toMatchObject({
       code: 'E_DUPLICATE',

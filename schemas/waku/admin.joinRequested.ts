@@ -5,7 +5,9 @@ export const adminJoinRequestSchema = wakuMessageSchema.extend({
   type: z.literal('admin.joinRequested'),
   payload: z.object({
     address: z.string(),
-    requestedAt: z.number().optional(),
+    displayName: z.string().optional(),
+    nonce: z.string(),
+    ts: z.number(),
   }),
 });
 
