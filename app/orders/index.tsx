@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
-import { Heading, Skeleton, Text } from '@/ui/primitives';
+import { Button, Heading, Skeleton, Text } from '@/ui/primitives';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import EmptyState from '@/shared/ui/EmptyState';
 import { useWallet } from '@/contexts/WalletProvider';
@@ -11,6 +11,8 @@ import { errorLog } from '@/utils/logger';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { AlertTriangle, RefreshCw, ShoppingCart } from 'lucide-react-native';
 import { useAppRouter } from '@/services/useAppRouter';
+
+const PAGE_SIZE = 20;
 
 function OrderSkeletonRow() {
   return (
@@ -74,6 +76,7 @@ export default function OrdersScreen() {
   const { t } = useLanguage();
   const { address, connect } = useWallet();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [remainingOrders, setRemainingOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +109,8 @@ export default function OrdersScreen() {
           const bTime = new Date(b.createdAt || 0).getTime();
           return bTime - aTime;
         });
-        setOrders(sorted);
+        setOrders(sorted.slice(0, PAGE_SIZE));
+        setRemainingOrders(sorted.slice(PAGE_SIZE));
       } catch (err) {
         errorLog('Failed to load buyer orders', err);
         setError(t('orders.loadError', 'Unable to load your orders. Please try again.'));
@@ -124,6 +128,7 @@ export default function OrdersScreen() {
   useEffect(() => {
     if (!address || !supportsBuyerOrders) {
       setOrders([]);
+      setRemainingOrders([]);
       return;
     }
     fetchOrders('initial').catch(() => {});
@@ -132,6 +137,15 @@ export default function OrdersScreen() {
   const handleRefresh = useCallback(() => {
     void fetchOrders('refresh');
   }, [fetchOrders]);
+
+  const handleLoadMore = useCallback(() => {
+    setRemainingOrders((prevRemaining) => {
+      if (prevRemaining.length === 0) return prevRemaining;
+      const nextBatch = prevRemaining.slice(0, PAGE_SIZE);
+      setOrders((prevOrders) => [...prevOrders, ...nextBatch]);
+      return prevRemaining.slice(PAGE_SIZE);
+    });
+  }, []);
 
   if (!supportsBuyerOrders) {
     return (
@@ -218,6 +232,9 @@ export default function OrdersScreen() {
                 openOrder={openOrder}
               />
             ))}
+            {remainingOrders.length > 0 ? (
+              <Button title={t('common.loadMore', 'Load more')} onPress={handleLoadMore} />
+            ) : null}
           </Stack>
         )}
       </Container>

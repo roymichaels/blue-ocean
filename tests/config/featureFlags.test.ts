@@ -79,6 +79,25 @@ describe('moonpay feature flag', () => {
   });
 });
 
+describe('disputes feature flag', () => {
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_FEATURE_DISPUTES;
+    jest.resetModules();
+  });
+
+  it('is disabled by default', () => {
+    const { isDisputesEnabled } = require('@/config/featureFlags');
+    expect(isDisputesEnabled()).toBe(false);
+  });
+
+  it('respects environment flag', () => {
+    process.env.EXPO_PUBLIC_FEATURE_DISPUTES = 'true';
+    jest.resetModules();
+    const { isDisputesEnabled } = require('@/config/featureFlags');
+    expect(isDisputesEnabled()).toBe(true);
+  });
+});
+
 describe('notifications pipeline feature flag', () => {
   beforeEach(() => {
     delete process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE;
