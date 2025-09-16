@@ -29,6 +29,7 @@ import { getPublicKeyHex } from '@/services/localIdentity';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
+const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
 const LOW_STOCK_THRESHOLD = 5;
 const KYC_RECEIPT_ERROR = 'KYC receipt missing or invalid';
@@ -55,9 +56,27 @@ export async function emitOrderEvents(
   storeId: string,
   sessionToken?: string,
 ) {
+  const parseDeterministicTimestamp = (): number => {
+    const candidates = [order.createdAt, order.updatedAt];
+    for (const candidate of candidates) {
+      if (typeof candidate !== 'string') continue;
+      const parsed = Date.parse(candidate);
+      if (!Number.isNaN(parsed)) {
+        return parsed;
+      }
+    }
+    const digest = Buffer.from(
+      sha256(Buffer.from(canonicalJson({ orderId: order.id }))),
+    ).toString('hex');
+    return Number.parseInt(digest.slice(0, 13), 16);
+  };
+
+  const deterministicTimestamp = parseDeterministicTimestamp();
+
   const baseEvent = {
     id: order.id,
     orderId: order.id,
+    timestamp: deterministicTimestamp,
     storeId,
     buyerAddress: order.buyerAddress,
     sellerAddress: order.sellerAddress,
@@ -71,13 +90,13 @@ export async function emitOrderEvents(
     },
   };
   try {
-    await eventBus.publish(ORDER_TOPIC, 'order.created', {
-      ...baseEvent,
-    });
+    const createdPayload = { ...baseEvent };
+    await eventBus.publish(ORDER_TOPIC, 'order.created', createdPayload);
+    await eventBus.publish(NOTIFICATION_TOPIC, 'order.created', createdPayload);
     if (order.paymentMethod === 'near') {
-      await eventBus.publish(ORDER_TOPIC, 'escrow.deployed', {
-        ...baseEvent,
-      });
+      const escrowPayload = { ...baseEvent };
+      await eventBus.publish(ORDER_TOPIC, 'escrow.deployed', escrowPayload);
+      await eventBus.publish(NOTIFICATION_TOPIC, 'escrow.deployed', escrowPayload);
 
     }
   } catch (err) {
