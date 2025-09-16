@@ -51,6 +51,7 @@ export interface Store {
   reputation?: number;
   plan?: 'free' | 'premium';
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Category {
