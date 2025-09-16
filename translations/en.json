@@ -631,6 +631,7 @@
       "courier_picked_up": "Courier Picked Up",
       "courier_on_way": "Courier On The Way",
       "delivered": "Delivered",
+      "disputed": "Disputed",
       "released": "Payment released",
       "refunded": "Payment refunded"
     },
