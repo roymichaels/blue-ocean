@@ -2,6 +2,7 @@ export * from './message';
 export * from './settings';
 export * from './notification';
 export * from './product.updated';
+export * from './product.deleted';
 export * from './order.status';
 export * from './admin.joinRequested';
 export * from './admin.approve';

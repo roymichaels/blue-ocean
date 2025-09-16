@@ -7,9 +7,10 @@ interface Props {
   fiatKeyInput: string;
   setFiatKeyInput: (v: string) => void;
   colors: any;
+  disabled?: boolean;
 }
 
-const MoonPaySettings: React.FC<Props> = ({ fiatKeyInput, setFiatKeyInput, colors }) => {
+const MoonPaySettings: React.FC<Props> = ({ fiatKeyInput, setFiatKeyInput, colors, disabled = false }) => {
   return (
     <Card
       style={[
@@ -33,12 +34,16 @@ const MoonPaySettings: React.FC<Props> = ({ fiatKeyInput, setFiatKeyInput, color
                 color: colors.text.primary,
               },
             ]}
-            value={fiatKeyInput}
-            onChangeText={setFiatKeyInput}
-            placeholder="pk_live_..."
+            value={disabled ? '' : fiatKeyInput}
+            onChangeText={disabled ? undefined : setFiatKeyInput}
+            placeholder={disabled ? 'בקרוב' : 'pk_live_...'}
+            editable={!disabled}
             textAlign="right"
             placeholderTextColor={colors.text.tertiary}
           />
+          {disabled ? (
+            <Text style={[styles.helper, { color: colors.text.secondary }]}>השדה חסום בגרסה זו.</Text>
+          ) : null}
         </View>
       </View>
     </Card>
@@ -82,6 +87,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
+  },
+  helper: {
+    marginTop: 8,
+    fontSize: 12,
+    textAlign: 'right',
   },
 });
 

@@ -1,233 +1,236 @@
-import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppRouter } from '@/services';
-import { ArrowLeft, CircleCheck as CheckCircle, Circle as XCircle, Clock, User, Mail, FileText, Calendar } from 'lucide-react-native';
-import { useAuth } from '@/features/auth/AuthContext';
+import { ArrowLeft, FileText, ShieldCheck, XCircle } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
-import DatabaseService from '@/services/database';
-import { User as UserType } from '../../../../types';
+import { useAppRouter } from '@/services';
+import SettingsAgent from '@/agents/settings-agent';
+import usersAgent from '@/agents/users-agent';
+import type { User } from '@/types';
 import { Spinner } from '@/ui/primitives';
-import commonStyles from '@/constants/styles';
-import SmartImage from '../../../../components/SmartImage';
+import { issueKycReceipt, loadKycReceipt } from '@/services/kycReceipts';
 
+const POLICY_SETTING_KEY = 'kyc.required';
 
-
-export default function KycApprovalsScreen() {
-  const [pendingRequests, setPendingRequests] = useState<UserType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { isAdmin, isDriver, user } = useAuth();
+export default function KycApprovalsScreen(): React.ReactElement {
   const { colors } = useTheme();
-  const { replace, back } = useAppRouter();
+  const { back } = useAppRouter();
+  const [policyRequired, setPolicyRequired] = useState(false);
+  const [pending, setPending] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [policySaving, setPolicySaving] = useState(false);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isAdmin && !isDriver) {
-      Alert.alert('גישה מוגבלת', 'רק מנהלים יכולים לגשת לדף זה', [
-        { text: 'אישור', onPress: () => replace('/') }
-      ]);
-      return;
-    }
-
-    loadPendingRequests();
-  }, [isAdmin, isDriver]);
-
-  const loadPendingRequests = async () => {
+  const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const db = DatabaseService.getInstance();
-      const requests = await db.getPendingKycRequests();
-      setPendingRequests(requests);
+      const [policyValue, users] = await Promise.all([
+        SettingsAgent.getInstance().getSettingValue(POLICY_SETTING_KEY),
+        usersAgent.getAll(),
+      ]);
+      setPolicyRequired((policyValue || '').toLowerCase() === 'on');
+      setPending(users.filter((user) => user.kycStatus === 'pending'));
     } catch (error) {
-      errorLog('Error loading pending KYC requests:', error);
-      Alert.alert('שגיאה', 'אירעה שגיאה בטעינת בקשות האימות');
+      Alert.alert('שגיאה', 'טעינת בקשות KYC נכשלה');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const approveRequest = async (userId: string) => {
-    if (!user) return;
-    
+  useEffect(() => {
+    void refreshData();
+  }, [refreshData]);
+
+  const togglePolicy = useCallback(async () => {
+    const next = !policyRequired;
+    setPolicySaving(true);
     try {
-      const db = DatabaseService.getInstance();
-      const success = await db.updateUserKycStatus(userId, 'verified', user.id);
-      
-      if (success) {
-        // Update local state
-        setPendingRequests(prev => prev.filter(req => req.id !== userId));
-        Alert.alert('הצלחה', 'אימות KYC אושר בהצלחה');
-      } else {
-        Alert.alert('שגיאה', 'אירעה שגיאה באישור האימות');
-      }
+      await SettingsAgent.getInstance().updateSettingValue(
+        POLICY_SETTING_KEY,
+        next ? 'on' : 'off',
+      );
+      setPolicyRequired(next);
     } catch (error) {
-      errorLog('Error approving KYC request:', error);
-      Alert.alert('שגיאה', 'אירעה שגיאה באישור האימות');
+      Alert.alert('שגיאה', 'עדכון מדיניות KYC נכשל');
+    } finally {
+      setPolicySaving(false);
     }
-  };
+  }, [policyRequired]);
 
-  const rejectRequest = async (userId: string) => {
-    if (!user) return;
-    
+  const handlePreview = useCallback((user: User) => {
+    if (user.kycDocumentUri) {
+      Linking.openURL(user.kycDocumentUri).catch(() =>
+        Alert.alert('שגיאה', 'לא ניתן לפתוח את מסמך ה-KYC'),
+      );
+    } else if (user.kycRequestNotes) {
+      Alert.alert('הערות משתמש', user.kycRequestNotes);
+    } else {
+      Alert.alert('מידע חסר', 'לא נמצאו מסמכי אימות עבור משתמש זה.');
+    }
+  }, []);
+
+  const approveRequest = useCallback(
+    async (user: User) => {
+      setProcessingId(user.id);
+      try {
+        await usersAgent.updateKyc(user.id, 'verified');
+        if (user.publicKey) {
+          const existingReceipt = await loadKycReceipt(user.publicKey);
+          if (!existingReceipt) {
+            await issueKycReceipt(user.publicKey, { userId: user.id });
+          }
+        }
+        setPending((prev) => prev.filter((item) => item.id !== user.id));
+        Alert.alert('הצלחה', 'האימות אושר ונשלחה קבלה חתומה');
+      } catch (error) {
+        Alert.alert('שגיאה', 'אישור הבקשה נכשל');
+      } finally {
+        setProcessingId(null);
+      }
+    },
+    [],
+  );
+
+  const declineRequest = useCallback(async (user: User) => {
+    setProcessingId(user.id);
     try {
-      const db = DatabaseService.getInstance();
-      const success = await db.updateUserKycStatus(userId, 'rejected', user.id);
-      
-      if (success) {
-        // Update local state
-        setPendingRequests(prev => prev.filter(req => req.id !== userId));
-        Alert.alert('הצלחה', 'אימות KYC נדחה');
-      } else {
-        Alert.alert('שגיאה', 'אירעה שגיאה בדחיית האימות');
-      }
+      await usersAgent.updateKyc(user.id, 'rejected');
+      setPending((prev) => prev.filter((item) => item.id !== user.id));
+      Alert.alert('עודכן', 'הבקשה נדחתה והמשתמש עודכן.');
     } catch (error) {
-      errorLog('Error rejecting KYC request:', error);
-      Alert.alert('שגיאה', 'אירעה שגיאה בדחיית האימות');
+      Alert.alert('שגיאה', 'דחיית הבקשה נכשלה');
+    } finally {
+      setProcessingId(null);
     }
-  };
+  }, []);
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'לא זמין';
-    return new Date(dateString).toLocaleDateString('he-IL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  const policyDescription = useMemo(
+    () =>
+      policyRequired
+        ? 'לקוחות ללא קבלה חתומה ייחסמו בקופה.'
+        : 'הקופה תתאפשר ללא אימות מוקדם.',
+    [policyRequired],
+  );
 
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <TouchableOpacity onPress={() => back()}>
+        <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
+          <TouchableOpacity onPress={back} accessibilityRole="button">
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אישורי KYC</Text>
-          <View style={commonStyles.spacer24} />
+          <Text style={[styles.title, { color: colors.text.primary }]}>אישורי KYC</Text>
+          <View style={{ width: 24 }} />
         </View>
-        <Spinner />
+        <View style={styles.centered}>
+          <Spinner />
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-        <TouchableOpacity onPress={() => back()}>
-          <ArrowLeft size={24} color={colors.text.primary} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.primary }]}>אישורי KYC</Text>
-        <View style={commonStyles.spacer24} />
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <View style={[styles.header, { borderBottomColor: colors.border.primary }]}> 
+        <TouchableOpacity onPress={back} accessibilityRole="button"> 
+          <ArrowLeft size={24} color={colors.text.primary} /> 
+        </TouchableOpacity> 
+        <Text style={[styles.title, { color: colors.text.primary }]}>אישורי KYC</Text> 
+        <View style={{ width: 24 }} /> 
+      </View> 
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.titleContainer}>
-          <Clock size={24} color={colors.gold} />
-          <Text style={[styles.title, { color: colors.text.primary }]}>בקשות אימות KYC ממתינות</Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}> 
+        <View style={[styles.policyCard, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}> 
+          <View style={styles.policyHeader}> 
+            <ShieldCheck size={20} color={colors.gold} /> 
+            <Text style={[styles.policyTitle, { color: colors.text.primary }]}>מדיניות אימות</Text> 
+          </View> 
+          <View style={styles.policyToggle}> 
+            <Text style={{ color: colors.text.primary }}>דרוש KYC לפני רכישה</Text> 
+            <Switch
+              value={policyRequired}
+              onValueChange={togglePolicy}
+              thumbColor={policyRequired ? colors.gold : colors.border.primary}
+              disabled={policySaving}
+            />
+          </View>
+          <Text style={{ color: colors.text.secondary }}>{policyDescription}</Text>
         </View>
 
-        {pendingRequests.length > 0 ? (
-          <View style={styles.requestsList}>
-            {pendingRequests.map((request) => (
-              <View key={request.id} style={[styles.requestCard, { 
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary 
-              }]}>
-                <View style={styles.userInfo}>
-                  <View style={styles.avatarContainer}>
-                    {request.avatar ? (
-                      <SmartImage
-                        uri={request.avatar}
-                        width={60}
-                        height={60}
-                        style={[styles.avatar, { borderColor: colors.gold }]}
-                      />
-                    ) : (
-                      <View style={[styles.avatarPlaceholder, { 
-                        backgroundColor: colors.surface.secondary,
-                        borderColor: colors.border.primary 
-                      }]}>
-                        <User size={24} color={colors.interactive.disabled} />
-                      </View>
-                    )}
-                  </View>
-                  
-                  <View style={styles.userDetails}>
-                    <Text style={[styles.userName, { color: colors.text.primary }]}>{request.displayName}</Text>
-                    <View style={styles.userDetailRow}>
-                      <User size={14} color={colors.text.secondary} />
-                      <Text style={[styles.userDetailText, { color: colors.text.secondary }]}>@{request.username}</Text>
-                    </View>
-                    <View style={styles.userDetailRow}>
-                      <Mail size={14} color={colors.text.secondary} />
-                      <Text style={[styles.userDetailText, { color: colors.text.secondary }]}>{request.email}</Text>
-                    </View>
-                    <View style={styles.userDetailRow}>
-                      <Calendar size={14} color={colors.text.secondary} />
-                      <Text style={[styles.userDetailText, { color: colors.text.secondary }]}>
-                        בקשה מ: {formatDate(request.kycRequestedAt)}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                {request.kycRequestNotes && (
-                  <View style={[styles.notesContainer, { backgroundColor: colors.surface.secondary }]}>
-                    <View style={styles.notesHeader}>
-                      <FileText size={16} color={colors.gold} />
-                      <Text style={[styles.notesTitle, { color: colors.text.primary }]}>הערות המשתמש:</Text>
-                    </View>
-                    <Text style={[styles.notesText, { color: colors.text.secondary }]}>{request.kycRequestNotes}</Text>
-                  </View>
-                )}
-
-                <View style={styles.actionButtons}>
-                  <TouchableOpacity 
-                    style={[styles.approveButton, { backgroundColor: colors.status.success }]}
-                    onPress={() => approveRequest(request.id)}
-                  >
-                    <CheckCircle size={20} color={colors.text.inverse} />
-                    <Text style={[styles.approveButtonText, { color: colors.text.inverse }]}>אשר</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.rejectButton, { backgroundColor: colors.status.error }]}
-                    onPress={() => rejectRequest(request.id)}
-                  >
-                    <XCircle size={20} color={colors.text.inverse} />
-                    <Text style={[styles.rejectButtonText, { color: colors.text.inverse }]}>דחה</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
+        <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>בקשות ממתינות</Text>
+        {pending.length === 0 ? (
+          <View style={styles.emptyState}>
+            <ShieldCheck size={48} color={colors.interactive.disabled} />
+            <Text style={{ color: colors.text.secondary }}>אין בקשות חדשות</Text>
           </View>
         ) : (
-          <View style={styles.emptyContainer}>
-            <CheckCircle size={80} color={colors.interactive.disabled} />
-            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>אין בקשות אימות ממתינות</Text>
-            <Text style={[styles.emptyMessage, { color: colors.text.secondary }]}>
-              כל בקשות האימות טופלו. בדוק שוב מאוחר יותר.
-            </Text>
-          </View>
+          pending.map((user) => (
+            <View
+              key={user.id}
+              style={[styles.requestCard, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}> 
+              <View style={styles.requestHeader}> 
+                <View> 
+                  <Text style={[styles.requestName, { color: colors.text.primary }]}>{user.displayName || user.username}</Text> 
+                  <Text style={{ color: colors.text.secondary }}>{user.email}</Text> 
+                </View> 
+                <TouchableOpacity
+                  style={styles.previewButton}
+                  onPress={() => handlePreview(user)}
+                  accessibilityRole="button">
+                  <FileText size={18} color={colors.text.primary} />
+                  <Text style={{ color: colors.text.primary }}>תצוגה</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={{ color: colors.text.secondary }}>
+                בקשה: {formatDate(user.kycRequestedAt)}
+              </Text>
+              {user.kycRequestNotes ? (
+                <Text style={[styles.notes, { color: colors.text.secondary }]}>{user.kycRequestNotes}</Text>
+              ) : null}
+              <View style={styles.actionsRow}>
+                <TouchableOpacity
+                  style={[styles.approveButton, { borderColor: colors.status.success }]}
+                  onPress={() => approveRequest(user)}
+                  disabled={processingId === user.id}>
+                  <ShieldCheck size={18} color={colors.status.success} />
+                  <Text style={{ color: colors.status.success }}>אשר</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.rejectButton, { borderColor: colors.status.error }]}
+                  onPress={() => declineRequest(user)}
+                  disabled={processingId === user.id}>
+                  <XCircle size={18} color={colors.status.error} />
+                  <Text style={{ color: colors.status.error }}>דחה</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))
         )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+function formatDate(value?: string): string {
+  if (!value) return 'לא זמין';
+  try {
+    return new Date(value).toLocaleString('he-IL');
+  } catch {
+    return value;
+  }
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -236,137 +239,26 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  requestsList: {
-    gap: 16,
-  },
-  requestCard: {
-    borderRadius: 16,
-    padding: 16,
+  title: { fontSize: 18, fontWeight: 'bold' },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  content: { padding: 16, gap: 16, paddingBottom: 40 },
+  policyCard: {
     borderWidth: 1,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  avatarContainer: {
-    marginRight: 16,
-  },
-  avatar: {
-    borderRadius: 30,
-    borderWidth: 2,
-  },
-  avatarPlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-  },
-  userDetails: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'right',
-  },
-  userDetailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-    justifyContent: 'flex-end',
-  },
-  userDetailText: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  notesContainer: {
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-  },
-  notesHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    justifyContent: 'flex-end',
-  },
-  notesTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  notesText: {
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'right',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    padding: 16,
     gap: 12,
   },
-  approveButton: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  approveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  rejectButton: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  rejectButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyMessage: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
+  policyHeader: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  policyTitle: { fontSize: 16, fontWeight: '600' },
+  policyToggle: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitle: { fontSize: 18, fontWeight: '600' },
+  emptyState: { alignItems: 'center', gap: 12, paddingVertical: 40 },
+  requestCard: { borderWidth: 1, borderRadius: 12, padding: 16, gap: 12 },
+  requestHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  requestName: { fontSize: 16, fontWeight: '600' },
+  previewButton: { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  notes: { fontStyle: 'italic' },
+  actionsRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
+  approveButton: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, flexDirection: 'row', gap: 6 },
+  rejectButton: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, flexDirection: 'row', gap: 6 },
 });
