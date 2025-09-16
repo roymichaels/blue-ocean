@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { uuid } from '@/utils/uuid';
+import { getDeviceHash } from '@/utils/getDeviceHash';
 import { saveSession, loadSessions, removeSession } from '@/services/tokenCache';
 import { requestConsent } from '@/services/consent';
 import {
@@ -29,6 +30,7 @@ export interface SessionToken {
   token: string;
   scopes: string[];
   exp: number;
+  deviceHash: string;
   sealed?: EncryptedScopePayload;
 }
 
@@ -96,14 +98,15 @@ export function requestScopes(
   const now = Date.now();
   const exp = ttlMs < 0 ? now - CLOCK_TOLERANCE_MS - 1 : now + ttlMs;
   const payload = JSON.stringify({ scopes, exp });
+  const deviceHash = getDeviceHash();
 
   const persist = (maybeToken: string | undefined): SessionToken => {
     const token = maybeToken || uuid();
     const sealed =
       typeof options.sealed === 'function' ? options.sealed() : options.sealed;
     const record: SessionToken = sealed
-      ? { token, scopes, exp, sealed }
-      : { token, scopes, exp };
+      ? { token, scopes, exp, sealed, deviceHash }
+      : { token, scopes, exp, deviceHash };
     store.set(token, record);
     void saveSession(record);
     return record;
@@ -133,6 +136,10 @@ export async function initSessionTokens(): Promise<void> {
   const records = await loadSessions();
   const now = Date.now();
   for (const r of records) {
+    if (typeof r.deviceHash !== 'string' || r.deviceHash.length === 0) {
+      void removeSession(r.token);
+      continue;
+    }
     if (now > r.exp + CLOCK_TOLERANCE_MS) {
       void removeSession(r.token);
       continue;
@@ -153,6 +160,12 @@ export function validateToken(token: string, requiredScopes: string[]): void {
   if (Date.now() > rec.exp + CLOCK_TOLERANCE_MS) {
     store.delete(token);
     throw new Error('{E_EXPIRED}');
+  }
+  const deviceHash = getDeviceHash();
+  if (rec.deviceHash !== deviceHash) {
+    store.delete(token);
+    void removeSession(token);
+    throw new Error('{E_DEVICE_MISMATCH}');
   }
   validateScopes(requiredScopes);
   const missing = requiredScopes.find((s) => !rec.scopes.includes(s));
@@ -198,6 +211,12 @@ export function refreshToken(
   if (Date.now() > rec.exp + CLOCK_TOLERANCE_MS) {
     store.delete(token);
     throw new Error('{E_EXPIRED}');
+  }
+  const deviceHash = getDeviceHash();
+  if (rec.deviceHash !== deviceHash) {
+    store.delete(token);
+    void removeSession(token);
+    throw new Error('{E_DEVICE_MISMATCH}');
   }
 
   const handleNext = (next: SessionToken): SessionToken => {
