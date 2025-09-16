@@ -28,8 +28,10 @@ Events published on `/blue-ocean/{tenantId}/analytics/1` follow this structure:
 
 | Type | Payload |
 |------|---------|
+| `view.home` | `{}` |
 | `catalog.view` | `{ category: string | null }` |
 | `catalog.product_view` | `{ productId: string }` |
+| `search.query` | `{ query: string }` |
 | `cart.add` | `{ productId: string, quantity: number }` |
 | `cart.remove` | `{ itemId: string }` |
 | `cart.update` | `{ itemId: string, quantity: number }` |
