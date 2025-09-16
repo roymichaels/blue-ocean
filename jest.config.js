@@ -96,6 +96,7 @@ const cfg = {
     '^@/ui$': '<rootDir>/src/ui/index',
     '^@/layout/(.*)$': '<rootDir>/src/layout/$1',
     '^@/core/(.*)$': '<rootDir>/src/core/$1',
+    '^@/auth/(.*)$': '<rootDir>/src/auth/$1',
     '^@/services$': '<rootDir>/src/services/index',
     '^@/services/(.*)$': ['<rootDir>/src/services/$1', '<rootDir>/services/$1'],
     '^@/billing$': '<rootDir>/src/billing/index',
@@ -104,6 +105,7 @@ const cfg = {
     '^@/providers/(.*)$': '<rootDir>/src/providers/$1',
     '^@/providers$': '<rootDir>/src/providers/index',
     '^@/i18n$': '<rootDir>/src/i18n',
+    '^@/schemas/(.*)$': '<rootDir>/schemas/$1',
     '^@/(.*)$': '<rootDir>/$1',
     '^src/(.*)$': '<rootDir>/src/$1',
 

@@ -71,6 +71,8 @@ module.exports = async function (env, argv) {
   config.resolve.alias = {
     ...(config.resolve.alias || {}),
     '@': path.resolve(__dirname),
+    '@/auth': path.resolve(__dirname, 'src/auth'),
+    '@/schemas': path.resolve(__dirname, 'schemas'),
     'expo-router/_ctx': path.resolve(__dirname, 'router-ctx.web.js'),
     'expo-router/_ctx.web': path.resolve(__dirname, 'router-ctx.web.js'),
     'expo-router/_ctx.web.js': path.resolve(__dirname, 'router-ctx.web.js'),
