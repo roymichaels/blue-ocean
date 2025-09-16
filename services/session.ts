@@ -20,6 +20,7 @@ export const CHECKOUT_SCOPE = 'checkout';
 export const LEGACY_CHECKOUT_SCOPE = 'write';
 
 const BASE_SCOPE_POLICY = new Set<string>(['read', LEGACY_CHECKOUT_SCOPE, CHECKOUT_SCOPE]);
+const ADMIN_SCOPE_PREFIX = 'admin:';
 const ADMIN_SCOPE_POLICY = new Set<AdminScope>(ALL_ADMIN_SCOPES);
 
 // Allow a small amount of clock skew when validating expirations
@@ -68,7 +69,7 @@ function assertRateLimit(): void {
 }
 
 export function isAdminScope(scope: string): boolean {
-  return scope.startsWith('admin:');
+  return scope.startsWith(ADMIN_SCOPE_PREFIX);
 }
 
 function assertScopePolicy(scopes: string[]): AdminScope[] {
@@ -100,13 +101,15 @@ async function ensureAdminScopes(scopes: AdminScope[]): Promise<void> {
     throw new Error('{E_SCOPE}');
   }
   const settings = SettingsAgent.getInstance();
-  for (const scope of uniqueScopes) {
-    const allowed = await settings.hasAdminScope(actor, scope);
-    if (!allowed) {
-      authInvalidScopeCounter.inc({ scope });
-      throw new Error('{E_SCOPE}');
-    }
-  }
+  await Promise.all(
+    uniqueScopes.map(async (scope) => {
+      const allowed = await settings.hasAdminScope(actor, scope);
+      if (!allowed) {
+        authInvalidScopeCounter.inc({ scope });
+        throw new Error('{E_SCOPE}');
+      }
+    }),
+  );
 }
 
 function validateScopes(scopes: string[]): void | Promise<void> {
