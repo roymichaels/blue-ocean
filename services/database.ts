@@ -44,7 +44,7 @@ import {
   UserRole,
 } from '../types';
 
-const CHAT_MESSAGE_LIMIT = 50;
+const CHAT_MESSAGE_LIMIT = 100;
 const CHAT_STORAGE_PREFIX = 'chat_messages_';
 const WISHLIST_STORAGE_PREFIX = 'wishlist_';
 
