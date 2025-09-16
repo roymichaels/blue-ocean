@@ -151,6 +151,7 @@ const cfg = {
     '<rootDir>/tests/homeScreenRender.test.tsx',
     '<rootDir>/tests/homeFallbackVisibility.test.tsx',
     '<rootDir>/tests/homeServices.test.tsx',
+    '<rootDir>/tests/homeSearch.test.tsx',
     '<rootDir>/tests/featuredStoresCarousel.test.tsx',
     '<rootDir>/tests/navigationLoop.test.tsx',
     '<rootDir>/tests/productCardAccessibility.test.tsx',
