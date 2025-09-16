@@ -36,9 +36,7 @@ if (chain === 'near') {
 }
 
 import OrderService from '@/services/orders';
-import eventBus from '@/services/eventBus';
 import { Spinner } from '@/ui/primitives';
-import { getCacheHitRatio } from '@/services/warmCache';
 const MoonPayButton = require('@/features/payments').MoonPayButton;
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';
@@ -49,11 +47,7 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { requestTokenWithConsent } from '@/services/session';
-import { uuid } from '@/utils/uuid';
-import NotificationService from '@/services/notification';
-
-const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
+import { useWalletSessions } from '@/auth/wallet';
 
 interface CartModalProps {
   visible: boolean;
@@ -77,7 +71,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderIds, setOrderIds] = useState<string[]>([]);
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, sessionToken: authSessionToken, refreshSession } = useAuth();
+  const { useToken } = useWalletSessions();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const { showNotification } = useNotifications();
@@ -101,13 +96,29 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     action: () => {},
   });
 
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (authSessionToken) {
+      setCheckoutToken(authSessionToken);
+    }
+  }, [authSessionToken]);
 
   const ensureSessionToken = async (): Promise<string> => {
-    if (sessionToken) return sessionToken;
-    const { token } = await requestTokenWithConsent(['write'], () => uuid());
-    setSessionToken(token);
-    return token;
+    const base = authSessionToken || checkoutToken;
+    if (!base) {
+      throw new Error('{E_EXPIRED}');
+    }
+    try {
+      const next = await useToken(base, ['checkout']);
+      setCheckoutToken(next.token);
+      return next.token;
+    } catch (err: any) {
+      if (err?.message === '{E_EXPIRED}') {
+        await refreshSession();
+      }
+      throw err;
+    }
   };
 
 
@@ -215,7 +226,6 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return;
     }
 
-    eventBus.track('checkout.start', { items: cartItems.length, total: getTotal() });
     setCheckoutStep('shipping');
   };
 
@@ -295,12 +305,6 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         'near',
         token,
       );
-      eventBus.track('checkout.complete', {
-        orderIds: orders.map((o) => o.id),
-        total: getTotal(),
-        cacheHitRatio: getCacheHitRatio(PRODUCT_CACHE_TOPIC),
-        sourceNotificationId: NotificationService.getInstance().getLastOpenedNotificationId(),
-      });
       setOrderIds(orders.map((o) => o.id));
       setOrderPlaced(true);
       await clearCart();
@@ -313,7 +317,12 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
       setTimeout(() => onClose(), 5000);
     } catch (error: any) {
-      if (error?.message === '{E_EXPIRED}' || error?.message === '{E_SCOPE}') {
+      if (
+        error?.message === '{E_EXPIRED}' ||
+        error?.message === '{E_SCOPE}' ||
+        error?.message === '{E_SESSION_PROOF}' ||
+        error?.message === '{E_CHECKOUT_FORBIDDEN}'
+      ) {
         setInfoModal({
           visible: true,
           title: t('common.error'),

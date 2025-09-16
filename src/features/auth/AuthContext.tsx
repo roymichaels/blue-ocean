@@ -164,7 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async () => {
     try {
       await connect();
-      const session = await loginWithWallet(['write']);
+      const session = await loginWithWallet(['checkout']);
       setSessionToken(session.token);
     } catch (err: unknown) {
       errorLog(

@@ -10,7 +10,7 @@ import {
 
 export const sessionEvents = new EventEmitter();
 
-const POLICY = new Set<string>(['read', 'write']);
+const POLICY = new Set<string>(['read', 'write', 'checkout']);
 
 // Allow a small amount of clock skew when validating expirations
 const CLOCK_TOLERANCE_MS = 60 * 1000; // 1 minute
@@ -88,11 +88,15 @@ export function requestScopes(
   const now = Date.now();
   const exp = ttlMs < 0 ? now - CLOCK_TOLERANCE_MS - 1 : now + ttlMs;
   const payload = JSON.stringify({ scopes, exp });
+  const requiresProof = scopes.includes('checkout');
 
   const persist = (maybeToken: string | undefined): SessionToken => {
     const token = maybeToken || uuid();
     const sealed =
       typeof options.sealed === 'function' ? options.sealed() : options.sealed;
+    if (requiresProof && (!sealed || !sealed.walletPublicKey || !sealed.identityPublicKey)) {
+      throw new Error('{E_SESSION_PROOF}');
+    }
     const record: SessionToken = sealed
       ? { token, scopes, exp, sealed }
       : { token, scopes, exp };
@@ -149,6 +153,12 @@ export function validateToken(token: string, requiredScopes: string[]): void {
   validateScopes(requiredScopes);
   const missing = requiredScopes.find((s) => !rec.scopes.includes(s));
   if (missing) throw new Error('{E_SCOPE}');
+  if (requiredScopes.includes('checkout')) {
+    const sealed = rec.sealed;
+    if (!sealed || !sealed.cipher || !sealed.walletPublicKey || !sealed.identityPublicKey) {
+      throw new Error('{E_SESSION_PROOF}');
+    }
+  }
 }
 
 export function refreshToken(

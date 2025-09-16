@@ -17,9 +17,12 @@ import { chainAdapter } from '@/services/chain';
 import { adminResolve, deployOrderPayment } from './nearContract';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
-import { validateToken } from '@/services/session';
 import { checkoutTokenIntegrity } from '@/services/monitoring';
 import SettingsAgent from '@/agents/settings-agent';
+import {
+  assertCheckoutSession,
+  type CheckoutSessionContext,
+} from '@/services/checkoutGuard';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
@@ -127,8 +130,15 @@ class OrderService {
       sellerAddress?: string;
     },
     sessionToken: string,
+    checkout?: CheckoutSessionContext,
   ): Promise<Order> {
-    validateToken(sessionToken, ['write']);
+    const guard =
+      checkout && checkout.token === sessionToken
+        ? checkout
+        : await assertCheckoutSession(userId, sessionToken, {
+            user: checkout?.user,
+          });
+    const buyerHint = guard.user.address || guard.user.id;
     const total = items.reduce((sum, item) => {
       const price = item.unitPrice ?? item.product.price;
       return sum + price * item.quantity;
@@ -144,7 +154,11 @@ class OrderService {
     }
 
     if (!pay?.buyerAddress) {
-      pay = { ...pay, buyerAddress: chainAdapter.getAccountId() || undefined };
+      const account = chainAdapter.getAccountId();
+      pay = {
+        ...pay,
+        buyerAddress: account || buyerHint || undefined,
+      };
     }
 
     const orderId = uuid();
@@ -162,7 +176,7 @@ class OrderService {
       total,
       status: 'order_received',
       shippingAddress,
-       itemsHash,
+      itemsHash,
       paymentMethod: pay?.method ?? 'cash_on_delivery',
       buyerAddress: pay?.buyerAddress,
       sellerAddress: pay?.sellerAddress,
@@ -190,13 +204,10 @@ class OrderService {
     paymentMethod: 'cash_on_delivery' | 'near' | 'card' = 'cash_on_delivery',
     sessionToken: string,
   ): Promise<Order[]> {
+    let checkoutGuard: CheckoutSessionContext;
     try {
-      validateToken(sessionToken, ['write']);
+      checkoutGuard = await assertCheckoutSession(userId, sessionToken);
     } catch (err) {
-      void eventBus.track('checkout.token_integrity', {
-        tokenValid: false,
-        success: false,
-      });
       checkoutTokenIntegrity.inc({ token_valid: 'false', success: 'false' });
       throw err;
     }
@@ -215,18 +226,30 @@ class OrderService {
           paymentMethod === 'near'
             ? {
                 method: 'near' as const,
-                buyerAddress: chainAdapter.getAccountId() || undefined,
+                buyerAddress:
+                  chainAdapter.getAccountId() ||
+                  checkoutGuard.user.address ||
+                  checkoutGuard.user.id ||
+                  undefined,
                 sellerAddress: store?.owner,
               }
             : paymentMethod === 'card'
             ? {
                 method: 'card' as const,
-                buyerAddress: chainAdapter.getAccountId() || undefined,
+                buyerAddress:
+                  chainAdapter.getAccountId() ||
+                  checkoutGuard.user.address ||
+                  checkoutGuard.user.id ||
+                  undefined,
                 sellerAddress: store?.owner,
               }
             : {
                 method: 'cash_on_delivery' as const,
-                buyerAddress: chainAdapter.getAccountId() || undefined,
+                buyerAddress:
+                  chainAdapter.getAccountId() ||
+                  checkoutGuard.user.address ||
+                  checkoutGuard.user.id ||
+                  undefined,
                 sellerAddress: store?.owner,
               };
         const order = await this.createOrder(
@@ -235,21 +258,14 @@ class OrderService {
           shippingAddress,
           payment,
           sessionToken,
+          checkoutGuard,
         );
         await emitOrderEvents(order, storeId, sessionToken);
         orders.push(order);
       }
-      void eventBus.track('checkout.token_integrity', {
-        tokenValid: true,
-        success: true,
-      });
       checkoutTokenIntegrity.inc({ token_valid: 'true', success: 'true' });
       return orders;
     } catch (err) {
-      void eventBus.track('checkout.token_integrity', {
-        tokenValid: true,
-        success: false,
-      });
       checkoutTokenIntegrity.inc({ token_valid: 'true', success: 'false' });
       throw err;
     }

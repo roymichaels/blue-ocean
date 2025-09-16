@@ -7,6 +7,10 @@ describe('session scope validation', () => {
     expect(() => requestScopes(['foo'], signer)).toThrow('{E_SCOPE}');
   });
 
+  it('requires sealed payload for checkout scope', () => {
+    expect(() => requestScopes(['checkout'], signer)).toThrow('{E_SESSION_PROOF}');
+  });
+
   it('throws on validating with unknown scopes', () => {
     const { token } = requestScopes(['read'], signer);
     expect(() => validateToken(token, ['foo'])).toThrow('{E_SCOPE}');

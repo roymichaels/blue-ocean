@@ -1,15 +1,38 @@
+import { Buffer } from 'buffer';
+import { getPublicKey, sign } from '@noble/ed25519';
+import { utils as nearUtils } from 'near-api-js';
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import OrderService from '@/services/orders';
 import { CartItem, ShippingAddress } from '@/types';
 
+const walletSecretKey = Uint8Array.from({ length: 32 }, (_, i) => 7 + i);
+let walletPublicKeyStr = 'ed25519:';
+
 jest.mock('@/contexts/WalletProvider', () => ({
   useWallet: () => ({
     address: 'buyer.near',
     connect: jest.fn().mockResolvedValue(undefined),
     disconnect: jest.fn().mockResolvedValue(undefined),
+    sign: jest.fn(async (message: Uint8Array | string) => {
+      const bytes = typeof message === 'string' ? Buffer.from(message) : Buffer.from(message);
+      const sig = await sign(bytes, walletSecretKey);
+      return Buffer.from(sig).toString('base64');
+    }),
   }),
+}));
+
+jest.mock('@/services/chain', () => ({
+  chainAdapter: {
+    init: jest.fn(async () => ({})),
+    useAccount: jest.fn(() => 'buyer.near'),
+    openModal: jest.fn(),
+    getSelector: jest.fn(() => ({ wallet: async () => ({ signOut: jest.fn() }) })),
+    getAccountId: jest.fn(() => 'buyer.near'),
+    getPublicKey: jest.fn(() => walletPublicKeyStr),
+    signMessage: jest.fn(),
+  },
 }));
 
 const store: Record<string, any> = {};
@@ -23,9 +46,18 @@ jest.mock('@/services/nearOrders', () => ({
 
 jest.mock('@/services/eventBus', () => ({ publish: jest.fn(), track: jest.fn() }));
 
-jest.mock('@/features/auth/services/nearAuth', () => ({
-  getAccountId: jest.fn().mockReturnValue('buyer.near'),
-  signIn: jest.fn(),
+jest.mock('@/features/auth/services/nearUsers', () => ({
+  getUser: jest.fn(async (id: string) => ({
+    id,
+    username: id,
+    displayName: id,
+    isAdmin: false,
+    role: 'user',
+    address: id,
+    chatPublicKey: '',
+    customerTier: 'regular' as const,
+  })),
+  setUser: jest.fn(),
 }));
 
 jest.mock('@/features/stores/services/nearStores', () => ({
@@ -51,6 +83,11 @@ jest.mock('../../agents/orders-agent', () => ({
     update: jest.fn(),
   },
 }));
+
+beforeAll(async () => {
+  const publicKey = await getPublicKey(walletSecretKey);
+  walletPublicKeyStr = `ed25519:${nearUtils.serialize.base_encode(publicKey)}`;
+});
 
 function Grab() {
   (Grab as any).ctx = useAuth();
@@ -99,7 +136,7 @@ describe('login issues session token used in checkout', () => {
       postalCode: 'p',
     };
 
-    await svc.createOrdersFromCart('user1', [item], shipping, 'cash_on_delivery', ctx.sessionToken!);
+    await svc.createOrdersFromCart('buyer.near', [item], shipping, 'cash_on_delivery', ctx.sessionToken!);
 
     expect(addMock).toHaveBeenCalled();
     const passedOrder = addMock.mock.calls[0][0];
