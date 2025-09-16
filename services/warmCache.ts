@@ -9,22 +9,34 @@ import { fetchHistory, subscribeWithAck } from '@/services/waku';
 import { isWarmCacheEnabled } from '@/config/featureFlags';
 import { E_STALE_DATA, E_SYNC_LAG } from '@/services/cache';
 
+export type DiffOp = 'set' | 'delete' | 'merge';
+
 export interface DiffMessage<T> {
   id: string;
   rev: number;
-  op: 'set' | 'delete';
-  value?: T;
+  op: DiffOp;
+  value?: T | Partial<T>;
+  ts?: number;
+}
+
+export interface CacheMutation<T> {
+  id: string;
+  rev?: number;
+  op?: DiffOp;
+  value?: T | Partial<T>;
   ts?: number;
 }
 
 export interface WarmCache<T> {
   getById(id: string): T | undefined;
+  list(filter?: (id: string, value: T) => boolean): T[];
   values(): T[];
   subscribe(
     filter: (id: string, value: T | undefined) => boolean,
     cb: (id: string, value: T | undefined) => void,
   ): () => void;
-  onSynced(cb: () => void): () => void;
+  onSynced(cb: (event?: { cache: string }) => void): () => void;
+  mutate(cmd: CacheMutation<T>): DiffMessage<T> | null;
   registerReconciler(
     address: string,
     fn: (id: string, value: T | undefined) => void,
@@ -36,12 +48,17 @@ export interface WarmCacheOptions<T> {
   lagThresholdMs?: number;
 }
 
-type MessageSource = 'lake' | 'history' | 'live';
+type MessageSource = 'lake' | 'history' | 'live' | 'local';
 
 const DEFAULT_LAG_THRESHOLD = 3000;
+const CLOCK_SKEW_GUARD_MS = 60_000;
 
-function normalizeMessage<T>(msg: DiffMessage<T>): DiffMessage<T> {
-  const ts = typeof msg.ts === 'number' ? msg.ts : Date.now();
+function normalizeMessage<T>(msg: DiffMessage<T>, source: MessageSource): DiffMessage<T> {
+  const now = Date.now();
+  let ts = typeof msg.ts === 'number' ? msg.ts : now;
+  if ((source === 'live' || source === 'local') && ts > now + CLOCK_SKEW_GUARD_MS) {
+    ts = now;
+  }
   return { ...msg, ts };
 }
 
@@ -65,8 +82,8 @@ export function createWarmCache<T>(
   const metricLabels = { cache: topic } as const;
   cacheLagGauge.set(metricLabels, 0);
 
-  function apply(raw: DiffMessage<T>, source: MessageSource): void {
-    const msg = normalizeMessage(raw);
+  function apply(raw: DiffMessage<T>, source: MessageSource): DiffMessage<T> | null {
+    const msg = normalizeMessage(raw, source);
     const currentRev = revisions.get(msg.id) ?? 0;
     const expected = currentRev === 0 ? msg.rev : currentRev + 1;
     if (currentRev !== 0) {
@@ -80,7 +97,7 @@ export function createWarmCache<T>(
             actual: msg.rev,
           });
         }
-        return;
+        return null;
       }
       if (msg.rev < currentRev) {
         if (source === 'live') {
@@ -92,7 +109,7 @@ export function createWarmCache<T>(
             actual: msg.rev,
           });
         }
-        return;
+        return null;
       }
     }
     if (currentRev !== 0 && msg.rev !== expected) {
@@ -103,13 +120,31 @@ export function createWarmCache<T>(
         expected,
         actual: msg.rev,
       });
-      return;
+      return null;
     }
     revisions.set(msg.id, msg.rev);
+    let appliedValue: T | undefined;
     if (msg.op === 'delete') {
       store.delete(msg.id);
+    } else if (msg.op === 'merge') {
+      const base = store.get(msg.id)?.value;
+      const patch =
+        msg.value && typeof msg.value === 'object'
+          ? (msg.value as Partial<T>)
+          : ({} as Partial<T>);
+      const merged = {
+        ...(typeof base === 'object' && base !== null ? (base as Record<string, unknown>) : {}),
+        ...(patch as Record<string, unknown>),
+      } as T;
+      store.set(msg.id, { value: merged, rev: msg.rev });
+      appliedValue = merged;
     } else if (msg.value !== undefined) {
-      store.set(msg.id, { value: msg.value, rev: msg.rev });
+      store.set(msg.id, { value: msg.value as T, rev: msg.rev });
+      appliedValue = msg.value as T;
+    }
+    if (msg.op !== 'delete' && appliedValue === undefined) {
+      // Nothing to merge or set; do not emit updates but keep revision for idempotency
+      return msg;
     }
     if (synced && source === 'live') {
       const now = Date.now();
@@ -134,13 +169,14 @@ export function createWarmCache<T>(
     reconcilers.forEach((fn, addr) => {
       if (isWarmCacheEnabled(addr)) fn(msg.id, value);
     });
+    return msg;
   }
 
   (async () => {
     let unsub: (() => void) | null = null;
     try {
       unsub = await subscribeWithAck(topic, (msg: DiffMessage<T>) => {
-        const normalized = normalizeMessage(msg);
+        const normalized = normalizeMessage(msg, 'live');
         if (!synced) buffer.push({ msg: normalized, source: 'live' });
         else apply(normalized, 'live');
       });
@@ -166,7 +202,7 @@ export function createWarmCache<T>(
       synced = true;
       endHydration();
       cacheLagGauge.set(metricLabels, 0);
-      emitter.emit('cache.synced');
+      emitter.emit('cache.synced', { cache: topic });
       if (unsub) (emitter as any).unsub = unsub;
     } catch (err) {
       stale = true;
@@ -186,12 +222,18 @@ export function createWarmCache<T>(
       cacheHitRatioGauge.set({ cache: topic }, stats.total ? stats.hits / stats.total : 0);
       return value;
     },
-    values() {
+    list(filter) {
       if (stale || !isWarmCacheEnabled()) throw { code: E_STALE_DATA };
       if (lagging) throw { code: E_SYNC_LAG, lagMs: lastLagMs };
-      return Array.from(store.values())
-        .map((v) => v.value)
-        .filter((value): value is T => value !== undefined);
+      const res: T[] = [];
+      store.forEach(({ value }, id) => {
+        if (value === undefined) return;
+        if (!filter || filter(id, value)) res.push(value);
+      });
+      return res;
+    },
+    values() {
+      return this.list();
     },
     subscribe(filter, cb) {
       const handler = (id: string, value: T | undefined) => {
@@ -200,10 +242,24 @@ export function createWarmCache<T>(
       emitter.on('update', handler);
       return () => emitter.off('update', handler);
     },
-    onSynced(cb: () => void) {
-      if (synced) cb();
-      emitter.on('cache.synced', cb);
-      return () => emitter.off('cache.synced', cb);
+    onSynced(cb: (event?: { cache: string }) => void) {
+      if (synced) cb({ cache: topic });
+      const handler = (evt: { cache: string }) => cb(evt);
+      emitter.on('cache.synced', handler);
+      return () => emitter.off('cache.synced', handler);
+    },
+    mutate(cmd: CacheMutation<T>) {
+      if (stale || !isWarmCacheEnabled()) throw { code: E_STALE_DATA };
+      const currentRev = revisions.get(cmd.id) ?? 0;
+      const rev = cmd.rev ?? currentRev + 1;
+      const op: DiffOp = cmd.op ?? (cmd.value === undefined ? 'delete' : 'set');
+      return apply({
+        id: cmd.id,
+        rev,
+        op,
+        value: cmd.value,
+        ts: cmd.ts,
+      }, 'local');
     },
     registerReconciler(address, fn) {
       const key = address.toLowerCase();

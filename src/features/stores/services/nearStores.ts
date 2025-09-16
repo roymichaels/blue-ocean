@@ -15,7 +15,7 @@ import {
 import { errorLog } from '@/utils/logger';
 import config from '@/config';
 import { createWarmCache } from '@/services/warmCache';
-import type { DiffMessage } from '@/services/warmCache';
+import type { CacheMutation, DiffMessage } from '@/services/warmCache';
 
 assertNearChain();
 
@@ -66,13 +66,19 @@ export const storesWarmCache = {
   getById(id: string) {
     return storeCache.getById(id);
   },
+  list(filter?: (id: string, value: Store) => boolean) {
+    return storeCache.list(filter);
+  },
   subscribe(
     filter: (id: string, value: Store | undefined) => boolean,
     cb: (id: string, value: Store | undefined) => void,
   ) {
     return storeCache.subscribe(filter, cb);
   },
-  onSynced(cb: () => void) {
+  mutate(cmd: CacheMutation<Store>) {
+    return storeCache.mutate(cmd);
+  },
+  onSynced(cb: (event?: { cache: string }) => void) {
     return storeCache.onSynced(cb);
   },
 };
@@ -199,7 +205,7 @@ export async function listStores(storeId: string): Promise<Store[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
   try {
-    const values = storeCache.values();
+    const values = storeCache.list();
     if (sid === 'default') return values;
     const filtered = values.filter((store) => requireStoreId(store.id) === sid);
     if (filtered.length > 0) return filtered;
