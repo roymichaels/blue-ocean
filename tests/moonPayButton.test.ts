@@ -1,6 +1,10 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { MoonPayButton } from '@/features/payments';
+import { MoonPayButton, MOONPAY_DISABLED_LABEL } from '@/features/payments';
+
+jest.mock('@/config/featureFlags', () => ({
+  isMoonPayEnabled: jest.fn(() => true),
+}));
 
 jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({ colors: { gold: 'gold', text: { inverse: '#fff' } } }),
@@ -74,6 +78,30 @@ describe('MoonPayButton', () => {
       root = renderer.create(React.createElement(MoonPayButton, { usdAmount: 6 }));
     });
     expect(root!.toJSON()).toBeNull();
+  });
+
+  it('renders disabled state in Hebrew without firing API requests', async () => {
+    const { isMoonPayEnabled } = require('@/config/featureFlags');
+    (isMoonPayEnabled as jest.Mock).mockReturnValueOnce(false);
+
+    const { useAppInfo } = require('../contexts/AppInfoContext');
+    (useAppInfo as jest.Mock).mockReturnValue({
+      fiatKey: 'key',
+      setFiatKey: jest.fn(),
+    });
+
+    global.fetch = jest.fn() as any;
+
+    let root: renderer.ReactTestRenderer;
+    await act(async () => {
+      root = renderer.create(React.createElement(MoonPayButton, { usdAmount: 10 }));
+    });
+
+    const label = root!.root.find(
+      (node) => node.type === 'Text' && node.props.children === MOONPAY_DISABLED_LABEL,
+    );
+    expect(label).toBeDefined();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });
 
