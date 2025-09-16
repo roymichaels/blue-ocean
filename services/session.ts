@@ -3,6 +3,10 @@ import { uuid } from '@/utils/uuid';
 import { getDeviceHash } from '@/utils/getDeviceHash';
 import { saveSession, loadSessions, removeSession } from '@/services/tokenCache';
 import { requestConsent } from '@/services/consent';
+import SettingsAgent from '@/agents/settings-agent';
+import { chainAdapter } from '@/services/chain';
+import type { AdminScope } from '@/types';
+import { ALL_ADMIN_SCOPES } from '@/types';
 import {
   authRateLimitCounter,
   authScopeRequestCounter,
@@ -15,7 +19,8 @@ export const sessionEvents = new EventEmitter();
 export const CHECKOUT_SCOPE = 'checkout';
 export const LEGACY_CHECKOUT_SCOPE = 'write';
 
-const POLICY = new Set<string>(['read', LEGACY_CHECKOUT_SCOPE, CHECKOUT_SCOPE]);
+const BASE_SCOPE_POLICY = new Set<string>(['read', LEGACY_CHECKOUT_SCOPE, CHECKOUT_SCOPE]);
+const ADMIN_SCOPE_POLICY = new Set<AdminScope>(ALL_ADMIN_SCOPES);
 
 // Allow a small amount of clock skew when validating expirations
 const CLOCK_TOLERANCE_MS = 60 * 1000; // 1 minute
@@ -62,13 +67,52 @@ function assertRateLimit(): void {
   rateLimitQueue.push(now);
 }
 
-function validateScopes(scopes: string[]): void {
+export function isAdminScope(scope: string): boolean {
+  return scope.startsWith('admin:');
+}
+
+function assertScopePolicy(scopes: string[]): AdminScope[] {
   authScopeRequestCounter.inc();
-  const invalid = scopes.find((s) => !POLICY.has(s));
-  if (invalid) {
-    authInvalidScopeCounter.inc({ scope: invalid });
+  const adminScopes: AdminScope[] = [];
+  for (const scope of scopes) {
+    if (BASE_SCOPE_POLICY.has(scope)) continue;
+    if (isAdminScope(scope)) {
+      if (!ADMIN_SCOPE_POLICY.has(scope as AdminScope)) {
+        authInvalidScopeCounter.inc({ scope });
+        throw new Error('{E_SCOPE}');
+      }
+      adminScopes.push(scope as AdminScope);
+      continue;
+    }
+    authInvalidScopeCounter.inc({ scope });
     throw new Error('{E_SCOPE}');
   }
+  return adminScopes;
+}
+
+async function ensureAdminScopes(scopes: AdminScope[]): Promise<void> {
+  if (scopes.length === 0) return;
+  const uniqueScopes = Array.from(new Set(scopes));
+  const getter = chainAdapter.getAccountId;
+  const actor = typeof getter === 'function' ? getter.call(chainAdapter) : null;
+  if (!actor) {
+    authInvalidScopeCounter.inc({ scope: uniqueScopes[0] });
+    throw new Error('{E_SCOPE}');
+  }
+  const settings = SettingsAgent.getInstance();
+  for (const scope of uniqueScopes) {
+    const allowed = await settings.hasAdminScope(actor, scope);
+    if (!allowed) {
+      authInvalidScopeCounter.inc({ scope });
+      throw new Error('{E_SCOPE}');
+    }
+  }
+}
+
+function validateScopes(scopes: string[]): void | Promise<void> {
+  const adminScopes = assertScopePolicy(scopes);
+  if (adminScopes.length === 0) return;
+  return ensureAdminScopes(adminScopes);
 }
 
 export function getCheckoutRequestScopes(): string[] {
@@ -94,29 +138,37 @@ export function requestScopes(
   options: ScopeRequestOptions = {},
 ): SessionToken | Promise<SessionToken> {
   assertRateLimit();
-  validateScopes(scopes);
-  const now = Date.now();
-  const exp = ttlMs < 0 ? now - CLOCK_TOLERANCE_MS - 1 : now + ttlMs;
-  const payload = JSON.stringify({ scopes, exp });
-  const deviceHash = getDeviceHash();
+  const scopeValidation = validateScopes(scopes);
 
-  const persist = (maybeToken: string | undefined): SessionToken => {
-    const token = maybeToken || uuid();
-    const sealed =
-      typeof options.sealed === 'function' ? options.sealed() : options.sealed;
-    const record: SessionToken = sealed
-      ? { token, scopes, exp, sealed, deviceHash }
-      : { token, scopes, exp, deviceHash };
-    store.set(token, record);
-    void saveSession(record);
-    return record;
+  const issueToken = (): SessionToken | Promise<SessionToken> => {
+    const now = Date.now();
+    const exp = ttlMs < 0 ? now - CLOCK_TOLERANCE_MS - 1 : now + ttlMs;
+    const payload = JSON.stringify({ scopes, exp });
+    const deviceHash = getDeviceHash();
+
+    const persist = (maybeToken: string | undefined): SessionToken => {
+      const token = maybeToken || uuid();
+      const sealed =
+        typeof options.sealed === 'function' ? options.sealed() : options.sealed;
+      const record: SessionToken = sealed
+        ? { token, scopes, exp, sealed, deviceHash }
+        : { token, scopes, exp, deviceHash };
+      store.set(token, record);
+      void saveSession(record);
+      return record;
+    };
+
+    const signed = signer(payload);
+    if (isPromise<string>(signed)) {
+      return signed.then((token) => persist(token));
+    }
+    return persist(signed);
   };
 
-  const signed = signer(payload);
-  if (isPromise<string>(signed)) {
-    return signed.then((token) => persist(token));
+  if (isPromise<void>(scopeValidation)) {
+    return scopeValidation.then(() => issueToken());
   }
-  return persist(signed);
+  return issueToken();
 }
 
 const store = new Map<string, SessionToken>();
@@ -167,7 +219,7 @@ export function validateToken(token: string, requiredScopes: string[]): void {
     void removeSession(token);
     throw new Error('{E_DEVICE_MISMATCH}');
   }
-  validateScopes(requiredScopes);
+  assertScopePolicy(requiredScopes);
   const missing = requiredScopes.find((s) => !rec.scopes.includes(s));
   if (missing) throw new Error('{E_SCOPE}');
 }
