@@ -146,10 +146,20 @@ class OrderService {
     }
     const active = this.checkoutNonceLocks.get(sessionToken);
     if (active) {
+      void eventBus.track('checkout.duplicate_attempt', {
+        nonce,
+        activeNonce: active,
+        source: 'lock',
+      });
       throw new Error('ERR_DUPLICATE_NONCE');
     }
     const session = getSession(sessionToken);
     if (session?.checkoutNonce && session.checkoutNonce !== nonce) {
+      void eventBus.track('checkout.duplicate_attempt', {
+        nonce,
+        activeNonce: session.checkoutNonce,
+        source: 'session',
+      });
       throw new Error('ERR_DUPLICATE_NONCE');
     }
     this.checkoutNonceLocks.set(sessionToken, nonce);
@@ -331,6 +341,9 @@ class OrderService {
       sha256(Buffer.from(canonicalJson(items)))
     ).toString('hex');
 
+    const orderId = uuid();
+    const timestamp = new Date().toISOString();
+
     let pay = payment;
     if (pay?.method === 'near' && (!pay.contractAddress || !pay.txHash)) {
       if (!chainAdapter.getAccountId()) {
@@ -375,8 +388,6 @@ class OrderService {
       pay = { ...pay, buyerAddress: chainAdapter.getAccountId() || undefined };
     }
 
-    const orderId = uuid();
-    const timestamp = new Date().toISOString();
     const feeInfo =
       pay?.method === 'card' ? await calculateCardFees(total) : undefined;
 

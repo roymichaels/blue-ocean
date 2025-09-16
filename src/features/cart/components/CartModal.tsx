@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import SmartImage from '@/components/SmartImage';
 import {
@@ -56,8 +57,10 @@ import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import {
-  requestTokenWithConsent,
   getCheckoutRequestScopes,
+  getSession,
+  requestScopes,
+  requestTokenWithConsent,
   setSessionCheckoutNonce,
 } from '@/services/session';
 import { uuid } from '@/utils/uuid';
@@ -65,6 +68,7 @@ import NotificationService from '@/services/notification';
 import SettingsAgent from '@/agents/settings-agent';
 import { errorLog } from '@/utils/logger';
 import { persistCheckoutIntent, clearCheckoutIntent } from '../services/orderIntent';
+import { getDocsUrl } from '@/services/config';
 
 const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
 
@@ -77,6 +81,122 @@ function parseBooleanSetting(value: string | null): boolean | null {
   if (BOOLEAN_TRUE_VALUES.has(normalized)) return true;
   if (BOOLEAN_FALSE_VALUES.has(normalized)) return false;
   return null;
+}
+
+type InfoModalState = {
+  visible: boolean;
+  title: string;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  buttonText?: string;
+  onConfirm?: () => void;
+  autoClose?: boolean;
+};
+
+function isInsufficientFundsError(error: unknown): boolean {
+  const patterns = [
+    'insufficient funds',
+    'insufficient balance',
+    'insufficient account balance',
+    'not enough balance',
+    'not enough to cover',
+    'does not have enough',
+    'requires attached deposit',
+    'attach more near',
+  ];
+  const codes = new Set([
+    'INSUFFICIENT_FUNDS',
+    'ERR_INSUFFICIENT_FUNDS',
+    'INSUFFICIENT_BALANCE',
+    'NOTENOUGHBALANCE',
+    'LACKBALANCE',
+  ]);
+
+  const checkString = (value?: string): boolean => {
+    if (!value) return false;
+    const normalized = value.toLowerCase();
+    return patterns.some((pattern) => normalized.includes(pattern));
+  };
+
+  if (!error) return false;
+
+  if (typeof error === 'string') {
+    return checkString(error);
+  }
+
+  if (error instanceof Error) {
+    if (checkString(error.message)) return true;
+    const cause = error.cause as unknown;
+    if (cause && typeof cause === 'object') {
+      const causeObj = cause as Record<string, unknown>;
+      if (checkString(typeof causeObj.message === 'string' ? causeObj.message : undefined)) {
+        return true;
+      }
+      if (checkString(typeof causeObj.ExecutionError === 'string' ? causeObj.ExecutionError : undefined)) {
+        return true;
+      }
+      if (
+        typeof causeObj.kind === 'object' &&
+        causeObj.kind &&
+        checkString(String((causeObj.kind as Record<string, unknown>).ExecutionError || ''))
+      ) {
+        return true;
+      }
+    }
+  }
+
+  if (typeof error !== 'object') {
+    return false;
+  }
+
+  const errObj = error as Record<string, any>;
+
+  const codeLike = [errObj.code, errObj.type, errObj.kind]
+    .map((value) => (typeof value === 'string' ? value.toUpperCase() : undefined))
+    .filter(Boolean) as string[];
+  if (codeLike.some((value) => codes.has(value))) {
+    return true;
+  }
+
+  const actionError = errObj.data?.status?.Failure?.ActionError?.kind;
+  if (actionError && (actionError.LackBalance || actionError.NotEnoughBalance)) {
+    return true;
+  }
+
+  const nestedStrings: string[] = [];
+  const maybeStrings = [
+    errObj.message,
+    errObj.reason,
+    errObj.error,
+    errObj.data?.message,
+    errObj.data?.errorMessage,
+    errObj.data?.ExecutionError,
+    errObj.data?.errorCause,
+    errObj.kind?.ExecutionError,
+    errObj.cause?.message,
+    errObj.cause?.ExecutionError,
+    errObj.cause?.kind?.ExecutionError,
+  ];
+  for (const value of maybeStrings) {
+    if (typeof value === 'string') {
+      nestedStrings.push(value);
+    }
+  }
+
+  if (nestedStrings.some((value) => checkString(value))) {
+    return true;
+  }
+
+  try {
+    const serialized = JSON.stringify(errObj);
+    if (checkString(serialized)) {
+      return true;
+    }
+  } catch (err) {
+    // ignore serialization issues
+  }
+
+  return false;
 }
 
 interface CartModalProps {
@@ -102,7 +222,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderIds, setOrderIds] = useState<string[]>([]);
   const [checkoutNonce, setCheckoutNonce] = useState<string | null>(null);
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, sessionToken: authSessionToken } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
   const { showNotification } = useNotifications();
@@ -112,12 +232,32 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const { requireUnlock } = useLaunchGate();
   const moonPayEnabled = useMemo(() => isMoonPayEnabled(), []);
 
+  const openTopUpInstructions = useCallback(() => {
+    setInfoModal((prev) => ({ ...prev, visible: false }));
+    const docsBase = getDocsUrl();
+    const fallbackUrl = 'https://docs.near.org/tools/wallets/fiat-onramps';
+    const target = docsBase
+      ? `${docsBase.replace(/\/$/, '')}/wallet/top-up`
+      : fallbackUrl;
+    void Linking.openURL(target).catch(() => {
+      showNotification(
+        t('common.error'),
+        t(
+          'cart.topUpLinkError',
+          'Unable to open the top-up instructions. Please try again.',
+        ),
+        'error',
+      );
+    });
+  }, [showNotification, t]);
+
   // Info/confirm modals
-  const [infoModal, setInfoModal] = useState({
+  const [infoModal, setInfoModal] = useState<InfoModalState>({
     visible: false,
     title: '',
     message: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning',
+    type: 'info',
+    autoClose: true,
   });
   const [confirmModal, setConfirmModal] = useState({
     visible: false,
@@ -128,17 +268,21 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     action: () => {},
   });
 
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [checkoutSessionToken, setCheckoutSessionToken] = useState<string | null>(null);
+  const [checkoutScopeGranted, setCheckoutScopeGranted] = useState(false);
+  const [checkoutScopePending, setCheckoutScopePending] = useState(false);
   const [kycRequired, setKycRequired] = useState<boolean | null>(null);
 
   const ensureSessionToken = async (): Promise<string> => {
-    await requireUnlock('checkout');
-    if (sessionToken) return sessionToken;
-    const { token } = await requestTokenWithConsent(
+    if (checkoutSessionToken) return checkoutSessionToken;
+    const { token, scopes } = await requestTokenWithConsent(
       getCheckoutRequestScopes(),
       () => uuid(),
     );
-    setSessionToken(token);
+    setCheckoutSessionToken(token);
+    if (scopes.includes('checkout')) {
+      setCheckoutScopeGranted(true);
+    }
     return token;
   };
 
@@ -159,7 +303,85 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     };
   }, [visible]);
 
-  
+
+  useEffect(() => {
+    if (!visible) {
+      setCheckoutScopePending(false);
+      return;
+    }
+    if (!isLoggedIn) {
+      setCheckoutScopeGranted(false);
+      setCheckoutScopePending(false);
+      return;
+    }
+
+    const activeScopes = new Set<string>();
+    const tokens = [authSessionToken, checkoutSessionToken].filter(
+      (value): value is string => typeof value === 'string' && value.length > 0,
+    );
+    for (const token of tokens) {
+      const session = getSession(token);
+      if (!session) continue;
+      for (const scope of session.scopes) {
+        activeScopes.add(scope);
+      }
+    }
+
+    if (activeScopes.has('checkout')) {
+      setCheckoutScopeGranted(true);
+      setCheckoutScopePending(false);
+      return;
+    }
+
+    let cancelled = false;
+    setCheckoutScopePending(true);
+
+    (async () => {
+      try {
+        void eventBus.track('checkout.scopePrompt', { status: 'requested' });
+        const issued = await requestScopes(['checkout'], () => uuid());
+        if (cancelled) return;
+        setCheckoutSessionToken(issued.token);
+        if (issued.scopes.includes('checkout')) {
+          setCheckoutScopeGranted(true);
+          void eventBus.track('checkout.scopePrompt', { status: 'granted' });
+        } else {
+          throw new Error('checkout scope missing');
+        }
+      } catch (err) {
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : String(err);
+        void eventBus.track('checkout.scopePrompt', { status: 'failed', message });
+        errorLog('Checkout scope request failed', err);
+        setCheckoutScopeGranted(false);
+        setInfoModal({
+          visible: true,
+          title: t('common.error'),
+          message: t(
+            'cart.checkoutScopeRequired',
+            'Checkout authorization is required before completing your order.',
+          ),
+          type: 'error',
+        });
+      } finally {
+        if (!cancelled) {
+          setCheckoutScopePending(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    visible,
+    isLoggedIn,
+    authSessionToken,
+    checkoutSessionToken,
+    t,
+  ]);
+
+
   useEffect(() => {
     if (visible) {
       // reset flow
@@ -338,6 +560,25 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
   const placeOrder = async () => {
     if (!validateShippingAddress()) return;
+    try {
+      await requireUnlock('checkout');
+      void eventBus.track('checkout.stepUp', { status: 'success' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      void eventBus.track('checkout.stepUp', { status: 'failed', message });
+      errorLog('Checkout step-up failed', error);
+      setInfoModal({
+        visible: true,
+        title: t('common.error'),
+        message: t(
+          'cart.checkoutStepUpFailed',
+          'Unlock verification is required before completing your order.',
+        ),
+        type: 'warning',
+      });
+      return;
+    }
+
     const token = await ensureSessionToken();
     let nonce = checkoutNonce;
     if (!nonce) {
@@ -383,6 +624,19 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           title: t('common.error'),
           message: t('cart.paymentAlreadyProcessing'),
           type: 'warning',
+        });
+      } else if (isInsufficientFundsError(error)) {
+        setInfoModal({
+          visible: true,
+          title: t('cart.insufficientFundsTitle', 'Insufficient funds'),
+          message: t(
+            'cart.insufficientFundsMessage',
+            'Your wallet does not have enough NEAR to deploy the escrow. Follow the top-up guide and try again.',
+          ),
+          type: 'error',
+          buttonText: t('cart.viewTopUpInstructions', 'View top-up instructions'),
+          onConfirm: openTopUpInstructions,
+          autoClose: false,
         });
       } else if (error?.message === '{E_EXPIRED}' || error?.message === '{E_SCOPE}') {
         setInfoModal({
@@ -1117,15 +1371,15 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           style={[
             styles.completeOrderButton,
             { backgroundColor: colors.gold },
-            loading && styles.buttonDisabled,
+            (loading || checkoutScopePending || !checkoutScopeGranted) && styles.buttonDisabled,
           ]}
           onPress={placeOrder}
-          disabled={loading}
+          disabled={loading || checkoutScopePending || !checkoutScopeGranted}
         >
-          {loading ? (
+          {loading || checkoutScopePending ? (
             <Spinner size="small" color={colors.text.inverse} />
           ) : (
-            <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}> 
+            <Text style={[styles.completeOrderText, { color: colors.text.inverse }]}>
               {t('cart.completeOrder')}
             </Text>
           )}
@@ -1363,7 +1617,10 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         title={infoModal.title}
         message={infoModal.message}
         type={infoModal.type}
-        onClose={() => setInfoModal({ ...infoModal, visible: false })}
+        buttonText={infoModal.buttonText}
+        onConfirm={infoModal.onConfirm}
+        autoClose={infoModal.autoClose ?? true}
+        onClose={() => setInfoModal((prev) => ({ ...prev, visible: false }))}
       />
 
       {/* Confirmation Modal */}
