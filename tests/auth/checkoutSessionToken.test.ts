@@ -182,7 +182,14 @@ describe('login issues session token used in checkout', () => {
     };
 
     requestScopes(['checkout'], () => 'checkout-token');
-    await svc.createOrdersFromCart('user1', [item], shipping, 'cash_on_delivery', 'checkout-token');
+    await svc.createOrdersFromCart(
+      'user1',
+      [item],
+      shipping,
+      'cash_on_delivery',
+      'checkout-token',
+      'nonce-auth-1',
+    );
 
     expect(mockAddOrder).toHaveBeenCalled();
     const passedOrder = mockAddOrder.mock.calls[0][0];

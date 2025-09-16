@@ -17,7 +17,11 @@ import { chainAdapter } from '@/services/chain';
 import { adminResolve, deployOrderPayment } from './nearContract';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
-import { assertCheckoutScope, getSession } from '@/services/session';
+import {
+  assertCheckoutScope,
+  getSession,
+  setSessionCheckoutNonce,
+} from '@/services/session';
 import { checkoutTokenIntegrity } from '@/services/monitoring';
 import SettingsAgent from '@/agents/settings-agent';
 import { loadKycReceipt } from '@/services/kycReceipts';
@@ -35,6 +39,16 @@ type VerifiedKycReceipt = {
   signature: string;
   hash: string;
 };
+
+interface OrderDraft {
+  sessionToken: string;
+  nonce: string;
+  storeId: string;
+  total: number;
+  itemsHash: string;
+  buyerAddress?: string;
+  sellerAddress?: string;
+}
 
 export async function emitOrderEvents(
   order: Order,
@@ -74,6 +88,7 @@ export async function emitOrderEvents(
 class OrderService {
   private static instance: OrderService;
   private listeners: Set<() => void> = new Set();
+  private checkoutNonceLocks: Map<string, string> = new Map();
 
   private constructor() {
     ordersAgent.subscribe(() => this.notifyListeners());
@@ -96,6 +111,42 @@ class OrderService {
 
   public removeListener(listener: () => void) {
     this.listeners.delete(listener);
+  }
+
+  private reserveCheckoutNonce(sessionToken: string, nonce: string): void {
+    if (typeof nonce !== 'string' || nonce.length === 0) {
+      throw new Error('ERR_DUPLICATE_NONCE');
+    }
+    const active = this.checkoutNonceLocks.get(sessionToken);
+    if (active) {
+      throw new Error('ERR_DUPLICATE_NONCE');
+    }
+    const session = getSession(sessionToken);
+    if (session?.checkoutNonce && session.checkoutNonce !== nonce) {
+      throw new Error('ERR_DUPLICATE_NONCE');
+    }
+    this.checkoutNonceLocks.set(sessionToken, nonce);
+    setSessionCheckoutNonce(sessionToken, nonce);
+  }
+
+  private releaseCheckoutNonce(sessionToken: string, nonce: string): void {
+    const active = this.checkoutNonceLocks.get(sessionToken);
+    if (active === nonce) {
+      this.checkoutNonceLocks.delete(sessionToken);
+      setSessionCheckoutNonce(sessionToken, null);
+    }
+  }
+
+  private async deployEscrow(
+    draft: OrderDraft,
+  ): Promise<{ contractAddress: string; txHash: string }> {
+    debugLog('Deploying escrow', {
+      nonce: draft.nonce,
+      storeId: draft.storeId,
+      total: draft.total,
+      itemsHash: draft.itemsHash,
+    });
+    return deployOrderPayment(draft.total);
   }
 
   private getTrackingSteps(status: OrderStatus): OrderTrackingStep[] {
@@ -225,6 +276,8 @@ class OrderService {
       sellerAddress?: string;
     },
     sessionToken: string,
+    nonce: string,
+    storeId: string,
     verifiedKyc?: VerifiedKycReceipt,
   ): Promise<Order> {
     assertCheckoutScope(sessionToken);
@@ -234,12 +287,25 @@ class OrderService {
       return sum + price * item.quantity;
     }, 0);
 
+    const itemsHash = Buffer.from(
+      sha256(Buffer.from(canonicalJson(items)))
+    ).toString('hex');
+
     let pay = payment;
     if (pay?.method === 'near' && (!pay.contractAddress || !pay.txHash)) {
       if (!chainAdapter.getAccountId()) {
         await chainAdapter.openModal();
       }
-      const { contractAddress, txHash } = await deployOrderPayment(total);
+      const draft: OrderDraft = {
+        sessionToken,
+        nonce,
+        storeId,
+        total,
+        itemsHash,
+        buyerAddress: pay?.buyerAddress,
+        sellerAddress: pay?.sellerAddress,
+      };
+      const { contractAddress, txHash } = await this.deployEscrow(draft);
       pay = { ...pay, contractAddress, txHash };
     }
 
@@ -249,9 +315,6 @@ class OrderService {
 
     const orderId = uuid();
     const timestamp = new Date().toISOString();
-    const itemsHash = Buffer.from(
-      sha256(Buffer.from(canonicalJson(items)))
-    ).toString('hex');
     const feeInfo =
       pay?.method === 'card' ? await calculateCardFees(total) : undefined;
 
@@ -292,6 +355,7 @@ class OrderService {
     shippingAddress: ShippingAddress,
     paymentMethod: 'cash_on_delivery' | 'near' | 'card' = 'cash_on_delivery',
     sessionToken: string,
+    nonce: string,
   ): Promise<Order[]> {
     try {
       assertCheckoutScope(sessionToken);
@@ -303,6 +367,7 @@ class OrderService {
       checkoutTokenIntegrity.inc({ token_valid: 'false', success: 'false' });
       throw err;
     }
+    this.reserveCheckoutNonce(sessionToken, nonce);
     try {
       const verifiedKyc = await this.verifyKycReceipt(sessionToken);
       const grouped: Record<string, CartItem[]> = {};
@@ -339,6 +404,8 @@ class OrderService {
           shippingAddress,
           payment,
           sessionToken,
+          nonce,
+          storeId,
           verifiedKyc,
         );
         await emitOrderEvents(order, storeId, sessionToken);
@@ -357,6 +424,8 @@ class OrderService {
       });
       checkoutTokenIntegrity.inc({ token_valid: 'true', success: 'false' });
       throw err;
+    } finally {
+      this.releaseCheckoutNonce(sessionToken, nonce);
     }
   }
 

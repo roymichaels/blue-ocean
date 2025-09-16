@@ -128,7 +128,14 @@ describe('card checkout fee deduction', () => {
     };
 
     const { token } = requestScopes(['checkout'], () => 'sig');
-    const orders = await svc.createOrdersFromCart('user1', items, shipping, 'card', token);
+    const orders = await svc.createOrdersFromCart(
+      'user1',
+      items,
+      shipping,
+      'card',
+      token,
+      'nonce-card-1',
+    );
     expect(orders).toHaveLength(1);
     const order = orders[0];
     expect(order.total).toBe(100);
