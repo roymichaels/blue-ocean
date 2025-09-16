@@ -161,7 +161,14 @@ describe('multi-seller checkout flow', () => {
     };
 
     const { token } = requestScopes(['checkout'], () => 'sig');
-    const orders = await svc.createOrdersFromCart('user1', items, shipping, 'near', token);
+    const orders = await svc.createOrdersFromCart(
+      'user1',
+      items,
+      shipping,
+      'near',
+      token,
+      'nonce-multi-1',
+    );
     expect(orders).toHaveLength(2);
     expect(deployOrderPayment).toHaveBeenCalledTimes(2);
     const totals = orders.map((o) => o.total).sort();
@@ -234,7 +241,7 @@ describe('multi-seller checkout flow', () => {
     const { token } = requestScopes(['checkout'], () => 'sig');
 
     await expect(
-      svc.createOrdersFromCart('user1', [item], shipping, 'near', token),
+      svc.createOrdersFromCart('user1', [item], shipping, 'near', token, 'nonce-multi-2'),
     ).rejects.toThrow('KYC receipt missing or invalid');
 
     const eventBus = require('@/services/eventBus');
@@ -282,7 +289,7 @@ describe('multi-seller checkout flow', () => {
     const { token } = requestScopes(['read'], () => 'sig');
 
     await expect(
-      svc.createOrdersFromCart('user1', [item], shipping, 'near', token),
+      svc.createOrdersFromCart('user1', [item], shipping, 'near', token, 'nonce-multi-3'),
     ).rejects.toThrow('{E_SCOPE}');
 
     const eventBus = require('@/services/eventBus');

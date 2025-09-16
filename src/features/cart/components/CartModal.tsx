@@ -50,7 +50,11 @@ import { useLaunchGate } from '@/features/launchGate';
 import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { requestTokenWithConsent, getCheckoutRequestScopes } from '@/services/session';
+import {
+  requestTokenWithConsent,
+  getCheckoutRequestScopes,
+  setSessionCheckoutNonce,
+} from '@/services/session';
 import { uuid } from '@/utils/uuid';
 import NotificationService from '@/services/notification';
 import SettingsAgent from '@/agents/settings-agent';
@@ -92,6 +96,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderIds, setOrderIds] = useState<string[]>([]);
+  const [checkoutNonce, setCheckoutNonce] = useState<string | null>(null);
   const { isLoggedIn, user } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
@@ -328,8 +333,15 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const placeOrder = async () => {
     if (!validateShippingAddress()) return;
     const token = await ensureSessionToken();
+    let nonce = checkoutNonce;
+    if (!nonce) {
+      nonce = uuid();
+      setCheckoutNonce(nonce);
+      setSessionCheckoutNonce(token, nonce);
+    }
 
     setLoading(true);
+    let resetNonce = false;
     try {
       const orders = await OrderService.getInstance().createOrdersFromCart(
         user?.id || 'guest',
@@ -337,7 +349,9 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         shippingAddress,
         'near',
         token,
+        nonce,
       );
+      resetNonce = true;
       eventBus.track('checkout.complete', {
         orderIds: orders.map((o) => o.id),
         total: getTotal(),
@@ -357,7 +371,14 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
       setTimeout(() => onClose(), 5000);
     } catch (error: any) {
-      if (error?.message === '{E_EXPIRED}' || error?.message === '{E_SCOPE}') {
+      if (error?.message === 'ERR_DUPLICATE_NONCE') {
+        setInfoModal({
+          visible: true,
+          title: t('common.error'),
+          message: t('cart.paymentAlreadyProcessing'),
+          type: 'warning',
+        });
+      } else if (error?.message === '{E_EXPIRED}' || error?.message === '{E_SCOPE}') {
         setInfoModal({
           visible: true,
           title: t('common.error'),
@@ -372,8 +393,15 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           type: 'error',
         });
       }
+      if (error?.message !== 'ERR_DUPLICATE_NONCE') {
+        resetNonce = true;
+      }
     } finally {
       setLoading(false);
+      if (resetNonce) {
+        setCheckoutNonce(null);
+        setSessionCheckoutNonce(token, null);
+      }
     }
   };
 

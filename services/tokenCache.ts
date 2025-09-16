@@ -25,6 +25,7 @@ export async function saveSession(record: SessionToken): Promise<void> {
       scopes: record.scopes,
       exp: record.exp,
       deviceHash: record.deviceHash,
+      ...(record.checkoutNonce ? { checkoutNonce: record.checkoutNonce } : {}),
       ...(record.sealed ? { sealed: record.sealed } : {}),
     } satisfies SessionToken;
     await SecureStore.setItemAsync(
@@ -52,6 +53,7 @@ export async function loadSessions(): Promise<SessionToken[]> {
         exp?: unknown;
         deviceHash?: unknown;
         sealed?: unknown;
+        checkoutNonce?: unknown;
       };
       if (
         parsed &&
@@ -75,6 +77,10 @@ export async function loadSessions(): Promise<SessionToken[]> {
         ) {
           continue;
         }
+        const checkoutNonce =
+          typeof parsed.checkoutNonce === 'string' && parsed.checkoutNonce.length > 0
+            ? parsed.checkoutNonce
+            : undefined;
         const record: SessionToken = sealed
           ? {
               token: parsed.token,
@@ -82,12 +88,14 @@ export async function loadSessions(): Promise<SessionToken[]> {
               exp: parsed.exp,
               deviceHash: parsed.deviceHash,
               sealed,
+              ...(checkoutNonce ? { checkoutNonce } : {}),
             }
           : {
               token: parsed.token,
               scopes: parsed.scopes as string[],
               exp: parsed.exp,
               deviceHash: parsed.deviceHash,
+              ...(checkoutNonce ? { checkoutNonce } : {}),
             };
         out.push(record);
       }

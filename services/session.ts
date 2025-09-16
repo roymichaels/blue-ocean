@@ -39,6 +39,7 @@ export interface SessionToken {
   exp: number;
   deviceHash: string;
   sealed?: EncryptedScopePayload;
+  checkoutNonce?: string;
 }
 
 export interface ScopeRequestOptions {
@@ -322,6 +323,24 @@ export async function requestTokenWithConsent(
 
 export function getSession(token: string): SessionToken | undefined {
   return store.get(token);
+}
+
+export function setSessionCheckoutNonce(
+  token: string,
+  nonce: string | null,
+): void {
+  const session = store.get(token);
+  if (!session) return;
+  if (typeof nonce === 'string' && nonce.length > 0) {
+    session.checkoutNonce = nonce;
+  } else if ('checkoutNonce' in session) {
+    delete session.checkoutNonce;
+  }
+  void saveSession(session);
+}
+
+export function getSessionCheckoutNonce(token: string): string | undefined {
+  return store.get(token)?.checkoutNonce;
 }
 
 export async function revokeToken(token: string): Promise<void> {
