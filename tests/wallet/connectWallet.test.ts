@@ -2,6 +2,19 @@ const mockSignIn = jest.fn();
 const mockGetAccountId = jest.fn();
 const mockGetPublicKey = jest.fn();
 
+jest.mock('@waku/sdk', () => ({}), { virtual: true });
+
+jest.mock('@/contexts/WalletProvider', () => ({
+  useWallet: () => ({ sign: jest.fn() }),
+}));
+
+jest.mock('@/services/session', () => ({
+  requestScopes: jest.fn(),
+  refreshToken: jest.fn(),
+  validateToken: jest.fn(),
+  getSession: jest.fn(),
+}));
+
 jest.mock('@/features/auth/services/nearAuth', () => ({
   signIn: mockSignIn,
   getAccountId: mockGetAccountId,

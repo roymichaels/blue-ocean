@@ -14,25 +14,31 @@ import { getEd25519KeyPair } from '@/services/localIdentity';
 import { deriveSharedKey, aesEncrypt, aesDecrypt, deriveChatSalt } from '@/utils/encryption';
 
 const SESSION_ENCRYPTION_INFO = 'wallet.session';
+const WALLET_PUBLIC_KEY_ERROR = 'Wallet public key unavailable';
+
+function readAccountId(): string | null {
+  return typeof getAccountId === 'function' ? getAccountId() : null;
+}
+
+function readWalletPublicKey(): string | null {
+  return typeof getPublicKey === 'function' ? getPublicKey() : null;
+}
 
 export async function connectWallet(): Promise<{ address: string; publicKey: string }> {
-  const readAccount = typeof getAccountId === 'function' ? getAccountId : () => null;
-  const readPublicKey = typeof getPublicKey === 'function' ? getPublicKey : () => null;
-
-  let address = readAccount();
-  let publicKey = readPublicKey();
+  let address = readAccountId();
+  let publicKey = readWalletPublicKey();
 
   if (!address || !publicKey) {
     if (typeof signIn !== 'function') {
-      throw new Error('Wallet public key unavailable');
+      throw new Error(WALLET_PUBLIC_KEY_ERROR);
     }
     await signIn();
-    address = readAccount();
-    publicKey = readPublicKey();
+    address = readAccountId();
+    publicKey = readWalletPublicKey();
   }
 
   if (!address || !publicKey) {
-    throw new Error('Wallet public key unavailable');
+    throw new Error(WALLET_PUBLIC_KEY_ERROR);
   }
 
   return { address, publicKey };
