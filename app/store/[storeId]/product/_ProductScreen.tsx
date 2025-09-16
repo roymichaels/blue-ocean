@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -36,6 +36,7 @@ export default function ProductDetailScreen() {
     quantity,
     incrementQuantity,
     decrementQuantity,
+    setQuantity,
     effectivePrice,
     totalPrice,
     currentPricingTier,
@@ -48,12 +49,43 @@ export default function ProductDetailScreen() {
   } = useProductDetail(productId ?? '', typeof storeId === 'string' ? storeId : undefined);
 
   const [adding, setAdding] = useState(false);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (!product?.variants || product.variants.length === 0) {
+      setSelectedVariantId(undefined);
+      return;
+    }
+
+    setSelectedVariantId((prev) => {
+      if (prev) {
+        const exists = product.variants?.some((variant) => (variant.id ?? variant.color) === prev);
+        if (exists) {
+          return prev;
+        }
+      }
+      const first = product.variants[0];
+      return first.id ?? first.color;
+    });
+  }, [product]);
+
+  const selectedVariant = useMemo(() => {
+    if (!product?.variants || !selectedVariantId) return undefined;
+    return product.variants.find((variant) => (variant.id ?? variant.color) === selectedVariantId);
+  }, [product?.variants, selectedVariantId]);
+
+  useEffect(() => {
+    if (!selectedVariant) return;
+    if (selectedVariant.stock >= 0 && quantity > selectedVariant.stock) {
+      setQuantity(selectedVariant.stock > 0 ? selectedVariant.stock : 1);
+    }
+  }, [quantity, selectedVariant, setQuantity]);
 
   const handleAddToCart = useCallback(async () => {
     if (!product) return;
     setAdding(true);
     try {
-      await CartService.getInstance().addToCart(product, quantity);
+      await CartService.getInstance().addToCart(product.id, selectedVariantId, quantity);
       showNotification(
         t('cart.addedTitle', 'Added to cart'),
         t('cart.addedMessage', 'The item was added to your cart.'),
@@ -68,7 +100,7 @@ export default function ProductDetailScreen() {
     } finally {
       setAdding(false);
     }
-  }, [product, quantity, showNotification, t]);
+  }, [product, quantity, selectedVariantId, showNotification, t]);
 
   const handleBack = useCallback(() => {
     if (storeId) {
@@ -82,6 +114,10 @@ export default function ProductDetailScreen() {
     if (!product) return '';
     return `${currencySymbol}${effectivePrice.toFixed(2)}`;
   }, [product, currencySymbol, effectivePrice]);
+
+  const rawStock = selectedVariant?.stock ?? product?.stock;
+  const isStockKnown = rawStock !== undefined && rawStock !== null;
+  const isOutOfStock = isStockKnown ? rawStock <= 0 : true;
 
   if (!productId) {
     return (
@@ -178,6 +214,52 @@ export default function ProductDetailScreen() {
                 </Text>
               </View>
             ) : null}
+            {product.variants?.length ? (
+              <View style={styles.variantSection}>
+                <Text style={{ color: colors.text.primary, fontWeight: '600' }}>
+                  {t('product.color', 'Color')}
+                </Text>
+                <View style={styles.variantOptions}>
+                  {product.variants.map((variant, index) => {
+                    const key = variant.id ?? variant.color ?? `${index}`;
+                    const isSelected = key === selectedVariantId;
+                    return (
+                      <TouchableOpacity
+                        key={key}
+                        onPress={() => setSelectedVariantId(key)}
+                        style={[
+                          styles.variantOption,
+                          {
+                            borderColor: isSelected ? colors.gold : colors.border.primary,
+                            backgroundColor: isSelected ? colors.interactive.secondary : colors.surface.secondary,
+                          },
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: isSelected }}
+                      >
+                        <View
+                          style={[
+                            styles.variantSwatch,
+                            {
+                              backgroundColor: variant.color || colors.surface.primary,
+                              borderColor: colors.border.primary,
+                            },
+                          ]}
+                        />
+                        <View style={styles.variantInfo}>
+                          <Text style={[styles.variantLabel, { color: colors.text.primary }]}>
+                            {variant.color || t('product.color', 'Color')}
+                          </Text>
+                          <Text style={[styles.variantStock, { color: colors.text.secondary }]}>
+                            {t('product.inStock', 'In Stock ({count})', { count: variant.stock })}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
             <View style={styles.quantityRow}>
               <Text style={{ color: colors.text.primary, fontWeight: '600' }}>
                 {t('productDetail.quantity', 'Quantity')}
@@ -196,7 +278,7 @@ export default function ProductDetailScreen() {
                   onPress={incrementQuantity}
                   accessibilityLabel={t('productDetail.increase', 'Increase quantity')}
                   style={[styles.quantityButton, { borderColor: colors.border.primary }]}
-                  disabled={product.stock !== undefined && quantity >= product.stock}
+                  disabled={isStockKnown && quantity >= rawStock}
                 >
                   <Plus size={16} color={colors.text.primary} />
                 </TouchableOpacity>
@@ -208,13 +290,13 @@ export default function ProductDetailScreen() {
             </Text>
             <View style={styles.stockRow}>
               <Text style={{ color: colors.text.secondary }}>
-                {t('productDetail.stock', 'In stock')}: {product.stock ?? t('common.unknown', 'Unknown')}
+                {t('productDetail.stock', 'In stock')}: {isStockKnown ? rawStock : t('common.unknown', 'Unknown')}
               </Text>
             </View>
             <Button
               onPress={handleAddToCart}
               loading={adding}
-              disabled={!product.stock || product.stock === 0}
+              disabled={isOutOfStock}
               accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
             >
               <View style={styles.buttonContent}>
@@ -287,6 +369,39 @@ const styles = StyleSheet.create({
   tierNotice: {
     padding: spacing.spacer12,
     borderRadius: radius.md,
+  },
+  variantSection: {
+    marginTop: spacing.spacer12,
+    gap: spacing.spacer8,
+  },
+  variantOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.spacer12,
+  },
+  variantOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: radius.md,
+    padding: spacing.spacer8,
+    gap: spacing.spacer8,
+  },
+  variantSwatch: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+  },
+  variantInfo: {
+    flexDirection: 'column',
+  },
+  variantLabel: {
+    ...typography.sm,
+    fontWeight: '600',
+  },
+  variantStock: {
+    ...typography.xs,
   },
   quantityRow: {
     flexDirection: 'row',
