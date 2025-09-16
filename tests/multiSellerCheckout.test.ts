@@ -34,6 +34,10 @@ jest.mock('@/services/kycReceipts', () => ({
   issueKycReceipt: jest.fn(),
 }));
 
+jest.mock('@/utils/verifyMessageSignature', () => ({
+  verifyMessageSignature: jest.fn().mockResolvedValue(true),
+}));
+
 jest.mock('@/services/nearOrders', () => ({
   setOrder: jest.fn(async (o: any) => { mockStore[o.id] = o; }),
   getOrder: jest.fn(async (id: string) => mockStore[id] || null),
@@ -168,6 +172,8 @@ describe('multi-seller checkout flow', () => {
     expect(orders.every((o) => o.paymentTxHash && o.paymentContractAddress)).toBe(
       true,
     );
+    expect(orders.every((o) => o.kycReceiptSignature === 'sig')).toBe(true);
+    expect(orders.every((o) => typeof o.kycReceiptHash === 'string')).toBe(true);
 
     const eventBus = require('@/services/eventBus');
     expect(eventBus.publish).toHaveBeenCalledTimes(4);

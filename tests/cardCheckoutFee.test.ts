@@ -33,6 +33,10 @@ jest.mock('@/services/kycReceipts', () => ({
   issueKycReceipt: jest.fn(),
 }));
 
+jest.mock('@/utils/verifyMessageSignature', () => ({
+  verifyMessageSignature: jest.fn().mockResolvedValue(true),
+}));
+
 jest.mock('@/services/nearOrders', () => ({
   setOrder: jest.fn(async (o: any) => { mockStore[o.id] = o; }),
   getOrder: jest.fn(async (id: string) => mockStore[id] || null),
@@ -130,6 +134,8 @@ describe('card checkout fee deduction', () => {
     expect(order.total).toBe(100);
     expect(order.platformFee).toBeCloseTo(2.5);
     expect(order.sellerPayout).toBeCloseTo(97.5);
+    expect(order.kycReceiptSignature).toBe('sig');
+    expect(typeof order.kycReceiptHash).toBe('string');
   });
 });
 
