@@ -14,10 +14,18 @@ import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from '@/features/stores/services/nearStores';
 import { getProduct, setProduct } from '@/features/products/services/nearProducts';
 import { chainAdapter } from '@/services/chain';
-import { adminResolve, deployOrderPayment } from './nearContract';
+import {
+  adminResolve,
+  deployEscrow as deployEscrowContract,
+  ESCROW_ERROR_CODES,
+  type DeployEscrowDraft,
+  type DeployEscrowResult,
+  type EscrowErrorCode,
+} from './nearContract';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
 import {
+  CHECKOUT_SCOPE,
   assertCheckoutScope,
   getSession,
   setSessionCheckoutNonce,
@@ -41,15 +49,15 @@ type VerifiedKycReceipt = {
   hash: string;
 };
 
-interface OrderDraft {
+type OrderDraft = DeployEscrowDraft & {
   sessionToken: string;
-  nonce: string;
-  storeId: string;
-  total: number;
-  itemsHash: string;
-  buyerAddress?: string;
-  sellerAddress?: string;
-}
+  scopes: string[];
+  kycReceiptHash: string;
+};
+
+const ESCROW_ERROR_SET = new Set<EscrowErrorCode>(
+  Object.values(ESCROW_ERROR_CODES),
+);
 
 export async function emitOrderEvents(
   order: Order,
@@ -158,14 +166,14 @@ class OrderService {
 
   private async deployEscrow(
     draft: OrderDraft,
-  ): Promise<{ contractAddress: string; txHash: string }> {
+  ): Promise<DeployEscrowResult> {
     debugLog('Deploying escrow', {
       nonce: draft.nonce,
       storeId: draft.storeId,
       total: draft.total,
       itemsHash: draft.itemsHash,
     });
-    return deployOrderPayment(draft.total);
+    return deployEscrowContract(draft);
   }
 
   private getTrackingSteps(status: OrderStatus): OrderTrackingStep[] {
@@ -299,8 +307,21 @@ class OrderService {
     storeId: string,
     verifiedKyc?: VerifiedKycReceipt,
   ): Promise<Order> {
-    assertCheckoutScope(sessionToken);
-    const kyc = verifiedKyc ?? (await this.verifyKycReceipt(sessionToken));
+    try {
+      assertCheckoutScope(sessionToken);
+    } catch (err) {
+      if (err instanceof Error && err.message === '{E_SCOPE}') {
+        throw new Error(ESCROW_ERROR_CODES.scopeMissing);
+      }
+      throw err;
+    }
+
+    let kyc: VerifiedKycReceipt;
+    try {
+      kyc = verifiedKyc ?? (await this.verifyKycReceipt(sessionToken));
+    } catch (err) {
+      throw new Error(ESCROW_ERROR_CODES.kycRequired);
+    }
     const total = items.reduce((sum, item) => {
       const price = item.unitPrice ?? item.product.price;
       return sum + price * item.quantity;
@@ -315,17 +336,39 @@ class OrderService {
       if (!chainAdapter.getAccountId()) {
         await chainAdapter.openModal();
       }
+      const session = getSession(sessionToken);
+      if (!session) {
+        throw new Error(ESCROW_ERROR_CODES.scopeMissing);
+      }
+      const scopes = Array.isArray(session.scopes)
+        ? [...session.scopes]
+        : [];
+      if (!scopes.includes(CHECKOUT_SCOPE)) {
+        throw new Error(ESCROW_ERROR_CODES.scopeMissing);
+      }
       const draft: OrderDraft = {
         sessionToken,
+        scopes,
         nonce,
         storeId,
         total,
         itemsHash,
         buyerAddress: pay?.buyerAddress,
         sellerAddress: pay?.sellerAddress,
+        kycReceiptHash: kyc.hash,
       };
-      const { contractAddress, txHash } = await this.deployEscrow(draft);
-      pay = { ...pay, contractAddress, txHash };
+      try {
+        const { orderId, txHash } = await this.deployEscrow(draft);
+        pay = { ...pay, contractAddress: orderId, txHash };
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          ESCROW_ERROR_SET.has(error.message as EscrowErrorCode)
+        ) {
+          throw error;
+        }
+        throw new Error(ESCROW_ERROR_CODES.deploymentFailed);
+      }
     }
 
     if (!pay?.buyerAddress) {

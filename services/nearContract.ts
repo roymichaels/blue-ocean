@@ -11,10 +11,43 @@ import {
   adminTransactionIntegrity,
 } from '@/utils/observability';
 import isAdmin from '@/utils/isAdmin';
+import { CHECKOUT_SCOPE, getSession } from '@/services/session';
 
 assertNearChain();
 
 export let ORDER_PAYMENT_FACTORY_ADDRESS = '';
+
+const ESCROW_EXPIRATION_WINDOW_MS = 15 * 60 * 1000;
+const ESCROW_STATUS_PENDING = 'pending' as const;
+
+export const ESCROW_ERROR_CODES = {
+  scopeMissing: 'ERR_SCOPE_MISSING',
+  kycRequired: 'ERR_KYC_REQUIRED',
+  duplicateNonce: 'ERR_DUPLICATE_NONCE',
+  deploymentFailed: 'ERR_ESCROW_DEPLOY',
+} as const;
+
+export type EscrowErrorCode =
+  (typeof ESCROW_ERROR_CODES)[keyof typeof ESCROW_ERROR_CODES];
+
+export interface DeployEscrowDraft {
+  sessionToken?: string;
+  scopes?: string[];
+  nonce: string;
+  storeId: string;
+  total: number;
+  itemsHash: string;
+  buyerAddress?: string;
+  sellerAddress?: string;
+  kycReceiptHash?: string;
+}
+
+export interface DeployEscrowResult {
+  orderId: string;
+  txHash: string;
+  expiresAt: string;
+  status: typeof ESCROW_STATUS_PENDING;
+}
 
 export async function getOrderPaymentFactoryAddress(): Promise<string> {
   if (!ORDER_PAYMENT_FACTORY_ADDRESS) {
@@ -37,28 +70,69 @@ async function assertAdmin(action: string) {
   }
 }
 
-export async function deployOrderPayment(
-  amount: number,
-): Promise<{ contractAddress: string; txHash: string }> {
-  await assertAdmin('near.deployOrderPayment');
-  const end = serviceLatency.startTimer({ service: 'near.deployOrderPayment' });
+export async function deployEscrow(
+  draft: DeployEscrowDraft,
+): Promise<DeployEscrowResult> {
+  const session = draft.sessionToken ? getSession(draft.sessionToken) : undefined;
+  if (draft.sessionToken && !session) {
+    throw new Error(ESCROW_ERROR_CODES.scopeMissing);
+  }
+  if (session && !session.scopes.includes(CHECKOUT_SCOPE)) {
+    throw new Error(ESCROW_ERROR_CODES.scopeMissing);
+  }
+
+  const combinedScopes = new Set<string>(Array.isArray(draft.scopes) ? draft.scopes : []);
+  if (session?.scopes) {
+    for (const scope of session.scopes) {
+      combinedScopes.add(scope);
+    }
+  }
+
+  if (!combinedScopes.has(CHECKOUT_SCOPE)) {
+    throw new Error(ESCROW_ERROR_CODES.scopeMissing);
+  }
+
+  if (typeof draft.nonce !== 'string' || draft.nonce.length === 0) {
+    throw new Error(ESCROW_ERROR_CODES.duplicateNonce);
+  }
+
+  if (session?.checkoutNonce && session.checkoutNonce !== draft.nonce) {
+    throw new Error(ESCROW_ERROR_CODES.duplicateNonce);
+  }
+
+  if (!draft.kycReceiptHash) {
+    throw new Error(ESCROW_ERROR_CODES.kycRequired);
+  }
+
+  const end = serviceLatency.startTimer({ service: 'near.deployEscrow' });
   try {
     const factoryAddress = await getOrderPaymentFactoryAddress();
     const settings = await fetchSettings();
     const feeAddress = settings.feeAddress ?? '';
     const feeBps = settings.feeBps ?? 0;
     const txHash = await sendNear(
-      `Pay:${amount}:${feeAddress}:${feeBps}`,
+      `Pay:${draft.total}:${feeAddress}:${feeBps}`,
     );
-    logger.info({ service: 'near.deployOrderPayment', txHash }, 'Order payment deployed');
-    adminTransactionIntegrity.inc({ action: 'near.deployOrderPayment', result: 'success' });
-    return { contractAddress: factoryAddress, txHash };
+    logger.info(
+      {
+        service: 'near.deployEscrow',
+        txHash,
+        orderId: factoryAddress,
+        storeId: draft.storeId,
+      },
+      'Escrow deployment submitted',
+    );
+    return {
+      orderId: factoryAddress,
+      txHash,
+      expiresAt: new Date(Date.now() + ESCROW_EXPIRATION_WINDOW_MS).toISOString(),
+      status: ESCROW_STATUS_PENDING,
+    };
   } catch (e) {
-    serviceFailures.inc({ service: 'near.deployOrderPayment' });
-    errorLog('Failed to deploy order payment', e);
-    logger.error({ err: e }, 'Failed to deploy order payment');
-    adminTransactionIntegrity.inc({ action: 'near.deployOrderPayment', result: 'failure' });
-    throw e;
+    serviceFailures.inc({ service: 'near.deployEscrow' });
+    errorLog('Failed to deploy escrow', e);
+    logger.error({ err: e }, 'Failed to deploy escrow');
+    throw new Error(ESCROW_ERROR_CODES.deploymentFailed);
   } finally {
     end();
   }
