@@ -146,4 +146,21 @@ describe('warmCache', () => {
       jest.useRealTimers();
     }
   });
+
+  it('uses a 3s default lag threshold before raising sync alerts', async () => {
+    jest.useFakeTimers();
+    try {
+      const cache = createWarmCache<any>('topic', { hydrateLake });
+      await new Promise((res) => cache.onSynced(res));
+      jest.setSystemTime(0);
+      liveHandler &&
+        liveHandler({ id: '2', rev: 2, op: 'set', value: { name: 'slow' }, ts: 0 });
+      jest.setSystemTime(2800);
+      expect(cache.getById('2')).toEqual({ name: 'slow' });
+      jest.setSystemTime(3300);
+      expect(() => cache.getById('2')).toThrowErrorMatchingObject({ code: E_SYNC_LAG });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });

@@ -1,6 +1,9 @@
 # Cache Invalidation
 
-Guidelines for keeping cache entries fresh across peers.
+Guidelines for keeping cache entries fresh across peers. The warm-start caches
+for **users**, **stores**, and **orders** hydrate from encrypted NEAR Lake
+snapshots and replay Waku history at boot, so the same invalidation rules apply
+across every device.
 
 ## When to Invalidate
 
