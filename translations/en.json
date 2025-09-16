@@ -219,6 +219,10 @@
     "report": "Report",
     "percentOff": "{percent}% off"
   },
+  "productDetail": {
+    "contactStore": "Contact store",
+    "contactStoreError": "We could not start a chat with this store. Please try again later."
+  },
   "category": {
     "addSubcategory": "Add Subcategory",
     "editSubcategory": "Edit Subcategory",

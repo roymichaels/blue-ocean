@@ -17,11 +17,10 @@ import { useNotificationActions } from '@/components/NotificationContext';
 import EmptyState from '@/shared/ui/EmptyState';
 import { useAppRouter } from '@/services/useAppRouter';
 import { useProductDetail } from '@/features/products/hooks/useProductDetail';
-import { AlertTriangle, Heart, Minus, Plus, ShoppingCart } from 'lucide-react-native';
-import type { ProductVariant } from '@/types';
-
-const getVariantKey = (variant: ProductVariant, index: number) =>
-  variant.id ?? variant.color ?? String(index);
+import { useAuth } from '@/features/auth/AuthContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
+import { openDM } from '@/services/openDM';
+import { AlertTriangle, Heart, MessageCircle, Minus, Plus, ShoppingCart } from 'lucide-react-native';
 
 export default function ProductDetailScreen() {
   const { storeId, productId } = useLocalSearchParams<{ storeId: string; productId: string }>();
@@ -30,6 +29,8 @@ export default function ProductDetailScreen() {
   const { currencySymbol } = useCurrency();
   const { showNotification } = useNotificationActions();
   const appRouter = useAppRouter();
+  const { isLoggedIn } = useAuth();
+  const { openAuthModal } = useAuthModal();
 
   const {
     product,
@@ -53,7 +54,13 @@ export default function ProductDetailScreen() {
   } = useProductDetail(productId ?? '', typeof storeId === 'string' ? storeId : undefined);
 
   const [adding, setAdding] = useState(false);
+  const [contacting, setContacting] = useState(false);
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>();
+
+  const storeIdentifier = useMemo(() => {
+    if (product?.storeId) return product.storeId;
+    return typeof storeId === 'string' ? storeId : undefined;
+  }, [product?.storeId, storeId]);
 
   useEffect(() => {
     if (!product?.variants || product.variants.length === 0) {
@@ -123,6 +130,53 @@ export default function ProductDetailScreen() {
       setAdding(false);
     }
   }, [product, quantity, selectedVariantId, showNotification, t]);
+
+  const handleContactStore = useCallback(async () => {
+    if (!storeIdentifier) {
+      showNotification(
+        t('common.error', 'Error'),
+        t(
+          'productDetail.contactStoreError',
+          'We could not start a chat with this store. Please try again later.',
+        ),
+        'error',
+      );
+      return;
+    }
+
+    if (!isLoggedIn) {
+      openAuthModal();
+      return;
+    }
+
+    setContacting(true);
+    try {
+      await openDM(storeIdentifier);
+      appRouter.push('/messages');
+    } catch (err) {
+      if (err instanceof Error && err.message === 'WALLET_REQUIRED') {
+        openAuthModal();
+        showNotification(
+          t('common.error', 'Error'),
+          t('auth.walletConnectionFailed', 'Wallet connection failed'),
+          'error',
+        );
+      } else {
+        showNotification(
+          t('common.error', 'Error'),
+          err instanceof Error
+            ? err.message
+            : t(
+                'productDetail.contactStoreError',
+                'We could not start a chat with this store. Please try again later.',
+              ),
+          'error',
+        );
+      }
+    } finally {
+      setContacting(false);
+    }
+  }, [appRouter, isLoggedIn, openAuthModal, openDM, showNotification, storeIdentifier, t]);
 
   const handleBack = useCallback(() => {
     if (storeId) {
@@ -343,19 +397,38 @@ export default function ProductDetailScreen() {
                 {t('productDetail.stock', 'In stock')}: {isStockKnown ? rawStock : t('common.unknown', 'Unknown')}
               </Text>
             </View>
-            <Button
-              onPress={handleAddToCart}
-              loading={adding}
-              disabled={disableAddToCart}
-              accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
-            >
-              <View style={styles.buttonContent}>
-                <ShoppingCart size={18} color={colors.text.inverse} />
-                <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
-                  {t('productDetail.addToCart', 'Add to cart')}
-                </Text>
-              </View>
-            </Button>
+            <View style={styles.actionButtons}>
+              <Button
+                onPress={handleContactStore}
+                loading={contacting}
+                disabled={contacting || !storeIdentifier}
+                accessibilityLabel={t('productDetail.contactStore', 'Contact store')}
+                style={(_state) => [
+                  styles.secondaryButton,
+                  { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary },
+                ]}
+              >
+                <View style={styles.buttonContent}>
+                  <MessageCircle size={18} color={colors.text.primary} />
+                  <Text style={[styles.buttonText, { color: colors.text.primary }]}>
+                    {t('productDetail.contactStore', 'Contact store')}
+                  </Text>
+                </View>
+              </Button>
+              <Button
+                onPress={handleAddToCart}
+                loading={adding}
+                disabled={isOutOfStock}
+                accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
+              >
+                <View style={styles.buttonContent}>
+                  <ShoppingCart size={18} color={colors.text.inverse} />
+                  <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
+                    {t('productDetail.addToCart', 'Add to cart')}
+                  </Text>
+                </View>
+              </Button>
+            </View>
           </View>
         </View>
       )}
@@ -476,6 +549,13 @@ const styles = StyleSheet.create({
   stockRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  actionButtons: {
+    flexDirection: 'column',
+    gap: spacing.spacer12,
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
   },
   buttonContent: {
     flexDirection: 'row',

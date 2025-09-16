@@ -216,6 +216,10 @@
     "report": "דווח",
     "percentOff": "{percent}% הנחה"
   },
+  "productDetail": {
+    "contactStore": "צור קשר עם החנות",
+    "contactStoreError": "לא ניתן להתחיל צ'אט עם החנות. נסה שוב מאוחר יותר."
+  },
   "category": {
     "addSubcategory": "הוסף תת-קטגוריה",
     "editSubcategory": "עריכת תת-קטגוריה",
