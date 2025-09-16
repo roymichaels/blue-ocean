@@ -22,10 +22,17 @@ function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) 
     price,
     originalPrice,
   } = useProductCard(product);
+  const accessibilityLabel = React.useMemo(() => {
+    if (!price) {
+      return product.name;
+    }
+    return `${product.name}, ${price}`;
+  }, [price, product.name]);
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       style={[styles.card, { backgroundColor: colors.surface.primary }, style]}
     >
