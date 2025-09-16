@@ -34,6 +34,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useLaunchGate } from '@/features/launchGate';
 import { formatTimestamp } from '@/utils/formatTimestamp';
+import { isDisputesEnabled } from '@/config/featureFlags';
 
 
 
@@ -54,6 +55,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
   const { requireUnlock } = useLaunchGate();
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const disputesEnabled = isDisputesEnabled();
 
   useEffect(() => {
     if (visible && order) {
@@ -363,17 +365,47 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
 
             {/* Cancel Order Button */}
             {(order.status === 'order_received' || order.status === 'courier_found') && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.cancelButton, { backgroundColor: colors.status.error }]}
                 onPress={cancelOrder}
               >
                 <Text style={[styles.cancelButtonText, { color: colors.text.inverse }]}>ביטול הזמנה</Text>
               </TouchableOpacity>
             )}
+            <TouchableOpacity
+              style={[
+                styles.disputeButton,
+                disputesEnabled
+                  ? { backgroundColor: colors.status.warning }
+                  : {
+                      backgroundColor: colors.surface.secondary,
+                      borderColor: colors.border.primary,
+                      borderWidth: 1,
+                    },
+              ]}
+              disabled={!disputesEnabled}
+              activeOpacity={disputesEnabled ? 0.7 : 1}
+              onPress={() => {
+                if (!disputesEnabled) return;
+                Alert.alert(t('orders.openDispute', 'Open dispute'));
+              }}
+              accessibilityRole="button"
+            >
+              <Text
+                style={[
+                  styles.disputeButtonText,
+                  { color: disputesEnabled ? colors.text.inverse : colors.text.secondary },
+                ]}
+              >
+                {disputesEnabled
+                  ? t('orders.openDispute', 'Open dispute')
+                  : t('orders.disputeComingSoon', 'בקרוב')}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* Order Info */}
-          <View style={[styles.orderInfo, { 
+          <View style={[styles.orderInfo, {
             backgroundColor: colors.surface.primary,
             borderColor: colors.border.primary 
           }]}>
@@ -632,6 +664,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  disputeButton: {
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  disputeButtonText: {
     fontSize: 14,
     fontWeight: '600',
   },
