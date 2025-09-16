@@ -443,21 +443,45 @@ export default function ProductDetailScreen() {
                 {t('productDetail.stock', 'In stock')}: {isStockKnown ? rawStock : t('common.unknown', 'Unknown')}
               </Text>
             </View>
-            <DisabledTooltip label={disabledReason}>
+            <View style={styles.actionButtons}>
               <Button
-                onPress={handleAddToCart}
-                loading={adding}
-                disabled={isOutOfStock || isProductDisabled}
-                accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
+                onPress={handleContactStore}
+                loading={contacting}
+                disabled={!storeIdentifier || contacting}
+                accessibilityLabel={t('productDetail.contactStore', 'Contact store')}
+                accessibilityHint={t(
+                  'productDetail.contactStoreHint',
+                  'Open a chat with this store.',
+                )}
+                tooltip={t('productDetail.contactStoreHint', 'Open a chat with this store.')}
+                style={[
+                  styles.secondaryButton,
+                  { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary },
+                ]}
               >
                 <View style={styles.buttonContent}>
-                  <ShoppingCart size={18} color={colors.text.inverse} />
-                  <Text style={[styles.buttonText, { color: colors.text.inverse }]}> 
-                    {t('productDetail.addToCart', 'Add to cart')}
+                  <MessageCircle size={18} color={colors.text.primary} />
+                  <Text style={[styles.buttonText, { color: colors.text.primary }]}>
+                    {t('productDetail.contactStore', 'Contact store')}
                   </Text>
                 </View>
               </Button>
-            </DisabledTooltip>
+              <DisabledTooltip label={disabledReason}>
+                <Button
+                  onPress={handleAddToCart}
+                  loading={adding}
+                  disabled={isOutOfStock || isProductDisabled}
+                  accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
+                >
+                  <View style={styles.buttonContent}>
+                    <ShoppingCart size={18} color={colors.text.inverse} />
+                    <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
+                      {t('productDetail.addToCart', 'Add to cart')}
+                    </Text>
+                  </View>
+                </Button>
+              </DisabledTooltip>
+            </View>
           </View>
         </View>
       )}

@@ -221,6 +221,7 @@
   },
   "productDetail": {
     "contactStore": "Contact store",
+    "contactStoreHint": "Open a chat with this store.",
     "contactStoreError": "We could not start a chat with this store. Please try again later."
   },
   "category": {

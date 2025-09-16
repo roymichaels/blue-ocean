@@ -218,6 +218,7 @@
   },
   "productDetail": {
     "contactStore": "צור קשר עם החנות",
+    "contactStoreHint": "פתח צ'אט עם החנות.",
     "contactStoreError": "לא ניתן להתחיל צ'אט עם החנות. נסה שוב מאוחר יותר."
   },
   "category": {
