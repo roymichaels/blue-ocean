@@ -46,6 +46,7 @@ import commonStyles from '@/constants/styles';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNotifications } from '@/components/NotificationContext';
 import { useLanguage } from '@/ui/ThemeProvider';
+import { useLaunchGate } from '@/features/launchGate';
 import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
@@ -84,6 +85,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const { t } = useLanguage();
   const { push } = useAppRouter();
   const scrollViewRef = useRef<ScrollView>(null);
+  const { requireUnlock } = useLaunchGate();
 
   // Info/confirm modals
   const [infoModal, setInfoModal] = useState({
@@ -104,6 +106,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
 
   const ensureSessionToken = async (): Promise<string> => {
+    await requireUnlock('checkout');
     if (sessionToken) return sessionToken;
     const { token } = await requestTokenWithConsent(
       getCheckoutRequestScopes(),
