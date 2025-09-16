@@ -8,6 +8,8 @@ const TouchableOpacity = ({ children, onPress, style }) =>
   React.createElement('TouchableOpacity', { onPress, style }, children);
 const Pressable = ({ children, onPress, style, onKeyDown }) =>
   React.createElement('Pressable', { onPress, style, onKeyDown }, children);
+const RefreshControl = ({ refreshing, onRefresh, tintColor }) =>
+  React.createElement('RefreshControl', { refreshing, onRefresh, tintColor });
 const TextInput = ({ value, onChangeText, placeholder, style, testID }) =>
   React.createElement('TextInput', { value, onChangeText, placeholder, style, testID });
 const ActivityIndicator = (props) => React.createElement('ActivityIndicator', props);
@@ -66,6 +68,7 @@ module.exports = {
   Text,
   ScrollView,
   FlatList,
+  RefreshControl,
   TouchableOpacity,
   Pressable,
   TextInput,

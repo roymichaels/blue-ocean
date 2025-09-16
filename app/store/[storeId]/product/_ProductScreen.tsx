@@ -11,6 +11,7 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Heading, Text, Button, Skeleton } from '@/ui/primitives';
 import { spacing, typography, radius } from '@/ui/tokens';
 import SmartImage from '@/components/SmartImage';
+import type { ProductVariant } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import CartService from '@/features/cart/services/cart';
 import { useNotificationActions } from '@/components/NotificationContext';
@@ -55,6 +56,13 @@ const DisabledTooltip = ({ label, children }: DisabledTooltipProps) => {
   });
 };
 
+const getVariantKey = (variant: ProductVariant, index: number) => {
+  if (variant.id && variant.id.trim().length > 0) {
+    return variant.id;
+  }
+  return `variant-${index}`;
+};
+
 export default function ProductDetailScreen() {
   const { storeId, productId } = useLocalSearchParams<{ storeId: string; productId: string }>();
   const { colors } = useTheme();
@@ -96,18 +104,19 @@ export default function ProductDetailScreen() {
   }, [product?.storeId, storeId]);
 
   useEffect(() => {
-    if (!product?.variants || product.variants.length === 0) {
+    const variants = product?.variants;
+    if (!variants || variants.length === 0) {
       setSelectedVariantId(undefined);
       return;
     }
 
     setSelectedVariantId((prev) => {
       if (prev) {
-        const existingIndex = product.variants.findIndex(
+        const existingIndex = variants.findIndex(
           (variant, index) => getVariantKey(variant, index) === prev,
         );
         if (existingIndex >= 0) {
-          const existingVariant = product.variants[existingIndex];
+          const existingVariant = variants[existingIndex];
           const hasStock =
             typeof existingVariant.stock === 'number' ? existingVariant.stock > 0 : true;
           if (hasStock) {
@@ -116,11 +125,11 @@ export default function ProductDetailScreen() {
         }
       }
 
-      const availableIndex = product.variants.findIndex((variant) =>
+      const availableIndex = variants.findIndex((variant) =>
         typeof variant.stock === 'number' ? variant.stock > 0 : true,
       );
       const fallbackIndex = availableIndex >= 0 ? availableIndex : 0;
-      const fallbackVariant = product.variants[fallbackIndex];
+      const fallbackVariant = variants[fallbackIndex];
       if (!fallbackVariant) {
         return undefined;
       }
@@ -129,8 +138,9 @@ export default function ProductDetailScreen() {
   }, [product]);
 
   const selectedVariant = useMemo(() => {
-    if (!product?.variants || !selectedVariantId) return undefined;
-    return product.variants.find((variant, index) => getVariantKey(variant, index) === selectedVariantId);
+    const variants = product?.variants;
+    if (!variants || !selectedVariantId) return undefined;
+    return variants.find((variant, index) => getVariantKey(variant, index) === selectedVariantId);
   }, [product?.variants, selectedVariantId]);
 
   useEffect(() => {
@@ -281,6 +291,9 @@ export default function ProductDetailScreen() {
       </View>
     </View>
   );
+
+  const galleryProductName =
+    product?.name || t('productDetail.galleryFallbackProductName', 'this product');
 
   return (
     <ScrollView
@@ -457,17 +470,41 @@ export default function ProductDetailScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: spacing.spacer12, paddingVertical: spacing.spacer12 }}
+            accessibilityHint={t(
+              'productDetail.galleryScrollHint',
+              'Swipe left or right to browse more media items.',
+            )}
           >
-            {media.map((item) => (
-              <SmartImage
-                key={item.uri}
-                uri={item.uri}
-                width={120}
-                height={120}
-                style={{ borderRadius: radius.md }}
-                contentFit="cover"
-              />
-            ))}
+            {media.map((item, index) => {
+              const fallbackDescription =
+                item.type === 'video'
+                  ? t('productDetail.galleryVideoLabel', 'Video')
+                  : t('productDetail.galleryImageLabel', 'Image');
+              const description = item.name || fallbackDescription;
+              const accessibilityLabel = t(
+                'productDetail.galleryItemAccessibilityLabel',
+                '{description} for {productName}. Item {index} of {total}.',
+                {
+                  description,
+                  productName: galleryProductName,
+                  index: index + 1,
+                  total: media.length,
+                },
+              );
+
+              return (
+                <SmartImage
+                  key={item.uri}
+                  uri={item.uri}
+                  width={120}
+                  height={120}
+                  style={{ borderRadius: radius.md }}
+                  contentFit="cover"
+                  accessibilityRole="image"
+                  accessibilityLabel={accessibilityLabel}
+                />
+              );
+            })}
           </ScrollView>
         </View>
       ) : null}
