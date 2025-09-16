@@ -205,10 +205,32 @@ describe('ordersAgent event emission', () => {
     } as any;
     mockStore[order.id] = order;
     await ordersAgent.update({ ...order, status: 'courier_found' });
-    expect(eventBus.publish).toHaveBeenCalledWith(
-      '/blue-ocean/orders/s',
-      'order.updated',
-      expect.objectContaining({ orderId: order.id, prevStatus: 'order_received', newStatus: 'courier_found' }),
+    const publishCalls = eventBus.publish.mock.calls.filter(([, type]) => type === 'order.updated');
+    expect(publishCalls).toEqual(
+      expect.arrayContaining([
+        [
+          '/blue-ocean/orders/s',
+          'order.updated',
+          expect.objectContaining({
+            orderId: order.id,
+            prevStatus: 'order_received',
+            newStatus: 'courier_found',
+          }),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+        [
+          '/blue-ocean/orders/1',
+          'order.updated',
+          expect.any(Object),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+        [
+          '/blue-ocean/notifications/1',
+          'order.updated',
+          expect.any(Object),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+      ]),
     );
   });
 
@@ -261,10 +283,28 @@ describe('ordersAgent event emission', () => {
       'payment.received',
       expect.objectContaining({ orderId: order.id }),
     );
-    expect(eventBus.publish).toHaveBeenCalledWith(
-      '/blue-ocean/orders/s',
-      'order.updated',
-      expect.objectContaining({ prevStatus: 'delivered', newStatus: 'released' }),
+    const orderUpdates = eventBus.publish.mock.calls.filter(([, type]) => type === 'order.updated');
+    expect(orderUpdates).toEqual(
+      expect.arrayContaining([
+        [
+          '/blue-ocean/orders/s',
+          'order.updated',
+          expect.objectContaining({ prevStatus: 'delivered', newStatus: 'released' }),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+        [
+          '/blue-ocean/orders/1',
+          'order.updated',
+          expect.any(Object),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+        [
+          '/blue-ocean/notifications/1',
+          'order.updated',
+          expect.any(Object),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+      ]),
     );
   });
 
@@ -288,10 +328,28 @@ describe('ordersAgent event emission', () => {
     } as any;
     mockStore[order.id] = order;
     await ordersAgent.refundPayment(order.id);
-    expect(eventBus.publish).toHaveBeenCalledWith(
-      '/blue-ocean/orders/s',
-      'order.updated',
-      expect.objectContaining({ prevStatus: 'delivered', newStatus: 'refunded' }),
+    const orderUpdates = eventBus.publish.mock.calls.filter(([, type]) => type === 'order.updated');
+    expect(orderUpdates).toEqual(
+      expect.arrayContaining([
+        [
+          '/blue-ocean/orders/s',
+          'order.updated',
+          expect.objectContaining({ prevStatus: 'delivered', newStatus: 'refunded' }),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+        [
+          '/blue-ocean/orders/1',
+          'order.updated',
+          expect.any(Object),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+        [
+          '/blue-ocean/notifications/1',
+          'order.updated',
+          expect.any(Object),
+          expect.objectContaining({ orderId: order.id, orderNonce: expect.any(String) }),
+        ],
+      ]),
     );
   });
 });

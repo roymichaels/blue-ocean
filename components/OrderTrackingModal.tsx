@@ -7,24 +7,10 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  Animated,
-  Easing,
   Alert,
-  Platform,
 } from 'react-native';
 import SmartImage from './SmartImage';
-import {
-  X,
-  CircleCheck as CheckCircle,
-  Circle,
-  Package,
-  Truck,
-  MapPin,
-  Star,
-  Phone,
-  MessageCircle,
-  Copy,
-} from 'lucide-react-native';
+import { X, MapPin, Star, Phone, MessageCircle, Copy } from 'lucide-react-native';
 import { Order, OrderStatus } from '../types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -35,6 +21,7 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useLaunchGate } from '@/features/launchGate';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { isDisputesEnabled } from '@/config/featureFlags';
+import OrderTimeline from '@/components/OrderTimeline';
 
 
 
@@ -45,8 +32,6 @@ interface OrderTrackingModalProps {
 }
 
 export default function OrderTrackingModal({ visible, onClose, order }: OrderTrackingModalProps) {
-  const [progressAnimation] = useState(new Animated.Value(0));
-  const [currentStep, setCurrentStep] = useState(0);
   const [estimatedDelivery, setEstimatedDelivery] = useState('');
   const { isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -59,27 +44,6 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
 
   useEffect(() => {
     if (visible && order) {
-      // Calculate current step based on order status
-      const statusOrder: OrderStatus[] = [
-        'order_received',
-        'courier_found',
-        'courier_picked_up',
-        'courier_on_way',
-        'delivered'
-      ];
-      
-      const stepIndex = statusOrder.indexOf(order.status);
-      setCurrentStep(stepIndex);
-      
-      // Animate progress bar
-      Animated.timing(progressAnimation, {
-        toValue: stepIndex / (statusOrder.length - 1),
-        duration: 1000,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: Platform.OS !== 'web',
-      }).start();
-      
-      // Set estimated delivery time
       calculateEstimatedDelivery(order);
     }
   }, [visible, order]);
@@ -113,7 +77,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
         estimatedMinutes = 15;
         break;
       case 'delivered':
-        setEstimatedDelivery('הזמנה נמסרה');
+        setEstimatedDelivery(t('orders.status.delivered', 'Delivered'));
         return;
     }
     
@@ -132,23 +96,6 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
       case 'courier_on_way': return 'שליח בדרך';
       case 'delivered': return 'נמסר';
       default: return status;
-    }
-  };
-
-  const getStatusDescription = (status: OrderStatus) => {
-    switch (status) {
-      case 'order_received': 
-        return 'ההזמנה שלך התקבלה ונמצאת בטיפול';
-      case 'courier_found': 
-        return 'מצאנו שליח שיטפל בהזמנה שלך';
-      case 'courier_picked_up': 
-        return 'השליח אסף את ההזמנה שלך מהחנות';
-      case 'courier_on_way': 
-        return 'השליח בדרך אליך עם ההזמנה';
-      case 'delivered': 
-        return 'ההזמנה נמסרה בהצלחה';
-      default: 
-        return '';
     }
   };
 
@@ -259,11 +206,6 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
 
   if (!order) return null;
 
-  const progressWidth = progressAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
-
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -294,47 +236,7 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
             </View>
 
             {/* Progress Bar */}
-            <View style={[styles.progressBarContainer, { backgroundColor: colors.interactive.disabled }]}>
-              <Animated.View 
-                style={[
-                  styles.progressBar,
-                  { width: progressWidth, backgroundColor: colors.gold }
-                ]} 
-              />
-            </View>
-
-            {/* Tracking Steps */}
-            <View style={styles.trackingSteps}>
-              {order.trackingSteps.map((step, index) => (
-                <View key={step.status} style={styles.trackingStep}>
-                  <View style={styles.stepIconContainer}>
-                    {step.completed ? (
-                      <CheckCircle size={24} color={colors.gold} />
-                    ) : (
-                      <Circle size={24} color={colors.interactive.disabled} />
-                    )}
-                  </View>
-                  
-                  <View style={styles.stepContent}>
-                    <Text style={[
-                      styles.stepTitle,
-                      { color: colors.text.primary },
-                      step.completed && { color: colors.gold }
-                    ]}>
-                      {step.title}
-                    </Text>
-                    <Text style={[styles.stepDescription, { color: colors.text.secondary }]}>
-                      {getStatusDescription(step.status)}
-                    </Text>
-                    {step.timestamp && step.completed && (
-                      <Text style={[styles.stepTime, { color: colors.text.tertiary }]}>
-                        {formatDate(step.timestamp)}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-              ))}
-            </View>
+            <OrderTimeline order={order} withBorder={false} style={styles.timeline} />
 
             {/* Contact Options */}
             {order.status === 'courier_on_way' && (
@@ -599,43 +501,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  progressBarContainer: {
-    height: 6,
-    borderRadius: 3,
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  trackingSteps: {
+  timeline: {
     marginBottom: 16,
-  },
-  trackingStep: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  stepIconContainer: {
-    marginRight: 16,
-  },
-  stepContent: {
-    flex: 1,
-  },
-  stepTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-    textAlign: 'right',
-  },
-  stepDescription: {
-    fontSize: 14,
-    marginBottom: 4,
-    textAlign: 'right',
-  },
-  stepTime: {
-    fontSize: 12,
-    textAlign: 'right',
   },
   contactOptions: {
     flexDirection: 'row',

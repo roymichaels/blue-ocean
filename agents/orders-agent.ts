@@ -38,6 +38,9 @@ import { normalizeMessage } from '../lib/normalizeMessage';
 import AgentError from '@/types/AgentError';
 import { canonicalJson } from '@/utils/serialization';
 
+const ORDER_TOPIC = '/blue-ocean/orders/1';
+const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
+
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   order_received: ['courier_found', 'refunded'],
   courier_found: ['courier_picked_up', 'refunded'],
@@ -332,11 +335,18 @@ class OrdersAgent {
       timestamp: Date.now(),
     });
     const sid = normalized.items?.[0]?.product?.storeId || '';
-    await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
+    const publishPayload = {
       ...this.buildBaseEvent(normalized),
       prevStatus: current.status,
       newStatus: normalized.status,
-    });
+    };
+    const publishOptions = {
+      orderId: normalized.id,
+      orderNonce: normalized.updatedAt || new Date().toISOString(),
+    } as const;
+    await eventBus.publish(buildTopic('orders', sid), 'order.updated', publishPayload, publishOptions);
+    await eventBus.publish(ORDER_TOPIC, 'order.updated', publishPayload, publishOptions);
+    await eventBus.publish(NOTIFICATION_TOPIC, 'order.updated', publishPayload, publishOptions);
     this.subscribers.forEach((cb) => cb(normalized));
     if (statusChanged) {
       await notificationsAgent.handleOrderEvent('status.updated', {
@@ -471,11 +481,18 @@ class OrdersAgent {
       timestamp: Date.now(),
     });
     const sid = normalized.items?.[0]?.product?.storeId || '';
-    await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
+    const publishPayload = {
       ...this.buildBaseEvent(normalized),
       prevStatus: order.status,
       newStatus: normalized.status,
-    });
+    };
+    const publishOptions = {
+      orderId: normalized.id,
+      orderNonce: normalized.updatedAt || new Date().toISOString(),
+    } as const;
+    await eventBus.publish(buildTopic('orders', sid), 'order.updated', publishPayload, publishOptions);
+    await eventBus.publish(ORDER_TOPIC, 'order.updated', publishPayload, publishOptions);
+    await eventBus.publish(NOTIFICATION_TOPIC, 'order.updated', publishPayload, publishOptions);
     await eventBus.publish(buildTopic('orders', sid), 'payment.received', {
       ...this.buildBaseEvent(normalized),
     });
@@ -546,11 +563,18 @@ class OrdersAgent {
       timestamp: Date.now(),
     });
     const sid = normalized.items?.[0]?.product?.storeId || '';
-    await eventBus.publish(buildTopic('orders', sid), 'order.updated', {
+    const publishPayload = {
       ...this.buildBaseEvent(normalized),
       prevStatus: order.status,
       newStatus: normalized.status,
-    });
+    };
+    const publishOptions = {
+      orderId: normalized.id,
+      orderNonce: normalized.updatedAt || new Date().toISOString(),
+    } as const;
+    await eventBus.publish(buildTopic('orders', sid), 'order.updated', publishPayload, publishOptions);
+    await eventBus.publish(ORDER_TOPIC, 'order.updated', publishPayload, publishOptions);
+    await eventBus.publish(NOTIFICATION_TOPIC, 'order.updated', publishPayload, publishOptions);
     this.subscribers.forEach((cb) => cb(normalized));
     await notificationsAgent.handleOrderEvent('status.updated', {
       orderId: normalized.id,

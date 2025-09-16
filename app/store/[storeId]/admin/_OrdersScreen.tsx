@@ -18,6 +18,7 @@ import { Badge, Spinner } from '@/ui/primitives';
 import { useLaunchGate } from '@/features/launchGate/LaunchGateContext';
 import OrderTrackingModal from '@/components/OrderTrackingModal';
 import { useAppRouter } from '@/services';
+import { promptCancelOrder } from '@/features/orders/adminActions';
 
 const SHIPPING_SEQUENCE: OrderStatus[] = [
   'order_received',
@@ -168,6 +169,7 @@ export default function StoreOrdersScreen(): React.ReactElement {
 
   const handleMarkShipped = useCallback(
     async (order: Order) => {
+      if (pendingId === order.id) return;
       setPendingId(order.id);
       try {
         let target: OrderStatus | null = null;
@@ -179,6 +181,7 @@ export default function StoreOrdersScreen(): React.ReactElement {
         if (!target) {
           throw new Error('לא ניתן לסמן הזמנה זו כנשלחה');
         }
+        await requireUnlock('order.fulfill');
         const pathIndex = SHIPPING_SEQUENCE.indexOf(order.status);
         let updated = order;
         if (target === 'courier_on_way' && pathIndex >= 0) {
@@ -196,38 +199,35 @@ export default function StoreOrdersScreen(): React.ReactElement {
         setPendingId(null);
       }
     },
-    [],
+    [pendingId, requireUnlock],
   );
 
   const handleCancel = useCallback(
     (order: Order) => {
-      Alert.alert('ביטול הזמנה', 'האם לבטל את ההזמנה?', [
-        { text: 'לא', style: 'cancel' },
-        {
-          text: 'כן, בטל',
-          style: 'destructive',
-          onPress: async () => {
-            setPendingId(order.id);
-            try {
-              await requireUnlock('order.cancel');
-              const updated: Order = {
-                ...order,
-                status: 'refunded',
-                updatedAt: new Date().toISOString(),
-              };
-              await ordersAgent.update(updated);
-              ordersWarmCache.mutate({ id: updated.id, value: updated, ts: Date.now() });
-              setOrders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
-            } catch (error) {
-              Alert.alert('שגיאה', 'ביטול ההזמנה נכשל');
-            } finally {
-              setPendingId(null);
-            }
-          },
+      promptCancelOrder({
+        order,
+        t,
+        onConfirm: async () => {
+          setPendingId(order.id);
+          try {
+            await requireUnlock('order.cancel');
+            const updated: Order = {
+              ...order,
+              status: 'refunded',
+              updatedAt: new Date().toISOString(),
+            };
+            await ordersAgent.update(updated);
+            ordersWarmCache.mutate({ id: updated.id, value: updated, ts: Date.now() });
+            setOrders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+          } catch (error) {
+            Alert.alert('שגיאה', 'ביטול ההזמנה נכשל');
+          } finally {
+            setPendingId(null);
+          }
         },
-      ]);
+      });
     },
-    [requireUnlock],
+    [requireUnlock, t],
   );
 
   const closeDetails = useCallback(() => {

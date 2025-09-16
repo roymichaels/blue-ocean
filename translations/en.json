@@ -635,6 +635,41 @@
       "released": "Payment released",
       "refunded": "Payment refunded"
     },
+    "timeline": {
+      "pending": "Pending",
+      "order_received": {
+        "title": "Order received",
+        "description": "We received your order and notified the seller."
+      },
+      "courier_found": {
+        "title": "Courier assigned",
+        "description": "A courier accepted the delivery."
+      },
+      "courier_picked_up": {
+        "title": "Order picked up",
+        "description": "The courier collected your order from the store."
+      },
+      "courier_on_way": {
+        "title": "Courier on the way",
+        "description": "Your order is on its way to you."
+      },
+      "delivered": {
+        "title": "Delivered",
+        "description": "Your order arrived."
+      },
+      "released": {
+        "title": "Payment released",
+        "description": "Funds were released to the seller."
+      },
+      "refunded": {
+        "title": "Payment refunded",
+        "description": "The payment was returned to you."
+      },
+      "disputed": {
+        "title": "Dispute opened",
+        "description": "We are reviewing the dispute for this order."
+      }
+    },
     "orderNumber": "Order #{id}",
     "itemsLabel": "Items:",
     "itemQuantity": "{name} x{quantity}",
@@ -654,7 +689,22 @@
     "statusUpdated": "Order status updated",
     "updateStatusFailed": "Failed to update status",
     "openDispute": "Open dispute",
-    "disputeComingSoon": "Coming soon"
+    "disputeComingSoon": "Coming soon",
+    "detailReceiptAction": "View receipt",
+    "receiptTitle": "Order receipt",
+    "receiptBody": "Receipt #{id}\nIssued {date}",
+    "receiptUnavailableTitle": "Receipt unavailable",
+    "receiptUnavailableMessage": "Connect your wallet again to view the receipt.",
+    "receiptMissingTitle": "Receipt not found",
+    "receiptMissingMessage": "We could not find a local receipt for this order.",
+    "receiptErrorTitle": "Unable to load receipt",
+    "receiptErrorMessage": "Please try again later.",
+    "admin": {
+      "cancelTitle": "Cancel order",
+      "cancelMessage": "Are you sure you want to cancel this order?",
+      "cancelReject": "No",
+      "cancelConfirm": "Yes, cancel"
+    }
   },
   "store": {
     "store_name": "Store Name",
