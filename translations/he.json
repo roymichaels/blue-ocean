@@ -662,6 +662,9 @@
   },
   "stores": {
     "storeName": "שם החנות",
+    "bannerAlt": "תמונת הבאנר של החנות {name}",
+    "avatarAlt": "תמונת הפרופיל של החנות {name}",
+    "offlineNotice": "מציג נתוני מטמון. ייתכן שחלק מהפרטים אינם מעודכנים.",
     "mintStore": "צור חנות",
     "transactionFailed": "העסקה נכשלה",
     "insufficientFunds": "אין מספיק כספים לפריסת החנות",

@@ -1,45 +1,53 @@
-// TOUCHPOINT: app/store/[storeId]/_StoreScreen.tsx renders in production — Fix Pack v2
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
-import StoreHeader from '@/features/stores/components/store/StoreHeader';
-import StoreTabs from '@/features/stores/components/store/StoreTabs';
-import { ProductGrid, ProductCardSkeleton } from '@/features/products';
+import { Text, Button } from '@/ui/primitives';
+import StoreHeader, { StoreHeaderSkeleton } from '@/features/stores/components/store/StoreHeader';
 import CategoryChips from '@/features/home/components/CategoryChips';
+import { ProductGrid, ProductCardSkeleton } from '@/features/products';
 import { useProducts, useCategories, useStoreReviews } from '@/services';
-import { selectStore } from '@/agents/stores-agent';
-import type { Store, Product } from '@/types';
-import { spacing } from '@/shared/ui/tokens';
+import { useStoreProfile } from '@/features/stores/hooks/useStoreProfile';
+import type { Product } from '@/types';
+import { spacing, radius } from '@/shared/ui/tokens';
 import EmptyState from '@/shared/ui/EmptyState';
-import Button from '@/ui/primitives/Button';
+import { useNotificationActions } from '@/components/NotificationContext';
 import { useAppRouter } from '@/services/useAppRouter';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
+import { openDM } from '@/services/openDM';
+import { openProduct } from '@/services/openProduct';
 import { AlertTriangle } from 'lucide-react-native';
 
 export default function StoreScreen() {
-  const { storeId } = useLocalSearchParams<{ storeId: string }>();
+  const { storeId: rawStoreId } = useLocalSearchParams<{ storeId: string }>();
+  const storeId = typeof rawStoreId === 'string' ? rawStoreId : undefined;
   const { colors } = useTheme();
   const { t, isRTL } = useLanguage();
-  const [store, setStore] = useState<Store | null>(null);
-  const [loaded, setLoaded] = useState(false);
-  const { push } = useAppRouter();
+  const { showNotification } = useNotificationActions();
+  const appRouter = useAppRouter();
+  const { isLoggedIn } = useAuth();
+  const { openAuthModal } = useAuthModal();
+
+  const { store, isLoading: storeLoading, error: storeError, isOffline } = useStoreProfile(storeId);
   const {
     data: products = [],
     isLoading: productsLoading,
     refetch: refetchProducts,
     isRefetching: productsRefetching,
     error: productsError,
-  } = useProducts(storeId);
+  } = useProducts(storeId ?? null);
   const {
     data: categories = [],
     isLoading: categoriesLoading,
     refetch: refetchCategories,
     isRefetching: categoriesRefetching,
     error: categoriesError,
-  } = useCategories(storeId);
-  const { data: { score } = { score: 0 } } = useStoreReviews(storeId);
-  const [tab, setTab] = useState<'products' | 'about' | 'reviews'>('products');
+  } = useCategories(storeId ?? null);
+  const { data: { score: reputationScore } = { score: 0 } } = useStoreReviews(storeId ?? null);
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [contacting, setContacting] = useState(false);
 
   const refreshing = productsRefetching || categoriesRefetching;
 
@@ -47,16 +55,61 @@ export default function StoreScreen() {
     void Promise.all([refetchProducts(), refetchCategories()]);
   }, [refetchProducts, refetchCategories]);
 
-  const handleProductPress = useCallback(
-    (product: Product) => {
-      const targetStore = product.storeId || storeId;
-      if (!targetStore) return;
-      push(`/store/${targetStore}/product/${product.id}`);
-    },
-    [push, storeId],
-  );
+  const handleProductPress = useCallback((product: Product) => {
+    void openProduct(product.id);
+  }, []);
 
-  const loadError = productsError || categoriesError;
+  const storeIdentifier = store?.id || storeId;
+  const contactLabel = t('productDetail.contactStore', 'Contact store');
+
+  const handleContactStore = useCallback(async () => {
+    if (!storeIdentifier) {
+      showNotification(
+        t('common.error', 'Error'),
+        t(
+          'productDetail.contactStoreError',
+          'We could not start a chat with this store. Please try again later.',
+        ),
+        'error',
+      );
+      return;
+    }
+
+    if (!isLoggedIn) {
+      openAuthModal();
+      return;
+    }
+
+    setContacting(true);
+    try {
+      await openDM(storeIdentifier);
+      appRouter.push('/messages');
+    } catch (err) {
+      if (err instanceof Error && err.message === 'WALLET_REQUIRED') {
+        openAuthModal();
+        showNotification(
+          t('common.error', 'Error'),
+          t('auth.walletConnectionFailed', 'Wallet connection failed'),
+          'error',
+        );
+      } else {
+        showNotification(
+          t('common.error', 'Error'),
+          err instanceof Error
+            ? err.message
+            : t(
+                'productDetail.contactStoreError',
+                'We could not start a chat with this store. Please try again later.',
+              ),
+          'error',
+        );
+      }
+    } finally {
+      setContacting(false);
+    }
+  }, [appRouter, isLoggedIn, openAuthModal, openDM, showNotification, storeIdentifier, t]);
+
+  const loadError = storeError || productsError || categoriesError;
   const loadErrorMessage = loadError
     ? loadError instanceof Error
       ? loadError.message
@@ -66,143 +119,198 @@ export default function StoreScreen() {
   const filteredProducts = useMemo(
     () =>
       selectedCategory
-        ? products.filter((p) => p.category === selectedCategory)
+        ? products.filter((product) => product.category === selectedCategory)
         : products,
     [products, selectedCategory],
   );
 
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      if (!storeId) return;
-      const s = await selectStore(storeId);
-      if (active) setStore(s);
-      if (active) setLoaded(true);
-    };
-    void load();
-    return () => {
-      active = false;
-    };
-  }, [storeId]);
+  const bannerUri = useMemo(() => {
+    if (!store) return null;
+    const raw = (store as Record<string, unknown>).bannerUri;
+    return typeof raw === 'string' ? raw : null;
+  }, [store]);
 
-  if (!loaded) {
+  const avatarUri = useMemo(() => {
+    if (!store) return null;
+    const raw = (store as Record<string, unknown>).avatarUri;
+    return typeof raw === 'string' ? raw : null;
+  }, [store]);
+
+  const tagline = useMemo(() => {
+    if (!store) return null;
+    const raw =
+      (store as Record<string, unknown>).tagline ??
+      (store as Record<string, unknown>).tagLine ??
+      (store as Record<string, unknown>).description;
+    return typeof raw === 'string' && raw.trim().length > 0 ? raw : null;
+  }, [store]);
+
+  const reputation = useMemo(() => {
+    if (typeof reputationScore === 'number' && reputationScore > 0) {
+      return reputationScore;
+    }
+    if (store && typeof store.reputation === 'number') {
+      return store.reputation;
+    }
+    return 0;
+  }, [reputationScore, store]);
+
+  if (!storeId && !store) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
-        <ProductCardSkeleton />
-      </View>
-    );
-  }
-  if (!store) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}> 
         <EmptyState
-          title={t('store.not_found')}
-          description={t('store.not_found_sub')}
-          action={<Button onPress={() => push('/')}>{t('cta.back_home')}</Button>}
+          icon={AlertTriangle}
+          title={t('store.not_found', 'Store not found')}
+          message={t('store.not_found_sub', "We couldn't find that store.")}
         />
       </View>
     );
   }
 
+  if (!store && storeLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}> 
+        <StoreHeaderSkeleton />
+        <View style={styles.productSkeletonRow}>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <View key={index} style={styles.productSkeletonWrapper}>
+              <ProductCardSkeleton />
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  if (!store && loadErrorMessage) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}> 
+        <EmptyState
+          icon={AlertTriangle}
+          title={t('store.not_found', 'Store not found')}
+          message={loadErrorMessage}
+        />
+      </View>
+    );
+  }
+
+  if (!store) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}> 
+        <EmptyState
+          icon={AlertTriangle}
+          title={t('store.not_found', 'Store not found')}
+          message={t('store.not_found_sub', "We couldn't find that store.")}
+        />
+      </View>
+    );
+  }
+
+  const showCategories = categories.length > 0 && !categoriesLoading;
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}> 
       <StoreHeader
         name={store.name}
-        reputation={score}
-        bannerUri={(store as any).bannerUri}
-        avatarUri={(store as any).avatarUri}
-        tagline={(store as any).tagline}
+        reputation={reputation}
+        bannerUri={bannerUri}
+        avatarUri={avatarUri}
+        tagline={tagline}
       />
-      <StoreTabs active={tab} onChange={setTab} />
-      {tab === 'products' && (
-        <>
-          {!!categories.length && !categoriesLoading && (
-            <CategoryChips
-              categories={categories}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-            />
+
+      <View
+        style={[
+          styles.actionsRow,
+          { flexDirection: isRTL ? 'row-reverse' : 'row' },
+        ]}
+      >
+        <Button
+          title={contactLabel}
+          accessibilityLabel={contactLabel}
+          onPress={handleContactStore}
+          loading={contacting}
+          disabled={!storeIdentifier || contacting}
+        />
+      </View>
+
+      {isOffline ? (
+        <Text
+          variant="sm"
+          style={{
+            marginHorizontal: spacing.spacer16,
+            marginTop: spacing.spacer8,
+            color: colors.status.warning,
+            textAlign: isRTL ? 'right' : 'left',
+          }}
+        >
+          {t(
+            'stores.offlineNotice',
+            'Viewing cached data. Some details may be out of date.',
           )}
-          {productsLoading ? (
-            <View style={styles.productsGrid}>
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <View key={idx} style={styles.productWrapper}>
-                  <ProductCardSkeleton />
-                </View>
-              ))}
-            </View>
-          ) : loadErrorMessage ? (
-            <EmptyState
-              icon={AlertTriangle}
-              title={t('home.loadErrorTitle', 'Unable to load products')}
-              message={loadErrorMessage}
-              actionText={t('common.reload', 'Reload')}
-              onAction={handleRefresh}
-            />
-          ) : (
-            <ProductGrid
-              products={filteredProducts}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              onProductPress={handleProductPress}
-            />
-          )}
-        </>
-      )}
-      {tab === 'about' && (
-        <View style={styles.section}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: colors.text.primary, textAlign: isRTL ? 'right' : 'left' },
-            ]}
-          >
-            {t('stores.about')}
-          </Text>
-          <Text
-            style={[
-              styles.sectionText,
-              { color: colors.text.secondary, textAlign: isRTL ? 'right' : 'left' },
-            ]}
-          >
-            {t('stores.aboutDescription')}
-          </Text>
+        </Text>
+      ) : null}
+
+      {showCategories ? (
+        <View style={{ marginTop: spacing.spacer16 }}>
+          <CategoryChips
+            categories={categories}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
         </View>
-      )}
-      {tab === 'reviews' && (
-        <View style={styles.section}>
-          <Text
-            style={[
-              styles.sectionText,
-              { color: colors.text.secondary, textAlign: isRTL ? 'right' : 'left' },
-            ]}
-          >
-            {t('stores.reviewsComingSoon')}
-          </Text>
-        </View>
-      )}
+      ) : null}
+
+      <View style={styles.catalogContainer}>
+        {productsLoading ? (
+          <View style={styles.productSkeletonRow}>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <View key={index} style={styles.productSkeletonWrapper}>
+                <ProductCardSkeleton />
+              </View>
+            ))}
+          </View>
+        ) : loadErrorMessage ? (
+          <EmptyState
+            icon={AlertTriangle}
+            title={t('home.loadErrorTitle', 'Unable to load products')}
+            message={loadErrorMessage}
+            actionText={t('common.reload', 'Reload')}
+            onAction={handleRefresh}
+          />
+        ) : (
+          <ProductGrid
+            products={filteredProducts}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            onProductPress={handleProductPress}
+          />
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, gap: spacing.spacer24 },
-  productsGrid: {
+  container: { flex: 1 },
+  actionsRow: {
+    paddingHorizontal: spacing.spacer16,
+    paddingTop: spacing.spacer16,
+  },
+  catalogContainer: {
+    flex: 1,
+    paddingTop: spacing.spacer8,
+  },
+  productSkeletonRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.spacer16,
     paddingVertical: spacing.spacer16,
+    gap: spacing.spacer16,
   },
-  productWrapper: { width: '48%', marginBottom: spacing.spacer16 },
-  section: { padding: spacing.spacer16 },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: spacing.spacer8,
+  productSkeletonWrapper: {
+    width: '48%',
+    borderRadius: radius.md,
   },
-  sectionText: {},
 });
-
-// AC: Missing store renders friendly EmptyState with Back to Home button.
 

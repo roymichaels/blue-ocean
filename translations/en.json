@@ -671,6 +671,9 @@
   },
   "stores": {
     "storeName": "Store Name",
+    "bannerAlt": "Store banner for {name}",
+    "avatarAlt": "Store avatar for {name}",
+    "offlineNotice": "Viewing cached data. Some details may be out of date.",
     "mintStore": "Mint Store",
     "transactionFailed": "Transaction failed",
     "insufficientFunds": "Insufficient funds to deploy the store",
