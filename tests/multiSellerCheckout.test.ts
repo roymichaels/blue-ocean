@@ -2,9 +2,37 @@ import OrderService from '@/services/orders';
 import { deployOrderPayment } from '@/services/nearContract';
 import { CartItem, ShippingAddress } from '../types';
 import { requestScopes } from '@/services/session';
+import { loadKycReceipt } from '@/services/kycReceipts';
+import { getDeviceHash } from '@/utils/getDeviceHash';
 
 const mockStore: Record<string, any> = {};
 const mockProducts: Record<string, any> = {};
+
+const deviceHash = getDeviceHash();
+
+const makeReceipt = (buyerPublicKey = 'buyer-public-key') => ({
+  type: 'kyc.receipt',
+  payload: {
+    receiptId: 'receipt-123',
+    buyerPublicKey,
+    issuerPublicKey: 'issuer',
+    issuedAt: new Date(0).toISOString(),
+    data: { deviceHash },
+    ts: Date.now(),
+    nonce: 'nonce',
+  },
+  sender: { publicKey: 'issuer', role: 'admin' },
+  signature: 'sig',
+});
+
+jest.mock('@/services/localIdentity', () => ({
+  getPublicKeyHex: jest.fn().mockResolvedValue('buyer-public-key'),
+}));
+
+jest.mock('@/services/kycReceipts', () => ({
+  loadKycReceipt: jest.fn(),
+  issueKycReceipt: jest.fn(),
+}));
 
 jest.mock('@/services/nearOrders', () => ({
   setOrder: jest.fn(async (o: any) => { mockStore[o.id] = o; }),
@@ -68,6 +96,7 @@ describe('multi-seller checkout flow', () => {
     for (const key of Object.keys(mockProducts)) {
       delete mockProducts[key];
     }
+    (loadKycReceipt as jest.Mock).mockResolvedValue(makeReceipt());
   });
 
   it('creates separate orders per seller with near payment', async () => {
@@ -157,6 +186,56 @@ describe('multi-seller checkout flow', () => {
     expect(firstPayload.sellerAddress).toBe('seller_s1');
     expect(firstPayload.payment.method).toBe('near');
     expect(firstPayload.payment.contractAddress).toBe('escrow_5');
+  });
+
+  it('rejects checkout without a verified kyc receipt', async () => {
+    jest
+      .spyOn<any, any>(OrderService.prototype as any, 'simulateOrderProgress')
+      .mockImplementation(() => {});
+
+    const svc = OrderService.getInstance();
+
+    const item: CartItem = {
+      id: 'i1',
+      productId: 'p1',
+      product: {
+        id: 'p1',
+        name: 'P1',
+        price: 5,
+        description: 'd',
+        category: 'c',
+        images: [],
+        rating: 0,
+        reviews: 0,
+        storeId: 's1',
+        stock: 10,
+      },
+      quantity: 1,
+      addedAt: '',
+    };
+    mockProducts['p1'] = { ...item.product };
+
+    const shipping: ShippingAddress = {
+      name: 'A',
+      phone: '1',
+      street: 'st',
+      city: 'c',
+      postalCode: 'p',
+    };
+
+    (loadKycReceipt as jest.Mock).mockResolvedValue(null);
+
+    const { token } = requestScopes(['checkout'], () => 'sig');
+
+    await expect(
+      svc.createOrdersFromCart('user1', [item], shipping, 'near', token),
+    ).rejects.toThrow('KYC receipt missing or invalid');
+
+    const eventBus = require('@/services/eventBus');
+    expect(eventBus.track).toHaveBeenCalledWith('checkout.token_integrity', {
+      tokenValid: true,
+      success: false,
+    });
   });
 
   it('rejects checkout when session is missing the checkout scope', async () => {

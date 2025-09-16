@@ -5,8 +5,38 @@ import OrderService from '@/services/orders';
 import { CartItem, ShippingAddress } from '@/types';
 import { requestScopes } from '@/services/session';
 import { Buffer } from 'buffer';
+import { loadKycReceipt } from '@/services/kycReceipts';
+import { getDeviceHash } from '@/utils/getDeviceHash';
 
 (global as any).Buffer = Buffer;
+
+const deviceHash = getDeviceHash();
+
+const makeReceipt = (buyerPublicKey = 'buyer-public-key') => ({
+  type: 'kyc.receipt',
+  payload: {
+    receiptId: 'receipt-123',
+    buyerPublicKey,
+    issuerPublicKey: 'issuer',
+    issuedAt: new Date(0).toISOString(),
+    data: { deviceHash },
+    ts: Date.now(),
+    nonce: 'nonce',
+  },
+  sender: { publicKey: 'issuer', role: 'admin' },
+  signature: 'sig',
+});
+
+jest.mock('@waku/sdk', () => ({}), { virtual: true });
+
+jest.mock('@/services/localIdentity', () => ({
+  getPublicKeyHex: jest.fn().mockResolvedValue('buyer-public-key'),
+}));
+
+jest.mock('@/services/kycReceipts', () => ({
+  loadKycReceipt: jest.fn(),
+  issueKycReceipt: jest.fn(),
+}));
 
 jest.mock('@noble/hashes/sha256', () => ({
   sha256: () => new Uint8Array(32),
@@ -104,6 +134,7 @@ describe('login issues session token used in checkout', () => {
   beforeEach(() => {
     mockAddOrder.mockClear();
     ordersAgentModule.default.add = mockAddOrder;
+    (loadKycReceipt as jest.Mock).mockResolvedValue(makeReceipt());
   });
 
   it('creates an order with attached session token', async () => {

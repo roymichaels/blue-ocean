@@ -259,6 +259,7 @@ export interface Order {
   escrowAddr?: string;
   disputeEvidenceUri?: string;
   itemsHash: string;
+  kycReceiptId?: string;
   createdAt: string;
   updatedAt: string;
   trackingSteps: OrderTrackingStep[];
