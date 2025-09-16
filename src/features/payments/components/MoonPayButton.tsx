@@ -3,7 +3,12 @@ import React, { useState } from 'react';
 import { Button } from '@/ui';
 import { useAppInfo } from '@/contexts/AppInfoContext';
 import { useWallet } from '@/contexts/WalletProvider';
+import { isMoonPayEnabled } from '@/config/featureFlags';
 import MoonPayModal from './MoonPayModal';
+
+export const MOONPAY_DISABLED_LABEL = 'תשלום בכרטיס — בקרוב';
+export const MOONPAY_DISABLED_TOOLTIP =
+  'תשלום בכרטיס יהיה זמין לאחר הפעלת MoonPay באזור שלך.';
 
 interface MoonPayButtonProps {
   usdAmount: number;
@@ -14,6 +19,18 @@ export default function MoonPayButton({ usdAmount }: MoonPayButtonProps) {
   const { address: walletAddress, connect } = useWallet();
   const [visible, setVisible] = useState(false);
   const [amountNEAR, setAmountNEAR] = useState<number | undefined>(undefined);
+  const moonPayEnabled = isMoonPayEnabled();
+
+  if (!moonPayEnabled) {
+    return (
+      <Button
+        title={MOONPAY_DISABLED_LABEL}
+        disabled
+        style={{ marginTop: 16 }}
+        tooltip={MOONPAY_DISABLED_TOOLTIP}
+      />
+    );
+  }
 
   if (!fiatKey) return null;
 
