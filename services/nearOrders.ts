@@ -4,7 +4,7 @@ import { assertNearChain } from './chain';
 import { requireStoreId } from '@blue-ocean/utils';
 import { canonicalJson } from '@/utils/serialization';
 import { createWarmCache } from '@/services/warmCache';
-import type { DiffMessage } from '@/services/warmCache';
+import type { CacheMutation, DiffMessage } from '@/services/warmCache';
 import { errorLog } from '@/utils/logger';
 
 assertNearChain();
@@ -67,13 +67,19 @@ export const ordersWarmCache = {
   getById(id: string) {
     return orderCache.getById(id);
   },
+  list(filter?: (id: string, value: Order) => boolean) {
+    return orderCache.list(filter);
+  },
   subscribe(
     filter: (id: string, value: Order | undefined) => boolean,
     cb: (id: string, value: Order | undefined) => void,
   ) {
     return orderCache.subscribe(filter, cb);
   },
-  onSynced(cb: () => void) {
+  mutate(cmd: CacheMutation<Order>) {
+    return orderCache.mutate(cmd);
+  },
+  onSynced(cb: (event?: { cache: string }) => void) {
     return orderCache.onSynced(cb);
   },
 };
@@ -100,7 +106,7 @@ export async function removeOrder(storeId: string, id: string) {
 export async function listOrders(storeId: string): Promise<Order[]> {
   const sid = requireStoreId(storeId);
   try {
-    const cached = orderCache.values().filter((order) => matchesStore(order, sid));
+    const cached = orderCache.list((id, order) => matchesStore(order, sid));
     if (cached.length > 0) return cached;
   } catch {}
   const items = await listValues(ADDRESS);
@@ -114,9 +120,9 @@ export async function listOrdersBySeller(
 ): Promise<Order[]> {
   const sid = requireStoreId(storeId);
   try {
-    const cached = orderCache
-      .values()
-      .filter((order) => matchesStore(order, sid) && order.sellerAddress === sellerAddress);
+    const cached = orderCache.list(
+      (id, order) => matchesStore(order, sid) && order.sellerAddress === sellerAddress,
+    );
     if (cached.length > 0) return cached;
   } catch {}
   const items = await listValues(ADDRESS);

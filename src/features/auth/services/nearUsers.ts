@@ -8,7 +8,7 @@ import { User } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { canonicalJson } from '@/utils/serialization';
 import { createWarmCache } from '@/services/warmCache';
-import type { DiffMessage } from '@/services/warmCache';
+import type { CacheMutation, DiffMessage } from '@/services/warmCache';
 import { errorLog } from '@/utils/logger';
 
 if (typeof assertNearChain === 'function') {
@@ -56,13 +56,19 @@ export const usersWarmCache = {
   getById(id: string) {
     return userCache.getById(id);
   },
+  list(filter?: (id: string, value: User) => boolean) {
+    return userCache.list(filter);
+  },
   subscribe(
     filter: (id: string, value: User | undefined) => boolean,
     cb: (id: string, value: User | undefined) => void,
   ) {
     return userCache.subscribe(filter, cb);
   },
-  onSynced(cb: () => void) {
+  mutate(cmd: CacheMutation<User>) {
+    return userCache.mutate(cmd);
+  },
+  onSynced(cb: (event?: { cache: string }) => void) {
     return userCache.onSynced(cb);
   },
 };
@@ -86,7 +92,7 @@ export async function removeUser(id: string) {
 
 export async function listUsers(): Promise<User[]> {
   try {
-    return userCache.values();
+    return userCache.list();
   } catch {}
   const items = await listValues(ADDRESS);
   return items.map((i) => JSON.parse(i.value) as User);

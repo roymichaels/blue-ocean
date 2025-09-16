@@ -6,7 +6,7 @@ import { errorLog } from '@/utils/logger';
 import { productSchema } from '@/schemas/waku';
 import { canonicalJson } from '@/utils/serialization';
 import { createWarmCache } from '@/services/warmCache';
-import type { DiffMessage } from '@/services/warmCache';
+import type { CacheMutation, DiffMessage } from '@/services/warmCache';
 
 assertNearChain();
 
@@ -53,6 +53,27 @@ async function hydrateProductLake(): Promise<Array<DiffMessage<Product>>> {
 const productCache = createWarmCache<Product>(PRODUCT_CACHE_TOPIC, {
   hydrateLake: hydrateProductLake,
 });
+
+export const productsWarmCache = {
+  getById(id: string) {
+    return productCache.getById(id);
+  },
+  list(filter?: (id: string, value: Product) => boolean) {
+    return productCache.list(filter);
+  },
+  subscribe(
+    filter: (id: string, value: Product | undefined) => boolean,
+    cb: (id: string, value: Product | undefined) => void,
+  ) {
+    return productCache.subscribe(filter, cb);
+  },
+  mutate(cmd: CacheMutation<Product>) {
+    return productCache.mutate(cmd);
+  },
+  onSynced(cb: (event?: { cache: string }) => void) {
+    return productCache.onSynced(cb);
+  },
+};
 const DISABLED = false;
 let SEEDED = false;
 
@@ -121,7 +142,7 @@ export async function listProducts(storeId: string): Promise<Product[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
   try {
-    const cached = productCache.values().filter((p) => p.storeId === sid);
+    const cached = productCache.list((id, p) => p.storeId === sid);
     if (cached.length > 0) return cached;
   } catch {}
   const items = await listValues(ADDRESS);
