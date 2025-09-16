@@ -17,6 +17,9 @@ class CartService {
   private listeners: (() => void)[] = [];
   private tierCache: Record<string, PricingTier> = {};
   private groupCache: Record<string, MixGroup> = {};
+  private productCache: Map<string, { product: Product; fetchedAt: number }> = new Map();
+
+  private static readonly PRODUCT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
   private async getCurrentUserId(): Promise<string | null> {
     try {
@@ -126,6 +129,64 @@ class CartService {
     return this.groupCache[id] || null;
   }
 
+  private now(): number {
+    return typeof performance !== 'undefined' ? performance.now() : Date.now();
+  }
+
+  private async getCachedProduct(productId: string): Promise<{ product: Product | null; cached: boolean }> {
+    const cached = this.productCache.get(productId);
+    const now = Date.now();
+
+    if (cached && now - cached.fetchedAt < CartService.PRODUCT_CACHE_TTL_MS) {
+      return { product: cached.product, cached: true };
+    }
+
+    const db = DatabaseService.getInstance();
+    const product = await db.getProduct(productId);
+    if (product) {
+      this.productCache.set(productId, { product, fetchedAt: now });
+    }
+
+    return { product: product ?? null, cached: false };
+  }
+
+  private reportAddToCartDuration({
+    productId,
+    variantId,
+    durationMs,
+    cached,
+    success,
+    error,
+  }: {
+    productId: string;
+    variantId: string | null;
+    durationMs: number;
+    cached: boolean;
+    success: boolean;
+    error?: unknown;
+  }): void {
+    const payload = {
+      productId,
+      variantId,
+      durationMs,
+      cached,
+      success,
+      error: error instanceof Error ? error.message : undefined,
+      thresholdMs: 120,
+      slow: durationMs > 120,
+    };
+
+    eventBus.track('cart.add.duration', payload).catch((err) => {
+      errorLog('Failed to track cart.add.duration', err);
+    });
+
+    if (payload.slow) {
+      console.warn(
+        `[cart] addToCart slow path ${Math.round(durationMs)}ms (cached=${cached}) for product ${productId}`,
+      );
+    }
+  }
+
   private async recalcPricing(): Promise<void> {
     const combos: Record<string, CartItem[]> = {};
 
@@ -178,9 +239,13 @@ class CartService {
       throw new Error('Quantity must be at least 1');
     }
 
+    const start = this.now();
+    let variantKey: string | undefined;
+    let wasCached = false;
+
     try {
-      const db = DatabaseService.getInstance();
-      const product = await db.getProduct(productId);
+      const { product, cached } = await this.getCachedProduct(productId);
+      wasCached = cached;
 
       if (!product) {
         throw new Error('Product not found');
@@ -202,7 +267,7 @@ class CartService {
         resolvedVariantId = selectedVariant.id ?? variantId ?? selectedVariant.color;
       }
 
-      const variantKey = resolvedVariantId ?? undefined;
+      variantKey = resolvedVariantId ?? undefined;
 
       const existingItemIndex = this.cartItems.findIndex((item) => {
         if (item.productId !== product.id) return false;
@@ -236,7 +301,27 @@ class CartService {
       await this.recalcPricing();
       await this.saveToStorage();
       this.notifyListeners();
+
+      const end = this.now();
+      const durationMs = end - start;
+      this.reportAddToCartDuration({
+        productId: product.id,
+        variantId: variantKey ?? null,
+        durationMs,
+        cached: wasCached,
+        success: true,
+      });
     } catch (error) {
+      const end = this.now();
+      const durationMs = end - start;
+      this.reportAddToCartDuration({
+        productId,
+        variantId: variantKey ?? null,
+        durationMs,
+        cached: wasCached,
+        success: false,
+        error,
+      });
       errorLog('Error adding product to cart', error);
       throw error;
     }
