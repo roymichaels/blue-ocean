@@ -7,10 +7,14 @@ import {
   authScopeRequestCounter,
   authInvalidScopeCounter,
 } from '@/services/monitoring';
+import { scopedTokensFlag } from '@/config/featureFlags';
 
 export const sessionEvents = new EventEmitter();
 
-const POLICY = new Set<string>(['read', 'write']);
+export const CHECKOUT_SCOPE = 'checkout';
+export const LEGACY_CHECKOUT_SCOPE = 'write';
+
+const POLICY = new Set<string>(['read', LEGACY_CHECKOUT_SCOPE, CHECKOUT_SCOPE]);
 
 // Allow a small amount of clock skew when validating expirations
 const CLOCK_TOLERANCE_MS = 60 * 1000; // 1 minute
@@ -60,9 +64,13 @@ function validateScopes(scopes: string[]): void {
   authScopeRequestCounter.inc();
   const invalid = scopes.find((s) => !POLICY.has(s));
   if (invalid) {
-    authInvalidScopeCounter.inc();
+    authInvalidScopeCounter.inc({ scope: invalid });
     throw new Error('{E_SCOPE}');
   }
+}
+
+export function getCheckoutRequestScopes(): string[] {
+  return scopedTokensFlag.rollback ? [LEGACY_CHECKOUT_SCOPE] : [CHECKOUT_SCOPE];
 }
 
 export function requestScopes(
@@ -149,6 +157,22 @@ export function validateToken(token: string, requiredScopes: string[]): void {
   validateScopes(requiredScopes);
   const missing = requiredScopes.find((s) => !rec.scopes.includes(s));
   if (missing) throw new Error('{E_SCOPE}');
+}
+
+export function assertCheckoutScope(token: string): void {
+  try {
+    validateToken(token, [CHECKOUT_SCOPE]);
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      err.message === '{E_SCOPE}' &&
+      scopedTokensFlag.rollback
+    ) {
+      validateToken(token, [LEGACY_CHECKOUT_SCOPE]);
+      return;
+    }
+    throw err;
+  }
 }
 
 export function refreshToken(

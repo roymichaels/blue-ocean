@@ -4,7 +4,7 @@ describe('session token lifecycle', () => {
   const signer = (msg: string) => `sig:${msg}`;
 
   it('refreshToken rotates token and extends expiry', async () => {
-    const { token, exp } = requestScopes(['read'], signer, 50);
+    const { token, exp } = requestScopes(['checkout'], signer, 50);
     const events: any[] = [];
     sessionEvents.once('token.rotated', (e) => events.push(e));
 
@@ -14,7 +14,7 @@ describe('session token lifecycle', () => {
 
     expect(events[0]).toEqual({ old: token, token: next.token });
     expect(next.exp).toBeGreaterThan(exp);
-    expect(() => validateToken(next.token, ['read'])).not.toThrow();
+    expect(() => validateToken(next.token, ['checkout'])).not.toThrow();
   });
 
   it('revoked token fails validation with {E_EXPIRED}', async () => {

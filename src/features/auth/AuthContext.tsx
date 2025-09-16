@@ -10,7 +10,7 @@ import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
 import { Buffer } from 'buffer';
 import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
-import { sessionEvents, revokeToken } from '@/services/session';
+import { sessionEvents, revokeToken, getCheckoutRequestScopes } from '@/services/session';
 import { useWalletSessions } from '@/auth/wallet';
 
 interface AuthContextType {
@@ -164,7 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async () => {
     try {
       await connect();
-      const session = await loginWithWallet(['write']);
+      const session = await loginWithWallet(getCheckoutRequestScopes());
       setSessionToken(session.token);
     } catch (err: unknown) {
       errorLog(
