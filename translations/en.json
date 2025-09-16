@@ -54,6 +54,41 @@
     "products": "Products",
     "orders": "Orders"
   },
+  "search": {
+    "title": "Universal search",
+    "placeholder": "Search products, stores, orders, and messages",
+    "reputation": "Reputation",
+    "tabs": {
+      "products": "Products",
+      "stores": "Stores",
+      "orders": "My Orders",
+      "messages": "Messages"
+    },
+    "filters": {
+      "category": "Categories",
+      "plan": "Plan",
+      "status": "Status",
+      "thread": "Threads",
+      "all": "All",
+      "inStock": "In stock only",
+      "open": "Open"
+    },
+    "empty": {
+      "noResults": "No matches found",
+      "noQuery": "Start typing to search your marketplace.",
+      "tryAgain": "Try another phrase or adjust your filters."
+    },
+    "orderStatus": {
+      "order_received": "Order received",
+      "courier_found": "Courier found",
+      "courier_picked_up": "Courier picked up",
+      "courier_on_way": "Courier on the way",
+      "delivered": "Delivered",
+      "disputed": "Disputed",
+      "released": "Released",
+      "refunded": "Refunded"
+    }
+  },
   "auth": {
     "login": "Login",
     "logout": "Logout",

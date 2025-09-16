@@ -1,13 +1,6 @@
 // TOUCHPOINT: components/GlobalHeader.tsx renders in production — Fix Pack v2
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Pressable,
-  TextInput,
-  Platform,
-  useWindowDimensions,
-} from 'react-native';
+import { View, StyleSheet, Pressable, Platform, useWindowDimensions } from 'react-native';
 import { Text, Chip } from '@/ui';
 import SmartImage from './SmartImage';
 import { Search, Bell, Globe } from 'lucide-react-native';
@@ -41,8 +34,6 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const isMd = width >= 768;
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [consoleVisible, setConsoleVisible] = useState(false);
   const tapTimesRef = useRef<number[]>([]);
@@ -63,11 +54,6 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const toggleLanguage = async () => {
     const next = currentLanguage === 'he' ? 'en' : 'he';
     await setLanguage(next as any);
-  };
-
-  const handleSearchSubmit = () => {
-    setSearchOpen(false);
-    if (pathname !== '/' && pathname !== '/index') push('/');
   };
 
   const walletLabel = address ? `@${address}` : t('auth.not_connected', 'Not connected');
@@ -131,54 +117,25 @@ export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
         ]}
       >
         {showSearch && (
-          searchOpen ? (
-            <View
-              style={[
-                styles.searchContainer,
-                {
-                  backgroundColor: colors.surface.primary,
-                  borderColor: colors.border.primary,
-                },
-              ]}
-            >
-              <TextInput
-                style={[
-                  styles.searchInput,
-                  {
-                    color: colors.text.primary,
-                    textAlign: isRTL ? 'right' : 'left',
-                  },
-                ]}
-                placeholder={t('home.searchPlaceholder')}
-                placeholderTextColor={colors.text.tertiary}
-                value={query}
-                onChangeText={setQuery}
-                autoFocus
-                onSubmitEditing={handleSearchSubmit}
-                onBlur={() => setSearchOpen(false)}
-              />
-            </View>
-          ) : (
-            <Pressable
-              onPress={() => setSearchOpen(true)}
-              accessibilityLabel={t('home.searchPlaceholder')}
-              accessibilityRole="button"
-              focusable
-              {...(Platform.OS === 'web'
-                ? { title: t('home.searchPlaceholder') }
-                : {})}
-              style={(state) => [
-                styles.iconButton,
-                { backgroundColor: colors.surface.primary },
-                (state as any).focused && {
-                  borderColor: colors.border.focus,
-                  borderWidth: 2,
-                },
-              ]}
-            >
-              <Search size={24} color={colors.text.primary} />
-            </Pressable>
-          )
+          <Pressable
+            onPress={() => push('/search')}
+            accessibilityLabel={t('home.searchPlaceholder')}
+            accessibilityRole="button"
+            focusable
+            {...(Platform.OS === 'web'
+              ? { title: t('home.searchPlaceholder') }
+              : {})}
+            style={(state) => [
+              styles.iconButton,
+              { backgroundColor: colors.surface.primary },
+              (state as any).focused && {
+                borderColor: colors.border.focus,
+                borderWidth: 2,
+              },
+            ]}
+          >
+            <Search size={24} color={colors.text.primary} />
+          </Pressable>
         )}
 
         <Pressable
@@ -310,19 +267,6 @@ const styles = StyleSheet.create({
   badgeText: {
     ...typography.xs,
     fontWeight: 'bold',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.spacer16,
-    paddingVertical: spacing.spacer8,
-    borderWidth: 1,
-    flex: 1,
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.md,
   },
 });
 

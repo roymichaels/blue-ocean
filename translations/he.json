@@ -54,6 +54,41 @@
     "products": "מוצרים",
     "orders": "הזמנות"
   },
+  "search": {
+    "title": "חיפוש אוניברסלי",
+    "placeholder": "חיפוש מוצרים, חנויות, הזמנות והודעות",
+    "reputation": "מוניטין",
+    "tabs": {
+      "products": "מוצרים",
+      "stores": "חנויות",
+      "orders": "ההזמנות שלי",
+      "messages": "הודעות"
+    },
+    "filters": {
+      "category": "קטגוריות",
+      "plan": "מסלול",
+      "status": "סטטוס",
+      "thread": "שיחות",
+      "all": "הכל",
+      "inStock": "זמין במלאי בלבד",
+      "open": "פתוחות"
+    },
+    "empty": {
+      "noResults": "לא נמצאו התאמות",
+      "noQuery": "התחילו להקליד כדי לחפש במרקטפלייס.",
+      "tryAgain": "נסו ביטוי אחר או עדכנו את המסננים."
+    },
+    "orderStatus": {
+      "order_received": "הזמנה התקבלה",
+      "courier_found": "נמצא שליח מתאים",
+      "courier_picked_up": "שליח אסף את ההזמנה",
+      "courier_on_way": "שליח בדרך אלייך",
+      "delivered": "נמסרה",
+      "disputed": "מחלוקת פתוחה",
+      "released": "תשלום שוחרר",
+      "refunded": "תשלום הוחזר"
+    }
+  },
   "auth": {
     "login": "התחבר",
     "logout": "התנתק",
