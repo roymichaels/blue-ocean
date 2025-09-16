@@ -13,7 +13,6 @@ export interface TenantSettings {
   fiatKey?: string;
   feeAddress?: string;
   feeBps?: number;
-  admins?: string[];
   rpcUrl: string;
   rpcFallbackUrls?: string[];
   paymentFactoryAddress?: string;
@@ -25,7 +24,6 @@ export let AppConfig: TenantSettings = {
   logoCid: '',
   feeAddress: '',
   feeBps: 0,
-  admins: [],
   rpcUrl: '',
   rpcFallbackUrls: [],
   paymentFactoryAddress: '',
@@ -39,7 +37,6 @@ export async function loadTenantSettings(): Promise<void> {
   const FIAT_KEY = 'app_fiat_key';
   const FEE_ADDR_KEY = 'app_fee_address';
   const FEE_BPS_KEY = 'app_fee_bps';
-  const ADMINS_KEY = 'app_admins';
   const RPC_URL_KEY = 'app_rpc_url';
   const RPC_FALLBACK_KEY = 'app_rpc_fallback_urls';
   const PAYMENT_FACTORY_KEY = 'app_payment_factory_address';
@@ -53,7 +50,6 @@ export async function loadTenantSettings(): Promise<void> {
       fiat,
       feeAddr,
       feeBps,
-      admins,
       rpc,
       rpcFallback,
       paymentFactory,
@@ -65,7 +61,6 @@ export async function loadTenantSettings(): Promise<void> {
       FIAT_KEY,
       FEE_ADDR_KEY,
       FEE_BPS_KEY,
-      ADMINS_KEY,
       RPC_URL_KEY,
       RPC_FALLBACK_KEY,
       PAYMENT_FACTORY_KEY,
@@ -79,7 +74,6 @@ export async function loadTenantSettings(): Promise<void> {
       fiatKey: fiat?.[1] || undefined,
       feeAddress: feeAddr?.[1] || '',
       feeBps: feeBps?.[1] ? parseInt(feeBps[1]) : 0,
-      admins: admins?.[1] ? JSON.parse(admins[1]) : [],
       rpcUrl: rpc?.[1] || '',
       rpcFallbackUrls: rpcFallback?.[1] ? JSON.parse(rpcFallback[1]) : [],
       paymentFactoryAddress: paymentFactory?.[1] || '',
@@ -94,7 +88,6 @@ export async function loadTenantSettings(): Promise<void> {
       fiatKey: remote.fiatKey,
       feeAddress: remote.feeAddress ?? '',
       feeBps: remote.feeBps ?? 0,
-      admins: remote.admins ?? [],
       rpcUrl: remote.rpcUrl,
       rpcFallbackUrls: remote.rpcFallbackUrls ?? [],
       paymentFactoryAddress: remote.paymentFactoryAddress ?? '',
@@ -108,7 +101,6 @@ export async function loadTenantSettings(): Promise<void> {
       [FIAT_KEY, remote.fiatKey ?? ''],
       [FEE_ADDR_KEY, remote.feeAddress ?? ''],
       [FEE_BPS_KEY, String(remote.feeBps ?? 0)],
-      [ADMINS_KEY, JSON.stringify(remote.admins ?? [])],
       [RPC_URL_KEY, remote.rpcUrl],
       [RPC_FALLBACK_KEY, JSON.stringify(remote.rpcFallbackUrls ?? [])],
       [PAYMENT_FACTORY_KEY, remote.paymentFactoryAddress ?? ''],
@@ -143,11 +135,4 @@ export async function getFeeSettings(): Promise<{
     feeAddress: AppConfig.feeAddress || '',
     feeBps: AppConfig.feeBps || 0,
   };
-}
-
-export async function getAdmins(): Promise<string[]> {
-  if (!AppConfig.admins || AppConfig.admins.length === 0) {
-    await loadTenantSettings();
-  }
-  return AppConfig.admins || [];
 }

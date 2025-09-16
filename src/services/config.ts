@@ -166,14 +166,62 @@ export function isDataV2Enabled(): boolean {
   );
 }
 
-export function isAdminBootstrapV2Enabled(): boolean {
-  const raw =
+export interface AdminBootstrapFlagConfig {
+  enabled: boolean;
+  canary: string[];
+  rollback: boolean;
+}
+
+function parseAddressList(raw: string | undefined): string[] {
+  return (raw || '')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function toBoolean(raw: string | undefined): boolean {
+  if (!raw) return false;
+  const normalized = raw.trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'on';
+}
+
+export function getAdminBootstrapFlag(): AdminBootstrapFlagConfig {
+  const rawFlag =
     process.env.EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2 ??
     process.env.FEATURE_ADMIN_BOOTSTRAP_V2 ??
     '';
-  if (raw === '0') return false;
-  if (raw === '1') return true;
-  return true;
+  const canaryRaw =
+    process.env.EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY ??
+    process.env.FEATURE_ADMIN_BOOTSTRAP_V2_CANARY ??
+    '';
+  const rollbackRaw =
+    process.env.EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK ??
+    process.env.FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK ??
+    '';
+
+  const canary = parseAddressList(canaryRaw);
+  const rollback = toBoolean(rollbackRaw);
+
+  if (rollback) {
+    return { enabled: false, canary: [], rollback: true };
+  }
+
+  const normalized = rawFlag.trim().toLowerCase();
+
+  if (normalized === '0' || normalized === 'off' || normalized === 'false') {
+    return { enabled: false, canary, rollback: false };
+  }
+
+  if (normalized === 'canary') {
+    return { enabled: false, canary, rollback: false };
+  }
+
+  if (normalized === '1' || normalized === 'on' || normalized === 'true') {
+    return { enabled: true, canary, rollback: false };
+  }
+
+  // Default behaviour keeps the v2 bootstrap enabled unless explicitly disabled.
+  return { enabled: true, canary, rollback: false };
 }
 
 export default requireEnv;

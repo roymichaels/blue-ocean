@@ -1,5 +1,5 @@
 import { insertConfig } from './testUtils';
-import { loadTenantSettings, getAdmins } from '@/constants/tenant';
+import { loadTenantSettings } from '@/constants/tenant';
 import PinataService from '@/services/pinata';
 import fs from 'fs';
 import path from 'path';
@@ -20,8 +20,6 @@ describe('PinataService', () => {
   });
 
   it('returns URI unchanged when already CID or URL', async () => {
-    const admins = await getAdmins();
-    expect(admins).toEqual([]);
     const svc = PinataService.getInstance();
     const cid = 'ipfs://bafybeigdyrzt5u2r6sxcv5a3dyhv6aipjfiv6t5bygbw4s3z6';
     const url = 'https://example.com/file.png';

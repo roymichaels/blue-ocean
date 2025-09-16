@@ -41,6 +41,7 @@ export class AdminAgent extends EventEmitter {
 
   private seenSignatures = new Map<string, number>();
   private unauthorizedAttemptTimestamps: number[] = [];
+  private lastUnauthorizedAlertAt = 0;
 
   async getAdmins(): Promise<AdminRecord[]> {
     return await readRecords(ADMINS_KEY);
@@ -79,8 +80,11 @@ export class AdminAgent extends EventEmitter {
       (ts) => ts >= cutoff,
     );
     if (
-      this.unauthorizedAttemptTimestamps.length ===
-      AdminAgent.UNAUTHORIZED_ALERT_THRESHOLD + 1
+      this.unauthorizedAttemptTimestamps.length >
+        AdminAgent.UNAUTHORIZED_ALERT_THRESHOLD &&
+      (this.lastUnauthorizedAlertAt === 0 ||
+        now - this.lastUnauthorizedAlertAt >=
+          AdminAgent.UNAUTHORIZED_ALERT_WINDOW_MS)
     ) {
       monitoringLogger.warn(
         {
@@ -89,6 +93,7 @@ export class AdminAgent extends EventEmitter {
         },
         'admin unauthorized attempts threshold exceeded',
       );
+      this.lastUnauthorizedAlertAt = now;
     }
   }
 
@@ -137,7 +142,12 @@ export class AdminAgent extends EventEmitter {
           : Date.now(),
     };
     const admins = await this.getAdmins();
-    if (!flags.ADMIN_BOOTSTRAP_V2) {
+    const bootstrapFlag = flags.ADMIN_BOOTSTRAP_V2;
+    const normalizedAddress = record.address.toLowerCase();
+    const shouldUseV2 =
+      !bootstrapFlag.rollback &&
+      (bootstrapFlag.enabled || bootstrapFlag.canary.includes(normalizedAddress));
+    if (!shouldUseV2) {
       if (!admins.some((a) => a.address === record.address)) {
         await this.addAdmin(record);
       }
