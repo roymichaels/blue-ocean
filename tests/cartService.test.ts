@@ -26,12 +26,17 @@ jest.mock('@/services/database', () => ({
 }));
 
 const getAccountIdMock = jest.fn();
+const mockSignIn = jest.fn().mockResolvedValue(undefined);
+const mockGetPublicKey = jest.fn(() => 'pub:test');
 jest.mock('@/services/chain', () => ({
   chainAdapter: { getAccountId: () => getAccountIdMock() },
 }));
 jest.mock('@/features/auth/services/nearAuth', () => ({
   __esModule: true,
   default: { getAccountId: getAccountIdMock },
+  getAccountId: getAccountIdMock,
+  getPublicKey: mockGetPublicKey,
+  signIn: mockSignIn,
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({

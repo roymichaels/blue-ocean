@@ -5,6 +5,8 @@ import { signMessage } from '@/features/auth/services/nearAuth';
 jest.mock('@/features/auth/services/nearAuth', () => ({
   signMessage: jest.fn((msg: string) => Promise.resolve(`sig:${msg}`)),
   getPublicKey: jest.fn(() => 'wallet:test'),
+  signIn: jest.fn().mockResolvedValue(undefined),
+  getAccountId: jest.fn(() => 'wallet.test'),
 }));
 
 const mockSignMessage = signMessage as jest.MockedFunction<typeof signMessage>;

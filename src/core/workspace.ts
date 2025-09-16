@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
 import { signMessage, getPublicKey } from '@/features/auth/services/nearAuth';
+import { connectWallet } from '@/auth/wallet';
 import { publish, subscribeWithAck } from '@/services/waku';
 import { requestScopes, validateToken, refreshToken, SessionToken } from '@/services/session';
 import { canonicalJson } from '@/utils/serialization';
@@ -86,6 +87,7 @@ export async function createWorkspace(
   ttlMs = DEFAULT_WORKSPACE_SESSION_TTL_MS,
 ): Promise<WorkspaceSession> {
   const workspaceId = generateWorkspaceId();
+  await connectWallet();
   const session = await requestScopes(
     Array.from(WORKSPACE_SCOPES),
     (payload) => signWorkspacePayload(workspaceId, payload),
@@ -107,6 +109,7 @@ export async function refreshWorkspaceSession(
   ttlMs = DEFAULT_WORKSPACE_SESSION_TTL_MS,
 ): Promise<WorkspaceSession> {
   const meta = requireWorkspaceMeta(token);
+  await connectWallet();
   const session = await refreshToken(
     token,
     (payload) => signWorkspacePayload(meta.workspaceId, payload),

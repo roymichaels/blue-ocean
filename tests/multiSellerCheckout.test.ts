@@ -54,7 +54,8 @@ jest.mock('../agents/orders-agent', () => ({
 
 jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('buyer_address'),
-  signIn: jest.fn(),
+  getPublicKey: jest.fn().mockReturnValue('pub:buyer_address'),
+  signIn: jest.fn().mockResolvedValue(undefined),
 }));
 
 describe('multi-seller checkout flow', () => {

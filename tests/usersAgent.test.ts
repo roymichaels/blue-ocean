@@ -9,7 +9,8 @@ import validateNearAddress from '../utils/validateNearAddress';
 
 jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: () => 'addr_admin',
-  signIn: jest.fn(),
+  getPublicKey: () => 'pub:addr_admin',
+  signIn: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/services/localIdentity', () => ({

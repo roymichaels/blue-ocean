@@ -12,8 +12,11 @@ jest.mock('../contexts/AppInfoContext', () => ({
 
 jest.mock('@/features/auth/services/nearAuth', () => ({
   __esModule: true,
-  default: { signIn: jest.fn() },
+  default: { signIn: jest.fn().mockResolvedValue(undefined) },
   useAccountId: jest.fn(() => 'addr'),
+  getAccountId: jest.fn(() => 'addr'),
+  getPublicKey: jest.fn(() => 'pub:addr'),
+  signIn: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/contexts/WalletProvider', () => ({

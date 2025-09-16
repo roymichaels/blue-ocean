@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Buffer } from 'buffer';
 import { useWallet } from '@/contexts/WalletProvider';
-import { chainAdapter } from '@/services/chain';
+import { signIn, getAccountId, getPublicKey } from '@/features/auth/services/nearAuth';
 import {
   requestScopes,
   refreshToken,
@@ -15,13 +15,27 @@ import { deriveSharedKey, aesEncrypt, aesDecrypt, deriveChatSalt } from '@/utils
 
 const SESSION_ENCRYPTION_INFO = 'wallet.session';
 
-function requireWalletPublicKey(): string {
-  const getter = chainAdapter.getPublicKey;
-  const publicKey = typeof getter === 'function' ? getter.call(chainAdapter) : null;
-  if (!publicKey) {
+export async function connectWallet(): Promise<{ address: string; publicKey: string }> {
+  const readAccount = typeof getAccountId === 'function' ? getAccountId : () => null;
+  const readPublicKey = typeof getPublicKey === 'function' ? getPublicKey : () => null;
+
+  let address = readAccount();
+  let publicKey = readPublicKey();
+
+  if (!address || !publicKey) {
+    if (typeof signIn !== 'function') {
+      throw new Error('Wallet public key unavailable');
+    }
+    await signIn();
+    address = readAccount();
+    publicKey = readPublicKey();
+  }
+
+  if (!address || !publicKey) {
     throw new Error('Wallet public key unavailable');
   }
-  return publicKey;
+
+  return { address, publicKey };
 }
 
 async function sealPayload(
@@ -94,7 +108,7 @@ export function useWalletSessions(): {
       if (!Array.isArray(scopes) || scopes.length === 0) {
         throw new Error('{E_SCOPE}');
       }
-      const walletPublicKey = requireWalletPublicKey();
+      const { publicKey: walletPublicKey } = await connectWallet();
       let sealed: EncryptedScopePayload | undefined;
       const session = await requestScopes(
         scopes,
@@ -126,7 +140,8 @@ export function useWalletSessions(): {
       await verifySealedPayload(record);
       validateToken(token, scopes);
 
-      const walletPublicKey = record.sealed?.walletPublicKey ?? requireWalletPublicKey();
+      const { publicKey: connectedPublicKey } = await connectWallet();
+      const walletPublicKey = record.sealed?.walletPublicKey ?? connectedPublicKey;
       let sealed: EncryptedScopePayload | undefined;
       const refreshed = await refreshToken(
         token,

@@ -10,10 +10,14 @@ const mockSignMessage = jest.fn<Promise<string>, [string | Uint8Array]>((message
   Promise.resolve(typeof message === 'string' ? `sig:${message}` : 'sig:bytes'),
 );
 const mockGetPublicKey = jest.fn(() => 'wallet:test');
+const mockSignIn = jest.fn().mockResolvedValue(undefined);
+const mockGetAccountId = jest.fn(() => 'wallet.test');
 
 jest.mock('@/features/auth/services/nearAuth', () => ({
   signMessage: mockSignMessage,
   getPublicKey: mockGetPublicKey,
+  signIn: mockSignIn,
+  getAccountId: mockGetAccountId,
 }));
 
 describe('workspace provisioning handshake', () => {
@@ -29,6 +33,10 @@ describe('workspace provisioning handshake', () => {
     );
     mockGetPublicKey.mockReset();
     mockGetPublicKey.mockReturnValue('wallet:test');
+    mockSignIn.mockClear();
+    mockSignIn.mockResolvedValue(undefined);
+    mockGetAccountId.mockReset();
+    mockGetAccountId.mockReturnValue('wallet.test');
   });
 
   afterEach(() => {
