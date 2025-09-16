@@ -48,7 +48,7 @@ jest.mock('@/services/nearOrders', () => ({
 jest.mock('@/services/eventBus', () => ({ publish: jest.fn(), track: jest.fn() }));
 
 jest.mock('@/services/nearContract', () => ({
-  deployOrderPayment: jest.fn(),
+  deployEscrow: jest.fn(),
   releasePayment: jest.fn(),
   refundPayment: jest.fn(),
 }));

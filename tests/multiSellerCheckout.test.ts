@@ -1,5 +1,5 @@
 import OrderService from '@/services/orders';
-import { deployOrderPayment } from '@/services/nearContract';
+import { deployEscrow } from '@/services/nearContract';
 import { CartItem, ShippingAddress } from '../types';
 import { requestScopes } from '@/services/session';
 import { loadKycReceipt } from '@/services/kycReceipts';
@@ -49,11 +49,13 @@ jest.mock('@/services/nearOrders', () => ({
 jest.mock('@/services/eventBus', () => ({ publish: jest.fn(), track: jest.fn() }));
 
 jest.mock('@/services/nearContract', () => ({
-  deployOrderPayment: jest
+  deployEscrow: jest
     .fn()
-    .mockImplementation(async (amount: number) => ({
-      contractAddress: `escrow_${amount}`,
-      txHash: `tx_${amount}`,
+    .mockImplementation(async (draft: any) => ({
+      orderId: `escrow_${draft.total}`,
+      txHash: `tx_${draft.total}`,
+      expiresAt: '2099-01-01T00:00:00.000Z',
+      status: 'pending',
     })),
   releasePayment: jest.fn(),
   refundPayment: jest.fn(),
@@ -170,7 +172,7 @@ describe('multi-seller checkout flow', () => {
       'nonce-multi-1',
     );
     expect(orders).toHaveLength(2);
-    expect(deployOrderPayment).toHaveBeenCalledTimes(2);
+    expect(deployEscrow).toHaveBeenCalledTimes(2);
     const totals = orders.map((o) => o.total).sort();
     expect(totals).toEqual([5, 6]);
     expect(orders.every((o) => o.paymentMethod === 'near')).toBe(true);
