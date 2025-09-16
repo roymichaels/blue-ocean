@@ -19,6 +19,7 @@ import { useLaunchGate } from '@/features/launchGate/LaunchGateContext';
 import OrderTrackingModal from '@/components/OrderTrackingModal';
 import { useAppRouter } from '@/services';
 import { promptCancelOrder } from '@/features/orders/adminActions';
+import { useActionNonceGuard } from '@/features/orders/actionNonceGuard';
 
 const SHIPPING_SEQUENCE: OrderStatus[] = [
   'order_received',
@@ -98,6 +99,7 @@ export default function StoreOrdersScreen(): React.ReactElement {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const { requireUnlock } = useLaunchGate();
+  const nonceGuard = useActionNonceGuard();
   const { replace } = useAppRouter();
   const [filter, setFilter] = useState<FilterKey>('open');
   const [orders, setOrders] = useState<Order[]>([]);
@@ -169,7 +171,7 @@ export default function StoreOrdersScreen(): React.ReactElement {
 
   const handleMarkShipped = useCallback(
     async (order: Order) => {
-      if (pendingId === order.id) return;
+      if (!nonceGuard.acquire(order.id)) return;
       setPendingId(order.id);
       try {
         let target: OrderStatus | null = null;
@@ -196,10 +198,11 @@ export default function StoreOrdersScreen(): React.ReactElement {
       } catch (error) {
         Alert.alert('שגיאה', 'עדכון סטטוס ההזמנה נכשל');
       } finally {
-        setPendingId(null);
+        nonceGuard.release(order.id);
+        setPendingId((prev) => (prev === order.id ? null : prev));
       }
     },
-    [pendingId, requireUnlock],
+    [nonceGuard, requireUnlock],
   );
 
   const handleCancel = useCallback(
@@ -208,6 +211,7 @@ export default function StoreOrdersScreen(): React.ReactElement {
         order,
         t,
         onConfirm: async () => {
+          if (!nonceGuard.acquire(order.id)) return;
           setPendingId(order.id);
           try {
             await requireUnlock('order.cancel');
@@ -222,12 +226,13 @@ export default function StoreOrdersScreen(): React.ReactElement {
           } catch (error) {
             Alert.alert('שגיאה', 'ביטול ההזמנה נכשל');
           } finally {
-            setPendingId(null);
+            nonceGuard.release(order.id);
+            setPendingId((prev) => (prev === order.id ? null : prev));
           }
         },
       });
     },
-    [requireUnlock, t],
+    [nonceGuard, requireUnlock, t],
   );
 
   const closeDetails = useCallback(() => {
