@@ -49,7 +49,7 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { requestTokenWithConsent } from '@/services/session';
+import { requestTokenWithConsent, getCheckoutRequestScopes } from '@/services/session';
 import { uuid } from '@/utils/uuid';
 import NotificationService from '@/services/notification';
 
@@ -105,7 +105,10 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
   const ensureSessionToken = async (): Promise<string> => {
     if (sessionToken) return sessionToken;
-    const { token } = await requestTokenWithConsent(['write'], () => uuid());
+    const { token } = await requestTokenWithConsent(
+      getCheckoutRequestScopes(),
+      () => uuid(),
+    );
     setSessionToken(token);
     return token;
   };

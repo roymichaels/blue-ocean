@@ -1,10 +1,20 @@
-import { requestScopes, validateToken } from '@/services/session';
+import { requestScopes, validateToken, assertCheckoutScope } from '@/services/session';
+import { scopedTokensFlag } from '@/config/featureFlags';
 
 describe('session scope validation', () => {
   const signer = (msg: string) => `sig:${msg}`;
 
+  afterEach(() => {
+    scopedTokensFlag.rollback = false;
+  });
+
   it('rejects invalid scope requests', () => {
     expect(() => requestScopes(['foo'], signer)).toThrow('{E_SCOPE}');
+  });
+
+  it('accepts checkout scope tokens', () => {
+    const { token } = requestScopes(['checkout'], signer);
+    expect(() => validateToken(token, ['checkout'])).not.toThrow();
   });
 
   it('throws on validating with unknown scopes', () => {
@@ -15,6 +25,17 @@ describe('session scope validation', () => {
   it('throws when required scope not granted', () => {
     const { token } = requestScopes(['read'], signer);
     expect(() => validateToken(token, ['write'])).toThrow('{E_SCOPE}');
+  });
+
+  it('enforces checkout scope when rollback disabled', () => {
+    const { token } = requestScopes(['write'], signer);
+    expect(() => assertCheckoutScope(token)).toThrow('{E_SCOPE}');
+  });
+
+  it('allows legacy write scope when checkout rollback enabled', () => {
+    scopedTokensFlag.rollback = true;
+    const { token } = requestScopes(['write'], signer);
+    expect(() => assertCheckoutScope(token)).not.toThrow();
   });
 
   it('throws when token missing', () => {

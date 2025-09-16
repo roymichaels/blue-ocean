@@ -43,7 +43,7 @@ export async function publish(
     if (!n) return;
     try {
       const client = await getClient();
-      const encoder = client.createEncoder({ contentTopic });
+      const encoder = client.createEncoder({ contentTopic } as any);
       const addr = chainAdapter.getAccountId();
       const event = {
         id: uuid(),

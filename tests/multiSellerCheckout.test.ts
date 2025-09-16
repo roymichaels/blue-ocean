@@ -14,7 +14,7 @@ jest.mock('@/services/nearOrders', () => ({
   listOrdersBySeller: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('@/services/eventBus', () => ({ publish: jest.fn() }));
+jest.mock('@/services/eventBus', () => ({ publish: jest.fn(), track: jest.fn() }));
 
 jest.mock('@/services/nearContract', () => ({
   deployOrderPayment: jest
@@ -58,6 +58,17 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
 }));
 
 describe('multi-seller checkout flow', () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+    for (const key of Object.keys(mockStore)) {
+      delete mockStore[key];
+    }
+    for (const key of Object.keys(mockProducts)) {
+      delete mockProducts[key];
+    }
+  });
+
   it('creates separate orders per seller with near payment', async () => {
     jest
       .spyOn<any, any>(OrderService.prototype as any, 'simulateOrderProgress')
@@ -115,7 +126,7 @@ describe('multi-seller checkout flow', () => {
       postalCode: 'p',
     };
 
-    const { token } = requestScopes(['write'], () => 'sig');
+    const { token } = requestScopes(['checkout'], () => 'sig');
     const orders = await svc.createOrdersFromCart('user1', items, shipping, 'near', token);
     expect(orders).toHaveLength(2);
     expect(deployOrderPayment).toHaveBeenCalledTimes(2);
@@ -145,6 +156,54 @@ describe('multi-seller checkout flow', () => {
     expect(firstPayload.sellerAddress).toBe('seller_s1');
     expect(firstPayload.payment.method).toBe('near');
     expect(firstPayload.payment.contractAddress).toBe('escrow_5');
+  });
+
+  it('rejects checkout when session is missing the checkout scope', async () => {
+    jest
+      .spyOn<any, any>(OrderService.prototype as any, 'simulateOrderProgress')
+      .mockImplementation(() => {});
+
+    const svc = OrderService.getInstance();
+
+    const item: CartItem = {
+      id: 'i1',
+      productId: 'p1',
+      product: {
+        id: 'p1',
+        name: 'P1',
+        price: 5,
+        description: 'd',
+        category: 'c',
+        images: [],
+        rating: 0,
+        reviews: 0,
+        storeId: 's1',
+        stock: 10,
+      },
+      quantity: 1,
+      addedAt: '',
+    };
+    mockProducts['p1'] = { ...item.product };
+
+    const shipping: ShippingAddress = {
+      name: 'A',
+      phone: '1',
+      street: 'st',
+      city: 'c',
+      postalCode: 'p',
+    };
+
+    const { token } = requestScopes(['read'], () => 'sig');
+
+    await expect(
+      svc.createOrdersFromCart('user1', [item], shipping, 'near', token),
+    ).rejects.toThrow('{E_SCOPE}');
+
+    const eventBus = require('@/services/eventBus');
+    expect(eventBus.track).toHaveBeenCalledWith('checkout.token_integrity', {
+      tokenValid: false,
+      success: false,
+    });
   });
 });
 

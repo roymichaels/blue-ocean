@@ -32,6 +32,18 @@ The signature becomes the session token. The response contains:
 }
 ```
 
+## Checkout Scope
+
+Checkout flows must request the `checkout` capability. Call
+`getCheckoutRequestScopes()` from `@/services/session` to obtain the scope list
+to request; this returns `['checkout']` by default and falls back to
+`['write']` automatically when `EXPO_PUBLIC_SCOPED_TOKENS_ROLLBACK=true`. The
+order pipeline enforces this requirement through `assertCheckoutScope(token)`,
+which also recognises legacy `write` tokens only while the rollback flag is
+active so that existing sessions are not bricked mid-rollout. Every rejected
+scope increments the `auth_invalid_scope_total{scope="..."}` counter to track
+abuse or integration bugs.
+
 ## Refresh Token
 
 `refreshToken(token, signer, ttlMs?)` rotates an existing token and emits a `{token.rotated}` event:

@@ -13,6 +13,7 @@ Understanding likely attacks helps harden Blue Ocean's peer-to-peer agents.
 - Man-in-the-middle interception of Waku traffic
 - Phishing via misleading scope approval prompts
 - Denial of service from malicious peers
+- Token theft or reuse via compromised device storage
 
 ## Mitigations
 - All messages are signed and optionally encrypted
@@ -20,6 +21,14 @@ Understanding likely attacks helps harden Blue Ocean's peer-to-peer agents.
 - Nonces or message hashes to detect replay
 - Known peer lists and encrypted transports
 - Rate limiting and exponential backoff
+- Wallet-signed, scope-limited session tokens rotate frequently; checkout
+  scope isolates payment privileges and limits blast radius
+
+## Operational Risks
+
+- Device secure storage may fail to persist session tokens consistently. The
+  rollback flag for scoped checkout tokens provides a rapid mitigation path
+  while clients re-issue fresh wallet signatures.
 
 ## WCAG-Compliant Consent Prompts
 

@@ -65,6 +65,7 @@ export const authScopeRequestCounter = registry.createCounter({
 export const authInvalidScopeCounter = registry.createCounter({
   name: 'auth_invalid_scope_total',
   help: 'Auth scope requests with invalid scopes',
+  labelNames: ['scope'],
 });
 
 export const checkoutTokenIntegrity = registry.createCounter({

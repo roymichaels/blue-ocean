@@ -17,7 +17,7 @@ import { chainAdapter } from '@/services/chain';
 import { adminResolve, deployOrderPayment } from './nearContract';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
-import { validateToken } from '@/services/session';
+import { assertCheckoutScope } from '@/services/session';
 import { checkoutTokenIntegrity } from '@/services/monitoring';
 import SettingsAgent from '@/agents/settings-agent';
 
@@ -128,7 +128,7 @@ class OrderService {
     },
     sessionToken: string,
   ): Promise<Order> {
-    validateToken(sessionToken, ['write']);
+    assertCheckoutScope(sessionToken);
     const total = items.reduce((sum, item) => {
       const price = item.unitPrice ?? item.product.price;
       return sum + price * item.quantity;
@@ -191,7 +191,7 @@ class OrderService {
     sessionToken: string,
   ): Promise<Order[]> {
     try {
-      validateToken(sessionToken, ['write']);
+      assertCheckoutScope(sessionToken);
     } catch (err) {
       void eventBus.track('checkout.token_integrity', {
         tokenValid: false,

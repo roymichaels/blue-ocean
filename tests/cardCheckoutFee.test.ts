@@ -13,7 +13,7 @@ jest.mock('@/services/nearOrders', () => ({
   listOrdersBySeller: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('@/services/eventBus', () => ({ publish: jest.fn() }));
+jest.mock('@/services/eventBus', () => ({ publish: jest.fn(), track: jest.fn() }));
 
 jest.mock('@/services/nearContract', () => ({
   deployOrderPayment: jest.fn(),
@@ -90,7 +90,7 @@ describe('card checkout fee deduction', () => {
       postalCode: 'p',
     };
 
-    const { token } = requestScopes(['write'], () => 'sig');
+    const { token } = requestScopes(['checkout'], () => 'sig');
     const orders = await svc.createOrdersFromCart('user1', items, shipping, 'card', token);
     expect(orders).toHaveLength(1);
     const order = orders[0];
