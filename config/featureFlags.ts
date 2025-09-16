@@ -29,6 +29,7 @@ const envSchema = z.object({
     .optional()
     .default('false'),
   EXPO_PUBLIC_FEATURE_MOONPAY: z.string().optional().default('false'),
+  EXPO_PUBLIC_FEATURE_DISPUTES: z.string().optional().default('false'),
 });
 
 const env = envSchema.parse(process.env);
@@ -141,9 +142,14 @@ export function triggerDeliveryNotificationsRollback(): void {
 export { deliveryNotificationsFlag };
 
 const moonPayFeatureEnabled = env.EXPO_PUBLIC_FEATURE_MOONPAY === 'true';
+const disputesFeatureEnabled = env.EXPO_PUBLIC_FEATURE_DISPUTES === 'true';
 
 export function isMoonPayEnabled(): boolean {
   return moonPayFeatureEnabled;
+}
+
+export function isDisputesEnabled(): boolean {
+  return disputesFeatureEnabled;
 }
 
 export default warmCacheFlag;

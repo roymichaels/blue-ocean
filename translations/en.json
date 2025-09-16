@@ -652,7 +652,9 @@
     "notFoundTitle": "Order not found",
     "notFoundMessage": "We couldn't find that order",
     "statusUpdated": "Order status updated",
-    "updateStatusFailed": "Failed to update status"
+    "updateStatusFailed": "Failed to update status",
+    "openDispute": "Open dispute",
+    "disputeComingSoon": "Coming soon"
   },
   "store": {
     "store_name": "Store Name",

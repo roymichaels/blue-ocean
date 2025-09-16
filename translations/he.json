@@ -642,7 +642,9 @@
     "notFoundTitle": "הזמנה לא נמצאה",
     "notFoundMessage": "לא הצלחנו למצוא את ההזמנה הזו",
     "statusUpdated": "סטטוס ההזמנה עודכן",
-    "updateStatusFailed": "עדכון הסטטוס נכשל"
+    "updateStatusFailed": "עדכון הסטטוס נכשל",
+    "openDispute": "פתח מחלוקת",
+    "disputeComingSoon": "בקרוב"
   },
   "store": {
     "store_name": "שם החנות",
