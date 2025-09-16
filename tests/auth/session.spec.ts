@@ -1,8 +1,33 @@
 import { requestScopes, validateToken, assertCheckoutScope } from '@/services/session';
 import { scopedTokensFlag } from '@/config/featureFlags';
 
+const mockHasAdminScope = jest.fn<Promise<boolean>, [string, string]>();
+const mockChainAdapter = {
+  getAccountId: jest.fn<string | null, []>(),
+};
+
+jest.mock('@/agents/settings-agent', () => ({
+  __esModule: true,
+  default: {
+    getInstance: () => ({
+      hasAdminScope: mockHasAdminScope,
+    }),
+  },
+}));
+
+jest.mock('@/services/chain', () => ({
+  chainAdapter: mockChainAdapter,
+}));
+
 describe('session scope validation', () => {
   const signer = (msg: string) => `sig:${msg}`;
+
+  beforeEach(() => {
+    mockHasAdminScope.mockReset();
+    mockHasAdminScope.mockResolvedValue(false);
+    mockChainAdapter.getAccountId.mockReset();
+    mockChainAdapter.getAccountId.mockReturnValue(null);
+  });
 
   afterEach(() => {
     scopedTokensFlag.rollback = false;
@@ -66,5 +91,20 @@ describe('session scope validation', () => {
     const { token } = requestScopes(['read'], signer);
     (globalThis as any).__DEVICE_INFO__ = 'device-b';
     expect(() => validateToken(token, ['read'])).toThrow('{E_DEVICE_MISMATCH}');
+  });
+
+  it('rejects admin scope requests for non-admin wallets', async () => {
+    mockChainAdapter.getAccountId.mockReturnValue('user.testnet');
+    await expect(
+      requestScopes(['admin:settings'], async (payload) => `sig:${payload}`),
+    ).rejects.toThrow('{E_SCOPE}');
+    expect(mockHasAdminScope).toHaveBeenCalledWith('user.testnet', 'admin:settings');
+  });
+
+  it('rejects admin scope requests without a connected wallet', async () => {
+    await expect(
+      requestScopes(['admin:settings'], async (payload) => `sig:${payload}`),
+    ).rejects.toThrow('{E_SCOPE}');
+    expect(mockHasAdminScope).not.toHaveBeenCalled();
   });
 });
