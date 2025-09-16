@@ -201,6 +201,77 @@ describe('multi-seller checkout flow', () => {
     expect(firstPayload.sellerAddress).toBe('seller_s1');
     expect(firstPayload.payment.method).toBe('near');
     expect(firstPayload.payment.contractAddress).toBe('escrow_5');
+
+    const integrityEvents = eventBus.track.mock.calls.filter(
+      (c: any) => c[0] === 'checkout.token_integrity',
+    );
+    expect(integrityEvents).toEqual(
+      expect.arrayContaining([
+        [
+          'checkout.token_integrity',
+          expect.objectContaining({
+            tokenValid: true,
+            success: true,
+            orderNonce: 'nonce-multi-1',
+          }),
+        ],
+      ]),
+    );
+  });
+
+  it('emits failure analytics when escrow deployment fails', async () => {
+    jest
+      .spyOn<any, any>(OrderService.prototype as any, 'simulateOrderProgress')
+      .mockImplementation(() => {});
+
+    const svc = OrderService.getInstance();
+
+    const item: CartItem = {
+      id: 'i1',
+      productId: 'p1',
+      product: {
+        id: 'p1',
+        name: 'P1',
+        price: 5,
+        description: 'd',
+        category: 'c',
+        images: [],
+        rating: 0,
+        reviews: 0,
+        storeId: 's1',
+        stock: 10,
+      },
+      quantity: 1,
+      addedAt: '',
+    };
+    mockProducts['p1'] = { ...item.product };
+
+    const shipping: ShippingAddress = {
+      name: 'A',
+      phone: '1',
+      street: 'st',
+      city: 'c',
+      postalCode: 'p',
+    };
+
+    const { deployEscrow } = require('@/services/nearContract');
+    (deployEscrow as jest.Mock).mockRejectedValueOnce(new Error('deploy failed'));
+
+    const { token } = requestScopes(['checkout'], () => 'sig');
+
+    await expect(
+      svc.createOrdersFromCart('user1', [item], shipping, 'near', token, 'nonce-multi-fail'),
+    ).rejects.toThrow('deploy failed');
+
+    const eventBus = require('@/services/eventBus');
+    expect(eventBus.track).toHaveBeenCalledWith(
+      'checkout.token_integrity',
+      expect.objectContaining({
+        tokenValid: true,
+        success: false,
+        orderNonce: 'nonce-multi-fail',
+      }),
+    );
   });
 
   it('rejects checkout without a verified kyc receipt', async () => {
