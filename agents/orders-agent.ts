@@ -13,9 +13,10 @@ import {
 import storesAgent from './stores-agent';
 import SettingsAgent from './settings-agent';
 import {
-  deployOrderPayment,
+  deployEscrow,
   releasePayment,
   refundPayment,
+  type DeployEscrowDraft,
 } from '@/services/nearContract';
 import productsAgent from './products-agent';
 import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
@@ -210,24 +211,39 @@ class OrdersAgent {
   async add(order: Order): Promise<void> {
     const normalized = normalizeMessage<Order>('Order', order);
     await this.ensureAuthorized(normalized);
-    let enriched = normalized;
+    const storeId = normalized.items?.[0]?.product?.storeId || '';
+    const itemsHash = normalized.itemsHash
+      ? normalized.itemsHash
+      : Buffer.from(
+          sha256(Buffer.from(canonicalJson(normalized.items))),
+        ).toString('hex');
+    let enriched: Order = { ...normalized, itemsHash };
     if (!normalized.paymentContractAddress || !normalized.paymentTxHash) {
-      const { contractAddress, txHash } = await deployOrderPayment(normalized.total);
+      const draft: DeployEscrowDraft = {
+        sessionToken: normalized.sessionToken,
+        scopes: ['checkout'],
+        nonce: normalized.id,
+        storeId,
+        total: normalized.total,
+        itemsHash,
+        buyerAddress: normalized.buyerAddress,
+        sellerAddress: normalized.sellerAddress,
+        kycReceiptHash: normalized.kycReceiptHash,
+      };
+      const { orderId, txHash } = await deployEscrow(draft);
       enriched = {
-        ...normalized,
-        paymentContractAddress: contractAddress,
-        escrowAddr: contractAddress,
+        ...enriched,
+        paymentContractAddress: orderId,
+        escrowAddr: orderId,
         paymentTxHash: txHash,
       };
     } else if (!normalized.escrowAddr && normalized.paymentContractAddress) {
-      enriched = { ...normalized, escrowAddr: normalized.paymentContractAddress };
+      enriched = { ...enriched, escrowAddr: normalized.paymentContractAddress };
     }
     let toStore: any = { ...enriched };
     // ensure integrity of items by hashing their serialized form
     if (!toStore.itemsHash) {
-      toStore.itemsHash = Buffer.from(
-        sha256(Buffer.from(canonicalJson(enriched.items)))
-      ).toString('hex');
+      toStore.itemsHash = itemsHash;
     }
     // encrypt shipping address for seller-only visibility
     if (enriched.shippingAddress && enriched.sellerAddress) {

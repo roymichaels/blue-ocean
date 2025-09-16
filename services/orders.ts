@@ -193,14 +193,7 @@ class OrderService {
 
   public addListener(listener: () => void) {
     this.listeners.add(listener);
-  }
-
-  public removeListener(listener: () => void) {
-    this.listeners.delete(listener);
-  }
-
-  private reserveCheckoutNonce(sessionToken: string, nonce: string): void {
-    if (typeof nonce !== 'string' || nonce.length === 0) {
+@@ -137,57 +204,86 @@ class OrderService {
       throw new Error('ERR_DUPLICATE_NONCE');
     }
     const active = this.checkoutNonceLocks.get(sessionToken);
@@ -287,122 +280,7 @@ class OrderService {
       if (!allSteps[i].timestamp) {
         const now = new Date();
         const minutesAgo = (currentIndex - i) * 10;
-        allSteps[i].timestamp = new Date(now.getTime() - minutesAgo * 60000).toISOString();
-      }
-    }
-    return allSteps;
-  }
-
-  private async verifyKycReceipt(sessionToken: string): Promise<VerifiedKycReceipt> {
-    const fail = (reason: string): never => {
-      errorLog('KYC receipt validation failed', { reason });
-      throw new Error(KYC_RECEIPT_ERROR);
-    };
-
-    const session = getSession(sessionToken);
-    if (!session || typeof session.deviceHash !== 'string' || session.deviceHash.length === 0) {
-      return fail('session_missing');
-    }
-
-    const buyerPublicKey = await getPublicKeyHex();
-    if (!buyerPublicKey) {
-      return fail('buyer_key_missing');
-    }
-
-    const receipt = await loadKycReceipt(buyerPublicKey);
-    if (!receipt) {
-      return fail('receipt_missing');
-    }
-
-    if (!receipt.payload || receipt.payload.buyerPublicKey !== buyerPublicKey) {
-      return fail('buyer_key_mismatch');
-    }
-
-    if (!receipt.signature || typeof receipt.signature !== 'string') {
-      return fail('signature_missing');
-    }
-
-    const issuerPublicKey = receipt.payload.issuerPublicKey;
-    const senderPublicKey = receipt.sender?.publicKey;
-
-    if (typeof senderPublicKey !== 'string' || senderPublicKey.length === 0) {
-      return fail('issuer_missing');
-    }
-
-    if (issuerPublicKey !== senderPublicKey) {
-      return fail('issuer_mismatch');
-    }
-
-    const signatureValid = await verifyMessageSignature(receipt, senderPublicKey);
-    if (!signatureValid) {
-      return fail('signature_invalid');
-    }
-
-    const data = receipt.payload.data || {};
-    let receiptDeviceHash: string | undefined;
-    if (data && typeof data === 'object') {
-      receiptDeviceHash =
-        data.deviceHash || data.device_hash || data['device-hash'] || data.device_hash_hex;
-    }
-
-    if (typeof receiptDeviceHash !== 'string') {
-      return fail('device_hash_missing');
-    }
-
-    if (receiptDeviceHash !== session.deviceHash) {
-      return fail('device_hash_mismatch');
-    }
-
-    const receiptHash = Buffer.from(
-      sha256(
-        Buffer.from(
-          canonicalJson({
-            type: receipt.type,
-            payload: receipt.payload,
-            sender: receipt.sender,
-            signature: receipt.signature,
-          }),
-        ),
-      ),
-    ).toString('hex');
-
-    const sealedHash = session.sealed?.kycReceiptHash;
-    if (typeof sealedHash === 'string' && sealedHash !== receiptHash) {
-      return fail('receipt_hash_mismatch');
-    }
-
-    return {
-      receiptId: receipt.payload.receiptId,
-      buyerPublicKey,
-      signature: receipt.signature,
-      hash: receiptHash,
-    };
-  }
-
-  async createOrder(
-    userId: string,
-    items: CartItem[],
-    shippingAddress: ShippingAddress,
-    payment?: {
-      method?: 'cash_on_delivery' | 'near' | 'card';
-      contractAddress?: string;
-      txHash?: string;
-      buyerAddress?: string;
-      sellerAddress?: string;
-    },
-    sessionToken: string,
-    nonce: string,
-    storeId: string,
-    verifiedKyc?: VerifiedKycReceipt,
-  ): Promise<Order> {
-    assertCheckoutScope(sessionToken);
-    const kyc = verifiedKyc ?? (await this.verifyKycReceipt(sessionToken));
-    const total = items.reduce((sum, item) => {
-      const price = item.unitPrice ?? item.product.price;
-      return sum + price * item.quantity;
-    }, 0);
-
-    const itemsHash = Buffer.from(
+@@ -310,160 +406,231 @@ class OrderService {
       sha256(Buffer.from(canonicalJson(items)))
     ).toString('hex');
 

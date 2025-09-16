@@ -34,7 +34,14 @@ jest.mock('../agents/settings-agent', () => ({
 }));
 
 jest.mock('@/services/nearContract', () => ({
-  deployOrderPayment: jest.fn().mockResolvedValue({ contractAddress: 'escrow1', txHash: 'tx1' }),
+  deployEscrow: jest
+    .fn()
+    .mockResolvedValue({
+      orderId: 'escrow1',
+      txHash: 'tx1',
+      expiresAt: '2099-01-01T00:00:00.000Z',
+      status: 'pending',
+    }),
   releasePayment: jest.fn().mockResolvedValue('hash-release'),
   refundPayment: jest.fn().mockResolvedValue('hash-refund'),
 }));
