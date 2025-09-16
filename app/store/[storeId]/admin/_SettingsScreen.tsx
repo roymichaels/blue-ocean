@@ -2,6 +2,7 @@ import { errorLog } from '@/utils/logger';
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
 import { ArrowLeft, Save, Settings as SettingsIcon } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -26,6 +27,8 @@ import { isMoonPayEnabled } from '@/config/featureFlags';
 
 export default function SettingsScreen() {
   const { replace, back } = useAppRouter();
+  const params = useLocalSearchParams<{ storeId: string }>();
+  const storeId = Array.isArray(params.storeId) ? params.storeId[0] : params.storeId;
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
   const [name, setName] = useState('');
   const [logoCidInput, setLogoCidInput] = useState('');
@@ -53,6 +56,7 @@ export default function SettingsScreen() {
   const [pendingInvites, setPendingInvites] = useState<string[]>([]);
   const [inviteLoading, setInviteLoading] = useState(false);
   const moonPayEnabled = useMemo(() => isMoonPayEnabled(), []);
+  const storeTopic = useMemo(() => `/blue-ocean/stores/${storeId ?? '1'}`, [storeId]);
 
   const [infoModal, setInfoModal] = useState({
     visible: false,
@@ -120,6 +124,14 @@ export default function SettingsScreen() {
         'paymentFactoryAddress',
         paymentFactoryAddress.trim(),
       );
+      await eventBus.publish(storeTopic, 'store.updated', {
+        profile: {
+          name,
+          logoCid: logoUri,
+          themeColor,
+          currencySymbol,
+        },
+      });
       setInfoModal({
         visible: true,
         title: 'הצלחה',
@@ -147,7 +159,7 @@ export default function SettingsScreen() {
     }
     setInviteLoading(true);
     try {
-      await eventBus.publish('/blue-ocean/stores/1', 'admin.joinRequested', {
+      await eventBus.publish(storeTopic, 'admin.joinRequested', {
         address,
       });
       setPendingInvites((prev) =>
@@ -171,7 +183,7 @@ export default function SettingsScreen() {
   const approveInvite = async (address: string) => {
     setInviteLoading(true);
     try {
-      await eventBus.publish('/blue-ocean/stores/1', 'admin.registered', {
+      await eventBus.publish(storeTopic, 'admin.registered', {
         address,
       });
       const nextAdmins = Array.from(new Set([...admins, address]));

@@ -31,6 +31,8 @@ const LOW_STOCK_THRESHOLD = 5;
 
 function ProductRow({ product, colors, busy, onEdit, onToggle, onDelete }: ProductRowProps) {
   const isActive = product.isActive !== false;
+  const stock = product.stock ?? 0;
+  const price = Number.isFinite(product.price) ? product.price : Number(product.price ?? 0);
   return (
     <View
       style={[
@@ -44,12 +46,12 @@ function ProductRow({ product, colors, busy, onEdit, onToggle, onDelete }: Produ
       <View style={styles.rowInfo}>
         <Text style={[styles.productName, { color: colors.text.primary }]}>{product.name}</Text>
         <Text style={{ color: colors.text.secondary }}>
-          ₪{product.price.toLocaleString('he-IL')} · מלאי {product.stock}
+          ₪{price.toLocaleString('he-IL')} · מלאי {stock}
         </Text>
         {!isActive && (
           <Text style={[styles.statusBadge, { color: colors.status.error }]}>מושבת</Text>
         )}
-        {product.stock <= LOW_STOCK_THRESHOLD && isActive ? (
+        {stock <= LOW_STOCK_THRESHOLD && isActive ? (
           <Text style={[styles.statusBadge, { color: colors.status.warning }]}>מלאי נמוך</Text>
         ) : null}
       </View>
@@ -105,6 +107,33 @@ export default function StoreProductsScreen(): React.ReactElement {
         .sort((a, b) => a.name.localeCompare(b.name)),
     );
   }, [fetchedProducts, storeId]);
+
+  useEffect(() => {
+    if (!storeId) return;
+    const unsubscribe = productsWarmCache.subscribe(
+      (_, product) => {
+        if (!storeId) return false;
+        if (!product) return true;
+        return product.storeId === storeId;
+      },
+      (id, product) => {
+        setProducts((prev) => {
+          if (!product) {
+            return prev.filter((item) => item.id !== id);
+          }
+          if (product.storeId !== storeId) return prev;
+          const next = prev.some((item) => item.id === id)
+            ? prev.map((item) => (item.id === id ? product : item))
+            : [...prev, product];
+          return next
+            .filter((item) => item.storeId === storeId)
+            .slice()
+            .sort((a, b) => a.name.localeCompare(b.name));
+        });
+      },
+    );
+    return () => unsubscribe?.();
+  }, [storeId]);
 
   const openForm = useCallback(
     (product?: Product) => {

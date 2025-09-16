@@ -1,4 +1,5 @@
 import { sign } from '@noble/ed25519';
+import { Buffer } from 'buffer';
 import type { Product } from '@/types';
 import { canonicalJson } from '@/utils/serialization';
 import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';

@@ -19,7 +19,7 @@ import { getPrivateKey } from '@/services/localIdentity';
 import { aesEncrypt, aesDecrypt } from '@/utils/encryption';
 import { sha256 } from '@noble/hashes/sha256';
 import { Buffer } from 'buffer';
-import { publishProductDeleted } from '@/services/productEvents';
+import { publishProductDeleted, publishProductUpdated } from '@/services/productEvents';
 
 let listAllReviews: (() => Promise<Review[]>) | undefined;
 if (chain === 'near') {
@@ -208,6 +208,11 @@ class DatabaseService {
     const id = `prod_${Date.now()}`;
     const full: Product = { id, ...product };
     await productsAgent.add(full);
+    try {
+      await publishProductUpdated(full);
+    } catch (err) {
+      errorLog('Failed to publish product.updated', err);
+    }
     return id;
   }
 
@@ -215,6 +220,11 @@ class DatabaseService {
     const existing = await fetchProduct(id);
     if (!existing) return;
     await productsAgent.update({ ...existing, ...data });
+    try {
+      await publishProductUpdated({ ...existing, ...data, id } as Product);
+    } catch (err) {
+      errorLog('Failed to publish product.updated', err);
+    }
   }
 
   async deleteProduct(id: string): Promise<void> {

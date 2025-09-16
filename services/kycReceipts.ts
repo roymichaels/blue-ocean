@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sign } from '@noble/ed25519';
+import { Buffer } from 'buffer';
 import { uuid } from '@/utils/uuid';
 import { canonicalJson } from '@/utils/serialization';
 import { publish } from '@/services/waku';

@@ -16,6 +16,8 @@ import { ordersWarmCache } from '@/services/nearOrders';
 import ordersAgent, { ALLOWED_STATUS_TRANSITIONS } from '@/agents/orders-agent';
 import { Spinner } from '@/ui/primitives';
 import { useLaunchGate } from '@/features/launchGate/LaunchGateContext';
+import OrderTrackingModal from '@/components/OrderTrackingModal';
+import { useAppRouter } from '@/services';
 
 const SHIPPING_SEQUENCE: OrderStatus[] = [
   'order_received',
@@ -32,6 +34,11 @@ const FILTERS = [
 ] as const;
 
 type FilterKey = typeof FILTERS[number]['id'];
+
+function getCreatedAt(order: Order): number {
+  const ts = order.createdAt ? new Date(order.createdAt).getTime() : 0;
+  return Number.isFinite(ts) ? ts : 0;
+}
 
 function formatDate(value?: string): string {
   if (!value) return '';
@@ -77,13 +84,18 @@ async function advanceStatus(order: Order, target: OrderStatus): Promise<Order> 
 }
 
 export default function StoreOrdersScreen(): React.ReactElement {
-  const { storeId } = useLocalSearchParams<{ storeId: string }>();
+  const params = useLocalSearchParams<{ storeId: string; orderId?: string | string[] }>();
+  const storeId = params.storeId;
+  const orderIdParam = Array.isArray(params.orderId) ? params.orderId[0] : params.orderId;
   const { colors } = useTheme();
   const { t } = useLanguage();
   const { requireUnlock } = useLaunchGate();
+  const { replace } = useAppRouter();
   const [filter, setFilter] = useState<FilterKey>('open');
   const [orders, setOrders] = useState<Order[]>([]);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [detailsVisible, setDetailsVisible] = useState(false);
   const {
     data: fetchedOrders = [],
     isLoading,
@@ -96,25 +108,54 @@ export default function StoreOrdersScreen(): React.ReactElement {
     const sorted = fetchedOrders
       .filter((order) => order.items?.[0]?.product?.storeId === storeId)
       .slice()
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a, b) => getCreatedAt(b) - getCreatedAt(a));
     setOrders(sorted);
   }, [fetchedOrders, storeId]);
 
   useEffect(() => {
     if (!storeId) return;
-    const unsub = ordersWarmCache.subscribe((_, value) => {
-      if (!value || value.items?.[0]?.product?.storeId !== storeId) return;
-      setOrders((prev) => {
-        const next = prev.some((order) => order.id === value.id)
-          ? prev.map((order) => (order.id === value.id ? value : order))
-          : [value, ...prev];
-        return next
-          .slice()
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      });
-    });
-    return () => unsub?.();
+    const unsubscribe = ordersWarmCache.subscribe(
+      (_, value) => {
+        if (!storeId) return false;
+        if (!value) return true;
+        return value.items?.[0]?.product?.storeId === storeId;
+      },
+      (id, value) => {
+        setOrders((prev) => {
+          if (!value) {
+            return prev.filter((order) => order.id !== id);
+          }
+          if (value.items?.[0]?.product?.storeId !== storeId) return prev;
+          const next = prev.some((order) => order.id === value.id)
+            ? prev.map((order) => (order.id === value.id ? value : order))
+            : [value, ...prev];
+          return next
+            .slice()
+            .sort((a, b) => getCreatedAt(b) - getCreatedAt(a));
+        });
+      },
+    );
+    return () => unsubscribe?.();
   }, [storeId]);
+
+  useEffect(() => {
+    if (!orderIdParam) {
+      setDetailsVisible(false);
+      setSelectedOrder(null);
+      return;
+    }
+    const match = orders.find((order) => order.id === orderIdParam);
+    if (match) {
+      setSelectedOrder(match);
+      setDetailsVisible(true);
+    }
+  }, [orderIdParam, orders]);
+
+  useEffect(() => {
+    if (!detailsVisible || !selectedOrder) return;
+    const updated = orders.find((order) => order.id === selectedOrder.id);
+    if (updated) setSelectedOrder(updated);
+  }, [detailsVisible, orders, selectedOrder?.id]);
 
   const filtered = useMemo(() => orders.filter(getFilterPredicate(filter)), [orders, filter]);
 
@@ -122,11 +163,16 @@ export default function StoreOrdersScreen(): React.ReactElement {
     async (order: Order) => {
       setPendingId(order.id);
       try {
-        const target = order.status === 'courier_on_way' ? 'delivered' : 'courier_on_way';
-        const pathIndex = SHIPPING_SEQUENCE.indexOf(order.status);
-        if (target === 'courier_on_way' && pathIndex === -1) {
+        let target: OrderStatus | null = null;
+        if (order.status === 'courier_on_way') {
+          target = 'delivered';
+        } else if (SHIPPING_SEQUENCE.includes(order.status)) {
+          target = 'courier_on_way';
+        }
+        if (!target) {
           throw new Error('לא ניתן לסמן הזמנה זו כנשלחה');
         }
+        const pathIndex = SHIPPING_SEQUENCE.indexOf(order.status);
         let updated = order;
         if (target === 'courier_on_way' && pathIndex >= 0) {
           for (const step of SHIPPING_SEQUENCE.slice(pathIndex + 1)) {
@@ -176,6 +222,14 @@ export default function StoreOrdersScreen(): React.ReactElement {
     },
     [requireUnlock],
   );
+
+  const closeDetails = useCallback(() => {
+    setDetailsVisible(false);
+    setSelectedOrder(null);
+    if (storeId) {
+      replace(`/store/${storeId}/admin/orders`);
+    }
+  }, [replace, storeId]);
 
   const refreshing = isLoading || isRefetching;
 
@@ -236,6 +290,7 @@ export default function StoreOrdersScreen(): React.ReactElement {
           contentContainerStyle={styles.listContent}
         />
       )}
+      <OrderTrackingModal visible={detailsVisible} order={selectedOrder} onClose={closeDetails} />
     </View>
   );
 }
@@ -249,7 +304,14 @@ interface OrderRowProps {
 }
 
 function OrderRow({ order, colors, busy, onMarkShipped, onCancel }: OrderRowProps) {
-  const actionable = !['released', 'refunded'].includes(order.status);
+  const actionableStatuses: OrderStatus[] = [
+    'order_received',
+    'courier_found',
+    'courier_picked_up',
+    'courier_on_way',
+  ];
+  const actionable = actionableStatuses.includes(order.status);
+  const cancellable = ['order_received', 'courier_found'].includes(order.status);
   return (
     <View
       style={[
@@ -278,7 +340,7 @@ function OrderRow({ order, colors, busy, onMarkShipped, onCancel }: OrderRowProp
         <TouchableOpacity
           style={[styles.dangerButton, { borderColor: colors.status.error }]}
           onPress={() => onCancel(order)}
-          disabled={order.status === 'refunded' || busy}>
+          disabled={!cancellable || busy}>
           <Text style={{ color: colors.status.error }}>בטל</Text>
         </TouchableOpacity>
       </View>

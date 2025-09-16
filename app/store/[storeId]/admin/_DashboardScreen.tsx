@@ -39,9 +39,12 @@ function isOrderForStore(order: Order | undefined, storeId: string): order is Or
 }
 
 function getOrderAttentionScore(order: Order): number {
-  const updated = order.updatedAt ? new Date(order.updatedAt).getTime() : 0;
-  const created = order.createdAt ? new Date(order.createdAt).getTime() : 0;
-  return Math.max(updated, created);
+  const toTime = (value?: string | null) => {
+    if (!value) return 0;
+    const parsed = new Date(value).getTime();
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  return Math.max(toTime(order.updatedAt), toTime(order.createdAt));
 }
 
 interface Kpis {
@@ -109,33 +112,47 @@ export default function StoreDashboardScreen(): React.ReactElement {
 
     hydrate();
 
-    const unsubOrders = ordersWarmCache.subscribe((_, order) => {
-      if (!storeId || !isOrderForStore(order, storeId)) return;
-      const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
-        loadFromCaches();
-      if (cancelled) return;
-      setOrders(
-        cachedOrders
-          .slice()
-          .sort((a, b) => getOrderAttentionScore(b) - getOrderAttentionScore(a)),
-      );
-      computeKpis(cachedOrders, cachedProducts, cachedUsers);
-    });
+    const unsubOrders = ordersWarmCache.subscribe(
+      (_, order) => {
+        if (!storeId) return false;
+        if (!order) return false;
+        return isOrderForStore(order, storeId);
+      },
+      () => {
+        const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
+          loadFromCaches();
+        if (cancelled) return;
+        setOrders(
+          cachedOrders
+            .slice()
+            .sort((a, b) => getOrderAttentionScore(b) - getOrderAttentionScore(a)),
+        );
+        computeKpis(cachedOrders, cachedProducts, cachedUsers);
+      },
+    );
 
-    const unsubProducts = productsWarmCache.subscribe((_, product) => {
-      if (!storeId || !product || product.storeId !== storeId) return;
-      const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
-        loadFromCaches();
-      if (cancelled) return;
-      computeKpis(cachedOrders, cachedProducts, cachedUsers);
-    });
+    const unsubProducts = productsWarmCache.subscribe(
+      (_, product) => {
+        if (!storeId) return false;
+        return !!product && product.storeId === storeId;
+      },
+      () => {
+        const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
+          loadFromCaches();
+        if (cancelled) return;
+        computeKpis(cachedOrders, cachedProducts, cachedUsers);
+      },
+    );
 
-    const unsubUsers = usersWarmCache.subscribe(() => {
-      const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
-        loadFromCaches();
-      if (cancelled) return;
-      computeKpis(cachedOrders, cachedProducts, cachedUsers);
-    });
+    const unsubUsers = usersWarmCache.subscribe(
+      (_id, _user) => true,
+      () => {
+        const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
+          loadFromCaches();
+        if (cancelled) return;
+        computeKpis(cachedOrders, cachedProducts, cachedUsers);
+      },
+    );
 
     return () => {
       cancelled = true;
