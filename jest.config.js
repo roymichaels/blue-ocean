@@ -83,6 +83,7 @@ const cfg = {
     '^expo-file-system$': '<rootDir>/tests/__mocks__/expo-file-system.js',
     '^expo-asset$': '<rootDir>/tests/__mocks__/expo-asset.js',
     '^expo-secure-store$': '<rootDir>/tests/__mocks__/expo-secure-store.js',
+    '^expo-local-authentication$': '<rootDir>/tests/__mocks__/expo-local-authentication.js',
     '^react-native$': '<rootDir>/tests/__mocks__/react-native.js',
     '^@shopify/flash-list$': '<rootDir>/tests/__mocks__/@shopify/flash-list.js',
     '^@app/(.*)$': '<rootDir>/app/$1',
@@ -157,6 +158,8 @@ const cfg = {
     '<rootDir>/tests/auth/**/*.test.ts',
     '<rootDir>/tests/auth/**/*.test.tsx',
     '<rootDir>/tests/auth/**/*.spec.ts',
+    '<rootDir>/tests/launchGate/**/*.test.ts',
+    '<rootDir>/tests/launchGate/**/*.test.tsx',
   ],
 
   setupFiles: ['<rootDir>/tests/initGlobals.ts'],
