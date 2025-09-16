@@ -157,10 +157,22 @@ describe('Product gallery accessibility', () => {
     });
   });
 
-  it('provides accessibility metadata for gallery images', async () => {
+  const renderProductGallery = async () => {
+    let testRenderer: renderer.ReactTestRenderer | undefined;
+
     await act(async () => {
-      renderer.create(<ProductDetailScreen />);
+      testRenderer = renderer.create(<ProductDetailScreen />);
     });
+
+    if (!testRenderer) {
+      throw new Error('Failed to render the product gallery');
+    }
+
+    return testRenderer;
+  };
+
+  it('provides accessibility metadata for gallery images', async () => {
+    const testRenderer = await renderProductGallery();
 
     const galleryImageProps = mockSmartImage.mock.calls.reduce<Record<string, any>[]>(
       (acc, call) => {
@@ -181,5 +193,25 @@ describe('Product gallery accessibility', () => {
     expect(galleryImageProps[1].accessibilityLabel).toBe(
       'Side profile for Accessible Product. Item 2 of 2.',
     );
+
+    testRenderer.unmount();
+  });
+
+  it('announces how to browse the gallery', async () => {
+    const testRenderer = await renderProductGallery();
+
+    const horizontalScrollViews = testRenderer.root.findAll(
+      (node) => Boolean(node.props?.horizontal),
+    );
+
+    expect(horizontalScrollViews.length).toBeGreaterThan(0);
+
+    const galleryScrollView = horizontalScrollViews[0];
+
+    expect(galleryScrollView.props.accessibilityHint).toBe(
+      'Swipe left or right to browse more media items.',
+    );
+
+    testRenderer.unmount();
   });
 });
