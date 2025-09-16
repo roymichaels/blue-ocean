@@ -1,27 +1,56 @@
-import { useState, useMemo } from 'react';
-import { Product } from '@/types';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Product } from '@/types';
+import { localIndex, type ResultSet } from '@/services/localIndex';
 
 export type SortOption = 'newest' | 'price-low' | 'price-high' | 'rating';
 
 export function useHomeFilters(products: Product[]) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Product[]>(products);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [showSortModal, setShowSortModal] = useState(false);
 
-  const filteredProducts = useMemo(() => {
-    let filtered = products;
+  const queryRef = useRef(searchQuery);
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(q) ||
-          product.category.toLowerCase().includes(q),
-      );
-    }
+  useEffect(() => {
+    queryRef.current = searchQuery;
+  }, [searchQuery]);
+
+  useEffect(() => {
+    localIndex.setProducts(products);
+
+    let active = true;
+    const syncResults = async () => {
+      try {
+        const { products: results } = await localIndex.query(queryRef.current);
+        if (!active) return;
+        setSearchResults(results);
+      } catch {
+        if (!active) return;
+        setSearchResults([...products]);
+      }
+    };
+
+    void syncResults();
+
+    return () => {
+      active = false;
+    };
+  }, [products]);
+
+  const applySearchResults = useCallback(
+    (query: string, resultSet: ResultSet) => {
+      setSearchQuery(query);
+      setSearchResults(resultSet.products);
+    },
+    [],
+  );
+
+  const filteredProducts = useMemo(() => {
+    let filtered = searchResults;
 
     if (selectedCategory) {
       filtered = filtered.filter((p) => p.category === selectedCategory);
@@ -29,14 +58,14 @@ export function useHomeFilters(products: Product[]) {
 
     const min = parseFloat(minPrice);
     const max = parseFloat(maxPrice);
-    if (!isNaN(min)) {
+    if (!Number.isNaN(min)) {
       filtered = filtered.filter((p) => p.price >= min);
     }
-    if (!isNaN(max)) {
+    if (!Number.isNaN(max)) {
       filtered = filtered.filter((p) => p.price <= max);
     }
 
-    filtered = [...filtered].sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
           return a.price - b.price;
@@ -52,14 +81,13 @@ export function useHomeFilters(products: Product[]) {
           );
       }
     });
-
-    return filtered;
-  }, [products, searchQuery, selectedCategory, minPrice, maxPrice, sortBy]);
+  }, [searchResults, selectedCategory, minPrice, maxPrice, sortBy]);
 
   return {
     filteredProducts,
     searchQuery,
     setSearchQuery,
+    applySearchResults,
     selectedCategory,
     setSelectedCategory,
     minPrice,
