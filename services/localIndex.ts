@@ -1,12 +1,33 @@
 import Fuse from 'fuse.js';
 import type { Product } from '@/types';
+import { normalizeHebrew } from '@/utils/strings';
 
 export interface ResultSet {
   products: Product[];
   total: number;
 }
 
-class LocalIndex {
+const normalizeSearchValue = (
+  value: unknown,
+): string | readonly string[] => {
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => (typeof entry === 'string' ? normalizeHebrew(entry) : null))
+      .filter((entry): entry is string => entry !== null);
+  }
+
+  if (typeof value === 'string') {
+    return normalizeHebrew(value);
+  }
+
+  if (value == null) {
+    return '';
+  }
+
+  return String(value);
+};
+
+export class LocalIndex {
   private fuse: Fuse<Product> | null = null;
 
   private products: Product[] = [];
@@ -30,6 +51,10 @@ class LocalIndex {
       ],
       threshold: 0.3,
       ignoreLocation: true,
+      getFn: (obj, path) => {
+        const value = Fuse.config.getFn(obj, path);
+        return normalizeSearchValue(value);
+      },
     });
   }
 
@@ -49,7 +74,8 @@ class LocalIndex {
       };
     }
 
-    const matches = this.fuse.search(trimmed);
+    const normalizedQuery = normalizeHebrew(trimmed);
+    const matches = this.fuse.search(normalizedQuery);
     const products = matches.map((match) => match.item);
 
     return {
