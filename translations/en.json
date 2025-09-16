@@ -172,6 +172,13 @@
     "buyNow": "Buy Now",
     "quantity": "Quantity",
     "color": "Color",
+    "variantSelectorLabel": "Choose a color option",
+    "variantAccessibleName": "{label}. {stock}",
+    "variantSelectHint": "Double tap to select this option",
+    "variantSelectedHint": "Currently selected option",
+    "variantStockLabel": "In stock: {count}",
+    "variantStockUnknown": "Stock unknown",
+    "variantOptionFallback": "Option {index}",
     "description": "Description",
     "reviews": "Reviews",
     "rating": "Rating",
@@ -211,6 +218,10 @@
     "messageSeller": "Message Seller",
     "report": "Report",
     "percentOff": "{percent}% off"
+  },
+  "productDetail": {
+    "contactStore": "Contact store",
+    "contactStoreError": "We could not start a chat with this store. Please try again later."
   },
   "category": {
     "addSubcategory": "Add Subcategory",
