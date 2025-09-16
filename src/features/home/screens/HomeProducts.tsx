@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useCallback } from 'react';
 import { Text, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { ArrowUpDown, Plus } from 'lucide-react-native';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
@@ -8,6 +8,7 @@ import ProductGrid from '@/features/home/components/ProductGrid';
 import HomeServices from '@/features/home/components/HomeServices';
 import { Product } from '@/types';
 import { styles } from './HomeProducts.styles';
+import { useAppRouter } from '@/services/useAppRouter';
 
 type Props = {
   products: Product[];
@@ -33,6 +34,7 @@ export default function HomeProducts({
   const { width: windowWidth } = useWindowDimensions();
   const { t } = useLanguage();
   const { colors: themeColors } = useTheme();
+  const appRouter = useAppRouter();
 
   const getProductItemWidth = () => {
     if (windowWidth >= 1024) {
@@ -42,6 +44,14 @@ export default function HomeProducts({
     }
     return '48%';
   };
+
+  const handleProductPress = useCallback(
+    (product: Product) => {
+      if (!product.storeId) return;
+      appRouter.push(`/store/${product.storeId}/product/${product.id}`);
+    },
+    [appRouter],
+  );
 
   const getSortLabel = () => {
     switch (sortBy) {
@@ -104,6 +114,7 @@ export default function HomeProducts({
             searchQuery={searchQuery}
             onAddProduct={onAddProduct}
             loading={loading}
+            onProductPress={handleProductPress}
           />
         </Suspense>
       </Container>

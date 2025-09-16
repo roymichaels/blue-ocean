@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
@@ -11,6 +11,7 @@ import { getStore as getNearStore } from '@/features/stores/services/nearStores'
 import { listProducts as listNearProducts } from '@/features/products/services/nearProducts';
 import { routes } from '@/utils/routes';
 import { Spinner } from '@/ui/primitives';
+import AdminOnboardingChecklist from '@/features/home/components/AdminOnboardingChecklist';
 
 export default function StoreDashboardScreen() {
   console.debug('SD: mount');
@@ -24,6 +25,11 @@ export default function StoreDashboardScreen() {
   const [store, setStore] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleOpenProducts = useCallback(() => {
+    if (!storeId) return;
+    push(`/store/${storeId}/admin/products`);
+  }, [push, storeId]);
 
   useEffect(() => {
     let active = true;
@@ -74,6 +80,8 @@ export default function StoreDashboardScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.text.primary }]}>{t('admin.dashboard')}</Text>
+      <AdminOnboardingChecklist onAddProduct={handleOpenProducts} />
+      <View style={{ height: 16 }} />
       <View style={styles.stats}>
         <Text style={[styles.statText, { color: colors.text.primary }]}>
           {t('admin.productCount', { count: productCount })}

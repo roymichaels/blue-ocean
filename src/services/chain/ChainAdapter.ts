@@ -21,6 +21,8 @@ export interface ChainAdapter {
   signMessage?(message: Uint8Array | string): Promise<string>;
   /** List orders for a given seller */
   listOrdersBySeller?(storeId: string, sellerId: string): Promise<Order[]>;
+  /** List orders for a buyer across stores */
+  listOrdersByBuyer?(buyerId: string): Promise<Order[]>;
   /** Optional chain specific payment helper */
   payPrivately?(args: any): Promise<any>;
 }

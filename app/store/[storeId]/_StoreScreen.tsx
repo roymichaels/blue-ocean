@@ -1,5 +1,5 @@
 // TOUCHPOINT: app/store/[storeId]/_StoreScreen.tsx renders in production — Fix Pack v2
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
@@ -9,11 +9,12 @@ import { ProductGrid, ProductCardSkeleton } from '@/features/products';
 import CategoryChips from '@/features/home/components/CategoryChips';
 import { useProducts, useCategories, useStoreReviews } from '@/services';
 import { selectStore } from '@/agents/stores-agent';
-import type { Store } from '@/types';
+import type { Store, Product } from '@/types';
 import { spacing } from '@/shared/ui/tokens';
 import EmptyState from '@/shared/ui/EmptyState';
 import Button from '@/ui/primitives/Button';
 import { useAppRouter } from '@/services/useAppRouter';
+import { AlertTriangle } from 'lucide-react-native';
 
 export default function StoreScreen() {
   const { storeId } = useLocalSearchParams<{ storeId: string }>();
@@ -25,14 +26,42 @@ export default function StoreScreen() {
   const {
     data: products = [],
     isLoading: productsLoading,
+    refetch: refetchProducts,
+    isRefetching: productsRefetching,
+    error: productsError,
   } = useProducts(storeId);
   const {
     data: categories = [],
     isLoading: categoriesLoading,
+    refetch: refetchCategories,
+    isRefetching: categoriesRefetching,
+    error: categoriesError,
   } = useCategories(storeId);
   const { data: { score } = { score: 0 } } = useStoreReviews(storeId);
   const [tab, setTab] = useState<'products' | 'about' | 'reviews'>('products');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const refreshing = productsRefetching || categoriesRefetching;
+
+  const handleRefresh = useCallback(() => {
+    void Promise.all([refetchProducts(), refetchCategories()]);
+  }, [refetchProducts, refetchCategories]);
+
+  const handleProductPress = useCallback(
+    (product: Product) => {
+      const targetStore = product.storeId || storeId;
+      if (!targetStore) return;
+      push(`/store/${targetStore}/product/${product.id}`);
+    },
+    [push, storeId],
+  );
+
+  const loadError = productsError || categoriesError;
+  const loadErrorMessage = loadError
+    ? loadError instanceof Error
+      ? loadError.message
+      : String(loadError)
+    : null;
 
   const filteredProducts = useMemo(
     () =>
@@ -102,8 +131,21 @@ export default function StoreScreen() {
                 </View>
               ))}
             </View>
+          ) : loadErrorMessage ? (
+            <EmptyState
+              icon={AlertTriangle}
+              title={t('home.loadErrorTitle', 'Unable to load products')}
+              message={loadErrorMessage}
+              actionText={t('common.reload', 'Reload')}
+              onAction={handleRefresh}
+            />
           ) : (
-            <ProductGrid products={filteredProducts} />
+            <ProductGrid
+              products={filteredProducts}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              onProductPress={handleProductPress}
+            />
           )}
         </>
       )}
