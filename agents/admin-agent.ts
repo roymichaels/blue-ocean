@@ -32,14 +32,15 @@ async function writeRecords(key: string, records: AdminRecord[]): Promise<void> 
 
 export type AdminAgentEvent =
   | { type: 'admin.registered'; payload: { address: string } }
-  | { type: 'admin.requested'; payload: { address: string; requestedAt: number } };
+  | { type: 'admin.requested'; payload: { address: string; requestedAt: number } }
+  | { type: 'admin.rejected'; payload: { address: string } };
 
 export class AdminAgent extends EventEmitter {
-  private static readonly SIGNATURE_CACHE_TTL = 10 * 60 * 1000;
+  private static readonly NONCE_TTL_MS = 2 * 60 * 1000;
+  private static readonly CLOCK_SKEW_MS = 2 * 60 * 1000;
   private static readonly UNAUTHORIZED_ALERT_WINDOW_MS = 60 * 1000;
   private static readonly UNAUTHORIZED_ALERT_THRESHOLD = 3;
-
-  private seenSignatures = new Map<string, number>();
+  private seenNonces = new Map<string, number>();
   private unauthorizedAttemptTimestamps: number[] = [];
   private lastUnauthorizedAlertAt = 0;
 
@@ -51,25 +52,25 @@ export class AdminAgent extends EventEmitter {
     return await readRecords(PENDING_KEY);
   }
 
-  private purgeSignatures(now: number) {
-    const cutoff = now - AdminAgent.SIGNATURE_CACHE_TTL;
-    for (const [sig, ts] of this.seenSignatures.entries()) {
+  private purgeNonces(now: number) {
+    const cutoff = now - AdminAgent.NONCE_TTL_MS;
+    for (const [nonce, ts] of this.seenNonces.entries()) {
       if (ts < cutoff) {
-        this.seenSignatures.delete(sig);
+        this.seenNonces.delete(nonce);
       }
     }
   }
 
-  private hasSeenSignature(signature: string): boolean {
+  private hasSeenNonce(nonce: string): boolean {
     const now = Date.now();
-    this.purgeSignatures(now);
-    return this.seenSignatures.has(signature.toLowerCase());
+    this.purgeNonces(now);
+    return this.seenNonces.has(nonce);
   }
 
-  private rememberSignature(signature: string): void {
+  private rememberNonce(nonce: string): void {
     const now = Date.now();
-    this.purgeSignatures(now);
-    this.seenSignatures.set(signature.toLowerCase(), now);
+    this.purgeNonces(now);
+    this.seenNonces.set(nonce, now);
   }
 
   private recordUnauthorizedAttempt(): void {
@@ -120,7 +121,7 @@ export class AdminAgent extends EventEmitter {
   }
 
   async requestAdmin(
-    msg: WakuMessage<{ address: string; requestedAt?: number }>,
+    msg: WakuMessage<{ address: string; displayName?: string; nonce: string; ts: number }>,
   ): Promise<AdminAgentEvent['type']> {
     const valid = await verifyMessageSignature(msg, msg.sender.publicKey);
     if (!valid) {
@@ -129,17 +130,17 @@ export class AdminAgent extends EventEmitter {
     if (msg.type && msg.type !== 'admin.joinRequested') {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid request type', 'admin-agent');
     }
-    if (this.hasSeenSignature(msg.signature)) {
-      throw new AgentError('E_DUPLICATE', 'Admin request already processed', 'admin-agent');
+    if (Math.abs(Date.now() - msg.payload.ts) > AdminAgent.CLOCK_SKEW_MS) {
+      throw new AgentError('E_REPLAY', 'Timestamp skew too high', 'admin-agent');
     }
-    this.rememberSignature(msg.signature);
+    if (this.hasSeenNonce(msg.payload.nonce)) {
+      throw new AgentError('E_REPLAY', 'Nonce already used', 'admin-agent');
+    }
+    this.rememberNonce(msg.payload.nonce);
     const record: AdminRecord = {
       address: msg.payload.address,
       publicKey: msg.sender.publicKey,
-      requestedAt:
-        typeof msg.payload.requestedAt === 'number'
-          ? msg.payload.requestedAt
-          : Date.now(),
+      requestedAt: msg.payload.ts,
     };
     const admins = await this.getAdmins();
     const bootstrapFlag = flags.ADMIN_BOOTSTRAP_V2;
@@ -180,7 +181,7 @@ export class AdminAgent extends EventEmitter {
   }
 
   async approveAdmin(
-    msg: WakuMessage<{ address: string }>,
+    msg: WakuMessage<{ address: string; nonce: string; ts: number }>,
   ): Promise<'admin.registered'> {
     const valid = await verifyMessageSignature(msg, msg.sender.publicKey);
     if (!valid) {
@@ -189,10 +190,13 @@ export class AdminAgent extends EventEmitter {
     if (msg.type && msg.type !== 'admin.approve') {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid approval type', 'admin-agent');
     }
-    if (this.hasSeenSignature(msg.signature)) {
-      return 'admin.registered';
+    if (Math.abs(Date.now() - msg.payload.ts) > AdminAgent.CLOCK_SKEW_MS) {
+      throw new AgentError('E_REPLAY', 'Timestamp skew too high', 'admin-agent');
     }
-    this.rememberSignature(msg.signature);
+    if (this.hasSeenNonce(msg.payload.nonce)) {
+      throw new AgentError('E_REPLAY', 'Nonce already used', 'admin-agent');
+    }
+    this.rememberNonce(msg.payload.nonce);
     const admins = await this.getAdmins();
     const isAdmin = admins.some((a) => a.publicKey === msg.sender.publicKey);
     if (!isAdmin) {
@@ -206,6 +210,37 @@ export class AdminAgent extends EventEmitter {
       this.emit('admin.registered', { address: pending.address });
     }
     return 'admin.registered';
+  }
+
+  async rejectAdmin(
+    msg: WakuMessage<{ address: string; nonce: string; ts: number }>,
+  ): Promise<'admin.rejected'> {
+    const valid = await verifyMessageSignature(msg, msg.sender.publicKey);
+    if (!valid) {
+      throw new AgentError('E_SIGNATURE_INVALID', 'Invalid signature', 'admin-agent');
+    }
+    if (msg.type && msg.type !== 'admin.reject') {
+      throw new AgentError('E_SIGNATURE_INVALID', 'Invalid reject type', 'admin-agent');
+    }
+    if (Math.abs(Date.now() - msg.payload.ts) > AdminAgent.CLOCK_SKEW_MS) {
+      throw new AgentError('E_REPLAY', 'Timestamp skew too high', 'admin-agent');
+    }
+    if (this.hasSeenNonce(msg.payload.nonce)) {
+      throw new AgentError('E_REPLAY', 'Nonce already used', 'admin-agent');
+    }
+    this.rememberNonce(msg.payload.nonce);
+    const admins = await this.getAdmins();
+    const isAdmin = admins.some((a) => a.publicKey === msg.sender.publicKey);
+    if (!isAdmin) {
+      adminUnauthorizedAttempts.inc();
+      this.recordUnauthorizedAttempt();
+      throw new AgentError('E_UNAUTHORIZED', 'Only admins can reject', 'admin-agent');
+    }
+    const pending = await this.removeRequest(msg.payload.address);
+    if (pending) {
+      this.emit('admin.rejected', { address: pending.address });
+    }
+    return 'admin.rejected';
   }
 }
 

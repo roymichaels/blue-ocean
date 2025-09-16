@@ -4,6 +4,8 @@ export * from './notification';
 export * from './product.updated';
 export * from './order.status';
 export * from './admin.joinRequested';
+export * from './admin.approve';
+export * from './admin.reject';
 export * from './store.created';
 export * from './workspace.created';
 export * from './delivery.update';
