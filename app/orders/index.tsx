@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshControl, StyleSheet, View } from 'react-native';
+import { RefreshControl, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
-import { Heading, Skeleton } from '@/ui/primitives';
+import { Heading, Skeleton, Text } from '@/ui/primitives';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import EmptyState from '@/shared/ui/EmptyState';
 import { useWallet } from '@/contexts/WalletProvider';
@@ -10,6 +10,7 @@ import { Order } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { AlertTriangle, RefreshCw, ShoppingCart } from 'lucide-react-native';
+import { useAppRouter } from '@/services/useAppRouter';
 
 function OrderSkeletonRow() {
   return (
@@ -28,6 +29,7 @@ interface OrderListItemProps {
   currencyPrefix: string;
   borderColor: string;
   background: string;
+  openOrder: (orderId: string) => void;
 }
 
 function OrderListItem({
@@ -37,6 +39,7 @@ function OrderListItem({
   currencyPrefix,
   borderColor,
   background,
+  openOrder,
 }: OrderListItemProps) {
   const createdAtLabel = useMemo(() => {
     if (!order.createdAt) return '—';
@@ -46,9 +49,10 @@ function OrderListItem({
   }, [order.createdAt]);
 
   return (
-    <View
+    <TouchableOpacity
       style={[styles.row, { borderColor, backgroundColor: background }]}
-      accessibilityRole="summary"
+      accessibilityRole="button"
+      onPress={() => openOrder(order.id)}
     >
       <Text style={[styles.rowId, { color }]} numberOfLines={1}>
         #{order.id}
@@ -61,7 +65,7 @@ function OrderListItem({
           {order.total?.toFixed?.(2) ?? order.total}
         </Text>
       </Stack>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -74,8 +78,17 @@ export default function OrdersScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { currencySymbol } = useCurrency();
+  const { push } = useAppRouter();
 
   const supportsBuyerOrders = typeof chainAdapter.listOrdersByBuyer === 'function';
+
+  const openOrder = useCallback(
+    (orderId: string) => {
+      if (!orderId) return;
+      push(`/orders/${orderId}`);
+    },
+    [push],
+  );
 
   const fetchOrders = useCallback(
     async (mode: 'initial' | 'refresh' = 'initial') => {
@@ -202,6 +215,7 @@ export default function OrdersScreen() {
                 currencyPrefix={currencySymbol}
                 borderColor={colors.border.primary}
                 background={colors.surface.primary}
+                openOrder={openOrder}
               />
             ))}
           </Stack>
