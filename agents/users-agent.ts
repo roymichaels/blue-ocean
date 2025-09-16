@@ -18,7 +18,10 @@ export type UsersAgentMessage =
   | { type: 'user.add'; payload: User }
   | { type: 'user.update'; payload: User }
   | { type: 'user.remove'; payload: { id: string } }
-  | { type: 'kyc.request'; payload: { userId: string; documentUri: string } }
+  | {
+      type: 'kyc.request';
+      payload: { userId: string; document: { uri: string; hash: string } };
+    }
   | {
       type: 'kyc.update';
       payload: { userId: string; status: 'verified' | 'rejected'; adminId?: string };
@@ -105,7 +108,10 @@ class UsersAgent {
   }
 
   // kyc.request
-  async requestKyc(userId: string, documentUri: string): Promise<void> {
+  async requestKyc(
+    userId: string,
+    document: { uri: string; hash: string },
+  ): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
     const user = await getUser(userId);
     if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
@@ -126,7 +132,7 @@ class UsersAgent {
       address,
       kycStatus: 'pending',
       kycRequestedAt: new Date().toISOString(),
-      kycDocumentUri: documentUri,
+      kycDocument: document,
     });
     await setUser(enriched);
   }
@@ -184,7 +190,7 @@ class UsersAgent {
         await this.remove(msg.payload.id);
         break;
       case 'kyc.request':
-        await this.requestKyc(msg.payload.userId, msg.payload.documentUri);
+        await this.requestKyc(msg.payload.userId, msg.payload.document);
         break;
       case 'kyc.update':
         await this.updateKyc(

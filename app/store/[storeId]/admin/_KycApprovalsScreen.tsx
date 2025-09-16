@@ -67,8 +67,9 @@ export default function KycApprovalsScreen(): React.ReactElement {
   }, [policyRequired]);
 
   const handlePreview = useCallback((user: User) => {
-    if (user.kycDocumentUri) {
-      Linking.openURL(user.kycDocumentUri).catch(() =>
+    const uri = user.kycDocument?.uri;
+    if (uri) {
+      Linking.openURL(uri).catch(() =>
         Alert.alert('שגיאה', 'לא ניתן לפתוח את מסמך ה-KYC'),
       );
     } else if (user.kycRequestNotes) {

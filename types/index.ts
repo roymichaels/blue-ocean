@@ -135,6 +135,11 @@ export const ALL_ADMIN_SCOPES: AdminScope[] = [
   'admin:orders',
 ];
 
+export interface KycDocument {
+  uri: string;
+  hash: string;
+}
+
 export interface User {
   id: string;
   tenant_id?: string;
@@ -157,7 +162,7 @@ export interface User {
   kycRequestedAt?: string;
   kycApprovedBy?: string;
   kycApprovedAt?: string;
-  kycDocumentUri?: string;
+  kycDocument?: KycDocument;
 }
 
 export interface Notification {
