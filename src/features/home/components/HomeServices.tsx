@@ -1,17 +1,31 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Alert } from 'react-native';
 import { Stack } from '@/ui/layout';
 import { spacing } from '@/ui/tokens';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
-import { Store, Truck } from 'lucide-react-native';
+import { Store as StoreIcon, Truck } from 'lucide-react-native';
 import { useAppRouter } from '@/services/useAppRouter';
 import { routes } from '@/utils/routes';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useStores } from '@/services/useStores';
 import ServiceCard from './ServiceCard';
 
 export default function HomeServices() {
   const { t } = useLanguage();
   const { colors } = useTheme();
   const appRouter = useAppRouter();
+  const { isAdmin, user } = useAuth();
+  const { data: stores = [] } = useStores('default');
+
+  const userAddress = user?.address ?? user?.id ?? null;
+
+  const ownedStores = useMemo(() => {
+    if (!userAddress) return [];
+    const lower = userAddress.toLowerCase();
+    return stores.filter((store) => store.owner?.toLowerCase() === lower);
+  }, [stores, userAddress]);
+
+  const shouldShowCreateStore = isAdmin === true && ownedStores.length === 0;
 
   const handleCreateStore = () => {
     appRouter.push(routes.createStore());
@@ -23,13 +37,15 @@ export default function HomeServices() {
 
   return (
     <Stack direction="horizontal" gap="spacer16" style={styles.container}>
-      <ServiceCard
-        title={t('cta.create_store')}
-        icon={<Store size={32} color={colors.gold} />}
-        onPress={handleCreateStore}
-        accessibilityRole="link"
-        testID="create-store-link"
-      />
+      {shouldShowCreateStore ? (
+        <ServiceCard
+          title={t('cta.create_store')}
+          icon={<StoreIcon size={32} color={colors.gold} />}
+          onPress={handleCreateStore}
+          accessibilityRole="link"
+          testID="create-store-link"
+        />
+      ) : null}
       <ServiceCard
         title={t('cta.become_driver')}
         icon={<Truck size={32} color={colors.gold} />}
