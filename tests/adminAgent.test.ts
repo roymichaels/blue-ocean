@@ -6,6 +6,7 @@ import type { WakuMessage } from '@/types/waku';
 import {
   adminCountGauge,
   adminUnauthorizedAttempts,
+  logger as monitoringLogger,
 } from '@/services/monitoring';
 import '@/polyfills.web';
 
@@ -225,5 +226,65 @@ describe('AdminAgent', () => {
     await expect(agent.requestAdmin(replay)).rejects.toMatchObject({
       code: 'E_DUPLICATE',
     });
+  });
+
+  it('alerts when unauthorized approvals exceed the threshold inside a minute', async () => {
+    jest.useFakeTimers();
+    const warnSpy = jest
+      .spyOn(monitoringLogger, 'warn')
+      .mockImplementation(() => undefined);
+
+    try {
+      jest.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));
+
+      const seedPriv = utils.randomPrivateKey();
+      const seedPub = await getPublicKey(seedPriv);
+      await agent.requestAdmin(
+        await createJoinRequest(seedPriv, seedPub, 'seed-admin'),
+      );
+
+      const roguePriv = utils.randomPrivateKey();
+      const roguePub = await getPublicKey(roguePriv);
+
+      for (let i = 0; i < 4; i++) {
+        const attempt = await createSignedMessage(
+          'admin.approve',
+          { address: `rogue-${i}` },
+          roguePriv,
+          roguePub,
+        );
+        await expect(agent.approveAdmin(attempt)).rejects.toMatchObject({
+          code: 'E_UNAUTHORIZED',
+        });
+      }
+
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenLastCalledWith(
+        {
+          attempts: 4,
+          windowMs: 60_000,
+        },
+        'admin unauthorized attempts threshold exceeded',
+      );
+
+      jest.setSystemTime(new Date('2024-01-01T00:02:00.000Z'));
+
+      for (let i = 0; i < 4; i++) {
+        const attempt = await createSignedMessage(
+          'admin.approve',
+          { address: `later-${i}` },
+          roguePriv,
+          roguePub,
+        );
+        await expect(agent.approveAdmin(attempt)).rejects.toMatchObject({
+          code: 'E_UNAUTHORIZED',
+        });
+      }
+
+      expect(warnSpy).toHaveBeenCalledTimes(2);
+    } finally {
+      warnSpy.mockRestore();
+      jest.useRealTimers();
+    }
   });
 });

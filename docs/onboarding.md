@@ -17,7 +17,7 @@ This playbook is intended for tenant administrators who manage their own NEAR ac
 1. **Choose a wallet.** We recommend [MyNearWallet](https://my.near.org) or another NEAR Wallet Selector compatible provider.
 2. **Secure your seed phrase.** Store the recovery phrase offline before proceeding. Require hardware-backed authentication where possible.
 3. **Fund the account.** Keep at least 3 Ⓝ available for contract deployment fees, storage staking, and initial listings.
-4. **Enable admin bootstrap canary.** Set `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2=1` once your canary wallet has tested the join request flow end-to-end.
+4. **Enable admin bootstrap canary.** Set `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2=1` once your canary wallet has tested the join request flow end-to-end. To stage the rollout, supply `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY=<wallet1,wallet2>` while the global flag remains off, and keep `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK=1` ready as an instant kill switch.
 5. **Sign in through the app.** Launch Blue Ocean (`yarn dev` or `yarn dev:web`) and use the Profile → **Connect Wallet** action to link your account. Confirm the `Admin` tab is visible before moving forward.
 
 > Tip: enable verbose logs during onboarding by setting `EXPO_PUBLIC_DEBUG_LOGS=true` so you can watch Waku agent events in the console.

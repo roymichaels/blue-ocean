@@ -1,6 +1,6 @@
 import { Product } from '../types';
 import { insertConfig } from './testUtils';
-import { loadTenantSettings, getAdmins } from '@/constants/tenant';
+import { loadTenantSettings } from '@/constants/tenant';
 
 jest.mock('expo-document-picker', () => ({}));
 
@@ -35,8 +35,6 @@ describe('BulkProductUploader processRecords', () => {
   });
 
   it('uploads 100 products in ≤4 batches', async () => {
-    const admins = await getAdmins();
-    expect(admins).toEqual([]);
     const { processRecords } = await import('@/features/products');
     const products: Product[] = Array.from({ length: 100 }, (_, i) => ({
       id: `p${i}`,

@@ -106,7 +106,7 @@ const { tokens, colors } = useTheme();
 
 5. **Admin onboarding**
 
-   - Enable `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2=1` to roll out the canary join-request flow.
+   - Enable `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2=1` to roll out the join-request flow, or stage specific wallets with `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY=<wallet1,wallet2>` while the flag stays off. Flip `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK=1` for an instant kill switch if a regression appears.
    - The first signed `admin.joinRequested` message seeds the admin list; subsequent wallets must be approved from **Admin → Requests**.
 
 All data is ephemeral and synchronized between peers over Waku and written to NEAR smart contracts when needed; no external services or local database are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
@@ -149,6 +149,8 @@ Common variables include:
 | `EXPO_PUBLIC_PINATA_SECRET_API_KEY` | no | Pinata API secret for authenticated uploads. |
 | `EXPO_PUBLIC_PINATA_JWT` | no | Pinata JWT used by the app and `scripts/pinata-upload.ts`. |
 | `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2` | no | Feature flag for canarying role-aware admin bootstrap. |
+| `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY` | no | Comma-separated NEAR accounts that should opt into the admin join-request flow while the global flag is off. |
+| `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK` | no | Set to `1` to disable the role-aware bootstrap logic immediately (feature kill switch). |
 
 The OrderPayment factory contract address is configured by admins through the
 **Admin → Settings** dashboard and does not require an environment variable.
@@ -156,6 +158,8 @@ The OrderPayment factory contract address is configured by admins through the
 `NEAR_STRICT` remains permissive in development, so local runs skip strict NEAR validation.
 
 - `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2` – enables the role-aware admin bootstrap canary (optional)
+- `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY` – comma-separated allowlist for staged rollouts (optional)
+- `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK` – emergency kill-switch for the bootstrap flow (optional)
 - `NEAR_RPC_URL` – primary NEAR RPC endpoint used for blockchain calls (optional; overrides tenant setting)
 - `EXPO_PUBLIC_CONTRACT_ID` – marketplace contract account the app interacts with (required)
 - `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default `false`)
