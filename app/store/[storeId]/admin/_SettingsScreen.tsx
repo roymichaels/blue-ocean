@@ -1,7 +1,8 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
 import { ArrowLeft, Save, Settings as SettingsIcon } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -21,9 +22,13 @@ import NotificationSettings from '../../../../components/settings/NotificationSe
 import RpcSettings from '../../../../components/settings/RpcSettings';
 import MoonPaySettings from '../../../../components/settings/MoonPaySettings';
 import PaymentFactorySettings from '../../../../components/settings/PaymentFactorySettings';
+import eventBus from '@/services/eventBus';
+import { isMoonPayEnabled } from '@/config/featureFlags';
 
 export default function SettingsScreen() {
   const { replace, back } = useAppRouter();
+  const params = useLocalSearchParams<{ storeId: string }>();
+  const storeId = Array.isArray(params.storeId) ? params.storeId[0] : params.storeId;
   const [currencySymbol, setCurrencySymbolState] = useState('₪');
   const [name, setName] = useState('');
   const [logoCidInput, setLogoCidInput] = useState('');
@@ -47,6 +52,11 @@ export default function SettingsScreen() {
     setFiatKey,
   } = useAppInfo();
   const [admins, setAdmins] = useState<string[]>([]);
+  const [inviteAddress, setInviteAddress] = useState('');
+  const [pendingInvites, setPendingInvites] = useState<string[]>([]);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const moonPayEnabled = useMemo(() => isMoonPayEnabled(), []);
+  const storeTopic = useMemo(() => `/blue-ocean/stores/${storeId ?? '1'}`, [storeId]);
 
   const [infoModal, setInfoModal] = useState({
     visible: false,
@@ -114,6 +124,14 @@ export default function SettingsScreen() {
         'paymentFactoryAddress',
         paymentFactoryAddress.trim(),
       );
+      await eventBus.publish(storeTopic, 'store.updated', {
+        profile: {
+          name,
+          logoCid: logoUri,
+          themeColor,
+          currencySymbol,
+        },
+      });
       setInfoModal({
         visible: true,
         title: 'הצלחה',
@@ -130,6 +148,53 @@ export default function SettingsScreen() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const sendInvite = async () => {
+    const address = inviteAddress.trim();
+    if (!address) {
+      Alert.alert('שגיאה', 'נא להזין כתובת ארנק להזמנה');
+      return;
+    }
+    setInviteLoading(true);
+    try {
+      await eventBus.publish(storeTopic, 'admin.joinRequested', {
+        address,
+      });
+      setPendingInvites((prev) =>
+        prev.includes(address) ? prev : [...prev, address],
+      );
+      setInviteAddress('');
+      setInfoModal({
+        visible: true,
+        title: 'הזמנה נשלחה',
+        message: 'המנהל החדש יקבל בקשת הצטרפות.',
+        type: 'success',
+      });
+    } catch (error) {
+      errorLog('Failed to publish admin invitation', error);
+      Alert.alert('שגיאה', 'שליחת ההזמנה נכשלה');
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const approveInvite = async (address: string) => {
+    setInviteLoading(true);
+    try {
+      await eventBus.publish(storeTopic, 'admin.registered', {
+        address,
+      });
+      const nextAdmins = Array.from(new Set([...admins, address]));
+      await SettingsAgent.getInstance().setAdmins(nextAdmins);
+      setAdmins(nextAdmins);
+      setPendingInvites((prev) => prev.filter((item) => item !== address));
+    } catch (error) {
+      errorLog('Failed to approve admin invite', error);
+      Alert.alert('שגיאה', 'אישור ההזמנה נכשל');
+    } finally {
+      setInviteLoading(false);
     }
   };
 
@@ -186,12 +251,73 @@ export default function SettingsScreen() {
           fiatKeyInput={fiatKeyInput}
           setFiatKeyInput={setFiatKeyInput}
           colors={colors}
+          disabled={!moonPayEnabled}
         />
         <PaymentFactorySettings
           paymentFactoryAddress={paymentFactoryAddress}
           setPaymentFactoryAddress={setPaymentFactoryAddress}
           colors={colors}
         />
+        <View style={styles.sectionHeader}>
+          <SettingsIcon size={24} color={colors.gold} />
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>ניהול מנהלים</Text>
+        </View>
+        <View
+          style={[styles.adminCard, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}
+        >
+          <Text style={[styles.cardTitle, { color: colors.text.primary }]}>הזמנת מנהל חדש</Text>
+          <View style={styles.inviteRow}>
+            <TextInput
+              style={[styles.inviteInput, { borderColor: colors.border.primary, color: colors.text.primary }]}
+              value={inviteAddress}
+              onChangeText={setInviteAddress}
+              placeholder="wallet.near"
+              placeholderTextColor={colors.text.tertiary}
+              textAlign="right"
+            />
+            <TouchableOpacity
+              style={[styles.inviteButton, { borderColor: colors.border.primary }]}
+              onPress={sendInvite}
+              disabled={inviteLoading}
+              accessibilityRole="button"
+            >
+              <Text style={{ color: colors.text.primary }}>שליחת הזמנה</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={{ color: colors.text.secondary }}>
+            הזמנה חדשה דורשת אישור מנהל קיים לפני כניסה למערכת.
+          </Text>
+          <Text style={[styles.cardTitle, { color: colors.text.primary }]}>הזמנות בהמתנה</Text>
+          {pendingInvites.length === 0 ? (
+            <Text style={{ color: colors.text.secondary }}>אין הזמנות ממתינות.</Text>
+          ) : (
+            pendingInvites.map((address) => (
+              <View
+                key={address}
+                style={[styles.inviteItem, { borderColor: colors.border.primary }]}
+              >
+                <Text style={{ color: colors.text.primary }}>{address}</Text>
+                <TouchableOpacity
+                  style={[styles.approveInviteButton, { borderColor: colors.status.success }]}
+                  onPress={() => approveInvite(address)}
+                  disabled={inviteLoading}
+                >
+                  <Text style={{ color: colors.status.success }}>אשר</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
+          <Text style={[styles.cardTitle, { color: colors.text.primary }]}>מנהלים פעילים</Text>
+          {admins.length === 0 ? (
+            <Text style={{ color: colors.text.secondary }}>עדיין לא הוגדרו מנהלים נוספים.</Text>
+          ) : (
+            admins.map((admin) => (
+              <Text key={admin} style={{ color: colors.text.secondary }}>
+                {admin}
+              </Text>
+            ))
+          )}
+        </View>
         <EnvironmentSettings colors={colors} admins={admins} />
         <RpcSettings colors={colors} />
         <LanguageSettings colors={colors} currentLanguage={currentLanguage} />
@@ -270,5 +396,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  adminCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+  },
+  cardTitle: { fontSize: 16, fontWeight: '600' },
+  inviteRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  inviteInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  inviteButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  inviteItem: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  approveInviteButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
 });
