@@ -1,9 +1,37 @@
 import OrderService from '@/services/orders';
 import { CartItem, ShippingAddress } from '../types';
 import { requestScopes } from '@/services/session';
+import { loadKycReceipt } from '@/services/kycReceipts';
+import { getDeviceHash } from '@/utils/getDeviceHash';
 
 const mockStore: Record<string, any> = {};
 const mockProducts: Record<string, any> = {};
+
+const deviceHash = getDeviceHash();
+
+const makeReceipt = (buyerPublicKey = 'buyer-public-key') => ({
+  type: 'kyc.receipt',
+  payload: {
+    receiptId: 'receipt-123',
+    buyerPublicKey,
+    issuerPublicKey: 'issuer',
+    issuedAt: new Date(0).toISOString(),
+    data: { deviceHash },
+    ts: Date.now(),
+    nonce: 'nonce',
+  },
+  sender: { publicKey: 'issuer', role: 'admin' },
+  signature: 'sig',
+});
+
+jest.mock('@/services/localIdentity', () => ({
+  getPublicKeyHex: jest.fn().mockResolvedValue('buyer-public-key'),
+}));
+
+jest.mock('@/services/kycReceipts', () => ({
+  loadKycReceipt: jest.fn(),
+  issueKycReceipt: jest.fn(),
+}));
 
 jest.mock('@/services/nearOrders', () => ({
   setOrder: jest.fn(async (o: any) => { mockStore[o.id] = o; }),
@@ -53,6 +81,10 @@ jest.mock('@/constants/tenant', () => ({
 }));
 
 describe('card checkout fee deduction', () => {
+  beforeEach(() => {
+    (loadKycReceipt as jest.Mock).mockResolvedValue(makeReceipt());
+  });
+
   it('deducts platform fee for card payments', async () => {
     jest
       .spyOn<any, any>(OrderService.prototype as any, 'simulateOrderProgress')

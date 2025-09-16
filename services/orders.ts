@@ -17,13 +17,21 @@ import { chainAdapter } from '@/services/chain';
 import { adminResolve, deployOrderPayment } from './nearContract';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
-import { assertCheckoutScope } from '@/services/session';
+import { assertCheckoutScope, getSession } from '@/services/session';
 import { checkoutTokenIntegrity } from '@/services/monitoring';
 import SettingsAgent from '@/agents/settings-agent';
+import { loadKycReceipt } from '@/services/kycReceipts';
+import { getPublicKeyHex } from '@/services/localIdentity';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
 const LOW_STOCK_THRESHOLD = 5;
+const KYC_RECEIPT_ERROR = 'KYC receipt missing or invalid';
+
+type VerifiedKycReceipt = {
+  receiptId: string;
+  buyerPublicKey: string;
+};
 
 export async function emitOrderEvents(
   order: Order,
@@ -37,6 +45,7 @@ export async function emitOrderEvents(
     buyerAddress: order.buyerAddress,
     sellerAddress: order.sellerAddress,
     sessionToken,
+    kycReceiptId: order.kycReceiptId,
     payment: {
       method: order.paymentMethod,
       contractAddress: order.paymentContractAddress,
@@ -115,6 +124,52 @@ class OrderService {
     return allSteps;
   }
 
+  private async verifyKycReceipt(sessionToken: string): Promise<VerifiedKycReceipt> {
+    const fail = (reason: string): never => {
+      errorLog('KYC receipt validation failed', { reason });
+      throw new Error(KYC_RECEIPT_ERROR);
+    };
+
+    const session = getSession(sessionToken);
+    if (!session || typeof session.deviceHash !== 'string' || session.deviceHash.length === 0) {
+      return fail('session_missing');
+    }
+
+    const buyerPublicKey = await getPublicKeyHex();
+    if (!buyerPublicKey) {
+      return fail('buyer_key_missing');
+    }
+
+    const receipt = await loadKycReceipt(buyerPublicKey);
+    if (!receipt) {
+      return fail('receipt_missing');
+    }
+
+    if (!receipt.payload || receipt.payload.buyerPublicKey !== buyerPublicKey) {
+      return fail('buyer_key_mismatch');
+    }
+
+    const data = receipt.payload.data || {};
+    let receiptDeviceHash: string | undefined;
+    if (data && typeof data === 'object') {
+      receiptDeviceHash =
+        data.deviceHash || data.device_hash || data['device-hash'] || data.device_hash_hex;
+    }
+
+    if (typeof receiptDeviceHash !== 'string') {
+      return fail('device_hash_missing');
+    }
+
+    if (receiptDeviceHash !== session.deviceHash) {
+      return fail('device_hash_mismatch');
+    }
+
+    return {
+      receiptId: receipt.payload.receiptId,
+      buyerPublicKey,
+    };
+  }
+
   async createOrder(
     userId: string,
     items: CartItem[],
@@ -127,8 +182,10 @@ class OrderService {
       sellerAddress?: string;
     },
     sessionToken: string,
+    verifiedKyc?: VerifiedKycReceipt,
   ): Promise<Order> {
     assertCheckoutScope(sessionToken);
+    const kyc = verifiedKyc ?? (await this.verifyKycReceipt(sessionToken));
     const total = items.reduce((sum, item) => {
       const price = item.unitPrice ?? item.product.price;
       return sum + price * item.quantity;
@@ -162,7 +219,7 @@ class OrderService {
       total,
       status: 'order_received',
       shippingAddress,
-       itemsHash,
+      itemsHash,
       paymentMethod: pay?.method ?? 'cash_on_delivery',
       buyerAddress: pay?.buyerAddress,
       sellerAddress: pay?.sellerAddress,
@@ -175,6 +232,7 @@ class OrderService {
       trackingSteps: this.getTrackingSteps('order_received'),
       platformFee: feeInfo?.platformFee,
       sellerPayout: feeInfo?.sellerPayout,
+      kycReceiptId: kyc.receiptId,
     };
 
     await ordersAgent.add(order);
@@ -201,6 +259,7 @@ class OrderService {
       throw err;
     }
     try {
+      const verifiedKyc = await this.verifyKycReceipt(sessionToken);
       const grouped: Record<string, CartItem[]> = {};
       for (const item of cartItems) {
         const storeId = item.product.storeId;
@@ -235,6 +294,7 @@ class OrderService {
           shippingAddress,
           payment,
           sessionToken,
+          verifiedKyc,
         );
         await emitOrderEvents(order, storeId, sessionToken);
         orders.push(order);
