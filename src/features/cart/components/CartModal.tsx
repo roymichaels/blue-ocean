@@ -37,9 +37,14 @@ if (chain === 'near') {
 
 import OrderService from '@/services/orders';
 import eventBus from '@/services/eventBus';
-import { Spinner } from '@/ui/primitives';
+import { Button, Spinner } from '@/ui/primitives';
 import { getCacheHitRatio } from '@/services/warmCache';
-const MoonPayButton = require('@/features/payments').MoonPayButton;
+import { isMoonPayEnabled } from '@/config/featureFlags';
+const {
+  MoonPayButton,
+  MOONPAY_DISABLED_LABEL,
+  MOONPAY_DISABLED_TOOLTIP,
+} = require('@/features/payments');
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';
 import commonStyles from '@/constants/styles';
@@ -100,6 +105,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const { push } = useAppRouter();
   const scrollViewRef = useRef<ScrollView>(null);
   const { requireUnlock } = useLaunchGate();
+  const moonPayEnabled = useMemo(() => isMoonPayEnabled(), []);
 
   // Info/confirm modals
   const [infoModal, setInfoModal] = useState({
@@ -777,7 +783,16 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </TouchableOpacity>
         </View>
 
-        <MoonPayButton usdAmount={getTotal()} />
+        {moonPayEnabled ? (
+          <MoonPayButton usdAmount={getTotal()} />
+        ) : (
+          <Button
+            title={MOONPAY_DISABLED_LABEL}
+            disabled
+            tooltip={MOONPAY_DISABLED_TOOLTIP}
+            style={styles.moonPayDisabledButton}
+          />
+        )}
 
         <View
           style={[
@@ -1447,6 +1462,7 @@ const styles = StyleSheet.create({
   completeOrderButton: { borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24, alignItems: 'center', minWidth: 180 },
   completeOrderText: { fontSize: 16, fontWeight: '600' },
   buttonDisabled: { opacity: 0.5 },
+  moonPayDisabledButton: { marginTop: 16 },
   paymentOptions: { marginBottom: 24 },
   paymentOption: {
     flexDirection: 'row',
