@@ -16,6 +16,9 @@ interface ProductGridProps {
   searchQuery: string;
   onAddProduct: () => void;
   loading?: boolean;
+  onProductPress?: (product: Product) => void;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
 
 const rowStyles = StyleSheet.create({
@@ -23,11 +26,17 @@ const rowStyles = StyleSheet.create({
   card: { marginBottom: spacing.spacer12 },
 });
 
-const ProductRow = React.memo(({ item }: { item: Product }) => (
-  <View style={rowStyles.flex}>
-    <ProductCard product={item} style={rowStyles.card} />
-  </View>
-));
+const ProductRow = React.memo(
+  ({ item, onProductPress }: { item: Product; onProductPress?: (product: Product) => void }) => (
+    <View style={rowStyles.flex}>
+      <ProductCard
+        product={item}
+        onPress={onProductPress ? () => onProductPress(item) : undefined}
+        style={rowStyles.card}
+      />
+    </View>
+  ),
+);
 
 function ProductGrid({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -39,11 +48,16 @@ function ProductGrid({
   searchQuery,
   onAddProduct,
   loading,
+  onProductPress,
+  refreshing,
+  onRefresh,
 }: ProductGridProps) {
   const { t } = useLanguage();
   const renderItem = useCallback(
-    ({ item }: { item: Product }) => <ProductRow item={item} />,
-    []
+    ({ item }: { item: Product }) => (
+      <ProductRow item={item} onProductPress={onProductPress} />
+    ),
+    [onProductPress],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);
@@ -95,6 +109,8 @@ function ProductGrid({
       columnWrapperStyle={columnWrapperStyle}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
     />
   );
 }

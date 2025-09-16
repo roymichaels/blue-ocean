@@ -1,6 +1,6 @@
 import { init, signIn, signMessage, useAccount, useAccountId, getAccountId, getPublicKey, getSelector } from '@/services/walletSelector';
 import { payPrivately as nearPayPrivately } from '@blue-ocean/sdk-near';
-import { listOrdersBySeller as nearListOrdersBySeller } from '@/services/nearOrders';
+import { listOrdersBySeller as nearListOrdersBySeller, listOrdersByBuyer as nearListOrdersByBuyer } from '@/services/nearOrders';
 import { getNetworkId } from '@/services/config';
 import config from '@/config';
 import type { ChainAdapter } from './ChainAdapter';
@@ -43,6 +43,7 @@ export const nearAdapter: ChainAdapter = {
   getBalance,
   signMessage,
   listOrdersBySeller: nearListOrdersBySeller,
+  listOrdersByBuyer: nearListOrdersByBuyer,
   payPrivately: nearPayPrivately,
 };
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import CartService from '@/features/cart/services/cart';
 import { Product, PricingTier } from '@/types';
-import { chainAdapter } from '@/services/chain';
 import { useProduct } from './useProduct';
 import { useProductPricing } from '@/services/useProductPricing';
 import { useProductMedia } from '@/services/useProductMedia';
@@ -10,6 +9,9 @@ import eventBus from '@/services/eventBus';
 interface ProductDetailResult {
   product: Product | null;
   isLoading: boolean;
+  refreshing: boolean;
+  refresh: () => Promise<void>;
+  error: Error | null;
   quantity: number;
   incrementQuantity: () => void;
   decrementQuantity: () => void;
@@ -26,9 +28,14 @@ interface ProductDetailResult {
   notFound: boolean;
 }
 
-export function useProductDetail(id: string): ProductDetailResult {
-  const { data: fetchedProduct, isLoading } = useProduct(id);
-  const address = chainAdapter.useAccountId();
+export function useProductDetail(id: string, storeId?: string): ProductDetailResult {
+  const {
+    data: fetchedProduct,
+    isLoading,
+    refetch,
+    isRefetching,
+    error,
+  } = useProduct(id, storeId ?? 'default');
 
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -39,19 +46,24 @@ export function useProductDetail(id: string): ProductDetailResult {
     useProductPricing(product, quantity);
   const { media, mainImageUri } = useProductMedia(product);
 
+  const fetchError = error instanceof Error ? error : error ? new Error(String(error)) : null;
+
   useEffect(() => {
     if (isLoading) return;
-    if (address && fetchedProduct && fetchedProduct.storeId !== address) {
-      setNotFound(true);
+    if (!fetchedProduct) {
       setProduct(null);
+      setNotFound(true);
       return;
     }
-    if (fetchedProduct) {
-      setProduct(fetchedProduct);
-      setNotFound(false);
-      eventBus.track('catalog.product_view', { productId: fetchedProduct.id });
+    if (storeId && fetchedProduct.storeId !== storeId) {
+      setProduct(null);
+      setNotFound(true);
+      return;
     }
-  }, [fetchedProduct, isLoading, address]);
+    setProduct(fetchedProduct);
+    setNotFound(false);
+    eventBus.track('catalog.product_view', { productId: fetchedProduct.id });
+  }, [fetchedProduct, isLoading, storeId]);
 
   useEffect(() => {
     if (!product) return;
@@ -95,6 +107,11 @@ export function useProductDetail(id: string): ProductDetailResult {
   return {
     product,
     isLoading,
+    refreshing: isRefetching,
+    refresh: async () => {
+      await refetch();
+    },
+    error: fetchError,
     quantity,
     incrementQuantity,
     decrementQuantity,

@@ -13,6 +13,7 @@ const unsupported: ChainAdapter = {
   async getBalance() { return '0'; },
   async signMessage() { throw new Error('Unsupported chain'); },
   async listOrdersBySeller() { throw new Error('Unsupported chain'); },
+  async listOrdersByBuyer() { throw new Error('Unsupported chain'); },
   async payPrivately() { throw new Error('Unsupported chain'); },
 };
 

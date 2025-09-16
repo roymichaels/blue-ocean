@@ -10,27 +10,39 @@ import { spacing } from '@/shared/ui/tokens';
 const rowStyles = StyleSheet.create({ flex: { flex: 1 } });
 
 const ProductRow = React.memo(
-  ({ item, borderColor }: { item: Product; borderColor: string }) => (
+  ({
+    item,
+    borderColor,
+    onProductPress,
+  }: { item: Product; borderColor: string; onProductPress?: (product: Product) => void }) => (
     <View style={rowStyles.flex}>
       <ProductCard
         key={item.id}
         product={item}
         style={{ marginBottom: spacing.spacer12, borderColor }}
+        onPress={onProductPress ? () => onProductPress(item) : undefined}
       />
     </View>
   )
 );
 
-function ProductGrid({ products }: { products: Product[] }) {
+interface ProductGridProps {
+  products: Product[];
+  refreshing?: boolean;
+  onRefresh?: () => void;
+  onProductPress?: (product: Product) => void;
+}
+
+function ProductGrid({ products, refreshing, onRefresh, onProductPress }: ProductGridProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
 
   const borderColor = colors.border.primary;
   const renderItem = useCallback(
     ({ item }: { item: Product }) => (
-      <ProductRow item={item} borderColor={borderColor} />
+      <ProductRow item={item} borderColor={borderColor} onProductPress={onProductPress} />
     ),
-    [borderColor]
+    [borderColor, onProductPress]
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);
@@ -62,6 +74,8 @@ function ProductGrid({ products }: { products: Product[] }) {
       columnWrapperStyle={columnWrapperStyle}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
     />
   );
 }

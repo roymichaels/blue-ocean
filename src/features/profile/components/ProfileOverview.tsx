@@ -4,7 +4,7 @@ import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useWallet } from '@/contexts/WalletProvider';
 import { chainAdapter } from '@/services/chain';
-import { Heading, Text, Card } from '@/ui/primitives';
+import { Heading, Text, Card, Button } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
 import { routes } from '@/utils/routes';
 import { listStores } from '@/features/stores/services/nearStores';
@@ -182,6 +182,16 @@ export default function ProfileOverview() {
               </Text>
             </TouchableOpacity>
           )}
+        </Stack>
+      </Card>
+      <Card>
+        <Stack gap="spacer8">
+          <Heading size="md">{t('profile.quickActions', 'Quick actions')}</Heading>
+          <Button title={t('navigation.orders', 'Orders')} onPress={handleViewOrders} />
+          <Button title={t('navigation.settings', 'Settings')} onPress={handleOpenSettings} />
+          {primaryStore ? (
+            <Button title={t('admin.dashboard', 'Store admin')} onPress={handleManageStore} />
+          ) : null}
         </Stack>
       </Card>
     </Stack>

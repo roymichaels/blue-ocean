@@ -28,6 +28,19 @@ function matchesStore(order: Order | undefined, sid: string): boolean {
   return !!inferred && inferred === sid;
 }
 
+function normalizeAddress(value?: string | null): string {
+  return typeof value === 'string' ? value.toLowerCase() : '';
+}
+
+function matchesBuyer(order: Order | undefined, buyer: string): boolean {
+  if (!order || !buyer) return false;
+  const normalized = normalizeAddress(buyer);
+  if (!normalized) return false;
+  const buyerAddress = normalizeAddress(order.buyerAddress);
+  const userId = normalizeAddress(order.userId);
+  return buyerAddress === normalized || userId === normalized;
+}
+
 async function hydrateOrderLake(): Promise<Array<DiffMessage<Order>>> {
   try {
     const entries = await listValues(ADDRESS);
@@ -130,6 +143,28 @@ export async function listOrdersBySeller(
     .filter((i) => i.key.startsWith(`${ADDRESS}:${sid}:`))
     .map((i) => JSON.parse(i.value) as Order)
     .filter((o) => o.sellerAddress === sellerAddress);
+}
+
+export async function listOrdersByBuyer(buyerAddress: string): Promise<Order[]> {
+  const normalized = normalizeAddress(buyerAddress);
+  if (!normalized) return [];
+  const sortByCreatedAtDesc = (a: Order, b: Order) => {
+    const aTime = new Date(a.createdAt || 0).getTime();
+    const bTime = new Date(b.createdAt || 0).getTime();
+    return bTime - aTime;
+  };
+  try {
+    const cached = orderCache
+      .values()
+      .filter((order) => matchesBuyer(order, normalized))
+      .sort(sortByCreatedAtDesc);
+    if (cached.length > 0) return cached;
+  } catch {}
+  const items = await listValues(ADDRESS);
+  return items
+    .map((i) => JSON.parse(i.value) as Order)
+    .filter((o) => matchesBuyer(o, normalized))
+    .sort(sortByCreatedAtDesc);
 }
 
 export { E_STALE_DATA, E_SYNC_LAG } from '@/services/warmCache';

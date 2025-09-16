@@ -38,6 +38,12 @@ const NAV_ITEMS: readonly NavItemConfig[] = [
     requiresAuth: true,
   },
   {
+    href: '/orders',
+    title: 'navigation.orders',
+    icon: 'Receipt',
+    requiresAuth: true,
+  },
+  {
     href: '/me',
     title: 'navigation.profile',
     icon: 'User',

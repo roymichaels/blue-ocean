@@ -36,6 +36,8 @@ import { spacing, typography, radius, shadows } from '@/ui/tokens';
 import HeroCallout from '@/features/home/components/HeroCallout';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
 import HomeError from '@/features/home/screens/HomeError';
+import AdminOnboardingChecklist from '@/features/home/components/AdminOnboardingChecklist';
+import { useAppRouter } from '@/services/useAppRouter';
 
 function HomeScreenContent() {
   const { tenantId, isNetwork } = useTenant();
@@ -43,6 +45,7 @@ function HomeScreenContent() {
   const { colors: themeColors } = useTheme();
   const { appName, logoCid } = useAppInfo();
   const { width: windowWidth } = useWindowDimensions();
+  const appRouter = useAppRouter();
 
   const home = useHome(tenantId);
 
@@ -69,17 +72,39 @@ function HomeScreenContent() {
   const { fallbackCategories, fallbackBanners } = useHomeData();
   const categoriesToShow = categories.length ? categories : fallbackCategories;
 
-    const { filteredProducts, searchQuery, selectedCategory, setSelectedCategory, minPrice, setMinPrice, maxPrice, setMaxPrice, sortBy, setSortBy, showSortModal, setShowSortModal } = useHomeFilters(products);
-    const [showCategorySelector, setShowCategorySelector] = useState(false);
+  const {
+    filteredProducts,
+    searchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    minPrice,
+    setMinPrice,
+    maxPrice,
+    setMaxPrice,
+    sortBy,
+    setSortBy,
+    showSortModal,
+    setShowSortModal,
+  } = useHomeFilters(products);
 
-    const getProductItemWidth = () => {
-      if (windowWidth >= 1024) {
-        return '23.5%';
-      } else if (windowWidth >= 768) {
-        return '32%';
-      }
-      return '48%';
-    };
+  const getProductItemWidth = () => {
+    if (windowWidth >= 1024) {
+      return '23.5%';
+    }
+    if (windowWidth >= 768) {
+      return '32%';
+    }
+    return '48%';
+  };
+
+  const handleProductPress = useCallback(
+    (product: Product) => {
+      const store = product.storeId || tenantId;
+      if (!store) return;
+      appRouter.push(`/store/${store}/product/${product.id}`);
+    },
+    [appRouter, tenantId],
+  );
 
   const getSortLabel = () => {
     switch (sortBy) {
@@ -133,6 +158,8 @@ function HomeScreenContent() {
           <HeroCallout />
           <View style={{ height: spacing.spacer16 }} />
           <HomeOptions />
+          <View style={{ height: spacing.spacer16 }} />
+          <AdminOnboardingChecklist onAddProduct={() => openProductForm()} />
         </Container>
       </ScrollArea>
     );
@@ -205,6 +232,9 @@ function HomeScreenContent() {
           maxPrice={maxPrice}
           setMaxPrice={setMaxPrice}
         />
+        <View style={{ height: spacing.spacer16 }} />
+        <AdminOnboardingChecklist onAddProduct={() => openProductForm()} />
+        <View style={{ height: spacing.spacer16 }} />
         {/* Categories Section */}
         <Container
           style={[
@@ -217,7 +247,7 @@ function HomeScreenContent() {
             <Heading size="lg" style={{ color: themeColors.text.primary }}>
               {t('home.categories')}
             </Heading>
-            <TouchableOpacity onPress={() => setShowCategorySelector(true)}>
+            <TouchableOpacity onPress={() => setSelectedCategory(null)}>
               <Text style={[styles.seeAll, { color: themeColors.gold }]}>
                 {t('common.viewAll')}
               </Text>
@@ -307,6 +337,7 @@ function HomeScreenContent() {
               searchQuery={searchQuery}
               onAddProduct={openProductForm}
               loading={productsLoading}
+              onProductPress={handleProductPress}
             />
           </Suspense>
         </Container>
