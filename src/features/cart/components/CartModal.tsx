@@ -53,8 +53,22 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import { requestTokenWithConsent, getCheckoutRequestScopes } from '@/services/session';
 import { uuid } from '@/utils/uuid';
 import NotificationService from '@/services/notification';
+import SettingsAgent from '@/agents/settings-agent';
+import { errorLog } from '@/utils/logger';
+import { persistCheckoutIntent, clearCheckoutIntent } from '../services/orderIntent';
 
 const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
+
+const BOOLEAN_TRUE_VALUES = new Set(['1', 'true', 'yes', 'y', 'on']);
+const BOOLEAN_FALSE_VALUES = new Set(['0', 'false', 'no', 'n', 'off']);
+
+function parseBooleanSetting(value: string | null): boolean | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  if (BOOLEAN_TRUE_VALUES.has(normalized)) return true;
+  if (BOOLEAN_FALSE_VALUES.has(normalized)) return false;
+  return null;
+}
 
 interface CartModalProps {
   visible: boolean;
@@ -104,6 +118,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   });
 
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [kycRequired, setKycRequired] = useState<boolean | null>(null);
 
   const ensureSessionToken = async (): Promise<string> => {
     await requireUnlock('checkout');
@@ -116,7 +131,24 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     return token;
   };
 
+  useEffect(() => {
+    if (!visible) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const setting = await SettingsAgent.getInstance().getSettingValue('kyc.required');
+        if (cancelled) return;
+        setKycRequired(parseBooleanSetting(setting));
+      } catch (err) {
+        errorLog('Failed to load kyc.required setting', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [visible]);
 
+  
   useEffect(() => {
     if (visible) {
       // reset flow
@@ -183,7 +215,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     }
 
     // KYC gate
-    if (user && user.kycStatus !== 'verified') {
+    if (kycRequired !== false && user && user.kycStatus !== 'verified') {
       let message = '';
       switch (user.kycStatus) {
         case 'none':
@@ -206,6 +238,10 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           confirmText: t('kyc.goToKyc'),
           cancelText: t('common.cancel'),
           action: () => {
+            void persistCheckoutIntent(cartItems, getTotal(), {
+              step: 'shipping',
+              returnPath: { pathname: '/', params: { showCart: 'true' } },
+            });
             onClose();
             push('/kyc');
           },
@@ -221,6 +257,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return;
     }
 
+    void clearCheckoutIntent();
     eventBus.track('checkout.start', { items: cartItems.length, total: getTotal() });
     setCheckoutStep('shipping');
   };
@@ -310,6 +347,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       setOrderIds(orders.map((o) => o.id));
       setOrderPlaced(true);
       await clearCart();
+      await clearCheckoutIntent();
 
       showNotification(
         t('cart.orderReceived'),
