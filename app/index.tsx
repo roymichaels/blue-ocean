@@ -40,6 +40,7 @@ import ErrorBoundary from 'src/shared/ErrorBoundary';
 import HomeError from '@/features/home/screens/HomeError';
 import AdminOnboardingChecklist from '@/features/home/components/AdminOnboardingChecklist';
 import { useAppRouter } from '@/services/useAppRouter';
+import eventBus from '@/services/eventBus';
 import { localIndex } from '@/services/localIndex';
 
 function HomeScreenContent() {
@@ -97,6 +98,10 @@ function HomeScreenContent() {
   const latestSearchValueRef = useRef(searchQuery);
 
   useEffect(() => {
+    void eventBus.track('view.home');
+  }, []);
+
+  useEffect(() => {
     latestSearchValueRef.current = searchQuery;
   }, [searchQuery]);
 
@@ -115,6 +120,7 @@ function HomeScreenContent() {
 
       const invoke = async () => {
         const queryText = latestSearchValueRef.current;
+        void eventBus.track('search.query', { query: queryText });
         try {
           const result = await localIndex.query(queryText);
           applySearchResults(queryText, result);
