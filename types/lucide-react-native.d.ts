@@ -63,6 +63,7 @@ declare module 'lucide-react-native' {
   export const Shield: FC<LucideProps>;
   export const ShoppingBag: FC<LucideProps>;
   export const ShoppingCart: FC<LucideProps>;
+  export const Store: FC<LucideProps>;
   export const Smile: FC<LucideProps>;
   export const Star: FC<LucideProps>;
   export const Sun: FC<LucideProps>;

@@ -150,6 +150,7 @@ const cfg = {
     '<rootDir>/tests/nearKvPersistence.test.ts',
     '<rootDir>/tests/homeScreenRender.test.tsx',
     '<rootDir>/tests/homeFallbackVisibility.test.tsx',
+    '<rootDir>/tests/homeServices.test.tsx',
     '<rootDir>/tests/featuredStoresCarousel.test.tsx',
     '<rootDir>/tests/navigationLoop.test.tsx',
     '<rootDir>/tests/themeContrast.test.tsx',
