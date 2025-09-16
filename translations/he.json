@@ -625,6 +625,41 @@
       "released": "תשלום שוחרר",
       "refunded": "תשלום הוחזר"
     },
+    "timeline": {
+      "pending": "ממתין",
+      "order_received": {
+        "title": "הזמנה התקבלה",
+        "description": "ההזמנה שלך התקבלה ונמצאת בטיפול"
+      },
+      "courier_found": {
+        "title": "נמצא שליח",
+        "description": "מצאנו שליח שיטפל בהזמנה שלך"
+      },
+      "courier_picked_up": {
+        "title": "השליח אסף",
+        "description": "השליח אסף את ההזמנה שלך מהחנות"
+      },
+      "courier_on_way": {
+        "title": "השליח בדרך",
+        "description": "השליח בדרך אליך עם ההזמנה"
+      },
+      "delivered": {
+        "title": "נמסר",
+        "description": "ההזמנה נמסרה בהצלחה"
+      },
+      "released": {
+        "title": "תשלום שוחרר",
+        "description": "התשלום שוחרר למוכר"
+      },
+      "refunded": {
+        "title": "תשלום הוחזר",
+        "description": "התשלום הוחזר אליך"
+      },
+      "disputed": {
+        "title": "מחלוקת נפתחה",
+        "description": "המחלוקת נבדקת כעת"
+      }
+    },
     "orderNumber": "הזמנה #{id}",
     "itemsLabel": "פריטים:",
     "itemQuantity": "{name} x{quantity}",
@@ -644,7 +679,22 @@
     "statusUpdated": "סטטוס ההזמנה עודכן",
     "updateStatusFailed": "עדכון הסטטוס נכשל",
     "openDispute": "פתח מחלוקת",
-    "disputeComingSoon": "בקרוב"
+    "disputeComingSoon": "בקרוב",
+    "detailReceiptAction": "צפה בקבלה",
+    "receiptTitle": "קבלת הזמנה",
+    "receiptBody": "קבלה מספר {id}\nהונפקה בתאריך {date}",
+    "receiptUnavailableTitle": "לא ניתן להציג קבלה",
+    "receiptUnavailableMessage": "התחבר מחדש לארנק כדי לצפות בקבלה.",
+    "receiptMissingTitle": "קבלה לא נמצאה",
+    "receiptMissingMessage": "לא מצאנו קבלה מקומית להזמנה זו.",
+    "receiptErrorTitle": "שגיאה בטעינת קבלה",
+    "receiptErrorMessage": "נסה שוב מאוחר יותר.",
+    "admin": {
+      "cancelTitle": "בטל הזמנה",
+      "cancelMessage": "האם אתה בטוח שברצונך לבטל את ההזמנה?",
+      "cancelReject": "לא",
+      "cancelConfirm": "כן, בטל"
+    }
   },
   "store": {
     "store_name": "שם החנות",

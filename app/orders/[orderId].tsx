@@ -12,6 +12,10 @@ import { Order } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { AlertTriangle, RefreshCw, ShoppingCart } from 'lucide-react-native';
 import { useAppRouter } from '@/services/useAppRouter';
+import { ordersWarmCache } from '@/services/nearOrders';
+import { loadKycReceipt } from '@/services/kycReceipts';
+import { getPublicKeyHex } from '@/services/localIdentity';
+import OrderTimeline from '@/components/OrderTimeline';
 
 function formatDateTime(value?: string): string {
   if (!value) return '—';
@@ -109,6 +113,32 @@ export default function OrderDetailScreen() {
     fetchOrder('initial').catch(() => {});
   }, [orderId, address, supportsBuyerOrders, fetchOrder]);
 
+  useEffect(() => {
+    if (!orderId) return;
+    try {
+      const unsubscribe = ordersWarmCache.subscribe(
+        (id) => id === orderId,
+        (_id, value) => {
+          if (!value) {
+            setNotFound(true);
+            return;
+          }
+          setOrder((prev) => {
+            if (prev && prev.updatedAt === value.updatedAt) {
+              return prev;
+            }
+            return value;
+          });
+          setNotFound(false);
+        },
+      );
+      return () => unsubscribe?.();
+    } catch (err) {
+      errorLog('order detail warm cache subscribe failed', err);
+      return undefined;
+    }
+  }, [orderId]);
+
   const createdAtLabel = useMemo(() => formatDateTime(order?.createdAt), [order?.createdAt]);
   const updatedAtLabel = useMemo(() => formatDateTime(order?.updatedAt), [order?.updatedAt]);
 
@@ -162,6 +192,45 @@ export default function OrderDetailScreen() {
       t('orders.detailSupportTitle', 'Need help?'),
       t('orders.detailSupportMessage', 'Support chat is on the way.'),
     );
+  }, [t]);
+
+  const handleViewReceipt = useCallback(async () => {
+    try {
+      const publicKey = await getPublicKeyHex();
+      if (!publicKey) {
+        Alert.alert(
+          t('orders.receiptUnavailableTitle', 'Receipt unavailable'),
+          t('orders.receiptUnavailableMessage', 'Connect your wallet again to view the receipt.'),
+        );
+        return;
+      }
+      const receipt = await loadKycReceipt(publicKey);
+      if (!receipt) {
+        Alert.alert(
+          t('orders.receiptMissingTitle', 'Receipt not found'),
+          t('orders.receiptMissingMessage', 'We could not find a local receipt for this order.'),
+        );
+        return;
+      }
+      const issuedAt = formatDateTime(receipt.payload.issuedAt);
+      const messageTemplate = t(
+        'orders.receiptBody',
+        'Receipt #{id}\nIssued {date}',
+      );
+      const message = messageTemplate
+        .replace('{id}', receipt.payload.receiptId)
+        .replace('{date}', issuedAt);
+      Alert.alert(
+        t('orders.receiptTitle', 'Order receipt'),
+        message,
+      );
+    } catch (err) {
+      errorLog('Failed to load receipt', err);
+      Alert.alert(
+        t('orders.receiptErrorTitle', 'Unable to load receipt'),
+        t('orders.receiptErrorMessage', 'Please try again later.'),
+      );
+    }
   }, [t]);
 
   const handleBack = useCallback(() => {
@@ -293,6 +362,10 @@ export default function OrderDetailScreen() {
         </Card>
 
         <Card>
+          <OrderTimeline order={order} withBorder={false} style={{ padding: 0 }} />
+        </Card>
+
+        <Card>
           <Stack gap="spacer12">
             <Heading size="md" style={{ color: colors.text.primary }}>
               {t('orders.detailItemsHeading', 'Items')}
@@ -401,6 +474,9 @@ export default function OrderDetailScreen() {
               </Button>
               <Button style={styles.fullWidthButton} onPress={handleContactSupport}>
                 {t('orders.detailSupportAction', 'Contact support')}
+              </Button>
+              <Button style={styles.fullWidthButton} onPress={handleViewReceipt}>
+                {t('orders.detailReceiptAction', 'View receipt')}
               </Button>
               <Button style={styles.fullWidthButton} onPress={handleBack}>
                 {t('orders.detailBackAction', 'Back to orders')}
