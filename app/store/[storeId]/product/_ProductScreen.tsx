@@ -238,7 +238,19 @@ export default function ProductDetailScreen() {
   const isStockKnown = rawStock !== undefined && rawStock !== null;
   const isOutOfStock = isStockKnown ? rawStock <= 0 : true;
   const isProductDisabled = Boolean(product?.disabled);
-  const disabledReason = isProductDisabled ? product?.disabledReason : undefined;
+  const productDisabledReason = product?.disabledReason;
+  const disabledReason = useMemo(() => {
+    if (!isProductDisabled) {
+      return undefined;
+    }
+
+    const reason = productDisabledReason?.trim();
+    if (reason && reason.length > 0) {
+      return reason;
+    }
+
+    return t('productDetail.disabledFallback', 'This product is currently unavailable.');
+  }, [isProductDisabled, productDisabledReason, t]);
 
   if (!productId) {
     return (
