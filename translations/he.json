@@ -169,6 +169,13 @@
     "buyNow": "קנה עכשיו",
     "quantity": "כמות",
     "color": "צבע",
+    "variantSelectorLabel": "בחר אפשרות צבע",
+    "variantAccessibleName": "{label}. {stock}",
+    "variantSelectHint": "הקש פעמיים כדי לבחור אפשרות זו",
+    "variantSelectedHint": "האפשרות הנוכחית שנבחרה",
+    "variantStockLabel": "במלאי: {count}",
+    "variantStockUnknown": "מלאי לא ידוע",
+    "variantOptionFallback": "אפשרות {index}",
     "description": "תיאור",
     "reviews": "ביקורות",
     "rating": "דירוג",
@@ -208,6 +215,10 @@
     "messageSeller": "שלח הודעה למוכר",
     "report": "דווח",
     "percentOff": "{percent}% הנחה"
+  },
+  "productDetail": {
+    "contactStore": "צור קשר עם החנות",
+    "contactStoreError": "לא ניתן להתחיל צ'אט עם החנות. נסה שוב מאוחר יותר."
   },
   "category": {
     "addSubcategory": "הוסף תת-קטגוריה",

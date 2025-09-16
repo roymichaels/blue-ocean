@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import CartService from '@/features/cart/services/cart';
 import { Product, PricingTier } from '@/types';
 import { useProduct } from './useProduct';
@@ -41,6 +41,7 @@ export function useProductDetail(id: string, storeId?: string): ProductDetailRes
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const lastTrackedProductId = useRef<string | null>(null);
 
   const { effectivePrice, totalPrice, currentPricingTier, showTieredPricing } =
     useProductPricing(product, quantity);
@@ -53,16 +54,21 @@ export function useProductDetail(id: string, storeId?: string): ProductDetailRes
     if (!fetchedProduct) {
       setProduct(null);
       setNotFound(true);
+      lastTrackedProductId.current = null;
       return;
     }
     if (storeId && fetchedProduct.storeId !== storeId) {
       setProduct(null);
       setNotFound(true);
+      lastTrackedProductId.current = null;
       return;
     }
     setProduct(fetchedProduct);
     setNotFound(false);
-    eventBus.track('catalog.product_view', { productId: fetchedProduct.id });
+    if (lastTrackedProductId.current !== fetchedProduct.id) {
+      eventBus.track('analytics.view.product', { productId: fetchedProduct.id });
+      lastTrackedProductId.current = fetchedProduct.id;
+    }
   }, [fetchedProduct, isLoading, storeId]);
 
   useEffect(() => {

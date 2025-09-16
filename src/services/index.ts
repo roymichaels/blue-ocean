@@ -14,3 +14,4 @@ export * from './useRequirePlatformAdmin';
 export * from './useReviews';
 export * from './useUsers';
 export * from './useStoreReviews';
+export * from './openDM';

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -11,13 +11,57 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Heading, Text, Button, Skeleton } from '@/ui/primitives';
 import { spacing, typography, radius } from '@/ui/tokens';
 import SmartImage from '@/components/SmartImage';
+import type { ProductVariant } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import CartService from '@/features/cart/services/cart';
 import { useNotificationActions } from '@/components/NotificationContext';
 import EmptyState from '@/shared/ui/EmptyState';
 import { useAppRouter } from '@/services/useAppRouter';
 import { useProductDetail } from '@/features/products/hooks/useProductDetail';
-import { AlertTriangle, Heart, Minus, Plus, ShoppingCart } from 'lucide-react-native';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useAuthModal } from '@/features/auth/AuthModalContext';
+import { openDM } from '@/services/openDM';
+import { AlertTriangle, Heart, MessageCircle, Minus, Plus, ShoppingCart } from 'lucide-react-native';
+
+type TooltipChildProps = {
+  tooltip?: string;
+  accessibilityHint?: string;
+  [key: string]: unknown;
+};
+
+interface DisabledTooltipProps {
+  label?: string;
+  children: React.ReactElement<TooltipChildProps>;
+}
+
+const appendSentence = (base?: string, addition?: string) => {
+  if (!base) return addition;
+  if (!addition) return base;
+  const trimmed = base.trim();
+  const suffix = trimmed.endsWith('.') ? '' : '.';
+  return `${trimmed}${suffix} ${addition}`;
+};
+
+const DisabledTooltip = ({ label, children }: DisabledTooltipProps) => {
+  if (!label) {
+    return children;
+  }
+
+  const existingTooltip = children.props.tooltip;
+  const existingHint = children.props.accessibilityHint;
+
+  return React.cloneElement(children, {
+    tooltip: appendSentence(existingTooltip, label),
+    accessibilityHint: appendSentence(existingHint, label),
+  });
+};
+
+const getVariantKey = (variant: ProductVariant, index: number) => {
+  if (variant.id && variant.id.trim().length > 0) {
+    return variant.id;
+  }
+  return `variant-${index}`;
+};
 
 export default function ProductDetailScreen() {
   const { storeId, productId } = useLocalSearchParams<{ storeId: string; productId: string }>();
@@ -26,6 +70,8 @@ export default function ProductDetailScreen() {
   const { currencySymbol } = useCurrency();
   const { showNotification } = useNotificationActions();
   const appRouter = useAppRouter();
+  const { isLoggedIn } = useAuth();
+  const { openAuthModal } = useAuthModal();
 
   const {
     product,
@@ -36,6 +82,7 @@ export default function ProductDetailScreen() {
     quantity,
     incrementQuantity,
     decrementQuantity,
+    setQuantity,
     effectivePrice,
     totalPrice,
     currentPricingTier,
@@ -48,12 +95,69 @@ export default function ProductDetailScreen() {
   } = useProductDetail(productId ?? '', typeof storeId === 'string' ? storeId : undefined);
 
   const [adding, setAdding] = useState(false);
+  const [contacting, setContacting] = useState(false);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>();
+
+  const storeIdentifier = useMemo(() => {
+    if (product?.storeId) return product.storeId;
+    return typeof storeId === 'string' ? storeId : undefined;
+  }, [product?.storeId, storeId]);
+
+  useEffect(() => {
+    const variants = product?.variants;
+    if (!variants || variants.length === 0) {
+      setSelectedVariantId(undefined);
+      return;
+    }
+
+    setSelectedVariantId((prev) => {
+      if (prev) {
+        const existingIndex = variants.findIndex(
+          (variant, index) => getVariantKey(variant, index) === prev,
+        );
+        if (existingIndex >= 0) {
+          const existingVariant = variants[existingIndex];
+          const hasStock =
+            typeof existingVariant.stock === 'number' ? existingVariant.stock > 0 : true;
+          if (hasStock) {
+            return prev;
+          }
+        }
+      }
+
+      const availableIndex = variants.findIndex((variant) =>
+        typeof variant.stock === 'number' ? variant.stock > 0 : true,
+      );
+      const fallbackIndex = availableIndex >= 0 ? availableIndex : 0;
+      const fallbackVariant = variants[fallbackIndex];
+      if (!fallbackVariant) {
+        return undefined;
+      }
+      return getVariantKey(fallbackVariant, fallbackIndex);
+    });
+  }, [product]);
+
+  const selectedVariant = useMemo(() => {
+    const variants = product?.variants;
+    if (!variants || !selectedVariantId) return undefined;
+    return variants.find((variant, index) => getVariantKey(variant, index) === selectedVariantId);
+  }, [product?.variants, selectedVariantId]);
+
+  useEffect(() => {
+    if (!selectedVariant) return;
+    if (selectedVariant.stock >= 0 && quantity > selectedVariant.stock) {
+      setQuantity(selectedVariant.stock > 0 ? selectedVariant.stock : 1);
+    }
+  }, [quantity, selectedVariant, setQuantity]);
 
   const handleAddToCart = useCallback(async () => {
     if (!product) return;
+    if (product.variants?.length && !selectedVariantId) {
+      return;
+    }
     setAdding(true);
     try {
-      await CartService.getInstance().addToCart(product, quantity);
+      await CartService.getInstance().addToCart(product.id, selectedVariantId, quantity);
       showNotification(
         t('cart.addedTitle', 'Added to cart'),
         t('cart.addedMessage', 'The item was added to your cart.'),
@@ -68,7 +172,54 @@ export default function ProductDetailScreen() {
     } finally {
       setAdding(false);
     }
-  }, [product, quantity, showNotification, t]);
+  }, [product, quantity, selectedVariantId, showNotification, t]);
+
+  const handleContactStore = useCallback(async () => {
+    if (!storeIdentifier) {
+      showNotification(
+        t('common.error', 'Error'),
+        t(
+          'productDetail.contactStoreError',
+          'We could not start a chat with this store. Please try again later.',
+        ),
+        'error',
+      );
+      return;
+    }
+
+    if (!isLoggedIn) {
+      openAuthModal();
+      return;
+    }
+
+    setContacting(true);
+    try {
+      await openDM(storeIdentifier);
+      appRouter.push('/messages');
+    } catch (err) {
+      if (err instanceof Error && err.message === 'WALLET_REQUIRED') {
+        openAuthModal();
+        showNotification(
+          t('common.error', 'Error'),
+          t('auth.walletConnectionFailed', 'Wallet connection failed'),
+          'error',
+        );
+      } else {
+        showNotification(
+          t('common.error', 'Error'),
+          err instanceof Error
+            ? err.message
+            : t(
+                'productDetail.contactStoreError',
+                'We could not start a chat with this store. Please try again later.',
+              ),
+          'error',
+        );
+      }
+    } finally {
+      setContacting(false);
+    }
+  }, [appRouter, isLoggedIn, openAuthModal, openDM, showNotification, storeIdentifier, t]);
 
   const handleBack = useCallback(() => {
     if (storeId) {
@@ -82,6 +233,12 @@ export default function ProductDetailScreen() {
     if (!product) return '';
     return `${currencySymbol}${effectivePrice.toFixed(2)}`;
   }, [product, currencySymbol, effectivePrice]);
+
+  const rawStock = selectedVariant?.stock ?? product?.stock;
+  const isStockKnown = rawStock !== undefined && rawStock !== null;
+  const isOutOfStock = isStockKnown ? rawStock <= 0 : true;
+  const isProductDisabled = Boolean(product?.disabled);
+  const disabledReason = isProductDisabled ? product?.disabledReason : undefined;
 
   if (!productId) {
     return (
@@ -135,6 +292,9 @@ export default function ProductDetailScreen() {
     </View>
   );
 
+  const galleryProductName =
+    product?.name || t('productDetail.galleryFallbackProductName', 'this product');
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.canvas }}
@@ -178,6 +338,78 @@ export default function ProductDetailScreen() {
                 </Text>
               </View>
             ) : null}
+            {product.variants?.length ? (
+              <View style={styles.variantSection}>
+                <Text style={{ color: colors.text.primary, fontWeight: '600' }}>
+                  {t('product.color', 'Color')}
+                </Text>
+                <View
+                  style={styles.variantOptions}
+                  accessibilityRole="radiogroup"
+                  accessibilityLabel={t('product.variantSelectorLabel', 'Choose a color option')}
+                >
+                  {product.variants.map((variant, index) => {
+                    const key = getVariantKey(variant, index);
+                    const isSelected = key === selectedVariantId;
+                    const variantLabel =
+                      variant.color?.trim() ||
+                      t('product.variantOptionFallback', 'Option {index}', { index: index + 1 });
+                    const stockLabel =
+                      typeof variant.stock === 'number'
+                        ? t('product.variantStockLabel', 'In stock: {count}', { count: variant.stock })
+                        : t('product.variantStockUnknown', 'Stock unknown');
+                    const isOptionOutOfStock =
+                      typeof variant.stock === 'number' ? variant.stock <= 0 : false;
+                    return (
+                      <TouchableOpacity
+                        key={key}
+                        onPress={() => setSelectedVariantId(key)}
+                        style={[
+                          styles.variantOption,
+                          {
+                            borderColor: isSelected ? colors.gold : colors.border.primary,
+                            backgroundColor: isSelected
+                              ? colors.interactive.secondary
+                              : colors.surface.secondary,
+                            opacity: isOptionOutOfStock ? 0.6 : 1,
+                          },
+                        ]}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected: isSelected, disabled: isOptionOutOfStock }}
+                        accessibilityLabel={t('product.variantAccessibleName', '{label}. {stock}', {
+                          label: variantLabel,
+                          stock: stockLabel,
+                        })}
+                        accessibilityHint={
+                          isSelected
+                            ? t('product.variantSelectedHint', 'Currently selected option')
+                            : t('product.variantSelectHint', 'Double tap to select this option')
+                        }
+                        disabled={isOptionOutOfStock && !isSelected}
+                      >
+                        <View
+                          style={[
+                            styles.variantSwatch,
+                            {
+                              backgroundColor: variant.color || colors.surface.primary,
+                              borderColor: colors.border.primary,
+                            },
+                          ]}
+                        />
+                        <View style={styles.variantInfo}>
+                          <Text style={[styles.variantLabel, { color: colors.text.primary }]}>
+                            {variantLabel}
+                          </Text>
+                          <Text style={[styles.variantStock, { color: colors.text.secondary }]}>
+                            {stockLabel}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
             <View style={styles.quantityRow}>
               <Text style={{ color: colors.text.primary, fontWeight: '600' }}>
                 {t('productDetail.quantity', 'Quantity')}
@@ -196,7 +428,7 @@ export default function ProductDetailScreen() {
                   onPress={incrementQuantity}
                   accessibilityLabel={t('productDetail.increase', 'Increase quantity')}
                   style={[styles.quantityButton, { borderColor: colors.border.primary }]}
-                  disabled={product.stock !== undefined && quantity >= product.stock}
+                  disabled={isStockKnown && quantity >= rawStock}
                 >
                   <Plus size={16} color={colors.text.primary} />
                 </TouchableOpacity>
@@ -208,22 +440,24 @@ export default function ProductDetailScreen() {
             </Text>
             <View style={styles.stockRow}>
               <Text style={{ color: colors.text.secondary }}>
-                {t('productDetail.stock', 'In stock')}: {product.stock ?? t('common.unknown', 'Unknown')}
+                {t('productDetail.stock', 'In stock')}: {isStockKnown ? rawStock : t('common.unknown', 'Unknown')}
               </Text>
             </View>
-            <Button
-              onPress={handleAddToCart}
-              loading={adding}
-              disabled={!product.stock || product.stock === 0}
-              accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
-            >
-              <View style={styles.buttonContent}>
-                <ShoppingCart size={18} color={colors.text.inverse} />
-                <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
-                  {t('productDetail.addToCart', 'Add to cart')}
-                </Text>
-              </View>
-            </Button>
+            <DisabledTooltip label={disabledReason}>
+              <Button
+                onPress={handleAddToCart}
+                loading={adding}
+                disabled={isOutOfStock || isProductDisabled}
+                accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
+              >
+                <View style={styles.buttonContent}>
+                  <ShoppingCart size={18} color={colors.text.inverse} />
+                  <Text style={[styles.buttonText, { color: colors.text.inverse }]}> 
+                    {t('productDetail.addToCart', 'Add to cart')}
+                  </Text>
+                </View>
+              </Button>
+            </DisabledTooltip>
           </View>
         </View>
       )}
@@ -236,17 +470,41 @@ export default function ProductDetailScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: spacing.spacer12, paddingVertical: spacing.spacer12 }}
+            accessibilityHint={t(
+              'productDetail.galleryScrollHint',
+              'Swipe left or right to browse more media items.',
+            )}
           >
-            {media.map((item) => (
-              <SmartImage
-                key={item.uri}
-                uri={item.uri}
-                width={120}
-                height={120}
-                style={{ borderRadius: radius.md }}
-                contentFit="cover"
-              />
-            ))}
+            {media.map((item, index) => {
+              const fallbackDescription =
+                item.type === 'video'
+                  ? t('productDetail.galleryVideoLabel', 'Video')
+                  : t('productDetail.galleryImageLabel', 'Image');
+              const description = item.name || fallbackDescription;
+              const accessibilityLabel = t(
+                'productDetail.galleryItemAccessibilityLabel',
+                '{description} for {productName}. Item {index} of {total}.',
+                {
+                  description,
+                  productName: galleryProductName,
+                  index: index + 1,
+                  total: media.length,
+                },
+              );
+
+              return (
+                <SmartImage
+                  key={item.uri}
+                  uri={item.uri}
+                  width={120}
+                  height={120}
+                  style={{ borderRadius: radius.md }}
+                  contentFit="cover"
+                  accessibilityRole="image"
+                  accessibilityLabel={accessibilityLabel}
+                />
+              );
+            })}
           </ScrollView>
         </View>
       ) : null}
@@ -288,6 +546,39 @@ const styles = StyleSheet.create({
     padding: spacing.spacer12,
     borderRadius: radius.md,
   },
+  variantSection: {
+    marginTop: spacing.spacer12,
+    gap: spacing.spacer8,
+  },
+  variantOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.spacer12,
+  },
+  variantOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: radius.md,
+    padding: spacing.spacer8,
+    gap: spacing.spacer8,
+  },
+  variantSwatch: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+  },
+  variantInfo: {
+    flexDirection: 'column',
+  },
+  variantLabel: {
+    ...typography.sm,
+    fontWeight: '600',
+  },
+  variantStock: {
+    ...typography.xs,
+  },
   quantityRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -311,6 +602,13 @@ const styles = StyleSheet.create({
   stockRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  actionButtons: {
+    flexDirection: 'column',
+    gap: spacing.spacer12,
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
   },
   buttonContent: {
     flexDirection: 'row',

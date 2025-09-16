@@ -24,7 +24,7 @@ export default function useWishlist(visible: boolean) {
   }, []);
 
   const addToCart = useCallback(async (item: WishlistItem) => {
-    await CartService.getInstance().addToCart(item.product, 1);
+    await CartService.getInstance().addToCart(item.productId, undefined, 1);
   }, []);
 
   return {

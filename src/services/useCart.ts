@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import CartService from '@/features/cart/services/cart';
-import { CartItem, Product } from '@/types';
+import { CartItem } from '@/types';
 
 export function useCart() {
   return useQuery<CartItem[]>({
@@ -20,8 +20,15 @@ export function useCartMutations() {
   const svc = CartService.getInstance();
 
   const add = useMutation({
-    mutationFn: ({ product, quantity = 1 }: { product: Product; quantity?: number }) =>
-      svc.addToCart(product, quantity),
+    mutationFn: ({
+      productId,
+      quantity = 1,
+      variantId,
+    }: {
+      productId: string;
+      quantity?: number;
+      variantId?: string;
+    }) => svc.addToCart(productId, variantId, quantity),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },

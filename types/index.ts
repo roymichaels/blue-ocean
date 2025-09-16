@@ -1,4 +1,5 @@
 export interface ProductVariant {
+  id?: string;
   color: string;
   stock: number;
 }
@@ -224,6 +225,7 @@ export interface CartItem {
   unitPrice?: number;
   tierName?: string;
   effectiveQty?: number;
+  variantId?: string;
   selectedColor?: string;
 }
 

@@ -10,6 +10,7 @@ declare module 'lucide-react-native' {
 
   export const ArrowLeft: FC<LucideProps>;
   export const ArrowUpDown: FC<LucideProps>;
+  export const AlertTriangle: FC<LucideProps>;
   export const Bell: FC<LucideProps>;
   export const Calendar: FC<LucideProps>;
   export const Camera: FC<LucideProps>;

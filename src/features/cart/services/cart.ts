@@ -1,6 +1,6 @@
 import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CartItem, WishlistItem, Product, PricingTier, PricingTierRule, MixGroup } from '@/types';
+import { CartItem, WishlistItem, Product, ProductVariant, PricingTier, PricingTierRule, MixGroup } from '@/types';
 import DatabaseService from '@/services/database';
 import cartAgent, { getCartItems } from '@/agents/cart-agent';
 import eventBus from '@/services/eventBus';
@@ -173,30 +173,73 @@ class CartService {
   }
 
   // Cart methods
-  public async addToCart(product: Product, quantity: number = 1): Promise<void> {
-    const existingItemIndex = this.cartItems.findIndex(
-      item => item.productId === product.id
-    );
-
-    if (existingItemIndex >= 0) {
-      this.cartItems[existingItemIndex].quantity += quantity;
-      await cartAgent.update(this.cartItems[existingItemIndex]);
-    } else {
-      const uid = await this.getCurrentUserId();
-      const cartItem: CartItem = {
-        id: `${uid ? uid + '_' : ''}${product.id}_${Date.now()}`,
-        productId: product.id,
-        product,
-        quantity,
-        addedAt: new Date().toISOString()
-      };
-      this.cartItems.push(cartItem);
-      await cartAgent.add(cartItem);
+  public async addToCart(productId: string, variantId?: string, qty: number = 1): Promise<void> {
+    if (qty <= 0) {
+      throw new Error('Quantity must be at least 1');
     }
-    eventBus.track('cart.add', { productId: product.id, quantity });
-    await this.recalcPricing();
-    await this.saveToStorage();
-    this.notifyListeners();
+
+    try {
+      const db = DatabaseService.getInstance();
+      const product = await db.getProduct(productId);
+
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      let selectedVariant: ProductVariant | undefined;
+      let resolvedVariantId = variantId;
+
+      if (variantId) {
+        selectedVariant = product.variants?.find((variant) => {
+          if (variant.id && variant.id === variantId) return true;
+          return variant.color === variantId;
+        });
+
+        if (!selectedVariant) {
+          throw new Error('Selected variant is unavailable');
+        }
+
+        resolvedVariantId = selectedVariant.id ?? variantId ?? selectedVariant.color;
+      }
+
+      const variantKey = resolvedVariantId ?? undefined;
+
+      const existingItemIndex = this.cartItems.findIndex((item) => {
+        if (item.productId !== product.id) return false;
+        const itemVariantKey = item.variantId ?? item.selectedColor ?? undefined;
+        return itemVariantKey === variantKey;
+      });
+
+      if (existingItemIndex >= 0) {
+        const existingItem = this.cartItems[existingItemIndex];
+        existingItem.quantity += qty;
+        existingItem.product = product;
+        existingItem.variantId = variantKey;
+        existingItem.selectedColor = selectedVariant?.color;
+        await cartAgent.update(existingItem);
+      } else {
+        const uid = await this.getCurrentUserId();
+        const cartItem: CartItem = {
+          id: `${uid ? uid + '_' : ''}${product.id}${variantKey ? `_${variantKey}` : ''}_${Date.now()}`,
+          productId: product.id,
+          product,
+          quantity: qty,
+          addedAt: new Date().toISOString(),
+          variantId: variantKey,
+          selectedColor: selectedVariant?.color,
+        };
+        this.cartItems.push(cartItem);
+        await cartAgent.add(cartItem);
+      }
+
+      eventBus.track('cart.add', { productId: product.id, quantity: qty, variantId: variantKey ?? null });
+      await this.recalcPricing();
+      await this.saveToStorage();
+      this.notifyListeners();
+    } catch (error) {
+      errorLog('Error adding product to cart', error);
+      throw error;
+    }
   }
 
   public async removeFromCart(itemId: string): Promise<void> {
