@@ -96,6 +96,7 @@ jest.mock('@features/home/hooks/useHomeFilters', () => ({
     filteredProducts: [],
     searchQuery: '',
     setSearchQuery: jest.fn(),
+    applySearchResults: jest.fn(),
     selectedCategory: null,
     setSelectedCategory: jest.fn(),
     minPrice: '',

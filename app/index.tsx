@@ -1,5 +1,5 @@
 // TOUCHPOINT: app/index.tsx renders in production — Fix Pack v2
-import React, { Suspense, useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ import CategoryChips from '@/features/home/components/CategoryChips';
 import HomeOptions from '@/features/home/components/HomeOptions';
 import ProductGrid from '@/features/home/components/ProductGrid';
 import CategoryCard from '@/features/home/components/CategoryCard';
+import SearchBar from '@/features/home/components/SearchBar';
 import { Spinner, Heading } from '@/ui/primitives';
 import EmptyState from '@/shared/ui/EmptyState';
 import { CartModal } from '@/features/cart';
@@ -38,6 +39,7 @@ import ErrorBoundary from 'src/shared/ErrorBoundary';
 import HomeError from '@/features/home/screens/HomeError';
 import AdminOnboardingChecklist from '@/features/home/components/AdminOnboardingChecklist';
 import { useAppRouter } from '@/services/useAppRouter';
+import { localIndex } from '@/services/localIndex';
 
 function HomeScreenContent() {
   const { tenantId, isNetwork } = useTenant();
@@ -75,6 +77,8 @@ function HomeScreenContent() {
   const {
     filteredProducts,
     searchQuery,
+    setSearchQuery,
+    applySearchResults,
     selectedCategory,
     setSelectedCategory,
     minPrice,
@@ -86,6 +90,62 @@ function HomeScreenContent() {
     showSortModal,
     setShowSortModal,
   } = useHomeFilters(products);
+
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSearchRunRef = useRef(0);
+  const latestSearchValueRef = useRef(searchQuery);
+
+  useEffect(() => {
+    latestSearchValueRef.current = searchQuery;
+  }, [searchQuery]);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+      latestSearchValueRef.current = value;
+
+      const invoke = async () => {
+        const queryText = latestSearchValueRef.current;
+        try {
+          const result = await localIndex.query(queryText);
+          applySearchResults(queryText, result);
+        } catch {
+          applySearchResults(queryText, {
+            products: [...products],
+            total: products.length,
+          });
+        }
+      };
+
+      const now = Date.now();
+      const elapsed = now - lastSearchRunRef.current;
+      const wait = 150;
+
+      if (elapsed >= wait) {
+        lastSearchRunRef.current = now;
+        if (searchTimeoutRef.current) {
+          clearTimeout(searchTimeoutRef.current);
+          searchTimeoutRef.current = null;
+        }
+        void invoke();
+      } else if (!searchTimeoutRef.current) {
+        searchTimeoutRef.current = setTimeout(() => {
+          lastSearchRunRef.current = Date.now();
+          searchTimeoutRef.current = null;
+          void invoke();
+        }, wait - elapsed);
+      }
+    },
+    [applySearchResults, products, setSearchQuery],
+  );
 
   const getProductItemWidth = () => {
     if (windowWidth >= 1024) {
@@ -326,6 +386,11 @@ function HomeScreenContent() {
               )}
             </Stack>
           </Stack>
+
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
+          />
 
           <Suspense fallback={<Spinner />}>
             <ProductGrid
