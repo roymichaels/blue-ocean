@@ -1,15 +1,23 @@
 import React from 'react';
-import { View, Switch, StyleSheet } from 'react-native';
+import { View, Switch, StyleSheet, Alert } from 'react-native';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { Heading, Text, Card, Button } from '@/ui/primitives';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { spacing } from '@/ui/tokens';
+import { useLaunchGate } from '@/features/launchGate';
 
 export default function SettingsScreen() {
   const { colors, theme, setTheme } = useTheme();
   const { t, currentLanguage, setLanguage } = useLanguage();
   const { currencySymbol, setCurrencySymbol } = useCurrency();
+  const {
+    biometricEnabled,
+    biometricAvailable,
+    enableBiometric,
+    startPinReset,
+    pinSet,
+  } = useLaunchGate();
 
   const handleThemeToggle = (value: boolean) => {
     void setTheme(value ? 'dark' : 'light');
@@ -21,6 +29,26 @@ export default function SettingsScreen() {
 
   const handleCurrencyChange = (symbol: string) => {
     void setCurrencySymbol(symbol);
+  };
+
+  const handleBiometricToggle = async (value: boolean) => {
+    try {
+      await enableBiometric(value);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : undefined;
+      Alert.alert(
+        t('settings.biometricUnavailableTitle', 'Biometric unavailable'),
+        message ||
+          t(
+            'settings.biometricUnavailable',
+            'Your device does not support biometric unlock.',
+          ),
+      );
+    }
+  };
+
+  const handleResetPin = async () => {
+    await startPinReset();
   };
 
   return (
@@ -111,6 +139,54 @@ export default function SettingsScreen() {
                 {t(
                   'settings.accessibilityDescription',
                   'Anonymous browsing is supported. We only store preferences like theme and currency locally on your device.',
+                )}
+              </Text>
+            </Stack>
+          </Card>
+
+          <Card>
+            <Stack gap="spacer12">
+              <Heading size="md" style={{ color: colors.text.primary }}>
+                {t('settings.security', 'Security')}
+              </Heading>
+              <Text style={{ color: colors.text.secondary }}>
+                {t(
+                  'settings.securityDescription',
+                  'Enable biometrics and reset your app PIN.',
+                )}
+              </Text>
+              <View style={styles.row}>
+                <Text style={{ color: colors.text.primary }}>
+                  {t('settings.enableBiometric', 'Use biometric unlock')}
+                </Text>
+                <Switch
+                  value={biometricEnabled}
+                  onValueChange={handleBiometricToggle}
+                  disabled={!biometricAvailable || !pinSet}
+                  thumbColor={biometricEnabled ? colors.gold : colors.surface.secondary}
+                  accessibilityLabel={t('settings.enableBiometric', 'Use biometric unlock')}
+                />
+              </View>
+              {!biometricAvailable && (
+                <Text style={{ color: colors.text.secondary }}>
+                  {t(
+                    'settings.biometricUnavailable',
+                    'Biometric unlock is not available on this device.',
+                  )}
+                </Text>
+              )}
+              {!pinSet && (
+                <Text style={{ color: colors.text.secondary }}>
+                  {t('settings.pinRequired', 'Set up a PIN before enabling biometrics.')}
+                </Text>
+              )}
+              <Button onPress={handleResetPin} disabled={!pinSet}>
+                {t('settings.resetPin', 'Reset PIN')}
+              </Button>
+              <Text style={{ color: colors.text.secondary }}>
+                {t(
+                  'settings.resetPinHint',
+                  'Resetting your PIN requires biometric verification or a wallet signature.',
                 )}
               </Text>
             </Stack>

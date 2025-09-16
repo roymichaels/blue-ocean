@@ -32,6 +32,7 @@ import OrderService from '@/services/orders';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';
+import { useLaunchGate } from '@/features/launchGate';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 
 
@@ -50,6 +51,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
   const { t } = useLanguage();
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+  const { requireUnlock } = useLaunchGate();
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -182,6 +184,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
           onPress: async () => {
             try {
               const orderService = OrderService.getInstance();
+              await requireUnlock('order.cancel');
               const success = await orderService.cancelOrder(order.id);
               
               if (success) {
