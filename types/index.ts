@@ -28,6 +28,8 @@ export interface Product {
   mixGroupId?: string;
   storeId: string;
   stock: number;
+  disabled?: boolean;
+  disabledReason?: string;
   createdAt?: string;
   updatedAt?: string;
 }
