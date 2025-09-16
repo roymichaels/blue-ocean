@@ -44,6 +44,7 @@ export interface WakuClient {
 
 interface WakuContextValue extends WakuClient {
   status: 'connecting' | 'connected' | 'disconnected';
+  getPeerSummary: () => { peers: number; connections: number };
 }
 
 const noop = async () => {};
@@ -56,6 +57,7 @@ const defaultValue: WakuContextValue = {
   subscribeSystem: async () => () => {},
   broadcastNotification: noop,
   subscribeNotifications: async () => () => {},
+  getPeerSummary: () => ({ peers: 0, connections: 0 }),
 };
 
 const WakuContext = createContext<WakuContextValue>(defaultValue);
@@ -308,6 +310,32 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const getPeerSummary = useCallback(() => {
+    const node = nodeRef.current as any;
+    if (!node?.libp2p) {
+      return { peers: 0, connections: 0 };
+    }
+    const libp2p = node.libp2p;
+    const connections = typeof libp2p.getConnections === 'function'
+      ? libp2p.getConnections().length
+      : Array.isArray(libp2p?.connectionManager?.connections)
+        ? libp2p.connectionManager.connections.length
+        : 0;
+    let peers = 0;
+    const store = libp2p.peerStore as any;
+    if (store?.peers && typeof store.peers.size === 'number') {
+      peers = store.peers.size;
+    } else if (typeof store?.getPeers === 'function') {
+      try {
+        const list = store.getPeers();
+        peers = Array.isArray(list) ? list.length : 0;
+      } catch {
+        peers = 0;
+      }
+    }
+    return { peers, connections };
+  }, []);
+
   const value = useMemo(
     () => ({
       status,
@@ -318,6 +346,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       subscribeSystem,
       broadcastNotification,
       subscribeNotifications,
+      getPeerSummary,
     }),
     [
       status,
@@ -328,6 +357,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       subscribeSystem,
       broadcastNotification,
       subscribeNotifications,
+      getPeerSummary,
     ],
   );
 

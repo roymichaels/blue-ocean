@@ -1,6 +1,6 @@
 // Touchpoint: Ensure bottom navigation remains sticky on mobile devices
-import React, { useCallback, useEffect, useMemo } from 'react';
-import { View, useWindowDimensions, Platform } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PanResponder, StyleSheet, View, useWindowDimensions, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Slot, usePathname } from 'expo-router';
@@ -17,6 +17,8 @@ import { useTenant } from '@/contexts/TenantContext';
 import { getShopTenantId } from '@/services/config';
 import { useLaunchGate } from '@/features/launchGate';
 import { useAppRouter } from '@/services/useAppRouter';
+import { OpsDrawer } from '@/features/opsDrawer';
+import { isOpsDrawerEnabled } from '@/config/featureFlags';
 
 interface NavItemConfig extends NavItem {
   requiresAuth?: boolean;
@@ -69,6 +71,7 @@ const NAV_ITEMS: readonly NavItemConfig[] = [
 
 const LARGE_SCREEN = 768;
 const BOTTOM_BAR_HEIGHT = 72; // ~ spacing.spacer24 * 3
+const OPS_GESTURE_WIDTH = 24;
 
 export default function RootLayout() {
   const { theme, colors } = useTheme();
@@ -85,6 +88,60 @@ export default function RootLayout() {
   const { openAuthModal } = useAuthModal();
   const { recordActivity, ready: launchReady, pinSet } = useLaunchGate();
   const { replace } = useAppRouter();
+  const opsDrawerFeature = isOpsDrawerEnabled();
+  const [opsDrawerOpen, setOpsDrawerOpen] = useState(false);
+  const opsOpenRef = useRef(false);
+
+  useEffect(() => {
+    opsOpenRef.current = opsDrawerOpen;
+  }, [opsDrawerOpen]);
+
+  useEffect(() => {
+    if (!opsDrawerFeature && opsDrawerOpen) {
+      opsOpenRef.current = false;
+      setOpsDrawerOpen(false);
+    }
+  }, [opsDrawerFeature, opsDrawerOpen]);
+
+  const openOpsDrawer = useCallback(() => {
+    if (opsOpenRef.current) return;
+    opsOpenRef.current = true;
+    setOpsDrawerOpen(true);
+  }, []);
+
+  const closeOpsDrawer = useCallback(() => {
+    opsOpenRef.current = false;
+    setOpsDrawerOpen(false);
+  }, []);
+
+  const opsGestureResponder = useMemo(() => {
+    if (!opsDrawerFeature) return null;
+    return PanResponder.create({
+      onStartShouldSetPanResponder: (evt) => {
+        const pageX =
+          typeof evt.nativeEvent.pageX === 'number'
+            ? evt.nativeEvent.pageX
+            : evt.nativeEvent.locationX;
+        return pageX <= OPS_GESTURE_WIDTH;
+      },
+      onMoveShouldSetPanResponder: (evt, gesture) => {
+        const startX =
+          typeof evt.nativeEvent.pageX === 'number'
+            ? evt.nativeEvent.pageX
+            : evt.nativeEvent.locationX;
+        if (startX > OPS_GESTURE_WIDTH) return false;
+        if (Math.abs(gesture.dy) > 25) return false;
+        return gesture.dx > 12;
+      },
+      onPanResponderMove: (_evt, gesture) => {
+        if (gesture.dx > 40) openOpsDrawer();
+      },
+      onPanResponderRelease: (_evt, gesture) => {
+        if (gesture.dx > 40) openOpsDrawer();
+      },
+      onPanResponderTerminationRequest: () => true,
+    });
+  }, [opsDrawerFeature, openOpsDrawer]);
 
   const navItems = useMemo(() => {
     const replaced = NAV_ITEMS.map((item) => ({
@@ -193,10 +250,32 @@ export default function RootLayout() {
           </Portal>
         )}
         {showCartWidget && <FloatingCartWidget />}
+        {opsDrawerFeature && opsGestureResponder && (
+          <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+            <View
+              style={styles.opsGestureStrip}
+              pointerEvents="auto"
+              {...opsGestureResponder.panHandlers}
+            />
+          </View>
+        )}
+        {opsDrawerFeature && (
+          <OpsDrawer open={opsDrawerOpen} onClose={closeOpsDrawer} />
+        )}
       </SafeAreaView>
     </ErrorBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  opsGestureStrip: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: OPS_GESTURE_WIDTH,
+  },
+});
 
 // Acceptance: Bottom navigation is mobile-only and content has padding to avoid overlap
 
