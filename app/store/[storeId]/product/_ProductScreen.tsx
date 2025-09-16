@@ -306,6 +306,10 @@ export default function ProductDetailScreen() {
 
   const galleryProductName =
     product?.name || t('productDetail.galleryFallbackProductName', 'this product');
+  const galleryAccessibilityHint = t(
+    'productDetail.galleryScrollHint',
+    'Swipe left or right to browse more media items.',
+  );
 
   return (
     <ScrollView
@@ -506,17 +510,14 @@ export default function ProductDetailScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: spacing.spacer12, paddingVertical: spacing.spacer12 }}
-            accessibilityHint={t(
-              'productDetail.galleryScrollHint',
-              'Swipe left or right to browse more media items.',
-            )}
+            accessibilityHint={galleryAccessibilityHint}
           >
             {media.map((item, index) => {
               const fallbackDescription =
                 item.type === 'video'
                   ? t('productDetail.galleryVideoLabel', 'Video')
                   : t('productDetail.galleryImageLabel', 'Image');
-              const description = item.name || fallbackDescription;
+              const description = item.name?.trim() || fallbackDescription;
               const accessibilityLabel = t(
                 'productDetail.galleryItemAccessibilityLabel',
                 '{description} for {productName}. Item {index} of {total}.',
