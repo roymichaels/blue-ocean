@@ -621,6 +621,7 @@
       "courier_picked_up": "שליח אסף",
       "courier_on_way": "שליח בדרך",
       "delivered": "נמסר",
+      "disputed": "מחלוקת",
       "released": "תשלום שוחרר",
       "refunded": "תשלום הוחזר"
     },

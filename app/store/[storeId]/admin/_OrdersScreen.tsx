@@ -14,7 +14,7 @@ import type { Order, OrderStatus } from '@/types';
 import { useOrders } from '@/services/useOrders';
 import { ordersWarmCache } from '@/services/nearOrders';
 import ordersAgent, { ALLOWED_STATUS_TRANSITIONS } from '@/agents/orders-agent';
-import { Spinner } from '@/ui/primitives';
+import { Badge, Spinner } from '@/ui/primitives';
 import { useLaunchGate } from '@/features/launchGate/LaunchGateContext';
 import OrderTrackingModal from '@/components/OrderTrackingModal';
 import { useAppRouter } from '@/services';
@@ -47,6 +47,13 @@ function formatDate(value?: string): string {
   } catch {
     return value;
   }
+}
+
+function formatStatusLabel(status: OrderStatus): string {
+  return status
+    .split('_')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }
 
 function getFilterPredicate(filter: FilterKey): (order: Order) => boolean {
@@ -304,6 +311,7 @@ interface OrderRowProps {
 }
 
 function OrderRow({ order, colors, busy, onMarkShipped, onCancel }: OrderRowProps) {
+  const { t } = useLanguage();
   const actionableStatuses: OrderStatus[] = [
     'order_received',
     'courier_found',
@@ -312,6 +320,19 @@ function OrderRow({ order, colors, busy, onMarkShipped, onCancel }: OrderRowProp
   ];
   const actionable = actionableStatuses.includes(order.status);
   const cancellable = ['order_received', 'courier_found'].includes(order.status);
+  const statusColors: Record<OrderStatus, string> = {
+    order_received: colors.status.info,
+    courier_found: colors.status.info,
+    courier_picked_up: colors.status.info,
+    courier_on_way: colors.status.info,
+    delivered: colors.status.success,
+    disputed: colors.status.warning,
+    released: colors.status.success,
+    refunded: colors.status.error,
+  };
+  const currentStatusLabel = t('orders.currentStatus', 'סטטוס');
+  const statusLabel = t(`orders.status.${order.status}`, formatStatusLabel(order.status));
+  const badgeColor = statusColors[order.status] ?? colors.status.info;
   return (
     <View
       style={[
@@ -323,7 +344,16 @@ function OrderRow({ order, colors, busy, onMarkShipped, onCancel }: OrderRowProp
         <Text style={{ color: colors.text.secondary }}>{formatDate(order.createdAt)}</Text>
       </View>
       <View style={styles.orderMeta}>
-        <Text style={{ color: colors.text.secondary }}>סטטוס: {order.status}</Text>
+        <View style={styles.statusRow}>
+          <Text style={{ color: colors.text.secondary }}>{`${currentStatusLabel}:`}</Text>
+          <Badge
+            label={statusLabel}
+            style={[styles.statusBadge, { backgroundColor: badgeColor }]}
+            accessibilityRole="text"
+            accessibilityLabel={`${currentStatusLabel}: ${statusLabel}`}
+            accessible
+          />
+        </View>
         <Text style={{ color: colors.text.secondary }}>
           סכום: ₪{order.total.toLocaleString('he-IL')}
         </Text>
@@ -367,7 +397,9 @@ const styles = StyleSheet.create({
   },
   orderHeader: { flexDirection: 'row', justifyContent: 'space-between' },
   orderTitle: { fontSize: 16, fontWeight: '600' },
-  orderMeta: { flexDirection: 'row', justifyContent: 'space-between' },
+  orderMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statusBadge: { alignSelf: 'center' },
   actionRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
   secondaryButton: {
     borderWidth: 1,
