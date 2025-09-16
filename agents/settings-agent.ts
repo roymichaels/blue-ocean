@@ -33,7 +33,8 @@ type SettingKey =
   | 'paymentFactoryAddress'
   | 'rpcUrl'
   | 'rpcFallbackUrls'
-  | 'paymentFactoryAddress';
+  | 'paymentFactoryAddress'
+  | 'kyc.required';
 
 class SettingsAgent {
   private static instance: SettingsAgent;

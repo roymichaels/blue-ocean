@@ -113,6 +113,7 @@ export default function ProductFormModal({
             category: '',
             stock: 0,
             storeId: address || '',
+            isActive: true,
           }
     );
 
