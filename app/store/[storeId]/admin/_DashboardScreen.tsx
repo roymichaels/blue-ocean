@@ -1,124 +1,338 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  RefreshControl,
+} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useTheme, useLanguage } from '@/ui/ThemeProvider';
+import { Spinner } from '@/ui/primitives';
 import { useAppRouter } from '@/services';
-import { useTheme } from '@/ui/ThemeProvider';
-import { useLanguage } from '@/ui/ThemeProvider';
+import type { Order, Product, User } from '@/types';
+import { ordersWarmCache } from '@/services/nearOrders';
+import { productsWarmCache } from '@/features/products/services/nearProducts';
+import { usersWarmCache } from '@/features/auth/services/nearUsers';
+import AdminOnboardingChecklist from '@/features/home/components/AdminOnboardingChecklist';
 import OrderRevenueMetrics from '@/features/stores/components/OrderRevenueMetrics';
 import FeeDashboard from '@/features/billing/components/FeeDashboard';
-import { useAuth } from '@/features/auth/AuthContext';
-import { getStore as getNearStore } from '@/features/stores/services/nearStores';
-import { listProducts as listNearProducts } from '@/features/products/services/nearProducts';
-import { routes } from '@/utils/routes';
-import { Spinner } from '@/ui/primitives';
-import AdminOnboardingChecklist from '@/features/home/components/AdminOnboardingChecklist';
 
-export default function StoreDashboardScreen() {
-  console.debug('SD: mount');
-  const { replace, push } = useAppRouter();
-  const { storeId, impersonate } = useLocalSearchParams<{ storeId: string; impersonate?: string }>();
+const LOW_STOCK_THRESHOLD = 5;
+
+function isToday(date: string | undefined): boolean {
+  if (!date) return false;
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return false;
+  const now = new Date();
+  return (
+    parsed.getFullYear() === now.getFullYear() &&
+    parsed.getMonth() === now.getMonth() &&
+    parsed.getDate() === now.getDate()
+  );
+}
+
+function isOrderForStore(order: Order | undefined, storeId: string): order is Order {
+  if (!order) return false;
+  return order.items?.some((item) => item.product?.storeId === storeId) ?? false;
+}
+
+function getOrderAttentionScore(order: Order): number {
+  const updated = order.updatedAt ? new Date(order.updatedAt).getTime() : 0;
+  const created = order.createdAt ? new Date(order.createdAt).getTime() : 0;
+  return Math.max(updated, created);
+}
+
+interface Kpis {
+  ordersToday: number;
+  pendingKyc: number;
+  lowStock: number;
+}
+
+const initialKpis: Kpis = { ordersToday: 0, pendingKyc: 0, lowStock: 0 };
+
+export default function StoreDashboardScreen(): React.ReactElement {
+  const { storeId } = useLocalSearchParams<{ storeId: string }>();
   const { colors } = useTheme();
   const { t } = useLanguage();
-  const { user } = useAuth();
-  const [productCount, setProductCount] = useState(0);
-  const [authorized, setAuthorized] = useState(false);
-  const [store, setStore] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
+  const { push } = useAppRouter();
+  const [kpis, setKpis] = useState<Kpis>(initialKpis);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const handleOpenProducts = useCallback(() => {
-    if (!storeId) return;
-    push(`/store/${storeId}/admin/products`);
-  }, [push, storeId]);
+  const computeKpis = useCallback(
+    (nextOrders: Order[], nextProducts: Product[], nextUsers: User[]) => {
+      const ordersToday = nextOrders.filter((order) => isToday(order.createdAt)).length;
+      const pendingKyc = nextUsers.filter((user) => user.kycStatus === 'pending').length;
+      const lowStock = nextProducts.filter(
+        (product) => product.storeId === storeId && (product.stock ?? 0) <= LOW_STOCK_THRESHOLD,
+      ).length;
+      setKpis({ ordersToday, pendingKyc, lowStock });
+    },
+    [storeId],
+  );
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      if (!storeId) return;
-      try {
-        console.debug('SD: fetch store', storeId);
-        const s = await getNearStore(storeId, storeId);
-        if (active) setStore(s);
-      } catch {
-        // ignore
-      }
-      try {
-        console.debug('SD: fetch products', storeId);
-        const ps = await listNearProducts(storeId);
-        if (active) setProducts(ps || []);
-      } catch {
-        // ignore
-      }
-      if (active) setLoading(false);
-    })();
-    return () => {
-      active = false;
-    };
+  const loadFromCaches = useCallback(() => {
+    if (!storeId) return { orders: [], products: [], users: [] };
+    let cachedOrders: Order[] = [];
+    let cachedProducts: Product[] = [];
+    let cachedUsers: User[] = [];
+    try {
+      cachedOrders = ordersWarmCache.list((_, order) => isOrderForStore(order, storeId));
+    } catch {}
+    try {
+      cachedProducts = productsWarmCache.list((_, product) => product.storeId === storeId);
+    } catch {}
+    try {
+      cachedUsers = usersWarmCache.list();
+    } catch {}
+    return { orders: cachedOrders, products: cachedProducts, users: cachedUsers };
   }, [storeId]);
 
   useEffect(() => {
-    if (!storeId || !store) return;
-    const isAdmin = impersonate === 'true' && user?.role === 'platform-admin';
-    if (store.owner !== user?.address && !isAdmin) {
-      replace(routes.store(storeId));
-      return;
-    }
-    setAuthorized(true);
-    setProductCount(products.filter((p) => p.storeId === storeId).length);
-  }, [storeId, store, user?.address, products, impersonate]);
-  
+    if (!storeId) return;
+    let cancelled = false;
+    const hydrate = () => {
+      const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
+        loadFromCaches();
+      if (cancelled) return;
+      setOrders(
+        cachedOrders
+          .slice()
+          .sort((a, b) => getOrderAttentionScore(b) - getOrderAttentionScore(a)),
+      );
+      computeKpis(cachedOrders, cachedProducts, cachedUsers);
+      setLoading(false);
+    };
 
-  if (!authorized) {
-    console.debug('SD: not authorized yet');
+    hydrate();
+
+    const unsubOrders = ordersWarmCache.subscribe((_, order) => {
+      if (!storeId || !isOrderForStore(order, storeId)) return;
+      const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
+        loadFromCaches();
+      if (cancelled) return;
+      setOrders(
+        cachedOrders
+          .slice()
+          .sort((a, b) => getOrderAttentionScore(b) - getOrderAttentionScore(a)),
+      );
+      computeKpis(cachedOrders, cachedProducts, cachedUsers);
+    });
+
+    const unsubProducts = productsWarmCache.subscribe((_, product) => {
+      if (!storeId || !product || product.storeId !== storeId) return;
+      const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
+        loadFromCaches();
+      if (cancelled) return;
+      computeKpis(cachedOrders, cachedProducts, cachedUsers);
+    });
+
+    const unsubUsers = usersWarmCache.subscribe(() => {
+      const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
+        loadFromCaches();
+      if (cancelled) return;
+      computeKpis(cachedOrders, cachedProducts, cachedUsers);
+    });
+
+    return () => {
+      cancelled = true;
+      unsubOrders?.();
+      unsubProducts?.();
+      unsubUsers?.();
+    };
+  }, [storeId, loadFromCaches, computeKpis]);
+
+  const onRefresh = useCallback(() => {
+    if (!storeId) return;
+    setRefreshing(true);
+    const { orders: cachedOrders, products: cachedProducts, users: cachedUsers } =
+      loadFromCaches();
+    setOrders(
+      cachedOrders
+        .slice()
+        .sort((a, b) => getOrderAttentionScore(b) - getOrderAttentionScore(a)),
+    );
+    computeKpis(cachedOrders, cachedProducts, cachedUsers);
+    setRefreshing(false);
+  }, [computeKpis, loadFromCaches, storeId]);
+
+  const actionableOrders = useMemo(
+    () =>
+      orders
+        .filter(
+          (order) =>
+            !['delivered', 'released', 'refunded'].includes(order.status) &&
+            order.items?.length,
+        )
+        .slice(0, 3),
+    [orders],
+  );
+
+  const addProduct = useCallback(() => {
+    if (!storeId) return;
+    push(`/store/${storeId}/admin/products?create=1`);
+  }, [push, storeId]);
+
+  const openOrder = useCallback(
+    (orderId: string) => {
+      if (!storeId || !orderId) return;
+      push(`/store/${storeId}/admin/orders?orderId=${orderId}`);
+    },
+    [push, storeId],
+  );
+
+  if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Spinner />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text.primary }]}>{t('admin.dashboard')}</Text>
-      <AdminOnboardingChecklist onAddProduct={handleOpenProducts} />
-      <View style={{ height: 16 }} />
-      <View style={styles.stats}>
-        <Text style={[styles.statText, { color: colors.text.primary }]}>
-          {t('admin.productCount', { count: productCount })}
-        </Text>
-        {storeId && <OrderRevenueMetrics storeId={storeId} />}
-      </View>
-      {storeId && <FeeDashboard tenantId={storeId} />}
-      <View style={styles.nav}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+      <View style={styles.headerRow}>
+        <Text style={[styles.title, { color: colors.text.primary }]}>{t('admin.dashboard')}</Text>
         <TouchableOpacity
-          style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => push(`/store/${storeId}/admin/products`)}
-        >
-          <Text style={{ color: colors.text.primary }}>{t('admin.manageProducts')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.navButton, { borderColor: colors.border.primary }]}
-          onPress={() => push(`/store/${storeId}/admin/orders`)}
-        >
-          <Text style={{ color: colors.text.primary }}>{t('admin.viewOrders')}</Text>
+          accessibilityRole="button"
+          style={[styles.addButton, { borderColor: colors.border.primary }]}
+          onPress={addProduct}>
+          <Text style={[styles.addButtonText, { color: colors.text.primary }]}>הוסף מוצר מהיר</Text>
         </TouchableOpacity>
       </View>
+
+      <View style={styles.kpiRow}>
+        <KpiCard
+          label="הזמנות היום"
+          value={kpis.ordersToday}
+          colors={colors}
+        />
+        <KpiCard
+          label="בקשות KYC ממתינות"
+          value={kpis.pendingKyc}
+          colors={colors}
+        />
+        <KpiCard
+          label={`מלאי נמוך (<${LOW_STOCK_THRESHOLD})`}
+          value={kpis.lowStock}
+          colors={colors}
+        />
+      </View>
+
+      {storeId ? (
+        <View style={styles.metricsSection}>
+          <OrderRevenueMetrics storeId={storeId} />
+          <View style={styles.metricSpacer} />
+          <FeeDashboard tenantId={storeId} />
+        </View>
+      ) : null}
+
+      <AdminOnboardingChecklist onAddProduct={addProduct} />
+
+      <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>הזמנות לטיפול</Text>
+      {actionableOrders.length === 0 ? (
+        <Text style={{ color: colors.text.secondary }}>אין הזמנות הדורשות פעולה.</Text>
+      ) : (
+        <View style={styles.bannerColumn}>
+          {actionableOrders.map((order) => (
+            <TouchableOpacity
+              key={order.id}
+              style={[styles.orderBanner, { borderColor: colors.border.primary }]}
+              onPress={() => openOrder(order.id)}>
+              <View style={styles.bannerText}>
+                <Text style={[styles.orderId, { color: colors.text.primary }]}>#{order.id}</Text>
+                <Text style={{ color: colors.text.secondary }}>{order.status}</Text>
+              </View>
+              <Text style={{ color: colors.text.secondary }}>
+                {new Date(order.createdAt || order.updatedAt || Date.now()).toLocaleString('he-IL')}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </ScrollView>
+  );
+}
+
+interface KpiCardProps {
+  label: string;
+  value: number;
+  colors: any;
+}
+
+function KpiCard({ label, value, colors }: KpiCardProps) {
+  return (
+    <View
+      style={[
+        styles.kpiCard,
+        {
+          backgroundColor: colors.surface.primary,
+          borderColor: colors.border.primary,
+        },
+      ]}>
+      <Text style={[styles.kpiValue, { color: colors.text.primary }]}>{value}</Text>
+      <Text style={[styles.kpiLabel, { color: colors.text.secondary }]}>{label}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 20, fontWeight: '600', marginBottom: 24, textAlign: 'right' },
-  stats: { marginBottom: 24, gap: 8, alignItems: 'flex-end' },
-  statText: { fontSize: 16 },
-  nav: { gap: 12 },
-  navButton: {
-    paddingVertical: 12,
+  container: { flex: 1 },
+  content: {
+    padding: 16,
+    gap: 16,
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: { fontSize: 22, fontWeight: '700' },
+  addButton: {
+    paddingVertical: 10,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 10,
+  },
+  addButtonText: { fontSize: 14, fontWeight: '600' },
+  kpiRow: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  kpiCard: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+  },
+  kpiValue: { fontSize: 28, fontWeight: '700', textAlign: 'center' },
+  kpiLabel: { fontSize: 14, textAlign: 'center', marginTop: 4 },
+  metricsSection: {
+    gap: 12,
+  },
+  metricSpacer: { height: 8 },
+  sectionTitle: { fontSize: 18, fontWeight: '600' },
+  bannerColumn: { gap: 12 },
+  orderBanner: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
+  bannerText: { gap: 4 },
+  orderId: { fontSize: 16, fontWeight: '600' },
 });
-

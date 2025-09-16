@@ -19,6 +19,7 @@ import { getPrivateKey } from '@/services/localIdentity';
 import { aesEncrypt, aesDecrypt } from '@/utils/encryption';
 import { sha256 } from '@noble/hashes/sha256';
 import { Buffer } from 'buffer';
+import { publishProductDeleted } from '@/services/productEvents';
 
 let listAllReviews: (() => Promise<Review[]>) | undefined;
 if (chain === 'near') {
@@ -217,7 +218,11 @@ class DatabaseService {
   }
 
   async deleteProduct(id: string): Promise<void> {
+    const existing = await fetchProduct(id);
     await productsAgent.remove(id);
+    if (existing) {
+      await publishProductDeleted(id, existing.storeId);
+    }
   }
 
   // Subcategories

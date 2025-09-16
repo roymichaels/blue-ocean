@@ -33,6 +33,7 @@ export const productSchema: z.ZodType<Product> = z.object({
   mixGroupId: z.string().optional(),
   storeId: z.string(),
   stock: z.number(),
+  isActive: z.boolean().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

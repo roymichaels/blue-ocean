@@ -38,10 +38,10 @@ import AgentError from '@/types/AgentError';
 import { canonicalJson } from '@/utils/serialization';
 
 export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  order_received: ['courier_found'],
-  courier_found: ['courier_picked_up'],
-  courier_picked_up: ['courier_on_way'],
-  courier_on_way: ['delivered'],
+  order_received: ['courier_found', 'refunded'],
+  courier_found: ['courier_picked_up', 'refunded'],
+  courier_picked_up: ['courier_on_way', 'refunded'],
+  courier_on_way: ['delivered', 'refunded'],
   delivered: ['released', 'refunded', 'disputed'],
   disputed: ['released', 'refunded'],
   released: [],
