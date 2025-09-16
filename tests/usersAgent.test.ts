@@ -59,10 +59,10 @@ describe('UsersAgent NEAR integration', () => {
     };
     await usersAgent.add(user);
 
-    await usersAgent.requestKyc('u2', 'ipfs://doc');
+    await usersAgent.requestKyc('u2', { uri: 'ipfs://doc', hash: 'deadbeef' });
     const pending = await usersAgent.get('u2');
     expect(pending?.kycStatus).toBe('pending');
-    expect(pending?.kycDocumentUri).toBe('ipfs://doc');
+    expect(pending?.kycDocument).toEqual({ uri: 'ipfs://doc', hash: 'deadbeef' });
 
     await usersAgent.updateKyc('u2', 'verified', 'admin1');
     const verified = await usersAgent.get('u2');
