@@ -33,13 +33,20 @@ export const productSchema: z.ZodType<Product> = z.object({
   mixGroupId: z.string().optional(),
   storeId: z.string(),
   stock: z.number(),
+  isActive: z.boolean().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
 
+export const productUpdatedPayloadSchema = z.object({
+  product: productSchema,
+  ts: z.number(),
+  nonce: z.string(),
+});
+
 export const productUpdatedSchema = wakuMessageSchema.extend({
   type: z.literal('product.updated'),
-  payload: productSchema,
+  payload: productUpdatedPayloadSchema,
 });
 
 export type ProductUpdatedMessage = z.infer<typeof productUpdatedSchema>;

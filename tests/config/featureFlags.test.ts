@@ -60,6 +60,25 @@ describe('scoped tokens feature flag', () => {
   });
 });
 
+describe('moonpay feature flag', () => {
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_FEATURE_MOONPAY;
+    jest.resetModules();
+  });
+
+  it('is disabled by default', () => {
+    const { isMoonPayEnabled } = require('@/config/featureFlags');
+    expect(isMoonPayEnabled()).toBe(false);
+  });
+
+  it('respects environment flag', () => {
+    process.env.EXPO_PUBLIC_FEATURE_MOONPAY = 'true';
+    jest.resetModules();
+    const { isMoonPayEnabled } = require('@/config/featureFlags');
+    expect(isMoonPayEnabled()).toBe(true);
+  });
+});
+
 describe('notifications pipeline feature flag', () => {
   beforeEach(() => {
     delete process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE;

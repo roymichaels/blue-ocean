@@ -28,8 +28,7 @@ export interface Product {
   mixGroupId?: string;
   storeId: string;
   stock: number;
-  disabled?: boolean;
-  disabledReason?: string;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

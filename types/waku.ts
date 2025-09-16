@@ -4,6 +4,7 @@ export {
   type NotificationEvent,
   type NotificationWakuPayload,
   type ProductUpdatedMessage,
+  type ProductDeletedMessage,
   type OrderStatusMessage,
   type AdminJoinRequestMessage,
   type AdminApproveMessage,
@@ -11,4 +12,5 @@ export {
   type WorkspaceCreatedMessage,
   type WorkspaceCreatedPayload,
   type DeliveryUpdateMessage,
+  type KycReceiptMessage,
 } from '../schemas/waku';

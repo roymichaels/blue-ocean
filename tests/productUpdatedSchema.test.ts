@@ -17,7 +17,11 @@ describe('product.updated schema', () => {
   test('valid message parses', () => {
     const msg = {
       type: 'product.updated',
-      payload: product,
+      payload: {
+        product,
+        ts: 1700000000000,
+        nonce: 'abcdef123456',
+      },
       sender: { publicKey: '0xabc' },
       signature: '0x123',
     };
@@ -28,7 +32,7 @@ describe('product.updated schema', () => {
   test('invalid message fails', () => {
     const bad = {
       type: 'product.updated',
-      payload: { id: 'p1' },
+      payload: { product: { id: 'p1' } },
       sender: { publicKey: '0xabc' },
       signature: '0x123',
     };
