@@ -1,10 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Card, Heading, Text, Button, Spinner } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { spacing, radius } from '@/ui/tokens';
 import meteredBilling, { useBillingSummary } from '@/billing';
+import { useLaunchGate } from '@/features/launchGate';
 
 interface FeeDashboardProps {
   tenantId: string | null;
@@ -32,7 +33,11 @@ function formatTimestamp(value?: string | null): string {
 export default function FeeDashboard({ tenantId, usagePreviewLimit = 4 }: FeeDashboardProps) {
   const { t } = useLanguage();
   const { colors } = useTheme();
-  const { data, error, isLoading, isFetching, refetch } = useBillingSummary(tenantId);
+  const { ready: launchReady, pinSet, requireUnlock } = useLaunchGate();
+  const [authorized, setAuthorized] = useState(false);
+  const [authRequested, setAuthRequested] = useState(false);
+  const effectiveTenant = authorized ? tenantId : null;
+  const { data, error, isLoading, isFetching, refetch } = useBillingSummary(effectiveTenant);
   const [settling, setSettling] = useState(false);
   const [settleError, setSettleError] = useState<string | null>(null);
 
@@ -51,6 +56,7 @@ export default function FeeDashboard({ tenantId, usagePreviewLimit = 4 }: FeeDas
     setSettleError(null);
     try {
       setSettling(true);
+      await requireUnlock('billing.viewFees');
       await meteredBilling.settleUsage(tenantId);
       await refetch();
     } catch (err) {
@@ -59,10 +65,57 @@ export default function FeeDashboard({ tenantId, usagePreviewLimit = 4 }: FeeDas
     } finally {
       setSettling(false);
     }
-  }, [tenantId, outstanding, settling, refetch]);
+  }, [tenantId, outstanding, settling, refetch, requireUnlock]);
 
   if (!tenantId) {
     return null;
+  }
+
+  useEffect(() => {
+    if (!launchReady) return;
+    if (!tenantId || !pinSet) {
+      setAuthorized(false);
+      return;
+    }
+    let active = true;
+    setAuthRequested(true);
+    requireUnlock('billing.viewFees')
+      .then(() => {
+        if (active) setAuthorized(true);
+      })
+      .catch(() => {
+        if (active) setAuthorized(false);
+      });
+    return () => {
+      active = false;
+      setAuthorized(false);
+    };
+  }, [launchReady, pinSet, tenantId, requireUnlock]);
+
+  if (!authorized) {
+    return (
+      <Card style={styles.card}>
+        <Stack gap="spacer16" align="center">
+          <Heading size="md" style={{ color: colors.text.primary }}>
+            {t('billing.title', 'Network fees & usage')}
+          </Heading>
+          <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
+            {t(
+              'billing.unlockPrompt',
+              'Unlock with your PIN to view fee settings.',
+            )}
+          </Text>
+          <Button
+            onPress={() => {
+              void requireUnlock('billing.viewFees').then(() => setAuthorized(true));
+            }}
+            loading={!authRequested || !launchReady}
+          >
+            {t('billing.unlockAction', 'Unlock')}
+          </Button>
+        </Stack>
+      </Card>
+    );
   }
 
   return (

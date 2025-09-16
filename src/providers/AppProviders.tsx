@@ -13,6 +13,7 @@ import { AuthModalProvider } from '@/features/auth/AuthModalContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import { reportError } from '@/services/errorReporter';
+import { LaunchGateProvider } from '@/features/launchGate';
 
 declare global {
   // React Native fast refresh re-evaluates modules; store the client globally to avoid recreation.
@@ -64,7 +65,9 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
                     <AuthProvider>
                       <AuthModalProvider>
                         <CurrencyProvider>
-                          <NotificationProvider>{children}</NotificationProvider>
+                          <NotificationProvider>
+                            <LaunchGateProvider>{children}</LaunchGateProvider>
+                          </NotificationProvider>
                         </CurrencyProvider>
                       </AuthModalProvider>
                     </AuthProvider>

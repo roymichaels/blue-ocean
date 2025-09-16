@@ -1,5 +1,5 @@
 // Touchpoint: Ensure bottom navigation remains sticky on mobile devices
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { View, useWindowDimensions, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -15,6 +15,8 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { getShopTenantId } from '@/services/config';
+import { useLaunchGate } from '@/features/launchGate';
+import { useAppRouter } from '@/services/useAppRouter';
 
 interface NavItemConfig extends NavItem {
   requiresAuth?: boolean;
@@ -81,6 +83,8 @@ export default function RootLayout() {
   const showCartWidget = showSearch;
 
   const { openAuthModal } = useAuthModal();
+  const { recordActivity, ready: launchReady, pinSet } = useLaunchGate();
+  const { replace } = useAppRouter();
 
   const navItems = useMemo(() => {
     const replaced = NAV_ITEMS.map((item) => ({
@@ -110,9 +114,37 @@ export default function RootLayout() {
     });
   }, [isLoggedIn, isStoreOwner, tenantId, openAuthModal]);
 
+  useEffect(() => {
+    if (!launchReady) return;
+    if (!pinSet && pathname !== '/wallet') {
+      replace('/wallet');
+      return;
+    }
+    if (pinSet && pathname === '/wallet') {
+      replace('/');
+    }
+  }, [launchReady, pinSet, pathname, replace]);
+
+  useEffect(() => {
+    if (!launchReady) return;
+    recordActivity();
+  }, [pathname, launchReady, recordActivity]);
+
+  const handleAnyInteraction = useCallback(() => {
+    if (!launchReady) return;
+    recordActivity();
+  }, [launchReady, recordActivity]);
+
   return (
     <ErrorBoundary>
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: colors.canvas }}
+        onTouchStart={handleAnyInteraction}
+        onStartShouldSetResponder={() => {
+          handleAnyInteraction();
+          return false;
+        }}
+      >
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.canvas} />
         <GlobalHeader showSearch={showSearch} />
         <View
@@ -120,6 +152,9 @@ export default function RootLayout() {
             flex: 1,
             flexDirection: isRTL ? 'row-reverse' : 'row',
           }}
+          onTouchStart={handleAnyInteraction}
+          // @ts-expect-error React Native web supports onMouseDown
+          onMouseDown={handleAnyInteraction}
         >
           {isLargeScreen && <SidebarTabBar items={navItems} isSidebar />}
           <View
