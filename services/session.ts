@@ -30,6 +30,7 @@ export interface EncryptedScopePayload {
   cipher: string;
   walletPublicKey: string;
   identityPublicKey: string;
+  kycReceiptHash?: string;
 }
 
 export interface SessionToken {
@@ -42,6 +43,7 @@ export interface SessionToken {
 
 export interface ScopeRequestOptions {
   sealed?: EncryptedScopePayload | (() => EncryptedScopePayload | undefined);
+  kycReceiptHash?: string;
 }
 
 export type SyncSessionSigner = (message: string) => string;
@@ -151,8 +153,16 @@ export function requestScopes(
 
     const persist = (maybeToken: string | undefined): SessionToken => {
       const token = maybeToken || uuid();
-      const sealed =
+      const resolvedSealed =
         typeof options.sealed === 'function' ? options.sealed() : options.sealed;
+      const receiptHash =
+        typeof options.kycReceiptHash === 'string' && options.kycReceiptHash.length > 0
+          ? options.kycReceiptHash
+          : undefined;
+      const sealed =
+        resolvedSealed && receiptHash
+          ? { ...resolvedSealed, kycReceiptHash: receiptHash }
+          : resolvedSealed;
       const record: SessionToken = sealed
         ? { token, scopes, exp, sealed, deviceHash }
         : { token, scopes, exp, deviceHash };

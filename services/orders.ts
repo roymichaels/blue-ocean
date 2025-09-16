@@ -22,6 +22,7 @@ import { checkoutTokenIntegrity } from '@/services/monitoring';
 import SettingsAgent from '@/agents/settings-agent';
 import { loadKycReceipt } from '@/services/kycReceipts';
 import { getPublicKeyHex } from '@/services/localIdentity';
+import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
@@ -31,6 +32,8 @@ const KYC_RECEIPT_ERROR = 'KYC receipt missing or invalid';
 type VerifiedKycReceipt = {
   receiptId: string;
   buyerPublicKey: string;
+  signature: string;
+  hash: string;
 };
 
 export async function emitOrderEvents(
@@ -149,6 +152,26 @@ class OrderService {
       return fail('buyer_key_mismatch');
     }
 
+    if (!receipt.signature || typeof receipt.signature !== 'string') {
+      return fail('signature_missing');
+    }
+
+    const issuerPublicKey = receipt.payload.issuerPublicKey;
+    const senderPublicKey = receipt.sender?.publicKey;
+
+    if (typeof senderPublicKey !== 'string' || senderPublicKey.length === 0) {
+      return fail('issuer_missing');
+    }
+
+    if (issuerPublicKey !== senderPublicKey) {
+      return fail('issuer_mismatch');
+    }
+
+    const signatureValid = await verifyMessageSignature(receipt, senderPublicKey);
+    if (!signatureValid) {
+      return fail('signature_invalid');
+    }
+
     const data = receipt.payload.data || {};
     let receiptDeviceHash: string | undefined;
     if (data && typeof data === 'object') {
@@ -164,9 +187,29 @@ class OrderService {
       return fail('device_hash_mismatch');
     }
 
+    const receiptHash = Buffer.from(
+      sha256(
+        Buffer.from(
+          canonicalJson({
+            type: receipt.type,
+            payload: receipt.payload,
+            sender: receipt.sender,
+            signature: receipt.signature,
+          }),
+        ),
+      ),
+    ).toString('hex');
+
+    const sealedHash = session.sealed?.kycReceiptHash;
+    if (typeof sealedHash === 'string' && sealedHash !== receiptHash) {
+      return fail('receipt_hash_mismatch');
+    }
+
     return {
       receiptId: receipt.payload.receiptId,
       buyerPublicKey,
+      signature: receipt.signature,
+      hash: receiptHash,
     };
   }
 
@@ -233,6 +276,8 @@ class OrderService {
       platformFee: feeInfo?.platformFee,
       sellerPayout: feeInfo?.sellerPayout,
       kycReceiptId: kyc.receiptId,
+      kycReceiptHash: kyc.hash,
+      kycReceiptSignature: kyc.signature,
     };
 
     await ordersAgent.add(order);

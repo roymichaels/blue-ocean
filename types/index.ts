@@ -265,6 +265,8 @@ export interface Order {
   disputeEvidenceUri?: string;
   itemsHash: string;
   kycReceiptId?: string;
+  kycReceiptHash?: string;
+  kycReceiptSignature?: string;
   createdAt: string;
   updatedAt: string;
   trackingSteps: OrderTrackingStep[];

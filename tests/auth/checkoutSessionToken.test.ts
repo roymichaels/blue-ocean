@@ -38,6 +38,10 @@ jest.mock('@/services/kycReceipts', () => ({
   issueKycReceipt: jest.fn(),
 }));
 
+jest.mock('@/utils/verifyMessageSignature', () => ({
+  verifyMessageSignature: jest.fn().mockResolvedValue(true),
+}));
+
 jest.mock('@noble/hashes/sha256', () => ({
   sha256: () => new Uint8Array(32),
 }));
@@ -183,6 +187,9 @@ describe('login issues session token used in checkout', () => {
     expect(mockAddOrder).toHaveBeenCalled();
     const passedOrder = mockAddOrder.mock.calls[0][0];
     expect(passedOrder.sessionToken).toBe('checkout-token');
+    expect(passedOrder.kycReceiptSignature).toBe('sig');
+    expect(typeof passedOrder.kycReceiptHash).toBe('string');
+    expect(passedOrder.kycReceiptHash).toHaveLength(64);
   });
 });
 
