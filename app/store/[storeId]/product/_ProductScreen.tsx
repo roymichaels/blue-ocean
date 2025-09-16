@@ -18,6 +18,10 @@ import EmptyState from '@/shared/ui/EmptyState';
 import { useAppRouter } from '@/services/useAppRouter';
 import { useProductDetail } from '@/features/products/hooks/useProductDetail';
 import { AlertTriangle, Heart, Minus, Plus, ShoppingCart } from 'lucide-react-native';
+import type { ProductVariant } from '@/types';
+
+const getVariantKey = (variant: ProductVariant, index: number) =>
+  variant.id ?? variant.color ?? String(index);
 
 export default function ProductDetailScreen() {
   const { storeId, productId } = useLocalSearchParams<{ storeId: string; productId: string }>();
@@ -59,19 +63,34 @@ export default function ProductDetailScreen() {
 
     setSelectedVariantId((prev) => {
       if (prev) {
-        const exists = product.variants?.some((variant) => (variant.id ?? variant.color) === prev);
-        if (exists) {
-          return prev;
+        const existingIndex = product.variants.findIndex(
+          (variant, index) => getVariantKey(variant, index) === prev,
+        );
+        if (existingIndex >= 0) {
+          const existingVariant = product.variants[existingIndex];
+          const hasStock =
+            typeof existingVariant.stock === 'number' ? existingVariant.stock > 0 : true;
+          if (hasStock) {
+            return prev;
+          }
         }
       }
-      const first = product.variants[0];
-      return first.id ?? first.color;
+
+      const availableIndex = product.variants.findIndex((variant) =>
+        typeof variant.stock === 'number' ? variant.stock > 0 : true,
+      );
+      const fallbackIndex = availableIndex >= 0 ? availableIndex : 0;
+      const fallbackVariant = product.variants[fallbackIndex];
+      if (!fallbackVariant) {
+        return undefined;
+      }
+      return getVariantKey(fallbackVariant, fallbackIndex);
     });
   }, [product]);
 
   const selectedVariant = useMemo(() => {
     if (!product?.variants || !selectedVariantId) return undefined;
-    return product.variants.find((variant) => (variant.id ?? variant.color) === selectedVariantId);
+    return product.variants.find((variant, index) => getVariantKey(variant, index) === selectedVariantId);
   }, [product?.variants, selectedVariantId]);
 
   useEffect(() => {
@@ -83,6 +102,9 @@ export default function ProductDetailScreen() {
 
   const handleAddToCart = useCallback(async () => {
     if (!product) return;
+    if (product.variants?.length && !selectedVariantId) {
+      return;
+    }
     setAdding(true);
     try {
       await CartService.getInstance().addToCart(product.id, selectedVariantId, quantity);
@@ -118,6 +140,8 @@ export default function ProductDetailScreen() {
   const rawStock = selectedVariant?.stock ?? product?.stock;
   const isStockKnown = rawStock !== undefined && rawStock !== null;
   const isOutOfStock = isStockKnown ? rawStock <= 0 : true;
+  const requiresVariantSelection = Boolean(product?.variants?.length);
+  const disableAddToCart = isOutOfStock || (requiresVariantSelection && !selectedVariantId);
 
   if (!productId) {
     return (
@@ -219,10 +243,23 @@ export default function ProductDetailScreen() {
                 <Text style={{ color: colors.text.primary, fontWeight: '600' }}>
                   {t('product.color', 'Color')}
                 </Text>
-                <View style={styles.variantOptions}>
+                <View
+                  style={styles.variantOptions}
+                  accessibilityRole="radiogroup"
+                  accessibilityLabel={t('product.variantSelectorLabel', 'Choose a color option')}
+                >
                   {product.variants.map((variant, index) => {
-                    const key = variant.id ?? variant.color ?? `${index}`;
+                    const key = getVariantKey(variant, index);
                     const isSelected = key === selectedVariantId;
+                    const variantLabel =
+                      variant.color?.trim() ||
+                      t('product.variantOptionFallback', 'Option {index}', { index: index + 1 });
+                    const stockLabel =
+                      typeof variant.stock === 'number'
+                        ? t('product.variantStockLabel', 'In stock: {count}', { count: variant.stock })
+                        : t('product.variantStockUnknown', 'Stock unknown');
+                    const isOptionOutOfStock =
+                      typeof variant.stock === 'number' ? variant.stock <= 0 : false;
                     return (
                       <TouchableOpacity
                         key={key}
@@ -231,11 +268,24 @@ export default function ProductDetailScreen() {
                           styles.variantOption,
                           {
                             borderColor: isSelected ? colors.gold : colors.border.primary,
-                            backgroundColor: isSelected ? colors.interactive.secondary : colors.surface.secondary,
+                            backgroundColor: isSelected
+                              ? colors.interactive.secondary
+                              : colors.surface.secondary,
+                            opacity: isOptionOutOfStock ? 0.6 : 1,
                           },
                         ]}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected: isSelected }}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected: isSelected, disabled: isOptionOutOfStock }}
+                        accessibilityLabel={t('product.variantAccessibleName', '{label}. {stock}', {
+                          label: variantLabel,
+                          stock: stockLabel,
+                        })}
+                        accessibilityHint={
+                          isSelected
+                            ? t('product.variantSelectedHint', 'Currently selected option')
+                            : t('product.variantSelectHint', 'Double tap to select this option')
+                        }
+                        disabled={isOptionOutOfStock && !isSelected}
                       >
                         <View
                           style={[
@@ -248,10 +298,10 @@ export default function ProductDetailScreen() {
                         />
                         <View style={styles.variantInfo}>
                           <Text style={[styles.variantLabel, { color: colors.text.primary }]}>
-                            {variant.color || t('product.color', 'Color')}
+                            {variantLabel}
                           </Text>
                           <Text style={[styles.variantStock, { color: colors.text.secondary }]}>
-                            {t('product.inStock', 'In Stock ({count})', { count: variant.stock })}
+                            {stockLabel}
                           </Text>
                         </View>
                       </TouchableOpacity>
@@ -296,7 +346,7 @@ export default function ProductDetailScreen() {
             <Button
               onPress={handleAddToCart}
               loading={adding}
-              disabled={isOutOfStock}
+              disabled={disableAddToCart}
               accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
             >
               <View style={styles.buttonContent}>
