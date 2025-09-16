@@ -22,6 +22,39 @@ import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { openDM } from '@/services/openDM';
 import { AlertTriangle, Heart, MessageCircle, Minus, Plus, ShoppingCart } from 'lucide-react-native';
 
+type TooltipChildProps = {
+  tooltip?: string;
+  accessibilityHint?: string;
+  [key: string]: unknown;
+};
+
+interface DisabledTooltipProps {
+  label?: string;
+  children: React.ReactElement<TooltipChildProps>;
+}
+
+const appendSentence = (base?: string, addition?: string) => {
+  if (!base) return addition;
+  if (!addition) return base;
+  const trimmed = base.trim();
+  const suffix = trimmed.endsWith('.') ? '' : '.';
+  return `${trimmed}${suffix} ${addition}`;
+};
+
+const DisabledTooltip = ({ label, children }: DisabledTooltipProps) => {
+  if (!label) {
+    return children;
+  }
+
+  const existingTooltip = children.props.tooltip;
+  const existingHint = children.props.accessibilityHint;
+
+  return React.cloneElement(children, {
+    tooltip: appendSentence(existingTooltip, label),
+    accessibilityHint: appendSentence(existingHint, label),
+  });
+};
+
 export default function ProductDetailScreen() {
   const { storeId, productId } = useLocalSearchParams<{ storeId: string; productId: string }>();
   const { colors } = useTheme();
@@ -194,8 +227,8 @@ export default function ProductDetailScreen() {
   const rawStock = selectedVariant?.stock ?? product?.stock;
   const isStockKnown = rawStock !== undefined && rawStock !== null;
   const isOutOfStock = isStockKnown ? rawStock <= 0 : true;
-  const requiresVariantSelection = Boolean(product?.variants?.length);
-  const disableAddToCart = isOutOfStock || (requiresVariantSelection && !selectedVariantId);
+  const isProductDisabled = Boolean(product?.disabled);
+  const disabledReason = isProductDisabled ? product?.disabledReason : undefined;
 
   if (!productId) {
     return (
@@ -397,38 +430,21 @@ export default function ProductDetailScreen() {
                 {t('productDetail.stock', 'In stock')}: {isStockKnown ? rawStock : t('common.unknown', 'Unknown')}
               </Text>
             </View>
-            <View style={styles.actionButtons}>
-              <Button
-                onPress={handleContactStore}
-                loading={contacting}
-                disabled={contacting || !storeIdentifier}
-                accessibilityLabel={t('productDetail.contactStore', 'Contact store')}
-                style={(_state) => [
-                  styles.secondaryButton,
-                  { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary },
-                ]}
-              >
-                <View style={styles.buttonContent}>
-                  <MessageCircle size={18} color={colors.text.primary} />
-                  <Text style={[styles.buttonText, { color: colors.text.primary }]}>
-                    {t('productDetail.contactStore', 'Contact store')}
-                  </Text>
-                </View>
-              </Button>
+            <DisabledTooltip label={disabledReason}>
               <Button
                 onPress={handleAddToCart}
                 loading={adding}
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || isProductDisabled}
                 accessibilityLabel={t('productDetail.addToCart', 'Add to cart')}
               >
                 <View style={styles.buttonContent}>
                   <ShoppingCart size={18} color={colors.text.inverse} />
-                  <Text style={[styles.buttonText, { color: colors.text.inverse }]}>
+                  <Text style={[styles.buttonText, { color: colors.text.inverse }]}> 
                     {t('productDetail.addToCart', 'Add to cart')}
                   </Text>
                 </View>
               </Button>
-            </View>
+            </DisabledTooltip>
           </View>
         </View>
       )}
