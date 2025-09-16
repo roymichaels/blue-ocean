@@ -63,7 +63,8 @@ jest.mock('@/services/eventBus', () => ({ publish: jest.fn(), track: jest.fn() }
 
 jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('buyer.near'),
-  signIn: jest.fn(),
+  getPublicKey: jest.fn().mockReturnValue('pub:buyer'),
+  signIn: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/features/stores/services/nearStores', () => ({

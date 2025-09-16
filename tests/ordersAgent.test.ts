@@ -46,7 +46,8 @@ jest.mock('@/services/eventBus', () => ({ publish: jest.fn() }));
 
 jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('seller'),
-  signIn: jest.fn(),
+  getPublicKey: jest.fn().mockReturnValue('pub:seller'),
+  signIn: jest.fn().mockResolvedValue(undefined),
 }));
 
 const sellerKey = nacl.sign.keyPair();

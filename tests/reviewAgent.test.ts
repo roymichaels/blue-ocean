@@ -34,7 +34,8 @@ jest.mock('../agents/stores-agent', () => ({
 
 jest.mock('@/features/auth/services/nearAuth', () => ({
   getAccountId: jest.fn().mockReturnValue('user1'),
-  signIn: jest.fn(),
+  getPublicKey: jest.fn().mockReturnValue('pub:user1'),
+  signIn: jest.fn().mockResolvedValue(undefined),
 }));
 
 import reviewAgent from '../agents/review-agent';
