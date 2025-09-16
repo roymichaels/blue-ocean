@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { LocalMetricRegistry } from '@/utils/localMetrics';
+import { LocalMetricRegistry, MetricLabels } from '@/utils/localMetrics';
 
 export const registry = new LocalMetricRegistry({ anonymizeLabels: true });
 export const logger = pino({ name: 'monitoring' });
@@ -7,7 +7,7 @@ export const logger = pino({ name: 'monitoring' });
 export const latencyHistogram = registry.createHistogram({
   name: 'service_latency_ms',
   help: 'Service call latency (ms)',
-  labelNames: ['service'],
+  labelNames: ['service', 'stage', 'order_id', 'order_nonce'],
   anonymizeLabels: false,
 });
 
@@ -78,15 +78,16 @@ export const checkoutTokenIntegrity = registry.createCounter({
 export async function withMonitoring<T>(
   service: string,
   fn: () => Promise<T>,
+  labels: MetricLabels = {},
 ): Promise<T> {
-  const timer = latencyHistogram.startTimer({ service });
+  const timer = latencyHistogram.startTimer({ service, ...labels });
   try {
     return await fn();
   } catch (err) {
     failureCounter.inc({ service });
-    logger.error({ service, err }, 'service failure');
+    logger.error({ service, ...labels, err }, 'service failure');
     throw err;
   } finally {
-    timer({ service });
+    timer();
   }
 }

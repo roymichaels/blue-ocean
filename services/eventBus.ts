@@ -1,4 +1,4 @@
-import { errorLog } from '@/utils/logger';
+import { errorLog, debugLog } from '@/utils/logger';
 import { withMonitoring } from './monitoring';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
@@ -12,6 +12,12 @@ const ANALYTICS_TOPIC = '/blue-ocean/analytics/1';
 const sessionId = uuid();
 
 let node: LightNode | null = null;
+
+interface PublishOptions {
+  orderId?: string;
+  orderNonce?: string;
+  stage?: string;
+}
 
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
@@ -37,36 +43,66 @@ export async function publish(
   contentTopic: string,
   type: string,
   payload: Record<string, unknown> = {},
+  options: PublishOptions = {},
 ): Promise<void> {
-  await withMonitoring('eventBus.publish', async () => {
-    const n = await ensureNode();
-    if (!n) return;
-    try {
-      const client = await getClient();
-      const encoder = client.createEncoder({ contentTopic } as any);
-      const addr = chainAdapter.getAccountId();
-      const event = {
-        id: uuid(),
-        timestamp: Date.now(),
-        actor: addr ? Buffer.from(sha256(Buffer.from(addr))).toString('hex') : undefined,
-        sessionId,
-        type,
-        ...payload,
-      };
-      await n.lightPush.send(encoder, {
-        payload: client.utf8ToBytes(canonicalJson(event)),
-      });
-    } catch (err) {
-      errorLog('Failed to publish event', err);
-    }
-  });
+  const stageLabel = options.stage ?? type;
+  const metricsLabels: Record<string, string> = { stage: stageLabel };
+  if (options.orderId) {
+    metricsLabels.order_id = options.orderId;
+  }
+  if (options.orderNonce) {
+    metricsLabels.order_nonce = options.orderNonce;
+  }
+  await withMonitoring(
+    'eventBus.publish',
+    async () => {
+      const n = await ensureNode();
+      if (!n) return;
+      try {
+        const client = await getClient();
+        const encoder = client.createEncoder({ contentTopic } as any);
+        const addr = chainAdapter.getAccountId();
+        const event = {
+          id: uuid(),
+          timestamp: Date.now(),
+          actor: addr ? Buffer.from(sha256(Buffer.from(addr))).toString('hex') : undefined,
+          sessionId,
+          type,
+          ...payload,
+        };
+        if (options.orderId || options.orderNonce) {
+          debugLog('eventBus.publish', {
+            contentTopic,
+            type,
+            stage: stageLabel,
+            orderId: options.orderId,
+            orderNonce: options.orderNonce,
+          });
+        }
+        await n.lightPush.send(encoder, {
+          payload: client.utf8ToBytes(canonicalJson(event)),
+        });
+      } catch (err) {
+        errorLog('Failed to publish event', {
+          contentTopic,
+          type,
+          stage: stageLabel,
+          orderId: options.orderId,
+          orderNonce: options.orderNonce,
+          errorMessage: err instanceof Error ? err.message : err,
+          errorStack: err instanceof Error ? err.stack : undefined,
+        });
+      }
+    },
+    metricsLabels,
+  );
 }
 
 export async function track(
   type: string,
   payload: Record<string, unknown> = {},
 ): Promise<void> {
-  await publish(ANALYTICS_TOPIC, type, payload);
+  await publish(ANALYTICS_TOPIC, type, payload, { stage: 'analytics' });
 }
 
 export default { publish, track };
