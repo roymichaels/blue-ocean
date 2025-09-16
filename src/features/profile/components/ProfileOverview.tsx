@@ -6,7 +6,6 @@ import { useWallet } from '@/contexts/WalletProvider';
 import { chainAdapter } from '@/services/chain';
 import { Heading, Text, Card, Button } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
-import { routes } from '@/utils/routes';
 import { listStores } from '@/features/stores/services/nearStores';
 import { Store } from '@/types';
 import { useNotificationActions } from '@/components/NotificationContext';
@@ -48,7 +47,8 @@ export default function ProfileOverview() {
       const amt = await chainAdapter.getBalance(address);
       setBalance(amt);
       const all = await listStores('default');
-      setStores(all.filter((s) => s.owner === address));
+      const owner = address?.toLowerCase() || '';
+      setStores(all.filter((s) => (s.owner || '').toLowerCase() === owner));
       // NFTs: disabled by default to avoid web bundle issues. Enable behind a flag in the future.
     } finally {
       setLoading(false);
@@ -64,6 +64,24 @@ export default function ProfileOverview() {
     const sum = stores.reduce((acc, s) => acc + (s.reputation || 0), 0);
     return Math.round((sum / stores.length) * 10) / 10; // 1 decimal
   }, [stores]);
+
+  const primaryStore = useMemo(() => {
+    return stores[0] ?? null;
+  }, [stores]);
+
+  const handleViewOrders = useCallback(() => {
+    push('/orders');
+  }, [push]);
+
+  const handleOpenSettings = useCallback(() => {
+    push('/settings');
+  }, [push]);
+
+  const handleManageStore = useCallback(() => {
+    if (!primaryStore) return;
+    void prefetchStoreBundle(primaryStore.id);
+    push(`/store/${primaryStore.id}/admin`);
+  }, [primaryStore, push]);
 
   if (!address) {
     return (
