@@ -44,6 +44,8 @@ import eventBus from '@/services/eventBus';
 import { localIndex } from '@/services/localIndex';
 import { isReviewsEnabled } from '@/config/featureFlags';
 
+// TODO:TODO-126 Split HomeScreenContent into route-level chunks so bundle size stays manageable on low-end devices.
+// TODO:REC-226 Prefetch personalization data during warm start to reduce spinner time when resuming the app.
 function HomeScreenContent() {
   const { tenantId, isNetwork } = useTenant();
   const { t } = useLanguage();

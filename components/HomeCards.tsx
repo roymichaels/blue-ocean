@@ -8,6 +8,8 @@ interface Card {
   image: string;
 }
 
+// TODO:TODO-122 Support skeleton loading states in HomeCards to smooth transitions on slow networks.
+// TODO:REC-222 Prefetch catalog imagery once layout stabilizes to reduce jank when scrolling.
 export default function HomeCards() {
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);

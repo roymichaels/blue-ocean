@@ -11,6 +11,8 @@ if (typeof process !== 'undefined' && typeof process.cwd === 'function') {
   loadEnv();
 }
 
+// TODO:TODO-101 Audit envSchema defaults so runtime parity across Expo web and native builds does not drift from documented expectations.
+// TODO:REC-201 Consider lifting envSchema into a shared config module consumed by services and agents to centralize validation.
 const envSchema = z.object({
   EXPO_PUBLIC_TRANSPORT: z.string().optional().default(''),
   EXPO_PUBLIC_CONTRACT_ID: z.string().optional().default(''),

@@ -15,6 +15,8 @@ export type AdminListItem = {
 
 type Props = { items: AdminListItem[]; emptyText?: string };
 
+// TODO:TODO-124 Allow AdminList to render action badges (approve/deny) inline for pending administrator requests.
+// TODO:REC-224 Memoize list virtualization so large admin rosters don't re-render on each theme change.
 function AdminList({ items, emptyText = 'Nothing yet.' }: Props) {
   const { colors } = useTheme();
 

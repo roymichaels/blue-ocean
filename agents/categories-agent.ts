@@ -11,6 +11,8 @@ import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 
+// TODO:TODO-113 Expand CategoriesAgent to coordinate cross-channel taxonomy sync when stores sell in multiple marketplaces.
+// TODO:REC-213 Share wallet guard copy through localization dictionaries to keep admin prompts consistent.
 class CategoriesAgent {
   private async ensureWallet() {
     await ensureNearWallet('Please connect your NEAR wallet to manage categories.');

@@ -22,6 +22,8 @@ if (typeof assertNearChain === 'function') {
   try { assertNearChain(); } catch {}
 }
 
+// TODO:TODO-110 Introduce versioned migrations for tenant settings so schema changes propagate safely across wallets.
+// TODO:REC-210 Move admin scope management into dedicated module with explicit capability contracts.
 type SettingKey =
   | 'tenantId'
   | 'appName'

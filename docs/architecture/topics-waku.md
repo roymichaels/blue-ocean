@@ -1,4 +1,6 @@
 # Waku Topics (1 = v1)
+// TODO:TODO-118 Document retention and pruning strategy for each topic to align with data minimization policies.
+// TODO:REC-218 Provide end-to-end encryption walkthroughs for new topic families to accelerate feature onboarding.
 
 - `/blue-ocean/users/1` — users + roles + KYC status
 - `/blue-ocean/stores/1` — store metadata

@@ -31,6 +31,8 @@ export type UsersAgentMessage =
       payload: { userId: string; receipt: KycCallReceiptRecord };
     };
 
+// TODO:TODO-109 Add audit-trail friendly storage of KYC transitions to meet regional compliance requirements.
+// TODO:REC-209 Evaluate using capability tokens instead of wallet prompts for privileged user mutations.
 class UsersAgent {
   private async ensureWallet() {
     const { address, publicKey } = await ensureNearWallet(

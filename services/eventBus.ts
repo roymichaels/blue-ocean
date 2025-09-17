@@ -19,6 +19,8 @@ interface PublishOptions {
   stage?: string;
 }
 
+// TODO:TODO-102 Harden ensureNode to survive mobile background transitions without leaking dangling Waku nodes.
+// TODO:REC-202 Emit structured connectivity metrics from ensureNode so monitoring can alert on relay unavailability.
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {

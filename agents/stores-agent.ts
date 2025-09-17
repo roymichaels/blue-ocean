@@ -15,6 +15,8 @@ import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 
 assertNearChain();
 
+// TODO:TODO-111 Extend StoresAgent to track multi-tenant metrics and avoid namespace collisions for shared storefronts.
+// TODO:REC-211 Publish reputation score updates via analytics topic so UI dashboards can react in real time.
 interface Metrics {
   reviewSum: number;
   reviewCount: number;

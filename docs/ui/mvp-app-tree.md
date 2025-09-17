@@ -1,4 +1,6 @@
 # MVP App Tree (Screens → Components → Buttons)
+// TODO:TODO-120 Layer interaction notes for accessibility states so designers can spot missing focus flows.
+// TODO:REC-220 Cross-link wireframe revisions when new agents introduce screens to keep docs discoverable.
 
 Auth
 - Connect Wallet → [PrimaryCTA: "Connect"] → onSuccess: request `checkout` scope

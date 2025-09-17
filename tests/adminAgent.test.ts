@@ -58,6 +58,8 @@ async function createJoinRequest(
   );
 }
 
+// TODO:TODO-127 Add regression cases for admin scope revocation to ensure pending approvals can't escalate permissions.
+// TODO:REC-227 Mirror these tests against browser crypto polyfills to catch serialization drift.
 describe('AdminAgent', () => {
   let agent: AdminAgent;
 

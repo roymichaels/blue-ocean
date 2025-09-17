@@ -53,6 +53,8 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   refunded: [],
 };
 
+// TODO:TODO-106 Break OrdersAgent into domain submodules for pricing, fulfillment, and notifications to tame the 600+ LOC scope.
+// TODO:REC-206 Introduce typed workflow definitions so status transitions can be validated without manual map maintenance.
 class OrdersAgent {
   private subscribers: Set<(o: Order) => void> = new Set();
   private sellerMetrics: Record<string, { completed: number; refunds: number }> = {};

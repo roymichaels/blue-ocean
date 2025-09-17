@@ -22,6 +22,8 @@ interface GlobalHeaderProps {
   showSearch?: boolean;
 }
 
+// TODO:TODO-121 Decompose GlobalHeader into presentational and data hooks to improve testability of complex UI state.
+// TODO:REC-221 Preload command palette dependencies when notifications arrive to minimize perceived latency.
 export default function GlobalHeader({ showSearch = true }: GlobalHeaderProps) {
   const isTest = typeof process !== 'undefined' && (process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test');
   const { t, isRTL, currentLanguage, setLanguage } = useLanguage();
