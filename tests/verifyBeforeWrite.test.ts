@@ -19,6 +19,8 @@ describe('verifyBeforeWrite', () => {
       payload: 'hi',
       sender: { publicKey: pubHex },
       signature: '',
+      ts: Date.now(),
+      nonce: 'nonce-allowed',
     };
     const bytes = new TextEncoder().encode(
       canonicalJson({ type: msg.type, payload: msg.payload, sender: msg.sender }),
@@ -50,6 +52,8 @@ describe('verifyBeforeWrite', () => {
         payload: { timestamp: ts },
         sender: { publicKey: pubHex },
         signature: '',
+        ts,
+        nonce: `nonce-${ts}`,
       };
       const bytes = new TextEncoder().encode(
         canonicalJson({ type: msg.type, payload: msg.payload, sender: msg.sender }),
@@ -64,5 +68,31 @@ describe('verifyBeforeWrite', () => {
 
     const future = await makeMsg(Date.now() + TIMESTAMP_TOLERANCE_MS + 1000);
     await expect(verifyBeforeWrite(future, schema)).resolves.toBeNull();
+  });
+
+  it('rejects duplicate nonces on the same topic', async () => {
+    const priv = utils.randomPrivateKey();
+    const pub = await getPublicKey(priv);
+    const pubHex = Buffer.from(pub).toString('hex');
+    const schema = wakuMessageSchema.extend({
+      type: z.literal('test'),
+      payload: z.string(),
+    });
+    const ts = Date.now();
+    const msg: WakuMessage<string> = {
+      type: 'test',
+      payload: 'hello',
+      sender: { publicKey: pubHex },
+      signature: '',
+      ts,
+      nonce: 'replay-nonce',
+    };
+    const bytes = new TextEncoder().encode(
+      canonicalJson({ type: msg.type, payload: msg.payload, sender: msg.sender }),
+    );
+    const sig = await sign(bytes, priv);
+    msg.signature = Buffer.from(sig).toString('hex');
+    await expect(verifyBeforeWrite(msg, schema, undefined, 'topic-1')).resolves.not.toBeNull();
+    await expect(verifyBeforeWrite(msg, schema, undefined, 'topic-1')).resolves.toBeNull();
   });
 });

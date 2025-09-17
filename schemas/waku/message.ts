@@ -8,6 +8,8 @@ export const wakuMessageSchema = z.object({
     role: z.string().optional(),
   }),
   signature: z.string(),
+  ts: z.number(),
+  nonce: z.string(),
   keyEpoch: z.number().optional(),
 });
 

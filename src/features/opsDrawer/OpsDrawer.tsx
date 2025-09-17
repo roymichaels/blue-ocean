@@ -50,6 +50,12 @@ interface OpsSnapshot {
     notificationsBacklog: number | null;
     deliveryBacklog: number | null;
     cacheLagMs: number | null;
+    replayDrops: {
+      total: number;
+      duplicate: number;
+      skew: number;
+      missing: number;
+    };
   };
   session: {
     token: string | null;
@@ -70,16 +76,33 @@ interface GaugeEntry {
   value: number;
 }
 
+interface CounterEntry {
+  value: number;
+  labels: Record<string, string>;
+}
+
 function readGauge(snapshot: RegistrySnapshot, name: string): number | null {
   const entries = snapshot.gauges[name] as GaugeEntry[] | undefined;
   if (!entries || entries.length === 0) return null;
   return entries.reduce((max, entry) => Math.max(max, entry.value), Number.NEGATIVE_INFINITY);
 }
 
-function readCounter(snapshot: RegistrySnapshot, name: string): number | null {
-  const entries = snapshot.counters[name];
-  if (!entries || entries.length === 0) return null;
-  return entries.reduce((sum, entry) => sum + (entry?.value ?? 0), 0);
+function summarizeReplayDrops(snapshot: RegistrySnapshot) {
+  const entries = snapshot.counters['waku_replay_drops_total'] as CounterEntry[] | undefined;
+  const summary = { total: 0, duplicate: 0, skew: 0, missing: 0 };
+  if (!entries) return summary;
+  for (const entry of entries) {
+    summary.total += entry.value;
+    const reason = entry.labels.reason;
+    if (reason === 'duplicate') {
+      summary.duplicate += entry.value;
+    } else if (reason === 'skew') {
+      summary.skew += entry.value;
+    } else {
+      summary.missing += entry.value;
+    }
+  }
+  return summary;
 }
 
 function formatNumber(value: number | null, suffix = ''): string {
@@ -230,6 +253,7 @@ export default function OpsDrawer({ open, onClose }: OpsDrawerProps) {
     const notificationsBacklog = readGauge(observability, 'notifications_backlog');
     const deliveryBacklog = readGauge(observability, 'delivery_notifications_backlog');
     const cacheLagMs = readGauge(monitoring, 'cache_sync_lag_ms');
+    const replayDrops = summarizeReplayDrops(observability);
     const record = sessionToken ? getSession(sessionToken) : undefined;
     const scopes = Array.isArray(record?.scopes) ? record!.scopes : [];
     return {
@@ -239,6 +263,7 @@ export default function OpsDrawer({ open, onClose }: OpsDrawerProps) {
         notificationsBacklog,
         deliveryBacklog,
         cacheLagMs,
+        replayDrops,
       },
       session: {
         token: sessionToken ?? null,
@@ -408,6 +433,11 @@ export default function OpsDrawer({ open, onClose }: OpsDrawerProps) {
                   )}
                 </Section>
                 <Section title="Security">
+                  <MetricRow
+                    label="Replay drops"
+                    value={formatNumber(snapshot.metrics.replayDrops.total)}
+                    detail={`dup ${formatNumber(snapshot.metrics.replayDrops.duplicate)} • skew ${formatNumber(snapshot.metrics.replayDrops.skew)} • miss ${formatNumber(snapshot.metrics.replayDrops.missing)}`}
+                  />
                   <MetricRow label="PIN enrolled" value={snapshot.security.pinSet ? 'Yes' : 'No'} />
                   <View style={styles.toggleRow}>
                     <Text style={[styles.metricLabel, { flex: 1 }]}>Biometric unlock</Text>

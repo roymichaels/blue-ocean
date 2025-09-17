@@ -8,6 +8,8 @@ export const orderFailedEventSchema = wakuMessageSchema.extend({
     userId: z.string(),
     code: z.string(),
     reason: z.string(),
+    ts: z.number(),
+    nonce: z.string(),
   }),
 });
 

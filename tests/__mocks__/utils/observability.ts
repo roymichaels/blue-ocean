@@ -6,6 +6,8 @@ const notificationsBacklog = { set: jest.fn() };
 const notificationDeliveryLatency = {
   observe: jest.fn(),
 };
+const deliveryBacklog = { set: jest.fn() };
+const wakuReplayDrops = { inc: jest.fn() };
 module.exports = {
   serviceLatency,
   serviceFailures,
@@ -13,4 +15,6 @@ module.exports = {
   startMetricsServer,
   notificationsBacklog,
   notificationDeliveryLatency,
+  deliveryBacklog,
+  wakuReplayDrops,
 };

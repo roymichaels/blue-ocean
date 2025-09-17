@@ -17,6 +17,8 @@ export const orderStatusMessageSchema = wakuMessageSchema.extend({
   payload: z.object({
     orderId: z.string(),
     status: z.enum(orderStatuses),
+    ts: z.number(),
+    nonce: z.string(),
   }),
 });
 

@@ -119,12 +119,13 @@ class OrdersAgent {
     const n = await this.ensureNode();
     if (!n) return;
     const client = await getClient();
-    const decoder = client.createDecoder(buildTopic('orders', storeId));
+    const topic = buildTopic('orders', storeId);
+    const decoder = client.createDecoder(topic);
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
-        const signed = await verifyBeforeWrite(raw, orderStatusMessageSchema);
+        const signed = await verifyBeforeWrite(raw, orderStatusMessageSchema, undefined, topic);
         if (!signed) return;
         const { orderId, status } = signed.payload;
         await this.applyRemoteStatus(orderId, status);

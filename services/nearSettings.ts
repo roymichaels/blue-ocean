@@ -4,19 +4,19 @@ import { getValue, setValue, listValues } from './nearKvStore';
 import config from '@/config';
 import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
-import type { SettingsWriteEvent, WakuMessage } from '../types/waku';
+import type { SettingsWriteEvent } from '../types/waku';
 import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
 import { verifyBeforeWrite } from '../utils/verifyMessageSignature';
 import { z } from 'zod';
-import { sign } from '@noble/ed25519';
 import { canonicalJson } from '@/utils/serialization';
-import { getPrivateKey, getPublicKeyHex } from './localIdentity';
+import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 import type { AdminScope } from '@/types';
 import { ALL_ADMIN_SCOPES } from '@/types';
 
 assertNearChain();
 
 const ADDRESS = 'settings';
+const SETTINGS_TOPIC = '/blue-ocean/settings/1';
 
 async function assertAdmin(actor: string): Promise<void> {
   if (!actor) {
@@ -81,27 +81,11 @@ async function emit(event: SettingsWriteEvent) {
   const n = await ensureNode();
   if (!n) return;
   try {
-    const priv = await getPrivateKey();
-    const pub = await getPublicKeyHex();
-    const msg: WakuMessage<SettingsWriteEvent> = {
-      type: event.type,
-      payload: event,
-      sender: { publicKey: pub },
-      signature: '',
-    };
-    const msgBytes = new TextEncoder().encode(
-      canonicalJson({
-        type: msg.type,
-        payload: msg.payload,
-        sender: msg.sender,
-      }),
-    );
-    const sig = await sign(msgBytes, priv);
-    msg.signature = Buffer.from(sig).toString('hex');
+    const msg = await makeSignedWakuMessage(event.type, event, 'admin');
 
     const client = await getClient();
     const encoder = client.createEncoder({
-      contentTopic: '/blue-ocean/settings/1',
+      contentTopic: SETTINGS_TOPIC,
     } as any);
     await n.lightPush.send(encoder, {
       payload: client.utf8ToBytes(canonicalJson(msg)),
@@ -117,10 +101,7 @@ export async function subscribeToSettingsWrites(
   const n = await ensureNode();
   if (!n) return () => {};
   const client = await getClient();
-  const decoder = client.createDecoder(
-    '/blue-ocean/settings/1',
-    undefined as any,
-  );
+  const decoder = client.createDecoder(SETTINGS_TOPIC, undefined as any);
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
@@ -130,7 +111,7 @@ export async function subscribeToSettingsWrites(
         payload: settingsWriteEventSchema,
       });
       const adminKeys = await getAdminPublicKeys();
-      const signed = await verifyBeforeWrite(raw, schema, adminKeys);
+      const signed = await verifyBeforeWrite(raw, schema, adminKeys, SETTINGS_TOPIC);
       if (!signed) return;
       cb(signed.payload);
     } catch (err) {

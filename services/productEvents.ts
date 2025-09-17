@@ -15,30 +15,36 @@ export async function publishProductUpdated(product: Product) {
     ...product,
     isActive: product.isActive !== false,
   };
+  const ts = Date.now();
+  const nonce = randomNonce();
   const message = await makeSignedWakuMessage(
     'product.updated',
     {
       product: normalized,
-      ts: Date.now(),
-      nonce: randomNonce(),
+      ts,
+      nonce,
     },
     'admin',
+    { ts, nonce },
   );
   await publish(PRODUCT_TOPIC, message);
   return message;
 }
 
 export async function publishProductDeleted(id: string, storeId: string) {
+  const ts = Date.now();
+  const nonce = randomNonce();
   const message = await makeSignedWakuMessage(
     'product.deleted',
     {
       id,
       storeId,
       deletedAt: new Date().toISOString(),
-      ts: Date.now(),
-      nonce: randomNonce(),
+      ts,
+      nonce,
     },
     'admin',
+    { ts, nonce },
   );
   await publish(PRODUCT_TOPIC, message);
   return message;

@@ -14,15 +14,14 @@ import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import { verifyBeforeWrite } from '@/utils/verifyMessageSignature';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
-import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
-import { sign } from '@noble/ed25519';
-import { canonicalJson } from '@/utils/serialization';
-import type { WakuMessage } from '@/types/waku';
 import { errorLog } from '@/utils/logger';
 import { buildTopic } from '@/utils/wakuTopics';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import AgentError from '@/types/AgentError';
 import isAdmin from '@/utils/isAdmin';
+import { makeSignedWakuMessage } from '@/utils/wakuSigning';
+import { randomBytes } from '@noble/hashes/utils';
+import { Buffer } from 'buffer';
 
 import {
   getProductCache,
@@ -71,12 +70,13 @@ class ProductsAgent {
     const n = await this.ensureNode();
     if (!n) return;
     const client = await getClient();
-    const decoder = client.createDecoder(buildProductTopic(storeId));
+    const topic = buildProductTopic(storeId);
+    const decoder = client.createDecoder(topic);
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
-        const signed = await verifyBeforeWrite(raw, productUpdatedSchema);
+        const signed = await verifyBeforeWrite(raw, productUpdatedSchema, undefined, topic);
         if (!signed) return;
         void this.invalidateCache();
       } catch (err) {
@@ -134,23 +134,14 @@ class ProductsAgent {
     const n = await this.ensureNode();
     if (!n) return;
     try {
-      const priv = await getPrivateKey();
-      const pub = await getPublicKeyHex();
-      const msg: WakuMessage<Product> = {
-        type: 'product.updated',
-        payload: product,
-        sender: { publicKey: pub },
-        signature: '',
-      };
-      const msgBytes = new TextEncoder().encode(
-        canonicalJson({
-          type: msg.type,
-          payload: msg.payload,
-          sender: msg.sender,
-        }),
+      const ts = Date.now();
+      const nonce = Buffer.from(randomBytes(12)).toString('hex');
+      const msg = await makeSignedWakuMessage(
+        'product.updated',
+        { product, ts, nonce },
+        'store-owner',
+        { ts, nonce },
       );
-      const sig = await sign(msgBytes, priv);
-      msg.signature = Buffer.from(sig).toString('hex');
       const client = await getClient();
       const encoder = client.createEncoder({
         contentTopic: buildProductTopic(product.storeId),

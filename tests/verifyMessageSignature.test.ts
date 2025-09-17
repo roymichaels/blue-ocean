@@ -14,6 +14,8 @@ describe('verifyMessageSignature', () => {
       payload: 'hello',
       sender: { publicKey: pubHex },
       signature: '',
+      ts: Date.now(),
+      nonce: 'nonce-verify',
     };
     const bytes = new TextEncoder().encode(
       canonicalJson({ type: msg.type, payload: msg.payload, sender: msg.sender }),
