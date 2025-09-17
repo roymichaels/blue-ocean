@@ -19,6 +19,7 @@ import { Buffer } from 'buffer';
 import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
 import { sessionEvents, revokeToken, listSessions } from '@/services/session';
 
+
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
@@ -53,7 +54,9 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
-interface AuthProviderProps { children: ReactNode }
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
 const SESSION_EXP_TOLERANCE_MS = 60_000;
 const BROWSE_SCOPE = 'read';
@@ -98,10 +101,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Prefer WalletProvider address; fall back to adapter's plain getters only
     const maybeUseAccount: any = (chainAdapter as any).useAccount;
     const mockedAccountId =
-      typeof maybeUseAccount === 'function' && (maybeUseAccount as any)._isMockFunction
+      typeof maybeUseAccount === 'function' &&
+      (maybeUseAccount as any)._isMockFunction
         ? maybeUseAccount()
         : null;
-    const walletAddress = address || chainAdapter.getAccountId?.() || mockedAccountId || null;
+    const walletAddress =
+      address || chainAdapter.getAccountId?.() || mockedAccountId || null;
 
     if (!walletAddress) {
       // Wallet not connected – ensure we clear any stale user data
@@ -175,10 +180,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // connection or after the wallet reconnects.
     const maybeUseAccount2: any = (chainAdapter as any).useAccount;
     const mockedAccountId2 =
-      typeof maybeUseAccount2 === 'function' && (maybeUseAccount2 as any)._isMockFunction
+      typeof maybeUseAccount2 === 'function' &&
+      (maybeUseAccount2 as any)._isMockFunction
         ? maybeUseAccount2()
         : null;
-    const current = address || chainAdapter.getAccountId?.() || mockedAccountId2;
+    const current =
+      address || chainAdapter.getAccountId?.() || mockedAccountId2;
     if (!current) {
       setUser(null);
       return;
@@ -191,6 +198,77 @@ export function AuthProvider({ children }: AuthProviderProps) {
     checkAuthState().finally(() => setInitialized(true));
   }, [address]);
 
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: (() => void) | null = null;
+
+    const buyerPublicKey = user?.chatPublicKey;
+    const buyerId = user?.id;
+    if (!buyerPublicKey || !buyerId) {
+      return () => {};
+    }
+
+    const applyReceipt = async (receipt: Awaited<ReturnType<typeof loadKycReceipt>>) => {
+      if (!receipt) return;
+      const receiptUserId =
+        (typeof receipt.payload.data === 'object' && receipt.payload.data && 'userId' in receipt.payload.data)
+          ? (receipt.payload.data as Record<string, unknown>).userId
+          : undefined;
+      if (receiptUserId && receiptUserId !== buyerId) return;
+      const targetId = typeof receiptUserId === 'string' && receiptUserId.length > 0 ? receiptUserId : buyerId;
+      const currentProfile = await getChainUser(targetId);
+      const baseProfile = currentProfile || (targetId === user?.id ? user : null);
+      if (!baseProfile) return;
+      const updatedProfile: User = {
+        ...baseProfile,
+        kycStatus: 'verified',
+        kycApprovedAt: receipt.payload.issuedAt,
+        kycApprovedBy: receipt.payload.issuerPublicKey,
+      };
+      await setChainUser(updatedProfile);
+      if (!active) return;
+      setUser((prev) => {
+        if (!prev || prev.id !== updatedProfile.id) return prev;
+        if (
+          prev.kycStatus === 'verified' &&
+          prev.kycApprovedAt === updatedProfile.kycApprovedAt &&
+          prev.kycApprovedBy === updatedProfile.kycApprovedBy
+        ) {
+          return prev;
+        }
+        return { ...prev, ...updatedProfile };
+      });
+    };
+
+    (async () => {
+      try {
+        const stored = await loadKycReceipt(buyerPublicKey);
+        await applyReceipt(stored);
+      } catch (err) {
+        errorLog('Failed to hydrate local KYC receipt', err);
+      }
+
+      try {
+        unsubscribe = await subscribeToKycReceipts(buyerPublicKey, {
+          fetchHistory: false,
+          onReceipt: async (receipt) => {
+            await applyReceipt(receipt);
+          },
+          onError: (err) => {
+            errorLog('kyc.receipt subscription error', err);
+          },
+        });
+      } catch (err) {
+        errorLog('Failed to subscribe to KYC receipts', err);
+      }
+    })();
+
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
+  }, [user?.chatPublicKey, user?.id]);
+
   const login = async () => {
     try {
       await connect();
@@ -199,14 +277,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err: unknown) {
       errorLog(
         t('auth.walletConnectionFailed', 'Wallet connection failed'),
-        err,
+        err
       );
       Alert.alert(
         t('common.error', 'Error'),
         t(
           'auth.walletConnectionFailedTry',
-          'Wallet connection failed. Please try again.',
-        ),
+          'Wallet connection failed. Please try again.'
+        )
       );
     }
   };

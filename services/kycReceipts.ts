@@ -3,7 +3,7 @@ import { randomBytes } from '@noble/hashes/utils';
 import { Buffer } from 'buffer';
 import { uuid } from '@/utils/uuid';
 import { canonicalJson } from '@/utils/serialization';
-import { publish } from '@/services/waku';
+import { fetchHistory, publish, subscribeWithAck } from '@/services/waku';
 import { getPublicKeyHex } from '@/services/localIdentity';
 import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 import type { KycReceiptMessage } from '@/types/waku';
@@ -21,6 +21,16 @@ function receiptTopic(buyerPublicKey: string): string {
 }
 
 export type KycReceipt = KycReceiptMessage;
+
+async function persistReceipt(
+  buyerPublicKey: string,
+  message: KycReceipt,
+): Promise<void> {
+  await AsyncStorage.setItem(
+    `${RECEIPT_STORAGE_PREFIX}${buyerPublicKey}`,
+    canonicalJson(message),
+  );
+}
 
 export async function loadKycReceipt(buyerPublicKey: string): Promise<KycReceipt | null> {
   if (!buyerPublicKey) return null;
@@ -52,10 +62,59 @@ export async function issueKycReceipt(
     nonce: randomNonce(),
   };
   const message = await makeSignedWakuMessage('kyc.receipt', payload, 'admin');
-  await AsyncStorage.setItem(
-    `${RECEIPT_STORAGE_PREFIX}${buyerPublicKey}`,
-    canonicalJson(message),
-  );
+  await persistReceipt(buyerPublicKey, message);
   await publish(receiptTopic(buyerPublicKey), message);
   return message;
+}
+
+export interface KycReceiptSubscriptionOptions {
+  onReceipt?: (receipt: KycReceipt) => void | Promise<void>;
+  onError?: (error: unknown) => void;
+  fetchHistory?: boolean;
+}
+
+export async function subscribeToKycReceipts(
+  buyerPublicKey: string,
+  options: KycReceiptSubscriptionOptions = {},
+): Promise<() => void> {
+  if (!buyerPublicKey) {
+    return () => {};
+  }
+
+  const topic = receiptTopic(buyerPublicKey);
+
+  const handleMessage = async (raw: unknown) => {
+    const parsed = kycReceiptSchema.safeParse(raw);
+    if (!parsed.success) return;
+    await persistReceipt(buyerPublicKey, parsed.data);
+    try {
+      await options.onReceipt?.(parsed.data);
+    } catch {}
+  };
+
+  if (options.fetchHistory !== false) {
+    try {
+      await fetchHistory(topic, (msg: unknown) => {
+        void handleMessage(msg);
+      });
+    } catch (err) {
+      options.onError?.(err);
+    }
+  }
+
+  let unsubscribe: (() => void) | undefined;
+  try {
+    unsubscribe = await subscribeWithAck(topic, (msg: unknown) => {
+      void handleMessage(msg);
+    });
+  } catch (err) {
+    options.onError?.(err);
+    unsubscribe = undefined;
+  }
+
+  return () => {
+    try {
+      unsubscribe?.();
+    } catch {}
+  };
 }

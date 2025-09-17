@@ -118,9 +118,9 @@ class StoresAgent {
     this.subscribers.delete(cb);
   }
 
-  private ensureWallet = async (): Promise<void> => {
+  private async ensureWallet(): Promise<void> {
     await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
-  };
+  }
 
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
