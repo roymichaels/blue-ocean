@@ -10,6 +10,10 @@ import { getDeviceHash } from '@/utils/getDeviceHash';
 
 (global as any).Buffer = Buffer;
 
+jest.mock('expo-linear-gradient', () => ({
+  LinearGradient: ({ children }: { children?: React.ReactNode }) => children || null,
+}));
+
 const deviceHash = getDeviceHash();
 
 const makeReceipt = (buyerPublicKey = 'buyer-public-key') => ({
@@ -60,17 +64,6 @@ jest.mock('@/contexts/WalletProvider', () => ({
     connect: jest.fn().mockResolvedValue(undefined),
     disconnect: jest.fn().mockResolvedValue(undefined),
     sign: jest.fn().mockResolvedValue('signature'),
-  }),
-}));
-
-jest.mock('@/auth/wallet', () => ({
-  useWalletSessions: () => ({
-    loginWithWallet: jest.fn().mockResolvedValue({
-      token: 'checkout-token',
-      scopes: ['checkout'],
-      exp: Date.now() + 60_000,
-    }),
-    useToken: jest.fn(),
   }),
 }));
 
@@ -142,7 +135,7 @@ describe('login issues session token used in checkout', () => {
   });
 
   it('creates an order with attached session token', async () => {
-    const svc = OrderService.getInstance();
+    const svc = OrderService.getInstance() as any;
     await act(async () => {
       renderer.create(
         React.createElement(AuthProvider, null, React.createElement(Grab, null)),
@@ -151,6 +144,10 @@ describe('login issues session token used in checkout', () => {
     const ctx = (Grab as any).ctx;
     await act(async () => {
       await ctx.login();
+    });
+
+    act(() => {
+      requestScopes(['read', 'checkout'], () => 'checkout-token');
     });
 
     const item: CartItem = {
@@ -181,7 +178,6 @@ describe('login issues session token used in checkout', () => {
       postalCode: 'p',
     };
 
-    requestScopes(['checkout'], () => 'checkout-token');
     await svc.createOrdersFromCart(
       'user1',
       [item],

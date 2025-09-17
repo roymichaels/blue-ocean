@@ -168,6 +168,7 @@ export function requestScopes(
         ? { token, scopes, exp, sealed, deviceHash }
         : { token, scopes, exp, deviceHash };
       store.set(token, record);
+      sessionEvents.emit('token.issued', { token, record });
       void saveSession(record);
       return record;
     };
@@ -194,6 +195,7 @@ function purgeExpiredSessions(now = Date.now()): void {
     if (now > rec.exp + CLOCK_TOLERANCE_MS) {
       store.delete(token);
       void removeSession(token);
+      sessionEvents.emit('token.revoked', { token });
     }
   }
 }
@@ -211,6 +213,7 @@ export async function initSessionTokens(): Promise<void> {
       continue;
     }
     store.set(r.token, r);
+    sessionEvents.emit('token.loaded', { token: r.token, record: r });
   }
   if (!sweepTimer) {
     sweepTimer = setInterval(purgeExpiredSessions, SWEEP_INTERVAL_MS);
@@ -225,12 +228,14 @@ export function validateToken(token: string, requiredScopes: string[]): void {
   if (!rec) throw new Error('{E_EXPIRED}');
   if (Date.now() > rec.exp + CLOCK_TOLERANCE_MS) {
     store.delete(token);
+    sessionEvents.emit('token.revoked', { token });
     throw new Error('{E_EXPIRED}');
   }
   const deviceHash = getDeviceHash();
   if (rec.deviceHash !== deviceHash) {
     store.delete(token);
     void removeSession(token);
+    sessionEvents.emit('token.revoked', { token });
     throw new Error('{E_DEVICE_MISMATCH}');
   }
   assertScopePolicy(requiredScopes);
@@ -325,6 +330,22 @@ export function getSession(token: string): SessionToken | undefined {
   return store.get(token);
 }
 
+export function listSessions(): SessionToken[] {
+  return Array.from(store.values()).map((record) => {
+    const copy: SessionToken = {
+      token: record.token,
+      scopes: [...record.scopes],
+      exp: record.exp,
+      deviceHash: record.deviceHash,
+      ...(record.checkoutNonce ? { checkoutNonce: record.checkoutNonce } : {}),
+    };
+    if (record.sealed) {
+      copy.sealed = { ...record.sealed };
+    }
+    return copy;
+  });
+}
+
 export function setSessionCheckoutNonce(
   token: string,
   nonce: string | null,
@@ -346,6 +367,7 @@ export function getSessionCheckoutNonce(token: string): string | undefined {
 export async function revokeToken(token: string): Promise<void> {
   store.delete(token);
   await removeSession(token);
+  sessionEvents.emit('token.revoked', { token });
 }
 
 export function sweepExpiredTokens(now = Date.now()): void {

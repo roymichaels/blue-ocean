@@ -1,4 +1,11 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react';
 import { Alert } from 'react-native';
 import { Spinner } from '@/ui';
 import { User } from '@/types';
@@ -10,8 +17,7 @@ import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
 import { Buffer } from 'buffer';
 import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
-import { sessionEvents, revokeToken, getCheckoutRequestScopes } from '@/services/session';
-import { useWalletSessions } from '@/auth/wallet';
+import { sessionEvents, revokeToken, listSessions } from '@/services/session';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -49,22 +55,44 @@ export const useAuth = () => useContext(AuthContext);
 
 interface AuthProviderProps { children: ReactNode }
 
+const SESSION_EXP_TOLERANCE_MS = 60_000;
+const BROWSE_SCOPE = 'read';
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const { address, connect, disconnect } = useWallet();
-  const { loginWithWallet } = useWalletSessions();
   const [user, setUser] = useState<User | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleRotation = ({ old, token }: { old: string; token: string }) => {
-      setSessionToken((current) => (current === old ? token : current));
-    };
-    sessionEvents.on('token.rotated', handleRotation);
-    return () => {
-      sessionEvents.off('token.rotated', handleRotation);
-    };
+  const syncSessionToken = useCallback(() => {
+    const records = listSessions();
+    const now = Date.now();
+    const active = records.filter((record) => now <= record.exp + SESSION_EXP_TOLERANCE_MS);
+    if (active.length === 0) {
+      setSessionToken((current) => (current !== null ? null : current));
+      return;
+    }
+    const sorted = [...active].sort((a, b) => b.exp - a.exp);
+    const preferred = sorted.find((record) => record.scopes.includes(BROWSE_SCOPE)) ?? sorted[0];
+    const nextToken = preferred?.token ?? null;
+    setSessionToken((current) => (current === nextToken ? current : nextToken));
   }, []);
+
+  useEffect(() => {
+    const handleTokenChange = () => {
+      syncSessionToken();
+    };
+    sessionEvents.on('token.rotated', handleTokenChange);
+    sessionEvents.on('token.issued', handleTokenChange);
+    sessionEvents.on('token.loaded', handleTokenChange);
+    sessionEvents.on('token.revoked', handleTokenChange);
+    return () => {
+      sessionEvents.off('token.rotated', handleTokenChange);
+      sessionEvents.off('token.issued', handleTokenChange);
+      sessionEvents.off('token.loaded', handleTokenChange);
+      sessionEvents.off('token.revoked', handleTokenChange);
+    };
+  }, [syncSessionToken]);
 
   const checkAuthState = async () => {
     // Prefer WalletProvider address; fall back to adapter's plain getters only
@@ -78,6 +106,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (!walletAddress) {
       // Wallet not connected – ensure we clear any stale user data
       setUser(null);
+      setSessionToken(null);
       return;
     }
 
@@ -138,6 +167,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(null);
       }
     }
+    syncSessionToken();
   };
 
   const refreshSession = async () => {
@@ -164,8 +194,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async () => {
     try {
       await connect();
-      const session = await loginWithWallet(getCheckoutRequestScopes());
-      setSessionToken(session.token);
+      await checkAuthState();
+      syncSessionToken();
     } catch (err: unknown) {
       errorLog(
         t('auth.walletConnectionFailed', 'Wallet connection failed'),
