@@ -18,6 +18,11 @@ import { t } from '@/i18n';
 import { Buffer } from 'buffer';
 import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
 import { sessionEvents, revokeToken, listSessions } from '@/services/session';
+import {
+  loadKycReceipt,
+  subscribeToKycReceipts,
+  type KycReceipt,
+} from '@/services/kycReceipts';
 
 
 interface AuthContextType {
@@ -251,10 +256,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         unsubscribe = await subscribeToKycReceipts(buyerPublicKey, {
           fetchHistory: false,
-          onReceipt: async (receipt) => {
+          onReceipt: async (receipt: KycReceipt) => {
             await applyReceipt(receipt);
           },
-          onError: (err) => {
+          onError: (err: unknown) => {
             errorLog('kyc.receipt subscription error', err);
           },
         });
