@@ -13,7 +13,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from '@/features/stores/services/nearStores';
 import { getProduct, setProduct } from '@/features/products/services/nearProducts';
 import { chainAdapter } from '@/services/chain';
-import { adminResolve, deployOrderPayment } from './nearContract';
+import { adminResolve, deployEscrow as nearDeployEscrow } from './nearContract';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
 import {
@@ -23,11 +23,12 @@ import {
 } from '@/services/session';
 import { checkoutTokenIntegrity, latencyHistogram } from '@/services/monitoring';
 import SettingsAgent from '@/agents/settings-agent';
+import { getFeeSettings } from '@/constants/tenant';
 import { loadKycReceipt } from '@/services/kycReceipts';
 import { getPublicKeyHex } from '@/services/localIdentity';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 
-const ORDER_TOPIC = '/blue-ocean/orders/1';
+const ORDER_TOPIC_PREFIX = '/blue-ocean/orders';
 const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
 const LOW_STOCK_THRESHOLD = 5;
@@ -84,6 +85,7 @@ interface OrderDraft {
   itemsHash: string;
   buyerAddress?: string;
   sellerAddress?: string;
+  kycReceiptHash?: string;
 }
 
 export async function emitOrderEvents(
@@ -109,6 +111,7 @@ export async function emitOrderEvents(
 
   const deterministicTimestamp = parseDeterministicTimestamp();
 
+  const orderTopic = `${ORDER_TOPIC_PREFIX}/${storeId}`;
   const baseEvent = {
     id: order.id,
     orderId: order.id,
@@ -144,11 +147,11 @@ export async function emitOrderEvents(
       storeId,
     });
     const createdPayload = { ...baseEvent };
-    await publishWithContext(ORDER_TOPIC, 'order.created', createdPayload);
+    await publishWithContext(orderTopic, 'order.created', createdPayload);
     await publishWithContext(NOTIFICATION_TOPIC, 'order.created', createdPayload);
     if (order.paymentMethod === 'near') {
       const escrowPayload = { ...baseEvent };
-      await publishWithContext(ORDER_TOPIC, 'escrow.deployed', escrowPayload);
+      await publishWithContext(orderTopic, 'escrow.deployed', escrowPayload);
       await publishWithContext(
         NOTIFICATION_TOPIC,
         'escrow.deployed',
@@ -234,15 +237,27 @@ class OrderService {
       itemsHash: draft.itemsHash,
     });
     try {
-      const result = await deployOrderPayment(draft.total);
+      const { feeAddress, feeBps } = await getFeeSettings();
+      const result = await nearDeployEscrow({
+        total: draft.total,
+        feeAddress,
+        feeBps,
+        buyerAddress: draft.buyerAddress,
+        sellerAddress: draft.sellerAddress,
+        kycReceiptHash: draft.kycReceiptHash,
+        nonce: draft.nonce,
+        sessionToken: draft.sessionToken,
+      });
       debugLog('orders.escrow.deploy.success', {
         orderId,
         orderNonce: draft.nonce,
         storeId: draft.storeId,
         contractAddress: result.contractAddress,
         txHash: result.txHash,
+        feeAddress,
+        feeBps,
       });
-      return result;
+      return { contractAddress: result.contractAddress, txHash: result.txHash };
     } catch (err) {
       errorLog('orders.escrow.deploy.failed', {
         orderId,
@@ -297,6 +312,7 @@ class OrderService {
         itemsHash,
         buyerAddress: pay?.buyerAddress,
         sellerAddress: pay?.sellerAddress,
+        kycReceiptHash: kyc.hash,
       };
       const { contractAddress, txHash } = await this.deployEscrow(draft);
       pay = { ...pay, contractAddress, txHash };
