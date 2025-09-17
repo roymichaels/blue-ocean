@@ -71,12 +71,16 @@ jest.mock('@/features/home/components/CategoryChips', () => ({
 }));
 
 jest.mock('@/features/products', () => ({
-  ProductGrid: ({ products }: any) =>
-    React.createElement(
-      'ProductGrid',
-      null,
-      products.map((p: any) => React.createElement('Product', { key: p.id }, p.name)),
-    ),
+  ProductGrid: ({ products, loading }: any) =>
+    loading
+      ? React.createElement('ProductSkeleton')
+      : React.createElement(
+          'ProductGrid',
+          null,
+          products.map((p: any) =>
+            React.createElement('Product', { key: p.id }, p.name),
+          ),
+        ),
   ProductCardSkeleton: () => React.createElement('ProductSkeleton'),
 }));
 

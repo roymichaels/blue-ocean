@@ -163,6 +163,7 @@
     "priceLowHigh": "Price: Low to High",
     "priceHighLow": "Price: High to Low",
     "highRating": "High Rating",
+    "loadingProducts": "Loading products",
     "loadErrorMessage": "Failed to load data. Pull to refresh or press Reload.",
     "connectWalletToContinue": "Connect wallet to continue",
     "create_store_prompt_title": "Create your store",

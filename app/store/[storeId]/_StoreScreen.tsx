@@ -275,15 +275,7 @@ export default function StoreScreen() {
       ) : null}
 
       <View style={styles.catalogContainer}>
-        {productsLoading ? (
-          <View style={styles.productSkeletonRow}>
-            {Array.from({ length: 4 }).map((_, index) => (
-              <View key={index} style={styles.productSkeletonWrapper}>
-                <ProductCardSkeleton />
-              </View>
-            ))}
-          </View>
-        ) : loadErrorMessage ? (
+        {loadErrorMessage ? (
           <EmptyState
             icon={AlertTriangle}
             title={t('home.loadErrorTitle', 'Unable to load products')}
@@ -297,6 +289,7 @@ export default function StoreScreen() {
             refreshing={refreshing}
             onRefresh={handleRefresh}
             onProductPress={handleProductPress}
+            loading={productsLoading}
           />
         )}
       </View>
@@ -313,18 +306,6 @@ const styles = StyleSheet.create({
   catalogContainer: {
     flex: 1,
     paddingTop: spacing.spacer8,
-  },
-  productSkeletonRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.spacer16,
-    paddingVertical: spacing.spacer16,
-    gap: spacing.spacer16,
-  },
-  productSkeletonWrapper: {
-    width: '48%',
-    borderRadius: radius.md,
   },
 });
 
