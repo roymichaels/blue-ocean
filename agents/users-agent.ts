@@ -142,6 +142,11 @@ class UsersAgent {
     userId: string,
     status: 'verified' | 'rejected',
     adminId?: string,
+    options?: {
+      kycReceiptHash?: string;
+      approvedAt?: string;
+      approvedBy?: string;
+    },
   ): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
     const hasScope = await SettingsAgent.getInstance().hasAdminScope(
@@ -157,15 +162,32 @@ class UsersAgent {
     }
     const user = await getUser(userId);
     if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
+    const now = options?.approvedAt ?? new Date().toISOString();
+    const approvedBy = options?.approvedBy ?? adminId ?? address;
+    const nextHash =
+      status === 'verified'
+        ? options?.kycReceiptHash ?? user.kycReceiptHash
+        : status === 'rejected'
+        ? undefined
+        : user.kycReceiptHash;
     const enriched: User = normalizeMessage<User>('User', {
       ...user,
       publicKey,
       address,
       kycStatus: status,
-      kycApprovedBy: adminId ?? address,
-      kycApprovedAt: new Date().toISOString(),
+      kycReceiptHash: nextHash,
+      kycApprovedBy: status === 'verified' ? approvedBy : user.kycApprovedBy,
+      kycApprovedAt: status === 'verified' ? now : user.kycApprovedAt,
     });
     await setUser(enriched);
+  }
+
+  async getKycReceiptHash(userId: string): Promise<string | null> {
+    const user = await getUser(userId);
+    if (!user) return null;
+    const hash = user.kycReceiptHash;
+    if (typeof hash !== 'string' || hash.length === 0) return null;
+    return hash;
   }
 
   async get(id: string): Promise<User | null> {

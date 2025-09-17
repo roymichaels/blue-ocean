@@ -10,7 +10,11 @@ import AppProviders from '@/providers/AppProviders';
 import { isRouterEnabled } from '@/services/config';
 import { initSessionTokens } from '@/services/session';
 import { initErrorReporter } from '@/services/errorReporter';
-import { setDebugLogsEnabled } from '@/utils/logger';
+import { errorLog, setDebugLogsEnabled } from '@/utils/logger';
+import {
+  ensureAdminAgentSubscription,
+  stopAdminAgentSubscription,
+} from '@/services/adminSubscription';
 
 const USE_ROUTER = isRouterEnabled();
 
@@ -42,6 +46,14 @@ function MainApp() {
       },
     });
     return cleanupReporter;
+  }, []);
+  useEffect(() => {
+    void ensureAdminAgentSubscription().catch((err) => {
+      errorLog('Failed to initialize admin agent subscription', err);
+    });
+    return () => {
+      stopAdminAgentSubscription();
+    };
   }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

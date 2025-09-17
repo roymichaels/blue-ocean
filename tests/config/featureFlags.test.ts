@@ -136,6 +136,25 @@ describe('driver chat feature flag', () => {
   });
 });
 
+describe('waku shared keys feature flag', () => {
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_FEATURE_WAKU_SHARED_KEYS;
+    jest.resetModules();
+  });
+
+  it('is disabled by default', () => {
+    const { isWakuSharedKeysEnabled } = require('@/config/featureFlags');
+    expect(isWakuSharedKeysEnabled()).toBe(false);
+  });
+
+  it('respects environment flag', () => {
+    process.env.EXPO_PUBLIC_FEATURE_WAKU_SHARED_KEYS = 'true';
+    jest.resetModules();
+    const { isWakuSharedKeysEnabled } = require('@/config/featureFlags');
+    expect(isWakuSharedKeysEnabled()).toBe(true);
+  });
+});
+
 describe('notifications pipeline feature flag', () => {
   beforeEach(() => {
     delete process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE;

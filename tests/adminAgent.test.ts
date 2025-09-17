@@ -210,6 +210,15 @@ describe('AdminAgent', () => {
     expect(end).toBe(start + 1);
   });
 
+  it('routes messages through handleMessage dispatcher', async () => {
+    const priv = utils.randomPrivateKey();
+    const pub = await getPublicKey(priv);
+    const join = await createJoinRequest(priv, pub, 'addr-dispatch');
+    await agent.handleMessage(join);
+    const admins = await agent.getAdmins();
+    expect(admins.map((a) => a.address)).toEqual(['addr-dispatch']);
+  });
+
   it('rejects approvals with bad signatures', async () => {
     const priv1 = utils.randomPrivateKey();
     const pub1 = await getPublicKey(priv1);

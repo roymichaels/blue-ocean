@@ -34,16 +34,16 @@ export interface DeployEscrowDraft {
   sessionToken?: string;
   scopes?: string[];
   nonce: string;
-  storeId: string;
   total: number;
-  itemsHash: string;
+  feeAddress: string;
+  feeBps: number;
   buyerAddress?: string;
   sellerAddress?: string;
   kycReceiptHash?: string;
 }
 
 export interface DeployEscrowResult {
-  orderId: string;
+  contractAddress: string;
   txHash: string;
   expiresAt: string;
   status: typeof ESCROW_STATUS_PENDING;
@@ -107,23 +107,22 @@ export async function deployEscrow(
   const end = serviceLatency.startTimer({ service: 'near.deployEscrow' });
   try {
     const factoryAddress = await getOrderPaymentFactoryAddress();
-    const settings = await fetchSettings();
-    const feeAddress = settings.feeAddress ?? '';
-    const feeBps = settings.feeBps ?? 0;
     const txHash = await sendNear(
-      `Pay:${draft.total}:${feeAddress}:${feeBps}`,
+      `Pay:${draft.total}:${draft.feeAddress}:${draft.feeBps}:${draft.nonce}`,
     );
     logger.info(
       {
         service: 'near.deployEscrow',
         txHash,
-        orderId: factoryAddress,
-        storeId: draft.storeId,
+        contractAddress: factoryAddress,
+        nonce: draft.nonce,
+        buyerAddress: draft.buyerAddress,
+        sellerAddress: draft.sellerAddress,
       },
       'Escrow deployment submitted',
     );
     return {
-      orderId: factoryAddress,
+      contractAddress: factoryAddress,
       txHash,
       expiresAt: new Date(Date.now() + ESCROW_EXPIRATION_WINDOW_MS).toISOString(),
       status: ESCROW_STATUS_PENDING,

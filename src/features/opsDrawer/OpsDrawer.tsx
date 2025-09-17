@@ -44,6 +44,7 @@ interface OpsSnapshot {
     peers: number;
     connections: number;
     queueDepth: number;
+    decryptErrors: number | null;
   };
   metrics: {
     notificationsBacklog: number | null;
@@ -248,6 +249,7 @@ export default function OpsDrawer({ open, onClose }: OpsDrawerProps) {
     const monitoring = monitoringRegistry.snapshot();
     const { peers, connections } = getPeerSummary();
     const queueDepth = snapshotQueue().length;
+    const decryptErrors = readCounter(monitoring, 'waku_decrypt_errors_total');
     const notificationsBacklog = readGauge(observability, 'notifications_backlog');
     const deliveryBacklog = readGauge(observability, 'delivery_notifications_backlog');
     const cacheLagMs = readGauge(monitoring, 'cache_sync_lag_ms');
@@ -256,7 +258,7 @@ export default function OpsDrawer({ open, onClose }: OpsDrawerProps) {
     const scopes = Array.isArray(record?.scopes) ? record!.scopes : [];
     return {
       capturedAt: Date.now(),
-      waku: { status, peers, connections, queueDepth },
+      waku: { status, peers, connections, queueDepth, decryptErrors },
       metrics: {
         notificationsBacklog,
         deliveryBacklog,
@@ -395,6 +397,10 @@ export default function OpsDrawer({ open, onClose }: OpsDrawerProps) {
                   <MetricRow
                     label="Replay queue"
                     value={formatNumber(snapshot.waku.queueDepth)}
+                  />
+                  <MetricRow
+                    label="Decrypt errors"
+                    value={formatNumber(snapshot.waku.decryptErrors)}
                   />
                 </Section>
                 <Section title="Sync">

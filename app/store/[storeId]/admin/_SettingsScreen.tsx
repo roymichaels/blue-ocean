@@ -1,11 +1,12 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useAppRouter } from '@/services';
 import { ArrowLeft, Save, Settings as SettingsIcon } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
+import { publish as publishWaku } from '@/services/waku';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { useLanguage } from '@/ui/ThemeProvider';
@@ -14,6 +15,7 @@ import InfoModal from '../../../../components/InfoModal';
 import { useAppInfo } from '../../../../contexts/AppInfoContext';
 import commonStyles from '@/constants/styles';
 import SettingsAgent from '../../../../agents/settings-agent';
+import adminAgent, { type AdminRecord } from '../../../../agents/admin-agent';
 import BrandingSettings from '../../../../components/settings/BrandingSettings';
 import CurrencySettings from '../../../../components/settings/CurrencySettings';
 import EnvironmentSettings from '../../../../components/settings/EnvironmentSettings';
@@ -24,6 +26,11 @@ import MoonPaySettings from '../../../../components/settings/MoonPaySettings';
 import PaymentFactorySettings from '../../../../components/settings/PaymentFactorySettings';
 import eventBus from '@/services/eventBus';
 import { isMoonPayEnabled } from '@/config/featureFlags';
+import { makeSignedWakuMessage } from '@/utils/wakuSigning';
+import uuid from '@/utils/uuid';
+
+type PendingRequest = Pick<AdminRecord, 'address' | 'requestedAt'>;
+const USERS_TOPIC = '/blue-ocean/users/1';
 
 export default function SettingsScreen() {
   const { replace, back } = useAppRouter();
@@ -37,7 +44,7 @@ export default function SettingsScreen() {
   const [paymentFactoryAddress, setPaymentFactoryAddress] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { isAdmin, isDriver } = useAuth();
+  const { isAdmin, isDriver, checkAuthState } = useAuth();
   const { colors } = useTheme();
   const { currencySymbol: contextCurrencySymbol, setCurrencySymbol } = useCurrency();
   const { currentLanguage, t } = useLanguage();
@@ -53,7 +60,7 @@ export default function SettingsScreen() {
   } = useAppInfo();
   const [admins, setAdmins] = useState<string[]>([]);
   const [inviteAddress, setInviteAddress] = useState('');
-  const [pendingInvites, setPendingInvites] = useState<string[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [inviteLoading, setInviteLoading] = useState(false);
   const moonPayEnabled = useMemo(() => isMoonPayEnabled(), []);
   const storeTopic = useMemo(() => `/blue-ocean/stores/${storeId ?? '1'}`, [storeId]);
@@ -64,6 +71,17 @@ export default function SettingsScreen() {
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
+
+  const refreshPendingRequests = useCallback(async () => {
+    try {
+      const requests = await adminAgent.getPendingRequests();
+      setPendingRequests(
+        requests.map(({ address, requestedAt }) => ({ address, requestedAt })),
+      );
+    } catch (error) {
+      errorLog('Failed to load pending admin requests:', error);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAdmin && !isDriver) {
@@ -78,6 +96,55 @@ export default function SettingsScreen() {
       .getAdmins()
       .then(setAdmins)
       .catch((err) => errorLog('Failed to load admins:', err));
+  }, []);
+
+  useEffect(() => {
+    void refreshPendingRequests();
+  }, [refreshPendingRequests]);
+
+  useEffect(() => {
+    const handleRequested = ({
+      address,
+      requestedAt,
+    }: {
+      address: string;
+      requestedAt: number;
+    }) => {
+      const lower = address.toLowerCase();
+      setPendingRequests((prev) => {
+        if (prev.some((req) => req.address.toLowerCase() === lower)) {
+          return prev.map((req) =>
+            req.address.toLowerCase() === lower ? { address, requestedAt } : req,
+          );
+        }
+        return [...prev, { address, requestedAt }];
+      });
+    };
+    const handleRegistered = ({ address }: { address: string }) => {
+      const lower = address.toLowerCase();
+      setPendingRequests((prev) =>
+        prev.filter((req) => req.address.toLowerCase() !== lower),
+      );
+      setAdmins((prev) =>
+        prev.some((admin) => admin.toLowerCase() === lower)
+          ? prev
+          : [...prev, address],
+      );
+    };
+    const handleRejected = ({ address }: { address: string }) => {
+      const lower = address.toLowerCase();
+      setPendingRequests((prev) =>
+        prev.filter((req) => req.address.toLowerCase() !== lower),
+      );
+    };
+    adminAgent.on('admin.requested', handleRequested);
+    adminAgent.on('admin.registered', handleRegistered);
+    adminAgent.on('admin.rejected', handleRejected);
+    return () => {
+      adminAgent.off('admin.requested', handleRequested);
+      adminAgent.off('admin.registered', handleRegistered);
+      adminAgent.off('admin.rejected', handleRejected);
+    };
   }, []);
 
   useEffect(() => {
@@ -159,12 +226,17 @@ export default function SettingsScreen() {
     }
     setInviteLoading(true);
     try {
-      await eventBus.publish(storeTopic, 'admin.joinRequested', {
-        address,
-      });
-      setPendingInvites((prev) =>
-        prev.includes(address) ? prev : [...prev, address],
+      const message = await makeSignedWakuMessage(
+        'admin.joinRequested',
+        {
+          address,
+          nonce: uuid(),
+          ts: Date.now(),
+        },
+        'admin',
       );
+      await publishWaku(USERS_TOPIC, message);
+      await refreshPendingRequests();
       setInviteAddress('');
       setInfoModal({
         visible: true,
@@ -183,16 +255,69 @@ export default function SettingsScreen() {
   const approveInvite = async (address: string) => {
     setInviteLoading(true);
     try {
-      await eventBus.publish(storeTopic, 'admin.registered', {
-        address,
-      });
+      const normalized = address.toLowerCase();
+      const waitForRegistration = () =>
+        new Promise<void>((resolve, reject) => {
+          let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+          const cleanup = () => {
+            if (timeoutHandle) clearTimeout(timeoutHandle);
+            adminAgent.off('admin.registered', handleRegistered);
+            adminAgent.off('admin.rejected', handleRejected);
+          };
+          const handleRegistered = ({ address: approved }: { address: string }) => {
+            if (approved.toLowerCase() !== normalized) return;
+            cleanup();
+            resolve();
+          };
+          const handleRejected = ({ address: rejected }: { address: string }) => {
+            if (rejected.toLowerCase() !== normalized) return;
+            cleanup();
+            reject(new Error('rejected'));
+          };
+          adminAgent.on('admin.registered', handleRegistered);
+          adminAgent.on('admin.rejected', handleRejected);
+          timeoutHandle = setTimeout(() => {
+            cleanup();
+            reject(new Error('timeout'));
+          }, 5000);
+        });
+
+      const resultPromise = waitForRegistration();
+      const message = await makeSignedWakuMessage(
+        'admin.approve',
+        {
+          address,
+          nonce: uuid(),
+          ts: Date.now(),
+        },
+        'admin',
+      );
+      await publishWaku(USERS_TOPIC, message);
+      await resultPromise;
       const nextAdmins = Array.from(new Set([...admins, address]));
       await SettingsAgent.getInstance().setAdmins(nextAdmins);
       setAdmins(nextAdmins);
-      setPendingInvites((prev) => prev.filter((item) => item !== address));
+      setPendingRequests((prev) =>
+        prev.filter((item) => item.address.toLowerCase() !== normalized),
+      );
+      await refreshPendingRequests();
+      await checkAuthState();
+      await eventBus.publish(storeTopic, 'admin.registered', {
+        address,
+      });
+      setInfoModal({
+        visible: true,
+        title: 'אישור מנהל',
+        message: 'המנהל החדש אושר בהצלחה.',
+        type: 'success',
+      });
     } catch (error) {
       errorLog('Failed to approve admin invite', error);
-      Alert.alert('שגיאה', 'אישור ההזמנה נכשל');
+      const message =
+        error instanceof Error && error.message === 'timeout'
+          ? 'האישור לא התקבל בזמן. נסה שוב.'
+          : 'אישור ההזמנה נכשל';
+      Alert.alert('שגיאה', message);
     } finally {
       setInviteLoading(false);
     }
@@ -288,15 +413,31 @@ export default function SettingsScreen() {
             הזמנה חדשה דורשת אישור מנהל קיים לפני כניסה למערכת.
           </Text>
           <Text style={[styles.cardTitle, { color: colors.text.primary }]}>הזמנות בהמתנה</Text>
-          {pendingInvites.length === 0 ? (
+          {pendingRequests.length === 0 ? (
             <Text style={{ color: colors.text.secondary }}>אין הזמנות ממתינות.</Text>
           ) : (
-            pendingInvites.map((address) => (
+            pendingRequests.map(({ address, requestedAt }) => (
               <View
                 key={address}
                 style={[styles.inviteItem, { borderColor: colors.border.primary }]}
               >
-                <Text style={{ color: colors.text.primary }}>{address}</Text>
+                <View style={styles.inviteInfo}>
+                  <Text
+                    style={{ color: colors.text.primary, textAlign: 'right' }}
+                  >
+                    {address}
+                  </Text>
+                  {requestedAt ? (
+                    <Text
+                      style={[
+                        styles.pendingMeta,
+                        { color: colors.text.secondary, textAlign: 'right' },
+                      ]}
+                    >
+                      {new Date(requestedAt).toLocaleString()}
+                    </Text>
+                  ) : null}
+                </View>
                 <TouchableOpacity
                   style={[styles.approveInviteButton, { borderColor: colors.status.success }]}
                   onPress={() => approveInvite(address)}
@@ -427,10 +568,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
+  inviteInfo: {
+    flex: 1,
+    alignItems: 'flex-end',
+    gap: 4,
+  },
   approveInviteButton: {
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
+  },
+  pendingMeta: {
+    fontSize: 12,
   },
 });

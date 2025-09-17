@@ -165,6 +165,7 @@ export interface User {
   kycRequestedAt?: string;
   kycApprovedBy?: string;
   kycApprovedAt?: string;
+  kycReceiptHash?: string;
   kycDocument?: KycDocument;
 }
 
