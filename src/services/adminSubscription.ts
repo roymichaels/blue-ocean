@@ -2,8 +2,9 @@ import adminAgent from '@/agents/admin-agent';
 import { subscribeWithAck } from '@/services/waku';
 import { errorLog } from '@/utils/logger';
 import type { WakuMessage } from '@/types/waku';
+import { adminUsersTopic } from '@/utils/wakuTopics';
 
-const USERS_TOPIC = '/blue-ocean/users/1';
+const USERS_TOPIC = adminUsersTopic();
 
 let subscriptionPromise: Promise<void> | null = null;
 let unsubscribe: (() => void) | null = null;

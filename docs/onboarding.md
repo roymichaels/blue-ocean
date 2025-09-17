@@ -131,4 +131,5 @@ Once both checklists are complete, announce your store URL and begin processing 
 - [Secure key management](secure-key-management.md)
 - [NEAR deployment packet](near-dev-packet.md)
 - [Notifications topics](notifications-topics.md)
+- [Admin recovery](admin-recovery.md)
 
