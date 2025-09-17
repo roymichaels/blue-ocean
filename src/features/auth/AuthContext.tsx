@@ -5,8 +5,10 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from 'react';
 import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Spinner } from '@/ui';
 import { User } from '@/types';
 import { errorLog } from '@/utils/logger';
@@ -16,6 +18,10 @@ import usersAgent from '@/agents/users-agent';
 import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
 import { Buffer } from 'buffer';
+import SettingsAgent from '@/agents/settings-agent';
+import { makeSignedWakuMessage } from '@/utils/wakuSigning';
+import { publish as publishWaku } from '@/services/waku';
+import uuid from '@/utils/uuid';
 import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
 import { sessionEvents, revokeToken, listSessions } from '@/services/session';
 import {
@@ -65,12 +71,15 @@ interface AuthProviderProps {
 
 const SESSION_EXP_TOLERANCE_MS = 60_000;
 const BROWSE_SCOPE = 'read';
+const USERS_TOPIC = '/blue-ocean/users/1';
+const ADMIN_BOOTSTRAP_FLAG_PREFIX = 'auth.adminBootstrap:';
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { address, connect, disconnect } = useWallet();
   const [user, setUser] = useState<User | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const adminBootstrapRequests = useRef<Set<string>>(new Set());
 
   const syncSessionToken = useCallback(() => {
     const records = listSessions();
@@ -85,6 +94,71 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const nextToken = preferred?.token ?? null;
     setSessionToken((current) => (current === nextToken ? current : nextToken));
   }, []);
+
+  const maybeRequestAdminBootstrap = useCallback(
+    async (profile: User) => {
+      const id = profile.address || profile.id;
+      if (!id) return;
+      const normalizedId = id.toLowerCase();
+      const attempts = adminBootstrapRequests.current;
+      if (attempts.has(normalizedId)) return;
+      attempts.add(normalizedId);
+      const release = () => {
+        attempts.delete(normalizedId);
+      };
+
+      const storageKey = `${ADMIN_BOOTSTRAP_FLAG_PREFIX}${normalizedId}`;
+      try {
+        const stored = await AsyncStorage.getItem(storageKey);
+        if (stored === '1') {
+          return;
+        }
+      } catch (err) {
+        errorLog('Failed to read admin bootstrap flag', err);
+      }
+
+      let admins: string[] = [];
+      try {
+        admins = await SettingsAgent.getInstance().getAdmins();
+      } catch (err) {
+        errorLog('Failed to fetch admin list for bootstrap', err);
+        release();
+        return;
+      }
+
+      if (admins.length > 0 || profile.role !== 'user') {
+        try {
+          await AsyncStorage.setItem(storageKey, '1');
+        } catch (err) {
+          errorLog('Failed to persist admin bootstrap flag', err);
+        }
+        return;
+      }
+
+      try {
+        const message = await makeSignedWakuMessage(
+          'admin.joinRequested',
+          {
+            address: profile.address || profile.id,
+            displayName: profile.displayName,
+            nonce: uuid(),
+            ts: Date.now(),
+          },
+          'user',
+        );
+        await publishWaku(USERS_TOPIC, message);
+        try {
+          await AsyncStorage.setItem(storageKey, '1');
+        } catch (err) {
+          errorLog('Failed to persist admin bootstrap flag', err);
+        }
+      } catch (err) {
+        errorLog('Failed to publish admin bootstrap request', err);
+        release();
+      }
+    },
+    [adminBootstrapRequests],
+  );
 
   useEffect(() => {
     const handleTokenChange = () => {
@@ -162,6 +236,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Ignore agent propagation errors in non-wallet test environments
         }
         setUser(profile);
+      }
+
+      if (profile) {
+        void maybeRequestAdminBootstrap(profile);
       }
     } catch {
       // Best-effort: keep existing stored profile if available
