@@ -19,15 +19,20 @@ async function createSignedMessage<T>(
   pub: Uint8Array,
   meta?: { nonce?: string; ts?: number },
 ): Promise<WakuMessage<T & { nonce: string; ts: number }>> {
+  const ts = meta?.ts ?? Date.now();
+  const nonce =
+    meta?.nonce ?? Buffer.from(utils.randomPrivateKey()).toString('hex');
   const message: WakuMessage<any> = {
     type,
     payload: {
       ...payload,
-      nonce: meta?.nonce ?? Buffer.from(utils.randomPrivateKey()).toString('hex'),
-      ts: meta?.ts ?? Date.now(),
+      nonce,
+      ts,
     },
     sender: { publicKey: Buffer.from(pub).toString('hex') },
     signature: '',
+    ts,
+    nonce,
   };
   const bytes = new TextEncoder().encode(
     canonicalJson({ type: message.type, payload: message.payload, sender: message.sender }),

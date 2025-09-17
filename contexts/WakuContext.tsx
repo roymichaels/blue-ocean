@@ -153,7 +153,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       try {
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const schema = wakuMessageSchema.extend({ payload: z.string() });
-        const signed = await verifyBeforeWrite(raw, schema);
+        const signed = await verifyBeforeWrite(raw, schema, undefined, topic);
         if (!signed) return;
         const text = await decryptMessage(signed.payload, roomId, peerPublicKey);
         const chat: ChatMessage = {
@@ -207,7 +207,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
         try {
           const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
           const schema = wakuMessageSchema.extend({ payload: z.string() });
-          const signed = await verifyBeforeWrite(raw, schema);
+          const signed = await verifyBeforeWrite(raw, schema, undefined, topic);
           if (!signed) continue;
           const text = await decryptMessage(signed.payload, roomId, peerPublicKey);
           const chat: ChatMessage = {
@@ -257,7 +257,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       try {
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const schema = wakuMessageSchema.extend({ payload: z.string() });
-        const signed = await verifyBeforeWrite(raw, schema);
+        const signed = await verifyBeforeWrite(raw, schema, undefined, SYSTEM_TOPIC);
         if (!signed) {
           errorLog('Dropping unverified system message', raw);
           return;
@@ -288,7 +288,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       try {
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const schema = wakuMessageSchema.extend({ payload: z.string() });
-        const signed = await verifyBeforeWrite(raw, schema);
+        const signed = await verifyBeforeWrite(raw, schema, undefined, NOTIFICATION_TOPIC);
         if (!signed) {
           errorLog('Dropping unverified notification message', raw);
           return;

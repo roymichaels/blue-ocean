@@ -7,6 +7,8 @@ import { errorLog } from '@/utils/logger';
 import { deliveryBacklog } from '@/utils/observability';
 import { onBacklog, onDrained } from '@/utils/wakuStore';
 import type { DeliveryJobStatus } from '@/types';
+import { randomBytes } from '@noble/hashes/utils';
+import { Buffer } from 'buffer';
 
 export const E_BACKLOG = 'E_BACKLOG';
 
@@ -110,6 +112,7 @@ class DeliveryAgent {
     const { type, payload, storeId } = job;
     const topic = buildTopic(DELIVERY_TOPIC_DOMAIN, storeId);
     const timestamp = Date.now();
+    const nonce = Buffer.from(randomBytes(12)).toString('hex');
     if (type === 'order.created') {
       const message = await makeSignedWakuMessage(
         'notify.deliveryUpdate',
@@ -119,8 +122,11 @@ class DeliveryAgent {
           storeId,
           status: 'pending',
           timestamp,
+          ts: timestamp,
+          nonce,
         },
         'deliveries',
+        { ts: timestamp, nonce },
       );
       await publish(topic, message);
       return;
@@ -136,8 +142,11 @@ class DeliveryAgent {
         driverId: assigned.driverId,
         status: assigned.status,
         timestamp,
+        ts: timestamp,
+        nonce,
       },
       'deliveries',
+      { ts: timestamp, nonce },
     );
     await publish(topic, message);
   }

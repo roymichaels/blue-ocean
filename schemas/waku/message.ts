@@ -8,6 +8,9 @@ export const wakuMessageSchema = z.object({
     role: z.string().optional(),
   }),
   signature: z.string(),
+  ts: z.number(),
+  nonce: z.string(),
+  keyEpoch: z.number().optional(),
 });
 
 export type WakuMessage<T = unknown> = z.infer<typeof wakuMessageSchema> & {

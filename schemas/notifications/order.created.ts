@@ -7,6 +7,8 @@ export const orderCreatedEventSchema = wakuMessageSchema.extend({
     orderId: z.string(),
     userId: z.string(),
     total: z.number(),
+    ts: z.number(),
+    nonce: z.string(),
   }),
 });
 

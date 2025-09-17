@@ -41,6 +41,13 @@ export const deliveryBacklog = registry.createGauge({
   help: 'Number of delivery updates pending broadcast',
 });
 
+export const wakuReplayDrops = registry.createCounter({
+  name: 'waku_replay_drops_total',
+  help: 'Number of Waku messages dropped by replay protection',
+  labelNames: ['reason'],
+  anonymizeLabels: false,
+});
+
 export function startMetricsServer(): void {
   logger.debug('Central metrics server disabled; metrics stay local.');
 }

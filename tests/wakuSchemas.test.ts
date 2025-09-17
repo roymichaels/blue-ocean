@@ -12,6 +12,8 @@ describe('Waku schemas', () => {
       payload: 'hello',
       sender: { publicKey: '0xabc' },
       signature: '0xdef',
+      ts: Date.now(),
+      nonce: 'nonce-schema',
     };
     const parsed = parseWakuMessage(msg, z.string());
     expect(parsed).toEqual(msg);
@@ -35,6 +37,8 @@ describe('Waku schemas', () => {
         read: false,
         timestamp: 1,
       },
+      ts: Date.now(),
+      nonce: 'notification-nonce',
     };
     expect(parseNotificationWakuPayload(payload)).toEqual(payload);
   });

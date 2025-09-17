@@ -10,11 +10,9 @@ import {
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { publish } from '@/services/waku';
 import { buildTopic } from '@/utils/wakuTopics';
-import { getPrivateKey, getPublicKeyHex } from '@/services/localIdentity';
-import { sign } from '@noble/ed25519';
-import { canonicalJson } from '@/utils/serialization';
 import type { WakuMessage } from '@/types/waku';
 import ensureNearWallet from '@/utils/ensureNearWallet';
+import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 
 assertNearChain();
 
@@ -178,18 +176,5 @@ export const selectStore = (id: string): Promise<Store | null> =>
 export default storesAgent;
 
 async function makeSignedMessage(type: string, payload: any): Promise<WakuMessage<any>> {
-  const priv = await getPrivateKey();
-  const pub = await getPublicKeyHex();
-  const msg: WakuMessage<any> = {
-    type,
-    payload,
-    sender: { publicKey: pub, role: 'store-owner' },
-    signature: '',
-  };
-  const toSign = new TextEncoder().encode(
-    canonicalJson({ type: msg.type, payload: msg.payload, sender: msg.sender }),
-  );
-  const sig = await sign(toSign, priv);
-  msg.signature = Buffer.from(sig).toString('hex');
-  return msg;
+  return await makeSignedWakuMessage(type, payload, 'store-owner');
 }

@@ -4,6 +4,8 @@ import { connectWallet } from '@/auth/wallet';
 import { publish, subscribeWithAck } from '@/services/waku';
 import { requestScopes, validateToken, refreshToken, SessionToken } from '@/services/session';
 import { canonicalJson } from '@/utils/serialization';
+import { randomBytes } from '@noble/hashes/utils';
+import { Buffer } from 'buffer';
 import { uuid } from '@/utils/uuid';
 import { parseWorkspaceCreatedMessage } from '@/schemas/waku/workspace.created';
 import type { WorkspaceCreatedMessage, WorkspaceCreatedPayload } from '@/types/waku';
@@ -219,11 +221,15 @@ async function buildWorkspaceMessage(
     timestamp: Date.now(),
   };
   const senderPublicKey = getPublicKey?.() ?? `workspace:${session.workspaceId}`;
+  const ts = Date.now();
+  const nonce = Buffer.from(randomBytes(12)).toString('hex');
   const message: WorkspaceCreatedMessage = {
     type: 'workspace.created',
     payload,
     sender: { publicKey: senderPublicKey, role: 'workspace' },
     signature: '',
+    ts,
+    nonce,
   };
   const canonical = canonicalJson({
     type: message.type,

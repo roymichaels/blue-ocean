@@ -11,6 +11,8 @@ export const deliveryUpdatePayloadSchema = z.object({
   driverId: z.string().optional(),
   status: deliveryStatusSchema,
   timestamp: z.number(),
+  ts: z.number(),
+  nonce: z.string(),
 });
 
 export const deliveryUpdateMessageSchema = wakuMessageSchema.extend({

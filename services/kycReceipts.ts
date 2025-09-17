@@ -61,7 +61,10 @@ export async function issueKycReceipt(
     ts: Date.now(),
     nonce: randomNonce(),
   };
-  const message = await makeSignedWakuMessage('kyc.receipt', payload, 'admin');
+  const message = await makeSignedWakuMessage('kyc.receipt', payload, 'admin', {
+    ts: payload.ts,
+    nonce: payload.nonce,
+  });
   await persistReceipt(buyerPublicKey, message);
   await publish(receiptTopic(buyerPublicKey), message);
   return message;

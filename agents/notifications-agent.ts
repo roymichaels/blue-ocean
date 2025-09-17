@@ -26,6 +26,8 @@ import {
 } from '@/config/featureFlags';
 import { canonicalJson } from '@/utils/serialization';
 import { makeSignedWakuMessage } from '@/utils/wakuSigning';
+import { randomBytes } from '@noble/hashes/utils';
+import { Buffer } from 'buffer';
 
 export const E_BACKLOG = 'E_BACKLOG';
 
@@ -284,11 +286,15 @@ class NotificationsAgent {
         type: event ?? 'notify.direct',
         notification: item,
         storeId,
+        ts: Date.now(),
+        nonce: Buffer.from(randomBytes(12)).toString('hex'),
       };
+      const meta = { ts: payload.ts, nonce: payload.nonce };
       const message = await makeSignedWakuMessage(
         MESSAGE_TYPE,
         canonicalJson(payload),
         'notifications',
+        meta,
       );
       await publish(NOTIFICATION_TOPIC, message);
     } catch (err) {

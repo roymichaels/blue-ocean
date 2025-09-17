@@ -29,6 +29,8 @@ export const notificationWakuPayloadSchema = z.object({
   type: notificationEventSchema,
   notification: notificationSchema,
   storeId: z.string().optional(),
+  ts: z.number(),
+  nonce: z.string(),
 });
 
 export type NotificationWakuPayload = z.infer<typeof notificationWakuPayloadSchema>;

@@ -13,6 +13,8 @@ import { initLake } from './nearLake';
 import { topicFor } from '@blue-ocean/utils';
 import { getNetworkId, getContractId } from '@/services/config';
 import { setStore as persistStore } from '@/features/stores/services/nearStores';
+import { randomBytes } from '@noble/hashes/utils';
+import { Buffer } from 'buffer';
 
 declare const logger: any;
 
@@ -39,6 +41,31 @@ let lakeStarted = false;
 
 const MAX_GZ_PAYLOAD = 200 * 1024; // 200KB
 const PROMPT_TTI_MS = 2500; // 2.5s
+const NONCE_BYTE_LENGTH = 12;
+const KEY_EPOCH_INTERVAL_MS = 10 * 60 * 1000;
+
+function randomHex(byteLength = NONCE_BYTE_LENGTH): string {
+  return Buffer.from(randomBytes(byteLength)).toString('hex');
+}
+
+function computeKeyEpoch(ts: number): number {
+  if (!Number.isFinite(ts)) return 0;
+  return Math.floor(ts / KEY_EPOCH_INTERVAL_MS);
+}
+
+function enrichEnvelope(message: unknown): Record<string, unknown> {
+  const base: Record<string, unknown> = {};
+  if (message && typeof message === 'object' && !Array.isArray(message)) {
+    Object.assign(base, message as Record<string, unknown>);
+  } else if (message !== undefined) {
+    base.payload = message;
+  }
+  const ts = typeof base.ts === 'number' ? base.ts : Date.now();
+  const nonce = typeof base.nonce === 'string' ? base.nonce : randomHex();
+  const keyEpoch =
+    typeof base.keyEpoch === 'number' ? base.keyEpoch : computeKeyEpoch(ts);
+  return { ...base, ts, nonce, keyEpoch };
+}
 
 function getPublisherKey(): string {
   if (PUB) return PUB;
@@ -175,7 +202,9 @@ async function sendAck(topic: string, id: string): Promise<void> {
 export async function publish(topic: string, message: any): Promise<string> {
   const client = await getClient();
   const id = message?.id || Date.now().toString();
-  const payload = client.utf8ToBytes(canonicalJson({ ...message, id }));
+  const enriched = enrichEnvelope(message);
+  const envelope = { ...enriched, id };
+  const payload = client.utf8ToBytes(canonicalJson(envelope));
   const gzSize = gzipSync(Buffer.from(payload)).length;
   if (gzSize > MAX_GZ_PAYLOAD) {
     throw new Error('Payload exceeds 200KB gz limit');
