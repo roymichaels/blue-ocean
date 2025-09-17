@@ -9,6 +9,8 @@ export * from './order.status';
 export * from './admin.joinRequested';
 export * from './admin.approve';
 export * from './admin.reject';
+export * from './admin.recoveryRequest';
+export * from './admin.recoveryVerify';
 export * from './store.created';
 export * from './workspace.created';
 export * from './delivery.update';

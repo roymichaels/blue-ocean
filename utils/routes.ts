@@ -6,6 +6,7 @@ export const routes = {
   store: (id: string | number) => `/store/${id}`,
   createStore: () => '/stores/create',
   driver: () => '/driver',
+  recoverAdmin: () => '/auth/recover-admin',
 };
 
 export type Routes = typeof routes;

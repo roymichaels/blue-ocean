@@ -29,6 +29,7 @@ import {
   subscribeToKycReceipts,
   type KycReceipt,
 } from '@/services/kycReceipts';
+import { adminUsersTopic } from '@/utils/wakuTopics';
 
 
 interface AuthContextType {
@@ -71,7 +72,7 @@ interface AuthProviderProps {
 
 const SESSION_EXP_TOLERANCE_MS = 60_000;
 const BROWSE_SCOPE = 'read';
-const USERS_TOPIC = '/blue-ocean/users/1';
+const USERS_TOPIC = adminUsersTopic();
 const ADMIN_BOOTSTRAP_FLAG_PREFIX = 'auth.adminBootstrap:';
 
 export function AuthProvider({ children }: AuthProviderProps) {

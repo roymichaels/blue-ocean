@@ -9,6 +9,8 @@ export {
   type AdminJoinRequestMessage,
   type AdminApproveMessage,
   type AdminRejectMessage,
+  type AdminRecoveryRequestMessage,
+  type AdminRecoveryVerifyMessage,
   type WorkspaceCreatedMessage,
   type WorkspaceCreatedPayload,
   type DeliveryUpdateMessage,
