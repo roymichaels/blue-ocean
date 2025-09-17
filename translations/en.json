@@ -819,7 +819,25 @@
   },
   "wallet": {
     "connect": "Connect Wallet",
-    "notConnected": "Not connected"
+    "notConnected": "Not connected",
+    "scopeHeading": "Authorize session permissions",
+    "scopeDescription": "Choose what this device can do. Tokens expire hourly and can be reissued at any time.",
+    "scopeBrowse": "Browse marketplace",
+    "scopeCheckout": "Checkout & payments",
+    "scopeAdmin": "Admin tools",
+    "scopeBrowseDescription": "Keeps marketplace data available on this device.",
+    "scopeCheckoutDescription": "Required to place orders and sign checkout requests from this device.",
+    "scopeAdminDescription": "Manage stores and escalations. Requires admin approval.",
+    "scopeButton": "Authorize permissions",
+    "scopeError": "The requested permissions are not available for this wallet.",
+    "deviceMismatch": "This session belongs to a different device. Reconnect your wallet and try again.",
+    "scopeUnknownError": "We were unable to issue a session token. Please try again.",
+    "scopeConnectFirst": "Connect a wallet before issuing a session token.",
+    "scopeAdminDenied": "Admin access still needs approval. Shopper permissions were issued instead.",
+    "scopeSuccess": "Session token issued: {scopes}",
+    "currentScopes": "Current session: {scopes}",
+    "noActiveScopes": "No active session token yet.",
+    "noScopes": "None"
   },
   "store": {
     "not_found": "Store not found",
