@@ -64,10 +64,15 @@ describe('UsersAgent NEAR integration', () => {
     expect(pending?.kycStatus).toBe('pending');
     expect(pending?.kycDocument).toEqual({ uri: 'ipfs://doc', hash: 'deadbeef' });
 
-    await usersAgent.updateKyc('u2', 'verified', 'admin1');
+    await usersAgent.updateKyc('u2', 'verified', 'admin1', {
+      kycReceiptHash: 'beadfeed',
+    });
     const verified = await usersAgent.get('u2');
     expect(verified?.kycStatus).toBe('verified');
     expect(verified?.kycApprovedBy).toBe('admin1');
+    expect(verified?.kycReceiptHash).toBe('beadfeed');
+    const storedHash = await usersAgent.getKycReceiptHash('u2');
+    expect(storedHash).toBe('beadfeed');
   });
 
   it('rejects invalid NEAR addresses', async () => {

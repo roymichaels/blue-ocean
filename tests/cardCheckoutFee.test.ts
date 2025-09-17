@@ -2,6 +2,8 @@ import OrderService from '@/services/orders';
 import { CartItem, ShippingAddress } from '../types';
 import { requestScopes } from '@/services/session';
 import { loadKycReceipt } from '@/services/kycReceipts';
+import { canonicalJson } from '@/utils/serialization';
+import { sha256 } from '@noble/hashes/sha256';
 import { getDeviceHash } from '@/utils/getDeviceHash';
 
 const mockStore: Record<string, any> = {};
@@ -53,8 +55,31 @@ jest.mock('@/services/nearContract', () => ({
   refundPayment: jest.fn(),
 }));
 
+const mockUsersAgent = {
+  get: jest.fn(),
+  getKycReceiptHash: jest.fn(),
+  getAll: jest.fn(),
+  add: jest.fn(),
+  update: jest.fn(),
+  requestKyc: jest.fn(),
+  updateKyc: jest.fn(),
+  remove: jest.fn(),
+  subscribe: jest.fn(),
+};
+
+jest.mock('@/agents/users-agent', () => ({
+  __esModule: true,
+  default: mockUsersAgent,
+}));
+
 jest.mock('@/features/stores/services/nearStores', () => ({
-  getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
+  getStore: jest.fn(async (id: string) => ({
+    id,
+    name: id,
+    owner: `seller_${id}`,
+    nftId: id,
+    policies: { kycRequired: true },
+  })),
 }));
 
 jest.mock('@/features/products/services/nearProducts', () => ({
@@ -86,7 +111,23 @@ jest.mock('@/constants/tenant', () => ({
 
 describe('card checkout fee deduction', () => {
   beforeEach(() => {
-    (loadKycReceipt as jest.Mock).mockResolvedValue(makeReceipt());
+    Object.values(mockUsersAgent).forEach((fn) => {
+      if (typeof fn === 'function' && 'mockReset' in fn) {
+        (fn as jest.Mock).mockReset();
+      }
+    });
+    const receipt = makeReceipt();
+    const receiptHash = Buffer.from(
+      sha256(Buffer.from(canonicalJson(receipt.payload))),
+    ).toString('hex');
+    (loadKycReceipt as jest.Mock).mockResolvedValue(receipt);
+    mockUsersAgent.get.mockResolvedValue({
+      id: 'user1',
+      kycStatus: 'verified',
+      chatPublicKey: receipt.payload.buyerPublicKey,
+      kycReceiptHash: receiptHash,
+    });
+    mockUsersAgent.getKycReceiptHash.mockResolvedValue(receiptHash);
   });
 
   it('deducts platform fee for card payments', async () => {
