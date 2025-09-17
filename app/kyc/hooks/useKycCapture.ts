@@ -289,6 +289,7 @@ export function useKycCapture(options: UseKycCaptureOptions = {}) {
             nonce: state.nonce,
             ts: start,
             hash: overlayHash,
+
           },
         },
       };

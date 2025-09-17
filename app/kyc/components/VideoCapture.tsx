@@ -60,6 +60,7 @@ export default function VideoCapture({
       const artifact = await recordLiveness(cameraRef.current);
       onRecorded(artifact);
     } catch (err) {
+
       if (err instanceof Error && err.message === 'liveness-too-short') {
         setError('הוידאו חייב להיות לפחות 3 שניות. נסה/י שוב עם ההנחיות.');
       } else {

@@ -1,7 +1,9 @@
+
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { sha256 } from '@noble/hashes/sha256';
 import { Buffer } from 'buffer';
+
 
 interface WatermarkOverlayProps {
   appName: string;
@@ -14,6 +16,8 @@ export default function WatermarkOverlay({
   timestamp,
   nonce,
 }: WatermarkOverlayProps): React.ReactElement {
+
+  
   const timeLabel = useMemo(() => new Date(timestamp).toLocaleString('he-IL'), [timestamp]);
   const nonceLabel = useMemo(() => nonce.slice(0, 12), [nonce]);
   const hashLabel = useMemo(() => {
@@ -22,6 +26,7 @@ export default function WatermarkOverlay({
     const digest = Buffer.from(sha256(bytes)).toString('hex');
     return digest.slice(0, 16);
   }, [nonce, timestamp]);
+
   return (
     <View style={styles.overlay} pointerEvents="none">
       <Text style={styles.text}>{appName}</Text>
