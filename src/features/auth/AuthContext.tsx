@@ -25,6 +25,7 @@ import {
   getCheckoutRequestScopes,
 } from '@/services/session';
 import { useWalletSessions } from '@/auth/wallet';
+import { loadKycReceipt, subscribeToKycReceipts } from '@/services/kycReceipts';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -179,6 +180,77 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     checkAuthState().finally(() => setInitialized(true));
   }, [address]);
+
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: (() => void) | null = null;
+
+    const buyerPublicKey = user?.chatPublicKey;
+    const buyerId = user?.id;
+    if (!buyerPublicKey || !buyerId) {
+      return () => {};
+    }
+
+    const applyReceipt = async (receipt: Awaited<ReturnType<typeof loadKycReceipt>>) => {
+      if (!receipt) return;
+      const receiptUserId =
+        (typeof receipt.payload.data === 'object' && receipt.payload.data && 'userId' in receipt.payload.data)
+          ? (receipt.payload.data as Record<string, unknown>).userId
+          : undefined;
+      if (receiptUserId && receiptUserId !== buyerId) return;
+      const targetId = typeof receiptUserId === 'string' && receiptUserId.length > 0 ? receiptUserId : buyerId;
+      const currentProfile = await getChainUser(targetId);
+      const baseProfile = currentProfile || (targetId === user?.id ? user : null);
+      if (!baseProfile) return;
+      const updatedProfile: User = {
+        ...baseProfile,
+        kycStatus: 'verified',
+        kycApprovedAt: receipt.payload.issuedAt,
+        kycApprovedBy: receipt.payload.issuerPublicKey,
+      };
+      await setChainUser(updatedProfile);
+      if (!active) return;
+      setUser((prev) => {
+        if (!prev || prev.id !== updatedProfile.id) return prev;
+        if (
+          prev.kycStatus === 'verified' &&
+          prev.kycApprovedAt === updatedProfile.kycApprovedAt &&
+          prev.kycApprovedBy === updatedProfile.kycApprovedBy
+        ) {
+          return prev;
+        }
+        return { ...prev, ...updatedProfile };
+      });
+    };
+
+    (async () => {
+      try {
+        const stored = await loadKycReceipt(buyerPublicKey);
+        await applyReceipt(stored);
+      } catch (err) {
+        errorLog('Failed to hydrate local KYC receipt', err);
+      }
+
+      try {
+        unsubscribe = await subscribeToKycReceipts(buyerPublicKey, {
+          fetchHistory: false,
+          onReceipt: async (receipt) => {
+            await applyReceipt(receipt);
+          },
+          onError: (err) => {
+            errorLog('kyc.receipt subscription error', err);
+          },
+        });
+      } catch (err) {
+        errorLog('Failed to subscribe to KYC receipts', err);
+      }
+    })();
+
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
+  }, [user?.chatPublicKey, user?.id]);
 
   const login = async () => {
     try {
