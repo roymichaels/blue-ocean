@@ -29,6 +29,13 @@ import { getFeeSettings } from '@/constants/tenant';
 import { loadKycReceipt } from '@/services/kycReceipts';
 import { getPublicKeyHex } from '@/services/localIdentity';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
+import { buildOrderTimeline } from '@/utils/buildOrderTimeline';
+import {
+  recordKycNonceUsage,
+  rememberCheckoutNonce,
+  forgetCheckoutNonce,
+  clearExpiredKycNonceUsage,
+} from '@/utils/nonceStore';
 
 const ORDER_TOPIC_PREFIX = '/blue-ocean/orders';
 const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
@@ -53,6 +60,7 @@ function recordOrderStageDuration(
   stage: string,
   durationMs: number,
 ): void {
+  // TODO:CORE-003 Angle 1 - Replace direct histogram writes with the shared pipeline metrics client once it is available.
   latencyHistogram.observe(
     {
       service: ORDER_PIPELINE_SERVICE,
@@ -80,6 +88,12 @@ type KycVerificationResult = {
   hash: string | null;
   receiptId?: string;
   signature?: string;
+};
+
+type ExternalKycVerification = {
+  hash?: string | null;
+  signature?: string | null;
+  receiptId?: string | null;
 };
 
 interface OrderDraft {
@@ -117,6 +131,7 @@ export async function emitOrderEvents(
   const deterministicTimestamp = parseDeterministicTimestamp();
 
   const orderTopic = `${ORDER_TOPIC_PREFIX}/${storeId}`;
+  // TODO:CORE-001 Angle 1 - Mirror order lifecycle events into the analytics stream once the schema handshake is finalized.
   const baseEvent = {
     id: order.id,
     orderId: order.id,
@@ -261,6 +276,8 @@ class OrderService {
     }
     this.checkoutNonceLocks.set(sessionToken, nonce);
     setSessionCheckoutNonce(sessionToken, nonce);
+    // TODO:CORE-007 Angle 1 - Bridge checkout nonce reservations to the shared store once it's online.
+    rememberCheckoutNonce(sessionToken, nonce);
   }
 
   private releaseCheckoutNonce(sessionToken: string, nonce: string): void {
@@ -268,6 +285,7 @@ class OrderService {
     if (active === nonce) {
       this.checkoutNonceLocks.delete(sessionToken);
       setSessionCheckoutNonce(sessionToken, null);
+      forgetCheckoutNonce(sessionToken, nonce);
     }
   }
 
@@ -278,6 +296,7 @@ class OrderService {
     const store = await getStore(storeId, storeId);
     const requiresKyc = this.storeRequiresKyc(store);
 
+    // TODO:CORE-004 Angle 1 - Swap to the tenant KYC verification microservice once its API contract is finalized.
     let user: User | null = null;
     if (buyerId) {
       try {
@@ -301,6 +320,20 @@ class OrderService {
 
     let canonicalHash = storedHash ?? computedHash ?? null;
     let canonicalSignature = storedSig ?? receipt?.signature ?? null;
+    let resolvedReceiptId = receipt?.payload?.receiptId ?? undefined;
+
+    const ledgerResult = await this.verifyKycReceiptWithLedger(buyerId, storeId);
+    if (ledgerResult) {
+      if (ledgerResult.hash) {
+        canonicalHash = ledgerResult.hash;
+      }
+      if (ledgerResult.signature) {
+        canonicalSignature = ledgerResult.signature;
+      }
+      if (ledgerResult.receiptId) {
+        resolvedReceiptId = ledgerResult.receiptId;
+      }
+    }
 
     if (requiresKyc) {
       if (!user || user.kycStatus !== 'verified') {
@@ -350,6 +383,7 @@ class OrderService {
         throw new Error('{E_REPLAY}');
       }
       this.kycReceiptReplayGuards.set(replayKey, now);
+      recordKycNonceUsage(replayKey, now);
       canonicalHash = storedHash;
       canonicalSignature = storedSig;
     }
@@ -357,9 +391,19 @@ class OrderService {
     return {
       ok: true,
       hash: canonicalHash,
-      receiptId: receipt?.payload?.receiptId,
+      receiptId: resolvedReceiptId,
       signature: canonicalSignature ?? undefined,
     };
+  }
+
+  private async verifyKycReceiptWithLedger(
+    buyerId: string,
+    storeId: string,
+  ): Promise<ExternalKycVerification | null> {
+    // TODO:CORE-005 Angle 1 - Replace stub with the ledger-backed verifier when the compliance service is wired in.
+    void buyerId;
+    void storeId;
+    return null;
   }
 
   private pruneKycReceiptReplayGuards(now: number): void {
@@ -368,6 +412,7 @@ class OrderService {
         this.kycReceiptReplayGuards.delete(key);
       }
     }
+    clearExpiredKycNonceUsage(now - KYC_RECEIPT_REPLAY_TTL_MS);
   }
 
   private async deployEscrow(
@@ -388,16 +433,12 @@ class OrderService {
       itemsHash: draft.itemsHash,
     });
     try {
+      // TODO:CORE-010 Angle 1 - Route escrow deployments through the contract wrapper once multi-chain support lands.
       const { feeAddress, feeBps } = await getFeeSettings();
-      const result = await nearDeployEscrow({
-        total: draft.total,
+      const result = await this.deployEscrowViaWrapper({
+        draft,
         feeAddress,
         feeBps,
-        buyerAddress: draft.buyerAddress,
-        sellerAddress: draft.sellerAddress,
-        kycReceiptHash: draft.kycReceiptHash,
-        nonce: draft.nonce,
-        sessionToken: draft.sessionToken,
       });
       debugLog('orders.escrow.deploy.success', {
         orderId,
@@ -423,29 +464,32 @@ class OrderService {
     }
   }
 
+  private async deployEscrowViaWrapper({
+    draft,
+    feeAddress,
+    feeBps,
+  }: {
+    draft: OrderDraft;
+    feeAddress: string;
+    feeBps: number;
+  }): Promise<{ contractAddress: string; txHash: string }> {
+    // TODO:CORE-011 Angle 1 - Replace this placeholder with the deploy wrapper once contract router endpoints are exposed.
+    return nearDeployEscrow({
+      total: draft.total,
+      feeAddress,
+      feeBps,
+      buyerAddress: draft.buyerAddress,
+      sellerAddress: draft.sellerAddress,
+      kycReceiptHash: draft.kycReceiptHash,
+      nonce: draft.nonce,
+      sessionToken: draft.sessionToken,
+    });
+  }
+
   private getTrackingSteps(status: OrderStatus): OrderTrackingStep[] {
-    const allSteps: OrderTrackingStep[] = [
-      { status: 'order_received', title: 'הזמנה התקבלה', timestamp: new Date().toISOString(), completed: false },
-      { status: 'courier_found', title: 'נמצא שליח מתאים', timestamp: '', completed: false },
-      { status: 'courier_picked_up', title: 'שליח אסף את ההזמנה', timestamp: '', completed: false },
-      { status: 'courier_on_way', title: 'שליח בדרך אלייך', timestamp: '', completed: false },
-      { status: 'delivered', title: 'הזמנה התקבלה (השאר ביקורת)', timestamp: '', completed: false },
-    ];
+    return buildOrderTimeline(status);
+  }
 
-    const statusOrder: OrderStatus[] = [
-      'order_received',
-      'courier_found',
-      'courier_picked_up',
-      'courier_on_way',
-      'delivered',
-    ];
-
-    const currentIndex = statusOrder.indexOf(status);
-    for (let i = 0; i <= currentIndex; i++) {
-      allSteps[i].completed = true;
-      if (!allSteps[i].timestamp) {
-        const now = new Date();
-        const minutesAgo = (currentIndex - i) * 10;
   private async createOrder(
     userId: string,
     items: CartItem[],
@@ -531,6 +575,7 @@ class OrderService {
       kycReceiptSignature: kyc.signature,
     };
 
+    await this.applyCheckoutRiskRules(order, storeId);
     await ordersAgent.add(order);
     debugLog('orders.createOrder.persisted', {
       orderId,
@@ -540,6 +585,7 @@ class OrderService {
     });
     await this.decrementProductStock(items);
     this.notifyListeners();
+    await this.trackOrderAnalytics(order, 'order_created');
     return order;
   }
 
@@ -551,6 +597,7 @@ class OrderService {
     sessionToken: string,
     nonce: string,
   ): Promise<Order[]> {
+    // TODO:CORE-016 Angle 1 - Introduce the checkout pipeline orchestrator before fan-out once the aggregator contract lands.
     const grouped: Record<string, CartItem[]> = {};
     for (const item of cartItems) {
       const storeId = item.product.storeId;
@@ -729,6 +776,28 @@ class OrderService {
     }
   }
 
+  private async applyCheckoutRiskRules(order: Order, storeId: string): Promise<void> {
+    // TODO:CORE-012 Angle 1 - Plug in the fraud/risk engine once scoring endpoints are exposed for checkout orchestration.
+    void order;
+    void storeId;
+  }
+
+  private async trackOrderAnalytics(order: Order, stage: string): Promise<void> {
+    // TODO:CORE-013 Angle 1 - Emit structured analytics events after the telemetry pipeline contract is finalized.
+    void order;
+    void stage;
+  }
+
+  private async dispatchDeliveryHook(order: Order): Promise<void> {
+    // TODO:CORE-014 Angle 1 - Call out to the delivery coordination webhook once the logistics integration is staged.
+    void order;
+  }
+
+  private async dispatchRefundHook(order: Order): Promise<void> {
+    // TODO:CORE-015 Angle 1 - Invoke the refund settlement webhook once the treasury service exposes the callback.
+    void order;
+  }
+
   private simulateOrderProgress(orderId: string) {
     const statusProgression: OrderStatus[] = [
       'courier_found',
@@ -764,6 +833,12 @@ class OrderService {
     order.updatedAt = new Date().toISOString();
     await ordersAgent.update(order);
     this.notifyListeners();
+    await this.trackOrderAnalytics(order, 'status_updated');
+    if (status === 'delivered') {
+      await this.dispatchDeliveryHook(order);
+    } else if (status === 'refunded') {
+      await this.dispatchRefundHook(order);
+    }
   }
 
   async resolveDispute(orderId: string, toSeller: boolean): Promise<void> {

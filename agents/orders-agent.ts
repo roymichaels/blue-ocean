@@ -38,6 +38,7 @@ import { buildTopic } from '../utils/wakuTopics';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import AgentError from '@/types/AgentError';
 import { canonicalJson } from '@/utils/serialization';
+import { buildOrderTimeline } from '@/utils/buildOrderTimeline';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
@@ -126,6 +127,7 @@ class OrdersAgent {
     const handler = async (wakuMsg: any) => {
       if (!wakuMsg.payload) return;
       try {
+        // TODO:CORE-018 Angle 1 - Attach Waku ack/resync hooks once the reliability layer contract is rolled out.
         const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
         const signed = await verifyBeforeWrite(raw, orderStatusMessageSchema, undefined, topic);
         if (!signed) return;
@@ -140,30 +142,8 @@ class OrdersAgent {
   }
 
   private getTrackingSteps(status: OrderStatus): OrderTrackingStep[] {
-    const allSteps: OrderTrackingStep[] = [
-      { status: 'order_received', title: 'הזמנה התקבלה', timestamp: new Date().toISOString(), completed: false },
-      { status: 'courier_found', title: 'נמצא שליח מתאים', timestamp: '', completed: false },
-      { status: 'courier_picked_up', title: 'שליח אסף את ההזמנה', timestamp: '', completed: false },
-      { status: 'courier_on_way', title: 'שליח בדרך אלייך', timestamp: '', completed: false },
-      { status: 'delivered', title: 'הזמנה התקבלה (השאר ביקורת)', timestamp: '', completed: false },
-    ];
-    const statusOrder: OrderStatus[] = [
-      'order_received',
-      'courier_found',
-      'courier_picked_up',
-      'courier_on_way',
-      'delivered',
-    ];
-    const currentIndex = statusOrder.indexOf(status);
-    for (let i = 0; i <= currentIndex; i++) {
-      allSteps[i].completed = true;
-      if (!allSteps[i].timestamp) {
-        const now = new Date();
-        const minutesAgo = (currentIndex - i) * 10;
-        allSteps[i].timestamp = new Date(now.getTime() - minutesAgo * 60000).toISOString();
-      }
-    }
-    return allSteps;
+    // TODO:CORE-017 Angle 1 - Extend the shared timeline builder with agent-specific phases once sync schema expands.
+    return buildOrderTimeline(status);
   }
 
   private async applyRemoteStatus(orderId: string, status: OrderStatus) {

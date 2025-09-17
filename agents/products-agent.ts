@@ -136,6 +136,7 @@ class ProductsAgent {
     const n = await this.ensureNode();
     if (!n) return;
     try {
+      // TODO:CORE-020 Angle 1 - Mirror product updates into the stock analytics stream once the topic contract is finalized.
       const ts = Date.now();
       const nonce = Buffer.from(randomBytes(12)).toString('hex');
       const msg = await makeSignedWakuMessage(

@@ -103,6 +103,7 @@ async function startNode(): Promise<LightNode | null> {
   const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
   let node: LightNode | null = null;
   try {
+    // TODO:CORE-022 Angle 1 - Insert the orders pipeline handshake before node start once the coordination spec is ready.
     node = await createLightNode({} as any);
   } catch (err) {
     errorLog('Failed to start Waku node', err instanceof Error ? err.message : err);

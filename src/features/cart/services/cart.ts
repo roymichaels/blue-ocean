@@ -176,6 +176,7 @@ class CartService {
       slow: durationMs > 120,
     };
 
+    // TODO:CORE-025 Angle 1 - Forward add-to-cart telemetry to the checkout analytics contract once Angle 1 metrics are live.
     eventBus.track('cart.add.duration', payload).catch((err) => {
       errorLog('Failed to track cart.add.duration', err);
     });
