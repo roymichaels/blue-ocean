@@ -202,6 +202,7 @@ export interface User {
   kycApprovedBy?: string;
   kycApprovedAt?: string;
   kycReceiptHash?: string;
+  kycReceiptSig?: string;
   kycDocument?: KycDocument;
   kycArtifacts?: KycArtifact[];
   kycBundleNonce?: string;
