@@ -11,7 +11,7 @@ import {
 } from '@/services/monitoring';
 import flags from '@/utils/flags';
 
-interface AdminRecord {
+export interface AdminRecord {
   address: string;
   publicKey: string;
   requestedAt?: number;
@@ -241,6 +241,35 @@ export class AdminAgent extends EventEmitter {
       this.emit('admin.rejected', { address: pending.address });
     }
     return 'admin.rejected';
+  }
+
+  async handleMessage(msg: WakuMessage<any>): Promise<void> {
+    if (!msg || typeof msg !== 'object') return;
+    const type = msg.type;
+    switch (type) {
+      case 'admin.joinRequested':
+        await this.requestAdmin(
+          msg as WakuMessage<{
+            address: string;
+            displayName?: string;
+            nonce: string;
+            ts: number;
+          }>,
+        );
+        break;
+      case 'admin.approve':
+        await this.approveAdmin(
+          msg as WakuMessage<{ address: string; nonce: string; ts: number }>,
+        );
+        break;
+      case 'admin.reject':
+        await this.rejectAdmin(
+          msg as WakuMessage<{ address: string; nonce: string; ts: number }>,
+        );
+        break;
+      default:
+        break;
+    }
   }
 }
 
