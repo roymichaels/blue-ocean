@@ -163,6 +163,7 @@
     "priceLowHigh": "מחיר: נמוך לגבוה",
     "priceHighLow": "מחיר: גבוה לנמוך",
     "highRating": "דירוג גבוה",
+    "loadingProducts": "טוען מוצרים",
     "loadErrorMessage": "טעינת הנתונים נכשלה. משוך לרענון או לחץ טען מחדש.",
     "connectWalletToContinue": "חבר ארנק כדי להמשיך",
     "create_store_prompt_title": "צור את החנות שלך",
