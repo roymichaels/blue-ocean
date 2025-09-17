@@ -82,8 +82,18 @@ export function createWarmCache<T>(
   const metricLabels = { cache: topic } as const;
   cacheLagGauge.set(metricLabels, 0);
 
+  function isValidDiff(msg: Partial<DiffMessage<T>>): msg is DiffMessage<T> {
+    if (!msg || typeof msg !== 'object') return false;
+    if (typeof msg.id !== 'string' || msg.id.length === 0) return false;
+    if (typeof msg.rev !== 'number' || !Number.isFinite(msg.rev)) return false;
+    if (msg.op !== 'set' && msg.op !== 'delete' && msg.op !== 'merge') return false;
+    return true;
+  }
+
   function apply(raw: DiffMessage<T>, source: MessageSource): DiffMessage<T> | null {
+    if (!isValidDiff(raw)) return null;
     const msg = normalizeMessage(raw, source);
+    if (!isValidDiff(msg)) return null;
     const currentRev = revisions.get(msg.id) ?? 0;
     const expected = currentRev === 0 ? msg.rev : currentRev + 1;
     if (currentRev !== 0) {
@@ -176,7 +186,9 @@ export function createWarmCache<T>(
     let unsub: (() => void) | null = null;
     try {
       unsub = await subscribeWithAck(topic, (msg: DiffMessage<T>) => {
+        if (!isValidDiff(msg)) return;
         const normalized = normalizeMessage(msg, 'live');
+        if (!isValidDiff(normalized)) return;
         if (!synced) buffer.push({ msg: normalized, source: 'live' });
         else apply(normalized, 'live');
       });
