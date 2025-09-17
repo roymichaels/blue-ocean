@@ -7,12 +7,20 @@ import config from '@/config';
 import { canonicalJson } from '@/utils/serialization';
 import { retryWithBackoff } from '@/utils/retry';
 import { enqueue, flush } from '@/utils/wakuStore';
-import { encrypt, decrypt } from '@/utils/wakuCrypto';
+import {
+  encrypt,
+  decrypt,
+  getCurrentKeyEpoch,
+  getSupportedKeyEpochs,
+  WakuDecryptError,
+} from '@/utils/wakuCrypto';
 import { serviceLatency, serviceFailures } from '@/utils/observability';
 import { initLake } from './nearLake';
 import { topicFor } from '@blue-ocean/utils';
 import { getNetworkId, getContractId } from '@/services/config';
 import { setStore as persistStore } from '@/features/stores/services/nearStores';
+import { isWakuSharedKeysEnabled } from '@/config/featureFlags';
+import { wakuDecryptErrorCounter } from '@/services/monitoring';
 
 declare const logger: any;
 
@@ -175,24 +183,44 @@ async function sendAck(topic: string, id: string): Promise<void> {
 export async function publish(topic: string, message: any): Promise<string> {
   const client = await getClient();
   const id = message?.id || Date.now().toString();
-  const payload = client.utf8ToBytes(canonicalJson({ ...message, id }));
+  const useSharedKeys = isWakuSharedKeysEnabled();
+  const keyEpoch = useSharedKeys ? getCurrentKeyEpoch() : null;
+  const envelope = keyEpoch !== null ? { ...message, id, keyEpoch } : { ...message, id };
+  const payload = client.utf8ToBytes(canonicalJson(envelope));
   const gzSize = gzipSync(Buffer.from(payload)).length;
   if (gzSize > MAX_GZ_PAYLOAD) {
     throw new Error('Payload exceeds 200KB gz limit');
   }
-  const encPayload = encrypt(topic, payload);
+  const encryption = await encrypt(topic, payload, { keyEpoch, dualWrite: useSharedKeys });
+  const envelopes = [encryption.primary, ...(encryption.legacy ? [encryption.legacy] : [])];
+  const unsent = new Set<number>(envelopes.map((_, index) => index));
+
   try {
     const node = await ensureNode();
     if (!node) throw new Error('Waku disabled');
     const encoder = client.createEncoder({ contentTopic: topic } as any);
-    await Promise.race([
-      node.lightPush.send(encoder, { payload: encPayload }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('TTI_EXCEEDED')), PROMPT_TTI_MS),
-      ),
-    ]);
+    for (let i = 0; i < envelopes.length; i += 1) {
+      const entry = envelopes[i];
+      try {
+        await Promise.race([
+          node.lightPush.send(encoder, { payload: entry.payload }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('TTI_EXCEEDED')), PROMPT_TTI_MS),
+          ),
+        ]);
+        unsent.delete(i);
+      } catch {
+        break;
+      }
+    }
   } catch {
-    enqueue(topic, encPayload);
+    // fall through to queue unsent envelopes
+  }
+
+  if (unsent.size > 0) {
+    for (const index of unsent) {
+      enqueue(topic, envelopes[index].payload);
+    }
   }
   return id;
 }
@@ -208,14 +236,25 @@ export async function subscribeWithAck(
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
-      const dec = decrypt(topic, wakuMsg.payload);
-      const msg = JSON.parse(client.bytesToUtf8(dec));
+      const allowedEpochs = getSupportedKeyEpochs();
+      const { plaintext } = await decrypt(topic, wakuMsg.payload, { allowedEpochs });
+      let msg: any;
+      try {
+        msg = JSON.parse(client.bytesToUtf8(plaintext));
+      } catch {
+        wakuDecryptErrorCounter.inc({ reason: 'decode_failure' });
+        return;
+      }
       if (msg.id && receivedIds.has(msg.id)) return;
       if (msg.id) receivedIds.add(msg.id);
       cb(msg);
       if (msg.id) await sendAck(topic, msg.id);
-    } catch {
-      /* ignore */
+    } catch (err) {
+      if (err instanceof WakuDecryptError) {
+        wakuDecryptErrorCounter.inc({ reason: err.code });
+      } else {
+        wakuDecryptErrorCounter.inc({ reason: 'unknown' });
+      }
     }
   };
   const maybeUnsub = (node.relay as any).addObserver(handler, [decoder]) as
@@ -246,11 +285,20 @@ export async function fetchHistory(
     for (const wakuMsg of messages) {
       if (!wakuMsg.payload) continue;
       try {
-        const dec = decrypt(topic, wakuMsg.payload);
-        const msg = JSON.parse(client.bytesToUtf8(dec));
-        cb(msg);
-      } catch {
-        /* ignore */
+        const allowedEpochs = getSupportedKeyEpochs();
+        const { plaintext } = await decrypt(topic, wakuMsg.payload, { allowedEpochs });
+        try {
+          const msg = JSON.parse(client.bytesToUtf8(plaintext));
+          cb(msg);
+        } catch {
+          wakuDecryptErrorCounter.inc({ reason: 'decode_failure' });
+        }
+      } catch (err) {
+        if (err instanceof WakuDecryptError) {
+          wakuDecryptErrorCounter.inc({ reason: err.code });
+        } else {
+          wakuDecryptErrorCounter.inc({ reason: 'unknown' });
+        }
       }
     }
     if (!res.next) break;

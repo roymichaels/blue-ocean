@@ -52,6 +52,12 @@ export const cacheLagAlertCounter = registry.createCounter({
   labelNames: ['cache'],
 });
 
+export const wakuDecryptErrorCounter = registry.createCounter({
+  name: 'waku_decrypt_errors_total',
+  help: 'Count of Waku decrypt failures by reason',
+  labelNames: ['reason'],
+});
+
 export const authRateLimitCounter = registry.createCounter({
   name: 'auth_rate_limit_total',
   help: 'Number of auth requests rejected due to rate limiting',
