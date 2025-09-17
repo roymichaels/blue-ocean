@@ -52,13 +52,19 @@ jest.mock('@/services/nearContract', () => ({
   deployEscrow: jest
     .fn()
     .mockImplementation(async (draft: any) => ({
-      orderId: `escrow_${draft.total}`,
+      contractAddress: `escrow_${draft.total}`,
       txHash: `tx_${draft.total}`,
       expiresAt: '2099-01-01T00:00:00.000Z',
       status: 'pending',
     })),
   releasePayment: jest.fn(),
   refundPayment: jest.fn(),
+}));
+
+jest.mock('@/constants/tenant', () => ({
+  getFeeSettings: jest
+    .fn()
+    .mockResolvedValue({ feeAddress: 'fee_addr', feeBps: 250 }),
 }));
 
 jest.mock('@/features/auth/services/nearUsers', () => ({

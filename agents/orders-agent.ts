@@ -21,6 +21,7 @@ import {
 import productsAgent from './products-agent';
 import { getSellerPublicKey } from '@/features/stores/services/sellerRegistry';
 import meteredBilling from '@/billing';
+import { getFeeSettings } from '@/constants/tenant';
 
 assertNearChain();
 import { encryptShippingInfo } from '../utils/shippingCrypto';
@@ -222,22 +223,23 @@ class OrdersAgent {
         ).toString('hex');
     let enriched: Order = { ...normalized, itemsHash };
     if (!normalized.paymentContractAddress || !normalized.paymentTxHash) {
+      const { feeAddress, feeBps } = await getFeeSettings();
       const draft: DeployEscrowDraft = {
         sessionToken: normalized.sessionToken,
         scopes: ['checkout'],
         nonce: normalized.id,
-        storeId,
         total: normalized.total,
-        itemsHash,
+        feeAddress,
+        feeBps,
         buyerAddress: normalized.buyerAddress,
         sellerAddress: normalized.sellerAddress,
         kycReceiptHash: normalized.kycReceiptHash,
       };
-      const { orderId, txHash } = await deployEscrow(draft);
+      const { contractAddress, txHash } = await deployEscrow(draft);
       enriched = {
         ...enriched,
-        paymentContractAddress: orderId,
-        escrowAddr: orderId,
+        paymentContractAddress: contractAddress,
+        escrowAddr: contractAddress,
         paymentTxHash: txHash,
       };
     } else if (!normalized.escrowAddr && normalized.paymentContractAddress) {
