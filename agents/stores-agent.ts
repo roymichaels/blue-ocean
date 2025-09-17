@@ -10,7 +10,6 @@ import {
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { publish } from '@/services/waku';
 import { buildTopic } from '@/utils/wakuTopics';
-import type { WakuMessage } from '@/types/waku';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 
@@ -116,12 +115,8 @@ class StoresAgent {
     this.subscribers.delete(cb);
   }
 
-  private async ensureWallet(): Promise<void> {
-    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
-  }
-
   async add(item: Store): Promise<void> {
-    await this.ensureWallet();
+    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
     const normalized = normalizeMessage<Store>('Store', item);
     const record = await this.persistStore({
       createdAt: normalized.createdAt || new Date().toISOString(),
@@ -131,13 +126,13 @@ class StoresAgent {
   }
 
   async update(item: Store): Promise<void> {
-    await this.ensureWallet();
+    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
     const normalized = normalizeMessage<Store>('Store', item);
     await this.persistStore(normalized);
   }
 
   async remove(id: string): Promise<void> {
-    await this.ensureWallet();
+    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
     await removeStore(id);
   }
 
@@ -159,7 +154,7 @@ class StoresAgent {
 
   private async broadcastCreated(store: Store): Promise<void> {
     try {
-      const msg = await makeSignedMessage('store.created', store);
+      const msg = await makeSignedWakuMessage<Store>('store.created', store, 'store-owner');
       await publish(buildTopic('stores', '1'), msg);
     } catch {
       // non-fatal
@@ -174,7 +169,3 @@ export const selectStore = (id: string): Promise<Store | null> =>
   storesAgent.selectStore(id);
 
 export default storesAgent;
-
-async function makeSignedMessage(type: string, payload: any): Promise<WakuMessage<any>> {
-  return await makeSignedWakuMessage(type, payload, 'store-owner');
-}
