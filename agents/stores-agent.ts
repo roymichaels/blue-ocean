@@ -34,6 +34,7 @@ class StoresAgent {
   }
 
   private async persistStore(store: Store): Promise<Store> {
+    // TODO:CORE-021 Angle 1 - Emit store persistence events to the analytics topic once tenant metrics schema ships.
     const record = this.toRecord(store);
     const namespace = this.getNamespace(record);
     const existing = await fetchStore(namespace, record.id);
