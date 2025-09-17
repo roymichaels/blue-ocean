@@ -4,6 +4,7 @@ import { Camera } from 'expo-camera';
 import { Platform } from 'react-native';
 import { randomBytes } from '@noble/hashes/utils';
 import { Buffer } from 'buffer';
+import { sha256 } from '@noble/hashes/sha256';
 import type { KycArtifactType } from '@/types';
 import {
   trackKycCapturedPath,
@@ -269,6 +270,10 @@ export function useKycCapture(options: UseKycCaptureOptions = {}) {
         mute: false,
       });
       const durationMs = recording.durationMs ?? Date.now() - start;
+      if (durationMs < 3000) {
+        throw new Error('liveness-too-short');
+      }
+      const overlayHash = Buffer.from(sha256(Buffer.from(`${state.nonce}:${start}`))).toString('hex');
       const artifact: CaptureArtifact = {
         type: 'selfie-video',
         uri: recording.uri,
@@ -283,6 +288,8 @@ export function useKycCapture(options: UseKycCaptureOptions = {}) {
           overlay: {
             nonce: state.nonce,
             ts: start,
+            hash: overlayHash,
+
           },
         },
       };

@@ -428,6 +428,8 @@ function renderStepContent(params: {
       return (
         <Stack gap="spacer16">
           <Text>עיינו בהנחיות על המסך והקליטו וידאו של 3-5 שניות.</Text>
+          <Text>וודאו שאתם מציינים בקול "האנדרגראונד" ואת התאריך והשעה הנוכחיים.</Text>
+
           <VideoCapture
             appName={appName}
             livenessPrompt={capture.livenessState?.prompt ?? null}
