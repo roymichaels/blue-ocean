@@ -24,12 +24,28 @@ function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) 
     originalPrice,
   } = useProductCard(product);
   const reviewsEnabled = isReviewsEnabled();
+  const imageUri = product.images && product.images[0] ? product.images[0] : null;
+  const [imageStatus, setImageStatus] = React.useState<
+    'loading' | 'loaded' | 'error'
+  >(imageUri ? 'loading' : 'error');
+
+  React.useEffect(() => {
+    if (imageUri) {
+      setImageStatus('loading');
+    } else {
+      setImageStatus('error');
+    }
+  }, [imageUri]);
+
   const accessibilityLabel = React.useMemo(() => {
     if (!price) {
       return product.name;
     }
     return `${product.name}, ${price}`;
   }, [price, product.name]);
+
+  const showSkeleton = imageUri && imageStatus !== 'loaded';
+  const shouldShowFallback = !imageUri || imageStatus === 'error';
 
   return (
     <Pressable
@@ -39,10 +55,26 @@ function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) 
       style={[styles.card, { backgroundColor: colors.surface.primary }, style]}
     >
       <View style={styles.imageWrapper}>
-        {product.images && product.images[0] ? (
-          <Image source={{ uri: product.images[0] }} style={styles.image} />
-        ) : (
+        {shouldShowFallback ? (
           <View style={[styles.image, { backgroundColor: colors.muted }]} />
+        ) : (
+          <>
+            <Image
+              source={{ uri: imageUri! }}
+              style={[styles.image, showSkeleton && styles.hiddenImage]}
+              accessibilityRole="image"
+              accessibilityLabel={product.name}
+              onLoadStart={() => setImageStatus('loading')}
+              onLoad={() => setImageStatus('loaded')}
+              onError={() => setImageStatus('error')}
+            />
+            {showSkeleton ? (
+              <Skeleton
+                style={styles.imageSkeleton}
+                accessibilityLabel="Loading product image"
+              />
+            ) : null}
+          </>
         )}
         <Pressable
           accessibilityRole="button"
@@ -136,6 +168,12 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     aspectRatio: 1,
+  },
+  hiddenImage: {
+    opacity: 0,
+  },
+  imageSkeleton: {
+    ...StyleSheet.absoluteFillObject,
   },
   wishlist: {
     position: 'absolute',
