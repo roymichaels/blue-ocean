@@ -5,7 +5,10 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Text, Button } from '@/ui/primitives';
 import StoreHeader, { StoreHeaderSkeleton } from '@/features/stores/components/store/StoreHeader';
 import CategoryChips from '@/features/home/components/CategoryChips';
-import { ProductGrid, ProductCardSkeleton } from '@/features/products';
+import {
+  ProductGrid,
+  ProductCardSkeleton,
+} from '@/features/products';
 import { useProducts, useCategories, useStoreReviews } from '@/services';
 import { useStoreProfile } from '@/features/stores/hooks/useStoreProfile';
 import type { Product } from '@/types';
