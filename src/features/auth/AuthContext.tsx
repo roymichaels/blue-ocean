@@ -1,4 +1,10 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useEffect,
+  useState,
+} from 'react';
 import { Alert } from 'react-native';
 import { Spinner } from '@/ui';
 import { User } from '@/types';
@@ -9,8 +15,15 @@ import usersAgent from '@/agents/users-agent';
 import { getEd25519KeyPair } from '@/services/localIdentity';
 import { t } from '@/i18n';
 import { Buffer } from 'buffer';
-import { getUser as getChainUser, setUser as setChainUser } from './services/nearUsers';
-import { sessionEvents, revokeToken, getCheckoutRequestScopes } from '@/services/session';
+import {
+  getUser as getChainUser,
+  setUser as setChainUser,
+} from './services/nearUsers';
+import {
+  sessionEvents,
+  revokeToken,
+  getCheckoutRequestScopes,
+} from '@/services/session';
 import { useWalletSessions } from '@/auth/wallet';
 
 interface AuthContextType {
@@ -47,7 +60,9 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
-interface AuthProviderProps { children: ReactNode }
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { address, connect, disconnect } = useWallet();
@@ -70,10 +85,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Prefer WalletProvider address; fall back to adapter's plain getters only
     const maybeUseAccount: any = (chainAdapter as any).useAccount;
     const mockedAccountId =
-      typeof maybeUseAccount === 'function' && (maybeUseAccount as any)._isMockFunction
+      typeof maybeUseAccount === 'function' &&
+      (maybeUseAccount as any)._isMockFunction
         ? maybeUseAccount()
         : null;
-    const walletAddress = address || chainAdapter.getAccountId?.() || mockedAccountId || null;
+    const walletAddress =
+      address || chainAdapter.getAccountId?.() || mockedAccountId || null;
 
     if (!walletAddress) {
       // Wallet not connected – ensure we clear any stale user data
@@ -145,10 +162,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // connection or after the wallet reconnects.
     const maybeUseAccount2: any = (chainAdapter as any).useAccount;
     const mockedAccountId2 =
-      typeof maybeUseAccount2 === 'function' && (maybeUseAccount2 as any)._isMockFunction
+      typeof maybeUseAccount2 === 'function' &&
+      (maybeUseAccount2 as any)._isMockFunction
         ? maybeUseAccount2()
         : null;
-    const current = address || chainAdapter.getAccountId?.() || mockedAccountId2;
+    const current =
+      address || chainAdapter.getAccountId?.() || mockedAccountId2;
     if (!current) {
       setUser(null);
       return;
@@ -169,14 +188,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err: unknown) {
       errorLog(
         t('auth.walletConnectionFailed', 'Wallet connection failed'),
-        err,
+        err
       );
       Alert.alert(
         t('common.error', 'Error'),
         t(
           'auth.walletConnectionFailedTry',
-          'Wallet connection failed. Please try again.',
-        ),
+          'Wallet connection failed. Please try again.'
+        )
       );
     }
   };
