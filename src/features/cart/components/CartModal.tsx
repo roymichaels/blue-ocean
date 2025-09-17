@@ -590,6 +590,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     setLoading(true);
     let resetNonce = false;
     try {
+      // TODO:CORE-024 Angle 1 - Display the Angle 1 checkout timeline once the orchestrator feeds status updates into the UI.
       const orders = await OrderService.getInstance().createOrdersFromCart(
         user?.id || 'guest',
         cartItems,

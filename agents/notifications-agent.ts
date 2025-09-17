@@ -108,6 +108,7 @@ class NotificationsAgent {
     storeId: string,
     options: { persisted?: boolean } = {},
   ) {
+    // TODO:CORE-019 Angle 1 - Emit queue telemetry to the analytics pipeline once the notification metrics schema stabilizes.
     if (!isNotificationsPipelineEnabled(item.userId)) return;
     if (this.backlog.length >= this.backlogLimit) {
       this.pause('queue');
