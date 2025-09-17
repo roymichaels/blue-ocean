@@ -4,6 +4,9 @@ import { canonicalJson } from '@/utils/serialization';
 import { deriveSharedKey, deriveChatSalt, aesEncrypt } from '@/utils/encryption';
 import { cleanupTrackedKycCapturedPaths } from '@/utils/kycTemp';
 import { getEd25519KeyPair } from './localIdentity';
+import { sign } from '@noble/ed25519';
+import { randomBytes } from '@noble/hashes/utils';
+import type { KycArtifact, KycArtifactType } from '@/types';
 import PinataService from './pinata';
 import * as FileSystem from 'expo-file-system';
 
@@ -22,6 +25,10 @@ export interface KycUploadFile {
   uri: string;
   name?: string;
   type?: string;
+  artifactType: KycArtifactType;
+  capturedAt: number;
+  nonce: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface EncryptedKycDocument {
@@ -29,7 +36,15 @@ export interface EncryptedKycDocument {
   hash: string;
 }
 
-const INFO_LABEL = 'kyc.v1';
+export interface EncryptedKycBundle {
+  document: EncryptedKycDocument;
+  artifacts: KycArtifact[];
+  ts: number;
+  nonce: string;
+  sig: string;
+}
+
+const INFO_LABEL = 'kyc.v2';
 
 function toFilePath(uri: string): string {
   return uri.startsWith('file://') ? uri.replace('file://', '') : uri;
@@ -129,7 +144,7 @@ function ensureIpfs(uri: string, fallback: string): string {
 export async function encryptForTenant(
   tenantPublicKey: string,
   files: KycUploadFile[],
-): Promise<EncryptedKycDocument> {
+): Promise<EncryptedKycBundle> {
   if (!tenantPublicKey) {
     throw new Error('tenant public key required');
   }
@@ -149,6 +164,10 @@ export async function encryptForTenant(
     hash: string;
     data: string;
     sourceUri: string;
+    artifactType: KycArtifactType;
+    capturedAt: number;
+    nonce: string;
+    metadata?: Record<string, unknown>;
   }>;
 
   for (const file of files) {
@@ -165,12 +184,23 @@ export async function encryptForTenant(
       hash,
       data: base64,
       sourceUri: file.uri,
+      artifactType: file.artifactType,
+      capturedAt: file.capturedAt,
+      nonce: file.nonce,
+      metadata: file.metadata,
     });
   }
 
   const manifest = {
-    version: 1,
+    version: 2,
     files: enriched.map(({ name, type, size, hash }) => ({ name, type, size, hash })),
+    artifacts: enriched.map(({ artifactType, capturedAt, nonce, metadata, hash }) => ({
+      type: artifactType,
+      ts: capturedAt,
+      nonce,
+      hash,
+      metadata: metadata ?? {},
+    })),
   };
 
   const manifestBytes = Buffer.from(canonicalJson(manifest));
@@ -180,12 +210,16 @@ export async function encryptForTenant(
     ...manifest,
     createdAt: new Date().toISOString(),
     from: myPubHex,
-    files: enriched.map(({ name, type, size, hash, data }) => ({
+    files: enriched.map(({ name, type, size, hash, data, artifactType, capturedAt, nonce, metadata }) => ({
       name,
       type,
       size,
       hash,
       data,
+      artifactType,
+      capturedAt,
+      nonce,
+      metadata,
     })),
   };
 
@@ -214,7 +248,44 @@ export async function encryptForTenant(
     finalUri = ensureIpfs(uploaded, `ipfs://${encryptedBodyHash}`);
   }
 
-  return { uri: finalUri, hash: manifestHash };
+  const artifacts: KycArtifact[] = enriched.map(({
+    artifactType,
+    capturedAt,
+    nonce,
+    metadata,
+    hash,
+  }) => ({
+    type: artifactType,
+    ts: capturedAt,
+    nonce,
+    metadata,
+    uri: finalUri,
+    hash,
+  }));
+
+  const bundleTs = Date.now();
+  const bundleNonce = Buffer.from(randomBytes(16)).toString('hex');
+  const signaturePayload = canonicalJson({
+    artifacts: artifacts.map(({ type, ts, nonce, hash, metadata }) => ({
+      type,
+      ts,
+      nonce,
+      hash,
+      metadata: metadata ?? {},
+    })),
+    ts: bundleTs,
+    nonce: bundleNonce,
+  });
+  const sigBytes = await sign(Buffer.from(signaturePayload), privateKey);
+  const sig = Buffer.from(sigBytes).toString('hex');
+
+  return {
+    document: { uri: finalUri, hash: manifestHash },
+    artifacts,
+    ts: bundleTs,
+    nonce: bundleNonce,
+    sig,
+  };
 }
 
 export default {

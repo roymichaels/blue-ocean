@@ -34,7 +34,9 @@ type SettingKey =
   | 'rpcUrl'
   | 'rpcFallbackUrls'
   | 'paymentFactoryAddress'
-  | 'kyc.required';
+  | 'kyc.required'
+  | 'kyc.requireSocialProof'
+  | 'kyc.requireWhatsappCall';
 
 class SettingsAgent {
   private static instance: SettingsAgent;
