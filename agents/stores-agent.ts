@@ -1,7 +1,8 @@
 import { Store } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import {
-  setStore,
+  addStore,
+  updateStore,
   removeStore,
   selectStore as fetchStore,
   listStores as fetchStores,
@@ -28,9 +29,20 @@ class StoresAgent {
   private reputation: Record<string, Metrics> = {};
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
+  private getNamespace(store: Store): string {
+    const owner = typeof store.owner === 'string' ? store.owner.trim() : '';
+    return owner || 'default';
+  }
+
   private async persistStore(store: Store): Promise<Store> {
     const record = this.toRecord(store);
-    await setStore(record.id, record);
+    const namespace = this.getNamespace(record);
+    const existing = await fetchStore(namespace, record.id);
+    if (existing) {
+      await updateStore(record, namespace);
+    } else {
+      await addStore(record, namespace);
+    }
     return record;
   }
 
@@ -106,9 +118,9 @@ class StoresAgent {
     this.subscribers.delete(cb);
   }
 
-  private async ensureWallet() {
+  private ensureWallet = async (): Promise<void> => {
     await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
-  }
+  };
 
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
