@@ -30,6 +30,7 @@ describe('UsersAgent NEAR integration', () => {
       'adminScopes',
       JSON.stringify({ addr_admin: ['admin:settings', 'admin:users', 'admin:orders'] }),
     );
+    setValue('settings', 'adminPublicKeys', JSON.stringify(['tenant-admin-key']));
   });
 
   it('adds and retrieves users via NEAR service', async () => {
@@ -83,11 +84,13 @@ describe('UsersAgent NEAR integration', () => {
 
     await usersAgent.updateKyc('u2', 'verified', 'admin1', {
       kycReceiptHash: 'beadfeed',
+      kycReceiptSig: 'siggy',
     });
     const verified = await usersAgent.get('u2');
     expect(verified?.kycStatus).toBe('verified');
     expect(verified?.kycApprovedBy).toBe('admin1');
     expect(verified?.kycReceiptHash).toBe('beadfeed');
+    expect(verified?.kycReceiptSig).toBe('siggy');
     const storedHash = await usersAgent.getKycReceiptHash('u2');
     expect(storedHash).toBe('beadfeed');
   });

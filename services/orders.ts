@@ -28,6 +28,7 @@ import SettingsAgent from '@/agents/settings-agent';
 import { getFeeSettings } from '@/constants/tenant';
 import { loadKycReceipt } from '@/services/kycReceipts';
 import { getPublicKeyHex } from '@/services/localIdentity';
+import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 
 const ORDER_TOPIC_PREFIX = '/blue-ocean/orders';
 const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
@@ -36,6 +37,8 @@ const LOW_STOCK_THRESHOLD = 5;
 const KYC_RECEIPT_ERROR = 'KYC receipt missing or invalid';
 const E_KYC_REQUIRED = 'E_KYC_REQUIRED';
 const ORDER_PIPELINE_SERVICE = 'orders.pipeline';
+const KYC_RECEIPT_REPLAY_TTL_MS = 5 * 60 * 1000;
+const KYC_RECEIPT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 function deriveOrderId(nonce: string, storeId: string): string {
   const digest = Buffer.from(
@@ -180,6 +183,7 @@ class OrderService {
   private static instance: OrderService;
   private listeners: Set<() => void> = new Set();
   private checkoutNonceLocks: Map<string, string> = new Map();
+  private kycReceiptReplayGuards: Map<string, number> = new Map();
 
   private constructor() {
     ordersAgent.subscribe(() => this.notifyListeners());
@@ -215,7 +219,7 @@ class OrderService {
 
   private async loadBuyerKycReceipt(
     user?: User | null,
-  ): Promise<{ receiptId: string; signature: string; hash: string } | null> {
+  ): Promise<{ message: any; hash: string } | null> {
     let buyerPublicKey: string | undefined;
     if (user && typeof user.chatPublicKey === 'string' && user.chatPublicKey.length > 0) {
       buyerPublicKey = user.chatPublicKey;
@@ -235,8 +239,7 @@ class OrderService {
         sha256(Buffer.from(canonicalJson(receipt.payload))),
       ).toString('hex');
       return {
-        receiptId: receipt.payload.receiptId,
-        signature: receipt.signature,
+        message: receipt,
         hash,
       };
     } catch {
@@ -291,22 +294,80 @@ class OrderService {
       storedHash = null;
     }
 
-    const receipt = await this.loadBuyerKycReceipt(user);
-    const computedHash = receipt?.hash ?? null;
-    const hash = storedHash ?? computedHash;
+    const receiptRecord = await this.loadBuyerKycReceipt(user);
+    const receipt = receiptRecord?.message ?? null;
+    const computedHash = receiptRecord?.hash ?? null;
+    const storedSig = user?.kycReceiptSig ?? null;
+
+    let canonicalHash = storedHash ?? computedHash ?? null;
+    let canonicalSignature = storedSig ?? receipt?.signature ?? null;
 
     if (requiresKyc) {
-      if (!user || user.kycStatus !== 'verified' || !hash) {
-        throw new Error(E_KYC_REQUIRED);
+      if (!user || user.kycStatus !== 'verified') {
+        throw new Error('{E_SCOPE}');
       }
+      if (!storedHash || !storedSig) {
+        throw new Error('{E_SCOPE}');
+      }
+      if (!receipt) {
+        throw new Error('{E_SCOPE}');
+      }
+      if (!computedHash || computedHash !== storedHash) {
+        throw new Error('{E_UNAUTHORIZED}');
+      }
+      if (receipt.signature !== storedSig) {
+        throw new Error('{E_UNAUTHORIZED}');
+      }
+      const issuedAtRaw = receipt.payload?.issuedAt;
+      const issuedAtMs = typeof issuedAtRaw === 'string' ? Date.parse(issuedAtRaw) : NaN;
+      if (!Number.isFinite(issuedAtMs)) {
+        throw new Error('{E_SCOPE}');
+      }
+      if (Date.now() - issuedAtMs > KYC_RECEIPT_MAX_AGE_MS) {
+        throw new Error('{E_SCOPE}');
+      }
+      const adminKeys = await SettingsAgent.getInstance().getAdminPublicKeys();
+      if (!Array.isArray(adminKeys) || adminKeys.length === 0) {
+        throw new Error('{E_UNAUTHORIZED}');
+      }
+      if (!adminKeys.includes(receipt.sender?.publicKey)) {
+        throw new Error('{E_UNAUTHORIZED}');
+      }
+      const signatureValid = await verifyMessageSignature(receipt, receipt.sender.publicKey);
+      if (!signatureValid) {
+        throw new Error('{E_UNAUTHORIZED}');
+      }
+      const receiptNonce = receipt.payload?.nonce;
+      if (!receiptNonce) {
+        throw new Error('{E_SCOPE}');
+      }
+      const now = Date.now();
+      this.pruneKycReceiptReplayGuards(now);
+      const replayKey = `${buyerId || 'anonymous'}:${receiptNonce}`;
+      if (this.kycReceiptReplayGuards.has(replayKey)) {
+        // TODO:TODO-004 Replace in-memory replay protection with a shared tenant-safe store.
+        // TODO:TODO-011 Record nonce usage in checkout session history to survive restarts.
+        throw new Error('{E_REPLAY}');
+      }
+      this.kycReceiptReplayGuards.set(replayKey, now);
+      canonicalHash = storedHash;
+      canonicalSignature = storedSig;
     }
 
     return {
       ok: true,
-      hash,
-      receiptId: receipt?.receiptId,
-      signature: receipt?.signature,
+      hash: canonicalHash,
+      receiptId: receipt?.payload?.receiptId,
+      signature: canonicalSignature ?? undefined,
     };
+  }
+
+  private pruneKycReceiptReplayGuards(now: number): void {
+    for (const [key, seenAt] of this.kycReceiptReplayGuards) {
+      if (now - seenAt > KYC_RECEIPT_REPLAY_TTL_MS) {
+        this.kycReceiptReplayGuards.delete(key);
+      }
+    }
   }
 
   private async deployEscrow(
@@ -558,7 +619,12 @@ class OrderService {
           errorMessage: err instanceof Error ? err.message : err,
           errorStack: err instanceof Error ? err.stack : undefined,
         });
-        if (err instanceof Error && err.message === E_KYC_REQUIRED) {
+        if (
+          err instanceof Error &&
+          (err.message === '{E_SCOPE}' ||
+            err.message === '{E_UNAUTHORIZED}' ||
+            err.message === E_KYC_REQUIRED)
+        ) {
           throw new Error(KYC_RECEIPT_ERROR);
         }
         throw err;

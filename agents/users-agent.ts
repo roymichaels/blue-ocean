@@ -152,6 +152,7 @@ class UsersAgent {
     adminId?: string,
     options?: {
       kycReceiptHash?: string;
+      kycReceiptSig?: string;
       approvedAt?: string;
       approvedBy?: string;
     },
@@ -172,12 +173,51 @@ class UsersAgent {
     if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
     const now = options?.approvedAt ?? new Date().toISOString();
     const approvedBy = options?.approvedBy ?? adminId ?? address;
+
+    if (status === 'verified') {
+      if (!user.kycBundleSig) {
+        throw new AgentError(
+          'E_SCOPE',
+          'KYC bundle signature required before approval',
+          'users-agent',
+        );
+      }
+      const adminKeys = await SettingsAgent.getInstance().getAdminPublicKeys();
+      const tenantAdminKey = adminKeys[0];
+      if (!tenantAdminKey) {
+        throw new AgentError('E_SCOPE', 'Tenant admin key unavailable', 'users-agent');
+      }
+      // TODO:TODO-004 Validate bundle attestation against tenant admin key once handshake metadata is persisted.
+      const bundleAuthorized = Boolean(tenantAdminKey && user.kycBundleSig);
+      if (!bundleAuthorized) {
+        throw new AgentError(
+          'E_UNAUTHORIZED',
+          'KYC bundle signature validation failed',
+          'users-agent',
+        );
+      }
+      if (!options?.kycReceiptHash || !options?.kycReceiptSig) {
+        // TODO:TODO-005 Persist canonical receipt envelope metadata when approval backend is available.
+        throw new AgentError(
+          'E_SCOPE',
+          'KYC receipt hash and signature are required for approval',
+          'users-agent',
+        );
+      }
+    }
+
     const nextHash =
       status === 'verified'
         ? options?.kycReceiptHash ?? user.kycReceiptHash
         : status === 'rejected'
         ? undefined
         : user.kycReceiptHash;
+    const nextSig =
+      status === 'verified'
+        ? options?.kycReceiptSig ?? user.kycReceiptSig
+        : status === 'rejected'
+        ? undefined
+        : user.kycReceiptSig;
     const callReceipts =
       status === 'verified' ? user.kycCallReceipts ?? [] : user.kycCallReceipts;
     const enriched: User = normalizeMessage<User>('User', {
@@ -186,10 +226,12 @@ class UsersAgent {
       address,
       kycStatus: status,
       kycReceiptHash: nextHash,
+      kycReceiptSig: nextSig,
       kycApprovedBy: status === 'verified' ? approvedBy : user.kycApprovedBy,
       kycApprovedAt: status === 'verified' ? now : user.kycApprovedAt,
       kycCallReceipts: callReceipts,
     });
+    // TODO:TODO-006 Attach approval attestation references when persistence contracts are finalized.
     await setUser(enriched);
   }
 

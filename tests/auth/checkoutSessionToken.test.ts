@@ -24,7 +24,7 @@ const makeReceipt = (buyerPublicKey = 'buyer-public-key') => ({
     receiptId: 'receipt-123',
     buyerPublicKey,
     issuerPublicKey: 'issuer',
-    issuedAt: new Date(0).toISOString(),
+    issuedAt: new Date().toISOString(),
     data: { deviceHash },
     ts: Date.now(),
     nonce: 'nonce',
@@ -46,6 +46,15 @@ jest.mock('@/services/kycReceipts', () => ({
 
 jest.mock('@/utils/verifyMessageSignature', () => ({
   verifyMessageSignature: jest.fn().mockResolvedValue(true),
+}));
+
+const mockSettingsAgent = {
+  getAdminPublicKeys: jest.fn().mockResolvedValue(['issuer']),
+};
+
+jest.mock('@/agents/settings-agent', () => ({
+  __esModule: true,
+  default: { getInstance: () => mockSettingsAgent },
 }));
 
 jest.mock('@noble/hashes/sha256', () => ({
@@ -170,8 +179,10 @@ describe('login issues session token used in checkout', () => {
       kycStatus: 'verified',
       chatPublicKey: receipt.payload.buyerPublicKey,
       kycReceiptHash: receiptHash,
+      kycReceiptSig: receipt.signature,
     });
     mockUsersAgent.getKycReceiptHash.mockResolvedValue(receiptHash);
+    mockSettingsAgent.getAdminPublicKeys.mockResolvedValue(['issuer']);
   });
 
   it('creates an order with attached session token', async () => {

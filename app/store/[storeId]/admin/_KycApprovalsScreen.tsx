@@ -29,6 +29,9 @@ import {
   issueKycCallReceipt,
   loadKycReceipt,
 } from '@/services/kycReceipts';
+import { canonicalJson } from '@/utils/serialization';
+import { sha256 } from '@noble/hashes/sha256';
+import { Buffer } from 'buffer';
 
 const POLICY_SETTING_KEY = 'kyc.required';
 const POLICY_SOCIAL_KEY = 'kyc.requireSocialProof';
@@ -177,17 +180,33 @@ export default function KycApprovalsScreen(): React.ReactElement {
     async (user: User) => {
       setProcessingId(user.id);
       try {
-        await usersAgent.updateKyc(user.id, 'verified');
-        if (user.publicKey) {
-          const existingReceipt = await loadKycReceipt(user.publicKey);
-          if (!existingReceipt) {
-            await issueKycReceipt(user.publicKey, { userId: user.id });
-          }
+        if (!user.publicKey) {
+          throw new Error('MISSING_PUBLIC_KEY');
         }
+        let receipt = await loadKycReceipt(user.publicKey);
+        if (!receipt) {
+          receipt = await issueKycReceipt(user.publicKey, { userId: user.id });
+        }
+        if (!receipt) {
+          throw new Error('RECEIPT_MISSING');
+        }
+        const receiptHash = Buffer.from(
+          sha256(Buffer.from(canonicalJson(receipt.payload))),
+        ).toString('hex');
+        await usersAgent.updateKyc(user.id, 'verified', undefined, {
+          kycReceiptHash: receiptHash,
+          kycReceiptSig: receipt.signature,
+        });
         setPending((prev) => prev.filter((item) => item.id !== user.id));
         Alert.alert('הצלחה', 'האימות אושר ונשלחה קבלה חתומה');
       } catch (error) {
-        Alert.alert('שגיאה', 'אישור הבקשה נכשל');
+        if (error instanceof Error && error.message === 'MISSING_PUBLIC_KEY') {
+          Alert.alert('שגיאה', 'לא נמצא מפתח ציבורי של הלקוח לצורך חתימה.');
+        } else if (error instanceof Error && error.message === 'RECEIPT_MISSING') {
+          Alert.alert('שגיאה', 'לא ניתן לטעון קבלה חתומה עבור המשתמש.');
+        } else {
+          Alert.alert('שגיאה', 'אישור הבקשה נכשל');
+        }
       } finally {
         setProcessingId(null);
       }
