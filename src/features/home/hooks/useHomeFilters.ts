@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Product } from '@/types';
 import { localIndex, type ResultSet } from '@/services/localIndex';
+import { isReviewsEnabled } from '@/config/featureFlags';
 
 export type SortOption = 'newest' | 'price-low' | 'price-high' | 'rating';
 
 export function useHomeFilters(products: Product[]) {
+  const reviewsEnabled = isReviewsEnabled();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>(products);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -18,6 +20,12 @@ export function useHomeFilters(products: Product[]) {
   useEffect(() => {
     queryRef.current = searchQuery;
   }, [searchQuery]);
+
+  useEffect(() => {
+    if (!reviewsEnabled && sortBy === 'rating') {
+      setSortBy('newest');
+    }
+  }, [reviewsEnabled, sortBy]);
 
   useEffect(() => {
     localIndex.setProducts(products);
@@ -72,7 +80,13 @@ export function useHomeFilters(products: Product[]) {
         case 'price-high':
           return b.price - a.price;
         case 'rating':
-          return b.rating - a.rating;
+          if (!reviewsEnabled) {
+            return (
+              new Date(b.createdAt || 0).getTime() -
+              new Date(a.createdAt || 0).getTime()
+            );
+          }
+          return (b.rating ?? 0) - (a.rating ?? 0);
         case 'newest':
         default:
           return (
@@ -81,7 +95,7 @@ export function useHomeFilters(products: Product[]) {
           );
       }
     });
-  }, [searchResults, selectedCategory, minPrice, maxPrice, sortBy]);
+  }, [maxPrice, minPrice, reviewsEnabled, searchResults, selectedCategory, sortBy]);
 
   return {
     filteredProducts,

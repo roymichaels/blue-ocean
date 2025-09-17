@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
+import { isReviewsEnabled } from '@/config/featureFlags';
 
 type TabKey = 'products' | 'about' | 'reviews';
 
@@ -13,11 +14,14 @@ export default function StoreTabs({
 }) {
   const { colors } = useTheme();
   const { t, isRTL } = useLanguage();
+  const reviewsEnabled = isReviewsEnabled();
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'products', label: t('stores.tabs.products') },
     { key: 'about', label: t('stores.tabs.about') },
-    { key: 'reviews', label: t('stores.tabs.reviews') },
   ];
+  if (reviewsEnabled) {
+    tabs.push({ key: 'reviews', label: t('stores.tabs.reviews') });
+  }
   return (
     <View
       style={{

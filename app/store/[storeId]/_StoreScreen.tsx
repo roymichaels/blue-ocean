@@ -17,6 +17,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { openDM } from '@/services/openDM';
 import { openProduct } from '@/services/openProduct';
+import { isDriverChatEnabled } from '@/config/featureFlags';
 import { AlertTriangle } from 'lucide-react-native';
 
 export default function StoreScreen() {
@@ -48,6 +49,7 @@ export default function StoreScreen() {
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [contacting, setContacting] = useState(false);
+  const driverChatEnabled = useMemo(() => isDriverChatEnabled(), []);
 
   const refreshing = productsRefetching || categoriesRefetching;
 
@@ -61,8 +63,15 @@ export default function StoreScreen() {
 
   const storeIdentifier = store?.id || storeId;
   const contactLabel = t('productDetail.contactStore', 'Contact store');
+  const contactHint = driverChatEnabled
+    ? t('productDetail.contactStoreHint', 'Open a chat with this store.')
+    : t('common.comingSoon', 'Coming Soon');
 
   const handleContactStore = useCallback(async () => {
+    if (!driverChatEnabled) {
+      return;
+    }
+
     if (!storeIdentifier) {
       showNotification(
         t('common.error', 'Error'),
@@ -107,7 +116,7 @@ export default function StoreScreen() {
     } finally {
       setContacting(false);
     }
-  }, [appRouter, isLoggedIn, openAuthModal, openDM, showNotification, storeIdentifier, t]);
+  }, [appRouter, driverChatEnabled, isLoggedIn, openAuthModal, openDM, showNotification, storeIdentifier, t]);
 
   const loadError = storeError || productsError || categoriesError;
   const loadErrorMessage = loadError
@@ -227,9 +236,11 @@ export default function StoreScreen() {
         <Button
           title={contactLabel}
           accessibilityLabel={contactLabel}
+          accessibilityHint={contactHint}
           onPress={handleContactStore}
           loading={contacting}
-          disabled={!storeIdentifier || contacting}
+          disabled={!driverChatEnabled || !storeIdentifier || contacting}
+          tooltip={contactHint}
         />
       </View>
 

@@ -3,6 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { X as XIcon } from 'lucide-react-native';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { SortOption } from '@/features/home/hooks/useHomeFilters';
+import { isReviewsEnabled } from '@/config/featureFlags';
 
 interface SortModalProps {
   visible: boolean;
@@ -21,12 +22,13 @@ export default function SortModal({
   const { colors: themeColors } = useTheme();
   const CloseIcon: any = (XIcon as any) || ((_: any) => null);
 
+  const reviewsEnabled = isReviewsEnabled();
   const options = [
     { key: 'newest', label: t('home.newest') },
     { key: 'price-low', label: t('home.priceLowHigh') },
     { key: 'price-high', label: t('home.priceHighLow') },
     { key: 'rating', label: t('home.highRating') },
-  ];
+  ].filter((option) => reviewsEnabled || option.key !== 'rating');
 
   return (
     <Modal

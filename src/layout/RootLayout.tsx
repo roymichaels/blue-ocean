@@ -18,7 +18,7 @@ import { getShopTenantId } from '@/services/config';
 import { useLaunchGate } from '@/features/launchGate';
 import { useAppRouter } from '@/services/useAppRouter';
 import { OpsDrawer } from '@/features/opsDrawer';
-import { isOpsDrawerEnabled } from '@/config/featureFlags';
+import { isOpsDrawerEnabled, isDriverChatEnabled } from '@/config/featureFlags';
 
 interface NavItemConfig extends NavItem {
   requiresAuth?: boolean;
@@ -89,6 +89,7 @@ export default function RootLayout() {
   const { recordActivity, ready: launchReady, pinSet } = useLaunchGate();
   const { replace } = useAppRouter();
   const opsDrawerFeature = isOpsDrawerEnabled();
+  const driverChatEnabled = isDriverChatEnabled();
   const [opsDrawerOpen, setOpsDrawerOpen] = useState(false);
   const opsOpenRef = useRef(false);
 
@@ -144,7 +145,10 @@ export default function RootLayout() {
   }, [opsDrawerFeature, openOpsDrawer]);
 
   const navItems = useMemo(() => {
-    const replaced = NAV_ITEMS.map((item) => ({
+    const filtered = driverChatEnabled
+      ? NAV_ITEMS
+      : NAV_ITEMS.filter((item) => item.href !== '/messages');
+    const replaced = filtered.map((item) => ({
       ...item,
       href: item.href.replace('[storeId]', tenantId ?? ''),
     }));
@@ -169,7 +173,7 @@ export default function RootLayout() {
         (needsAuth && !isLoggedIn) || (needsOwner && !isStoreOwner) || (needsTenant && !tenantId);
       return shouldIntercept ? ({ ...item, onPress: guardedOnPress } as NavItem) : (item as NavItem);
     });
-  }, [isLoggedIn, isStoreOwner, tenantId, openAuthModal]);
+  }, [driverChatEnabled, isLoggedIn, isStoreOwner, tenantId, openAuthModal]);
 
   useEffect(() => {
     if (!launchReady) return;

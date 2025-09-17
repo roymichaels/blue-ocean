@@ -98,6 +98,44 @@ describe('disputes feature flag', () => {
   });
 });
 
+describe('reviews feature flag', () => {
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_FEATURE_REVIEWS;
+    jest.resetModules();
+  });
+
+  it('is disabled by default', () => {
+    const { isReviewsEnabled } = require('@/config/featureFlags');
+    expect(isReviewsEnabled()).toBe(false);
+  });
+
+  it('respects environment flag', () => {
+    process.env.EXPO_PUBLIC_FEATURE_REVIEWS = 'true';
+    jest.resetModules();
+    const { isReviewsEnabled } = require('@/config/featureFlags');
+    expect(isReviewsEnabled()).toBe(true);
+  });
+});
+
+describe('driver chat feature flag', () => {
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_FEATURE_DRIVER_CHAT;
+    jest.resetModules();
+  });
+
+  it('is disabled by default', () => {
+    const { isDriverChatEnabled } = require('@/config/featureFlags');
+    expect(isDriverChatEnabled()).toBe(false);
+  });
+
+  it('respects environment flag', () => {
+    process.env.EXPO_PUBLIC_FEATURE_DRIVER_CHAT = 'true';
+    jest.resetModules();
+    const { isDriverChatEnabled } = require('@/config/featureFlags');
+    expect(isDriverChatEnabled()).toBe(true);
+  });
+});
+
 describe('notifications pipeline feature flag', () => {
   beforeEach(() => {
     delete process.env.EXPO_PUBLIC_NOTIFICATIONS_PIPELINE;

@@ -20,7 +20,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useLaunchGate } from '@/features/launchGate';
 import { formatTimestamp } from '@/utils/formatTimestamp';
-import { isDisputesEnabled } from '@/config/featureFlags';
+import { isDisputesEnabled, isReviewsEnabled } from '@/config/featureFlags';
 import OrderTimeline from '@/components/OrderTimeline';
 
 
@@ -41,6 +41,7 @@ export default function OrderTrackingModal({ visible, onClose, order }: OrderTra
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const disputesEnabled = isDisputesEnabled();
+  const reviewsEnabled = isReviewsEnabled();
 
   useEffect(() => {
     if (visible && order) {
@@ -426,11 +427,11 @@ ${order.items.map(item => `- ${item.product.name} x${item.quantity} - ${currency
           )}
 
           {/* Review Prompt */}
-          {order.status === 'delivered' && (
-            <View style={[styles.reviewPrompt, { 
+          {reviewsEnabled && order.status === 'delivered' && (
+            <View style={[styles.reviewPrompt, {
               backgroundColor: colors.surface.primary,
-              borderColor: colors.border.primary 
-            }]}>
+              borderColor: colors.border.primary
+            }]}> 
               <Star size={24} color={colors.gold} />
               <Text style={[styles.reviewTitle, { color: colors.text.primary }]}>איך היה המשלוח?</Text>
               <Text style={[styles.reviewText, { color: colors.text.secondary }]}>

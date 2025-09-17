@@ -42,6 +42,7 @@ import AdminOnboardingChecklist from '@/features/home/components/AdminOnboarding
 import { useAppRouter } from '@/services/useAppRouter';
 import eventBus from '@/services/eventBus';
 import { localIndex } from '@/services/localIndex';
+import { isReviewsEnabled } from '@/config/featureFlags';
 
 function HomeScreenContent() {
   const { tenantId, isNetwork } = useTenant();
@@ -50,6 +51,7 @@ function HomeScreenContent() {
   const { appName, logoCid } = useAppInfo();
   const { width: windowWidth } = useWindowDimensions();
   const appRouter = useAppRouter();
+  const reviewsEnabled = isReviewsEnabled();
 
   const home = useHome(tenantId);
 
@@ -180,7 +182,7 @@ function HomeScreenContent() {
       case 'price-high':
         return t('home.priceHighLow');
       case 'rating':
-        return t('home.highRating');
+        return reviewsEnabled ? t('home.highRating') : t('common.comingSoon', 'Coming Soon');
       case 'newest':
       default:
         return t('home.newest');
