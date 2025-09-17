@@ -6,10 +6,11 @@ import { canonicalJson } from '@/utils/serialization';
 import { fetchHistory, publish, subscribeWithAck } from '@/services/waku';
 import { getPublicKeyHex } from '@/services/localIdentity';
 import { makeSignedWakuMessage } from '@/utils/wakuSigning';
-import type { KycReceiptMessage } from '@/types/waku';
-import { kycReceiptSchema } from '@/schemas/waku';
+import type { KycReceiptMessage, KycCallReceiptMessage } from '@/types/waku';
+import { kycReceiptSchema, kycCallReceiptSchema } from '@/schemas/waku';
 
 const RECEIPT_STORAGE_PREFIX = 'kyc.receipt:';
+const CALL_RECEIPT_STORAGE_PREFIX = 'kyc.call.receipt:';
 const DM_TOPIC_PREFIX = '/blue-ocean/dm';
 
 function randomNonce(byteLength = 12): string {
@@ -21,6 +22,7 @@ function receiptTopic(buyerPublicKey: string): string {
 }
 
 export type KycReceipt = KycReceiptMessage;
+export type KycCallReceipt = KycCallReceiptMessage;
 
 async function persistReceipt(
   buyerPublicKey: string,
@@ -68,6 +70,58 @@ export async function issueKycReceipt(
   await persistReceipt(buyerPublicKey, message);
   await publish(receiptTopic(buyerPublicKey), message);
   return message;
+}
+
+async function persistCallReceipt(
+  buyerPublicKey: string,
+  message: KycCallReceipt,
+): Promise<void> {
+  await AsyncStorage.setItem(
+    `${CALL_RECEIPT_STORAGE_PREFIX}${buyerPublicKey}`,
+    canonicalJson(message),
+  );
+}
+
+export async function issueKycCallReceipt(
+  buyerPublicKey: string,
+  data: Record<string, unknown>,
+): Promise<KycCallReceipt> {
+  const receiptId = uuid();
+  const issuedAt = new Date().toISOString();
+  const issuerPublicKey = await getPublicKeyHex();
+  const payload = {
+    receiptId,
+    buyerPublicKey,
+    issuerPublicKey,
+    issuedAt,
+    data,
+    ts: Date.now(),
+    nonce: randomNonce(),
+  };
+  const message = await makeSignedWakuMessage('kyc.call.receipt', payload, 'admin', {
+    ts: payload.ts,
+    nonce: payload.nonce,
+  });
+  await persistCallReceipt(buyerPublicKey, message);
+  await publish(receiptTopic(buyerPublicKey), message);
+  return message;
+}
+
+export async function loadKycCallReceipt(
+  buyerPublicKey: string,
+): Promise<KycCallReceipt | null> {
+  if (!buyerPublicKey) return null;
+  try {
+    const raw = await AsyncStorage.getItem(
+      `${CALL_RECEIPT_STORAGE_PREFIX}${buyerPublicKey}`,
+    );
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const validated = kycCallReceiptSchema.parse(parsed);
+    return validated;
+  } catch {
+    return null;
+  }
 }
 
 export interface KycReceiptSubscriptionOptions {

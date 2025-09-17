@@ -4,6 +4,7 @@ export * from './notification';
 export * from './product.updated';
 export * from './product.deleted';
 export * from './kyc.receipt';
+export * from './kyc.call.receipt';
 export * from './order.status';
 export * from './admin.joinRequested';
 export * from './admin.approve';

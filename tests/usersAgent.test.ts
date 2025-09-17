@@ -59,10 +59,27 @@ describe('UsersAgent NEAR integration', () => {
     };
     await usersAgent.add(user);
 
-    await usersAgent.requestKyc('u2', { uri: 'ipfs://doc', hash: 'deadbeef' });
+    await usersAgent.requestKyc('u2', {
+      document: { uri: 'ipfs://doc', hash: 'deadbeef' },
+      artifacts: [
+        {
+          type: 'id-front',
+          uri: 'ipfs://doc',
+          hash: 'deadbeef',
+          ts: 1700000000000,
+          nonce: 'nonce123',
+        },
+      ],
+      ts: 1700000000100,
+      nonce: 'bundle-nonce',
+      sig: 'cafebabe',
+    });
     const pending = await usersAgent.get('u2');
     expect(pending?.kycStatus).toBe('pending');
     expect(pending?.kycDocument).toEqual({ uri: 'ipfs://doc', hash: 'deadbeef' });
+    expect(pending?.kycArtifacts?.length).toBe(1);
+    expect(pending?.kycBundleNonce).toBe('bundle-nonce');
+    expect(pending?.kycBundleSig).toBe('cafebabe');
 
     await usersAgent.updateKyc('u2', 'verified', 'admin1', {
       kycReceiptHash: 'beadfeed',
@@ -102,5 +119,27 @@ describe('UsersAgent NEAR integration', () => {
     await expect(usersAgent.updateKyc('u4', 'verified')).rejects.toThrow(
       'Only admins',
     );
+  });
+
+  it('logs WhatsApp call receipts', async () => {
+    const user: any = {
+      id: 'u5',
+      username: 'ellen',
+      displayName: 'Ellen',
+      role: 'user',
+      address: '',
+      publicKey: '',
+    };
+    await usersAgent.add(user);
+    await usersAgent.logKycCallReceipt('u5', {
+      receiptId: 'r1',
+      issuedAt: '2024-01-01T00:00:00Z',
+      issuerPublicKey: 'admin-key',
+      ts: 1700000000000,
+      nonce: 'nonce',
+      whatsappNumber: '+972500000000',
+    });
+    const updated = await usersAgent.get('u5');
+    expect(updated?.kycCallReceipts?.length).toBe(1);
   });
 });
