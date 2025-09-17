@@ -22,6 +22,9 @@ import { setStore as persistStore } from '@/features/stores/services/nearStores'
 import { randomBytes } from '@noble/hashes/utils';
 import { Buffer } from 'buffer';
 
+// TODO:TODO-103 Break the monolithic Waku service into focused modules so subscription, publishing, and sync concerns stay isolated.
+// TODO:REC-203 Investigate streaming compression primitives to mitigate zlib blocking when handling large relay payloads.
+
 declare const logger: any;
 
 const isProd = process.env.NODE_ENV === 'production';

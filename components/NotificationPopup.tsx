@@ -23,6 +23,8 @@ interface NotificationPopupProps {
 
 const { width } = Dimensions.get('window');
 
+// TODO:TODO-123 Allow stacking multiple NotificationPopup instances with queue prioritization per severity.
+// TODO:REC-223 Normalize animation timing tokens so toast experiences match mobile motion guidelines.
 export default function NotificationPopup({
   title,
   message,

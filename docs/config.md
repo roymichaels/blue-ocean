@@ -1,4 +1,6 @@
 # Configuration
+// TODO:TODO-119 Expand configuration docs with environment-specific examples for mobile vs. server runtimes.
+// TODO:REC-219 Include threat modeling guidance for secrets management to complement the vault workflow.
 
 Use `requireEnv(key, fallback?)` from `src/services/config.ts` to read environment variables. Missing keys will throw unless a fallback is provided.
 

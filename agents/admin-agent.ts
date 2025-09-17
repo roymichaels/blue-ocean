@@ -11,6 +11,9 @@ import {
 } from '@/services/monitoring';
 import flags from '@/utils/flags';
 
+// TODO:TODO-105 Add structured audit history for admin approvals and rejections to satisfy compliance requirements.
+// TODO:REC-205 Explore moving AdminAgent persistence into a typed repository to avoid repeated manual JSON parsing.
+
 export interface AdminRecord {
   address: string;
   publicKey: string;

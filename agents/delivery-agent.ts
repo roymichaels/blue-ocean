@@ -32,6 +32,8 @@ type QueueItem =
   | { type: 'order.created'; payload: OrderCreatedPayload; storeId: string; queuedAt: number }
   | { type: 'delivery.assigned'; payload: DeliveryAssignedPayload; storeId: string; queuedAt: number };
 
+// TODO:TODO-115 Teach DeliveryAgent to checkpoint backlog state so restarts do not drop queued delivery notifications.
+// TODO:REC-215 Leverage structured telemetry for pauseReasons to aid incident debugging when Waku pauses drain cycles.
 class DeliveryAgent {
   private backlog: QueueItem[] = [];
   private draining = false;

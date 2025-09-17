@@ -34,6 +34,8 @@ const PAGE_SIZE = 50;
 
 assertNearChain();
 
+// TODO:TODO-108 Separate ProductAgent concerns for cache hydration, Waku broadcasts, and persistence to simplify reasoning.
+// TODO:REC-208 Adopt incremental diff sync for product updates to minimize payload sizes over Waku relays.
 interface ProductSummary {
   rating: number;
   reviews: number;

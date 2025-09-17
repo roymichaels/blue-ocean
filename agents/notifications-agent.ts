@@ -36,6 +36,8 @@ const MESSAGE_TYPE = 'notification.broadcast';
 type PauseReason = 'queue' | 'latency' | 'waku';
 type NotificationBroadcastPayload = NotificationWakuPayload & { storeId?: string };
 
+// TODO:TODO-107 Introduce shard-aware backlog management so NotificationsAgent scales across high-volume tenants without drops.
+// TODO:REC-207 Surface pauseReasons telemetry via monitoring hooks to accelerate production incident triage.
 class NotificationsAgent {
   private subscribers: Set<(n: Notification) => void> = new Set();
   private backlog: Array<{

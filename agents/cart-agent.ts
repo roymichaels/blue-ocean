@@ -11,6 +11,8 @@ import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 
+// TODO:TODO-112 Extend CartAgent to support multi-store contexts without clobbering per-tenant line items.
+// TODO:REC-212 Move wallet prompt handling into a shared UX utility for consistent localization and messaging.
 class CartAgent {
   private async ensureWallet() {
     await ensureNearWallet('Please connect your NEAR wallet to manage your cart.');

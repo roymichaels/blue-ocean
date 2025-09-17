@@ -12,6 +12,8 @@ assertNearChain();
 
 const TOPIC = '/blue-ocean/reviews/1';
 
+// TODO:TODO-117 Capture reviewer metadata hashing so duplicate detection survives anonymized Waku relays.
+// TODO:REC-217 Consider streaming review updates over eventBus to avoid polling when storefronts refresh.
 class ReviewAgent {
   private subscribers: Set<(r: Review) => void> = new Set();
 

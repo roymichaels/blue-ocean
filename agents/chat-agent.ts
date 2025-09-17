@@ -3,6 +3,8 @@ import DatabaseService from '@/services/database';
 import { ChatRoom } from '../types';
 import { normalizeMessage } from '../lib/normalizeMessage';
 
+// TODO:TODO-114 Extend ChatAgent to persist unread state transitions so cross-device inbox views stay in sync.
+// TODO:REC-214 Consider migrating ChatAgent event wiring to typed observables for better composability in React contexts.
 class ChatAgent {
   private emitter = new EventEmitter();
 
