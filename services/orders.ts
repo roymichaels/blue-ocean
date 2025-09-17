@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { errorLog, debugLog } from '@/utils/logger';
 import ordersAgent from '../agents/orders-agent';
+import usersAgent from '@/agents/users-agent';
 import eventBus from './eventBus';
 import {
   Order,
@@ -8,6 +9,7 @@ import {
   CartItem,
   ShippingAddress,
   OrderTrackingStep,
+  User,
 } from '../types';
 import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from '@/features/stores/services/nearStores';
@@ -25,13 +27,13 @@ import { checkoutTokenIntegrity, latencyHistogram } from '@/services/monitoring'
 import SettingsAgent from '@/agents/settings-agent';
 import { loadKycReceipt } from '@/services/kycReceipts';
 import { getPublicKeyHex } from '@/services/localIdentity';
-import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
 const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
 const PRODUCT_TOPIC = '/blue-ocean/products/1';
 const LOW_STOCK_THRESHOLD = 5;
 const KYC_RECEIPT_ERROR = 'KYC receipt missing or invalid';
+const E_KYC_REQUIRED = 'E_KYC_REQUIRED';
 const ORDER_PIPELINE_SERVICE = 'orders.pipeline';
 
 function deriveOrderId(nonce: string, storeId: string): string {
@@ -69,11 +71,11 @@ function recordStageForOrders(
   }
 }
 
-type VerifiedKycReceipt = {
-  receiptId: string;
-  buyerPublicKey: string;
-  signature: string;
-  hash: string;
+type KycVerificationResult = {
+  ok: true;
+  hash: string | null;
+  receiptId?: string;
+  signature?: string;
 };
 
 interface OrderDraft {
@@ -84,6 +86,7 @@ interface OrderDraft {
   itemsHash: string;
   buyerAddress?: string;
   sellerAddress?: string;
+  kycReceiptHash?: string;
 }
 
 export async function emitOrderEvents(
@@ -193,7 +196,54 @@ class OrderService {
 
   public addListener(listener: () => void) {
     this.listeners.add(listener);
-@@ -137,57 +204,86 @@ class OrderService {
+  }
+
+  private storeRequiresKyc(store: any): boolean {
+    if (!store || typeof store !== 'object') return false;
+    if (typeof store.kycRequired === 'boolean') return store.kycRequired;
+    const policy = store.kycPolicy || store.policy || store.policies;
+    if (policy && typeof policy === 'object') {
+      if (typeof policy.kycRequired === 'boolean') return policy.kycRequired;
+      if (policy.kyc && typeof policy.kyc === 'object') {
+        if (typeof policy.kyc.required === 'boolean') return policy.kyc.required;
+      }
+    }
+    return false;
+  }
+
+  private async loadBuyerKycReceipt(
+    user?: User | null,
+  ): Promise<{ receiptId: string; signature: string; hash: string } | null> {
+    let buyerPublicKey: string | undefined;
+    if (user && typeof user.chatPublicKey === 'string' && user.chatPublicKey.length > 0) {
+      buyerPublicKey = user.chatPublicKey;
+    }
+    if (!buyerPublicKey) {
+      try {
+        buyerPublicKey = await getPublicKeyHex();
+      } catch {
+        buyerPublicKey = undefined;
+      }
+    }
+    if (!buyerPublicKey) return null;
+    try {
+      const receipt = await loadKycReceipt(buyerPublicKey);
+      if (!receipt) return null;
+      const hash = Buffer.from(
+        sha256(Buffer.from(canonicalJson(receipt.payload))),
+      ).toString('hex');
+      return {
+        receiptId: receipt.payload.receiptId,
+        signature: receipt.signature,
+        hash,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private reserveCheckoutNonce(sessionToken: string, nonce: string): void {
+    if (this.checkoutNonceLocks.has(nonce)) {
       throw new Error('ERR_DUPLICATE_NONCE');
     }
     const active = this.checkoutNonceLocks.get(sessionToken);
@@ -214,6 +264,47 @@ class OrderService {
       this.checkoutNonceLocks.delete(sessionToken);
       setSessionCheckoutNonce(sessionToken, null);
     }
+  }
+
+  private async verifyKycReceipt(
+    buyerId: string,
+    storeId: string,
+  ): Promise<KycVerificationResult> {
+    const store = await getStore(storeId, storeId);
+    const requiresKyc = this.storeRequiresKyc(store);
+
+    let user: User | null = null;
+    if (buyerId) {
+      try {
+        user = await usersAgent.get(buyerId);
+      } catch {
+        user = null;
+      }
+    }
+
+    let storedHash: string | null = null;
+    try {
+      storedHash = buyerId ? await usersAgent.getKycReceiptHash(buyerId) : null;
+    } catch {
+      storedHash = null;
+    }
+
+    const receipt = await this.loadBuyerKycReceipt(user);
+    const computedHash = receipt?.hash ?? null;
+    const hash = storedHash ?? computedHash;
+
+    if (requiresKyc) {
+      if (!user || user.kycStatus !== 'verified' || !hash) {
+        throw new Error(E_KYC_REQUIRED);
+      }
+    }
+
+    return {
+      ok: true,
+      hash,
+      receiptId: receipt?.receiptId,
+      signature: receipt?.signature,
+    };
   }
 
   private async deployEscrow(
@@ -280,12 +371,34 @@ class OrderService {
       if (!allSteps[i].timestamp) {
         const now = new Date();
         const minutesAgo = (currentIndex - i) * 10;
-@@ -310,160 +406,231 @@ class OrderService {
+  private async createOrder(
+    userId: string,
+    items: CartItem[],
+    shippingAddress: ShippingAddress,
+    payment:
+      | {
+          method: 'cash_on_delivery' | 'near' | 'card';
+          buyerAddress?: string;
+          sellerAddress?: string;
+          contractAddress?: string;
+          txHash?: string;
+        }
+      | undefined,
+    sessionToken: string,
+    nonce: string,
+    storeId: string,
+    kyc: KycVerificationResult,
+  ): Promise<Order> {
+    const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    const itemsHash = Buffer.from(
       sha256(Buffer.from(canonicalJson(items)))
     ).toString('hex');
 
     let pay = payment;
     if (pay?.method === 'near' && (!pay.contractAddress || !pay.txHash)) {
+      if (!kyc.hash) {
+        throw new Error(KYC_RECEIPT_ERROR);
+      }
       if (!chainAdapter.getAccountId()) {
         await chainAdapter.openModal();
       }
@@ -297,6 +410,7 @@ class OrderService {
         itemsHash,
         buyerAddress: pay?.buyerAddress,
         sellerAddress: pay?.sellerAddress,
+        kycReceiptHash: kyc.hash,
       };
       const { contractAddress, txHash } = await this.deployEscrow(draft);
       pay = { ...pay, contractAddress, txHash };
@@ -338,7 +452,7 @@ class OrderService {
       platformFee: feeInfo?.platformFee,
       sellerPayout: feeInfo?.sellerPayout,
       kycReceiptId: kyc.receiptId,
-      kycReceiptHash: kyc.hash,
+      kycReceiptHash: kyc.hash ?? undefined,
       kycReceiptSignature: kyc.signature,
     };
 
@@ -404,17 +518,20 @@ class OrderService {
     }
     this.reserveCheckoutNonce(sessionToken, nonce);
     try {
-      let verifiedKyc: VerifiedKycReceipt;
+      const kycResults = new Map<string, KycVerificationResult>();
       const kycStarted = Date.now();
       try {
-        verifiedKyc = await this.verifyKycReceipt(sessionToken);
+        for (const storeId of orderIds.keys()) {
+          const result = await this.verifyKycReceipt(userId, storeId);
+          kycResults.set(storeId, result);
+        }
         const duration = Date.now() - kycStarted;
         recordStageForOrders(orderIds.values(), nonce, 'kyc_check', duration);
         debugLog('orders.kyc_check.success', {
           orderNonce: nonce,
           durationMs: duration,
           orderIds: knownOrderIds,
-          receiptId: verifiedKyc.receiptId,
+          stores: Array.from(orderIds.keys()),
         });
       } catch (err) {
         const duration = Date.now() - kycStarted;
@@ -423,14 +540,19 @@ class OrderService {
           orderNonce: nonce,
           durationMs: duration,
           orderIds: knownOrderIds,
+          stores: Array.from(orderIds.keys()),
           errorMessage: err instanceof Error ? err.message : err,
           errorStack: err instanceof Error ? err.stack : undefined,
         });
+        if (err instanceof Error && err.message === E_KYC_REQUIRED) {
+          throw new Error(KYC_RECEIPT_ERROR);
+        }
         throw err;
       }
 
       const orders: Order[] = [];
       for (const [storeId, items] of Object.entries(grouped)) {
+        const verifiedKyc = kycResults.get(storeId) ?? { ok: true, hash: null };
         const store = await getStore(storeId, storeId);
         const payment =
           paymentMethod === 'near'

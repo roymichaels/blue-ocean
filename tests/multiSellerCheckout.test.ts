@@ -3,6 +3,8 @@ import { deployEscrow } from '@/services/nearContract';
 import { CartItem, ShippingAddress } from '../types';
 import { requestScopes } from '@/services/session';
 import { loadKycReceipt } from '@/services/kycReceipts';
+import { canonicalJson } from '@/utils/serialization';
+import { sha256 } from '@noble/hashes/sha256';
 import { getDeviceHash } from '@/utils/getDeviceHash';
 
 const mockStore: Record<string, any> = {};
@@ -65,8 +67,31 @@ jest.mock('@/features/auth/services/nearUsers', () => ({
   getUser: jest.fn().mockResolvedValue({ publicKey: 'a'.repeat(64) }),
 }));
 
+const mockUsersAgent = {
+  get: jest.fn(),
+  getKycReceiptHash: jest.fn(),
+  getAll: jest.fn(),
+  add: jest.fn(),
+  update: jest.fn(),
+  requestKyc: jest.fn(),
+  updateKyc: jest.fn(),
+  remove: jest.fn(),
+  subscribe: jest.fn(),
+};
+
+jest.mock('@/agents/users-agent', () => ({
+  __esModule: true,
+  default: mockUsersAgent,
+}));
+
 jest.mock('@/features/stores/services/nearStores', () => ({
-  getStore: jest.fn(async (id: string) => ({ id, name: id, owner: `seller_${id}`, nftId: id })),
+  getStore: jest.fn(async (id: string) => ({
+    id,
+    name: id,
+    owner: `seller_${id}`,
+    nftId: id,
+    policies: { kycRequired: true },
+  })),
 }));
 
 jest.mock('@/features/products/services/nearProducts', () => ({
@@ -102,7 +127,23 @@ describe('multi-seller checkout flow', () => {
     for (const key of Object.keys(mockProducts)) {
       delete mockProducts[key];
     }
-    (loadKycReceipt as jest.Mock).mockResolvedValue(makeReceipt());
+    Object.values(mockUsersAgent).forEach((fn) => {
+      if (typeof fn === 'function' && 'mockReset' in fn) {
+        (fn as jest.Mock).mockReset();
+      }
+    });
+    const receipt = makeReceipt();
+    const receiptHash = Buffer.from(
+      sha256(Buffer.from(canonicalJson(receipt.payload))),
+    ).toString('hex');
+    (loadKycReceipt as jest.Mock).mockResolvedValue(receipt);
+    mockUsersAgent.get.mockResolvedValue({
+      id: 'user1',
+      kycStatus: 'verified',
+      chatPublicKey: receipt.payload.buyerPublicKey,
+      kycReceiptHash: receiptHash,
+    });
+    mockUsersAgent.getKycReceiptHash.mockResolvedValue(receiptHash);
   });
 
   it('creates separate orders per seller with near payment', async () => {
@@ -183,6 +224,9 @@ describe('multi-seller checkout flow', () => {
     );
     expect(orders.every((o) => o.kycReceiptSignature === 'sig')).toBe(true);
     expect(orders.every((o) => typeof o.kycReceiptHash === 'string')).toBe(true);
+    expect(deployEscrow).toHaveBeenCalledWith(
+      expect.objectContaining({ kycReceiptHash: expect.any(String) }),
+    );
 
     const eventBus = require('@/services/eventBus');
     expect(eventBus.publish).toHaveBeenCalledTimes(4);
@@ -309,7 +353,14 @@ describe('multi-seller checkout flow', () => {
       postalCode: 'p',
     };
 
-    (loadKycReceipt as jest.Mock).mockResolvedValue(null);
+    mockUsersAgent.get.mockResolvedValueOnce({
+      id: 'user1',
+      kycStatus: 'verified',
+      chatPublicKey: 'buyer-public-key',
+      kycReceiptHash: null,
+    });
+    mockUsersAgent.getKycReceiptHash.mockResolvedValueOnce(null);
+    (loadKycReceipt as jest.Mock).mockResolvedValueOnce(null);
 
     const { token } = requestScopes(['checkout'], () => 'sig');
 
