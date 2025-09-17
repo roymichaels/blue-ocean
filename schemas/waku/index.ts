@@ -14,3 +14,4 @@ export * from './admin.recoveryVerify';
 export * from './store.created';
 export * from './workspace.created';
 export * from './delivery.update';
+export * from './order.purchaseProof';
