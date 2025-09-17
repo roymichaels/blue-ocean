@@ -14,6 +14,7 @@ import { WishlistItem } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import useWishlist from '../hooks/useWishlist';
+import { isReviewsEnabled } from '@/config/featureFlags';
 
 interface WishlistModalProps {
   visible: boolean;
@@ -24,6 +25,7 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
   const { wishlistItems, removeFromWishlist, addToCart } = useWishlist(visible);
   const { colors } = useTheme();
   const { currencySymbol } = useCurrency();
+  const reviewsEnabled = isReviewsEnabled();
 
   const handleAddToCart = async (item: WishlistItem) => {
     await addToCart(item);
@@ -62,10 +64,12 @@ export default function WishlistModal({ visible, onClose }: WishlistModalProps) 
           )}
         </View>
 
-        <View style={styles.ratingContainer}>
-          <Text style={[styles.rating, { color: colors.text.primary }]}>⭐ {item.product.rating}</Text>
-          <Text style={[styles.reviews, { color: colors.text.tertiary }]}>({item.product.reviews})</Text>
-        </View>
+        {reviewsEnabled ? (
+          <View style={styles.ratingContainer}>
+            <Text style={[styles.rating, { color: colors.text.primary }]}>⭐ {item.product.rating}</Text>
+            <Text style={[styles.reviews, { color: colors.text.tertiary }]}>({item.product.reviews})</Text>
+          </View>
+        ) : null}
 
         <View style={styles.stockContainer}>
           <View

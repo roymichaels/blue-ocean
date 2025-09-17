@@ -4,6 +4,7 @@ import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Heading, Text, Skeleton } from '@/ui/primitives';
 import { spacing, radius } from '@/shared/ui/tokens';
 import { Star } from 'lucide-react-native';
+import { isReviewsEnabled } from '@/config/featureFlags';
 
 interface Props {
   name: string;
@@ -25,6 +26,7 @@ export default function StoreHeader({
   const fallbackName = name || t('stores.storeName');
   const bannerLabel = t('stores.bannerAlt', { name: fallbackName });
   const avatarLabel = t('stores.avatarAlt', { name: fallbackName });
+  const reviewsEnabled = isReviewsEnabled();
 
   return (
     <View>
@@ -103,25 +105,38 @@ export default function StoreHeader({
           >
             {fallbackName}
           </Heading>
-          <View
-            style={[
-              styles.ratingRow,
-              { flexDirection: isRTL ? 'row-reverse' : 'row' },
-            ]}
-          >
-            <Star size={16} color={colors.gold} />
+          {reviewsEnabled ? (
+            <View
+              style={[
+                styles.ratingRow,
+                { flexDirection: isRTL ? 'row-reverse' : 'row' },
+              ]}
+            >
+              <Star size={16} color={colors.gold} />
+              <Text
+                variant="sm"
+                weight="500"
+                style={{
+                  color: colors.text.primary,
+                  marginStart: isRTL ? 0 : spacing.spacer4,
+                  marginEnd: isRTL ? spacing.spacer4 : 0,
+                }}
+              >
+                {t('stores.reputation', 'Reputation:')} {reputation.toFixed(1)}
+              </Text>
+            </View>
+          ) : (
             <Text
               variant="sm"
-              weight="500"
               style={{
-                color: colors.text.primary,
-                marginStart: isRTL ? 0 : spacing.spacer4,
-                marginEnd: isRTL ? spacing.spacer4 : 0,
+                color: colors.text.secondary,
+                marginTop: spacing.spacer4,
+                textAlign: isRTL ? 'right' : 'left',
               }}
             >
-              {t('stores.reputation', 'Reputation:')} {reputation.toFixed(1)}
+              {t('stores.reviewsComingSoon', 'Reviews coming soon.')}
             </Text>
-          </View>
+          )}
           {tagline ? (
             <Text
               variant="sm"

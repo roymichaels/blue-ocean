@@ -31,6 +31,8 @@ const envSchema = z.object({
   EXPO_PUBLIC_FEATURE_MOONPAY: z.string().optional().default('false'),
   EXPO_PUBLIC_FEATURE_DISPUTES: z.string().optional().default('false'),
   EXPO_PUBLIC_FEATURE_OPS_DRAWER: z.string().optional().default('false'),
+  EXPO_PUBLIC_FEATURE_REVIEWS: z.string().optional().default('false'),
+  EXPO_PUBLIC_FEATURE_DRIVER_CHAT: z.string().optional().default('false'),
 });
 
 const env = envSchema.parse(process.env);
@@ -145,6 +147,8 @@ export { deliveryNotificationsFlag };
 const moonPayFeatureEnabled = env.EXPO_PUBLIC_FEATURE_MOONPAY === 'true';
 const disputesFeatureEnabled = env.EXPO_PUBLIC_FEATURE_DISPUTES === 'true';
 const opsDrawerFeatureEnabled = env.EXPO_PUBLIC_FEATURE_OPS_DRAWER === 'true';
+const reviewsFeatureEnabled = env.EXPO_PUBLIC_FEATURE_REVIEWS === 'true';
+const driverChatFeatureEnabled = env.EXPO_PUBLIC_FEATURE_DRIVER_CHAT === 'true';
 
 export function isMoonPayEnabled(): boolean {
   return moonPayFeatureEnabled;
@@ -156,6 +160,14 @@ export function isDisputesEnabled(): boolean {
 
 export function isOpsDrawerEnabled(): boolean {
   return opsDrawerFeatureEnabled;
+}
+
+export function isReviewsEnabled(): boolean {
+  return reviewsFeatureEnabled;
+}
+
+export function isDriverChatEnabled(): boolean {
+  return driverChatFeatureEnabled;
 }
 
 export default warmCacheFlag;

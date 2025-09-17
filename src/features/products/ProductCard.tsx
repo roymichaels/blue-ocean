@@ -6,6 +6,7 @@ import { Text, Button, Skeleton } from '@/ui';
 import { spacing, radius, typography } from '@/ui/tokens';
 import { Product } from '@/types';
 import { useProductCard } from './hooks/useProductCard';
+import { isReviewsEnabled } from '@/config/featureFlags';
 
 interface ProductCardProps {
   product: Product;
@@ -22,6 +23,7 @@ function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) 
     price,
     originalPrice,
   } = useProductCard(product);
+  const reviewsEnabled = isReviewsEnabled();
   const accessibilityLabel = React.useMemo(() => {
     if (!price) {
       return product.name;
@@ -79,14 +81,16 @@ function ProductCard({ product, onPress, onCTAPress, style }: ProductCardProps) 
             {price}
           </Text>
         </View>
-        <View style={styles.ratingRow}>
-          <Star size={12} color={colors.gold} />
-          <Text
-            style={[typography.xs, { fontWeight: '500', marginStart: spacing.spacer4, color: colors.text.primary }]}
-          >
-            {product.rating ?? 0}
-          </Text>
-        </View>
+        {reviewsEnabled ? (
+          <View style={styles.ratingRow}>
+            <Star size={12} color={colors.gold} />
+            <Text
+              style={[typography.xs, { fontWeight: '500', marginStart: spacing.spacer4, color: colors.text.primary }]}
+            >
+              {product.rating ?? 0}
+            </Text>
+          </View>
+        ) : null}
         {onCTAPress && (
           <Button title="Buy" onPress={onCTAPress} style={styles.cta} />
         )}

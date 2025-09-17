@@ -12,6 +12,7 @@ import { X } from 'lucide-react-native';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import { Spinner } from '@/ui/primitives';
+import { isDriverChatEnabled } from '@/config/featureFlags';
 
 interface UserProfileModalProps {
   visible: boolean;
@@ -24,6 +25,7 @@ interface UserProfileModalProps {
 export default function UserProfileModal({ visible, userId, onClose, isAdmin = false, onMessage }: UserProfileModalProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const driverChatEnabled = isDriverChatEnabled();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<{ username: string; displayName: string; exists: boolean } | null>(null);
   const [orders, setOrders] = useState<{ id: string; total: number; status: string; createdAt: string }[]>([]);
@@ -101,14 +103,30 @@ export default function UserProfileModal({ visible, userId, onClose, isAdmin = f
                       ))}
                     </View>
                   )}
-                  {isAdmin && onMessage && (
-                    <TouchableOpacity
-                      style={[styles.messageButton, { backgroundColor: colors.gold }]}
-                      onPress={() => onMessage(userId, profile.displayName)}
-                    >
-                      <Text style={[styles.messageButtonText, { color: colors.text.inverse }]}>{t('navigation.messages')}</Text>
-                    </TouchableOpacity>
-                  )}
+                  {isAdmin && onMessage
+                    ? driverChatEnabled
+                      ? (
+                          <TouchableOpacity
+                            style={[styles.messageButton, { backgroundColor: colors.gold }]}
+                            onPress={() => onMessage(userId, profile.displayName)}
+                          >
+                            <Text style={[styles.messageButtonText, { color: colors.text.inverse }]}>
+                              {t('navigation.messages')}
+                            </Text>
+                          </TouchableOpacity>
+                        )
+                      : (
+                          <Text
+                            style={{
+                              marginTop: 16,
+                              color: colors.text.secondary,
+                              textAlign: 'center',
+                            }}
+                          >
+                            {t('common.comingSoon', 'Coming Soon')}
+                          </Text>
+                        )
+                    : null}
                 </>
               ) : (
                 <Text style={[styles.displayName, { color: colors.text.primary }]}>{t('chat.noUsersFound')}</Text>

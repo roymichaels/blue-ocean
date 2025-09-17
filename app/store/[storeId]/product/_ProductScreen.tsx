@@ -21,6 +21,7 @@ import { useProductDetail } from '@/features/products/hooks/useProductDetail';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { openDM } from '@/services/openDM';
+import { isDriverChatEnabled } from '@/config/featureFlags';
 import { AlertTriangle, Heart, MessageCircle, Minus, Plus, ShoppingCart } from 'lucide-react-native';
 
 type TooltipChildProps = {
@@ -97,11 +98,23 @@ export default function ProductDetailScreen() {
   const [adding, setAdding] = useState(false);
   const [contacting, setContacting] = useState(false);
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>();
+  const driverChatEnabled = useMemo(() => isDriverChatEnabled(), []);
 
   const storeIdentifier = useMemo(() => {
     if (product?.storeId) return product.storeId;
     return typeof storeId === 'string' ? storeId : undefined;
   }, [product?.storeId, storeId]);
+  const contactLabel = useMemo(
+    () => t('productDetail.contactStore', 'Contact store'),
+    [t],
+  );
+  const contactHint = useMemo(
+    () =>
+      driverChatEnabled
+        ? t('productDetail.contactStoreHint', 'Open a chat with this store.')
+        : t('common.comingSoon', 'Coming Soon'),
+    [driverChatEnabled, t],
+  );
 
   useEffect(() => {
     const variants = product?.variants;
@@ -175,6 +188,10 @@ export default function ProductDetailScreen() {
   }, [product, quantity, selectedVariantId, showNotification, t]);
 
   const handleContactStore = useCallback(async () => {
+    if (!driverChatEnabled) {
+      return;
+    }
+
     if (!storeIdentifier) {
       showNotification(
         t('common.error', 'Error'),
@@ -219,7 +236,7 @@ export default function ProductDetailScreen() {
     } finally {
       setContacting(false);
     }
-  }, [appRouter, isLoggedIn, openAuthModal, openDM, showNotification, storeIdentifier, t]);
+  }, [appRouter, driverChatEnabled, isLoggedIn, openAuthModal, openDM, showNotification, storeIdentifier, t]);
 
   const handleBack = useCallback(() => {
     if (storeId) {
@@ -463,22 +480,22 @@ export default function ProductDetailScreen() {
               <Button
                 onPress={handleContactStore}
                 loading={contacting}
-                disabled={!storeIdentifier || contacting}
-                accessibilityLabel={t('productDetail.contactStore', 'Contact store')}
-                accessibilityHint={t(
-                  'productDetail.contactStoreHint',
-                  'Open a chat with this store.',
-                )}
-                tooltip={t('productDetail.contactStoreHint', 'Open a chat with this store.')}
+                disabled={!driverChatEnabled || !storeIdentifier || contacting}
+                accessibilityLabel={contactLabel}
+                accessibilityHint={contactHint}
+                tooltip={contactHint}
                 style={[
                   styles.secondaryButton,
                   { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary },
                 ]}
               >
                 <View style={styles.buttonContent}>
-                  <MessageCircle size={18} color={colors.text.primary} />
-                  <Text style={[styles.buttonText, { color: colors.text.primary }]}>
-                    {t('productDetail.contactStore', 'Contact store')}
+                  <MessageCircle
+                    size={18}
+                    color={driverChatEnabled ? colors.text.primary : colors.text.secondary}
+                  />
+                  <Text style={[styles.buttonText, { color: colors.text.primary }]}> 
+                    {contactLabel}
                   </Text>
                 </View>
               </Button>
