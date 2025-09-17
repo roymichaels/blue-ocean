@@ -141,8 +141,8 @@ describe('integration/offline queue encryption', () => {
 
     const decoded = await runInIsolated(async () => {
       const { decrypt } = await import('@/utils/wakuCrypto');
-      const decrypted = decrypt(topic, payload);
-      return new TextDecoder().decode(decrypted);
+      const { plaintext } = await decrypt(topic, payload);
+      return new TextDecoder().decode(plaintext);
     });
 
     expect(decoded).toBe(canonical);

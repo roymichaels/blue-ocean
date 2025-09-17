@@ -18,6 +18,8 @@ const envSchema = z.object({
   EXPO_PUBLIC_WAKU_PUBLISHER_KEY: z.string().optional().default(''),
   WAKU_DISABLE: z.string().optional().default(''),
   EXPO_PUBLIC_WAKU_DISABLE: z.string().optional().default(''),
+  WAKU_KEY_EPOCH: z.string().optional().default('1'),
+  EXPO_PUBLIC_WAKU_KEY_EPOCH: z.string().optional().default('1'),
   WAKU_STRICT: z.string().optional().default(''),
   EXPO_PUBLIC_RELAYER_URL: z.string().optional().default(''),
   EXPO_PUBLIC_INDEXER_URL: z.string().optional().default(''),

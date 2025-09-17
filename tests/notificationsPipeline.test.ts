@@ -41,8 +41,22 @@ import {
 
 // Mock encrypt/decrypt as identity to simplify payload checks
 jest.mock('@/utils/wakuCrypto', () => ({
-  encrypt: (_t: string, b: Uint8Array) => b,
-  decrypt: (_t: string, b: Uint8Array) => b,
+  encrypt: async (_t: string, b: Uint8Array) => ({
+    primary: { payload: b, keyEpoch: null, format: 'legacy' },
+  }),
+  decrypt: async (_t: string, b: Uint8Array) => ({
+    plaintext: b,
+    keyEpoch: null,
+    format: 'legacy',
+  }),
+  getCurrentKeyEpoch: () => 0,
+  getSupportedKeyEpochs: () => [0],
+  WakuDecryptError: class MockWakuDecryptError extends Error {
+    constructor(public code: string) {
+      super(code);
+      this.name = 'WakuDecryptError';
+    }
+  },
 }));
 
 // observability stubs

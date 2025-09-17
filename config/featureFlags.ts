@@ -33,6 +33,7 @@ const envSchema = z.object({
   EXPO_PUBLIC_FEATURE_OPS_DRAWER: z.string().optional().default('false'),
   EXPO_PUBLIC_FEATURE_REVIEWS: z.string().optional().default('false'),
   EXPO_PUBLIC_FEATURE_DRIVER_CHAT: z.string().optional().default('false'),
+  EXPO_PUBLIC_FEATURE_WAKU_SHARED_KEYS: z.string().optional().default('false'),
 });
 
 const env = envSchema.parse(process.env);
@@ -149,6 +150,7 @@ const disputesFeatureEnabled = env.EXPO_PUBLIC_FEATURE_DISPUTES === 'true';
 const opsDrawerFeatureEnabled = env.EXPO_PUBLIC_FEATURE_OPS_DRAWER === 'true';
 const reviewsFeatureEnabled = env.EXPO_PUBLIC_FEATURE_REVIEWS === 'true';
 const driverChatFeatureEnabled = env.EXPO_PUBLIC_FEATURE_DRIVER_CHAT === 'true';
+const wakuSharedKeysFeatureEnabled = env.EXPO_PUBLIC_FEATURE_WAKU_SHARED_KEYS === 'true';
 
 export function isMoonPayEnabled(): boolean {
   return moonPayFeatureEnabled;
@@ -168,6 +170,10 @@ export function isReviewsEnabled(): boolean {
 
 export function isDriverChatEnabled(): boolean {
   return driverChatFeatureEnabled;
+}
+
+export function isWakuSharedKeysEnabled(): boolean {
+  return wakuSharedKeysFeatureEnabled;
 }
 
 export default warmCacheFlag;
