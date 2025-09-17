@@ -36,11 +36,13 @@ jest.mock('@/ui/ThemeProvider', () => ({
 }));
 
 const getAdminPublicKeysMock = jest.fn();
+const getSettingValueMock = jest.fn();
 jest.mock('@/agents/settings-agent', () => ({
   __esModule: true,
   default: {
     getInstance: () => ({
       getAdminPublicKeys: (...args: any[]) => getAdminPublicKeysMock(...args),
+      getSettingValue: (...args: any[]) => getSettingValueMock(...args),
     }),
   },
 }));
@@ -69,22 +71,33 @@ jest.mock('@/features/auth/services/nearUsers', () => ({
   setUser: (...args: any[]) => persistUserMock(...args),
 }));
 
-const documentPickerMock = jest.fn();
-jest.mock('expo-document-picker', () => ({
-  getDocumentAsync: (...args: any[]) => documentPickerMock(...args),
-}));
+const recordAsyncMock = jest.fn();
+const requestExpoCameraPermissionMock = jest.fn(() => Promise.resolve({ status: 'granted' }));
+jest.mock('expo-camera', () => {
+  const React = require('react');
+  const View = require('react-native').View;
+  return {
+    CameraType: { front: 'front', back: 'back' },
+    Constants: { Type: { front: 'front', back: 'back' }, VideoQuality: { '480p': '480p' } },
+    requestCameraPermissionsAsync: (...args: any[]) => requestExpoCameraPermissionMock(...args),
+    Camera: React.forwardRef((props: any, ref: any) => {
+      React.useImperativeHandle(ref, () => ({
+        recordAsync: (...recordArgs: any[]) => recordAsyncMock(...recordArgs),
+      }));
+      return React.createElement(View, props, props.children);
+    }),
+  };
+});
 
 const requestCameraPermissionsAsync = jest.fn();
 const requestMediaLibraryPermissionsAsync = jest.fn();
 const launchCameraAsync = jest.fn();
-const launchImageLibraryAsync = jest.fn();
 
 jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: (...args: any[]) => requestCameraPermissionsAsync(...args),
   requestMediaLibraryPermissionsAsync: (...args: any[]) =>
     requestMediaLibraryPermissionsAsync(...args),
   launchCameraAsync: (...args: any[]) => launchCameraAsync(...args),
-  launchImageLibraryAsync: (...args: any[]) => launchImageLibraryAsync(...args),
 }));
 
 const { default: KycScreen } = require('@/app/kyc/index');
@@ -95,12 +108,30 @@ describe('KycVerificationScreen', () => {
     requestCameraPermissionsAsync.mockResolvedValue({ status: 'granted' });
     requestMediaLibraryPermissionsAsync.mockResolvedValue({ status: 'granted' });
     cleanupMock.mockResolvedValue(undefined);
-    encryptForTenantMock.mockResolvedValue({ uri: 'ipfs://encrypted', hash: 'hash123' });
+    recordAsyncMock.mockResolvedValue({ uri: 'file://liveness.mp4', durationMs: 4000 });
+    requestExpoCameraPermissionMock.mockResolvedValue({ status: 'granted' });
+    encryptForTenantMock.mockResolvedValue({
+      document: { uri: 'ipfs://encrypted', hash: 'hash123' },
+      artifacts: [
+        {
+          type: 'selfie-video',
+          uri: 'ipfs://encrypted',
+          hash: 'videohash',
+          ts: 1700,
+          nonce: 'nonce-video',
+        },
+      ],
+      ts: 1700,
+      nonce: 'bundle-nonce',
+      sig: 'sig',
+    });
     sendDMMock.mockResolvedValue(undefined);
-    documentPickerMock.mockResolvedValue({ canceled: true });
     launchCameraAsync.mockResolvedValue({ canceled: true });
-    launchImageLibraryAsync.mockResolvedValue({ canceled: true });
     getAdminPublicKeysMock.mockResolvedValue(['tenant-public']);
+    getSettingValueMock.mockImplementation((key: string) => {
+      if (key === 'appName') return 'Blue Ocean';
+      return 'off';
+    });
   });
 
   const render = () => renderer.create(<KycScreen />);
@@ -127,28 +158,51 @@ describe('KycVerificationScreen', () => {
       checkAuthState: jest.fn(),
     });
 
-    documentPickerMock.mockResolvedValue({
-      canceled: false,
-      assets: [
-        { uri: 'file://id.png', mimeType: 'image/png', size: 2048, name: 'id.png' },
-      ],
-    });
-    launchImageLibraryAsync.mockResolvedValue({
-      canceled: false,
-      assets: [
-        { uri: 'file://selfie.jpg', mimeType: 'image/jpeg', fileSize: 4096, fileName: 'selfie.jpg' },
-      ],
-    });
+    launchCameraAsync
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [
+          { uri: 'file://id-front.jpg', mimeType: 'image/jpeg', fileName: 'front.jpg', fileSize: 2048 },
+        ],
+      })
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [
+          { uri: 'file://id-back.jpg', mimeType: 'image/jpeg', fileName: 'back.jpg', fileSize: 2048 },
+        ],
+      })
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [
+          { uri: 'file://selfie-id.jpg', mimeType: 'image/jpeg', fileName: 'selfie-id.jpg', fileSize: 4096 },
+        ],
+      });
+    recordAsyncMock.mockResolvedValue({ uri: 'file://liveness.mp4', durationMs: 3800 });
 
     const tree = render();
 
     await act(async () => {
-      tree.root.findByProps({ testID: 'kyc-id-document' }).props.onPress();
+      tree.root.findByProps({ testID: 'kyc-capture-id-front' }).props.onPress();
       await Promise.resolve();
     });
 
     await act(async () => {
-      tree.root.findByProps({ testID: 'kyc-selfie-library' }).props.onPress();
+      tree.root.findByProps({ testID: 'kyc-capture-id-back' }).props.onPress();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      tree.root.findByProps({ testID: 'kyc-capture-selfie-id' }).props.onPress();
+      await Promise.resolve();
+    });
+
+    const startButtons = tree.root.findAll(
+      (node: any) => node.props?.title === 'התחל/י הקלטה',
+    );
+    expect(startButtons.length).toBeGreaterThan(0);
+
+    await act(async () => {
+      startButtons[0].props.onPress();
       await Promise.resolve();
     });
 
@@ -158,17 +212,24 @@ describe('KycVerificationScreen', () => {
     });
 
     expect(getAdminPublicKeysMock).toHaveBeenCalled();
-    expect(encryptForTenantMock).toHaveBeenCalledWith('tenant-public', [
-      expect.objectContaining({ uri: 'file://id.png' }),
-      expect.objectContaining({ uri: 'file://selfie.jpg' }),
-    ]);
+    expect(encryptForTenantMock).toHaveBeenCalled();
+    const filesArg = encryptForTenantMock.mock.calls[0][1];
+    expect(filesArg).toHaveLength(4);
+    expect(filesArg[0]).toMatchObject({ uri: 'file://id-front.jpg', artifactType: 'id-front' });
+    expect(filesArg[1]).toMatchObject({ uri: 'file://id-back.jpg', artifactType: 'id-back' });
+    expect(filesArg[2]).toMatchObject({ uri: 'file://selfie-id.jpg', artifactType: 'selfie-with-id' });
+    expect(filesArg[3]).toMatchObject({ uri: 'file://liveness.mp4', artifactType: 'selfie-video' });
     expect(sendDMMock).toHaveBeenCalledWith(
       'tenant-public',
       'kyc.request',
-      expect.objectContaining({ userId: 'user-1', tenantId: 'tenant-1' }),
+      expect.objectContaining({
+        userId: 'user-1',
+        tenantId: 'tenant-1',
+        bundle: expect.objectContaining({ artifacts: expect.any(Array), document: expect.any(Object) }),
+      }),
     );
-    expect(trackMock).toHaveBeenCalledWith('file://id.png');
-    expect(trackMock).toHaveBeenCalledWith('file://selfie.jpg');
+    expect(trackMock).toHaveBeenCalledWith('file://id-front.jpg');
+    expect(trackMock).toHaveBeenCalledWith('file://liveness.mp4');
     expect(cleanupMock).toHaveBeenCalled();
     expect(persistUserMock).toHaveBeenCalledWith(
       expect.objectContaining({ kycStatus: 'pending' }),
@@ -187,17 +248,22 @@ describe('KycVerificationScreen', () => {
       checkAuthState: jest.fn(),
     });
 
-    documentPickerMock.mockResolvedValue({
+    launchCameraAsync.mockResolvedValueOnce({
       canceled: false,
       assets: [
-        { uri: 'file://large.pdf', mimeType: 'application/pdf', size: 50 * 1024 * 1024 },
+        {
+          uri: 'file://too-large.jpg',
+          mimeType: 'image/jpeg',
+          fileName: 'too-large.jpg',
+          fileSize: 50 * 1024 * 1024,
+        },
       ],
     });
 
     const tree = render();
 
     await act(async () => {
-      tree.root.findByProps({ testID: 'kyc-id-document' }).props.onPress();
+      tree.root.findByProps({ testID: 'kyc-capture-id-front' }).props.onPress();
       await Promise.resolve();
     });
 
@@ -228,24 +294,39 @@ describe('KycVerificationScreen', () => {
       checkAuthState,
     });
 
-    documentPickerMock.mockResolvedValue({
-      canceled: false,
-      assets: [{ uri: 'file://id.png', mimeType: 'image/png', size: 2048, name: 'id.png' }],
-    });
-    launchImageLibraryAsync.mockResolvedValue({
-      canceled: false,
-      assets: [{ uri: 'file://selfie.jpg', mimeType: 'image/jpeg', fileSize: 4096 }],
-    });
+    launchCameraAsync
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [{ uri: 'file://id-front.jpg', mimeType: 'image/jpeg', fileName: 'front.jpg', fileSize: 2048 }],
+      })
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [{ uri: 'file://id-back.jpg', mimeType: 'image/jpeg', fileName: 'back.jpg', fileSize: 2048 }],
+      })
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [{ uri: 'file://selfie-id.jpg', mimeType: 'image/jpeg', fileName: 'selfie-id.jpg', fileSize: 4096 }],
+      });
+    recordAsyncMock.mockResolvedValue({ uri: 'file://liveness.mp4', durationMs: 3600 });
     sendDMMock.mockRejectedValueOnce(new Error('send failed'));
 
     const tree = render();
 
     await act(async () => {
-      tree.root.findByProps({ testID: 'kyc-id-document' }).props.onPress();
+      tree.root.findByProps({ testID: 'kyc-capture-id-front' }).props.onPress();
       await Promise.resolve();
     });
     await act(async () => {
-      tree.root.findByProps({ testID: 'kyc-selfie-library' }).props.onPress();
+      tree.root.findByProps({ testID: 'kyc-capture-id-back' }).props.onPress();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      tree.root.findByProps({ testID: 'kyc-capture-selfie-id' }).props.onPress();
+      await Promise.resolve();
+    });
+    const startButtons = tree.root.findAll((node: any) => node.props?.title === 'התחל/י הקלטה');
+    await act(async () => {
+      startButtons[0].props.onPress();
       await Promise.resolve();
     });
     await act(async () => {

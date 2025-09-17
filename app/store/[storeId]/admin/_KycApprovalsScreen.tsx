@@ -10,34 +10,54 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, FileText, ShieldCheck, XCircle } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  FileText,
+  ShieldCheck,
+  Smartphone,
+  Video,
+  XCircle,
+} from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import SettingsAgent from '@/agents/settings-agent';
 import usersAgent from '@/agents/users-agent';
-import type { User } from '@/types';
+import type { User, KycArtifact } from '@/types';
 import { Spinner } from '@/ui/primitives';
-import { issueKycReceipt, loadKycReceipt } from '@/services/kycReceipts';
+import {
+  issueKycReceipt,
+  issueKycCallReceipt,
+  loadKycReceipt,
+} from '@/services/kycReceipts';
 
 const POLICY_SETTING_KEY = 'kyc.required';
+const POLICY_SOCIAL_KEY = 'kyc.requireSocialProof';
+const POLICY_WHATSAPP_KEY = 'kyc.requireWhatsappCall';
 
 export default function KycApprovalsScreen(): React.ReactElement {
   const { colors } = useTheme();
   const { back } = useAppRouter();
   const [policyRequired, setPolicyRequired] = useState(false);
+  const [policySocialProof, setPolicySocialProof] = useState(false);
+  const [policyWhatsapp, setPolicyWhatsapp] = useState(false);
   const [pending, setPending] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [policySaving, setPolicySaving] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [callInFlight, setCallInFlight] = useState<string | null>(null);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const [policyValue, users] = await Promise.all([
+      const [policyValue, socialValue, whatsappValue, users] = await Promise.all([
         SettingsAgent.getInstance().getSettingValue(POLICY_SETTING_KEY),
+        SettingsAgent.getInstance().getSettingValue(POLICY_SOCIAL_KEY),
+        SettingsAgent.getInstance().getSettingValue(POLICY_WHATSAPP_KEY),
         usersAgent.getAll(),
       ]);
       setPolicyRequired((policyValue || '').toLowerCase() === 'on');
+      setPolicySocialProof((socialValue || '').toLowerCase() === 'on');
+      setPolicyWhatsapp((whatsappValue || '').toLowerCase() === 'on');
       setPending(users.filter((user) => user.kycStatus === 'pending'));
     } catch (error) {
       Alert.alert('שגיאה', 'טעינת בקשות KYC נכשלה');
@@ -66,18 +86,92 @@ export default function KycApprovalsScreen(): React.ReactElement {
     }
   }, [policyRequired]);
 
+  const toggleSocialPolicy = useCallback(async () => {
+    const next = !policySocialProof;
+    setPolicySaving(true);
+    try {
+      await SettingsAgent.getInstance().updateSettingValue(
+        POLICY_SOCIAL_KEY,
+        next ? 'on' : 'off',
+      );
+      setPolicySocialProof(next);
+    } catch (error) {
+      Alert.alert('שגיאה', 'עדכון מדיניות צילום רשתות חברתיות נכשל');
+    } finally {
+      setPolicySaving(false);
+    }
+  }, [policySocialProof]);
+
+  const toggleWhatsappPolicy = useCallback(async () => {
+    const next = !policyWhatsapp;
+    setPolicySaving(true);
+    try {
+      await SettingsAgent.getInstance().updateSettingValue(
+        POLICY_WHATSAPP_KEY,
+        next ? 'on' : 'off',
+      );
+      setPolicyWhatsapp(next);
+    } catch (error) {
+      Alert.alert('שגיאה', 'עדכון דרישת שיחת WhatsApp נכשל');
+    } finally {
+      setPolicySaving(false);
+    }
+  }, [policyWhatsapp]);
+
   const handlePreview = useCallback((user: User) => {
     const uri = user.kycDocument?.uri;
     if (uri) {
       Linking.openURL(uri).catch(() =>
         Alert.alert('שגיאה', 'לא ניתן לפתוח את מסמך ה-KYC'),
       );
-    } else if (user.kycRequestNotes) {
-      Alert.alert('הערות משתמש', user.kycRequestNotes);
-    } else {
-      Alert.alert('מידע חסר', 'לא נמצאו מסמכי אימות עבור משתמש זה.');
+      return;
     }
+    if (user.kycRequestNotes) {
+      Alert.alert('הערות משתמש', user.kycRequestNotes);
+      return;
+    }
+    Alert.alert('מידע חסר', 'לא נמצאו מסמכי אימות עבור משתמש זה.');
   }, []);
+
+  const hasWhatsappReceipt = useCallback((user: User) => {
+    if (!user.kycCallReceipts?.length) return false;
+    return user.kycCallReceipts.some((receipt) => receipt.whatsappNumber);
+  }, []);
+
+  const completeWhatsappVerification = useCallback(
+    async (user: User) => {
+      if (!user.publicKey) {
+        Alert.alert('שגיאה', 'לא נמצא מפתח ציבורי של הלקוח לצורך חתימה.');
+        return;
+      }
+      if (!user.kycWhatsappNumber) {
+        Alert.alert('שגיאה', 'לא הוזן מספר WhatsApp אצל הלקוח.');
+        return;
+      }
+      setCallInFlight(user.id);
+      try {
+        const receipt = await issueKycCallReceipt(user.publicKey, {
+          userId: user.id,
+          whatsappNumber: user.kycWhatsappNumber,
+        });
+        await usersAgent.logKycCallReceipt(user.id, {
+          receiptId: receipt.payload.receiptId,
+          issuedAt: receipt.payload.issuedAt,
+          issuerPublicKey: receipt.payload.issuerPublicKey,
+          ts: receipt.payload.ts,
+          nonce: receipt.payload.nonce,
+          whatsappNumber: user.kycWhatsappNumber,
+        });
+        Alert.alert('עודכן', 'אישור שיחת ה-WhatsApp נשמר ונחתם.');
+        await refreshData();
+      } catch (error) {
+        Alert.alert('שגיאה', 'שמירת אישור השיחה נכשלה');
+      } finally {
+        setCallInFlight(null);
+      }
+    },
+    [refreshData],
+  );
 
   const approveRequest = useCallback(
     async (user: User) => {
@@ -149,18 +243,37 @@ export default function KycApprovalsScreen(): React.ReactElement {
         <View style={{ width: 24 }} /> 
       </View> 
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}> 
-        <View style={[styles.policyCard, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}> 
-          <View style={styles.policyHeader}> 
-            <ShieldCheck size={20} color={colors.gold} /> 
-            <Text style={[styles.policyTitle, { color: colors.text.primary }]}>מדיניות אימות</Text> 
-          </View> 
-          <View style={styles.policyToggle}> 
-            <Text style={{ color: colors.text.primary }}>דרוש KYC לפני רכישה</Text> 
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View
+          style={[styles.policyCard, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}
+          <View style={styles.policyHeader}>
+            <ShieldCheck size={20} color={colors.gold} />
+            <Text style={[styles.policyTitle, { color: colors.text.primary }]}>מדיניות אימות</Text>
+          </View>
+          <View style={styles.policyToggle}>
+            <Text style={{ color: colors.text.primary }}>דרוש KYC לפני רכישה</Text>
             <Switch
               value={policyRequired}
               onValueChange={togglePolicy}
               thumbColor={policyRequired ? colors.gold : colors.border.primary}
+              disabled={policySaving}
+            />
+          </View>
+          <View style={styles.policyToggle}>
+            <Text style={{ color: colors.text.primary }}>דרוש צילום פרופיל חברתי</Text>
+            <Switch
+              value={policySocialProof}
+              onValueChange={toggleSocialPolicy}
+              thumbColor={policySocialProof ? colors.gold : colors.border.primary}
+              disabled={policySaving}
+            />
+          </View>
+          <View style={styles.policyToggle}>
+            <Text style={{ color: colors.text.primary }}>דרוש אימות שיחת WhatsApp</Text>
+            <Switch
+              value={policyWhatsapp}
+              onValueChange={toggleWhatsappPolicy}
+              thumbColor={policyWhatsapp ? colors.gold : colors.border.primary}
               disabled={policySaving}
             />
           </View>
@@ -177,12 +290,17 @@ export default function KycApprovalsScreen(): React.ReactElement {
           pending.map((user) => (
             <View
               key={user.id}
-              style={[styles.requestCard, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}> 
-              <View style={styles.requestHeader}> 
-                <View> 
-                  <Text style={[styles.requestName, { color: colors.text.primary }]}>{user.displayName || user.username}</Text> 
-                  <Text style={{ color: colors.text.secondary }}>{user.email}</Text> 
-                </View> 
+              style={[
+                styles.requestCard,
+                { borderColor: colors.border.primary, backgroundColor: colors.surface.primary },
+              ]}>
+              <View style={styles.requestHeader}>
+                <View>
+                  <Text style={[styles.requestName, { color: colors.text.primary }]}>
+                    {user.displayName || user.username}
+                  </Text>
+                  <Text style={{ color: colors.text.secondary }}>{user.email}</Text>
+                </View>
                 <TouchableOpacity
                   style={styles.previewButton}
                   onPress={() => handlePreview(user)}
@@ -194,10 +312,49 @@ export default function KycApprovalsScreen(): React.ReactElement {
               <Text style={{ color: colors.text.secondary }}>
                 בקשה: {formatDate(user.kycRequestedAt)}
               </Text>
+              {user.kycWhatsappNumber ? (
+                <Text style={{ color: colors.text.secondary }}>
+                  מספר WhatsApp: {user.kycWhatsappNumber}
+                </Text>
+              ) : null}
               {user.kycRequestNotes ? (
                 <Text style={[styles.notes, { color: colors.text.secondary }]}>{user.kycRequestNotes}</Text>
               ) : null}
+              {Array.isArray(user.kycArtifacts) && user.kycArtifacts.length > 0 ? (
+                <View style={styles.artifactList}>
+                  {user.kycArtifacts.map((artifact) => (
+                    <View
+                      key={`${artifact.type}-${artifact.hash}`}
+                      style={[styles.artifactRow, { borderColor: colors.border.primary }]}
+                    >
+                      <View style={styles.artifactIcon}>
+                        {renderArtifactIcon(artifact.type, colors.text.primary)}
+                      </View>
+                      <View style={styles.artifactBody}>
+                        <Text style={[styles.artifactTitle, { color: colors.text.primary }]}>
+                          {artifactLabel(artifact.type)}
+                        </Text>
+                        <Text style={{ color: colors.text.secondary }}>
+                          {new Date(artifact.ts).toLocaleString('he-IL')} · nonce {artifact.nonce}
+                        </Text>
+                        <Text style={styles.artifactHash} numberOfLines={1}>
+                          {artifact.hash}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
               <View style={styles.actionsRow}>
+                {policyWhatsapp && !hasWhatsappReceipt(user) ? (
+                  <TouchableOpacity
+                    style={[styles.whatsappButton, { borderColor: colors.gold }]}
+                    onPress={() => completeWhatsappVerification(user)}
+                    disabled={callInFlight === user.id}>
+                    <Smartphone size={18} color={colors.gold} />
+                    <Text style={{ color: colors.gold }}>סמן שיחת וידאו</Text>
+                  </TouchableOpacity>
+                ) : null}
                 <TouchableOpacity
                   style={[styles.approveButton, { borderColor: colors.status.success }]}
                   onPress={() => approveRequest(user)}
@@ -259,7 +416,75 @@ const styles = StyleSheet.create({
   requestName: { fontSize: 16, fontWeight: '600' },
   previewButton: { flexDirection: 'row', gap: 6, alignItems: 'center' },
   notes: { fontStyle: 'italic' },
-  actionsRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
-  approveButton: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, flexDirection: 'row', gap: 6 },
-  rejectButton: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, flexDirection: 'row', gap: 6 },
+  artifactList: { gap: 10 },
+  artifactRow: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  artifactIcon: { width: 32, alignItems: 'center' },
+  artifactBody: { flex: 1, gap: 4 },
+  artifactTitle: { fontWeight: '600' },
+  artifactHash: { fontSize: 12, color: '#777' },
+  actionsRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' },
+  approveButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+  },
+  rejectButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+  },
+  whatsappButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+  },
 });
+
+function artifactLabel(type: KycArtifact['type']): string {
+  switch (type) {
+    case 'id-front':
+      return 'תעודה - צד קדמי';
+    case 'id-back':
+      return 'תעודה - צד אחורי';
+    case 'selfie-with-id':
+      return 'סלפי עם תעודה';
+    case 'selfie-video':
+      return 'וידאו בדיקת חיות';
+    case 'social-proof':
+      return 'צילום רשת חברתית';
+    case 'whatsapp-call':
+      return 'אישור שיחת וידאו';
+    default:
+      return type;
+  }
+}
+
+function renderArtifactIcon(type: KycArtifact['type'], color: string): React.ReactElement {
+  switch (type) {
+    case 'selfie-video':
+      return <Video size={18} color={color} />;
+    case 'whatsapp-call':
+      return <Smartphone size={18} color={color} />;
+    default:
+      return <FileText size={18} color={color} />;
+  }
+}

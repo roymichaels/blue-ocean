@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Image, Platform, StyleSheet, TextInput } from 'react-native';
+import { Image, StyleSheet, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as DocumentPicker from 'expo-document-picker';
 import { ScrollArea, Container, Stack } from '@/ui/layout';
 import { Heading, Text, Button, Card, Badge } from '@/ui/primitives';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
@@ -9,55 +8,69 @@ import { spacing, radius } from '@/ui/tokens';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import SettingsAgent from '@/agents/settings-agent';
+import { useKycCapture } from './hooks/useKycCapture';
+import VideoCapture from './components/VideoCapture';
 import { encryptForTenant, type KycUploadFile } from '@/services/kycUpload';
 import { sendDM } from '@/services/dm';
-import {
-  cleanupTrackedKycCapturedPaths,
-  trackKycCapturedPath,
-  untrackKycCapturedPath,
-} from '@/utils/kycTemp';
-import HelperText from '@/ui/form/HelperText';
-import Label from '@/ui/form/Label';
+import { cleanupTrackedKycCapturedPaths } from '@/utils/kycTemp';
 import type { User } from '@/types';
 import { setUser as persistUser } from '@/features/auth/services/nearUsers';
 
-interface CapturedAsset {
-  uri: string;
-  name: string;
-  type?: string;
-  size?: number;
+interface PolicyState {
+  requireSocialProof: boolean;
+  requireWhatsapp: boolean;
+  appName: string;
 }
 
-type CaptureSlot = 'id' | 'selfie';
-
-type PickerSource = 'camera' | 'library' | 'document';
-
-const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const MAX_FILE_SIZE_MB = Math.round(MAX_FILE_BYTES / (1024 * 1024));
-
-function isImage(type?: string): boolean {
-  return typeof type === 'string' && type.startsWith('image/');
-}
+const INITIAL_POLICY: PolicyState = {
+  requireSocialProof: false,
+  requireWhatsapp: false,
+  appName: 'Blue Ocean',
+};
 
 export default function KycVerificationScreen(): React.ReactElement {
   const { colors } = useTheme();
   const { t } = useLanguage();
   const { user, checkAuthState } = useAuth();
   const { tenantId } = useTenant();
-
-  const [idAsset, setIdAsset] = useState<CapturedAsset | null>(null);
-  const [selfieAsset, setSelfieAsset] = useState<CapturedAsset | null>(null);
-  const [notes, setNotes] = useState<string>(user?.kycRequestNotes ?? '');
+  const [policy, setPolicy] = useState<PolicyState>(INITIAL_POLICY);
+  const [notes, setNotes] = useState(user?.kycRequestNotes ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const kycStatus = user?.kycStatus ?? 'none';
-  const isLocked = !user || kycStatus === 'pending';
+  const capture = useKycCapture({
+    requireSocialProof: policy.requireSocialProof,
+    requireWhatsapp: policy.requireWhatsapp,
+  });
+  const { steps, currentStepIndex, artifacts, requireWhatsapp } = capture;
+  const [activeStep, setActiveStep] = useState(currentStepIndex);
 
   useEffect(() => {
+    setActiveStep(currentStepIndex);
+  }, [currentStepIndex]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const instance = SettingsAgent.getInstance();
+        const [social, whatsapp, name] = await Promise.all([
+          instance.getSettingValue('kyc.requireSocialProof'),
+          instance.getSettingValue('kyc.requireWhatsappCall'),
+          instance.getSettingValue('appName'),
+        ]);
+        if (!mounted) return;
+        setPolicy({
+          requireSocialProof: (social || '').toLowerCase() === 'on',
+          requireWhatsapp: (whatsapp || '').toLowerCase() === 'on',
+          appName: name || INITIAL_POLICY.appName,
+        });
+      } catch (err) {
+        // Ignore policy fetch errors and fall back to defaults
+      }
+    })();
     return () => {
-      void cleanupTrackedKycCapturedPaths();
+      mounted = false;
     };
   }, []);
 
@@ -66,6 +79,9 @@ export default function KycVerificationScreen(): React.ReactElement {
       setNotes(user.kycRequestNotes);
     }
   }, [user?.kycRequestNotes]);
+
+  const kycStatus = user?.kycStatus ?? 'none';
+  const isLocked = !user || kycStatus === 'pending';
 
   const statusLabel = useMemo(() => {
     switch (kycStatus) {
@@ -94,132 +110,78 @@ export default function KycVerificationScreen(): React.ReactElement {
       default:
         return t(
           'kyc.instructionsIntro',
-          'Submit a photo ID and a selfie so we can verify your identity before you place an order.',
+          'Submit the requested captures so we can verify your identity before you place an order.',
         );
     }
   }, [kycStatus, t]);
 
-  const ensureWithinLimit = useCallback(
-    (asset: Partial<CapturedAsset> & { size?: number }): boolean => {
-      if (typeof asset.size === 'number' && asset.size > MAX_FILE_BYTES) {
-        setError(t('kyc.fileTooLarge', 'Files must be {size} MB or smaller.', { size: MAX_FILE_SIZE_MB }));
-        return false;
-      }
-      return true;
-    },
-    [t],
-  );
-
-  const requestPermission = useCallback(
-    async (source: PickerSource): Promise<boolean> => {
-      if (Platform.OS === 'web') return true;
-      try {
-        if (source === 'camera') {
-          const { status } = await ImagePicker.requestCameraPermissionsAsync();
-          if (status !== 'granted') {
-            setError(t('kyc.permissionDenied', 'Camera access is required to continue.'));
-            return false;
-          }
-          return true;
-        }
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          setError(t('kyc.permissionDenied', 'Media library access is required to continue.'));
-          return false;
-        }
-        return true;
-      } catch (err) {
-        setError(t('kyc.permissionDenied', 'Camera access is required to continue.'));
-        return false;
-      }
-    },
-    [t],
-  );
-
-  const handlePick = useCallback(
-    async (slot: CaptureSlot, source: PickerSource) => {
-      setError(null);
-      setSuccessMessage(null);
-      if (source !== 'document' && !(await requestPermission(source))) {
-        return;
-      }
-
-      try {
-        let picked: ImagePicker.ImagePickerAsset | DocumentPicker.DocumentPickerAsset | null = null;
-        if (source === 'document') {
-          const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: false });
-          if (result.canceled || !result.assets?.length) return;
-          picked = result.assets[0];
-        } else if (source === 'camera') {
-          const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 });
-          if (result.canceled || !result.assets?.length) return;
-          picked = result.assets[0];
-        } else {
-          const result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.8 });
-          if (result.canceled || !result.assets?.length) return;
-          picked = result.assets[0];
-        }
-
-        if (!picked?.uri) return;
-
-        const size =
-          typeof (picked as any).fileSize === 'number'
-            ? (picked as any).fileSize
-            : typeof (picked as any).size === 'number'
-            ? (picked as any).size
-            : undefined;
-
-        const prepared: CapturedAsset = {
-          uri: picked.uri,
-          name:
-            picked.name ||
-            (picked as any).fileName ||
-            `${slot}-${Date.now()}.${picked.mimeType?.split('/')[1] ?? 'jpg'}`,
-          type: picked.mimeType || (picked as any).type,
-          size,
-        };
-
-        if (!ensureWithinLimit(prepared)) {
+  const handleError = useCallback(
+    (err: unknown) => {
+      if (err instanceof Error) {
+        if (err.message === 'file-too-large') {
+          setError(t('kyc.fileTooLarge', 'Files must be 15 MB or smaller.'));
           return;
         }
-
-        trackKycCapturedPath(prepared.uri);
-        if (slot === 'id') {
-          if (idAsset) untrackKycCapturedPath(idAsset.uri);
-          setIdAsset(prepared);
-        } else {
-          if (selfieAsset) untrackKycCapturedPath(selfieAsset.uri);
-          setSelfieAsset(prepared);
+        if (err.message === 'camera-permission-denied') {
+          setError(t('kyc.permissionDenied', 'Camera access is required to continue.'));
+          return;
         }
-      } catch (err) {
-        setError(t('kyc.selectionError', 'We could not open that file. Try again.'));
+        if (err.message === 'library-permission-denied') {
+          setError(t('kyc.permissionDenied', 'Media library access is required to continue.'));
+          return;
+        }
       }
+      setError(t('kyc.selectionError', 'We could not open that file. Try again.'));
     },
-    [ensureWithinLimit, idAsset, requestPermission, selfieAsset, t],
+    [t],
   );
 
-  const removeAsset = useCallback(
-    (slot: CaptureSlot) => {
-      if (slot === 'id' && idAsset) {
-        untrackKycCapturedPath(idAsset.uri);
-        setIdAsset(null);
+  const captureId = useCallback(
+    async (type: 'id-front' | 'id-back') => {
+      try {
+        setError(null);
+        await capture.capturePhoto(
+          type,
+          'camera',
+          type === 'id-front' ? ImagePicker.CameraType.back : ImagePicker.CameraType.back,
+          { side: type === 'id-front' ? 'front' : 'back' },
+        );
+      } catch (err) {
+        handleError(err);
       }
-      if (slot === 'selfie' && selfieAsset) {
-        untrackKycCapturedPath(selfieAsset.uri);
-        setSelfieAsset(null);
-      }
-      setSuccessMessage(null);
     },
-    [idAsset, selfieAsset],
+    [capture, handleError],
   );
+
+  const captureSelfieWithId = useCallback(async () => {
+    try {
+      setError(null);
+      await capture.capturePhoto('selfie-with-id', 'camera', ImagePicker.CameraType.front, {
+        pose: 'hold-id',
+      });
+    } catch (err) {
+      handleError(err);
+    }
+  }, [capture, handleError]);
+
+  const captureSocialProof = useCallback(async () => {
+    try {
+      setError(null);
+      await capture.capturePhoto('social-proof', 'library', ImagePicker.CameraType.back, {
+        source: 'social-screenshot',
+      });
+    } catch (err) {
+      handleError(err);
+    }
+  }, [capture, handleError]);
 
   const handleSubmit = useCallback(async () => {
     if (!user) {
       setError(t('kyc.loginRequired', 'Connect your wallet to submit verification.'));
       return;
     }
-    if (!idAsset || !selfieAsset) {
-      setError(t('kyc.missingDocuments', 'Add both an ID image and a selfie before submitting.'));
+    if (!capture.canSubmit) {
+      setError(t('kyc.missingDocuments', 'Complete all required steps before submitting.'));
       return;
     }
 
@@ -234,18 +196,33 @@ export default function KycVerificationScreen(): React.ReactElement {
         throw new Error('TENANT_PUBLIC_KEY_MISSING');
       }
 
-      const files: KycUploadFile[] = [
-        { uri: idAsset.uri, name: idAsset.name, type: idAsset.type },
-        { uri: selfieAsset.uri, name: selfieAsset.name, type: selfieAsset.type },
-      ];
+      const files: KycUploadFile[] = artifacts.map((artifact) => ({
+        uri: artifact.uri,
+        name: artifact.name,
+        type: artifact.mimeType,
+        artifactType: artifact.type,
+        capturedAt: artifact.capturedAt,
+        nonce: artifact.nonce,
+        metadata: {
+          ...(artifact.metadata ?? {}),
+          size: artifact.size,
+          durationMs: artifact.durationMs,
+        },
+      }));
 
       const encrypted = await encryptForTenant(tenantPublicKey, files);
+      const bundle = {
+        ...encrypted,
+        notes: notes.trim() ? notes.trim() : undefined,
+        whatsappNumber: capture.requireWhatsapp
+          ? capture.whatsappNumber.trim() || undefined
+          : undefined,
+      };
 
       await sendDM(tenantPublicKey, 'kyc.request', {
         userId: user.id,
         tenantId: tenantId ?? 'default',
-        document: encrypted,
-        notes: notes.trim() ? notes.trim() : undefined,
+        bundle,
       });
 
       const updated: User = {
@@ -253,13 +230,15 @@ export default function KycVerificationScreen(): React.ReactElement {
         kycStatus: 'pending',
         kycRequestedAt: new Date().toISOString(),
         kycRequestNotes: notes.trim() ? notes.trim() : undefined,
-        kycDocument: encrypted,
+        kycDocument: encrypted.document,
+        kycArtifacts: encrypted.artifacts,
+        kycBundleNonce: encrypted.nonce,
+        kycBundleSig: encrypted.sig,
+        kycWhatsappNumber: bundle.whatsappNumber ?? undefined,
       };
       await persistUser(updated);
       await checkAuthState();
-
-      setIdAsset(null);
-      setSelfieAsset(null);
+      capture.reset();
       setNotes('');
       setSuccessMessage(t('kyc.requestSubmittedMessage', 'Your verification request has been submitted.'));
     } catch (err) {
@@ -273,17 +252,32 @@ export default function KycVerificationScreen(): React.ReactElement {
       setSubmitting(false);
     }
   }, [
+    artifacts,
+    capture,
     checkAuthState,
-    idAsset,
     notes,
-    selfieAsset,
     t,
     tenantId,
     user,
   ]);
 
-  const canSubmit =
-    !isLocked && !!idAsset && !!selfieAsset && (kycStatus === 'none' || kycStatus === 'rejected');
+  const canSubmit = capture.canSubmit && !isLocked && (kycStatus === 'none' || kycStatus === 'rejected');
+
+  const handleCaptureIdFront = useCallback(() => {
+    void captureId('id-front');
+  }, [captureId]);
+
+  const handleCaptureIdBack = useCallback(() => {
+    void captureId('id-back');
+  }, [captureId]);
+
+  const handleCaptureSelfieStep = useCallback(() => {
+    void captureSelfieWithId();
+  }, [captureSelfieWithId]);
+
+  const handleCaptureSocialStep = useCallback(() => {
+    void captureSocialProof();
+  }, [captureSocialProof]);
 
   return (
     <ScrollArea backgroundColor={colors.canvas}>
@@ -294,7 +288,7 @@ export default function KycVerificationScreen(): React.ReactElement {
             <Card style={[styles.statusCard, { backgroundColor: colors.surface.primary }]}>
               <Stack gap="spacer8">
                 <Stack direction="horizontal" gap="spacer12" align="center">
-                  <Text style={[styles.statusLabel, { color: colors.text.secondary }]}>
+                  <Text style={[styles.statusLabel, { color: colors.text.secondary }]}> 
                     {t('kyc.viewStatusLabel', 'Current status')}
                   </Text>
                   <Badge label={statusLabel} accessibilityLabel={statusLabel} />
@@ -305,192 +299,268 @@ export default function KycVerificationScreen(): React.ReactElement {
           </Stack>
 
           {kycStatus !== 'verified' ? (
-            <Stack gap="spacer16">
-              <Card style={[styles.instructionsCard, { backgroundColor: colors.surface.primary }]}>
-                <Stack gap="spacer8">
-                  <Text style={styles.instructionsTitle}>{t('kyc.instructionsTitle', 'What you will need')}</Text>
-                  <Text>{t('kyc.instructionsId', 'A clear photo or scan of your government-issued ID.')}</Text>
-                  <Text>{t('kyc.instructionsSelfie', 'A selfie that matches your ID and shows your face clearly.')}</Text>
-                  <Text>{t('kyc.instructionsTip', 'Use good lighting and avoid glare or blurry images.')}</Text>
-                </Stack>
+            <Stack gap="spacer24">
+              <Stack gap="spacer16">
+                <Heading size="lg">{t('kyc.stepsTitle', 'Verification steps')}</Heading>
+                <View style={styles.stepper}>
+                  {steps.map((step, index) => {
+                    const isComplete = index < currentStepIndex;
+                    const isActive = index === activeStep;
+                    return (
+                      <View key={step.key} style={styles.stepItem}>
+                        <Button
+                          title={`${index + 1}. ${step.title}`}
+                          onPress={() => setActiveStep(index)}
+                          disabled={index > currentStepIndex}
+                          style={() => [
+                            styles.stepButton,
+                            isActive && styles.stepButtonActive,
+                            isComplete && styles.stepButtonComplete,
+                          ]}
+                          textStyle={styles.stepButtonText}
+                        />
+                        {index === currentStepIndex && !isComplete ? (
+                          <Text style={[styles.stepDescription, { color: colors.text.secondary }]}>
+                            {step.description}
+                          </Text>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+                </View>
+              </Stack>
+
+              <Card style={[styles.stepCard, { backgroundColor: colors.surface.primary }]}> 
+                {renderStepContent({
+                  activeStep,
+                  capture,
+                  appName: policy.appName,
+                  onCaptureIdFront: handleCaptureIdFront,
+                  onCaptureIdBack: handleCaptureIdBack,
+                  onCaptureSelfie: handleCaptureSelfieStep,
+                  onCaptureSocial: handleCaptureSocialStep,
+                })}
               </Card>
 
-              <Stack gap="spacer16">
-                <Stack gap="spacer8">
-                  <Text style={styles.sectionTitle}>{t('kyc.idSectionTitle', 'Identity document')}</Text>
-                  {idAsset ? (
-                    <Card style={[styles.assetCard, { backgroundColor: colors.surface.primary }]}>
-                      <Stack gap="spacer12">
-                        {isImage(idAsset.type) ? (
-                          <Image
-                            source={{ uri: idAsset.uri }}
-                            style={styles.previewImage}
-                            accessibilityLabel={t('kyc.idPreviewAlt', 'Selected ID preview')}
-                          />
-                        ) : (
-                          <Text>{idAsset.name}</Text>
-                        )}
-                        <Button
-                          title={t('kyc.removeAttachment', 'Remove')}
-                          onPress={() => removeAsset('id')}
-                          testID="kyc-remove-id"
-                          accessibilityRole="button"
-                        />
-                      </Stack>
-                    </Card>
-                  ) : (
-                    <Stack direction="horizontal" gap="spacer12" style={styles.actionRow}>
-                      <Button
-                        title={t('kyc.captureId', 'Capture ID photo')}
-                        onPress={() => void handlePick('id', 'camera')}
-                        testID="kyc-id-camera"
-                        accessibilityRole="button"
-                      />
-                      <Button
-                        title={t('kyc.uploadId', 'Upload from library')}
-                        onPress={() => void handlePick('id', 'library')}
-                        testID="kyc-id-library"
-                        accessibilityRole="button"
-                      />
-                      <Button
-                        title={t('kyc.uploadIdFile', 'Upload a file')}
-                        onPress={() => void handlePick('id', 'document')}
-                        testID="kyc-id-document"
-                        accessibilityRole="button"
-                      />
-                    </Stack>
-                  )}
-                </Stack>
+              {activeStep >= steps.length - 1 ? (
+                <Card style={[styles.reviewCard, { backgroundColor: colors.surface.primary }]}> 
+                  {renderReviewSection({
+                    artifacts,
+                    colors,
+                    t,
+                    capture,
+                    notes,
+                    setNotes,
+                    requireWhatsapp,
+                    whatsappNumber: capture.whatsappNumber,
+                    setWhatsappNumber: capture.setWhatsappNumber,
+                  })}
+                </Card>
+              ) : null}
 
-                <Stack gap="spacer8">
-                  <Text style={styles.sectionTitle}>{t('kyc.selfieSectionTitle', 'Selfie')}</Text>
-                  {selfieAsset ? (
-                    <Card style={[styles.assetCard, { backgroundColor: colors.surface.primary }]}>
-                      <Stack gap="spacer12">
-                        {isImage(selfieAsset.type) ? (
-                          <Image
-                            source={{ uri: selfieAsset.uri }}
-                            style={styles.previewImage}
-                            accessibilityLabel={t('kyc.selfiePreviewAlt', 'Selected selfie preview')}
-                          />
-                        ) : (
-                          <Text>{selfieAsset.name}</Text>
-                        )}
-                        <Button
-                          title={t('kyc.removeAttachment', 'Remove')}
-                          onPress={() => removeAsset('selfie')}
-                          testID="kyc-remove-selfie"
-                          accessibilityRole="button"
-                        />
-                      </Stack>
-                    </Card>
-                  ) : (
-                    <Stack direction="horizontal" gap="spacer12" style={styles.actionRow}>
-                      <Button
-                        title={t('kyc.captureSelfie', 'Capture selfie')}
-                        onPress={() => void handlePick('selfie', 'camera')}
-                        testID="kyc-selfie-camera"
-                        accessibilityRole="button"
-                      />
-                      <Button
-                        title={t('kyc.uploadSelfie', 'Upload from library')}
-                        onPress={() => void handlePick('selfie', 'library')}
-                        testID="kyc-selfie-library"
-                        accessibilityRole="button"
-                      />
-                    </Stack>
-                  )}
-                </Stack>
+              {error ? <Text style={[styles.errorText, { color: colors.status.error }]}>{error}</Text> : null}
+              {successMessage ? (
+                <Text style={[styles.successText, { color: colors.status.success }]}>{successMessage}</Text>
+              ) : null}
 
-                <Stack gap="spacer4">
-                  <Label>{t('kyc.notesForAdmin', 'Notes for Admin (Optional)')}</Label>
-                  <TextInput
-                    value={notes}
-                    onChangeText={setNotes}
-                    placeholder={t(
-                      'kyc.notesPlaceholder',
-                      "Share any context that helps us verify your identity",
-                    )}
-                    style={[styles.notesInput, { borderColor: colors.border.primary, color: colors.text.primary }]}
-                    placeholderTextColor={colors.text.tertiary}
-                    multiline
-                    numberOfLines={4}
-                    accessible
-                    accessibilityLabel={t('kyc.notesForAdmin', 'Notes for Admin (Optional)')}
-                  />
-                </Stack>
-
-                {error ? (
-                  <HelperText error>{error}</HelperText>
-                ) : null}
-                {!user ? (
-                  <HelperText error>
-                    {t('kyc.loginRequired', 'Connect your wallet to submit verification.')}
-                  </HelperText>
-                ) : null}
-                {successMessage ? (
-                  <HelperText>{successMessage}</HelperText>
-                ) : null}
-
-                <Button
-                  title={t('kyc.requestVerification', 'Request Verification')}
-                  onPress={() => void handleSubmit()}
-                  loading={submitting}
-                  disabled={!canSubmit || submitting}
-                  testID="kyc-submit"
-                  accessibilityRole="button"
-                />
-              </Stack>
+              <Button
+                title={t('kyc.submit', 'Submit for review')}
+                onPress={() => void handleSubmit()}
+                disabled={!canSubmit || submitting}
+                testID="kyc-submit"
+              />
             </Stack>
-          ) : (
-            <Card style={[styles.instructionsCard, { backgroundColor: colors.surface.primary }]}>
-              <Text>{t('kyc.verifiedMessage', 'Your account is verified. You can now place orders.')}</Text>
-            </Card>
-          )}
+          ) : null}
         </Stack>
       </Container>
     </ScrollArea>
   );
 }
 
+function renderStepContent(params: {
+  activeStep: number;
+  capture: ReturnType<typeof useKycCapture>;
+  appName: string;
+  onCaptureIdFront: () => void;
+  onCaptureIdBack: () => void;
+  onCaptureSelfie: () => void;
+  onCaptureSocial: () => void;
+}): React.ReactElement {
+  const { activeStep, capture, appName, onCaptureIdFront, onCaptureIdBack, onCaptureSelfie, onCaptureSocial } = params;
+  const step = capture.steps[activeStep];
+  const artifact = capture.getArtifact(step.key as any);
+  switch (step.key) {
+    case 'id-front':
+    case 'id-back': {
+      return (
+        <Stack gap="spacer16">
+          <Text>{step.description}</Text>
+          {artifact ? (
+            <Image source={{ uri: artifact.uri }} style={styles.previewImage} />
+          ) : null}
+          <Button
+            title={artifact ? 'צלם/י מחדש' : 'צלם/י'}
+            onPress={() => {
+              if (step.key === 'id-front') {
+                onCaptureIdFront();
+              } else {
+                onCaptureIdBack();
+              }
+            }}
+            testID={step.key === 'id-front' ? 'kyc-capture-id-front' : 'kyc-capture-id-back'}
+          />
+        </Stack>
+      );
+    }
+    case 'selfie-with-id':
+      return (
+        <Stack gap="spacer16">
+          <Text>החזיקו את התעודה מול הפנים וצילמו סלפי ברור.</Text>
+          {artifact ? <Image source={{ uri: artifact.uri }} style={styles.previewImage} /> : null}
+          <Button
+            title={artifact ? 'צלם/י מחדש' : 'צלם/י סלפי'}
+            onPress={onCaptureSelfie}
+            testID="kyc-capture-selfie-id"
+          />
+        </Stack>
+      );
+    case 'selfie-video':
+      return (
+        <Stack gap="spacer16">
+          <Text>עיינו בהנחיות על המסך והקליטו וידאו של 3-5 שניות.</Text>
+          <VideoCapture
+            appName={appName}
+            livenessPrompt={capture.livenessState?.prompt ?? null}
+            livenessNonce={capture.livenessState?.nonce ?? null}
+            prepareLiveness={capture.prepareLiveness}
+            recordLiveness={capture.livenessVideoCapture}
+            onRecorded={() => {}}
+          />
+        </Stack>
+      );
+    case 'social-proof':
+      return (
+        <Stack gap="spacer16">
+          <Text>העלה/י צילום מסך של הפרופיל החברתי המבוקש.</Text>
+          {artifact ? <Image source={{ uri: artifact.uri }} style={styles.previewImage} /> : null}
+          <Button
+            title={artifact ? 'העלה/י מחדש' : 'בחר/י צילום מסך'}
+            onPress={onCaptureSocial}
+            testID="kyc-upload-social"
+          />
+        </Stack>
+      );
+    case 'review':
+    default:
+      return (
+        <Stack gap="spacer16">
+          <Text>עברו על הפרטים לפני השליחה.</Text>
+        </Stack>
+      );
+  }
+}
+
+function renderReviewSection(params: {
+  artifacts: ReturnType<typeof useKycCapture>['artifacts'];
+  colors: any;
+  t: (key: string, fallback: string, params?: Record<string, unknown>) => string;
+  capture: ReturnType<typeof useKycCapture>;
+  notes: string;
+  setNotes: (value: string) => void;
+  requireWhatsapp: boolean;
+  whatsappNumber: string;
+  setWhatsappNumber: (value: string) => void;
+}): React.ReactElement {
+  const { artifacts, colors, t, capture, notes, setNotes, requireWhatsapp, whatsappNumber, setWhatsappNumber } = params;
+  return (
+    <Stack gap="spacer16">
+      <Heading size="md">{t('kyc.reviewArtifacts', 'Captured artifacts')}</Heading>
+      <Stack gap="spacer12">
+        {artifacts.map((artifact) => (
+          <Card key={`${artifact.type}-${artifact.nonce}`} style={[styles.artifactCard, { backgroundColor: colors.surface.secondary }]}> 
+            <Stack gap="spacer8">
+              <Text style={{ fontWeight: '600' }}>{artifactLabel(artifact.type)}</Text>
+              <Text style={{ color: colors.text.secondary }}>
+                {new Date(artifact.capturedAt).toLocaleString('he-IL')} · nonce {artifact.nonce}
+              </Text>
+              <Text style={styles.hashText} numberOfLines={1}>
+                {artifact.uri}
+              </Text>
+              <Button title={t('kyc.removeAttachment', 'Remove')} onPress={() => capture.removeArtifact(artifact.type)} />
+            </Stack>
+          </Card>
+        ))}
+      </Stack>
+      <View>
+        <Text style={{ marginBottom: spacing['spacer8'] }}>{t('kyc.additionalNotes', 'Additional notes')}</Text>
+        <TextInput
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          placeholder={t('kyc.notesPlaceholder', 'Anything the admin should know?')}
+          style={[styles.textArea, { borderColor: colors.border.primary, color: colors.text.primary }]}
+        />
+      </View>
+      {requireWhatsapp ? (
+        <View>
+          <Text style={{ marginBottom: spacing['spacer8'] }}>מספר WhatsApp לבדיקת וידאו</Text>
+          <TextInput
+            value={whatsappNumber}
+            onChangeText={setWhatsappNumber}
+            keyboardType="phone-pad"
+            placeholder="050-000-0000"
+            style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary }]}
+          />
+        </View>
+      ) : null}
+    </Stack>
+  );
+}
+
+function artifactLabel(type: string): string {
+  switch (type) {
+    case 'id-front':
+      return 'תעודה - צד קדמי';
+    case 'id-back':
+      return 'תעודה - צד אחורי';
+    case 'selfie-with-id':
+      return 'סלפי עם תעודה';
+    case 'selfie-video':
+      return 'וידאו בדיקת חיות';
+    case 'social-proof':
+      return 'צילום מסך רשת חברתית';
+    case 'whatsapp-call':
+      return 'רשומת שיחת WhatsApp';
+    default:
+      return type;
+  }
+}
+
 const styles = StyleSheet.create({
-  page: {
-    paddingVertical: spacing.spacer24,
-  },
-  statusCard: {
-    padding: spacing.spacer16,
-  },
-  statusLabel: {
-    fontWeight: '600',
-  },
-  instructionsCard: {
-    padding: spacing.spacer16,
-  },
-  instructionsTitle: {
-    fontWeight: '600',
-  },
-  sectionTitle: {
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  assetCard: {
-    padding: spacing.spacer16,
-    borderRadius: radius.lg,
-  },
-  actionRow: {
-    flexWrap: 'wrap',
-  },
-  previewImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: radius.md,
-    backgroundColor: '#0001',
-  },
-  notesInput: {
+  page: { paddingVertical: spacing['spacer24'] },
+  statusCard: { padding: spacing['spacer16'], borderRadius: radius.lg },
+  statusLabel: { fontWeight: '600' },
+  stepper: { gap: spacing['spacer12'] },
+  stepItem: { gap: spacing['spacer8'] },
+  stepDescription: { fontSize: 14 },
+  stepButton: { marginBottom: spacing['spacer4'] },
+  stepButtonActive: { opacity: 1 },
+  stepButtonComplete: { opacity: 0.8 },
+  stepButtonText: { fontWeight: '600' },
+  stepCard: { padding: spacing['spacer16'], borderRadius: radius.lg },
+  reviewCard: { padding: spacing['spacer16'], borderRadius: radius.lg, gap: spacing['spacer16'] },
+  previewImage: { width: '100%', height: 220, borderRadius: radius.md, backgroundColor: '#000' },
+  artifactCard: { padding: spacing['spacer12'], borderRadius: radius.md },
+  hashText: { fontSize: 12, fontFamily: 'Courier', color: '#555' },
+  textArea: {
     borderWidth: 1,
     borderRadius: radius.md,
-    padding: spacing.spacer12,
+    padding: spacing['spacer12'],
     minHeight: 100,
     textAlignVertical: 'top',
   },
+  input: { borderWidth: 1, borderRadius: radius.md, padding: spacing['spacer12'] },
+  errorText: { fontWeight: '600' },
+  successText: { fontWeight: '600' },
 });
+

@@ -138,9 +138,45 @@ export const ALL_ADMIN_SCOPES: AdminScope[] = [
   'admin:orders',
 ];
 
+export type KycArtifactType =
+  | 'id-front'
+  | 'id-back'
+  | 'selfie-with-id'
+  | 'selfie-video'
+  | 'social-proof'
+  | 'whatsapp-call';
+
 export interface KycDocument {
   uri: string;
   hash: string;
+}
+
+export interface KycArtifact {
+  type: KycArtifactType;
+  uri: string;
+  hash: string;
+  ts: number;
+  nonce: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface KycArtifactBundle {
+  document: KycDocument;
+  artifacts: KycArtifact[];
+  ts: number;
+  nonce: string;
+  sig: string;
+  notes?: string;
+  whatsappNumber?: string;
+}
+
+export interface KycCallReceiptRecord {
+  receiptId: string;
+  issuedAt: string;
+  issuerPublicKey: string;
+  ts: number;
+  nonce: string;
+  whatsappNumber?: string;
 }
 
 export interface User {
@@ -167,6 +203,11 @@ export interface User {
   kycApprovedAt?: string;
   kycReceiptHash?: string;
   kycDocument?: KycDocument;
+  kycArtifacts?: KycArtifact[];
+  kycBundleNonce?: string;
+  kycBundleSig?: string;
+  kycWhatsappNumber?: string;
+  kycCallReceipts?: KycCallReceiptRecord[];
 }
 
 export interface Notification {

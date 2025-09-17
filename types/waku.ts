@@ -13,4 +13,5 @@ export {
   type WorkspaceCreatedPayload,
   type DeliveryUpdateMessage,
   type KycReceiptMessage,
+  type KycCallReceiptMessage,
 } from '../schemas/waku';

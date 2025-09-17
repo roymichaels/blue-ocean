@@ -4,7 +4,6 @@ import { sha256 } from '@noble/hashes/sha256';
 import { sha512 } from '@noble/hashes/sha512';
 import { etc, getPublicKey, utils as edUtils } from '@noble/ed25519';
 import { randomBytes, randomUUID } from 'crypto';
-import { canonicalJson } from '@/utils/serialization';
 import PinataService from '@/services/pinata';
 import { encryptForTenant } from '@/services/kycUpload';
 import {
@@ -72,24 +71,30 @@ describe('encryptForTenant', () => {
 
       trackKycCapturedPath(filePath);
       const result = await encryptForTenant(tenantPubHex, [
-        { uri: filePath, name: 'doc.png' },
+        {
+          uri: filePath,
+          name: 'doc.png',
+          artifactType: 'id-front',
+          capturedAt: 1700000000000,
+          nonce: 'nonce123',
+        },
       ]);
 
       expect(uploadSpy).toHaveBeenCalledTimes(1);
       expect(uploadSpy.mock.calls[0][0]).toContain('kyc-');
-      expect(result.uri).toBe('ipfs://cid123');
+      expect(result.document.uri).toBe('ipfs://cid123');
+      expect(typeof result.sig).toBe('string');
+      expect(typeof result.ts).toBe('number');
+      expect(typeof result.nonce).toBe('string');
+      expect(result.artifacts).toHaveLength(1);
+      expect(result.artifacts[0]).toMatchObject({
+        type: 'id-front',
+        uri: 'ipfs://cid123',
+      });
 
       const fileBytes = Buffer.from('hello');
       const fileHash = Buffer.from(sha256(new Uint8Array(fileBytes))).toString('hex');
-      const manifest = {
-        version: 1,
-        files: [
-          { name: 'doc.png', type: 'application/octet-stream', size: 5, hash: fileHash },
-        ],
-      };
-      const manifestBytes = Buffer.from(canonicalJson(manifest));
-      const expectedHash = Buffer.from(sha256(new Uint8Array(manifestBytes))).toString('hex');
-      expect(result.hash).toBe(expectedHash);
+      expect(result.artifacts[0].hash).toBe(fileHash);
 
       expect(fs.existsSync(filePath)).toBe(false);
     } finally {
@@ -115,7 +120,15 @@ describe('encryptForTenant', () => {
       trackKycCapturedPath(filePath);
 
       await expect(
-        encryptForTenant(tenantPubHex, [{ uri: filePath, name: 'doc.png' }]),
+        encryptForTenant(tenantPubHex, [
+          {
+            uri: filePath,
+            name: 'doc.png',
+            artifactType: 'id-front',
+            capturedAt: Date.now(),
+            nonce: 'nonce123',
+          },
+        ]),
       ).rejects.toThrow('upload failed');
 
       expect(fs.existsSync(filePath)).toBe(true);

@@ -1,4 +1,4 @@
-import { User } from '@/types';
+import { User, type KycArtifactBundle, type KycCallReceiptRecord } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { getUser, setUser, listUsers, removeUser } from '@/features/auth/services/nearUsers';
 import { getPublicKeyHex } from '@/services/localIdentity';
@@ -20,11 +20,15 @@ export type UsersAgentMessage =
   | { type: 'user.remove'; payload: { id: string } }
   | {
       type: 'kyc.request';
-      payload: { userId: string; document: { uri: string; hash: string } };
+      payload: { userId: string; bundle: KycArtifactBundle };
     }
   | {
       type: 'kyc.update';
       payload: { userId: string; status: 'verified' | 'rejected'; adminId?: string };
+    }
+  | {
+      type: 'kyc.call';
+      payload: { userId: string; receipt: KycCallReceiptRecord };
     };
 
 class UsersAgent {
@@ -108,10 +112,7 @@ class UsersAgent {
   }
 
   // kyc.request
-  async requestKyc(
-    userId: string,
-    document: { uri: string; hash: string },
-  ): Promise<void> {
+  async requestKyc(userId: string, bundle: KycArtifactBundle): Promise<void> {
     const { address, publicKey } = await this.ensureWallet();
     const user = await getUser(userId);
     if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
@@ -132,7 +133,12 @@ class UsersAgent {
       address,
       kycStatus: 'pending',
       kycRequestedAt: new Date().toISOString(),
-      kycDocument: document,
+      kycRequestNotes: bundle.notes ?? user.kycRequestNotes,
+      kycDocument: bundle.document,
+      kycArtifacts: bundle.artifacts,
+      kycBundleNonce: bundle.nonce,
+      kycBundleSig: bundle.sig,
+      kycWhatsappNumber: bundle.whatsappNumber ?? user.kycWhatsappNumber,
     });
     await setUser(enriched);
   }
@@ -170,6 +176,8 @@ class UsersAgent {
         : status === 'rejected'
         ? undefined
         : user.kycReceiptHash;
+    const callReceipts =
+      status === 'verified' ? user.kycCallReceipts ?? [] : user.kycCallReceipts;
     const enriched: User = normalizeMessage<User>('User', {
       ...user,
       publicKey,
@@ -178,6 +186,32 @@ class UsersAgent {
       kycReceiptHash: nextHash,
       kycApprovedBy: status === 'verified' ? approvedBy : user.kycApprovedBy,
       kycApprovedAt: status === 'verified' ? now : user.kycApprovedAt,
+      kycCallReceipts: callReceipts,
+    });
+    await setUser(enriched);
+  }
+
+  async logKycCallReceipt(userId: string, receipt: KycCallReceiptRecord): Promise<void> {
+    const { address, publicKey } = await this.ensureWallet();
+    const hasScope = await SettingsAgent.getInstance().hasAdminScope(
+      address,
+      'admin:users',
+    );
+    if (!hasScope) {
+      throw new AgentError(
+        'UNAUTHORIZED',
+        'Only admins with scope admin:users can log call receipts',
+        'users-agent',
+      );
+    }
+    const user = await getUser(userId);
+    if (!user) throw new AgentError('USER_NOT_FOUND', 'User not found', 'users-agent');
+    const nextReceipts = [...(user.kycCallReceipts ?? []), receipt];
+    const enriched: User = normalizeMessage<User>('User', {
+      ...user,
+      publicKey,
+      address,
+      kycCallReceipts: nextReceipts,
     });
     await setUser(enriched);
   }
@@ -212,7 +246,7 @@ class UsersAgent {
         await this.remove(msg.payload.id);
         break;
       case 'kyc.request':
-        await this.requestKyc(msg.payload.userId, msg.payload.document);
+        await this.requestKyc(msg.payload.userId, msg.payload.bundle);
         break;
       case 'kyc.update':
         await this.updateKyc(
@@ -220,6 +254,9 @@ class UsersAgent {
           msg.payload.status,
           msg.payload.adminId,
         );
+        break;
+      case 'kyc.call':
+        await this.logKycCallReceipt(msg.payload.userId, msg.payload.receipt);
         break;
     }
   }
