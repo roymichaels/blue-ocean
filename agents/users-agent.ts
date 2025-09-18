@@ -1,3 +1,7 @@
+// TODO:KYC-002 verify kycBundleSig with tenant admin pubkey before approval
+// TODO:KYC-003 persist {kycReceiptHash, kycReceiptSig, kycApprovedBy, kycApprovedAt}
+// TODO:KYC-017 require step-up to approve/decline KYC (requireUnlock('kyc.approve'))
+
 import { User, type KycArtifactBundle, type KycCallReceiptRecord } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { getUser, setUser, listUsers, removeUser } from '@/features/auth/services/nearUsers';
@@ -146,6 +150,9 @@ class UsersAgent {
   }
 
   // kyc.update
+  // TODO:KYC-002 compute canonical hash(bundle) and verify signature; reject on mismatch {code:'E_SIGNATURE_INVALID'}
+  // TODO:KYC-003 emit signed kyc.receipt over Waku on approval; include {ts,nonce} (see KYC-009)
+  // TODO:KYC-019 handle revocation path to clear receipt; publish kyc.receipt.revoked
   async updateKyc(
     userId: string,
     status: 'verified' | 'rejected',
@@ -175,6 +182,8 @@ class UsersAgent {
     const approvedBy = options?.approvedBy ?? adminId ?? address;
 
     if (status === 'verified') {
+      // TODO:KYC-002 verify buyer bundleSig before approval (canonical manifest hash)
+      // TODO:KYC-003 after approval, compute receipt hash and emit kyc.receipt (signed)
       if (!user.kycBundleSig) {
         throw new AgentError(
           'E_SCOPE',

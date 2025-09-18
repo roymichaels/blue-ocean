@@ -1,3 +1,4 @@
+import type { WakuMessage } from '@/types/waku';
 import { Store } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import {
@@ -13,6 +14,7 @@ import { buildTopic } from '@/utils/wakuTopics';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 
+const getTransportCrypto = () => (typeof globalThis !== 'undefined' && globalThis.crypto ? globalThis.crypto : undefined);
 assertNearChain();
 
 // TODO:TODO-111 Extend StoresAgent to track multi-tenant metrics and avoid namespace collisions for shared storefronts.
@@ -27,6 +29,10 @@ interface Metrics {
 class StoresAgent {
   private reputation: Record<string, Metrics> = {};
   private subscribers: Set<(id: string, score: number) => void> = new Set();
+
+  private async ensureWallet(): Promise<{ address: string; publicKey: string }> {
+    return ensureNearWallet('Please connect your NEAR wallet to manage stores.');
+  }
 
   private getNamespace(store: Store): string {
     const owner = typeof store.owner === 'string' ? store.owner.trim() : '';
@@ -119,7 +125,7 @@ class StoresAgent {
   }
 
   async add(item: Store): Promise<void> {
-    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
+    await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
     const record = await this.persistStore({
       createdAt: normalized.createdAt || new Date().toISOString(),
@@ -129,13 +135,13 @@ class StoresAgent {
   }
 
   async update(item: Store): Promise<void> {
-    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
+    await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
     await this.persistStore(normalized);
   }
 
   async remove(id: string): Promise<void> {
-    await ensureNearWallet('Please connect your NEAR wallet to manage stores.');
+    await this.ensureWallet();
     await removeStore(id);
   }
 
@@ -157,7 +163,14 @@ class StoresAgent {
 
   private async broadcastCreated(store: Store): Promise<void> {
     try {
-      const msg = await makeSignedWakuMessage<Store>('store.created', store, 'store-owner');
+      const transportCrypto = getTransportCrypto();
+      const nonce = transportCrypto && typeof transportCrypto.randomUUID === 'function'
+        ? transportCrypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const msg: WakuMessage<Store> = await makeSignedWakuMessage('store.created', store, 'store-owner', {
+        ts: Date.now(),
+        nonce,
+      });
       await publish(buildTopic('stores', '1'), msg);
     } catch {
       // non-fatal
@@ -172,3 +185,9 @@ export const selectStore = (id: string): Promise<Store | null> =>
   storesAgent.selectStore(id);
 
 export default storesAgent;
+
+
+
+
+
+

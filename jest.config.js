@@ -79,6 +79,7 @@ const cfg = {
 
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@noble/hashes/hkdf$': '<rootDir>/tests/nobleHkdfMock.js',
     '\\.(png|jpg|jpeg|gif|svg)$': '<rootDir>/tests/__mocks__/fileMock.js',
     '^expo-file-system$': '<rootDir>/tests/__mocks__/expo-file-system.js',
     '^expo-asset$': '<rootDir>/tests/__mocks__/expo-asset.js',
@@ -109,6 +110,7 @@ const cfg = {
     '^@/schemas/(.*)$': '<rootDir>/schemas/$1',
     '^@/(.*)$': '<rootDir>/$1',
     '^src/(.*)$': '<rootDir>/src/$1',
+    '^@waku/sdk$': '<rootDir>/tests/wakuSdkMock.js',
 
     // Light stubs for RN libs in Node env
     '^react-native-svg$': '<rootDir>/tests/__mocks__/react-native.js',
@@ -177,3 +179,5 @@ const cfg = {
 };
 
 module.exports = cfg;
+
+

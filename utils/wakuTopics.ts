@@ -1,3 +1,5 @@
+// TODO:KYC-018 add dm topic builder: buildDmTopic(tenantId, lowHighPairId)
+// TODO:CORE-020 buildTopic(domain,{tenantId,storeId}) everywhere
 // TODO:TODO-104 Expand buildTopic to validate domain/store identifiers against allowed vocabularies before constructing topics.
 // TODO:REC-204 Consider caching normalized topics to reduce repeated string allocations in hot message loops.
 

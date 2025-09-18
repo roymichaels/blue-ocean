@@ -1,3 +1,6 @@
+// TODO:CORE-010 broadcast /notifications/<tenant> on every order transition
+// TODO:CORE-020 tenant-scoped topic helper
+
 import { Notification } from '../types';
 import type { NotificationEvent, NotificationWakuPayload, WakuMessage } from '../types/waku';
 import AgentError from '@/types/AgentError';
@@ -52,9 +55,9 @@ class NotificationsAgent {
   private latencyLimit = 1000; // ms
   private pauseReasons = new Set<PauseReason>();
   private delivered = new Set<string>();
-  private pollTimer: NodeJS.Timeout | null = null;
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
   private pollInterval = 30000;
-  private latencyTimer: NodeJS.Timeout | null = null;
+  private latencyTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     onBacklog(() => this.pause('waku'));
@@ -347,3 +350,4 @@ class NotificationsAgent {
 }
 
 export default new NotificationsAgent();
+

@@ -1,22 +1,21 @@
+// TODO:CORE-021 include {ts:number, nonce:string}; enforce skew<=2min
 import { z } from 'zod';
 import { wakuMessageSchema } from './message';
 
-// TODO:CORE-011 Replace placeholder property definitions once purchase proof payload is finalized.
-export const orderPurchaseProofPayloadSchema = z.object({
-  orderId: z.unknown(),
-  buyerId: z.unknown(),
-  sellerId: z.unknown(),
-  storeId: z.unknown(),
-  escrowTx: z.unknown(),
-  closedAt: z.unknown(),
-  receiptHash: z.unknown(),
-  ts: z.unknown(),
-  nonce: z.unknown(),
-});
-
-export const orderPurchaseProofMessageSchema = wakuMessageSchema.extend({
+export const orderPurchaseProofSchema = wakuMessageSchema.extend({
   type: z.literal('order.purchaseProof'),
-  payload: orderPurchaseProofPayloadSchema,
+  payload: z.object({
+    orderId: z.string(),
+    storeId: z.string(),
+    buyerId: z.string(),
+    sellerId: z.string(),
+    escrowTx: z.string(),
+    receiptHash: z.string(), // canonical hash of receipt/closing data
+    closedAt: z.number(),    // unix ms
+    ts: z.number(),
+    nonce: z.string(),
+    tenantId: z.string()
+  })
 });
 
-export type OrderPurchaseProofMessage = z.infer<typeof orderPurchaseProofMessageSchema>;
+export type OrderPurchaseProofMessage = z.infer<typeof orderPurchaseProofSchema>;

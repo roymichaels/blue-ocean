@@ -1,3 +1,11 @@
+jest.mock('@/services/waku', () => ({
+  ensureNode: jest.fn(async () => null),
+  isWakuDisabled: jest.fn(() => true),
+  subscribeWithAck: jest.fn(async () => () => {}),
+  fetchHistory: jest.fn(async () => undefined),
+  publish: jest.fn(async () => 'mock-id'),
+}));
+
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import AppProviders from '@/providers/AppProviders';
@@ -19,7 +27,7 @@ describe('AppProviders QueryClientProvider usage', () => {
     expect(() => {
       act(() => {
         const root = renderer.create(
-          React.createElement(AppProviders, {}, React.createElement(React.Fragment)),
+          React.createElement(AppProviders, {}, null),
         );
         root.unmount();
       });
@@ -32,11 +40,11 @@ describe('AppProviders QueryClientProvider usage', () => {
       act(() => {
         roots.push(
           renderer.create(
-            React.createElement(AppProviders, {}, React.createElement(React.Fragment)),
+            React.createElement(AppProviders, {}, null),
           ),
         );
         renderer.create(
-          React.createElement(AppProviders, {}, React.createElement(React.Fragment)),
+          React.createElement(AppProviders, {}, null),
         );
       });
     }).toThrow('Multiple QueryClientProvider instances detected');
@@ -46,3 +54,5 @@ describe('AppProviders QueryClientProvider usage', () => {
     });
   });
 });
+
+

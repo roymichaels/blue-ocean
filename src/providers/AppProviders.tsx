@@ -1,8 +1,8 @@
 import React from 'react';
 import { WalletProvider } from './WalletProvider';
 import { WakuProvider } from '@/contexts/WakuContext';
-import { QueryClient } from '@tanstack/react-query';
 import { CheckedQueryClientProvider } from './CheckedQueryClientProvider';
+import { queryClient } from '@/providers/queryClient';
 import ErrorBoundary from '@/shared/ErrorBoundary';
 import { useNotificationActions } from '@/components/NotificationContext';
 import { ThemeProvider, LanguageProvider } from '../ui/ThemeProvider';
@@ -14,15 +14,6 @@ import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import { reportError } from '@/services/errorReporter';
 import { LaunchGateProvider } from '@/features/launchGate';
-
-declare global {
-  // React Native fast refresh re-evaluates modules; store the client globally to avoid recreation.
-  // eslint-disable-next-line no-var
-  var __queryClient: QueryClient | undefined;
-}
-
-export const queryClient =
-  globalThis.__queryClient ?? (globalThis.__queryClient = new QueryClient());
 
 /**
  * Composes the core providers used across the app.

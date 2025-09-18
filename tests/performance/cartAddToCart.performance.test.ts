@@ -37,7 +37,7 @@ jest.mock('@/services/eventBus', () => {
   };
 });
 
-jest.mock('@/services/chain', () => ({
+jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: { getAccountId: jest.fn() },
 }));
 

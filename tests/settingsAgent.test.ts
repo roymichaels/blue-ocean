@@ -5,7 +5,7 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
 }));
 jest.mock('@/services/nearKvStore', () => require('./nearKvMock'));
 jest.mock('@/services/nearSettings');
-jest.mock('@/services/chain', () => ({ assertNearChain: jest.fn() }));
+jest.mock('@/services/chain', () => ({ __esModule: true, assertNearChain: jest.fn() }));
 jest.mock('../utils/ensureNearWallet', () => jest.fn().mockResolvedValue(undefined));
 
 import SettingsAgent from '../agents/settings-agent';

@@ -9,11 +9,11 @@ import React, {
 } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { router } from 'expo-router';
 import { useWallet } from '@/contexts/WalletProvider';
+import { useAppRouter } from '@/services/useAppRouter';
 import { useNotificationActions } from '@/components/NotificationContext';
 import { sessionEvents } from '@/services/session';
-import { queryClient } from '@/providers/AppProviders';
+import { queryClient } from '@/providers/queryClient';
 import {
   clearSessionState,
   enableBiometric as persistBiometric,
@@ -41,7 +41,7 @@ export type StepUpAction =
 
 type EnrollReason = 'first-run' | 'reset' | null;
 
-interface LaunchGateContextValue {
+export interface LaunchGateContextValue {
   ready: boolean;
   pinSet: boolean;
   locked: boolean;
@@ -126,6 +126,7 @@ export function LaunchGateProvider({
   const lastUnlockRef = useRef<number | null>(null);
 
   const { address, connect, disconnect, sign } = useWallet();
+  const { replace } = useAppRouter();
   const { showNotification } = useNotificationActions();
 
   useEffect(() => {
@@ -338,7 +339,7 @@ export function LaunchGateProvider({
     }
   }, [applyLock]);
 
-  const startPinReset = useCallback(async () => {
+  const startPinReset = useCallback(async (): Promise<'reset.started'> => {
     if (!pinHashRef.current) {
       beginEnrollment('reset');
       return 'reset.started';
@@ -394,9 +395,9 @@ export function LaunchGateProvider({
       applyLock('switch-wallet');
     }
     try {
-      router.replace('/wallet');
+      replace('/wallet');
     } catch {}
-  }, [applyLock, disconnect]);
+  }, [applyLock, disconnect, replace]);
 
   const enableBiometric = useCallback(
     async (enabled: boolean) => {
@@ -482,9 +483,10 @@ export function LaunchGateProvider({
   return (
     <LaunchGateContext.Provider value={contextValue}>
       {children}
-      <LaunchGateOverlay />
+      <LaunchGateOverlay {...contextValue} maxFails={MAX_FAILS} />
     </LaunchGateContext.Provider>
   );
 }
 
 export default LaunchGateProvider;
+

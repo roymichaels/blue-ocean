@@ -79,7 +79,7 @@ jest.mock('expo-camera', () => {
   return {
     CameraType: { front: 'front', back: 'back' },
     Constants: { Type: { front: 'front', back: 'back' }, VideoQuality: { '480p': '480p' } },
-    requestCameraPermissionsAsync: (...args: any[]) => requestExpoCameraPermissionMock(...args),
+    requestCameraPermissionsAsync: () => requestExpoCameraPermissionMock(),
     Camera: React.forwardRef((props: any, ref: any) => {
       React.useImperativeHandle(ref, () => ({
         recordAsync: (...recordArgs: any[]) => recordAsyncMock(...recordArgs),
@@ -341,3 +341,4 @@ describe('KycVerificationScreen', () => {
     expect(cleanupMock).toHaveBeenCalled();
   });
 });
+

@@ -1,22 +1,51 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import config from '@/config';
+import { Buffer } from "buffer";
+type FSPromises = typeof import('fs').promises;
 import AgentError from '@/types/AgentError';
+import config from '@/config';
 import { E_STALE_DATA, E_SYNC_LAG } from '@/schemas/cache';
 import { warnIfLowStorage } from '@/services/storage';
 
+const isBrowser = typeof window !== 'undefined';
+const isNodeRuntime = !isBrowser && typeof process !== 'undefined' && !!process.versions?.node;
 
-const CACHE_DIR = config.CACHE_DIR || path.join(process.cwd(), '.cache');
+let fsPromises: FSPromises | null = null;
+let pathModule: typeof import('path') | null = null;
+let cryptoModule: typeof import('crypto') | null = null;
+
+if (isNodeRuntime) {
+  fsPromises = require('fs').promises;
+  pathModule = require('path');
+  cryptoModule = require('crypto');
+}
+
+const memorySnapshots = new Map<string, { hash: string; version: number; data: unknown }>();
+
+const CACHE_DIR = isNodeRuntime && pathModule && typeof process.cwd === 'function'
+  ? config.CACHE_DIR || pathModule.join(process.cwd(), '.cache')
+  : '.cache';
 const SECRET = config.CACHE_SECRET || 'blue-ocean';
-const KEY = crypto.createHash('sha256').update(SECRET).digest();
+const KEY = cryptoModule ? cryptoModule.createHash('sha256').update(SECRET).digest() : null;
 
 function filePath(key: string): string {
-  return path.join(CACHE_DIR, `${key}.bin`);
+  if (!pathModule) return key;
+  return pathModule.join(CACHE_DIR, `${key}.bin`);
 }
 
 async function ensureDir(dir: string) {
-  await fs.mkdir(dir, { recursive: true });
+  if (!fsPromises) return;
+  await fsPromises.mkdir(dir, { recursive: true });
+}
+
+function hashBuffer(data: Buffer): string {
+  if (cryptoModule) {
+    return cryptoModule.createHash('sha256').update(data).digest('hex');
+  }
+  // simple fallback hash for browser usage
+  let hash = 0;
+  for (const byte of data) {
+    hash = (hash * 31 + byte) >>> 0;
+  }
+  return hash.toString(16);
 }
 
 export async function saveSnapshot(
@@ -24,16 +53,21 @@ export async function saveSnapshot(
   version: number,
   data: unknown,
 ): Promise<string> {
-  const json = Buffer.from(JSON.stringify({ version, data }));
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', KEY, iv);
-  const enc = Buffer.concat([cipher.update(json), cipher.final()]);
+  const jsonBuffer = Buffer.from(JSON.stringify({ version, data }));
+  if (!isNodeRuntime || !fsPromises || !cryptoModule || !KEY) {
+    const hash = hashBuffer(jsonBuffer);
+    memorySnapshots.set(key, { hash, version, data });
+    return hash;
+  }
+  const iv = cryptoModule.randomBytes(12);
+  const cipher = cryptoModule.createCipheriv('aes-256-gcm', KEY, iv);
+  const enc = Buffer.concat([cipher.update(jsonBuffer), cipher.final()]);
   const tag = cipher.getAuthTag();
   const out = Buffer.concat([iv, tag, enc]);
   await ensureDir(CACHE_DIR);
   await warnIfLowStorage();
-  await fs.writeFile(filePath(key), out);
-  return crypto.createHash('sha256').update(json).digest('hex');
+  await fsPromises.writeFile(filePath(key), out);
+  return hashBuffer(jsonBuffer);
 }
 
 export async function loadSnapshot<T>(
@@ -41,15 +75,23 @@ export async function loadSnapshot<T>(
   expectedHash: string,
   expectedVersion: number,
 ): Promise<T | null> {
+  if (!isNodeRuntime || !fsPromises || !cryptoModule || !KEY) {
+    const entry = memorySnapshots.get(key);
+    if (!entry) return null;
+    if (entry.hash !== expectedHash || entry.version !== expectedVersion) {
+      return null;
+    }
+    return entry.data as T;
+  }
   try {
-    const buf = await fs.readFile(filePath(key));
+    const buf = await fsPromises.readFile(filePath(key));
     const iv = buf.subarray(0, 12);
     const tag = buf.subarray(12, 28);
     const enc = buf.subarray(28);
-    const decipher = crypto.createDecipheriv('aes-256-gcm', KEY, iv);
+    const decipher = cryptoModule.createDecipheriv('aes-256-gcm', KEY, iv);
     decipher.setAuthTag(tag);
     const json = Buffer.concat([decipher.update(enc), decipher.final()]);
-    const hash = crypto.createHash('sha256').update(json).digest('hex');
+    const hash = hashBuffer(json);
     if (hash !== expectedHash)
       throw Object.assign(
         new AgentError(E_STALE_DATA, 'Snapshot hash mismatch', 'cache'),
@@ -81,3 +123,5 @@ export async function getValidatedSnapshot<T>(
 }
 
 export { E_STALE_DATA, E_SYNC_LAG };
+
+

@@ -72,7 +72,7 @@ jest.mock('@/services/localIdentity', () => ({
   })),
 }));
 
-jest.mock('@/services/chain', () => ({
+jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: {
     getAccountId: (...args: Parameters<typeof mockGetAccountId>) =>
       mockGetAccountId(...args),

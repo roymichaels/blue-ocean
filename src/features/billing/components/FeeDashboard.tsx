@@ -67,10 +67,6 @@ export default function FeeDashboard({ tenantId, usagePreviewLimit = 4 }: FeeDas
     }
   }, [tenantId, outstanding, settling, refetch, requireUnlock]);
 
-  if (!tenantId) {
-    return null;
-  }
-
   useEffect(() => {
     if (!launchReady) return;
     if (!tenantId || !pinSet) {
@@ -91,6 +87,10 @@ export default function FeeDashboard({ tenantId, usagePreviewLimit = 4 }: FeeDas
       setAuthorized(false);
     };
   }, [launchReady, pinSet, tenantId, requireUnlock]);
+
+  if (!tenantId) {
+    return null;
+  }
 
   if (!authorized) {
     return (

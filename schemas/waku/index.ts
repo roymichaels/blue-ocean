@@ -15,3 +15,9 @@ export * from './store.created';
 export * from './workspace.created';
 export * from './delivery.update';
 export * from './order.purchaseProof';
+export { orderPurchaseProofSchema, type OrderPurchaseProofMessage } from './order.purchaseProof';
+
+export { kycReceiptSchema, type KycReceiptMessage } from './kyc.receipt';
+export { kycReceiptRevokedSchema, type KycReceiptRevokedMessage } from './kyc.receiptRevoked';
+export { kycRequestSchema, type KycRequestMessage } from './kyc.request';
+

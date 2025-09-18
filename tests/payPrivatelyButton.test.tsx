@@ -2,7 +2,7 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import PayPrivatelyButton from '@/features/payments/components/PayPrivatelyButton';
 
-jest.mock('@/services/chain', () => ({
+jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: {
     payPrivately: jest.fn().mockResolvedValue(undefined),
   },

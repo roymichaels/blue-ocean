@@ -1,3 +1,5 @@
+// TODO:CORE-021 include {ts:number, nonce:string}; enforce skew<=2min
+
 import { z } from 'zod';
 import { wakuMessageSchema } from './message';
 

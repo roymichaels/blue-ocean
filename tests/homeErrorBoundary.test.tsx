@@ -55,7 +55,7 @@ jest.mock('@/components/InfoModal', () => (props: any) => {
   return null;
 });
 jest.mock('@/services/database', () => ({}));
-jest.mock('@/services/chain', () => 'near');
+jest.mock('@/services/chain', () => ({ __esModule: true, default: 'near' }));
 jest.mock('@features/products/services/nearCategories', () => ({
   listCategories: jest.fn().mockResolvedValue([]),
 }));

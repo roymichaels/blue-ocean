@@ -3,10 +3,14 @@ import { I18nManager, StyleSheet, Text, TouchableOpacity, View } from 'react-nat
 import { Portal, Card, Button, Heading } from '@/ui/primitives';
 import { spacing, radius } from '@/ui/tokens';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
-import { useLaunchGate, MAX_FAILS } from '../LaunchGateContext';
+import type { LaunchGateContextValue } from '../LaunchGateContext';
 
 const PIN_LENGTH = 6;
 const DIGITS: readonly string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+
+type LaunchGateOverlayProps = LaunchGateContextValue & {
+  maxFails: number;
+};
 
 function PinDisplay({ count }: { count: number }) {
   const { colors } = useTheme();
@@ -16,8 +20,7 @@ function PinDisplay({ count }: { count: number }) {
         const filled = index < count;
         return (
           <View
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
+            key={`pin-slot-${index}`}
             style={[
               styles.pinDot,
               {
@@ -32,26 +35,26 @@ function PinDisplay({ count }: { count: number }) {
   );
 }
 
-export default function LaunchGateOverlay(): React.ReactElement | null {
-  const {
-    ready,
-    pinSet,
-    locked,
-    verifying,
-    enrolling,
-    enrollReason,
-    biometricAvailable,
-    biometricEnabled,
-    failureCount,
-    cooldownEndsAt,
-    enterPin,
-    unlockWithBiometric,
-    startPinReset,
-    switchWallet,
-    beginEnrollment,
-    commitPin,
-    cancelEnrollment,
-  } = useLaunchGate();
+export default function LaunchGateOverlay({
+  ready,
+  pinSet,
+  locked,
+  verifying,
+  enrolling,
+  enrollReason,
+  biometricAvailable,
+  biometricEnabled,
+  failureCount,
+  cooldownEndsAt,
+  enterPin,
+  unlockWithBiometric,
+  startPinReset,
+  switchWallet,
+  beginEnrollment,
+  commitPin,
+  cancelEnrollment,
+  maxFails,
+}: LaunchGateOverlayProps): React.ReactElement | null {
   const { colors } = useTheme();
   const { t } = useLanguage();
 
@@ -209,7 +212,7 @@ export default function LaunchGateOverlay(): React.ReactElement | null {
             <Text style={[styles.attempts, { color: colors.text.secondary }]}>
               {t('launch.attemptsLeft', {
                 defaultValue: 'Attempts left: {{count}}',
-                count: Math.max(0, MAX_FAILS - failureCount),
+                count: Math.max(0, maxFails - failureCount),
               })}
             </Text>
           )}

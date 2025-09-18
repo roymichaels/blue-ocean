@@ -1,11 +1,19 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Animated, StyleProp, ViewStyle, Platform, DimensionValue } from 'react-native';
+import {
+  View,
+  Animated,
+  StyleProp,
+  ViewStyle,
+  Platform,
+  DimensionValue,
+  ViewProps,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../ThemeProvider';
 import useReducedMotion from '@/shared/hooks/useReducedMotion';
 import { radius } from '@/shared/ui/tokens';
 
-interface SkeletonProps {
+interface SkeletonProps extends ViewProps {
   width?: DimensionValue;
   height?: DimensionValue;
   style?: StyleProp<ViewStyle>;
@@ -17,6 +25,7 @@ export default function Skeleton({
   height = 16,
   style,
   borderRadius = radius.sm,
+  ...rest
 }: SkeletonProps) {
   const { colors } = useTheme();
   const shimmer = useRef(new Animated.Value(0)).current;
@@ -44,6 +53,7 @@ export default function Skeleton({
 
   return (
     <View
+      {...rest}
       style={[
         {
           width,
@@ -74,3 +84,5 @@ export default function Skeleton({
     </View>
   );
 }
+
+

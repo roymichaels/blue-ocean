@@ -28,7 +28,7 @@ jest.mock('@/services/database', () => ({
 const getAccountIdMock = jest.fn();
 const mockSignIn = jest.fn().mockResolvedValue(undefined);
 const mockGetPublicKey = jest.fn(() => 'pub:test');
-jest.mock('@/services/chain', () => ({
+jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: { getAccountId: () => getAccountIdMock() },
 }));
 jest.mock('@/features/auth/services/nearAuth', () => ({

@@ -1,3 +1,7 @@
+// TODO:CORE-002 call OrderService.deployOrderPayment instead of legacy helper
+// TODO:CORE-004 per-submit nonce; prevent double-tap (disable button, replay guard)
+// TODO:CORE-019 anonymous analytics begin/success/fail on tenant topic
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
@@ -558,6 +562,8 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     return true;
   };
 
+  // TODO:CORE-002 replace nearDeployEscrow -> OrderService.deployOrderPayment(orderDraft,{nonce})
+  // TODO:KYC-001 if tenant.requireKyc === true, block checkout until verifyKycReceipt() passes
   const placeOrder = async () => {
     if (!validateShippingAddress()) return;
     try {

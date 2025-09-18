@@ -15,7 +15,7 @@ jest.mock('@/agents/settings-agent', () => ({
   },
 }));
 
-jest.mock('@/services/chain', () => ({
+jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: mockChainAdapter,
 }));
 

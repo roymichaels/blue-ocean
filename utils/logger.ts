@@ -6,15 +6,25 @@ let DEBUG_LOGS = asBool(config.EXPO_PUBLIC_DEBUG_LOGS);
 
 export function setDebugLogsEnabled(enabled: boolean): void {
   DEBUG_LOGS = enabled;
+  const value = enabled ? 'true' : 'false';
+  let reloaded = false;
   if (typeof process !== 'undefined' && process?.env) {
-    process.env.EXPO_PUBLIC_DEBUG_LOGS = enabled ? 'true' : 'false';
     try {
+      (process.env as Record<string, string | undefined>).EXPO_PUBLIC_DEBUG_LOGS = value;
       reloadConfig();
-      refreshDebugLogsFromConfig();
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn('Failed to reload config after toggling debug logs', err);
+      reloaded = true;
+    } catch {
+      reloaded = false;
     }
+  }
+  if (!reloaded) {
+    config.EXPO_PUBLIC_DEBUG_LOGS = value;
+  }
+  try {
+    refreshDebugLogsFromConfig();
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to reload config after toggling debug logs', err);
   }
 }
 
@@ -61,3 +71,5 @@ export function errorLog(...args: unknown[]): void {
 }
 
 export { redact as redactLogValue };
+
+

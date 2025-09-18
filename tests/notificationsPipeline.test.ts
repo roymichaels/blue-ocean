@@ -3,7 +3,7 @@ jest.mock('../utils/ensureNearWallet', () => jest.fn().mockResolvedValue(undefin
 import { Buffer } from 'buffer';
 
 // --- Mocks for Waku client and node ---
-const sendMock = jest.fn();
+const mockSend = jest.fn();
 const createEncoderMock = jest.fn(({ contentTopic }) => ({ contentTopic }));
 
 jest.mock('@/services/waku', () => {
@@ -11,7 +11,7 @@ jest.mock('@/services/waku', () => {
   return {
     ...actual,
     ensureNode: jest.fn(async () => ({
-      lightPush: { send: (...args: any[]) => sendMock(...args) },
+      lightPush: { send: (...args: any[]) => mockSend(...args) },
     })),
     isWakuDisabled: jest.fn(() => false),
   };
@@ -71,7 +71,7 @@ describe('notifications pipeline', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (ensureNodeReal as jest.Mock).mockResolvedValue({
-      lightPush: { send: sendMock },
+      lightPush: { send: mockSend },
     });
     setBacklogThreshold(1000);
   });
@@ -93,8 +93,8 @@ describe('notifications pipeline', () => {
     expect(createEncoderMock).toHaveBeenCalledWith({
       contentTopic: '/blue-ocean/notifications/1',
     });
-    expect(sendMock).toHaveBeenCalledTimes(1);
-    const [, { payload: rawPayload }] = sendMock.mock.calls[0];
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    const [, { payload: rawPayload }] = mockSend.mock.calls[0];
     const envelope = JSON.parse(Buffer.from(rawPayload).toString());
     expect(envelope.type).toBe('notification.broadcast');
     expect(typeof envelope.payload).toBe('string');
@@ -139,3 +139,4 @@ describe('notifications pipeline', () => {
     expect(backlogSpy).not.toHaveBeenCalled();
   });
 });
+

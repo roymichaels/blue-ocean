@@ -41,7 +41,7 @@ jest.mock('@/features/stores/services/nearStores', () => ({
   createStoreOnChain: jest.fn(),
 }));
 
-jest.mock('@/services/chain', () => ({
+jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: { getAccountId: jest.fn() },
 }));
 

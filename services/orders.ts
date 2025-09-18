@@ -1,4 +1,15 @@
 // @ts-nocheck
+// TODO:CORE-001 deployOrderPayment wrapper around deployEscrow
+// TODO:CORE-003 verifyKycReceipt gate before escrow
+// TODO:CORE-004 duplicate-tap nonce guard on submit (E_REPLAY)
+// TODO:CORE-014 recompute totals server-side; reject tamper (E_TAMPER)
+// TODO:CORE-015 stock guard at submit
+// TODO:CORE-020 tenant-scoped topics via buildTopic()
+// TODO:CORE-021 enforce ts/nonce on emitted messages
+// TODO:KYC-001 enforce tenant policy: if requireKyc then buyer must have valid receipt
+// TODO:KYC-004 verifyKycReceipt(buyerId, tenantId) before deployOrderPayment
+// TODO:KYC-009 include ts/nonce on any KYC-related messages
+
 import { errorLog, debugLog } from '@/utils/logger';
 import ordersAgent from '../agents/orders-agent';
 import usersAgent from '@/agents/users-agent';
@@ -36,6 +47,22 @@ import {
   forgetCheckoutNonce,
   clearExpiredKycNonceUsage,
 } from '@/utils/nonceStore';
+
+// TODO:CORE-001 thin wrapper; instrument, do not inline deployEscrow
+export async function deployOrderPayment(orderDraft: any, opts: { fee?: any; nonce: string }) {
+  // TODO:CORE-004 check duplicate nonce (nonceStore.has(nonce) -> throw { code:'E_REPLAY' })
+  // TODO:CORE-003 await verifyKycReceipt(orderDraft.buyerId, orderDraft.tenantId)
+  return await nearDeployEscrow(orderDraft, opts?.fee, opts.nonce); // existing impl
+}
+
+// TODO:CORE-003 verify KYC receipt; throw {code:'E_SCOPE'|'E_UNAUTHORIZED'|'E_EXPIRED'}
+export async function verifyKycReceipt(buyerId: string, tenantId: string): Promise<void> {
+  // TODO:KYC-004 fetch buyer.user.kycReceiptHash/Sig; verify signature; throw {code:'E_SCOPE'|'E_EXPIRED'|'E_UNAUTHORIZED'}
+  // stub; Codex to implement
+  void buyerId;
+  void tenantId;
+  return;
+}
 
 const ORDER_TOPIC_PREFIX = '/blue-ocean/orders';
 const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
@@ -107,6 +134,9 @@ interface OrderDraft {
   kycReceiptHash?: string;
 }
 
+// TODO:CORE-005 emit order.created {orderId, storeId, buyerId, total, escrowTx, ts, nonce}
+// TODO:CORE-020 use buildTopic('orders',{tenantId,storeId})
+// TODO:CORE-021 add ts, nonce; skew<=2min; cache recent nonces (TTL 10m)
 export async function emitOrderEvents(
   order: Order,
   storeId: string,

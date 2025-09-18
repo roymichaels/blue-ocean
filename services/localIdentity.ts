@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils } from '@noble/ed25519';
 

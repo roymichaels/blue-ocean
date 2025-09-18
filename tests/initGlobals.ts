@@ -1,6 +1,7 @@
 // Setup global variables required by React Native modules
 // eslint-disable-next-line
 (globalThis as any).__DEV__ = true;
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 process.env.EXPO_PUBLIC_CHAIN = 'near';
 process.env.EXPO_PUBLIC_CONTRACT_ID = 'EQtestcontract';
 process.env.EXPO_PUBLIC_NETWORK = 'testnet';

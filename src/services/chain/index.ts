@@ -19,10 +19,6 @@ const unsupported: ChainAdapter = {
 
 export const chainAdapter: ChainAdapter = CHAIN === 'near' ? nearAdapter : unsupported;
 
-export function assertNearChain(): void {
-  if (CHAIN !== 'near') {
-    throw new Error('BlueOcean is NEAR-only. Set EXPO_PUBLIC_CHAIN=near');
-  }
-}
+export { assertNearChain } from './assert';
 
 export default CHAIN;

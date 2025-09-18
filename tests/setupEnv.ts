@@ -10,6 +10,37 @@ export {};
 // Ensure global React for classic JSX runtime in tests
 (globalThis as any).React = React;
 
+const secretInternals =
+  (React as any).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED ??
+  (React as any).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE ??
+  (React as any).__COMPILER_RUNTIME?.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+if (!(React as any).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED && secretInternals) {
+  (React as any).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = secretInternals;
+}
+if (!(React as any).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED) {
+  (React as any).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = { ReactCurrentOwner: {} };
+}
+
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT =
+  (globalThis as any).IS_REACT_ACT_ENVIRONMENT ?? true;
+
+try {
+  const renderer = require('react-test-renderer');
+  if (renderer && typeof renderer.create === 'function' && typeof renderer.act === 'function') {
+    const originalCreate = renderer.create.bind(renderer);
+    renderer.create = (...args: any[]) => {
+      let created: any;
+      renderer.act(() => {
+        created = originalCreate(...args);
+      });
+      return created;
+    };
+  }
+} catch {
+  // ignore missing renderer in non-React tests
+}
+
+
 /** ---------------- Reanimated bootstrap (v3/v4 safe) ---------------- */
 try {
   // Reanimated v4+

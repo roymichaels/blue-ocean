@@ -1,3 +1,7 @@
+// TODO:KYC-010 on Approve: sign & send kyc.receipt; persist to users-agent
+// TODO:KYC-017 require step-up before approve/decline
+// TODO:KYC-014 export audit log (CSV) of approvals
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -265,6 +269,7 @@ export default function KycApprovalsScreen(): React.ReactElement {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View
           style={[styles.policyCard, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}
+        >
           <View style={styles.policyHeader}>
             <ShieldCheck size={20} color={colors.gold} />
             <Text style={[styles.policyTitle, { color: colors.text.primary }]}>מדיניות אימות</Text>
@@ -507,3 +512,5 @@ function renderArtifactIcon(type: KycArtifact['type'], color: string): React.Rea
       return <FileText size={18} color={color} />;
   }
 }
+
+

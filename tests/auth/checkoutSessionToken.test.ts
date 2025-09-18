@@ -78,7 +78,7 @@ jest.mock('@/contexts/WalletProvider', () => ({
   }),
 }));
 
-jest.mock('@/services/chain', () => ({
+jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: {
     useAccount: jest.fn().mockReturnValue(null),
     getAccountId: jest.fn().mockReturnValue('buyer.near'),

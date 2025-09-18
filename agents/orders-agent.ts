@@ -1,3 +1,10 @@
+// TODO:CORE-006 subscribe to /orders/<tenant>/<storeId>; validate sig/ts/nonce
+// TODO:CORE-009 last-write-wins with {orderId, rev}
+// TODO:CORE-016 refundEscrow(orderId,reason) stub
+// TODO:CORE-017 markShipped(orderId,tracking?) stub
+// TODO:CORE-018 cancel rules (grace window vs paid)
+// TODO:CORE-011 purchaseProof emission on close
+
 import { Order, OrderStatus, OrderTrackingStep } from '../types';
 import nearAuth from '@/features/auth/services/nearAuth';
 import notificationsAgent from './notifications-agent';
@@ -282,6 +289,7 @@ class OrdersAgent {
     });
   }
 
+  // TODO:CORE-008 require step-up for ship/cancel (requireUnlock('ship'|'cancel'))
   async update(order: Order): Promise<void> {
     const normalized = normalizeMessage<Order>('Order', order);
     const current = await this.get(normalized.id);
@@ -503,6 +511,31 @@ class OrdersAgent {
     });
     await this.recordSellerMetric(order.sellerAddress, 'completed');
     return hash;
+  }
+
+
+  // TODO:CORE-016 refundEscrow(orderId,reason) stub
+  async refundEscrow(orderId: string, reason?: string): Promise<void> {
+    // stub; Codex to implement
+    void orderId;
+    void reason;
+    return;
+  }
+
+  // TODO:CORE-017 markShipped(orderId,tracking?) stub
+  async markShipped(orderId: string, tracking?: string): Promise<void> {
+    // stub; Codex to implement
+    void orderId;
+    void tracking;
+    return;
+  }
+
+  // TODO:CORE-018 cancel rules (grace window vs paid)
+  async cancelOrder(orderId: string, reason?: string): Promise<void> {
+    // stub; Codex to implement
+    void orderId;
+    void reason;
+    return;
   }
 
   async refundPayment(orderId: string): Promise<string> {

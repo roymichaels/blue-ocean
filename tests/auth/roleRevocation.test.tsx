@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import * as nearUsers from '@/features/auth/services/nearUsers';
 import { chainAdapter } from '@/services/chain';
 
-jest.mock('@/services/chain', () => ({
+jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: {
     init: jest.fn(),
     useAccount: jest.fn(),

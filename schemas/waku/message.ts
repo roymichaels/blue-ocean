@@ -1,3 +1,4 @@
+// TODO:KYC-009 add required {ts:number, nonce:string}; reject skew>2min; replay cache TTL 10m
 import { z } from 'zod';
 
 export const wakuMessageSchema = z.object({

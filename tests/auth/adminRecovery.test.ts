@@ -9,9 +9,9 @@ import { Buffer } from 'buffer';
 
 jest.mock('@/services/nearKvStore', () => require('../nearKvMock'));
 
-const publishMock = jest.fn();
+const mockPublish = jest.fn();
 jest.mock('@/services/waku', () => ({
-  publish: (...args: unknown[]) => publishMock(...args),
+  publish: (...args: unknown[]) => mockPublish(...args),
 }));
 
 async function createSignedMessage<T>(
@@ -45,8 +45,8 @@ describe('Admin recovery agent', () => {
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date('2024-01-01T00:00:00Z'));
     __clear();
-    publishMock.mockResolvedValue('id');
-    publishMock.mockClear();
+    mockPublish.mockResolvedValue('id');
+    mockPublish.mockClear();
     agent = new AdminAgent();
   });
 
@@ -91,7 +91,7 @@ describe('Admin recovery agent', () => {
     const once = new Promise((resolve) => agent.once('recovery.requested', resolve as any));
     await agent.requestRecovery(msg);
     await expect(once).resolves.toEqual({ tenantId: 'demo', codeId: code.id, deviceId: 'device-123' });
-    expect(publishMock).toHaveBeenCalledWith(
+    expect(mockPublish).toHaveBeenCalledWith(
       adminRecoveryTopic('demo', 'request'),
       expect.objectContaining({ codeId: code.id, deviceId: 'device-123' }),
     );
@@ -125,7 +125,7 @@ describe('Admin recovery agent', () => {
     }
     const finalMsg = await makeRequest('wrong');
     await expect(agent.requestRecovery(finalMsg)).rejects.toMatchObject({ code: 'E_RATE_LIMIT' });
-    expect(publishMock).toHaveBeenCalledWith(
+    expect(mockPublish).toHaveBeenCalledWith(
       adminRecoveryTopic('demo', 'attempt'),
       expect.objectContaining({ reason: 'locked' }),
     );
@@ -172,14 +172,14 @@ describe('Admin recovery agent', () => {
 
     const first = await verify(admin1Priv, admin1Pub);
     await agent.verifyRecovery(first);
-    expect(publishMock).not.toHaveBeenCalledWith(
+    expect(mockPublish).not.toHaveBeenCalledWith(
       adminRecoveryTopic('tenant', 'granted'),
       expect.anything(),
     );
 
     const second = await verify(admin2Priv, admin2Pub);
     await agent.verifyRecovery(second);
-    expect(publishMock).toHaveBeenCalledWith(
+    expect(mockPublish).toHaveBeenCalledWith(
       adminRecoveryTopic('tenant', 'granted'),
       expect.objectContaining({ codeId: record.id }),
     );
@@ -218,4 +218,5 @@ describe('Admin recovery agent', () => {
     await expect(agent.verifyRecovery(verify)).rejects.toMatchObject({ code: 'E_REPLAY' });
   });
 });
+
 

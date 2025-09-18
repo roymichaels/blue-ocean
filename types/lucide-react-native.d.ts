@@ -74,15 +74,19 @@ declare module 'lucide-react-native' {
   export const TrendingUp: FC<LucideProps>;
   export const TriangleAlert: FC<LucideProps>;
   export const Truck: FC<LucideProps>;
+  export const Briefcase: FC<LucideProps>;
   export const Upload: FC<LucideProps>;
   export const User: FC<LucideProps>;
   export const UserCheck: FC<LucideProps>;
   export const UserPlus: FC<LucideProps>;
   export const UserX: FC<LucideProps>;
   export const Users: FC<LucideProps>;
+  export const Code2: FC<LucideProps>;
   export const Video: FC<LucideProps>;
   export const X: FC<LucideProps>;
   export const XCircle: FC<LucideProps>;
   export const createLucideIcon: (name: string, iconNode: any[]) => FC<LucideProps>;
   export default {} as Record<string, FC<LucideProps>>;
 }
+
+

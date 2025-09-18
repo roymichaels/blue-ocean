@@ -34,6 +34,8 @@ describe('subscribeToKycReceipts', () => {
     },
     sender: { publicKey: 'issuer-public', role: 'admin' },
     signature: 'deadbeef',
+    ts: Date.now(),
+    nonce: 'abc123',
   };
 
   beforeEach(() => {
@@ -89,3 +91,6 @@ describe('subscribeToKycReceipts', () => {
     expect(onError).toHaveBeenCalledWith(error);
   });
 });
+
+
+

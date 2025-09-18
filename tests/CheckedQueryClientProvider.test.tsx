@@ -1,3 +1,11 @@
+jest.mock('@/services/waku', () => ({
+  ensureNode: jest.fn(async () => null),
+  isWakuDisabled: jest.fn(() => true),
+  subscribeWithAck: jest.fn(async () => () => {}),
+  fetchHistory: jest.fn(async () => undefined),
+  publish: jest.fn(async () => 'mock-id'),
+}));
+
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { QueryClient } from '@tanstack/react-query';
@@ -21,7 +29,7 @@ describe('CheckedQueryClientProvider', () => {
         React.createElement(
           CheckedQueryClientProvider,
           { client: new QueryClient() },
-          React.createElement(React.Fragment),
+          null,
         ),
       );
     });
@@ -32,7 +40,7 @@ describe('CheckedQueryClientProvider', () => {
           React.createElement(
             CheckedQueryClientProvider,
             { client: new QueryClient() },
-            React.createElement(React.Fragment),
+            null,
           ),
         );
       });
@@ -43,3 +51,5 @@ describe('CheckedQueryClientProvider', () => {
     });
   });
 });
+
+

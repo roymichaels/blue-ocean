@@ -13,17 +13,17 @@ function randomNonce(byteLength = NONCE_BYTE_LENGTH): string {
 
 const textEncoder = new TextEncoder();
 
-export async function makeSignedWakuMessage<T>(
-  type: string,
-  payload: T,
+export async function makeSignedWakuMessage<TPayload, TType extends string>(
+  type: TType,
+  payload: TPayload,
   role: string,
   options: { ts?: number; nonce?: string } = {},
-): Promise<WakuMessage<T>> {
+): Promise<WakuMessage<TPayload> & { type: TType }> {
   const priv = await getPrivateKey();
   const pub = await getPublicKeyHex();
   const ts = options.ts ?? Date.now();
   const nonce = options.nonce ?? randomNonce();
-  const message: WakuMessage<T> = {
+  const message: WakuMessage<TPayload> & { type: TType } = {
     type,
     payload,
     sender: { publicKey: pub, role },

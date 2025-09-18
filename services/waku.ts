@@ -1,3 +1,6 @@
+// TODO:CORE-020 buildTopic(domain,{tenantId,storeId}) everywhere
+// TODO:CORE-023 derive shared keys per-tenant (replace per-process secret)
+
 import type { LightNode } from '@waku/sdk';
 import { types } from 'near-lake-framework';
 import { getClient } from '@/utils/transport';
@@ -15,12 +18,13 @@ import {
   WakuDecryptError,
 } from '@/utils/wakuCrypto';
 import { serviceLatency, serviceFailures } from '@/utils/observability';
+import { wakuDecryptErrorCounter } from './monitoring';
 import { initLake } from './nearLake';
 import { topicFor } from '@blue-ocean/utils';
 import { getNetworkId, getContractId } from '@/services/config';
-import { setStore as persistStore } from '@/features/stores/services/nearStores';
 import { randomBytes } from '@noble/hashes/utils';
 import { Buffer } from 'buffer';
+import type { Store } from '@/types';
 
 // TODO:TODO-103 Break the monolithic Waku service into focused modules so subscription, publishing, and sync concerns stay isolated.
 // TODO:REC-203 Investigate streaming compression primitives to mitigate zlib blocking when handling large relay payloads.
@@ -55,6 +59,26 @@ const KEY_EPOCH_INTERVAL_MS = 10 * 60 * 1000;
 
 function randomHex(byteLength = NONCE_BYTE_LENGTH): string {
   return Buffer.from(randomBytes(byteLength)).toString('hex');
+}
+type PersistStoreFn = (storeId: string, store: Store) => Promise<void>;
+
+let persistStoreImpl: PersistStoreFn | null = null;
+
+async function persistStore(storeId: string, store: Store): Promise<void> {
+  if (!persistStoreImpl) {
+    try {
+      const mod = await import('@/features/stores/services/nearStores');
+      persistStoreImpl = mod.setStore as PersistStoreFn;
+    } catch (err) {
+      errorLog('Failed to load store persistence module', err);
+      return;
+    }
+  }
+  try {
+    await persistStoreImpl?.(storeId, store);
+  } catch (err) {
+    errorLog('Failed to persist store from lake event', err);
+  }
 }
 
 function computeKeyEpoch(ts: number): number {
@@ -213,13 +237,21 @@ export async function publish(topic: string, message: any): Promise<string> {
   const client = await getClient();
   const id = message?.id || Date.now().toString();
   const enriched = enrichEnvelope(message);
-  const envelope = { ...enriched, id };
+  const baseEpoch =
+    typeof enriched.keyEpoch === 'number' && Number.isFinite(enriched.keyEpoch)
+      ? enriched.keyEpoch
+      : getCurrentKeyEpoch();
+  const envelope = { ...enriched, id, keyEpoch: baseEpoch };
   const payload = client.utf8ToBytes(canonicalJson(envelope));
   const gzSize = gzipSync(Buffer.from(payload)).length;
   if (gzSize > MAX_GZ_PAYLOAD) {
     throw new Error('Payload exceeds 200KB gz limit');
   }
-  const encryption = await encrypt(topic, payload, { keyEpoch, dualWrite: useSharedKeys });
+  const useSharedKeys = baseEpoch > 0;
+  const encryption = await encrypt(topic, payload, {
+    keyEpoch: baseEpoch,
+    dualWrite: useSharedKeys,
+  });
   const envelopes = [encryption.primary, ...(encryption.legacy ? [encryption.legacy] : [])];
   const unsent = new Set<number>(envelopes.map((_, index) => index));
 
@@ -380,7 +412,13 @@ async function handleLakeBlock(msg: types.StreamerMessage) {
               const owner = evt.owner;
               const name = evt.name || `Store ${storeId}`;
               if (storeId && owner) {
-                const store = { id: storeId, name, owner, nftId: storeId, reputation: 0 } as any;
+                const store: Store = {
+                  id: storeId,
+                  name,
+                  owner,
+                  nftId: storeId,
+                  reputation: 0,
+                };
                 await persistStore('default', store);
                 await persistStore(storeId, store);
               }

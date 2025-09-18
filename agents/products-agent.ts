@@ -1,5 +1,6 @@
 import { Product } from '@/types';
 import { assertNearChain } from '@/services/chain';
+import { canonicalJson } from '@/utils/serialization';
 import {
   setProduct,
   getProduct,

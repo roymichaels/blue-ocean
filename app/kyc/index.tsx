@@ -1,3 +1,7 @@
+// TODO:KYC-015 auto-delete temp images after successful send
+// TODO:KYC-016 ensure session token bound to deviceHash for kyc.upload
+// TODO:KYC-013 status strip shows pending/approved/declined with receipt details
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, StyleSheet, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';

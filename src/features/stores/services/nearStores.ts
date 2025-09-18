@@ -302,4 +302,3 @@ export async function createStoreOnChain(args: {
   return json?.tx || '';
 }
 
-export { E_STALE_DATA, E_SYNC_LAG } from '@/services/warmCache';

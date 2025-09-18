@@ -1,3 +1,8 @@
+// TODO:KYC-005 derive per-tenant shared key via HKDF(ECDH(adminPub,buyerPriv), 'kyc:v1', tenantId)
+// TODO:KYC-018 tenant-scoped topics /blue-ocean/<tenant>/dm/1/<pairId>
+// TODO:KYC-008 enforce size limits for image/video; reject > MAX (E_PAYLOAD_TOO_LARGE)
+// TODO:KYC-009 include {ts,nonce} in all DM envelopes
+
 import { publish } from '@/services/waku';
 import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 import type { WakuMessage } from '@/types/waku';

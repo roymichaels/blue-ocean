@@ -27,3 +27,9 @@ export function clearExpiredKycNonceUsage(expireBefore: number): void {
     }
   }
 }
+
+const seen = new Map<string, number>();
+export function rememberNonce(nonce: string, ttlMs = 10 * 60 * 1000) { prune(ttlMs); seen.set(nonce, Date.now()); }
+export function hasNonce(nonce: string, ttlMs = 10 * 60 * 1000) { prune(ttlMs); return seen.has(nonce); }
+function prune(ttlMs: number) { const now=Date.now(); for (const [k,v] of seen) if (now - v > ttlMs) seen.delete(k); }
+// TODO:CORE-004 replace with persisted store later

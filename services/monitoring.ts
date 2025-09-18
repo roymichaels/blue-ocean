@@ -1,3 +1,5 @@
+// TODO:KYC-020 metrics: kyc_requests_total, kyc_approvals_total, kyc_receipts_hydrated_total, kyc_dm_backlog_gauge
+
 import pino from 'pino';
 import { LocalMetricRegistry, MetricLabels } from '@/utils/localMetrics';
 

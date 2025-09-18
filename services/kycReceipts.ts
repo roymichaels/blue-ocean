@@ -1,3 +1,6 @@
+// TODO:KYC-006 history replay implementation
+// TODO:KYC-007 encrypted KV retention (180d) + revoke
+// TODO:KYC-020 counters / gauges
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { randomBytes } from '@noble/hashes/utils';
 import { Buffer } from 'buffer';
@@ -174,4 +177,23 @@ export async function subscribeToKycReceipts(
       unsubscribe?.();
     } catch {}
   };
+}
+
+export async function getReceipt(buyerId: string, tenantId: string): Promise<KycReceipt | null> {
+  // TODO:KYC-004 lookup by KV or cache; verify signature freshness
+  void buyerId;
+  void tenantId;
+  return null;
+}
+
+export async function putReceipt(receipt: KycReceipt): Promise<void> {
+  // TODO:KYC-003 persist encrypted + index by buyerId,tenantId
+  void receipt;
+}
+
+export async function revokeReceipt(receiptId: string, tenantId: string, reason?: string): Promise<void> {
+  // TODO:KYC-019 mark revoked + emit kyc.receipt.revoked
+  void receiptId;
+  void tenantId;
+  void reason;
 }

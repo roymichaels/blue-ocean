@@ -52,6 +52,7 @@ class DeliveryAgent {
     this.enqueue(type, payload);
   }
 
+  // TODO:CORE-022 verify order existence; else {code:'E_NOT_FOUND'}
   async handleDeliveryEvent(
     type: 'delivery.assigned',
     payload: DeliveryAssignedPayload,

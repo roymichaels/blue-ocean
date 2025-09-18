@@ -98,4 +98,5 @@ export async function listUsers(): Promise<User[]> {
   return items.map((i) => JSON.parse(i.value) as User);
 }
 
-export { E_STALE_DATA, E_SYNC_LAG } from '@/services/warmCache';
+export { E_STALE_DATA, E_SYNC_LAG } from '@/schemas/cache';
+

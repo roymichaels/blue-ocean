@@ -1,3 +1,8 @@
+// TODO:KYC-006 enable history replay to recover receipts on reinstall
+// TODO:KYC-007 persist encrypted receipt hash/sig to tenant KV with 180d retention
+// TODO:KYC-012 retry/backoff if tenant public key missing; show inline banner
+// TODO:KYC-020 expose sync metrics (receipts count, lastTs)
+
 import React, {
   createContext,
   useContext,

@@ -4,7 +4,6 @@ import { getDeviceHash } from '@/utils/getDeviceHash';
 import { saveSession, loadSessions, removeSession } from '@/services/tokenCache';
 import { requestConsent } from '@/services/consent';
 import SettingsAgent from '@/agents/settings-agent';
-import { chainAdapter } from '@/services/chain';
 import type { AdminScope } from '@/types';
 import { ALL_ADMIN_SCOPES } from '@/types';
 import {
@@ -15,6 +14,25 @@ import {
 import { scopedTokensFlag } from '@/config/featureFlags';
 
 export const sessionEvents = new EventEmitter();
+let cachedChainAdapter: { getAccountId: () => string | null } | null = null;
+
+async function loadChainAdapter(): Promise<{ getAccountId: () => string | null }> {
+  if (cachedChainAdapter) return cachedChainAdapter;
+  const mod: any = await import('@/services/chain');
+  const candidate =
+    (mod && mod.chainAdapter) ??
+    (mod && mod.default && mod.default.chainAdapter) ??
+    (mod && mod.default) ??
+    mod;
+  const adapter =
+    candidate && typeof candidate.getAccountId === 'function'
+      ? candidate
+      : { getAccountId: () => null };
+  cachedChainAdapter = adapter;
+  return adapter;
+}
+
+
 
 export const CHECKOUT_SCOPE = 'checkout';
 export const LEGACY_CHECKOUT_SCOPE = 'write';
@@ -97,6 +115,7 @@ function assertScopePolicy(scopes: string[]): AdminScope[] {
 async function ensureAdminScopes(scopes: AdminScope[]): Promise<void> {
   if (scopes.length === 0) return;
   const uniqueScopes = Array.from(new Set(scopes));
+  const chainAdapter = await loadChainAdapter();
   const getter = chainAdapter.getAccountId;
   const actor = typeof getter === 'function' ? getter.call(chainAdapter) : null;
   if (!actor) {
@@ -373,4 +392,3 @@ export async function revokeToken(token: string): Promise<void> {
 export function sweepExpiredTokens(now = Date.now()): void {
   purgeExpiredSessions(now);
 }
-

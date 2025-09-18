@@ -34,13 +34,7 @@ export default function SmartImage({
   }
 
   return (
-    // @ts-ignore Expo Image supports width/height as props
-    <ExpoImage
-      {...props}
-      source={{ uri }}
-      width={width}
-      height={height}
-      style={style}
+    <ExpoImage\n      {...props}\n      source={{ uri }}\n      style={[{ width, height }, style]}
       contentFit={contentFit}
       cachePolicy={cachePolicy}
       placeholder={Platform.OS === 'web' ? undefined : shimmer}
@@ -48,3 +42,4 @@ export default function SmartImage({
     />
   );
 }
+

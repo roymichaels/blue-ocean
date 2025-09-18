@@ -7,7 +7,7 @@ import {
 } from '@/services/monitoring';
 import { fetchHistory, subscribeWithAck } from '@/services/waku';
 import { isWarmCacheEnabled } from '@/config/featureFlags';
-import { E_STALE_DATA, E_SYNC_LAG } from '@/services/cache';
+import { E_STALE_DATA, E_SYNC_LAG } from '@/schemas/cache';
 
 export type DiffOp = 'set' | 'delete' | 'merge';
 
@@ -50,13 +50,26 @@ export interface WarmCacheOptions<T> {
 
 type MessageSource = 'lake' | 'history' | 'live' | 'local';
 
-const DEFAULT_LAG_THRESHOLD = 3000;
-const CLOCK_SKEW_GUARD_MS = 60_000;
+function getDefaultLagThreshold() {
+  return 3000;
+}
+
+function getClockSkewGuardMs() {
+  return 60_000;
+}
+
+var hitStatsStore: Map<string, { hits: number; total: number }> | undefined;
+function getHitStats() {
+  if (!hitStatsStore) {
+    hitStatsStore = new Map();
+  }
+  return hitStatsStore;
+}
 
 function normalizeMessage<T>(msg: DiffMessage<T>, source: MessageSource): DiffMessage<T> {
   const now = Date.now();
   let ts = typeof msg.ts === 'number' ? msg.ts : now;
-  if ((source === 'live' || source === 'local') && ts > now + CLOCK_SKEW_GUARD_MS) {
+  if ((source === 'live' || source === 'local') && ts > now + getClockSkewGuardMs()) {
     ts = now;
   }
   return { ...msg, ts };
@@ -76,9 +89,9 @@ export function createWarmCache<T>(
   const buffer: { msg: DiffMessage<T>; source: MessageSource }[] = [];
   const reconcilers = new Map<string, (id: string, value: T | undefined) => void>();
   const stats = { hits: 0, total: 0 };
-  hitStats.set(topic, stats);
+  getHitStats().set(topic, stats);
   const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
-  const lagThreshold = options.lagThresholdMs ?? DEFAULT_LAG_THRESHOLD;
+  const lagThreshold = options.lagThresholdMs ?? getDefaultLagThreshold();
   const metricLabels = { cache: topic } as const;
   cacheLagGauge.set(metricLabels, 0);
 
@@ -281,14 +294,22 @@ export function createWarmCache<T>(
   };
 }
 
-const hitStats = new Map<string, { hits: number; total: number }>();
 
 export function getCacheHitRatio(topic: string): number {
-  const s = hitStats.get(topic);
+  const s = getHitStats().get(topic);
   if (!s || s.total === 0) return 0;
   return s.hits / s.total;
 }
 
 export { E_STALE_DATA, E_SYNC_LAG };
 
-export default { createWarmCache, E_STALE_DATA, E_SYNC_LAG, getCacheHitRatio };
+export default { createWarmCache, getCacheHitRatio };
+
+
+
+
+
+
+
+
+

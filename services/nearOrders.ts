@@ -167,4 +167,5 @@ export async function listOrdersByBuyer(buyerAddress: string): Promise<Order[]> 
     .sort(sortByCreatedAtDesc);
 }
 
-export { E_STALE_DATA, E_SYNC_LAG } from '@/services/warmCache';
+export { E_STALE_DATA, E_SYNC_LAG } from '@/schemas/cache';
+

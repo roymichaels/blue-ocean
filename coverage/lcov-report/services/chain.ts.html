@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/5</span>
+                <span class='fraction'>0/30</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/5</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -72,32 +72,74 @@
 <a name='L7'></a><a href='#L7'>7</a>
 <a name='L8'></a><a href='#L8'>8</a>
 <a name='L9'></a><a href='#L9'>9</a>
-<a name='L10'></a><a href='#L10'>10</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const chain = 'near';
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const chain = <span class="cstat-no" title="statement not covered" >'near';</span>
 &nbsp;
-export function assertNearChain(): void {
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (chain !== 'near') {
+export const chainAdapter = <span class="cstat-no" title="statement not covered" >{</span>
+  async <span class="fstat-no" title="function not covered" >init<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>) { <span class="cstat-no" title="statement not covered" >t</span></span>hrow new Error('Unsupported chain'); }</span>,</span>
+  async <span class="fstat-no" title="function not covered" >openModal<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>) { <span class="cstat-no" title="statement not covered" >t</span></span>hrow new Error('Unsupported chain'); }</span>,</span>
+<span class="fstat-no" title="function not covered" >  useAccount(</span>) { <span class="cstat-no" title="statement not covered" >return null; }</span>,
+<span class="fstat-no" title="function not covered" >  useAccountId(</span>) { <span class="cstat-no" title="statement not covered" >return null; }</span>,
+<span class="fstat-no" title="function not covered" >  getAccountId(</span>) { <span class="cstat-no" title="statement not covered" >return null; }</span>,
+<span class="fstat-no" title="function not covered" >  getPublicKey(</span>) { <span class="cstat-no" title="statement not covered" >return null; }</span>,
+<span class="fstat-no" title="function not covered" >  getSelector(</span>) { <span class="cstat-no" title="statement not covered" >return null; }</span>,
+  async <span class="fstat-no" title="function not covered" >getBalance<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>) { <span class="cstat-no" title="statement not covered" >r</span></span>eturn '0'; }</span>,</span>
+  async <span class="fstat-no" title="function not covered" >signMessage<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>) { <span class="cstat-no" title="statement not covered" >t</span></span>hrow new Error('Unsupported chain'); }</span>,</span>
+  async <span class="fstat-no" title="function not covered" >listOrdersBySeller<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>) { <span class="cstat-no" title="statement not covered" >t</span></span>hrow new Error('Unsupported chain'); }</span>,</span>
+  async <span class="fstat-no" title="function not covered" >listOrdersByBuyer<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>) { <span class="cstat-no" title="statement not covered" >t</span></span>hrow new Error('Unsupported chain'); }</span>,</span>
+  async <span class="fstat-no" title="function not covered" >payPrivately<span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(</span>) { <span class="cstat-no" title="statement not covered" >t</span></span>hrow new Error('Unsupported chain'); }</span>,</span>
+};
+&nbsp;
+export function <span class="fstat-no" title="function not covered" >assertNearChain(</span>): void {
+<span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (chain !== 'near') {</span>
 <span class="cstat-no" title="statement not covered" >    throw new Error('BlueOcean is NEAR-only. Set EXPO_PUBLIC_CHAIN=near');</span>
   }
 }
 &nbsp;
-export default chain;
-&nbsp;</pre></td></tr></table></pre>
+export default chain;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-14T03:04:22.290Z
+                at 2025-09-18T15:38:45.126Z
             </div>
         <script src="../prettify.js"></script>
         <script>
