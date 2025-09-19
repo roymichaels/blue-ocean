@@ -43,7 +43,7 @@ export async function hydrateMessages(
   
   // Import createDecoder dynamically to avoid bundling issues
   const { createDecoder } = await import('@waku/sdk');
-  const decoder = createDecoder({ contentTopic: topic });
+  const decoder = createDecoder(topic, undefined as any);
   const existing = messageCache.get(topic) || [];
   const seen = seenCache.get(topic) || new Set<string>();
   const start = Date.now();
