@@ -84,7 +84,13 @@
                                                     ],
                                           "@waku/sdk":  [
                                                             "tests/types/waku-sdk"
-                                                        ]
+                                                        ],
+                                          "@noble/hashes/sha256":  [
+                                                                       "tests/nobleSha256Mock"
+                                                                   ],
+                                          "@noble/hashes/sha512":  [
+                                                                       "tests/nobleSha512Mock"
+                                                                   ]
                                       },
                             "moduleResolution":  "Bundler"
                         },

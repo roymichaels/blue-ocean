@@ -29,7 +29,13 @@ import type { Store } from '@/types';
 // TODO:TODO-103 Break the monolithic Waku service into focused modules so subscription, publishing, and sync concerns stay isolated.
 // TODO:REC-203 Investigate streaming compression primitives to mitigate zlib blocking when handling large relay payloads.
 
-declare const logger: any;
+const fallbackLogger = {
+  info: (...args: unknown[]) => errorLog(...args),
+  warn: (...args: unknown[]) => errorLog(...args),
+  error: (...args: unknown[]) => errorLog(...args),
+};
+const logger: { info: (...args: unknown[]) => void; warn: (...args: unknown[]) => void; error: (...args: unknown[]) => void } =
+  (globalThis as any).logger ?? fallbackLogger;
 
 const isProd = process.env.NODE_ENV === 'production';
 const strict = (config.WAKU_STRICT || (isProd ? '1' : '0')) === '1';
@@ -435,3 +441,9 @@ async function handleLakeBlock(msg: types.StreamerMessage) {
 
 // Expose internals for testing
 export const __test__ = { startNode, scheduleReconnect };
+
+
+
+
+
+

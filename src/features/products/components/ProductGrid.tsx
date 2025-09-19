@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo } from 'react';
-import { FlatList, View, StyleSheet, I18nManager } from 'react-native';
+import { FlatList, View, StyleSheet, I18nManager, StyleProp, ViewStyle } from 'react-native';
 import EmptyState from '@/shared/ui/EmptyState';
 import ProductCard, { ProductCardSkeleton } from '../ProductCard';
 import { Product } from '@/types';
@@ -135,4 +135,5 @@ const styles = StyleSheet.create({
     width: '48%',
   },
 });
+
 

@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 
 // --- Mocks for Waku client and node ---
 const mockSend = jest.fn();
-const createEncoderMock = jest.fn(({ contentTopic }) => ({ contentTopic }));
+const mockCreateEncoder = jest.fn(({ contentTopic }) => ({ contentTopic }));
 
 jest.mock('@/services/waku', () => {
   const actual = jest.requireActual('@/services/waku');
@@ -19,7 +19,7 @@ jest.mock('@/services/waku', () => {
 
 jest.mock('@/utils/transport', () => ({
   getClient: jest.fn(async () => ({
-    createEncoder: createEncoderMock,
+    createEncoder: mockCreateEncoder,
     utf8ToBytes: (str: string) => Buffer.from(str),
     bytesToUtf8: (b: Uint8Array) => Buffer.from(b).toString(),
   })),
@@ -89,8 +89,8 @@ describe('notifications pipeline', () => {
 
     await notificationsAgent.broadcast('order.created', item, 'store42');
 
-    expect(createEncoderMock).toHaveBeenCalledTimes(1);
-    expect(createEncoderMock).toHaveBeenCalledWith({
+    expect(mockCreateEncoder).toHaveBeenCalledTimes(1);
+    expect(mockCreateEncoder).toHaveBeenCalledWith({
       contentTopic: '/blue-ocean/notifications/1',
     });
     expect(mockSend).toHaveBeenCalledTimes(1);
@@ -139,4 +139,6 @@ describe('notifications pipeline', () => {
     expect(backlogSpy).not.toHaveBeenCalled();
   });
 });
+
+
 

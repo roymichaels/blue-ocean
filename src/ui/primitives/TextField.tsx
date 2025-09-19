@@ -1,20 +1,34 @@
-import React from 'react';
-import { TextInput, StyleProp, TextStyle } from 'react-native';
+﻿import React from 'react';
+import { TextInput, StyleProp, TextStyle, TextInputProps } from 'react-native';
 import { useTheme } from '../ThemeProvider';
 import { spacing, radius, typography } from '../tokens';
 
-interface TextFieldProps {
-  value?: string;
-  onChangeText?: (text: string) => void;
-  placeholder?: string;
+export interface TextFieldProps extends TextInputProps {
+  variant?: 'default' | 'search';
   style?: StyleProp<TextStyle>;
-  secureTextEntry?: boolean;
-  keyboardType?: string;
-  textAlign?: 'left' | 'right' | 'center';
 }
 
-export default function TextField({ value, onChangeText, placeholder, style, secureTextEntry, keyboardType, textAlign }: TextFieldProps) {
+export default function TextField({
+  value,
+  onChangeText,
+  placeholder,
+  style,
+  secureTextEntry,
+  keyboardType,
+  textAlign,
+  variant = 'default',
+  ...rest
+}: TextFieldProps) {
   const { colors } = useTheme();
+
+  const variantStyle =
+    variant === 'search'
+      ? {
+          borderRadius: radius.full,
+          paddingHorizontal: spacing.spacer16,
+        }
+      : undefined;
+
   return (
     <TextInput
       value={value}
@@ -22,8 +36,8 @@ export default function TextField({ value, onChangeText, placeholder, style, sec
       placeholder={placeholder}
       placeholderTextColor={colors.text.tertiary}
       secureTextEntry={secureTextEntry}
-      keyboardType={keyboardType as any}
-      textAlign={textAlign as any}
+      keyboardType={keyboardType}
+      textAlign={textAlign as TextStyle['textAlign']}
       style={[
         {
           backgroundColor: colors.surface.primary,
@@ -33,8 +47,10 @@ export default function TextField({ value, onChangeText, placeholder, style, sec
           borderRadius: radius.md,
           ...typography.md,
         },
+        variantStyle,
         style,
       ]}
+      {...rest}
     />
   );
 }

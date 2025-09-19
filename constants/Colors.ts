@@ -34,6 +34,7 @@ export const Colors = {
     info: '#4D96FF',
   },
   
+  link: '#4D96FF',
   // Interactive Colors
   interactive: {
     primary: '#B99C5A',

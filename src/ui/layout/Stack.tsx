@@ -25,7 +25,7 @@ export default function Stack({
         {
           flexDirection: direction === 'horizontal' ? 'row' : 'column',
           gap: gap ? spacing[gap] : undefined,
-          alignItems: align,
+          alignItems: align,\r\n          justifyContent: justify,
         },
         style,
       ]}
@@ -35,4 +35,7 @@ export default function Stack({
     </View>
   );
 }
+
+
+
 

@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/276</span>
+                <span class='fraction'>0/281</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/137</span>
+                <span class='fraction'>0/139</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/45</span>
+                <span class='fraction'>0/48</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/239</span>
+                <span class='fraction'>0/244</span>
             </div>
         
             
@@ -500,7 +500,19 @@
 <a name='L435'></a><a href='#L435'>435</a>
 <a name='L436'></a><a href='#L436'>436</a>
 <a name='L437'></a><a href='#L437'>437</a>
-<a name='L438'></a><a href='#L438'>438</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L438'></a><a href='#L438'>438</a>
+<a name='L439'></a><a href='#L439'>439</a>
+<a name='L440'></a><a href='#L440'>440</a>
+<a name='L441'></a><a href='#L441'>441</a>
+<a name='L442'></a><a href='#L442'>442</a>
+<a name='L443'></a><a href='#L443'>443</a>
+<a name='L444'></a><a href='#L444'>444</a>
+<a name='L445'></a><a href='#L445'>445</a>
+<a name='L446'></a><a href='#L446'>446</a>
+<a name='L447'></a><a href='#L447'>447</a>
+<a name='L448'></a><a href='#L448'>448</a>
+<a name='L449'></a><a href='#L449'>449</a>
+<a name='L450'></a><a href='#L450'>450</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -531,6 +543,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -937,6 +955,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// TODO:CORE-020 buildTopic(domain,{tenantId,storeId}) everywhere
 // TODO:CORE-023 derive shared keys per-tenant (replace per-process secret)
 &nbsp;
@@ -968,7 +992,13 @@ import type { Store } from '@/types';
 // TODO:TODO-103 Break the monolithic Waku service into focused modules so subscription, publishing, and sync concerns stay isolated.
 // TODO:REC-203 Investigate streaming compression primitives to mitigate zlib blocking when handling large relay payloads.
 &nbsp;
-declare const logger: any;
+const fallbackLogger = <span class="cstat-no" title="statement not covered" >{</span>
+<span class="fstat-no" title="function not covered" >  info<span class="cstat-no" title="statement not covered" >:</span> (...args: unknown[]) =&gt; errorLog(...args),</span>
+<span class="fstat-no" title="function not covered" >  warn<span class="cstat-no" title="statement not covered" >:</span> (...args: unknown[]) =&gt; errorLog(...args),</span>
+<span class="fstat-no" title="function not covered" >  error<span class="cstat-no" title="statement not covered" >:</span> (...args: unknown[]) =&gt; errorLog(...args),</span>
+};
+const logger<span class="cstat-no" title="statement not covered" >: { info: (...args: unknown[]) =&gt; void; warn: (...args: unknown[]) =&gt; void; error: (...args: unknown[]) =&gt; void } =</span>
+  (globalThis as any).logger ?? fallbackLogger;
 &nbsp;
 const isProd = <span class="cstat-no" title="statement not covered" >process.env.NODE_ENV === 'production';</span>
 const strict = <span class="cstat-no" title="statement not covered" >(config.WAKU_STRICT || (isProd ? '1' : '0')) === '1';</span>
@@ -1374,6 +1404,12 @@ function <span class="fstat-no" title="function not covered" >dedupeKey(</span>t
 &nbsp;
 // Expose internals for testing
 export const __test__ = <span class="cstat-no" title="statement not covered" >{ startNode, scheduleReconnect };</span>
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -1381,7 +1417,7 @@ export const __test__ = <span class="cstat-no" title="statement not covered" >{ 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-18T15:38:45.126Z
+                at 2025-09-19T13:41:36.623Z
             </div>
         <script src="../prettify.js"></script>
         <script>

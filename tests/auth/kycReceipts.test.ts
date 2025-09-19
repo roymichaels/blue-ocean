@@ -11,12 +11,12 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
 }));
 
-const fetchHistoryMock = jest.fn();
-const subscribeWithAckMock = jest.fn();
+const mockFetchHistory = jest.fn();
+const mockSubscribeWithAck = jest.fn();
 
 jest.mock('@/services/waku', () => ({
-  fetchHistory: (...args: any[]) => fetchHistoryMock(...args),
-  subscribeWithAck: (...args: any[]) => subscribeWithAckMock(...args),
+  fetchHistory: (...args: any[]) => mockFetchHistory(...args),
+  subscribeWithAck: (...args: any[]) => mockSubscribeWithAck(...args),
   publish: jest.fn(),
 }));
 
@@ -41,17 +41,17 @@ describe('subscribeToKycReceipts', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
-    fetchHistoryMock.mockResolvedValue(undefined);
-    subscribeWithAckMock.mockResolvedValue(() => {});
+    mockFetchHistory.mockResolvedValue(undefined);
+    mockSubscribeWithAck.mockResolvedValue(() => {});
   });
 
   it('persists receipts from history and live updates', async () => {
-    fetchHistoryMock.mockImplementation(async (_topic: string, cb: (msg: KycReceipt) => void) => {
+    mockFetchHistory.mockImplementation(async (_topic: string, cb: (msg: KycReceipt) => void) => {
       await cb(baseReceipt);
     });
 
     let liveHandler: ((msg: KycReceipt) => void) | undefined;
-    subscribeWithAckMock.mockImplementation(async (_topic: string, cb: (msg: KycReceipt) => void) => {
+    mockSubscribeWithAck.mockImplementation(async (_topic: string, cb: (msg: KycReceipt) => void) => {
       liveHandler = cb;
       return () => {};
     });
@@ -85,12 +85,13 @@ describe('subscribeToKycReceipts', () => {
 
   it('notifies errors during history fetch', async () => {
     const error = new Error('history failed');
-    fetchHistoryMock.mockRejectedValueOnce(error);
+    mockFetchHistory.mockRejectedValueOnce(error);
     const onError = jest.fn();
     await subscribeToKycReceipts('buyer-public', { onError });
     expect(onError).toHaveBeenCalledWith(error);
   });
 });
+
 
 
 

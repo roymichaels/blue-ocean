@@ -1,9 +1,9 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 
-const useAuthMock = jest.fn();
+const mockUseAuth = jest.fn();
 jest.mock('@/features/auth/AuthContext', () => ({
-  useAuth: () => useAuthMock(),
+  useAuth: () => mockUseAuth(),
 }));
 
 jest.mock('@/contexts/TenantContext', () => ({
@@ -137,7 +137,7 @@ describe('KycVerificationScreen', () => {
   const render = () => renderer.create(<KycScreen />);
 
   it('renders verified state', () => {
-    useAuthMock.mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { id: 'user-1', kycStatus: 'verified' },
       checkAuthState: jest.fn(),
     });
@@ -148,7 +148,7 @@ describe('KycVerificationScreen', () => {
   });
 
   it('submits a KYC request with uploads', async () => {
-    useAuthMock.mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: {
         id: 'user-1',
         kycStatus: 'none',
@@ -234,7 +234,7 @@ describe('KycVerificationScreen', () => {
     expect(persistUserMock).toHaveBeenCalledWith(
       expect.objectContaining({ kycStatus: 'pending' }),
     );
-    expect(useAuthMock.mock.results[0].value.checkAuthState).toHaveBeenCalled();
+    expect(mockUseAuth.mock.results[0].value.checkAuthState).toHaveBeenCalled();
 
     const helperTexts = tree.root
       .findAll((node: any) => node.props?.children && typeof node.props.children === 'string')
@@ -243,7 +243,7 @@ describe('KycVerificationScreen', () => {
   });
 
   it('blocks files that exceed the size limit', async () => {
-    useAuthMock.mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { id: 'user-1', kycStatus: 'none', chatPublicKey: 'buyer-public' },
       checkAuthState: jest.fn(),
     });
@@ -275,7 +275,7 @@ describe('KycVerificationScreen', () => {
   });
 
   it('shows pending message when status is pending', () => {
-    useAuthMock.mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { id: 'user-1', kycStatus: 'pending' },
       checkAuthState: jest.fn(),
     });
@@ -289,7 +289,7 @@ describe('KycVerificationScreen', () => {
 
   it('handles submission failure and keeps attachments for retry', async () => {
     const checkAuthState = jest.fn();
-    useAuthMock.mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { id: 'user-1', kycStatus: 'rejected', chatPublicKey: 'buyer-public' },
       checkAuthState,
     });
@@ -341,4 +341,5 @@ describe('KycVerificationScreen', () => {
     expect(cleanupMock).toHaveBeenCalled();
   });
 });
+
 

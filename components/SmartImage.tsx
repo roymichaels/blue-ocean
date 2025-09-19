@@ -34,7 +34,10 @@ export default function SmartImage({
   }
 
   return (
-    <ExpoImage\n      {...props}\n      source={{ uri }}\n      style={[{ width, height }, style]}
+    <ExpoImage
+      {...props}
+      source={{ uri }}
+      style={[{ width, height }, style]}
       contentFit={contentFit}
       cachePolicy={cachePolicy}
       placeholder={Platform.OS === 'web' ? undefined : shimmer}
@@ -42,4 +45,5 @@ export default function SmartImage({
     />
   );
 }
+
 

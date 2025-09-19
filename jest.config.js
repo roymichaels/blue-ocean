@@ -80,9 +80,12 @@ const cfg = {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@noble/hashes/hkdf$': '<rootDir>/tests/nobleHkdfMock.js',
+    '^@noble/hashes/sha256$': '<rootDir>/tests/nobleSha256Mock.js',
+    '^@noble/hashes/sha512$': '<rootDir>/tests/nobleSha512Mock.js',
     '\\.(png|jpg|jpeg|gif|svg)$': '<rootDir>/tests/__mocks__/fileMock.js',
     '^expo-file-system$': '<rootDir>/tests/__mocks__/expo-file-system.js',
     '^expo-asset$': '<rootDir>/tests/__mocks__/expo-asset.js',
+    '^expo-image$': '<rootDir>/tests/__mocks__/expo-image.js',
     '^expo-secure-store$': '<rootDir>/tests/__mocks__/expo-secure-store.js',
     '^expo-local-authentication$': '<rootDir>/tests/__mocks__/expo-local-authentication.js',
     '^react-native$': '<rootDir>/tests/__mocks__/react-native.js',
@@ -179,5 +182,6 @@ const cfg = {
 };
 
 module.exports = cfg;
+
 
 
