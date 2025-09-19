@@ -265,6 +265,7 @@ export default function KycApprovalsScreen(): React.ReactElement {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View
           style={[styles.policyCard, { borderColor: colors.border.primary, backgroundColor: colors.surface.primary }]}
+        >
           <View style={styles.policyHeader}>
             <ShieldCheck size={20} color={colors.gold} />
             <Text style={[styles.policyTitle, { color: colors.text.primary }]}>מדיניות אימות</Text>
