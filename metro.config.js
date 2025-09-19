@@ -18,6 +18,7 @@ config.resolver.extraNodeModules = {
 
 config.resolver.alias = {
   ...(config.resolver.alias || {}),
+  '@blue-ocean/sdk-near': path.resolve(__dirname, 'packages/sdk-near/src'),
   '@/auth': path.resolve(__dirname, 'src/auth'),
   '@/schemas': path.resolve(__dirname, 'schemas'),
 };

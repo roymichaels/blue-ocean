@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "expo start",
-    "dev:web": "expo start --web",
+    "build:sdk-near": "cd packages/sdk-near && npx tsc",
+    "dev": "npm run build:sdk-near && expo start",
+    "dev:web": "npm run build:sdk-near && expo start --web",
     "web:clear": "rimraf .expo node_modules/.cache .turbo && cross-env EXPO_WEB_BUNDLER=metro expo start --web --clear",
     "build:web": "cross-env EXPO_WEB_BUNDLER=metro EXPO_PUBLIC_USE_ROUTER=1 expo export --platform web --output-dir dist",
     "preview": "serve dist -p 4173",
