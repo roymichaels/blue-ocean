@@ -291,7 +291,7 @@ function getHitStats(): Map<string, { hits: number; total: number }> {
 }
 
 export function getCacheHitRatio(topic: string): number {
-  const s = hitStats.get(topic);
+  const s = getHitStats().get(topic);
   if (!s || s.total === 0) return 0;
   return s.hits / s.total;
 }
