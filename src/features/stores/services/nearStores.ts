@@ -9,30 +9,24 @@ import {
 } from '@/services/nearKvStore';
 import { errorLog } from '@/utils/logger';
 import {
-  createWarmCache,
-  type CacheMutation,
-  type DiffMessage,
-} from '@/services/warmCache';
-import {
   createDefaultStoreServiceDeps,
   type StoreServiceDeps,
 } from './storeServiceDeps';
+import {
+  STORE_CACHE_ADDRESS,
+  storeCacheRepository,
+  storeCacheIndexKey,
+  storeCacheKey,
+} from './storeCache';
 
 
-const ADDRESS = 'stores';
-const STORE_CACHE_TOPIC = '/blue-ocean/stores/1';
 const DISABLED = false;
-let SEEDED = false;
 
 const defaultDeps = createDefaultStoreServiceDeps();
 
 function resolveDeps(deps?: StoreServiceDeps): StoreServiceDeps {
   return deps ?? defaultDeps;
 }
-
-const storeCache = createWarmCache<Store>(STORE_CACHE_TOPIC, {
-  hydrateLake: hydrateStoreLake,
-});
 
 function decodeBase64String(value: string): string {
   const globalObj: any = globalThis as any;
@@ -67,77 +61,26 @@ function decodeBase64String(value: string): string {
   return value;
 }
 
-async function hydrateStoreLake(): Promise<Array<DiffMessage<Store>>> {
-  try {
-    const entries = await listValues(ADDRESS);
-    const seen = new Map<string, DiffMessage<Store>>();
-    for (const entry of entries) {
-      try {
-        const parsed = JSON.parse(entry.value) as Store & { rev?: number; version?: number };
-        const keyParts = entry.key.split(':');
-        const id = parsed.id || keyParts[keyParts.length - 1] || entry.key;
-        if (!id) continue;
-        const tsSource =
-          (parsed.updatedAt && new Date(parsed.updatedAt).getTime()) ||
-          (parsed.createdAt && new Date(parsed.createdAt).getTime()) ||
-          Date.now();
-        const ts = Number.isFinite(tsSource) ? tsSource : Date.now();
-        const rev =
-          (typeof parsed.rev === 'number' && parsed.rev) ||
-          (typeof parsed.version === 'number' && parsed.version) ||
-          1;
-        const diff: DiffMessage<Store> = { id, rev, op: 'set', value: parsed, ts };
-        if (!seen.has(id) || entry.key.includes(`:${id}`)) {
-          seen.set(id, diff);
-        }
-      } catch (err) {
-        errorLog('Invalid store snapshot', err);
-      }
-    }
-    return Array.from(seen.values());
-  } catch (err) {
-    errorLog('Failed to hydrate stores from NEAR Lake', err);
-    return [];
-  }
-}
-
 export const storesWarmCache = {
   getById(id: string) {
-    return storeCache.getById(id);
+    return storeCacheRepository.get(id);
   },
   list(filter?: (id: string, value: Store) => boolean) {
-    return storeCache.list(filter);
+    return storeCacheRepository.list(filter);
   },
   subscribe(
     filter: (id: string, value: Store | undefined) => boolean,
     cb: (id: string, value: Store | undefined) => void,
   ) {
-    return storeCache.subscribe(filter, cb);
+    return storeCacheRepository.subscribe(filter, cb);
   },
-  mutate(cmd: CacheMutation<Store>) {
-    return storeCache.mutate(cmd);
+  mutate(cmd: Parameters<typeof storeCacheRepository.mutate>[0]) {
+    return storeCacheRepository.mutate(cmd);
   },
   onSynced(cb: (event?: { cache: string }) => void) {
-    return storeCache.onSynced(cb);
+    return storeCacheRepository.onSynced(cb);
   },
 };
-
-function ensureSeed() {
-  if (!DISABLED || SEEDED) return;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const data = require('@/assets/seed/seed-data.json');
-    if (data?.stores) {
-      for (const s of data.stores as Store[]) {
-        const sid = requireStoreId(s.id);
-        const json = canonicalJson(s);
-        void setValue(ADDRESS, storeKey(s.id, sid), json);
-        void setValue(ADDRESS, indexKey(s.id), json);
-      }
-    }
-  } catch {}
-  SEEDED = true;
-}
 
 function fromChain(data: any): Store {
   return {
@@ -201,18 +144,10 @@ export async function mintStore(
   return { id, nftId, txHash };
 }
 
-function storeKey(id: string, sid: string): string {
-  return `${ADDRESS}:${sid}:${id}`;
-}
-
-function indexKey(id: string): string {
-  return `${ADDRESS}:default:${id}`;
-}
-
 async function persistStore(store: Store, sid: string) {
   const json = canonicalJson(store);
-  await setValue(ADDRESS, storeKey(store.id, sid), json);
-  await setValue(ADDRESS, indexKey(store.id), json);
+  await setValue(STORE_CACHE_ADDRESS, storeCacheKey(store.id, sid), json);
+  await setValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(store.id), json);
 }
 
 async function sendTx(action: string, data: any, deps: StoreServiceDeps) {
@@ -240,7 +175,6 @@ export async function selectStore(
   arg2OrDeps?: string | StoreServiceDeps,
   maybeDeps?: StoreServiceDeps,
 ): Promise<Store | null> {
-  ensureSeed();
   const id = typeof arg2OrDeps === 'string' ? arg2OrDeps : arg1;
   const deps =
     (typeof arg2OrDeps === 'object' && arg2OrDeps)
@@ -248,14 +182,14 @@ export async function selectStore(
       : maybeDeps;
   resolveDeps(deps);
   try {
-    const cached = storesWarmCache.getById(id);
+    const cached = storeCacheRepository.get(id);
     if (cached) return cached;
   } catch {}
   const key =
     typeof arg2OrDeps === 'string'
-      ? storeKey(id, requireStoreId(arg1))
-      : indexKey(id);
-  const res = await getValue(ADDRESS, key);
+      ? storeCacheKey(id, requireStoreId(arg1))
+      : storeCacheIndexKey(id);
+  const res = await getValue(STORE_CACHE_ADDRESS, key);
   if (!res) return null;
   try {
     return JSON.parse(res) as Store;
@@ -268,18 +202,17 @@ export async function listStores(
   storeId: string,
   deps?: StoreServiceDeps,
 ): Promise<Store[]> {
-  ensureSeed();
   const sid = requireStoreId(storeId);
   try {
-    const values = storeCache.list();
+    const values = storeCacheRepository.list();
     if (sid === 'default') return values;
     const filtered = values.filter((store) => requireStoreId(store.id) === sid);
     if (filtered.length > 0) return filtered;
   } catch {}
-  const items = await listValues(ADDRESS);
+  const items = await listValues(STORE_CACHE_ADDRESS);
   const res: Store[] = [];
   for (const i of items) {
-    if (!i.key.startsWith(`${ADDRESS}:${sid}:`)) continue;
+    if (!i.key.startsWith(`${STORE_CACHE_ADDRESS}:${sid}:`)) continue;
     try {
       res.push(JSON.parse(i.value) as Store);
     } catch {}
@@ -345,8 +278,8 @@ export async function removeStore(
       : maybeDeps;
   const resolved = resolveDeps(deps);
   await sendTx('remove', { id }, resolved);
-  await removeValue(ADDRESS, storeKey(id, sid));
-  await removeValue(ADDRESS, indexKey(id));
+  await removeValue(STORE_CACHE_ADDRESS, storeCacheKey(id, sid));
+  await removeValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(id));
 }
 
 export const getStore = selectStore;
@@ -443,6 +376,7 @@ export async function createStoreOnChain(args: {
 }
 
 export { createDefaultStoreServiceDeps } from './storeServiceDeps';
+export { seedStoreCache, setStoreCacheSeedEnabled } from './storeCache';
 
 
 
