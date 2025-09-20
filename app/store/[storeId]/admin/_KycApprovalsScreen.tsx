@@ -14,14 +14,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  ArrowLeft,
-  FileText,
-  ShieldCheck,
-  Smartphone,
-  Video,
-  XCircle,
-} from 'lucide-react-native';
+import { ArrowLeft, FileText, ShieldCheck, Smartphone, Video, Circle as XCircle } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAppRouter } from '@/services';
 import SettingsAgent from '@/agents/settings-agent';

@@ -66,6 +66,12 @@ function getHitStats() {
   return hitStatsStore;
 }
 
+let _hitStats: Map<string, { hits: number; total: number }> = new Map();
+
+function getHitStats(): Map<string, { hits: number; total: number }> {
+  return _hitStats;
+}
+
 function normalizeMessage<T>(msg: DiffMessage<T>, source: MessageSource): DiffMessage<T> {
   const now = Date.now();
   let ts = typeof msg.ts === 'number' ? msg.ts : now;
@@ -294,7 +300,10 @@ export function createWarmCache<T>(
   };
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> d216adbb8dbc37b3b9c4757b53aba85da3b76ceb
 export function getCacheHitRatio(topic: string): number {
   const s = getHitStats().get(topic);
   if (!s || s.total === 0) return 0;

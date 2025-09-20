@@ -73,6 +73,8 @@ module.exports = async function (env, argv) {
     '@': path.resolve(__dirname),
     '@/auth': path.resolve(__dirname, 'src/auth'),
     '@/schemas': path.resolve(__dirname, 'schemas'),
+    '@blue-ocean/sdk-near': path.resolve(__dirname, 'packages/sdk-near/src'),
+    '@blue-ocean/sdk-near': path.resolve(__dirname, 'packages/sdk-near/dist'),
     'expo-router/_ctx': path.resolve(__dirname, 'router-ctx.web.js'),
     'expo-router/_ctx.web': path.resolve(__dirname, 'router-ctx.web.js'),
     'expo-router/_ctx.web.js': path.resolve(__dirname, 'router-ctx.web.js'),

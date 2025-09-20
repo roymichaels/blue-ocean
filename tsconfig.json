@@ -19,6 +19,9 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@blue-ocean/sdk-near": [
+        "packages/sdk-near/src"
+      ],
       "@app/*": [
         "app/*"
       ],

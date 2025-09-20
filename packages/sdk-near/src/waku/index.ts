@@ -3,11 +3,10 @@
 // its own. The logic here mirrors the higher level Waku utilities found in the
 // app source but is trimmed down for size and to avoid React dependencies.
 
-import type { LightNode } from '@waku/sdk';
+import { createLightNode, waitForRemotePeer, Protocols, type LightNode } from '@waku/sdk';
 import { Buffer } from 'buffer';
 import { topicFor } from '@blue-ocean/utils';
 import { getNetworkId } from '../config';
-import { getClient } from '@/utils/transport';
 
 // In-memory cache of messages keyed by topic. Each topic also tracks a set of
 // previously seen payloads to avoid duplications when `hydrateMessages` is called
@@ -19,7 +18,6 @@ let node: LightNode | null = null;
 async function ensureNode(): Promise<LightNode | null> {
   if (node) return node;
   try {
-    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
     node = await createLightNode({} as any);
     if (!node) return null;
     await node.start();
@@ -42,9 +40,10 @@ export async function hydrateMessages(
 ): Promise<any[]> {
   const n = await ensureNode();
   if (!n) return messageCache.get(topic) || [];
-  const client: any = await getClient();
-  // createDecoder signature may require routing info in newer versions; provide minimal arg
-  const decoder = client.createDecoder(topic, {});
+  
+  // Import createDecoder dynamically to avoid bundling issues
+  const { createDecoder } = await import('@waku/sdk');
+  const decoder = createDecoder(topic, undefined as any);
   const existing = messageCache.get(topic) || [];
   const seen = seenCache.get(topic) || new Set<string>();
   const start = Date.now();
