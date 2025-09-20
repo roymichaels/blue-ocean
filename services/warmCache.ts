@@ -53,6 +53,12 @@ type MessageSource = 'lake' | 'history' | 'live' | 'local';
 const DEFAULT_LAG_THRESHOLD = 3000;
 const CLOCK_SKEW_GUARD_MS = 60_000;
 
+let _hitStats: Map<string, { hits: number; total: number }> = new Map();
+
+function getHitStats(): Map<string, { hits: number; total: number }> {
+  return _hitStats;
+}
+
 function normalizeMessage<T>(msg: DiffMessage<T>, source: MessageSource): DiffMessage<T> {
   const now = Date.now();
   let ts = typeof msg.ts === 'number' ? msg.ts : now;
@@ -279,12 +285,6 @@ export function createWarmCache<T>(
       return () => reconcilers.delete(key);
     },
   };
-}
-
-let _hitStats: Map<string, { hits: number; total: number }> = new Map();
-
-function getHitStats(): Map<string, { hits: number; total: number }> {
-  return _hitStats;
 }
 
 export function getCacheHitRatio(topic: string): number {
