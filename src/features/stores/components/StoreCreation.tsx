@@ -14,9 +14,14 @@ import { useLanguage } from '@/ui/ThemeProvider';
 import storesAgent from '@/agents/stores-agent';
 import DatabaseService from '@/services/database';
 import { useNotificationActions } from '@/components/NotificationContext';
-import { createStoreOnChain } from '@/features/stores/services/nearStores';
+import {
+  createStoreOnChain,
+  createDefaultStoreServiceDeps,
+} from '@/features/stores/services/nearStores';
 import { useWallet } from '@/contexts/WalletProvider';
 import { errorLog } from '@/utils/logger';
+
+const storeServiceDeps = createDefaultStoreServiceDeps();
 
 const StoreCreation: React.FC = () => {
   const [name, setName] = useState('');
@@ -42,7 +47,7 @@ const StoreCreation: React.FC = () => {
     let onChainError: any = null;
     // Try on-chain first, but do not block local creation in dev
     try {
-      const tx = await createStoreOnChain({ id, name: finalName, owner });
+      const tx = await createStoreOnChain({ id, name: finalName, owner }, storeServiceDeps);
       if (tx) {
         try {
           showNotification('Store Minted', `tx: ${tx}`, 'success');

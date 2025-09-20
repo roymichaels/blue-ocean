@@ -37,7 +37,11 @@ let getStore:
   | ((storeId: string, id: string) => Promise<Store | null>)
   | undefined;
 if (chain === 'near') {
-  ({ getStore } = require('@/features/stores/services/nearStores'));
+  const nearStores = require('@/features/stores/services/nearStores');
+  const service = nearStores.createStoreService(
+    nearStores.createDefaultStoreServiceDeps(),
+  );
+  getStore = service.selectStore;
 }
 
 import OrderService from '@/services/orders';

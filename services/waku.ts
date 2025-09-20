@@ -78,7 +78,8 @@ async function persistStore(storeId: string, store: Store): Promise<void> {
   if (!persistStoreImpl) {
     try {
       const mod = await import('@/features/stores/services/nearStores');
-      persistStoreImpl = mod.setStore as PersistStoreFn;
+      const service = mod.createStoreService(mod.createDefaultStoreServiceDeps());
+      persistStoreImpl = service.setStore.bind(service) as PersistStoreFn;
     } catch (err) {
       errorLog('Failed to load store persistence module', err);
       return;

@@ -23,7 +23,10 @@ import {
   User,
 } from '../types';
 import { sha256 } from '@noble/hashes/sha256';
-import { getStore } from '@/features/stores/services/nearStores';
+import {
+  createDefaultStoreServiceDeps,
+  createStoreService,
+} from '@/features/stores/services/nearStores';
 import { getProduct, setProduct } from '@/features/products/services/nearProducts';
 import { chainAdapter } from '@/services/chain';
 import { getAccountId as getNearAuthAccountId } from '@/features/auth/services/nearAuth';
@@ -48,6 +51,8 @@ import {
   forgetCheckoutNonce,
   clearExpiredKycNonceUsage,
 } from '@/utils/nonceStore';
+
+const storeService = createStoreService(createDefaultStoreServiceDeps());
 
 // TODO:CORE-001 thin wrapper; instrument, do not inline deployEscrow
 export async function deployOrderPayment(orderDraft: any, opts: { fee?: any; nonce: string }) {
@@ -324,7 +329,7 @@ class OrderService {
     buyerId: string,
     storeId: string,
   ): Promise<KycVerificationResult> {
-    const store = await getStore(storeId, storeId);
+    const store = await storeService.selectStore(storeId, storeId);
     const requiresKyc = this.storeRequiresKyc(store);
 
     // TODO:CORE-004 Angle 1 - Swap to the tenant KYC verification microservice once its API contract is finalized.
@@ -711,7 +716,7 @@ class OrderService {
       const orders: Order[] = [];
       for (const [storeId, items] of Object.entries(grouped)) {
         const verifiedKyc = kycResults.get(storeId) ?? { ok: true, hash: null };
-        const store = await getStore(storeId, storeId);
+        const store = await storeService.selectStore(storeId, storeId);
         const payment =
           paymentMethod === 'near'
             ? {

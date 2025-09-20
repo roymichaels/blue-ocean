@@ -8,7 +8,11 @@ let getUser: ((id: string) => Promise<User | null>) | undefined;
 
 if (chain === 'near') {
   try {
-    ({ getStore } = require('@/features/stores/services/nearStores'));
+    const nearStores = require('@/features/stores/services/nearStores');
+    const service = nearStores.createStoreService(
+      nearStores.createDefaultStoreServiceDeps(),
+    );
+    getStore = service.selectStore;
   } catch (err) {
     errorLog('Failed to load store service for messaging', err);
   }

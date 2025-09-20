@@ -37,12 +37,20 @@ async function loadNearProducts(): Promise<NearProductsModule> {
 }
 
 type NearStoresModule = typeof import('@/features/stores/services/nearStores');
+type StoreService = ReturnType<NearStoresModule['createStoreService']>;
+
 let nearStoresModule: NearStoresModule | null = null;
-async function loadNearStores(): Promise<NearStoresModule> {
+let storeService: StoreService | null = null;
+
+async function loadNearStores(): Promise<StoreService> {
   if (!nearStoresModule) {
     nearStoresModule = await import('@/features/stores/services/nearStores');
   }
-  return nearStoresModule;
+  if (!storeService) {
+    const deps = nearStoresModule.createDefaultStoreServiceDeps();
+    storeService = nearStoresModule.createStoreService(deps);
+  }
+  return storeService;
 }
 
 let ensureNearWalletFn: (typeof import('@/utils/ensureNearWallet').default) | null = null;
@@ -209,8 +217,8 @@ class ProductsAgent {
 
   private async assertStoreOwner(storeId: string) {
     const { address } = await this.ensureWallet();
-    const { getStore } = await loadNearStores();
-    const store = await getStore(storeId, storeId);
+    const storeService = await loadNearStores();
+    const store = await storeService.selectStore(storeId, storeId);
     const admin = await isAdmin();
     if (!store || store.owner !== address || !admin) {
       throw new AgentError(

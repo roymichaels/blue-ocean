@@ -6,7 +6,19 @@ let listStores: ((storeId: string) => Promise<Store[]>) | undefined;
 let setStore: ((storeId: string, store: Store) => Promise<void>) | undefined;
 let removeStore: ((storeId: string, id: string) => Promise<void>) | undefined;
 if (chain === 'near') {
-  ({ listStores, setStore, removeStore } = require('@/features/stores/services/nearStores'));
+  const nearStores = require('@/features/stores/services/nearStores');
+  const storeService = nearStores.createStoreService(
+    nearStores.createDefaultStoreServiceDeps(),
+  );
+  ({
+    listStores,
+    setStore,
+    removeStore,
+  } = {
+    listStores: storeService.listStores,
+    setStore: storeService.setStore,
+    removeStore: storeService.removeStore,
+  });
 }
 
 export function useStores(storeId: string) {

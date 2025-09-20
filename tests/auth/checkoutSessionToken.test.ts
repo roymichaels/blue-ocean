@@ -105,14 +105,41 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   signIn: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock('@/features/stores/services/nearStores', () => ({
-  getStore: jest.fn(async (id: string) => ({
+jest.mock('@/features/stores/services/nearStores', () => {
+  const selectStore = jest.fn(async (id: string) => ({
     id,
     name: id,
     owner: `seller_${id}`,
     policies: { kycRequired: true },
-  })),
-}));
+  }));
+  const setStore = jest.fn();
+  const service = {
+    mintStore: jest.fn(),
+    selectStore,
+    listStores: jest.fn(),
+    addStore: jest.fn(),
+    updateStore: jest.fn(),
+    removeStore: jest.fn(),
+    setStore,
+    createStoreOnChain: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    getStore: selectStore,
+    setStore,
+    listStores: service.listStores,
+    createStoreOnChain: service.createStoreOnChain,
+    createDefaultStoreServiceDeps: jest.fn(() => ({})),
+    createStoreService: jest.fn(() => service),
+    storesWarmCache: {
+      getById: jest.fn(),
+      list: jest.fn(() => []),
+      subscribe: jest.fn(() => jest.fn()),
+      mutate: jest.fn(),
+      onSynced: jest.fn(() => jest.fn()),
+    },
+  };
+});
 
 const mockUsersAgent = {
   get: jest.fn(),

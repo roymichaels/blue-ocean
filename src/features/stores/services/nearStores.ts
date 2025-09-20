@@ -8,83 +8,31 @@ import {
   removeValue,
 } from '@/services/nearKvStore';
 import { errorLog } from '@/utils/logger';
-import type { CacheMutation, DiffMessage, WarmCache as WarmCacheType } from '@/services/warmCache';
+import {
+  createWarmCache,
+  type CacheMutation,
+  type DiffMessage,
+} from '@/services/warmCache';
+import {
+  createDefaultStoreServiceDeps,
+  type StoreServiceDeps,
+} from './storeServiceDeps';
 
 
 const ADDRESS = 'stores';
 const STORE_CACHE_TOPIC = '/blue-ocean/stores/1';
 const DISABLED = false;
 let SEEDED = false;
-let chainEnsured = false;
-type ChainModule = typeof import('@/services/chain');
-let chainModule: ChainModule | null = null;
-async function loadChainModule(): Promise<ChainModule> {
-  if (!chainModule) {
-    chainModule = await import('@/services/chain');
-  }
-  return chainModule;
+
+const defaultDeps = createDefaultStoreServiceDeps();
+
+function resolveDeps(deps?: StoreServiceDeps): StoreServiceDeps {
+  return deps ?? defaultDeps;
 }
 
-async function ensureChain(): Promise<void> {
-  if (chainEnsured) return;
-  const { assertNearChain } = await loadChainModule();
-  assertNearChain();
-  chainEnsured = true;
-}
-
-type NearStoreContractModule = typeof import('@/services/nearStoreContract');
-let nearStoreContractModule: NearStoreContractModule | null = null;
-async function loadNearStoreContract(): Promise<NearStoreContractModule> {
-  await ensureChain();
-  if (!nearStoreContractModule) {
-    nearStoreContractModule = await import('@/services/nearStoreContract');
-  }
-  return nearStoreContractModule;
-}
-
-type WalletSelectorModule = typeof import('@/services/walletSelector');
-let walletSelectorModule: WalletSelectorModule | null = null;
-async function loadWalletSelector(): Promise<WalletSelectorModule> {
-  if (!walletSelectorModule) {
-    walletSelectorModule = await import('@/services/walletSelector');
-  }
-  return walletSelectorModule;
-}
-
-type ConfigModule = typeof import('@/services/config');
-let configModule: ConfigModule | null = null;
-async function loadConfigModule(): Promise<ConfigModule> {
-  if (!configModule) {
-    configModule = await import('@/services/config');
-  }
-  return configModule;
-}
-
-type AppConfig = typeof import('@/config').default;
-let cachedAppConfig: AppConfig | null = null;
-type WarmCacheModule = typeof import('@/services/warmCache');
-let warmCacheModule: WarmCacheModule | null = null;
-let storeCacheInstance: WarmCacheType<Store> | null = null;
-
-function ensureStoreCache(): WarmCacheType<Store> {
-  if (!storeCacheInstance) {
-    const mod: WarmCacheModule =
-      warmCacheModule ??
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      (require('@/services/warmCache') as WarmCacheModule);
-    warmCacheModule = mod;
-    storeCacheInstance = mod.createWarmCache<Store>(STORE_CACHE_TOPIC, {
-      hydrateLake: hydrateStoreLake,
-    });
-  }
-  return storeCacheInstance;
-}
-async function loadAppConfig(): Promise<AppConfig> {
-  if (!cachedAppConfig) {
-    cachedAppConfig = (await import('@/config')).default;
-  }
-  return cachedAppConfig;
-}
+const storeCache = createWarmCache<Store>(STORE_CACHE_TOPIC, {
+  hydrateLake: hydrateStoreLake,
+});
 
 function decodeBase64String(value: string): string {
   const globalObj: any = globalThis as any;
@@ -155,22 +103,22 @@ async function hydrateStoreLake(): Promise<Array<DiffMessage<Store>>> {
 
 export const storesWarmCache = {
   getById(id: string) {
-    return ensureStoreCache().getById(id);
+    return storeCache.getById(id);
   },
   list(filter?: (id: string, value: Store) => boolean) {
-    return ensureStoreCache().list(filter);
+    return storeCache.list(filter);
   },
   subscribe(
     filter: (id: string, value: Store | undefined) => boolean,
     cb: (id: string, value: Store | undefined) => void,
   ) {
-    return ensureStoreCache().subscribe(filter, cb);
+    return storeCache.subscribe(filter, cb);
   },
   mutate(cmd: CacheMutation<Store>) {
-    return ensureStoreCache().mutate(cmd);
+    return storeCache.mutate(cmd);
   },
   onSynced(cb: (event?: { cache: string }) => void) {
-    return ensureStoreCache().onSynced(cb);
+    return storeCache.onSynced(cb);
   },
 };
 
@@ -205,14 +153,14 @@ function fromChain(data: any): Store {
 }
 
 export async function mintStore(
-  name: string
+  name: string,
+  deps?: StoreServiceDeps,
 ): Promise<{ id: string; nftId: string; txHash: string }> {
-  await ensureChain();
-  const { nearConfig } = await loadConfigModule();
-  const { contractId } = nearConfig();
+  const resolved = resolveDeps(deps);
+  resolved.chain.assertNearChain();
+  const { contractId } = resolved.config.nearConfig();
   if (!contractId) throw new Error('CONTRACT_ID required');
-  const { getSelector } = await loadWalletSelector();
-  const selector = getSelector();
+  const selector = resolved.walletSelector.getSelector();
   if (!selector) throw new Error('Wallet not initialized');
   const wallet = await selector.wallet();
   const res: any = await wallet.signAndSendTransactions({
@@ -267,29 +215,46 @@ async function persistStore(store: Store, sid: string) {
   await setValue(ADDRESS, indexKey(store.id), json);
 }
 
-async function sendTx(action: string, data: any) {
+async function sendTx(action: string, data: any, deps: StoreServiceDeps) {
   if (process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test') {
     return;
   }
   const payload = canonicalJson({ action, ...data });
-  await ensureChain();
-  const { chainAdapter } = await loadChainModule();
-  const tx = await chainAdapter.signMessage?.(payload);
+  deps.chain.assertNearChain();
+  const tx = await deps.chain.chainAdapter.signMessage?.(payload);
   if (!tx) {
     throw new Error('Transaction failed');
   }
 }
+export function selectStore(
+  arg1: string,
+  deps?: StoreServiceDeps,
+): Promise<Store | null>;
+export function selectStore(
+  arg1: string,
+  arg2: string,
+  deps?: StoreServiceDeps,
+): Promise<Store | null>;
 export async function selectStore(
   arg1: string,
-  arg2?: string
+  arg2OrDeps?: string | StoreServiceDeps,
+  maybeDeps?: StoreServiceDeps,
 ): Promise<Store | null> {
   ensureSeed();
-  const id = arg2 ?? arg1;
+  const id = typeof arg2OrDeps === 'string' ? arg2OrDeps : arg1;
+  const deps =
+    (typeof arg2OrDeps === 'object' && arg2OrDeps)
+      ? arg2OrDeps
+      : maybeDeps;
+  resolveDeps(deps);
   try {
     const cached = storesWarmCache.getById(id);
     if (cached) return cached;
   } catch {}
-  const key = arg2 ? storeKey(id, requireStoreId(arg1)) : indexKey(id);
+  const key =
+    typeof arg2OrDeps === 'string'
+      ? storeKey(id, requireStoreId(arg1))
+      : indexKey(id);
   const res = await getValue(ADDRESS, key);
   if (!res) return null;
   try {
@@ -299,11 +264,14 @@ export async function selectStore(
     return null;
   }
 }
-export async function listStores(storeId: string): Promise<Store[]> {
+export async function listStores(
+  storeId: string,
+  deps?: StoreServiceDeps,
+): Promise<Store[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
   try {
-    const values = ensureStoreCache().list();
+    const values = storeCache.list();
     if (sid === 'default') return values;
     const filtered = values.filter((store) => requireStoreId(store.id) === sid);
     if (filtered.length > 0) return filtered;
@@ -318,9 +286,9 @@ export async function listStores(storeId: string): Promise<Store[]> {
   }
   if (res.length > 0 || DISABLED) return res;
   try {
-    await ensureChain();
-    const { listStores: contractListStores } = await loadNearStoreContract();
-    const chainRes = await contractListStores();
+    const resolved = resolveDeps(deps);
+    resolved.chain.assertNearChain();
+    const chainRes = await resolved.contract.listStores();
     const mapped = chainRes.map(fromChain);
     for (const s of mapped) {
       await persistStore(s, requireStoreId(s.id));
@@ -332,33 +300,101 @@ export async function listStores(storeId: string): Promise<Store[]> {
   return res;
 }
 
-export async function addStore(store: Store, sid?: string): Promise<void> {
-  await sendTx('add', { store });
+export async function addStore(
+  store: Store,
+  sid?: string,
+  deps?: StoreServiceDeps,
+): Promise<void> {
+  const resolved = resolveDeps(deps);
+  await sendTx('add', { store }, resolved);
   await persistStore(store, sid ?? requireStoreId(store.id));
 }
 
-export async function updateStore(store: Store, sid?: string): Promise<void> {
-  await sendTx('update', { store });
+export async function updateStore(
+  store: Store,
+  sid?: string,
+  deps?: StoreServiceDeps,
+): Promise<void> {
+  const resolved = resolveDeps(deps);
+  await sendTx('update', { store }, resolved);
   await persistStore(store, sid ?? requireStoreId(store.id));
 }
 
-export async function removeStore(arg1: string, arg2?: string): Promise<void> {
-  const id = arg2 ?? arg1;
-  const sid = arg2 ? requireStoreId(arg1) : requireStoreId(id);
-  await sendTx('remove', { id });
+export function removeStore(
+  id: string,
+  deps?: StoreServiceDeps,
+): Promise<void>;
+export function removeStore(
+  arg1: string,
+  arg2: string,
+  deps?: StoreServiceDeps,
+): Promise<void>;
+export async function removeStore(
+  arg1: string,
+  arg2OrDeps?: string | StoreServiceDeps,
+  maybeDeps?: StoreServiceDeps,
+): Promise<void> {
+  const id = typeof arg2OrDeps === 'string' ? arg2OrDeps : arg1;
+  const sid =
+    typeof arg2OrDeps === 'string'
+      ? requireStoreId(arg1)
+      : requireStoreId(id);
+  const deps =
+    (typeof arg2OrDeps === 'object' && arg2OrDeps)
+      ? arg2OrDeps
+      : maybeDeps;
+  const resolved = resolveDeps(deps);
+  await sendTx('remove', { id }, resolved);
   await removeValue(ADDRESS, storeKey(id, sid));
   await removeValue(ADDRESS, indexKey(id));
 }
 
 export const getStore = selectStore;
 
-export async function setStore(storeId: string, store: Store) {
-  const existing = await selectStore(storeId, store.id);
+export async function setStore(
+  storeId: string,
+  store: Store,
+  deps?: StoreServiceDeps,
+) {
+  const resolved = resolveDeps(deps);
+  const existing = await selectStore(storeId, store.id, resolved);
   if (existing) {
-    await updateStore(store, storeId);
+    await updateStore(store, storeId, resolved);
   } else {
-    await addStore(store, storeId);
+    await addStore(store, storeId, resolved);
   }
+}
+
+export function createStoreService(
+  deps: StoreServiceDeps = defaultDeps,
+): {
+  mintStore: (name: string) => Promise<{ id: string; nftId: string; txHash: string }>;
+  selectStore: (arg1: string, arg2?: string) => Promise<Store | null>;
+  listStores: (storeId: string) => Promise<Store[]>;
+  addStore: (store: Store, sid?: string) => Promise<void>;
+  updateStore: (store: Store, sid?: string) => Promise<void>;
+  removeStore: (arg1: string, arg2?: string) => Promise<void>;
+  setStore: (storeId: string, store: Store) => Promise<void>;
+  createStoreOnChain: (args: { id: string; name: string; owner: string }) => Promise<string>;
+} {
+  const resolved = resolveDeps(deps);
+  return {
+    mintStore: (name: string) => mintStore(name, resolved),
+    selectStore: (arg1: string, arg2?: string) =>
+      typeof arg2 === 'string'
+        ? selectStore(arg1, arg2, resolved)
+        : selectStore(arg1, resolved),
+    listStores: (storeId: string) => listStores(storeId, resolved),
+    addStore: (store: Store, sid?: string) => addStore(store, sid, resolved),
+    updateStore: (store: Store, sid?: string) => updateStore(store, sid, resolved),
+    removeStore: (arg1: string, arg2?: string) =>
+      typeof arg2 === 'string'
+        ? removeStore(arg1, arg2, resolved)
+        : removeStore(arg1, resolved),
+    setStore: (storeId: string, store: Store) => setStore(storeId, store, resolved),
+    createStoreOnChain: (args: { id: string; name: string; owner: string }) =>
+      createStoreOnChain(args, resolved),
+  };
 }
 
 /**
@@ -370,12 +406,13 @@ export async function createStoreOnChain(args: {
   id: string;
   name: string;
   owner: string;
-}): Promise<string> {
-  const appConfig = await loadAppConfig();
+}, deps?: StoreServiceDeps): Promise<string> {
+  const resolved = resolveDeps(deps);
+  const appConfig = await resolved.config.loadAppConfig();
   const relayerUrl = appConfig.EXPO_PUBLIC_RELAYER_URL;
   if (!relayerUrl) throw new Error('EXPO_PUBLIC_RELAYER_URL not configured');
-  await ensureChain();
-  const { chainAdapter } = await loadChainModule();
+  resolved.chain.assertNearChain();
+  const { chainAdapter } = resolved.chain;
   const publicKey = chainAdapter.getPublicKey();
   if (!publicKey) throw new Error('Wallet not connected');
   const body = {
@@ -404,6 +441,8 @@ export async function createStoreOnChain(args: {
   if (json?.error) throw new Error(String(json.error));
   return json?.tx || '';
 }
+
+export { createDefaultStoreServiceDeps } from './storeServiceDeps';
 
 
 

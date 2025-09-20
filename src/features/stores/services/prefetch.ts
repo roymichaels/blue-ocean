@@ -1,13 +1,15 @@
 /* Lightweight prefetcher for store bundles (store + products + categories).
  * Starts network/kv reads ahead of navigation to reduce first render latency.
  */
-import { getStore } from './nearStores';
+import { getStore, createDefaultStoreServiceDeps } from './nearStores';
 import { listProducts } from '@/features/products/services/nearProducts';
 import { listCategories } from '@/features/products/services/nearCategories';
 
 type Entry = { ts: number; promise: Promise<void> };
 const cache = new Map<string, Entry>();
 const TTL_MS = 30000;
+
+const storeServiceDeps = createDefaultStoreServiceDeps();
 
 export function prefetchStoreBundle(storeId: string | null | undefined): Promise<void> {
   const id = (storeId || '').trim();
@@ -19,7 +21,7 @@ export function prefetchStoreBundle(storeId: string | null | undefined): Promise
   const promise = (async () => {
     try {
       await Promise.allSettled([
-        getStore(id, id),
+        getStore(id, id, storeServiceDeps),
         listProducts(id),
         listCategories(id),
       ]);

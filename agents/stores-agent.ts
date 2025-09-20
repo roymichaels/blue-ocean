@@ -6,12 +6,20 @@ import { buildTopic } from '@/utils/wakuTopics';
 const getTransportCrypto = () => (typeof globalThis !== 'undefined' && globalThis.crypto ? globalThis.crypto : undefined);
 
 type NearStoresModule = typeof import('@/features/stores/services/nearStores');
+type StoreService = ReturnType<NearStoresModule['createStoreService']>;
+
 let nearStoresModule: NearStoresModule | null = null;
-async function getStoreServices(): Promise<NearStoresModule> {
+let nearStoreService: StoreService | null = null;
+
+async function getStoreServices(): Promise<StoreService> {
   if (!nearStoresModule) {
     nearStoresModule = await import('@/features/stores/services/nearStores');
   }
-  return nearStoresModule;
+  if (!nearStoreService) {
+    const deps = nearStoresModule.createDefaultStoreServiceDeps();
+    nearStoreService = nearStoresModule.createStoreService(deps);
+  }
+  return nearStoreService;
 }
 
 type EnsureNearWalletFn = typeof import('@/utils/ensureNearWallet').default;

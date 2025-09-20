@@ -1,6 +1,11 @@
 import { types } from 'near-lake-framework';
 import { initLake } from './nearLake';
-import { setStore } from '@/features/stores/services/nearStores';
+import {
+  createDefaultStoreServiceDeps,
+  createStoreService,
+} from '@/features/stores/services/nearStores';
+
+const storeService = createStoreService(createDefaultStoreServiceDeps());
 
 let started = false;
 
@@ -31,8 +36,8 @@ export function startNearStoreLake() {
                 if (evt?.event === 'store_created') {
                   const s = toStore(evt);
                   if (s) {
-                    await setStore(s.id, s);
-                    await setStore('default', s);
+                    await storeService.setStore(s.id, s);
+                    await storeService.setStore('default', s);
                   }
                 }
               } catch {
