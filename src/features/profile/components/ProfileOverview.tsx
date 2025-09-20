@@ -6,7 +6,10 @@ import { useWallet } from '@/contexts/WalletProvider';
 import { chainAdapter } from '@/services/chain';
 import { Heading, Text, Card, Button } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
-import { listStores } from '@/features/stores/services/nearStores';
+import {
+  listStores,
+  createDefaultStoreServiceDeps,
+} from '@/features/stores/services/nearStores';
 import { Store } from '@/types';
 import { useNotificationActions } from '@/components/NotificationContext';
 import { prefetchStoreBundle } from '@/features/stores/services/prefetch';
@@ -29,6 +32,8 @@ function formatNearYocto(yocto: string): string {
   return `${whole}.${frac}`;
 }
 
+const storeServiceDeps = createDefaultStoreServiceDeps();
+
 export default function ProfileOverview() {
   const { colors } = useTheme();
   const { t } = useLanguage();
@@ -46,7 +51,7 @@ export default function ProfileOverview() {
     try {
       const amt = await chainAdapter.getBalance(address);
       setBalance(amt);
-      const all = await listStores('default');
+      const all = await listStores('default', storeServiceDeps);
       const owner = address?.toLowerCase() || '';
       setStores(all.filter((s) => (s.owner || '').toLowerCase() === owner));
       // NFTs: disabled by default to avoid web bundle issues. Enable behind a flag in the future.

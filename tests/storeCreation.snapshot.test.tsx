@@ -37,9 +37,37 @@ jest.mock('@/components/NotificationContext', () => ({
   useNotificationActions: () => ({ showNotification: jest.fn() }),
 }));
 
-jest.mock('@/features/stores/services/nearStores', () => ({
-  createStoreOnChain: jest.fn(),
-}));
+jest.mock('@/features/stores/services/nearStores', () => {
+  const createStoreOnChain = jest.fn();
+  const selectStore = jest.fn();
+  const setStore = jest.fn();
+  const service = {
+    mintStore: jest.fn(),
+    selectStore,
+    listStores: jest.fn(),
+    addStore: jest.fn(),
+    updateStore: jest.fn(),
+    removeStore: jest.fn(),
+    setStore,
+    createStoreOnChain,
+  };
+  return {
+    __esModule: true,
+    createStoreOnChain,
+    getStore: selectStore,
+    listStores: service.listStores,
+    setStore,
+    createDefaultStoreServiceDeps: jest.fn(() => ({})),
+    createStoreService: jest.fn(() => service),
+    storesWarmCache: {
+      getById: jest.fn(),
+      list: jest.fn(() => []),
+      subscribe: jest.fn(() => jest.fn()),
+      mutate: jest.fn(),
+      onSynced: jest.fn(() => jest.fn()),
+    },
+  };
+});
 
 jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: { getAccountId: jest.fn() },

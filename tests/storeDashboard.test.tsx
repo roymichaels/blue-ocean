@@ -31,7 +31,37 @@ jest.mock('@/ui/ThemeProvider', () => ({
   }),
 }));
 
-jest.mock('@/features/stores/services/nearStores', () => ({ getStore: jest.fn() }));
+jest.mock('@/features/stores/services/nearStores', () => {
+  const selectStore = jest.fn();
+  const listStores = jest.fn();
+  const setStore = jest.fn();
+  const service = {
+    mintStore: jest.fn(),
+    selectStore,
+    listStores,
+    addStore: jest.fn(),
+    updateStore: jest.fn(),
+    removeStore: jest.fn(),
+    setStore,
+    createStoreOnChain: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    getStore: selectStore,
+    listStores,
+    setStore,
+    createStoreOnChain: service.createStoreOnChain,
+    createDefaultStoreServiceDeps: jest.fn(() => ({})),
+    createStoreService: jest.fn(() => service),
+    storesWarmCache: {
+      getById: jest.fn(),
+      list: jest.fn(() => []),
+      subscribe: jest.fn(() => jest.fn()),
+      mutate: jest.fn(),
+      onSynced: jest.fn(() => jest.fn()),
+    },
+  };
+});
 jest.mock('@/features/products/services/nearProducts', () => ({ listProducts: jest.fn() }));
 
 jest.mock('@/features/auth/AuthContext', () => ({ useAuth: jest.fn() }));

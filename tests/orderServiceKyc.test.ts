@@ -30,9 +30,36 @@ jest.mock('@/services/kycReceipts', () => ({
 }));
 
 const mockGetStore = jest.fn();
-jest.mock('@/features/stores/services/nearStores', () => ({
-  getStore: (...args: any[]) => mockGetStore(...args),
-}));
+jest.mock('@/features/stores/services/nearStores', () => {
+  const selectStore = jest.fn((...args: any[]) => mockGetStore(...args));
+  const setStore = jest.fn();
+  const service = {
+    mintStore: jest.fn(),
+    selectStore,
+    listStores: jest.fn(),
+    addStore: jest.fn(),
+    updateStore: jest.fn(),
+    removeStore: jest.fn(),
+    setStore,
+    createStoreOnChain: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    getStore: selectStore,
+    setStore,
+    listStores: service.listStores,
+    createStoreOnChain: service.createStoreOnChain,
+    createDefaultStoreServiceDeps: jest.fn(() => ({})),
+    createStoreService: jest.fn(() => service),
+    storesWarmCache: {
+      getById: jest.fn(),
+      list: jest.fn(() => []),
+      subscribe: jest.fn(() => jest.fn()),
+      mutate: jest.fn(),
+      onSynced: jest.fn(() => jest.fn()),
+    },
+  };
+});
 
 jest.mock('@/agents/orders-agent', () => ({
   __esModule: true,

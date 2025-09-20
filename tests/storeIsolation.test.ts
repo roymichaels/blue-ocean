@@ -1,6 +1,10 @@
 import { setProduct, listProducts } from '@/features/products/services/nearProducts';
 import { setOrder, listOrders } from '@/services/nearOrders';
-import { setStore, listStores } from '@/features/stores/services/nearStores';
+import {
+  setStore,
+  listStores,
+  createDefaultStoreServiceDeps,
+} from '@/features/stores/services/nearStores';
 import { Product, Order, Store, ShippingAddress } from '../types';
 
 jest.mock('@/services/nearKvStore', () => {
@@ -14,6 +18,8 @@ jest.mock('@/services/nearKvStore', () => {
     removeValue: async (_addr: string, key: string) => { store.delete(key); },
   };
 });
+
+const storeServiceDeps = createDefaultStoreServiceDeps();
 
 describe('store data isolation', () => {
   it('separates products by storeId', async () => {
@@ -41,10 +47,10 @@ describe('store data isolation', () => {
   it('separates stores by storeId', async () => {
     const s1: Store = { id: 'a', name: 'A', owner: '', nftId: '' };
     const s2: Store = { id: 'b', name: 'B', owner: '', nftId: '' };
-    await setStore('s1', s1);
-    await setStore('s2', s2);
-    const l1 = await listStores('s1');
-    const l2 = await listStores('s2');
+    await setStore('s1', s1, storeServiceDeps);
+    await setStore('s2', s2, storeServiceDeps);
+    const l1 = await listStores('s1', storeServiceDeps);
+    const l2 = await listStores('s2', storeServiceDeps);
     expect(l1.map(s => s.id)).toEqual(['a']);
     expect(l2.map(s => s.id)).toEqual(['b']);
   });

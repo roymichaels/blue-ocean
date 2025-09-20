@@ -4,7 +4,11 @@ import { Store } from '@/types';
 
 let getStore: ((storeId: string, id: string) => Promise<Store | null>) | undefined;
 if (chain === 'near') {
-  ({ getStore } = require('@/features/stores/services/nearStores'));
+  const nearStores = require('@/features/stores/services/nearStores');
+  const service = nearStores.createStoreService(
+    nearStores.createDefaultStoreServiceDeps(),
+  );
+  getStore = service.selectStore;
 }
 
 export function useStore(id?: string, storeId: string = 'default') {
