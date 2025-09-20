@@ -12,6 +12,7 @@ import {
   createDefaultStoreServiceDeps,
   type StoreServiceDeps,
 } from './storeServiceDeps';
+import type { MintStoreResult } from './storeChainClient';
 import {
   STORE_CACHE_ADDRESS,
   storeCacheRepository,
@@ -26,39 +27,6 @@ const defaultDeps = createDefaultStoreServiceDeps();
 
 function resolveDeps(deps?: StoreServiceDeps): StoreServiceDeps {
   return deps ?? defaultDeps;
-}
-
-function decodeBase64String(value: string): string {
-  const globalObj: any = globalThis as any;
-  const BufferCtor = globalObj?.Buffer;
-  if (BufferCtor?.from) {
-    try {
-      return BufferCtor.from(value, 'base64').toString('utf-8');
-    } catch {
-      // fall through
-    }
-  }
-  if (typeof globalObj?.atob === 'function') {
-    try {
-      const binary = globalObj.atob(value);
-      if (typeof globalObj.TextDecoder === 'function') {
-        const decoder = new globalObj.TextDecoder();
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i += 1) {
-          bytes[i] = binary.charCodeAt(i);
-        }
-        return decoder.decode(bytes);
-      }
-      return binary;
-    } catch {
-      try {
-        return globalObj.atob(value);
-      } catch {
-        // continue to fallback
-      }
-    }
-  }
-  return value;
 }
 
 export const storesWarmCache = {
@@ -98,50 +66,9 @@ function fromChain(data: any): Store {
 export async function mintStore(
   name: string,
   deps?: StoreServiceDeps,
-): Promise<{ id: string; nftId: string; txHash: string }> {
+): Promise<MintStoreResult> {
   const resolved = resolveDeps(deps);
-  resolved.chain.assertNearChain();
-  const { contractId } = resolved.config.nearConfig();
-  if (!contractId) throw new Error('CONTRACT_ID required');
-  const selector = resolved.walletSelector.getSelector();
-  if (!selector) throw new Error('Wallet not initialized');
-  const wallet = await selector.wallet();
-  const res: any = await wallet.signAndSendTransactions({
-    transactions: [
-      {
-        receiverId: contractId,
-        actions: [
-          {
-            type: 'FunctionCall',
-            params: {
-              methodName: 'mint_store',
-              args: { name },
-              gas: '30000000000000',
-              deposit: '0',
-            },
-          },
-        ],
-      },
-    ],
-  });
-
-  const outcome = Array.isArray(res) ? res[0] : res;
-  const txHash: string = outcome?.transaction?.hash || '';
-  let id = '';
-  let nftId = '';
-  try {
-    const val =
-      outcome?.status?.SuccessValue ||
-      outcome?.transaction_outcome?.outcome?.status?.SuccessValue;
-    if (val) {
-      const decoded = decodeBase64String(val);
-      const parsed = JSON.parse(decoded);
-      id = parsed.store_id || parsed.storeId || parsed.id || '';
-      nftId = parsed.nft_id || parsed.nftId || '';
-    }
-  } catch {}
-  if (!id) throw new Error('mint_store failed');
-  return { id, nftId, txHash };
+  return resolved.storeChainClient.mintStore(name);
 }
 
 async function persistStore(store: Store, sid: string) {
@@ -150,17 +77,6 @@ async function persistStore(store: Store, sid: string) {
   await setValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(store.id), json);
 }
 
-async function sendTx(action: string, data: any, deps: StoreServiceDeps) {
-  if (process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test') {
-    return;
-  }
-  const payload = canonicalJson({ action, ...data });
-  deps.chain.assertNearChain();
-  const tx = await deps.chain.chainAdapter.signMessage?.(payload);
-  if (!tx) {
-    throw new Error('Transaction failed');
-  }
-}
 export function selectStore(
   arg1: string,
   deps?: StoreServiceDeps,
@@ -239,7 +155,7 @@ export async function addStore(
   deps?: StoreServiceDeps,
 ): Promise<void> {
   const resolved = resolveDeps(deps);
-  await sendTx('add', { store }, resolved);
+  await resolved.storeChainClient.submitMutation('add', { store });
   await persistStore(store, sid ?? requireStoreId(store.id));
 }
 
@@ -249,7 +165,7 @@ export async function updateStore(
   deps?: StoreServiceDeps,
 ): Promise<void> {
   const resolved = resolveDeps(deps);
-  await sendTx('update', { store }, resolved);
+  await resolved.storeChainClient.submitMutation('update', { store });
   await persistStore(store, sid ?? requireStoreId(store.id));
 }
 
@@ -277,7 +193,7 @@ export async function removeStore(
       ? arg2OrDeps
       : maybeDeps;
   const resolved = resolveDeps(deps);
-  await sendTx('remove', { id }, resolved);
+  await resolved.storeChainClient.submitMutation('remove', { id });
   await removeValue(STORE_CACHE_ADDRESS, storeCacheKey(id, sid));
   await removeValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(id));
 }
@@ -301,7 +217,7 @@ export async function setStore(
 export function createStoreService(
   deps: StoreServiceDeps = defaultDeps,
 ): {
-  mintStore: (name: string) => Promise<{ id: string; nftId: string; txHash: string }>;
+  mintStore: (name: string) => Promise<MintStoreResult>;
   selectStore: (arg1: string, arg2?: string) => Promise<Store | null>;
   listStores: (storeId: string) => Promise<Store[]>;
   addStore: (store: Store, sid?: string) => Promise<void>;
@@ -341,42 +257,12 @@ export async function createStoreOnChain(args: {
   owner: string;
 }, deps?: StoreServiceDeps): Promise<string> {
   const resolved = resolveDeps(deps);
-  const appConfig = await resolved.config.loadAppConfig();
-  const relayerUrl = appConfig.EXPO_PUBLIC_RELAYER_URL;
-  if (!relayerUrl) throw new Error('EXPO_PUBLIC_RELAYER_URL not configured');
-  resolved.chain.assertNearChain();
-  const { chainAdapter } = resolved.chain;
-  const publicKey = chainAdapter.getPublicKey();
-  if (!publicKey) throw new Error('Wallet not connected');
-  const body = {
-    action: 'create_store',
-    args: { store_id: args.id, name: args.name },
-    ownerId: args.owner,
-  } as const;
-  const toSign = new TextEncoder().encode(
-    JSON.stringify({ action: body.action, args: body.args })
-  );
-  const signature = await chainAdapter.signMessage?.(toSign);
-  const res = await fetch(`${relayerUrl}/meta-tx`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: canonicalJson({ ...body, publicKey, signature }),
-  });
-  if (!res.ok) {
-    let msg = `${res.status} ${res.statusText}`;
-    try {
-      const j = await res.json();
-      msg = (j && (j.error || j.message)) || msg;
-    } catch {}
-    throw new Error(`Relayer error: ${msg}`);
-  }
-  const json = await res.json();
-  if (json?.error) throw new Error(String(json.error));
-  return json?.tx || '';
+  return resolved.storeChainClient.createStoreOnChain(args);
 }
 
 export { createDefaultStoreServiceDeps } from './storeServiceDeps';
 export { seedStoreCache, setStoreCacheSeedEnabled } from './storeCache';
+export type { MintStoreResult } from './storeChainClient';
 
 
 
