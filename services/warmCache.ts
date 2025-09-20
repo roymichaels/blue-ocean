@@ -281,12 +281,9 @@ export function createWarmCache<T>(
   };
 }
 
-let _hitStats: Map<string, { hits: number; total: number }> | undefined;
+let _hitStats: Map<string, { hits: number; total: number }> = new Map();
 
 function getHitStats(): Map<string, { hits: number; total: number }> {
-  if (!_hitStats) {
-    _hitStats = new Map<string, { hits: number; total: number }>();
-  }
   return _hitStats;
 }
 
