@@ -281,7 +281,14 @@ export function createWarmCache<T>(
   };
 }
 
-const hitStats = new Map<string, { hits: number; total: number }>();
+let _hitStats: Map<string, { hits: number; total: number }> | undefined;
+
+function getHitStats(): Map<string, { hits: number; total: number }> {
+  if (!_hitStats) {
+    _hitStats = new Map<string, { hits: number; total: number }>();
+  }
+  return _hitStats;
+}
 
 export function getCacheHitRatio(topic: string): number {
   const s = hitStats.get(topic);
