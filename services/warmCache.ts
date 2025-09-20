@@ -76,7 +76,7 @@ export function createWarmCache<T>(
   const buffer: { msg: DiffMessage<T>; source: MessageSource }[] = [];
   const reconcilers = new Map<string, (id: string, value: T | undefined) => void>();
   const stats = { hits: 0, total: 0 };
-  hitStats.set(topic, stats);
+  getHitStats().set(topic, stats);
   const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
   const lagThreshold = options.lagThresholdMs ?? DEFAULT_LAG_THRESHOLD;
   const metricLabels = { cache: topic } as const;
