@@ -223,6 +223,10 @@ export default function FeeDashboard({ tenantId, usagePreviewLimit = 4 }: FeeDas
               ) : (
                 usagePreview.map((event) => {
                   const settled = Boolean(event.settledAt);
+                  const reference =
+                    typeof event.metadata?.orderId === 'string' && event.metadata.orderId
+                      ? event.metadata.orderId
+                      : event.id;
                   return (
                     <View
                       key={event.id}
@@ -237,7 +241,7 @@ export default function FeeDashboard({ tenantId, usagePreviewLimit = 4 }: FeeDas
                           {event.meterId}
                         </Text>
                         <Text style={{ color: colors.text.secondary }}>
-                          {t('billing.orderReference', 'Reference')}: {event.metadata?.orderId ?? event.id}
+                          {t('billing.orderReference', 'Reference')}: {reference}
                         </Text>
                       </Stack>
                       <Stack gap="spacer4" style={styles.usageDetails}>

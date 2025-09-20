@@ -1,11 +1,31 @@
-import { Buffer } from 'buffer';
+﻿import { Buffer } from 'buffer';
 import * as SecureStore from 'expo-secure-store';
 import { getPublicKey, utils } from '@noble/ed25519';
 
 const KEY_NAME = 'ephemeral-ed25519';
 let memoryKey: string | null = null;
 
-async function getPrivateKeyHex(): Promise<string> {\r\n  try {\r\n    const stored = await SecureStore.getItemAsync(KEY_NAME);\r\n    if (stored) {\r\n      memoryKey = stored;\r\n      return stored;\r\n    }\r\n  } catch {\r\n    if (memoryKey) return memoryKey;\r\n  }\r\n  if (memoryKey) return memoryKey;\r\n  const privBytes = utils.randomPrivateKey();\r\n  const hex = Buffer.from(privBytes).toString('hex');\r\n  memoryKey = hex;\r\n  try {\r\n    await SecureStore.setItemAsync(KEY_NAME, hex);\r\n  } catch {\r\n    // fall back to in-memory key when SecureStore unavailable\r\n  }\r\n  return hex;\r\n}
+async function getPrivateKeyHex(): Promise<string> {
+  try {
+    const stored = await SecureStore.getItemAsync(KEY_NAME);
+    if (stored) {
+      memoryKey = stored;
+      return stored;
+    }
+  } catch {
+    if (memoryKey) return memoryKey;
+  }
+  if (memoryKey) return memoryKey;
+  const privBytes = utils.randomPrivateKey();
+  const hex = Buffer.from(privBytes).toString('hex');
+  memoryKey = hex;
+  try {
+    await SecureStore.setItemAsync(KEY_NAME, hex);
+  } catch {
+    // fall back to in-memory key when SecureStore unavailable
+  }
+  return hex;
+}
 
 export async function getEd25519KeyPair(): Promise<{
   privateKey: Uint8Array;
@@ -26,4 +46,3 @@ export async function getPrivateKey(): Promise<Uint8Array> {
   const { privateKey } = await getEd25519KeyPair();
   return privateKey;
 }
-

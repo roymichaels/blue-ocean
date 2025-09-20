@@ -2,10 +2,10 @@
 // TODO:CORE-023 derive shared keys per-tenant (replace per-process secret)
 
 import type { LightNode } from '@waku/sdk';
-import { types } from 'near-lake-framework';
+import type { types } from 'near-lake-framework';
 import { getClient } from '@/utils/transport';
 import { errorLog } from '@/utils/logger';
-import { gzipSync } from 'zlib';
+import { gzipSize } from '@/utils/gzipSize';
 import config from '@/config';
 import { canonicalJson } from '@/utils/serialization';
 import { retryWithBackoff } from '@/utils/retry';
@@ -23,7 +23,7 @@ import { initLake } from './nearLake';
 import { topicFor } from '@blue-ocean/utils';
 import { getNetworkId, getContractId } from '@/services/config';
 import { randomBytes } from '@noble/hashes/utils';
-import { Buffer } from 'buffer';
+
 import type { Store } from '@/types';
 
 // TODO:TODO-103 Break the monolithic Waku service into focused modules so subscription, publishing, and sync concerns stay isolated.
@@ -63,8 +63,12 @@ const PROMPT_TTI_MS = 2500; // 2.5s
 const NONCE_BYTE_LENGTH = 12;
 const KEY_EPOCH_INTERVAL_MS = 10 * 60 * 1000;
 
+function toHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 function randomHex(byteLength = NONCE_BYTE_LENGTH): string {
-  return Buffer.from(randomBytes(byteLength)).toString('hex');
+  return toHex(randomBytes(byteLength));
 }
 type PersistStoreFn = (storeId: string, store: Store) => Promise<void>;
 
@@ -249,7 +253,7 @@ export async function publish(topic: string, message: any): Promise<string> {
       : getCurrentKeyEpoch();
   const envelope = { ...enriched, id, keyEpoch: baseEpoch };
   const payload = client.utf8ToBytes(canonicalJson(envelope));
-  const gzSize = gzipSync(Buffer.from(payload)).length;
+  const gzSize = gzipSize(payload);
   if (gzSize > MAX_GZ_PAYLOAD) {
     throw new Error('Payload exceeds 200KB gz limit');
   }
@@ -441,6 +445,7 @@ async function handleLakeBlock(msg: types.StreamerMessage) {
 
 // Expose internals for testing
 export const __test__ = { startNode, scheduleReconnect };
+
 
 
 

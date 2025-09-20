@@ -73,28 +73,24 @@ export function useHomeFilters(products: Product[]) {
       filtered = filtered.filter((p) => p.price <= max);
     }
 
-    return [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'rating':
-          if (!reviewsEnabled) {
-            return (
-              new Date(b.createdAt || 0).getTime() -
-              new Date(a.createdAt || 0).getTime()
-            );
-          }
-          return (b.rating ?? 0) - (a.rating ?? 0);
-        case 'newest':
-        default:
+    const sorted = [...filtered];
+    if (sortBy === 'price-low') {
+      sorted.sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'price-high') {
+      sorted.sort((a, b) => b.price - a.price);
+    } else if (sortBy === 'rating') {
+      sorted.sort((a, b) => {
+        if (!reviewsEnabled) {
           return (
             new Date(b.createdAt || 0).getTime() -
             new Date(a.createdAt || 0).getTime()
           );
-      }
-    });
+        }
+        return (b.rating ?? 0) - (a.rating ?? 0);
+      });
+    }
+
+    return sorted;
   }, [maxPrice, minPrice, reviewsEnabled, searchResults, selectedCategory, sortBy]);
 
   return {

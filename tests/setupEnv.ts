@@ -4,11 +4,16 @@ import React from 'react';
 import { insertConfig } from './testUtils';
 import { loadTenantSettings } from '../constants/tenant';
 
+import { etc } from '@noble/ed25519';
+import { sha512 } from '@noble/hashes/sha512';
+
 // Make this file a module so global augmentation works
 export {};
 
 // Ensure global React for classic JSX runtime in tests
 (globalThis as any).React = React;
+
+etc.sha512Sync = (...inputs: any[]) => sha512(...inputs);
 
 const secretInternals =
   (React as any).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED ??

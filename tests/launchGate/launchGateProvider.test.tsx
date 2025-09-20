@@ -1,5 +1,27 @@
+const colors = {
+  link: '#00f',
+  border: { primary: '#222', secondary: '#444' },
+  text: { primary: '#000', secondary: '#333', inverse: '#fff' },
+  surface: { primary: '#fff' },
+  status: { warning: '#f90' },
+  background: '#fff',
+};
 import React, { forwardRef, useImperativeHandle } from 'react';
 import renderer, { act } from 'react-test-renderer';
+jest.mock('@/ui/ThemeProvider', () => ({
+  useTheme: () => ({ colors }),
+  useLanguage: () => ({
+    t: (key: string, arg?: any, fallback?: string) => {
+      if (typeof arg === 'string') return arg;
+      if (arg && typeof arg === 'object' && 'digit' in arg) {
+        return `Digit ${arg.digit}`;
+      }
+      if (typeof fallback === 'string') return fallback;
+      return key;
+    },
+  }),
+}));
+
 import { I18nManager } from 'react-native';
 import { LaunchGateProvider, useLaunchGate, COOLDOWN_MS, IDLE_MS } from '@/features/launchGate';
 import WalletContext from '@/contexts/WalletProvider';

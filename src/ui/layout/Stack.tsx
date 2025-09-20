@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, ViewProps } from 'react-native';
 import { spacing } from '../tokens';
 
@@ -9,12 +9,21 @@ interface StackProps extends ViewProps {
   gap?: keyof typeof spacing;
   /** align-items value */
   align?: 'flex-start' | 'center' | 'flex-end' | 'stretch' | 'baseline';
+  /** justify-content value */
+  justify?:
+    | 'flex-start'
+    | 'center'
+    | 'flex-end'
+    | 'space-between'
+    | 'space-around'
+    | 'space-evenly';
 }
 
 export default function Stack({
   direction = 'vertical',
   gap,
   align,
+  justify,
   style,
   children,
   ...rest
@@ -25,7 +34,8 @@ export default function Stack({
         {
           flexDirection: direction === 'horizontal' ? 'row' : 'column',
           gap: gap ? spacing[gap] : undefined,
-          alignItems: align,\r\n          justifyContent: justify,
+          alignItems: align,
+          justifyContent: justify,
         },
         style,
       ]}
@@ -35,7 +45,3 @@ export default function Stack({
     </View>
   );
 }
-
-
-
-

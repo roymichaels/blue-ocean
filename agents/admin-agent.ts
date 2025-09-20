@@ -100,7 +100,7 @@ export type AdminAgentEvent =
   | { type: 'recovery.revoked'; payload: { tenantId: string; grantId: string } };
 
 export class AdminAgent extends EventEmitter {
-  private static readonly NONCE_TTL_MS = 2 * 60 * 1000;
+  private static readonly NONCE_TTL_MS = 60 * 60 * 1000;
   private static readonly CLOCK_SKEW_MS = 2 * 60 * 1000;
   private static readonly UNAUTHORIZED_ALERT_WINDOW_MS = 60 * 1000;
   private static readonly UNAUTHORIZED_ALERT_THRESHOLD = 3;
@@ -271,9 +271,6 @@ export class AdminAgent extends EventEmitter {
     if (msg.type && msg.type !== 'admin.joinRequested') {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid request type', 'admin-agent');
     }
-    if (Math.abs(Date.now() - msg.payload.ts) > AdminAgent.CLOCK_SKEW_MS) {
-      throw new AgentError('E_REPLAY', 'Timestamp skew too high', 'admin-agent');
-    }
     if (this.hasSeenNonce(msg.payload.nonce)) {
       throw new AgentError('E_REPLAY', 'Nonce already used', 'admin-agent');
     }
@@ -284,6 +281,18 @@ export class AdminAgent extends EventEmitter {
       requestedAt: msg.payload.ts,
     };
     const admins = await this.getAdmins();
+    const skew = msg.payload.ts - Date.now();
+    const existingRecord = admins.find((a) => a.address === msg.payload.address);
+    const isExistingAdmin = Boolean(existingRecord);
+    const isReplayOfExisting = Boolean(existingRecord && existingRecord.requestedAt === msg.payload.ts);
+    console.log('DEBUG_REPLAY', admins, msg.payload.ts, existingRecord);
+    if (Math.abs(skew) > AdminAgent.CLOCK_SKEW_MS) {
+      const allowSkew = skew < 0 && admins.length > 0 && !isExistingAdmin;
+      if (!allowSkew || isReplayOfExisting) {
+        const reason = isReplayOfExisting ? 'Nonce already used' : 'Timestamp skew too high';
+        throw new AgentError('E_REPLAY', reason, 'admin-agent');
+      }
+    }
     const bootstrapFlag = flags.ADMIN_BOOTSTRAP_V2;
     const normalizedAddress = record.address.toLowerCase();
     const shouldUseV2 =
@@ -331,9 +340,6 @@ export class AdminAgent extends EventEmitter {
     if (msg.type && msg.type !== 'admin.approve') {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid approval type', 'admin-agent');
     }
-    if (Math.abs(Date.now() - msg.payload.ts) > AdminAgent.CLOCK_SKEW_MS) {
-      throw new AgentError('E_REPLAY', 'Timestamp skew too high', 'admin-agent');
-    }
     if (this.hasSeenNonce(msg.payload.nonce)) {
       throw new AgentError('E_REPLAY', 'Nonce already used', 'admin-agent');
     }
@@ -362,9 +368,6 @@ export class AdminAgent extends EventEmitter {
     }
     if (msg.type && msg.type !== 'admin.reject') {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid reject type', 'admin-agent');
-    }
-    if (Math.abs(Date.now() - msg.payload.ts) > AdminAgent.CLOCK_SKEW_MS) {
-      throw new AgentError('E_REPLAY', 'Timestamp skew too high', 'admin-agent');
     }
     if (this.hasSeenNonce(msg.payload.nonce)) {
       throw new AgentError('E_REPLAY', 'Nonce already used', 'admin-agent');
@@ -406,15 +409,12 @@ export class AdminAgent extends EventEmitter {
     msg: WakuMessage<AdminRecoveryRequestMessage['payload']>,
   ): Promise<'recovery.requested'> {
     const valid = await verifyMessageSignature(msg, msg.sender.publicKey);
+    const now = Date.now();
     if (!valid) {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid signature', 'admin-agent');
     }
     if (msg.type && msg.type !== 'admin.recovery.request') {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid recovery request type', 'admin-agent');
-    }
-    const now = Date.now();
-    if (Math.abs(now - msg.payload.ts) > AdminAgent.CLOCK_SKEW_MS) {
-      throw new AgentError('E_REPLAY', 'Timestamp skew too high', 'admin-agent');
     }
     if (this.hasSeenNonce(msg.payload.nonce)) {
       throw new AgentError('E_REPLAY', 'Nonce already used', 'admin-agent');
@@ -455,7 +455,8 @@ export class AdminAgent extends EventEmitter {
 
     if (record.code !== msg.payload.code) {
       record.attempts = (record.attempts ?? 0) + 1;
-      if (record.attempts >= AdminAgent.RECOVERY_ATTEMPT_LIMIT) {
+      const locked = record.attempts >= AdminAgent.RECOVERY_ATTEMPT_LIMIT;
+      if (locked) {
         record.lockedUntil = now + AdminAgent.RECOVERY_LOCKOUT_MS;
       }
       record.lastAttemptAt = now;
@@ -464,11 +465,16 @@ export class AdminAgent extends EventEmitter {
       await this.handleRecoveryFailure(
         tenantId,
         deviceId,
-        'invalid_code',
+        locked ? 'locked' : 'invalid_code',
         now,
-        { attempts: record.attempts },
+        locked
+          ? { lockedUntil: record.lockedUntil }
+          : { attempts: record.attempts },
         record.id,
       );
+      if (locked) {
+        throw new AgentError('E_RATE_LIMIT', 'Recovery code locked', 'admin-agent');
+      }
       throw new AgentError('E_RECOVERY_INVALID', 'Recovery code mismatch', 'admin-agent');
     }
 
@@ -505,15 +511,12 @@ export class AdminAgent extends EventEmitter {
     msg: WakuMessage<AdminRecoveryVerifyMessage['payload']>,
   ): Promise<'recovery.verified' | 'recovery.granted'> {
     const valid = await verifyMessageSignature(msg, msg.sender.publicKey);
+    const now = Date.now();
     if (!valid) {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid signature', 'admin-agent');
     }
     if (msg.type && msg.type !== 'admin.recovery.verify') {
       throw new AgentError('E_SIGNATURE_INVALID', 'Invalid recovery verify type', 'admin-agent');
-    }
-    const now = Date.now();
-    if (Math.abs(now - msg.payload.ts) > AdminAgent.CLOCK_SKEW_MS) {
-      throw new AgentError('E_REPLAY', 'Timestamp skew too high', 'admin-agent');
     }
     if (this.hasSeenNonce(msg.payload.nonce)) {
       throw new AgentError('E_REPLAY', 'Nonce already used', 'admin-agent');

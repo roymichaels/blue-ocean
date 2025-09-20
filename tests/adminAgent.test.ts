@@ -63,7 +63,10 @@ async function createJoinRequest(
 describe('AdminAgent', () => {
   let agent: AdminAgent;
 
-  beforeEach(() => {\r\n    jest.useFakeTimers();\r\n    jest.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));\r\n    __clear();
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));
+    __clear();
     adminUnauthorizedAttempts.reset();
     adminCountGauge.set(0);
     agent = new AdminAgent();

@@ -13,11 +13,10 @@ export default function SearchBar({ searchQuery, onSearchChange }: SearchBarProp
 
   return (
     <TextField
-      variant="search"
       value={searchQuery}
       onChangeText={onSearchChange}
       placeholder={t('home.searchPlaceholder')}
-      style={styles.field}
+      style={[styles.field, styles.search]}
       textAlign="right"
     />
   );
@@ -27,6 +26,10 @@ const styles = StyleSheet.create({
   field: {
     marginHorizontal: 16,
     marginBottom: 16,
+  },
+  search: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
   },
 });
 

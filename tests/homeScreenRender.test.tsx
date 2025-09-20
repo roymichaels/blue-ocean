@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 
@@ -83,6 +84,7 @@ jest.mock('@features/products', () => ({
 jest.mock('@/components/InfoModal', () => () => null);
 jest.mock('@/components/SmartImage', () => () => null);
 
+jest.mock('@/features/home/components/AdminOnboardingChecklist', () => () => null);
 jest.mock('@/features/home/hooks/useHomeFilters', () => ({
   useHomeFilters: () => ({
     filteredProducts: [],
@@ -102,6 +104,21 @@ jest.mock('@/features/home/hooks/useHomeFilters', () => ({
   }),
 }));
 
+jest.mock('@/features/home/hooks/useHomeModals', () => ({
+  useHomeModals: () => ({
+    productFormVisible: false,
+    productToEdit: null,
+    openProductForm: jest.fn(),
+    closeProductForm: jest.fn(),
+    showCartModal: false,
+    closeCartModal: jest.fn(),
+    infoModal: { visible: false, title: '', message: '', type: 'info', buttonText: '' },
+    closeInfoModal: jest.fn(),
+  }),
+}));
+jest.mock('@/features/home/hooks/useHomeData', () => ({
+  useHomeData: () => ({ fallbackCategories: [], fallbackBanners: [] }),
+}));
 import HomeScreen from '@app/index';
 
 describe('HomeScreen render', () => {
@@ -114,7 +131,12 @@ describe('HomeScreen render', () => {
 
     let root: renderer.ReactTestRenderer;
     await act(async () => {
-      root = renderer.create(<HomeScreen />);
+      const queryClient = new QueryClient();
+      root = renderer.create(
+        <QueryClientProvider client={queryClient}>
+          <HomeScreen />
+        </QueryClientProvider>
+      );
     });
     await act(async () => {});
 
@@ -141,7 +163,12 @@ describe('HomeScreen render', () => {
 
     let root: renderer.ReactTestRenderer;
     await act(async () => {
-      root = renderer.create(<HomeScreen />);
+      const queryClient = new QueryClient();
+      root = renderer.create(
+        <QueryClientProvider client={queryClient}>
+          <HomeScreen />
+        </QueryClientProvider>
+      );
     });
     await act(async () => {});
 

@@ -37,7 +37,7 @@ export default function TextField({
       placeholderTextColor={colors.text.tertiary}
       secureTextEntry={secureTextEntry}
       keyboardType={keyboardType}
-      textAlign={textAlign as TextStyle['textAlign']}
+      textAlign={textAlign}
       style={[
         {
           backgroundColor: colors.surface.primary,

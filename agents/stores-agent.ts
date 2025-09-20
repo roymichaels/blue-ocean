@@ -1,21 +1,45 @@
 import type { WakuMessage } from '@/types/waku';
-import { Store } from '@/types';
-import { assertNearChain } from '@/services/chain';
-import {
-  addStore,
-  updateStore,
-  removeStore,
-  selectStore as fetchStore,
-  listStores as fetchStores,
-} from '@/features/stores/services/nearStores';
+import type { Store } from '@/types';
 import { normalizeMessage } from '../lib/normalizeMessage';
-import { publish } from '@/services/waku';
 import { buildTopic } from '@/utils/wakuTopics';
-import ensureNearWallet from '@/utils/ensureNearWallet';
-import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 
 const getTransportCrypto = () => (typeof globalThis !== 'undefined' && globalThis.crypto ? globalThis.crypto : undefined);
-assertNearChain();
+
+type NearStoresModule = typeof import('@/features/stores/services/nearStores');
+let nearStoresModule: NearStoresModule | null = null;
+async function getStoreServices(): Promise<NearStoresModule> {
+  if (!nearStoresModule) {
+    nearStoresModule = await import('@/features/stores/services/nearStores');
+  }
+  return nearStoresModule;
+}
+
+type EnsureNearWalletFn = typeof import('@/utils/ensureNearWallet').default;
+let ensureNearWalletFn: EnsureNearWalletFn | null = null;
+async function loadEnsureNearWallet(): Promise<EnsureNearWalletFn> {
+  if (!ensureNearWalletFn) {
+    const mod = await import('@/utils/ensureNearWallet');
+    ensureNearWalletFn = mod.default;
+  }
+  return ensureNearWalletFn;
+}
+
+type PublishFn = typeof import('@/services/waku').publish;
+type MakeSignedMessageFn = typeof import('@/utils/wakuSigning').makeSignedWakuMessage;
+let wakuDeps: { publish: PublishFn; makeSignedWakuMessage: MakeSignedMessageFn } | null = null;
+async function loadWakuDeps(): Promise<{ publish: PublishFn; makeSignedWakuMessage: MakeSignedMessageFn }> {
+  if (!wakuDeps) {
+    const [wakuModule, signingModule] = await Promise.all([
+      import('@/services/waku'),
+      import('@/utils/wakuSigning'),
+    ]);
+    wakuDeps = {
+      publish: wakuModule.publish,
+      makeSignedWakuMessage: signingModule.makeSignedWakuMessage,
+    };
+  }
+  return wakuDeps;
+}
 
 // TODO:TODO-111 Extend StoresAgent to track multi-tenant metrics and avoid namespace collisions for shared storefronts.
 // TODO:REC-211 Publish reputation score updates via analytics topic so UI dashboards can react in real time.
@@ -31,7 +55,8 @@ class StoresAgent {
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
   private async ensureWallet(): Promise<{ address: string; publicKey: string }> {
-    return ensureNearWallet('Please connect your NEAR wallet to manage stores.');
+    const ensureWallet = await loadEnsureNearWallet();
+    return ensureWallet('Please connect your NEAR wallet to manage stores.');
   }
 
   private getNamespace(store: Store): string {
@@ -40,14 +65,14 @@ class StoresAgent {
   }
 
   private async persistStore(store: Store): Promise<Store> {
-    // TODO:CORE-021 Angle 1 - Emit store persistence events to the analytics topic once tenant metrics schema ships.
+    const services = await getStoreServices();
     const record = this.toRecord(store);
     const namespace = this.getNamespace(record);
-    const existing = await fetchStore(namespace, record.id);
+    const existing = await services.selectStore(namespace, record.id);
     if (existing) {
-      await updateStore(record, namespace);
+      await services.updateStore(record, namespace);
     } else {
-      await addStore(record, namespace);
+      await services.addStore(record, namespace);
     }
     return record;
   }
@@ -63,7 +88,6 @@ class StoresAgent {
     return (avg + m.reliability * 5) / 2;
   }
 
-
   async recordReview(storeId: string, rating: number) {
     if (!this.reputation[storeId]) {
       this.reputation[storeId] = { reviewSum: 0, reviewCount: 0, reliability: 0, score: 0 };
@@ -72,11 +96,12 @@ class StoresAgent {
     m.reviewSum += rating;
     m.reviewCount += 1;
     const newScore = this.calculateScore(storeId);
-    const store = await fetchStore(storeId);
+    const services = await getStoreServices();
+    const store = await services.selectStore(storeId);
     if (store) {
       try {
         await this.persistStore({ ...store, reputation: newScore });
-        const confirmed = await fetchStore(storeId);
+        const confirmed = await services.selectStore(storeId);
         if (confirmed) {
           m.score = confirmed.reputation || newScore;
           this.subscribers.forEach((cb) => cb(storeId, m.score));
@@ -89,7 +114,8 @@ class StoresAgent {
   }
 
   async updateReputationByOwner(owner: string, reliability: number): Promise<void> {
-    const stores = await fetchStores('default');
+    const services = await getStoreServices();
+    const stores = await services.listStores('default');
     const store = stores.find((s) => s.owner === owner);
     if (store) {
       const id = store.id;
@@ -101,7 +127,7 @@ class StoresAgent {
       const newScore = this.calculateScore(id);
       try {
         await this.persistStore({ ...store, reputation: newScore });
-        const confirmed = await fetchStore(id);
+        const confirmed = await services.selectStore(id);
         if (confirmed) {
           this.reputation[id].score = confirmed.reputation || newScore;
           this.subscribers.forEach((cb) => cb(id, this.reputation[id].score));
@@ -142,14 +168,16 @@ class StoresAgent {
 
   async remove(id: string): Promise<void> {
     await this.ensureWallet();
-    await removeStore(id);
+    const services = await getStoreServices();
+    await services.removeStore(id);
   }
 
   /**
    * Returns a defensive copy of a store by id.
    */
   async selectStore(id: string): Promise<Store | null> {
-    const store = await fetchStore(id);
+    const services = await getStoreServices();
+    const store = await services.selectStore(id);
     return store ? JSON.parse(JSON.stringify(store)) : null;
   }
 
@@ -157,12 +185,14 @@ class StoresAgent {
    * Returns defensive copies of all stores.
    */
   async getStores(): Promise<Store[]> {
-    const list = await fetchStores('default');
+    const services = await getStoreServices();
+    const list = await services.listStores('default');
     return list.map((s) => JSON.parse(JSON.stringify(s)));
   }
 
   private async broadcastCreated(store: Store): Promise<void> {
     try {
+      const { publish, makeSignedWakuMessage } = await loadWakuDeps();
       const transportCrypto = getTransportCrypto();
       const nonce = transportCrypto && typeof transportCrypto.randomUUID === 'function'
         ? transportCrypto.randomUUID()
@@ -185,9 +215,3 @@ export const selectStore = (id: string): Promise<Store | null> =>
   storesAgent.selectStore(id);
 
 export default storesAgent;
-
-
-
-
-
-

@@ -15,11 +15,12 @@ import { routes } from '@/utils/routes';
 import { Order, Store } from '@/types';
 import { errorLog } from '@/utils/logger';
 import {
-  CheckCircle2,
+  CheckCircle,
   Circle,
-  PackagePlus,
+  Package,
   ShoppingCart,
   Store as StoreIcon,
+  type LucideProps,
 } from 'lucide-react-native';
 
 interface AdminOnboardingChecklistProps {
@@ -36,11 +37,11 @@ interface StepConfig {
   disabled?: boolean;
   loading?: boolean;
   helperText?: string | null;
-  Icon: React.ComponentType<{ size: number; color: string }>;
+  Icon: React.ComponentType<LucideProps>;
 }
 
 const StepRow: React.FC<{ step: StepConfig; colors: any }> = ({ step, colors }) => {
-  const StatusIcon = step.completed ? CheckCircle2 : step.Icon;
+  const StatusIcon: React.ComponentType<LucideProps> = step.completed ? CheckCircle : step.Icon;
   return (
     <View style={styles.stepRow} accessibilityRole="summary">
       <StatusIcon
@@ -229,7 +230,7 @@ export default function AdminOnboardingChecklist({ onAddProduct }: AdminOnboardi
       onAction: handleManageProducts,
       disabled: !hasStore,
       loading: productsLoading || productsRefetching,
-      Icon: PackagePlus,
+      Icon: Package,
     },
     {
       key: 'checkout',

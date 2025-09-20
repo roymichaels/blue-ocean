@@ -154,9 +154,7 @@ export async function subscribeToKycReceipts(
 
   if (options.fetchHistory !== false) {
     try {
-      await fetchHistory(topic, (msg: unknown) => {
-        void handleMessage(msg);
-      });
+      await fetchHistory(topic, (msg: unknown) => handleMessage(msg));
     } catch (err) {
       options.onError?.(err);
     }
@@ -164,9 +162,7 @@ export async function subscribeToKycReceipts(
 
   let unsubscribe: (() => void) | undefined;
   try {
-    unsubscribe = await subscribeWithAck(topic, (msg: unknown) => {
-      void handleMessage(msg);
-    });
+    unsubscribe = await subscribeWithAck(topic, (msg: unknown) => handleMessage(msg));
   } catch (err) {
     options.onError?.(err);
     unsubscribe = undefined;

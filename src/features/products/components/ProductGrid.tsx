@@ -61,14 +61,14 @@ function ProductGrid({
     () => ({
       gap: spacing.spacer12,
       paddingHorizontal: spacing.spacer16,
-      flexDirection: isRTL ? 'row-reverse' : 'row',
+      flexDirection: (isRTL ? 'row-reverse' : 'row') as ViewStyle['flexDirection'],
     }),
     [isRTL]
   );
   const contentContainerStyle = useMemo(
     () => ({
       paddingVertical: spacing.spacer16,
-      direction: isRTL ? 'rtl' : 'ltr',
+      direction: (isRTL ? 'rtl' : 'ltr') as ViewStyle['direction'],
     }),
     [isRTL]
   );
@@ -110,7 +110,7 @@ function ProductGrid({
       data={products}
       keyExtractor={keyExtractor}
       numColumns={2}
-      style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+      style={{ direction: (isRTL ? 'rtl' : 'ltr') as ViewStyle['direction'] }}
       columnWrapperStyle={columnWrapperStyle}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}

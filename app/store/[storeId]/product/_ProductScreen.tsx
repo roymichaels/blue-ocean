@@ -269,6 +269,8 @@ export default function ProductDetailScreen() {
     return t('productDetail.disabledFallback', 'This product is currently unavailable.');
   }, [isProductDisabled, productDisabledReason, t]);
 
+  const heroImageUri = mainImageUri || product?.images?.[0] || null;
+
   if (!productId) {
     return (
       <EmptyState
@@ -339,7 +341,8 @@ export default function ProductDetailScreen() {
       ) : (
         <View style={[styles.card, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }] }>
           <SmartImage
-            uri={mainImageUri || product.images?.[0]}
+            uri={heroImageUri}
+            source={heroImageUri ? { uri: heroImageUri } : undefined}
             width={360}
             height={220}
             style={[styles.heroImage, { borderRadius: radius.lg }]}
@@ -550,6 +553,7 @@ export default function ProductDetailScreen() {
                 <SmartImage
                   key={item.uri}
                   uri={item.uri}
+                  source={{ uri: item.uri }}
                   width={120}
                   height={120}
                   style={{ borderRadius: radius.md }}

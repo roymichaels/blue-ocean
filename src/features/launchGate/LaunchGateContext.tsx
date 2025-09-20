@@ -240,7 +240,7 @@ export function LaunchGateProvider({
         idleTimerRef.current = null;
       }
     };
-  }, [applyLock]);
+  }, [applyLock, pinSet]);
 
   useEffect(() => {
     const handleAppStateChange = (state: AppStateStatus) => {
@@ -256,9 +256,12 @@ export function LaunchGateProvider({
         }
       }
     };
-    const sub = AppState.addEventListener('change', handleAppStateChange);
+    if (!AppState || typeof AppState.addEventListener !== 'function') {
+      return undefined;
+    }
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => {
-      sub.remove();
+      (subscription as { remove?: () => void } | undefined)?.remove?.();
     };
   }, [applyLock, recordActivity]);
 

@@ -26,6 +26,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import { getStore } from '@/features/stores/services/nearStores';
 import { getProduct, setProduct } from '@/features/products/services/nearProducts';
 import { chainAdapter } from '@/services/chain';
+import { getAccountId as getNearAuthAccountId } from '@/features/auth/services/nearAuth';
 import { adminResolve, deployEscrow as nearDeployEscrow } from './nearContract';
 import { canonicalJson } from '@/utils/serialization';
 import { calculateCardFees } from '@/features/payments/services/card';
@@ -874,7 +875,7 @@ class OrderService {
   async resolveDispute(orderId: string, toSeller: boolean): Promise<void> {
     const order = await ordersAgent.get(orderId);
     if (!order || !order.escrowAddr) return;
-    const actor = chainAdapter.getAccountId();
+    const actor = chainAdapter.getAccountId() ?? getNearAuthAccountId();
     if (!actor) {
       throw new Error('Admin wallet address required');
     }

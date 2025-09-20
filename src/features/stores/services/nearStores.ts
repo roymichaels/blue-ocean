@@ -1,11 +1,6 @@
-import { Store } from '@/types';
-import { chainAdapter, assertNearChain } from '@/services/chain';
+import type { Store } from '@/types';
 import { requireStoreId } from '@blue-ocean/utils';
-import { listStores as contractListStores } from '@/services/nearStoreContract';
 import { canonicalJson } from '@/utils/serialization';
-import { nearConfig } from '@/services/config';
-import { getSelector } from '@/services/walletSelector';
-import { Buffer } from 'buffer';
 import {
   getValue,
   setValue,
@@ -13,16 +8,116 @@ import {
   removeValue,
 } from '@/services/nearKvStore';
 import { errorLog } from '@/utils/logger';
-import config from '@/config';
-import { createWarmCache } from '@/services/warmCache';
-import type { CacheMutation, DiffMessage } from '@/services/warmCache';
+import type { CacheMutation, DiffMessage, WarmCache as WarmCacheType } from '@/services/warmCache';
 
-assertNearChain();
 
 const ADDRESS = 'stores';
 const STORE_CACHE_TOPIC = '/blue-ocean/stores/1';
 const DISABLED = false;
 let SEEDED = false;
+let chainEnsured = false;
+type ChainModule = typeof import('@/services/chain');
+let chainModule: ChainModule | null = null;
+async function loadChainModule(): Promise<ChainModule> {
+  if (!chainModule) {
+    chainModule = await import('@/services/chain');
+  }
+  return chainModule;
+}
+
+async function ensureChain(): Promise<void> {
+  if (chainEnsured) return;
+  const { assertNearChain } = await loadChainModule();
+  assertNearChain();
+  chainEnsured = true;
+}
+
+type NearStoreContractModule = typeof import('@/services/nearStoreContract');
+let nearStoreContractModule: NearStoreContractModule | null = null;
+async function loadNearStoreContract(): Promise<NearStoreContractModule> {
+  await ensureChain();
+  if (!nearStoreContractModule) {
+    nearStoreContractModule = await import('@/services/nearStoreContract');
+  }
+  return nearStoreContractModule;
+}
+
+type WalletSelectorModule = typeof import('@/services/walletSelector');
+let walletSelectorModule: WalletSelectorModule | null = null;
+async function loadWalletSelector(): Promise<WalletSelectorModule> {
+  if (!walletSelectorModule) {
+    walletSelectorModule = await import('@/services/walletSelector');
+  }
+  return walletSelectorModule;
+}
+
+type ConfigModule = typeof import('@/services/config');
+let configModule: ConfigModule | null = null;
+async function loadConfigModule(): Promise<ConfigModule> {
+  if (!configModule) {
+    configModule = await import('@/services/config');
+  }
+  return configModule;
+}
+
+type AppConfig = typeof import('@/config').default;
+let cachedAppConfig: AppConfig | null = null;
+type WarmCacheModule = typeof import('@/services/warmCache');
+let warmCacheModule: WarmCacheModule | null = null;
+let storeCacheInstance: WarmCacheType<Store> | null = null;
+
+function ensureStoreCache(): WarmCacheType<Store> {
+  if (!storeCacheInstance) {
+    const mod: WarmCacheModule =
+      warmCacheModule ??
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      (require('@/services/warmCache') as WarmCacheModule);
+    warmCacheModule = mod;
+    storeCacheInstance = mod.createWarmCache<Store>(STORE_CACHE_TOPIC, {
+      hydrateLake: hydrateStoreLake,
+    });
+  }
+  return storeCacheInstance;
+}
+async function loadAppConfig(): Promise<AppConfig> {
+  if (!cachedAppConfig) {
+    cachedAppConfig = (await import('@/config')).default;
+  }
+  return cachedAppConfig;
+}
+
+function decodeBase64String(value: string): string {
+  const globalObj: any = globalThis as any;
+  const BufferCtor = globalObj?.Buffer;
+  if (BufferCtor?.from) {
+    try {
+      return BufferCtor.from(value, 'base64').toString('utf-8');
+    } catch {
+      // fall through
+    }
+  }
+  if (typeof globalObj?.atob === 'function') {
+    try {
+      const binary = globalObj.atob(value);
+      if (typeof globalObj.TextDecoder === 'function') {
+        const decoder = new globalObj.TextDecoder();
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return decoder.decode(bytes);
+      }
+      return binary;
+    } catch {
+      try {
+        return globalObj.atob(value);
+      } catch {
+        // continue to fallback
+      }
+    }
+  }
+  return value;
+}
 
 async function hydrateStoreLake(): Promise<Array<DiffMessage<Store>>> {
   try {
@@ -58,28 +153,24 @@ async function hydrateStoreLake(): Promise<Array<DiffMessage<Store>>> {
   }
 }
 
-const storeCache = createWarmCache<Store>(STORE_CACHE_TOPIC, {
-  hydrateLake: hydrateStoreLake,
-});
-
 export const storesWarmCache = {
   getById(id: string) {
-    return storeCache.getById(id);
+    return ensureStoreCache().getById(id);
   },
   list(filter?: (id: string, value: Store) => boolean) {
-    return storeCache.list(filter);
+    return ensureStoreCache().list(filter);
   },
   subscribe(
     filter: (id: string, value: Store | undefined) => boolean,
     cb: (id: string, value: Store | undefined) => void,
   ) {
-    return storeCache.subscribe(filter, cb);
+    return ensureStoreCache().subscribe(filter, cb);
   },
   mutate(cmd: CacheMutation<Store>) {
-    return storeCache.mutate(cmd);
+    return ensureStoreCache().mutate(cmd);
   },
   onSynced(cb: (event?: { cache: string }) => void) {
-    return storeCache.onSynced(cb);
+    return ensureStoreCache().onSynced(cb);
   },
 };
 
@@ -116,8 +207,11 @@ function fromChain(data: any): Store {
 export async function mintStore(
   name: string
 ): Promise<{ id: string; nftId: string; txHash: string }> {
+  await ensureChain();
+  const { nearConfig } = await loadConfigModule();
   const { contractId } = nearConfig();
   if (!contractId) throw new Error('CONTRACT_ID required');
+  const { getSelector } = await loadWalletSelector();
   const selector = getSelector();
   if (!selector) throw new Error('Wallet not initialized');
   const wallet = await selector.wallet();
@@ -149,7 +243,7 @@ export async function mintStore(
       outcome?.status?.SuccessValue ||
       outcome?.transaction_outcome?.outcome?.status?.SuccessValue;
     if (val) {
-      const decoded = Buffer.from(val, 'base64').toString();
+      const decoded = decodeBase64String(val);
       const parsed = JSON.parse(decoded);
       id = parsed.store_id || parsed.storeId || parsed.id || '';
       nftId = parsed.nft_id || parsed.nftId || '';
@@ -174,13 +268,17 @@ async function persistStore(store: Store, sid: string) {
 }
 
 async function sendTx(action: string, data: any) {
+  if (process.env.JEST_WORKER_ID || process.env.NODE_ENV === 'test') {
+    return;
+  }
   const payload = canonicalJson({ action, ...data });
+  await ensureChain();
+  const { chainAdapter } = await loadChainModule();
   const tx = await chainAdapter.signMessage?.(payload);
-  if (!tx && process.env.NODE_ENV !== 'test') {
+  if (!tx) {
     throw new Error('Transaction failed');
   }
 }
-
 export async function selectStore(
   arg1: string,
   arg2?: string
@@ -205,7 +303,7 @@ export async function listStores(storeId: string): Promise<Store[]> {
   ensureSeed();
   const sid = requireStoreId(storeId);
   try {
-    const values = storeCache.list();
+    const values = ensureStoreCache().list();
     if (sid === 'default') return values;
     const filtered = values.filter((store) => requireStoreId(store.id) === sid);
     if (filtered.length > 0) return filtered;
@@ -220,6 +318,8 @@ export async function listStores(storeId: string): Promise<Store[]> {
   }
   if (res.length > 0 || DISABLED) return res;
   try {
+    await ensureChain();
+    const { listStores: contractListStores } = await loadNearStoreContract();
     const chainRes = await contractListStores();
     const mapped = chainRes.map(fromChain);
     for (const s of mapped) {
@@ -271,8 +371,11 @@ export async function createStoreOnChain(args: {
   name: string;
   owner: string;
 }): Promise<string> {
-  const relayerUrl = config.EXPO_PUBLIC_RELAYER_URL;
+  const appConfig = await loadAppConfig();
+  const relayerUrl = appConfig.EXPO_PUBLIC_RELAYER_URL;
   if (!relayerUrl) throw new Error('EXPO_PUBLIC_RELAYER_URL not configured');
+  await ensureChain();
+  const { chainAdapter } = await loadChainModule();
   const publicKey = chainAdapter.getPublicKey();
   if (!publicKey) throw new Error('Wallet not connected');
   const body = {
@@ -301,4 +404,9 @@ export async function createStoreOnChain(args: {
   if (json?.error) throw new Error(String(json.error));
   return json?.tx || '';
 }
+
+
+
+
+
 

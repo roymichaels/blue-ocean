@@ -1,18 +1,21 @@
-import React from 'react';
+﻿import React from 'react';
 import { Image as ExpoImage, ImageProps } from 'expo-image';
 import { Platform, View } from 'react-native';
 import { useTheme } from '@/ui/ThemeProvider';
+
 // blurhash placeholder used while the image loads
 const shimmer = 'LKO2?U%2Tw=w]~RBVZRi};RPxuwH';
 
 interface SmartImageProps extends Omit<ImageProps, 'source' | 'width' | 'height'> {
   uri?: string | null;
+  source?: ImageProps['source'];
   width: number;
   height: number;
 }
 
 export default function SmartImage({
   uri,
+  source,
   width,
   height,
   style,
@@ -22,9 +25,11 @@ export default function SmartImage({
 }: SmartImageProps) {
   const { colors } = useTheme();
 
-  if (!uri) {
+  const resolvedSource = source ?? (uri ? { uri } : undefined);
+
+  if (!resolvedSource) {
     if (__DEV__) {
-      console.warn('SmartImage: missing image uri');
+      console.warn('SmartImage: missing image uri or source');
     }
     return (
       <View
@@ -36,7 +41,7 @@ export default function SmartImage({
   return (
     <ExpoImage
       {...props}
-      source={{ uri }}
+      source={resolvedSource}
       style={[{ width, height }, style]}
       contentFit={contentFit}
       cachePolicy={cachePolicy}
@@ -45,5 +50,3 @@ export default function SmartImage({
     />
   );
 }
-
-

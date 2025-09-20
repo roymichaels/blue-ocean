@@ -2,6 +2,7 @@
 const ReactNative = require('react');
 const renderer = require('react-test-renderer');
 const { act } = renderer;
+const { QueryClient, QueryClientProvider } = require('@tanstack/react-query');
 
 jest.mock('expo-secure-store');
 
@@ -73,6 +74,7 @@ jest.mock('@features/products', () => ({
 }));
 jest.mock('@/components/InfoModal', () => () => null);
 jest.mock('@/components/SmartImage', () => () => null);
+jest.mock('@/features/home/components/AdminOnboardingChecklist', () => () => null);
 jest.mock('lucide-react-native', () => ({
   __esModule: true,
   Plus: () => null,
@@ -123,11 +125,47 @@ jest.mock('@/features/home/hooks/useHomeFilters', () => ({
   }),
 }));
 
+jest.mock('@/features/home/hooks/useHomeModals', () => ({
+  useHomeModals: () => ({
+    productFormVisible: false,
+    productToEdit: null,
+    openProductForm: jest.fn(),
+    closeProductForm: jest.fn(),
+    showCartModal: false,
+    closeCartModal: jest.fn(),
+    infoModal: { visible: false, title: '', message: '', type: 'info', buttonText: '' },
+    closeInfoModal: jest.fn(),
+  }),
+}));
+jest.mock('@/features/home/hooks/useHomeData', () => ({
+  useHomeData: () => ({
+    fallbackCategories: [
+      { id: 'electronics', slug: 'electronics', image: null, gradient: ['#000', '#111'] },
+    ],
+    fallbackBanners: [
+      {
+        id: 'banner-1',
+        title: 'home.fallbackBanner1Title',
+        description: 'home.fallbackBanner1Description',
+        ctaLabel: 'home.fallbackBanner1Cta',
+        ctaLink: '/cta',
+        image: null,
+      },
+    ],
+  }),
+}));
 describe('HomeScreen fallback visibility', () => {
   it('displays fallback data and keeps ScrollArea expanded', async () => {
     let root;
     await act(async () => {
-      root = renderer.create(ReactNative.createElement(HomeScreen));
+      const queryClient = new QueryClient();
+      root = renderer.create(
+        ReactNative.createElement(
+          QueryClientProvider,
+          { client: queryClient },
+          ReactNative.createElement(HomeScreen)
+        )
+      );
     });
     await act(async () => {});
 
@@ -136,11 +174,16 @@ describe('HomeScreen fallback visibility', () => {
       expect.arrayContaining([expect.objectContaining({ flex: 1 })])
     );
 
-    const tree = root.toJSON();
-    const str = JSON.stringify(tree);
-    expect(str).toContain('categories.electronics');
-    expect(str).toContain('home.fallbackBanner1Title');
-    expect(str).toContain('home.noProducts');
+    const textNodes = root.root.findAllByType('Text');
+    const textContent = textNodes
+      .flatMap((node: any) =>
+        Array.isArray(node.props.children) ? node.props.children : [node.props.children]
+      )
+      .filter(Boolean)
+      .join(' ');
+    expect(textContent).toContain('home.fallbackBanner1Title');
+    expect(textContent).toContain('home.noProducts');
+    expect(textContent).toContain('home.categories');
   });
 });
 

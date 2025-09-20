@@ -31,3 +31,7 @@
 ## Ready-to-earn rule
 If the change doesn't make it faster/easier for a tenant to:
 1) create a store, 2) list products, 3) accept payment (NEAR; MoonPay optional/flag), 4) see & fulfill orders — it’s probably **Coming Soon**.
+
+## Current Architecture Workstreams
+- **Core SDK Alignment**: Review agenda + scheduling details live in docs/architecture/core-sdk-review.md. Start there before opening new refactor tasks.
+

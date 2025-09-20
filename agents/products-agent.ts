@@ -1,29 +1,14 @@
-import { Product } from '@/types';
-import { assertNearChain } from '@/services/chain';
+import type { Product } from '@/types';
 import { canonicalJson } from '@/utils/serialization';
-import {
-  setProduct,
-  getProduct,
-  listProducts,
-  removeProduct,
-  getProducts as fetchProducts,
-  getVersion,
-} from '@/features/products/services/nearProducts';
-import { getStore } from '@/features/stores/services/nearStores';
-import ensureNearWallet from '@/utils/ensureNearWallet';
-import type { LightNode } from '@waku/sdk';
-import { getClient } from '@/utils/transport';
-import { verifyBeforeWrite } from '@/utils/verifyMessageSignature';
+import { verifyBeforeWrite } from '../utils/verifyMessageSignature';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
 import { errorLog } from '@/utils/logger';
 import { buildTopic } from '@/utils/wakuTopics';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import AgentError from '@/types/AgentError';
 import isAdmin from '@/utils/isAdmin';
-import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 import { randomBytes } from '@noble/hashes/utils';
-import { Buffer } from 'buffer';
-
+import type { LightNode } from '@waku/sdk';
 import {
   getProductCache,
   setProductCache,
@@ -33,7 +18,60 @@ import {
 const buildProductTopic = (storeId: string) => buildTopic('products', storeId);
 const PAGE_SIZE = 50;
 
-assertNearChain();
+let chainEnsured = false;
+async function ensureChain(): Promise<void> {
+  if (chainEnsured) return;
+  const { assertNearChain } = await import('@/services/chain');
+  assertNearChain();
+  chainEnsured = true;
+}
+
+type NearProductsModule = typeof import('@/features/products/services/nearProducts');
+let nearProductsModule: NearProductsModule | null = null;
+async function loadNearProducts(): Promise<NearProductsModule> {
+  await ensureChain();
+  if (!nearProductsModule) {
+    nearProductsModule = await import('@/features/products/services/nearProducts');
+  }
+  return nearProductsModule;
+}
+
+type NearStoresModule = typeof import('@/features/stores/services/nearStores');
+let nearStoresModule: NearStoresModule | null = null;
+async function loadNearStores(): Promise<NearStoresModule> {
+  if (!nearStoresModule) {
+    nearStoresModule = await import('@/features/stores/services/nearStores');
+  }
+  return nearStoresModule;
+}
+
+let ensureNearWalletFn: (typeof import('@/utils/ensureNearWallet').default) | null = null;
+async function loadEnsureNearWallet() {
+  if (!ensureNearWalletFn) {
+    ensureNearWalletFn = (await import('@/utils/ensureNearWallet')).default;
+  }
+  return ensureNearWalletFn;
+}
+
+let transportModule: (typeof import('@/utils/transport')) | null = null;
+async function loadTransport() {
+  if (!transportModule) {
+    transportModule = await import('@/utils/transport');
+  }
+  return transportModule;
+}
+
+let wakuSigningModule: (typeof import('@/utils/wakuSigning')) | null = null;
+async function loadWakuSigning() {
+  if (!wakuSigningModule) {
+    wakuSigningModule = await import('@/utils/wakuSigning');
+  }
+  return wakuSigningModule;
+}
+
+function toHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 // TODO:TODO-108 Separate ProductAgent concerns for cache hydration, Waku broadcasts, and persistence to simplify reasoning.
 // TODO:REC-208 Adopt incremental diff sync for product updates to minimize payload sizes over Waku relays.
@@ -55,7 +93,7 @@ class ProductsAgent {
   private async ensureNode(): Promise<LightNode | null> {
     if (this.node) return this.node;
     try {
-      const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
+      const { createLightNode, waitForRemotePeer, Protocols } = await loadTransport();
       const node = await createLightNode({} as any);
       await node.start();
       await waitForRemotePeer(node, [Protocols.Relay]);
@@ -72,7 +110,7 @@ class ProductsAgent {
     if (this.subscribedStores.has(storeId)) return;
     const n = await this.ensureNode();
     if (!n) return;
-    const client = await getClient();
+    const client = await loadTransport();
     const topic = buildProductTopic(storeId);
     const decoder = client.createDecoder(topic);
     const handler = async (wakuMsg: any) => {
@@ -98,9 +136,10 @@ class ProductsAgent {
   }
 
   private async loadFromIndex(index: string[]): Promise<void> {
+    const nearProducts = await loadNearProducts();
     for (let i = 0; i < index.length; i += PAGE_SIZE) {
       const slice = index.slice(i, i + PAGE_SIZE);
-      const batch = await fetchProducts('default', slice);
+      const batch = await nearProducts.getProducts('default', slice);
       batch.forEach((p) => {
         this.cache.set(p.id, p);
         this.summaries.set(p.id, { rating: p.rating, reviews: p.reviews });
@@ -111,7 +150,8 @@ class ProductsAgent {
   private async ensureCache(): Promise<void> {
     if (this.loading) return this.loading;
     this.loading = (async () => {
-      const chainVersion = await getVersion();
+      const nearProducts = await loadNearProducts();
+      const chainVersion = await nearProducts.getVersion();
       if (this.cache.size > 0 && this.version === chainVersion) {
         this.loading = null;
         return;
@@ -122,7 +162,7 @@ class ProductsAgent {
         this.version = chainVersion;
       } else {
         await this.invalidateCache();
-        const products = await listProducts('default');
+        const products = await nearProducts.listProducts('default');
         const ids = products.map((p) => p.id);
         await this.loadFromIndex(ids);
         await setProductCache({ version: chainVersion, index: ids });
@@ -139,14 +179,15 @@ class ProductsAgent {
     try {
       // TODO:CORE-020 Angle 1 - Mirror product updates into the stock analytics stream once the topic contract is finalized.
       const ts = Date.now();
-      const nonce = Buffer.from(randomBytes(12)).toString('hex');
+      const nonce = toHex(randomBytes(12));
+      const { makeSignedWakuMessage } = await loadWakuSigning();
       const msg = await makeSignedWakuMessage(
         'product.updated',
         { product, ts, nonce },
         'store-owner',
         { ts, nonce },
       );
-      const client = await getClient();
+      const client = await loadTransport();
       const encoder = client.createEncoder({
         contentTopic: buildProductTopic(product.storeId),
       });
@@ -159,7 +200,8 @@ class ProductsAgent {
   }
 
   private async ensureWallet() {
-    const { address, publicKey } = await ensureNearWallet(
+    const ensureWallet = await loadEnsureNearWallet();
+    const { address, publicKey } = await ensureWallet(
       'Please connect your NEAR wallet to manage products.',
     );
     return { address, publicKey };
@@ -167,6 +209,7 @@ class ProductsAgent {
 
   private async assertStoreOwner(storeId: string) {
     const { address } = await this.ensureWallet();
+    const { getStore } = await loadNearStores();
     const store = await getStore(storeId, storeId);
     const admin = await isAdmin();
     if (!store || store.owner !== address || !admin) {
@@ -181,7 +224,8 @@ class ProductsAgent {
   async add(item: Product): Promise<void> {
     const normalized = normalizeMessage<Product>('Product', item);
     await this.assertStoreOwner(normalized.storeId);
-    await setProduct(normalized.storeId, normalized);
+    const nearProducts = await loadNearProducts();
+    await nearProducts.setProduct(normalized.storeId, normalized);
     this.cache.set(normalized.id, normalized);
     this.summaries.set(normalized.id, {
       rating: normalized.rating,
@@ -194,7 +238,8 @@ class ProductsAgent {
   async update(item: Product): Promise<void> {
     const normalized = normalizeMessage<Product>('Product', item);
     await this.assertStoreOwner(normalized.storeId);
-    await setProduct(normalized.storeId, normalized);
+    const nearProducts = await loadNearProducts();
+    await nearProducts.setProduct(normalized.storeId, normalized);
     this.cache.set(normalized.id, normalized);
     this.summaries.set(normalized.id, {
       rating: normalized.rating,
@@ -208,7 +253,8 @@ class ProductsAgent {
     const prod = this.cache.get(id);
     if (!prod) return;
     await this.assertStoreOwner(prod.storeId);
-    await removeProduct(prod.storeId, id);
+    const nearProducts = await loadNearProducts();
+    await nearProducts.removeProduct(prod.storeId, id);
     this.cache.delete(id);
     this.summaries.delete(id);
   }
@@ -221,7 +267,8 @@ class ProductsAgent {
     await this.ensureCache();
     const cached = this.cache.get(id);
     if (cached) return JSON.parse(JSON.stringify(cached));
-    const prod = await getProduct('default', id);
+    const nearProducts = await loadNearProducts();
+    const prod = await nearProducts.getProduct('default', id);
     if (prod) {
       this.cache.set(id, prod);
       this.summaries.set(id, { rating: prod.rating, reviews: prod.reviews });
@@ -251,11 +298,12 @@ class ProductsAgent {
   }
 
   async decrementStock(productId: string, quantity: number): Promise<void> {
-    const prod = this.cache.get(productId) || (await getProduct('default', productId));
+    const nearProducts = await loadNearProducts();
+    const prod = this.cache.get(productId) || (await nearProducts.getProduct('default', productId));
     if (!prod) return;
     await this.assertStoreOwner(prod.storeId);
     const newStock = Math.max((prod.stock || 0) - quantity, 0);
-    await setProduct(prod.storeId, { ...prod, stock: newStock });
+    await nearProducts.setProduct(prod.storeId, { ...prod, stock: newStock });
   }
 }
 
