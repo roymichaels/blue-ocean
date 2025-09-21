@@ -70,4 +70,11 @@ describe('store data isolation', () => {
     expect(l1.map(s => s.id)).toEqual(['a']);
     expect(l2.map(s => s.id)).toEqual(['b']);
   });
+
+  it('returns stores persisted to a custom namespace', async () => {
+    const scopedStore: Store = { id: 'ns-store', name: 'Scoped', owner: 'owner-1', nftId: '' };
+    await setStore('custom-namespace', scopedStore, storeServiceDeps);
+    const scoped = await listStores('custom-namespace', storeServiceDeps).read();
+    expect(scoped).toEqual([{ ...scopedStore }]);
+  });
 });
