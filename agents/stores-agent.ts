@@ -2,25 +2,10 @@ import type { WakuMessage } from '@/types/waku';
 import type { Store } from '@/types';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { buildTopic } from '@/utils/wakuTopics';
+import storeRepository from '@/services/storeRepository';
 
-const getTransportCrypto = () => (typeof globalThis !== 'undefined' && globalThis.crypto ? globalThis.crypto : undefined);
-
-type NearStoresModule = typeof import('@/features/stores/services/nearStores');
-type StoreService = ReturnType<NearStoresModule['createStoreService']>;
-
-let nearStoresModule: NearStoresModule | null = null;
-let nearStoreService: StoreService | null = null;
-
-async function getStoreServices(): Promise<StoreService> {
-  if (!nearStoresModule) {
-    nearStoresModule = await import('@/features/stores/services/nearStores');
-  }
-  if (!nearStoreService) {
-    const deps = nearStoresModule.createDefaultStoreServiceDeps();
-    nearStoreService = nearStoresModule.createStoreService(deps);
-  }
-  return nearStoreService;
-}
+const getTransportCrypto = () =>
+  typeof globalThis !== 'undefined' && globalThis.crypto ? globalThis.crypto : undefined;
 
 type EnsureNearWalletFn = typeof import('@/utils/ensureNearWallet').default;
 let ensureNearWalletFn: EnsureNearWalletFn | null = null;
@@ -58,36 +43,30 @@ interface Metrics {
   score: number;
 }
 
+type StoreRemovalPayload = { id: string; store: Store | null };
+
+type StoreChangeType = 'store.created' | 'store.updated';
+
 class StoresAgent {
   private reputation: Record<string, Metrics> = {};
   private subscribers: Set<(id: string, score: number) => void> = new Set();
 
+  constructor() {
+    storeRepository.on('store.created', ({ store }) => {
+      void this.broadcastStoreChange('store.created', store);
+    });
+    storeRepository.on('store.updated', ({ store }) => {
+      void this.broadcastStoreChange('store.updated', store);
+    });
+    storeRepository.on('store.removed', ({ id, store }) => {
+      delete this.reputation[id];
+      void this.broadcastStoreRemoval({ id, store });
+    });
+  }
+
   private async ensureWallet(): Promise<{ address: string; publicKey: string }> {
     const ensureWallet = await loadEnsureNearWallet();
     return ensureWallet('Please connect your NEAR wallet to manage stores.');
-  }
-
-  private getNamespace(store: Store): string {
-    const owner = typeof store.owner === 'string' ? store.owner.trim() : '';
-    return owner || 'default';
-  }
-
-  private async persistStore(store: Store): Promise<Store> {
-    const services = await getStoreServices();
-    const record = this.toRecord(store);
-    const namespace = this.getNamespace(record);
-    const existing = await services.selectStore(namespace, record.id);
-    if (existing) {
-      await services.updateStore(record, namespace);
-    } else {
-      await services.addStore(record, namespace);
-    }
-    return record;
-  }
-
-  private toRecord(item: Store) {
-    const { id, name, owner, nftId, reputation = 0, plan, createdAt } = item;
-    return { id, name, owner, nftId, reputation, plan, createdAt } as Store;
   }
 
   private calculateScore(id: string): number {
@@ -104,16 +83,13 @@ class StoresAgent {
     m.reviewSum += rating;
     m.reviewCount += 1;
     const newScore = this.calculateScore(storeId);
-    const services = await getStoreServices();
-    const store = await services.selectStore(storeId);
+    const store = await storeRepository.select(storeId);
     if (store) {
       try {
-        await this.persistStore({ ...store, reputation: newScore });
-        const confirmed = await services.selectStore(storeId);
-        if (confirmed) {
-          m.score = confirmed.reputation || newScore;
-          this.subscribers.forEach((cb) => cb(storeId, m.score));
-        }
+        const result = await storeRepository.save({ ...store, reputation: newScore });
+        const confirmed = result.store.reputation ?? newScore;
+        m.score = confirmed;
+        this.subscribers.forEach((cb) => cb(storeId, confirmed));
       } catch {
         m.reviewSum -= rating;
         m.reviewCount -= 1;
@@ -122,13 +98,7 @@ class StoresAgent {
   }
 
   async updateReputationByOwner(owner: string, reliability: number): Promise<void> {
-    const services = await getStoreServices();
-    const stream = services.listStores('default');
-    let stores = stream.getSnapshot();
-    if (stores.length === 0) {
-      stores = await stream.read();
-    }
-    const store = stores.find((s) => s.owner === owner);
+    const store = await storeRepository.findByOwner(owner);
     if (store) {
       const id = store.id;
       if (!this.reputation[id]) {
@@ -138,12 +108,10 @@ class StoresAgent {
       this.reputation[id].reliability = reliability;
       const newScore = this.calculateScore(id);
       try {
-        await this.persistStore({ ...store, reputation: newScore });
-        const confirmed = await services.selectStore(id);
-        if (confirmed) {
-          this.reputation[id].score = confirmed.reputation || newScore;
-          this.subscribers.forEach((cb) => cb(id, this.reputation[id].score));
-        }
+        const result = await storeRepository.save({ ...store, reputation: newScore });
+        const confirmed = result.store.reputation ?? newScore;
+        this.reputation[id].score = confirmed;
+        this.subscribers.forEach((cb) => cb(id, confirmed));
       } catch {
         this.reputation[id].reliability = prev;
       }
@@ -165,58 +133,72 @@ class StoresAgent {
   async add(item: Store): Promise<void> {
     await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
-    const record = await this.persistStore({
+    await storeRepository.save({
       createdAt: normalized.createdAt || new Date().toISOString(),
       ...normalized,
     });
-    await this.broadcastCreated(record);
   }
 
   async update(item: Store): Promise<void> {
     await this.ensureWallet();
     const normalized = normalizeMessage<Store>('Store', item);
-    await this.persistStore(normalized);
+    await storeRepository.save(normalized);
   }
 
   async remove(id: string): Promise<void> {
     await this.ensureWallet();
-    const services = await getStoreServices();
-    await services.removeStore(id);
+    await storeRepository.remove(id);
   }
 
   /**
    * Returns a defensive copy of a store by id.
    */
   async selectStore(id: string): Promise<Store | null> {
-    const services = await getStoreServices();
-    const store = await services.selectStore(id);
-    return store ? { ...store } : null;
+    return storeRepository.select(id);
   }
 
   /**
    * Returns defensive copies of all stores.
    */
   async getStores(): Promise<Store[]> {
-    const services = await getStoreServices();
-    const stream = services.listStores('default');
-    let list = stream.getSnapshot();
-    if (list.length === 0) {
-      list = await stream.read();
-    }
-    return list.map((s) => ({ ...s }));
+    return storeRepository.list('default');
   }
 
-  private async broadcastCreated(store: Store): Promise<void> {
+  private async broadcastStoreChange(type: StoreChangeType, store: Store): Promise<void> {
     try {
       const { publish, makeSignedWakuMessage } = await loadWakuDeps();
       const transportCrypto = getTransportCrypto();
-      const nonce = transportCrypto && typeof transportCrypto.randomUUID === 'function'
-        ? transportCrypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const msg: WakuMessage<Store> = await makeSignedWakuMessage('store.created', store, 'store-owner', {
+      const nonce =
+        transportCrypto && typeof transportCrypto.randomUUID === 'function'
+          ? transportCrypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const msg: WakuMessage<Store> = await makeSignedWakuMessage(type, store, 'store-owner', {
         ts: Date.now(),
         nonce,
       });
+      await publish(buildTopic('stores', '1'), msg);
+    } catch {
+      // non-fatal
+    }
+  }
+
+  private async broadcastStoreRemoval(payload: StoreRemovalPayload): Promise<void> {
+    try {
+      const { publish, makeSignedWakuMessage } = await loadWakuDeps();
+      const transportCrypto = getTransportCrypto();
+      const nonce =
+        transportCrypto && typeof transportCrypto.randomUUID === 'function'
+          ? transportCrypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const msg: WakuMessage<StoreRemovalPayload> = await makeSignedWakuMessage(
+        'store.removed',
+        payload,
+        'store-owner',
+        {
+          ts: Date.now(),
+          nonce,
+        },
+      );
       await publish(buildTopic('stores', '1'), msg);
     } catch {
       // non-fatal
@@ -227,7 +209,6 @@ class StoresAgent {
 const storesAgent = new StoresAgent();
 
 export const getStores = (): Promise<Store[]> => storesAgent.getStores();
-export const selectStore = (id: string): Promise<Store | null> =>
-  storesAgent.selectStore(id);
+export const selectStore = (id: string): Promise<Store | null> => storesAgent.selectStore(id);
 
 export default storesAgent;
