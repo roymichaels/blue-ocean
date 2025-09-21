@@ -23,6 +23,49 @@ import type { DiffMessage } from '@/services/warmCache';
 
 const defaultDeps = createDefaultStoreServiceDeps();
 
+const storeNamespaces = new Map<string, Set<string>>();
+
+function trackStoreNamespace(storeId: string | undefined, namespace: string): void {
+  if (!storeId || storeId.length === 0 || !namespace || namespace.length === 0) return;
+  let namespaces = storeNamespaces.get(storeId);
+  if (!namespaces) {
+    namespaces = new Set();
+    storeNamespaces.set(storeId, namespaces);
+  }
+  namespaces.add(namespace);
+}
+
+function untrackStoreNamespace(storeId: string | undefined, namespace: string): void {
+  if (!storeId || storeId.length === 0 || !namespace || namespace.length === 0) return;
+  const namespaces = storeNamespaces.get(storeId);
+  if (!namespaces) return;
+  namespaces.delete(namespace);
+  if (namespaces.size === 0) {
+    storeNamespaces.delete(storeId);
+  }
+}
+
+function storeBelongsToNamespace(
+  id: string,
+  value: Store | undefined,
+  namespace: string,
+): boolean {
+  if (namespace === 'default') return true;
+  if (!id) return false;
+  const tracked = storeNamespaces.get(id);
+  if (tracked?.has(namespace)) return true;
+  if (!value) return false;
+  if (value.owner && value.owner.length > 0) {
+    try {
+      if (requireStoreId(value.owner) === namespace) {
+        trackStoreNamespace(id, namespace);
+        return true;
+      }
+    } catch {}
+  }
+  return false;
+}
+
 function resolveDeps(deps?: StoreServiceDeps): StoreServiceDeps {
   return deps ?? defaultDeps;
 }
@@ -84,6 +127,7 @@ async function persistStore(store: Store, sid: string): Promise<DiffMessage<Stor
   const json = canonicalJson(store);
   await setValue(STORE_CACHE_ADDRESS, storeCacheKey(store.id, sid), json);
   await setValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(store.id), json);
+  trackStoreNamespace(store.id, sid);
   let diff: DiffMessage<Store> | null = null;
   try {
     diff = storeCacheRepository.mutate({ id: store.id, value: store }) ?? null;
@@ -210,9 +254,15 @@ function createStoreListStream(
   }
 
   const filter = (id: string, value: Store | undefined) => {
+    if (storeBelongsToNamespace(id, value, sid)) {
+      if (value) trackStoreNamespace(id, sid);
+      return true;
+    }
+    if (value) return false;
     if (sid === 'default') return true;
-    if (value) return requireStoreId(value.id) === sid;
-    return state.has(id);
+    if (state.has(id)) return true;
+    const tracked = storeNamespaces.get(id);
+    return tracked?.has(sid) ?? false;
   };
 
   try {
@@ -247,7 +297,9 @@ function createStoreListStream(
           if (sid === 'default' && !item.key.startsWith(`${STORE_CACHE_ADDRESS}:default:`)) continue;
           try {
             const parsed = JSON.parse(item.value) as Store;
-            if (sid !== 'default' && requireStoreId(parsed.id) !== sid) continue;
+            const keyParts = item.key.split(':');
+            const namespaceFromKey = keyParts.length >= 2 ? keyParts[1] : sid;
+            trackStoreNamespace(parsed.id, namespaceFromKey);
             res.push(parsed);
           } catch (err) {
             errorLog('Invalid store data', err);
@@ -436,6 +488,10 @@ export async function removeStore(
   await resolved.storeChainClient.submitMutation('remove', { id });
   await removeValue(STORE_CACHE_ADDRESS, storeCacheKey(id, sid));
   await removeValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(id));
+  untrackStoreNamespace(id, sid);
+  if (sid !== 'default') {
+    untrackStoreNamespace(id, 'default');
+  }
   let diff: DiffMessage<Store> | null = null;
   try {
     diff = storeCacheRepository.mutate({ id, op: 'delete' }) ?? null;
