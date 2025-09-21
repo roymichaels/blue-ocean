@@ -9,7 +9,6 @@ import {
   I18nManager,
 } from 'react-native';
 import { useAppRouter } from '@/services';
-import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/ui/ThemeProvider';
 import storesAgent from '@/agents/stores-agent';
 import DatabaseService from '@/services/database';
@@ -25,7 +24,6 @@ const storeServiceDeps = createDefaultStoreServiceDeps();
 
 const StoreCreation: React.FC = () => {
   const [name, setName] = useState('');
-  const queryClient = useQueryClient();
   const { t } = useLanguage();
   const { replace } = useAppRouter();
   const { showNotification } = useNotificationActions();
@@ -80,11 +78,6 @@ const StoreCreation: React.FC = () => {
       } else {
         Alert.alert(t('common.success'), t('stores.createSuccess'));
       }
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['home'] }),
-        queryClient.invalidateQueries({ queryKey: ['store'] }),
-        queryClient.invalidateQueries({ queryKey: ['product'] }),
-      ]);
       replace(`/store/${id}/admin`);
     } catch (err: any) {
       Alert.alert(t('stores.transactionCancelled'));

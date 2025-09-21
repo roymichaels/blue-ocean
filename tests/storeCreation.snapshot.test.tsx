@@ -6,12 +6,6 @@ jest.mock('@/services', () => ({
   useAppRouter: () => ({ replace: jest.fn() }),
 }));
 
-jest.mock('@tanstack/react-query', () => ({
-  useQueryClient: () => ({
-    invalidateQueries: jest.fn(),
-  }),
-}));
-
 jest.mock('@/ui/ThemeProvider', () => ({
   useLanguage: () => ({
     t: (key: string, fallback?: string) => fallback ?? key,

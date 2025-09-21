@@ -2,7 +2,7 @@ import type { WakuMessage } from '@/types/waku';
 import type { Store } from '@/types';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { buildTopic } from '@/utils/wakuTopics';
-import storeRepository from '@/services/storeRepository';
+import storeRepository, { type StoreRepositoryDiff } from '@/services/storeRepository';
 import reputationService, { type ScoreUpdateListener } from './reputation-service';
 
 const getTransportCrypto = () =>
@@ -43,17 +43,8 @@ type StoreChangeType = 'store.created' | 'store.updated';
 
 class StoresAgent {
   constructor() {
-    storeRepository.on('store.created', ({ store }) => {
-      reputationService.hydrate(store.id, store);
-      void this.broadcastStoreChange('store.created', store);
-    });
-    storeRepository.on('store.updated', ({ store }) => {
-      reputationService.hydrate(store.id, store);
-      void this.broadcastStoreChange('store.updated', store);
-    });
-    storeRepository.on('store.removed', ({ id, store }) => {
-      reputationService.clear(id);
-      void this.broadcastStoreRemoval({ id, store });
+    storeRepository.on('store.diff', (change) => {
+      this.handleRepositoryDiff(change);
     });
   }
 
@@ -142,7 +133,16 @@ class StoresAgent {
     return storeRepository.list('default');
   }
 
-  private async broadcastStoreChange(type: StoreChangeType, store: Store): Promise<void> {
+  private handleRepositoryDiff(change: StoreRepositoryDiff): void {
+    if (change.op === 'remove') {
+      reputationService.clear(change.id);
+    } else {
+      reputationService.hydrate(change.id, change.store);
+    }
+    void this.broadcastStoreDiff(change);
+  }
+
+  private async broadcastStoreDiff(change: StoreRepositoryDiff): Promise<void> {
     try {
       const { publish, makeSignedWakuMessage } = await loadWakuDeps();
       const transportCrypto = getTransportCrypto();
@@ -150,7 +150,25 @@ class StoresAgent {
         transportCrypto && typeof transportCrypto.randomUUID === 'function'
           ? transportCrypto.randomUUID()
           : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const msg: WakuMessage<Store> = await makeSignedWakuMessage(type, store, 'store-owner', {
+      if (change.op === 'remove') {
+        const payload: StoreRemovalPayload = {
+          id: change.id,
+          store: change.previous ?? null,
+        };
+        const msg: WakuMessage<StoreRemovalPayload> = await makeSignedWakuMessage(
+          'store.removed',
+          payload,
+          'store-owner',
+          {
+            ts: Date.now(),
+            nonce,
+          },
+        );
+        await publish(buildTopic('stores', '1'), msg);
+        return;
+      }
+      const type: StoreChangeType = change.op === 'create' ? 'store.created' : 'store.updated';
+      const msg: WakuMessage<Store> = await makeSignedWakuMessage(type, change.store, 'store-owner', {
         ts: Date.now(),
         nonce,
       });
@@ -160,28 +178,6 @@ class StoresAgent {
     }
   }
 
-  private async broadcastStoreRemoval(payload: StoreRemovalPayload): Promise<void> {
-    try {
-      const { publish, makeSignedWakuMessage } = await loadWakuDeps();
-      const transportCrypto = getTransportCrypto();
-      const nonce =
-        transportCrypto && typeof transportCrypto.randomUUID === 'function'
-          ? transportCrypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const msg: WakuMessage<StoreRemovalPayload> = await makeSignedWakuMessage(
-        'store.removed',
-        payload,
-        'store-owner',
-        {
-          ts: Date.now(),
-          nonce,
-        },
-      );
-      await publish(buildTopic('stores', '1'), msg);
-    } catch {
-      // non-fatal
-    }
-  }
 }
 
 const storesAgent = new StoresAgent();

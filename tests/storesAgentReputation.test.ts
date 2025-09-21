@@ -75,6 +75,14 @@ describe('storesAgent reputation integration', () => {
       namespace: 'default',
       previous: baseStore,
       created: false,
+      diff: {
+        op: 'update',
+        id: baseStore.id,
+        namespace: 'default',
+        store: { ...baseStore, reputation: 3.4 },
+        previous: baseStore,
+        cacheDiff: null,
+      },
     });
 
     const callback = jest.fn();
@@ -112,6 +120,14 @@ describe('storesAgent reputation integration', () => {
       namespace: 'default',
       previous: baseStore,
       created: false,
+      diff: {
+        op: 'update',
+        id: baseStore.id,
+        namespace: 'default',
+        store: { ...baseStore, reputation: 3 },
+        previous: baseStore,
+        cacheDiff: null,
+      },
     });
 
     const callback = jest.fn();

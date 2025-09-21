@@ -19,7 +19,7 @@ import {
   storeCacheIndexKey,
   storeCacheKey,
 } from './storeCache';
-
+import type { DiffMessage } from '@/services/warmCache';
 
 const defaultDeps = createDefaultStoreServiceDeps();
 
@@ -80,13 +80,15 @@ export async function mintStore(
   return resolved.storeChainClient.mintStore(name);
 }
 
-async function persistStore(store: Store, sid: string) {
+async function persistStore(store: Store, sid: string): Promise<DiffMessage<Store> | null> {
   const json = canonicalJson(store);
   await setValue(STORE_CACHE_ADDRESS, storeCacheKey(store.id, sid), json);
   await setValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(store.id), json);
+  let diff: DiffMessage<Store> | null = null;
   try {
-    storeCacheRepository.mutate({ id: store.id, value: store });
+    diff = storeCacheRepository.mutate({ id: store.id, value: store }) ?? null;
   } catch {}
+  return diff;
 }
 
 export function selectStore(
@@ -391,36 +393,36 @@ export async function addStore(
   store: Store,
   sid?: string,
   deps?: StoreServiceDeps,
-): Promise<void> {
+): Promise<DiffMessage<Store> | null> {
   const resolved = resolveDeps(deps);
   await resolved.storeChainClient.submitMutation('add', { store });
-  await persistStore(store, sid ?? requireStoreId(store.id));
+  return persistStore(store, sid ?? requireStoreId(store.id));
 }
 
 export async function updateStore(
   store: Store,
   sid?: string,
   deps?: StoreServiceDeps,
-): Promise<void> {
+): Promise<DiffMessage<Store> | null> {
   const resolved = resolveDeps(deps);
   await resolved.storeChainClient.submitMutation('update', { store });
-  await persistStore(store, sid ?? requireStoreId(store.id));
+  return persistStore(store, sid ?? requireStoreId(store.id));
 }
 
 export function removeStore(
   id: string,
   deps?: StoreServiceDeps,
-): Promise<void>;
+): Promise<DiffMessage<Store> | null>;
 export function removeStore(
   arg1: string,
   arg2: string,
   deps?: StoreServiceDeps,
-): Promise<void>;
+): Promise<DiffMessage<Store> | null>;
 export async function removeStore(
   arg1: string,
   arg2OrDeps?: string | StoreServiceDeps,
   maybeDeps?: StoreServiceDeps,
-): Promise<void> {
+): Promise<DiffMessage<Store> | null> {
   const id = typeof arg2OrDeps === 'string' ? arg2OrDeps : arg1;
   const sid =
     typeof arg2OrDeps === 'string'
@@ -434,9 +436,11 @@ export async function removeStore(
   await resolved.storeChainClient.submitMutation('remove', { id });
   await removeValue(STORE_CACHE_ADDRESS, storeCacheKey(id, sid));
   await removeValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(id));
+  let diff: DiffMessage<Store> | null = null;
   try {
-    storeCacheRepository.mutate({ id, op: 'delete' });
+    diff = storeCacheRepository.mutate({ id, op: 'delete' }) ?? null;
   } catch {}
+  return diff;
 }
 
 export const getStore = selectStore;
@@ -445,14 +449,13 @@ export async function setStore(
   storeId: string,
   store: Store,
   deps?: StoreServiceDeps,
-) {
+): Promise<DiffMessage<Store> | null> {
   const resolved = resolveDeps(deps);
   const existing = await selectStore(storeId, store.id, resolved);
   if (existing) {
-    await updateStore(store, storeId, resolved);
-  } else {
-    await addStore(store, storeId, resolved);
+    return updateStore(store, storeId, resolved);
   }
+  return addStore(store, storeId, resolved);
 }
 
 export function createStoreService(
@@ -461,10 +464,10 @@ export function createStoreService(
   mintStore: (name: string) => Promise<MintStoreResult>;
   selectStore: (arg1: string, arg2?: string) => Promise<Store | null>;
   listStores: (storeId: string) => StoreListStream;
-  addStore: (store: Store, sid?: string) => Promise<void>;
-  updateStore: (store: Store, sid?: string) => Promise<void>;
-  removeStore: (arg1: string, arg2?: string) => Promise<void>;
-  setStore: (storeId: string, store: Store) => Promise<void>;
+  addStore: (store: Store, sid?: string) => Promise<DiffMessage<Store> | null>;
+  updateStore: (store: Store, sid?: string) => Promise<DiffMessage<Store> | null>;
+  removeStore: (arg1: string, arg2?: string) => Promise<DiffMessage<Store> | null>;
+  setStore: (storeId: string, store: Store) => Promise<DiffMessage<Store> | null>;
   createStoreOnChain: (args: { id: string; name: string; owner: string }) => Promise<string>;
 } {
   const resolved = resolveDeps(deps);
