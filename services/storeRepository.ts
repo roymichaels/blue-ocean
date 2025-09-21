@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import type { Store } from '@/types';
 
 import type { StoreListStream } from '@/features/stores/services/nearStores';
+import type { DiffMessage } from '@/services/warmCache';
 
 type NearStoresModule = typeof import('@/features/stores/services/nearStores');
 type StoreService = ReturnType<NearStoresModule['createStoreService']>;
@@ -24,6 +25,7 @@ export type StoreRepositoryEventMap = {
   'store.created': { store: Store; namespace: string; previous: Store | null };
   'store.updated': { store: Store; namespace: string; previous: Store | null };
   'store.removed': { id: string; namespace: string; store: Store | null };
+  'store.diff': StoreRepositoryDiff;
 };
 
 type StoreRepositoryEvent = keyof StoreRepositoryEventMap;
@@ -36,11 +38,35 @@ function cloneStore(store: Store): Store {
   return { ...store };
 }
 
+type StoreRepositoryDiffBase = {
+  id: string;
+  namespace: string;
+  cacheDiff: DiffMessage<Store> | null;
+};
+
+export type StoreRepositoryDiff =
+  | (StoreRepositoryDiffBase & {
+      op: 'create';
+      store: Store;
+      previous: null;
+    })
+  | (StoreRepositoryDiffBase & {
+      op: 'update';
+      store: Store;
+      previous: Store;
+    })
+  | (StoreRepositoryDiffBase & {
+      op: 'remove';
+      store: null;
+      previous: Store | null;
+    });
+
 export interface SaveStoreResult {
   store: Store;
   namespace: string;
   previous: Store | null;
   created: boolean;
+  diff: StoreRepositoryDiff;
 }
 
 export class StoreRepository {
@@ -75,6 +101,10 @@ export class StoreRepository {
     this.emitter.emit(event, payload);
   }
 
+  private emitDiff(diff: StoreRepositoryDiff): void {
+    this.emit('store.diff', diff);
+  }
+
   on<T extends StoreRepositoryEvent>(
     event: T,
     listener: StoreRepositoryListener<T>,
@@ -106,17 +136,35 @@ export class StoreRepository {
 
     if (previous) {
       const previousRecord = cloneStore(previous);
-      await service.updateStore(record, namespace);
+      const cacheDiff = await service.updateStore(record, namespace);
+      const diff: StoreRepositoryDiff = {
+        op: 'update',
+        id: record.id,
+        namespace,
+        store: record,
+        previous: previousRecord,
+        cacheDiff: cacheDiff ?? null,
+      };
       this.emit('store.updated', { store: record, namespace, previous: previousRecord });
-      return { store: record, namespace, previous: previousRecord, created: false };
+      this.emitDiff(diff);
+      return { store: record, namespace, previous: previousRecord, created: false, diff };
     }
 
-    await service.addStore(record, namespace);
+    const cacheDiff = await service.addStore(record, namespace);
+    const diff: StoreRepositoryDiff = {
+      op: 'create',
+      id: record.id,
+      namespace,
+      store: record,
+      previous: null,
+      cacheDiff: cacheDiff ?? null,
+    };
     this.emit('store.created', { store: record, namespace, previous: null });
-    return { store: record, namespace, previous: null, created: true };
+    this.emitDiff(diff);
+    return { store: record, namespace, previous: null, created: true, diff };
   }
 
-  async remove(id: string): Promise<{ id: string; namespace: string; store: Store | null } | null> {
+  async remove(id: string): Promise<StoreRepositoryDiff | null> {
     const service = await getStoreService();
     let existing: Store | null = null;
     try {
@@ -125,9 +173,18 @@ export class StoreRepository {
     if (!existing) return null;
     const namespace = this.getNamespace(existing);
     const snapshot = cloneStore(existing);
-    await service.removeStore(namespace, id);
+    const cacheDiff = await service.removeStore(namespace, id);
+    const diff: StoreRepositoryDiff = {
+      op: 'remove',
+      id,
+      namespace,
+      store: null,
+      previous: snapshot,
+      cacheDiff: cacheDiff ?? null,
+    };
     this.emit('store.removed', { id, namespace, store: snapshot });
-    return { id, namespace, store: snapshot };
+    this.emitDiff(diff);
+    return diff;
   }
 
   async select(id: string): Promise<Store | null> {

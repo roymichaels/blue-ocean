@@ -2,10 +2,15 @@ import { useCallback, useEffect, useState } from 'react';
 import chain from '@/services/chain';
 import type { Store } from '@/types';
 import type { StoreListStream } from '@/features/stores/services/nearStores';
+import type { DiffMessage } from '@/services/warmCache';
 
 let listStores: ((storeId: string) => StoreListStream) | undefined;
-let setStore: ((storeId: string, store: Store) => Promise<void>) | undefined;
-let removeStore: ((storeId: string, id: string) => Promise<void>) | undefined;
+let setStore:
+  | ((storeId: string, store: Store) => Promise<DiffMessage<Store> | null>)
+  | undefined;
+let removeStore:
+  | ((storeId: string, id: string) => Promise<DiffMessage<Store> | null>)
+  | undefined;
 if (chain === 'near') {
   const nearStores = require('@/features/stores/services/nearStores');
   const storeService = nearStores.createStoreService(

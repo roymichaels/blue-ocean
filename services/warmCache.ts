@@ -300,10 +300,6 @@ export function createWarmCache<T>(
   };
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> d216adbb8dbc37b3b9c4757b53aba85da3b76ceb
 export function getCacheHitRatio(topic: string): number {
   const s = getHitStats().get(topic);
   if (!s || s.total === 0) return 0;
