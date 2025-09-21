@@ -6,11 +6,55 @@ jest.mock('@/services', () => ({
   useAppRouter: () => ({ replace: jest.fn() }),
 }));
 
-jest.mock('@/ui/ThemeProvider', () => ({
-  useLanguage: () => ({
-    t: (key: string, fallback?: string) => fallback ?? key,
-  }),
-}));
+jest.mock('@/ui/ThemeProvider', () => {
+  const colors = {
+    canvas: '#111111',
+    surface: { primary: '#1A1A1A', secondary: '#222222', elevated: '#2A2A2A' },
+    text: {
+      primary: '#FFFFFF',
+      secondary: '#CCCCCC',
+      tertiary: '#888888',
+      inverse: '#000000',
+    },
+    border: { primary: '#333333', focus: '#B99C5A' },
+    status: {
+      success: '#4CAF50',
+      warning: '#FFC107',
+      error: '#FF3B30',
+      info: '#4D96FF',
+    },
+    interactive: {
+      primary: '#B99C5A',
+      primaryHover: '#A08A52',
+      secondary: '#3A2F1F',
+      disabled: '#555555',
+    },
+    gold: '#B99C5A',
+  };
+  return {
+    useLanguage: () => ({
+      t: (key: string, options?: Record<string, string | number> | string) => {
+        if (typeof options === 'string') {
+          return options;
+        }
+        if (options && typeof options === 'object') {
+          if ('step' in options) {
+            return `Step ${options.step} of 3`;
+          }
+          if ('owner' in options) {
+            return `Owner: ${options.owner}`;
+          }
+          if ('tx' in options) {
+            return `Transaction hash: ${options.tx}`;
+          }
+        }
+        return key;
+      },
+      isRTL: false,
+    }),
+    useTheme: () => ({ colors }),
+  };
+});
 
 jest.mock('@/agents/stores-agent', () => ({
   add: jest.fn(),
@@ -82,38 +126,19 @@ jest.mock('@/services/chain', () => ({ __esModule: true,
 }));
 
 jest.mock('@/contexts/WalletProvider', () => ({
-  useWallet: () => ({ address: '0x123456', connect: jest.fn() }),
+  useWallet: () => ({ address: 'owner.testnet', connect: jest.fn() }),
 }));
 
 jest.mock('@/utils/logger', () => ({
   errorLog: jest.fn(),
 }));
 
-const ReactNative = require('react-native');
-(ReactNative as any).Button = ({
-  title,
-  onPress,
-  color,
-  disabled,
-}: {
-  title: string;
-  onPress?: () => void;
-  color?: string;
-  disabled?: boolean;
-}) =>
-  React.createElement('Button', {
-    title,
-    onPress,
-    color,
-    disabled,
-  });
-
 describe('StoreCreation snapshot', () => {
   beforeEach(() => {
     mockDatabase.updateUserRole.mockClear();
   });
 
-  it('renders without premium plan controls', () => {
+  it('renders the multi-step wizard', () => {
     const tree = renderer.create(<StoreCreation />).toJSON();
     expect(tree).toMatchSnapshot();
   });
