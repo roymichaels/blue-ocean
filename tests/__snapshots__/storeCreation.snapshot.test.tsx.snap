@@ -1,39 +1,348 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`StoreCreation snapshot renders without premium plan controls 1`] = `
+exports[`StoreCreation snapshot renders the multi-step wizard 1`] = `
 <View
   style={
-    {
-      "gap": 16,
-    }
+    [
+      {
+        "flex": 1,
+      },
+      {
+        "backgroundColor": "#111111",
+      },
+    ]
   }
 >
-  <Text
-    style={
-      {
-        "fontSize": 16,
-        "fontWeight": "600",
-        "textAlign": "left",
-      }
+  <ScrollView
+    contentContainerStyle={
+      [
+        {
+          "gap": 16,
+          "paddingHorizontal": 24,
+          "paddingTop": 24,
+        },
+        {
+          "alignItems": "stretch",
+          "paddingBottom": 80,
+        },
+      ]
     }
   >
-    stores.storeName
-  </Text>
-  <TextInput
-    onChangeText={[Function]}
-    style={
-      {
-        "borderRadius": 8,
-        "borderWidth": 1,
-        "padding": 8,
-        "textAlign": "left",
+    <Text
+      style={
+        [
+          {
+            "color": "#FFFFFF",
+            "fontSize": 12,
+            "fontWeight": "400",
+            "letterSpacing": 0.01,
+            "lineHeight": 16,
+          },
+          {
+            "color": "#CCCCCC",
+            "letterSpacing": 1,
+            "textAlign": "left",
+            "textTransform": "uppercase",
+          },
+        ]
       }
+    >
+      Step 1 of 3
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "color": "#FFFFFF",
+            "fontSize": 24,
+            "fontWeight": "700",
+            "letterSpacing": 0,
+            "lineHeight": 32,
+          },
+          {
+            "color": "#FFFFFF",
+            "marginTop": 8,
+            "textAlign": "left",
+          },
+        ]
+      }
+    >
+      Mint your store
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "color": "#FFFFFF",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "letterSpacing": 0.01,
+            "lineHeight": 24,
+          },
+          {
+            "color": "#CCCCCC",
+            "marginTop": 8,
+            "textAlign": "left",
+          },
+        ]
+      }
+    >
+      Create a badge-ready storefront with Shopify-quality polish.
+    </Text>
+    <View
+      style={
+        [
+          {
+            "backgroundColor": "#1A1A1A",
+            "borderColor": "#333333",
+            "borderRadius": 12,
+            "borderWidth": 1,
+            "boxShadow": "0px 4px 12px rgba(0,0,0,0.15)",
+            "elevation": 5,
+            "padding": 16,
+          },
+          {
+            "marginTop": 24,
+          },
+        ]
+      }
+    >
+      <View
+        style={
+          {
+            "gap": 12,
+          }
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "color": "#FFFFFF",
+                "fontSize": 20,
+                "fontWeight": "700",
+                "letterSpacing": 0,
+                "lineHeight": 28,
+              },
+              {
+                "color": "#FFFFFF",
+                "textAlign": "left",
+              },
+            ]
+          }
+        >
+          Store identity
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#FFFFFF",
+                "fontSize": 14,
+                "fontWeight": "400",
+                "letterSpacing": 0.01,
+                "lineHeight": 20,
+              },
+              {
+                "color": "#CCCCCC",
+                "marginTop": 8,
+                "textAlign": "left",
+              },
+            ]
+          }
+        >
+          Name your storefront and confirm the owner wallet.
+        </Text>
+        <View
+          style={
+            {
+              "marginTop": 16,
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "color": "#FFFFFF",
+                  "fontSize": 14,
+                  "fontWeight": "600",
+                  "letterSpacing": 0.01,
+                  "lineHeight": 20,
+                },
+                {
+                  "color": "#FFFFFF",
+                  "textAlign": "left",
+                },
+              ]
+            }
+          >
+            Store Name
+          </Text>
+          <TextInput
+            onChangeText={[Function]}
+            placeholder="e.g. Sunrise Collective"
+            style={
+              [
+                {
+                  "backgroundColor": "#1A1A1A",
+                  "borderRadius": 8,
+                  "color": "#FFFFFF",
+                  "fontSize": 16,
+                  "letterSpacing": 0.01,
+                  "lineHeight": 24,
+                  "paddingHorizontal": 16,
+                  "paddingVertical": 8,
+                },
+                undefined,
+                {
+                  "marginTop": 8,
+                },
+              ]
+            }
+            testID="store-creation-name"
+            value=""
+          />
+        </View>
+        <View
+          style={
+            {
+              "marginTop": 16,
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "color": "#FFFFFF",
+                  "fontSize": 14,
+                  "fontWeight": "600",
+                  "letterSpacing": 0.01,
+                  "lineHeight": 20,
+                },
+                {
+                  "color": "#FFFFFF",
+                  "textAlign": "left",
+                },
+              ]
+            }
+          >
+            Owner wallet
+          </Text>
+          <TextInput
+            placeholder="Connect wallet to autofill"
+            style={
+              [
+                {
+                  "backgroundColor": "#1A1A1A",
+                  "borderRadius": 8,
+                  "color": "#FFFFFF",
+                  "fontSize": 16,
+                  "letterSpacing": 0.01,
+                  "lineHeight": 24,
+                  "paddingHorizontal": 16,
+                  "paddingVertical": 8,
+                },
+                undefined,
+                {
+                  "color": "#FFFFFF",
+                  "marginTop": 8,
+                },
+              ]
+            }
+            testID="store-creation-owner"
+            value="owner.testnet"
+          />
+          <AnimatedView
+            style={
+              {
+                "transform": [
+                  {
+                    "scale": Value {
+                      "_v": 1,
+                      "setValue": [Function],
+                    },
+                  },
+                ],
+              }
+            }
+          >
+            <Pressable
+              onPress={[MockFunction]}
+              style={[Function]}
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "color": "#000000",
+                      "fontSize": 16,
+                      "letterSpacing": 0.01,
+                      "lineHeight": 24,
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                Connect Wallet
+              </Text>
+            </Pressable>
+          </AnimatedView>
+        </View>
+      </View>
+    </View>
+  </ScrollView>
+  <View
+    style={
+      [
+        {
+          "borderTopWidth": 1,
+          "paddingHorizontal": 24,
+          "paddingVertical": 16,
+        },
+        {
+          "backgroundColor": "#111111",
+          "borderTopColor": "#333333",
+        },
+      ]
     }
-    value=""
-  />
-  <Button
-    onPress={[Function]}
-    title="stores.mintStore"
-  />
+  >
+    <AnimatedView
+      style={
+        {
+          "transform": [
+            {
+              "scale": Value {
+                "_v": 1,
+                "setValue": [Function],
+              },
+            },
+          ],
+        }
+      }
+    >
+      <Pressable
+        onPress={[Function]}
+        style={[Function]}
+      >
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "letterSpacing": 0.01,
+                "lineHeight": 24,
+              },
+              undefined,
+            ]
+          }
+        >
+          Continue
+        </Text>
+      </Pressable>
+    </AnimatedView>
+  </View>
 </View>
 `;

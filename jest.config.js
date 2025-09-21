@@ -135,6 +135,7 @@ const cfg = {
     '<rootDir>/tests/admin-disputes.test.tsx',
     '<rootDir>/tests/storeDashboard.test.tsx',
     '<rootDir>/tests/storeCreation.snapshot.test.tsx',
+    '<rootDir>/tests/storeCreation.test.tsx',
     '<rootDir>/tests/adminDeliveries.snapshot.test.tsx',
     '<rootDir>/tests/admin-impersonate.test.tsx',
     '<rootDir>/tests/admin-store-detail.test.tsx',
