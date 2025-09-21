@@ -51,7 +51,11 @@ export default function ProfileOverview() {
     try {
       const amt = await chainAdapter.getBalance(address);
       setBalance(amt);
-      const all = await listStores('default', storeServiceDeps);
+      const stream = listStores('default', storeServiceDeps);
+      let all = stream.getSnapshot();
+      if (all.length === 0) {
+        all = await stream.read();
+      }
       const owner = address?.toLowerCase() || '';
       setStores(all.filter((s) => (s.owner || '').toLowerCase() === owner));
       // NFTs: disabled by default to avoid web bundle issues. Enable behind a flag in the future.

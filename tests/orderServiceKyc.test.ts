@@ -31,12 +31,26 @@ jest.mock('@/services/kycReceipts', () => ({
 
 const mockGetStore = jest.fn();
 jest.mock('@/features/stores/services/nearStores', () => {
+  const createStream = (stores: any[] = []) => {
+    const stream: any = {
+      read: jest.fn().mockResolvedValue(stores),
+      getSnapshot: jest.fn(() => stores),
+      subscribe: jest.fn(() => jest.fn()),
+      onError: jest.fn(() => jest.fn()),
+    };
+    stream[Symbol.asyncIterator] = jest.fn(() => ({
+      next: jest.fn().mockResolvedValue({ value: stores, done: false }),
+      return: jest.fn().mockResolvedValue({ value: undefined, done: true }),
+      throw: jest.fn(),
+    }));
+    return stream;
+  };
   const selectStore = jest.fn((...args: any[]) => mockGetStore(...args));
   const setStore = jest.fn();
   const service = {
     mintStore: jest.fn(),
     selectStore,
-    listStores: jest.fn(),
+    listStores: jest.fn(() => createStream()),
     addStore: jest.fn(),
     updateStore: jest.fn(),
     removeStore: jest.fn(),

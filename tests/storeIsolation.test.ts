@@ -65,8 +65,8 @@ describe('store data isolation', () => {
     expect(mockStoreChainClient.submitMutation).toHaveBeenCalledTimes(2);
     expect(mockStoreChainClient.submitMutation).toHaveBeenCalledWith('add', { store: s1 });
     expect(mockStoreChainClient.submitMutation).toHaveBeenCalledWith('add', { store: s2 });
-    const l1 = await listStores('s1', storeServiceDeps);
-    const l2 = await listStores('s2', storeServiceDeps);
+    const l1 = await listStores('s1', storeServiceDeps).read();
+    const l2 = await listStores('s2', storeServiceDeps).read();
     expect(l1.map(s => s.id)).toEqual(['a']);
     expect(l2.map(s => s.id)).toEqual(['b']);
   });
