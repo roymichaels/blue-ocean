@@ -1,73 +1,178 @@
-import React, { useEffect } from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, Text } from 'react-native';
-import { ExpoRoot } from 'expo-router';
-import { ctx } from './router-ctx.web';
-import { useLanguage } from '@/ui/ThemeProvider';
-import { Spinner } from '@/ui';
-import AppProviders from '@/providers/AppProviders';
-import { isRouterEnabled } from '@/services/config';
-import { initSessionTokens } from '@/services/session';
-import { initErrorReporter } from '@/services/errorReporter';
-import { errorLog, setDebugLogsEnabled } from '@/utils/logger';
-import {
-  ensureAdminAgentSubscription,
-  stopAdminAgentSubscription,
-} from '@/services/adminSubscription';
+import React, { Suspense, useMemo, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import AppProviders from '@/application/providers/AppProviders';
+import { ErrorBoundary } from '@/application/error/ErrorBoundary';
+import { useAppMode } from '@/application/providers/AppModeProvider';
+import { useTheme } from '@/ui/theme/ThemeProvider';
+import { TabBarIcon } from '@/ui/components/TabBarIcon';
+import { Screen } from '@/ui/layout/Screen';
+import { Skeleton } from '@/ui/components/Skeleton';
 
-const USE_ROUTER = isRouterEnabled();
+type TabKey = 'home' | 'search' | 'messages' | 'orders' | 'profile';
 
-function RouterApp() {
-  return <ExpoRoot context={ctx} />;
+type TabIconName = React.ComponentProps<typeof TabBarIcon>['name'];
+
+interface TabConfig {
+  key: TabKey;
+  label: string;
+  icon: TabIconName;
+  component: React.ComponentType;
 }
 
-function FallbackScreen() {
-  const { t } = useLanguage();
+function createLazyScreen<T extends Record<string, unknown> = Record<string, never>>(
+  loader: () => Promise<{ default: React.ComponentType<T> }>,
+) {
+  const LazyComponent = React.lazy(loader);
+  return (props: T) => (
+    <Suspense
+      fallback={
+        <Screen scrollable>
+          <Skeleton height={220} />
+        </Screen>
+      }
+    >
+      <LazyComponent {...props} />
+    </Suspense>
+  );
+}
+
+const tabs: TabConfig[] = [
+  {
+    key: 'home',
+    label: 'Home',
+    icon: 'home',
+    component: createLazyScreen(() => import('@/ui/screens/HomeScreen')),
+  },
+  {
+    key: 'search',
+    label: 'Search',
+    icon: 'search',
+    component: createLazyScreen(() => import('@/ui/screens/SearchScreen')),
+  },
+  {
+    key: 'messages',
+    label: 'Messages',
+    icon: 'message-square',
+    component: createLazyScreen(() => import('@/ui/screens/MessagesScreen')),
+  },
+  {
+    key: 'orders',
+    label: 'Orders',
+    icon: 'shopping-bag',
+    component: createLazyScreen(() => import('@/ui/screens/OrdersScreen')),
+  },
+  {
+    key: 'profile',
+    label: 'Profile',
+    icon: 'user',
+    component: createLazyScreen(() => import('@/ui/screens/ProfileScreen')),
+  },
+];
+
+function AppContent() {
+  const { colors, spacing } = useTheme();
+  const [activeTab, setActiveTab] = useState<TabKey>('home');
+
+  const active = useMemo(() => tabs.find((tab) => tab.key === activeTab) ?? tabs[0], [activeTab]);
+  const ActiveComponent = active.component;
+
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>{t('app.routerDisabled')}</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}> 
+      <View style={styles.content}>
+        <ActiveComponent />
+      </View>
+      <View
+        style={[
+          styles.tabBar,
+          {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+            paddingBottom: Platform.select({ ios: spacing.sm, android: spacing.xs, default: spacing.xs }),
+          },
+        ]}
+      >
+        {tabs.map((tab) => {
+          const focused = tab.key === activeTab;
+          return (
+            <Pressable
+              key={tab.key}
+              accessibilityRole="button"
+              accessibilityState={{ selected: focused }}
+              onPress={() => setActiveTab(tab.key)}
+              style={({ pressed }) => [
+                styles.tabButton,
+                { paddingVertical: spacing.xs, opacity: pressed ? 0.8 : 1 },
+              ]}
+            >
+              <TabBarIcon name={tab.icon} focused={focused} />
+              <Text
+                style={{
+                  marginTop: 4,
+                  color: focused ? colors.primary : colors.textMuted,
+                  fontSize: 12,
+                  fontWeight: '600',
+                  fontFamily: Platform.select({ web: 'inherit', default: undefined }),
+                }}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
-function MainApp() {
-  useEffect(() => {
-    void initSessionTokens();
-  }, []);
-  useEffect(() => {
-    setDebugLogsEnabled(true);
-    const cleanupReporter = initErrorReporter({
-      tags: {
-        release: process.env.EXPO_PUBLIC_APP_REVISION || 'dev',
-      },
-      extras: {
-        nodeEnv: process.env.NODE_ENV,
-      },
-    });
-    return cleanupReporter;
-  }, []);
-  useEffect(() => {
-    void ensureAdminAgentSubscription().catch((err) => {
-      errorLog('Failed to initialize admin agent subscription', err);
-    });
-    return () => {
-      stopAdminAgentSubscription();
-    };
-  }, []);
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <React.Suspense fallback={<Spinner />}>
-          <AppProviders>
-            {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-          </AppProviders>
-        </React.Suspense>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
-  );
+function AppHost() {
+  const { hydrated } = useAppMode();
+  const { colors } = useTheme();
+
+  if (!hydrated) {
+    return (
+      <View style={[styles.loadingState, { backgroundColor: colors.background }]}> 
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    );
+  }
+
+  return <AppContent />;
 }
 
 export default function App() {
-  return <MainApp />;
+  return (
+    <View style={styles.container}>
+      <AppProviders>
+        <ErrorBoundary>
+          <AppHost />
+        </ErrorBoundary>
+      </AppProviders>
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    paddingHorizontal: 12,
+    paddingTop: 6,
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  loadingState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
