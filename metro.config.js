@@ -28,4 +28,30 @@ if (!config.resolver.sourceExts.includes('mjs'))
 if (!config.resolver.sourceExts.includes('cjs'))
   config.resolver.sourceExts.push('cjs');
 
+config.transformer = config.transformer || {};
+const existingMinifierConfig = config.transformer.minifierConfig || {};
+config.transformer.minifierConfig = {
+  ...existingMinifierConfig,
+  compress: {
+    ...(existingMinifierConfig.compress || {}),
+    drop_console: true,
+    drop_debugger: true,
+  },
+  mangle: {
+    ...(existingMinifierConfig.mangle || {}),
+    toplevel: true,
+  },
+  output: {
+    ...(existingMinifierConfig.output || {}),
+    comments: false,
+  },
+};
+
+config.transformer.getTransformOptions = async () => ({
+  transform: {
+    experimentalImportSupport: false,
+    inlineRequires: true,
+  },
+});
+
 module.exports = config;

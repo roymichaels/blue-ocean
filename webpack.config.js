@@ -3,9 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
 const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
+  const isProduction = config.mode === 'production';
   const version0 = (() => {
     const candidates = [
       path.resolve(
@@ -34,16 +36,58 @@ module.exports = async function (env, argv) {
   })();
   const wakuCore = require.resolve('@waku/core', { paths: [__dirname] });
 
-  // Use source maps in all modes to avoid eval-based tooling which can violate CSP
-  config.devtool = 'source-map';
+  // Avoid eval-based tooling in dev while keeping production bundles lean
+  config.devtool = isProduction ? false : 'source-map';
   // Ensure assets are served relative to index.html for IPFS/URL subpaths
   config.output.publicPath = './';
 
-  // Optional: remove buggy plugin in production
-  if (config.mode === 'production') {
+  // Optional: remove buggy plugin in production and tighten optimizations
+  if (isProduction) {
     config.plugins = config.plugins.filter(
       (p) => p.constructor.name !== 'WebpackDeepScopeAnalysisPlugin'
     );
+
+    const existingMinimizers = Array.isArray(config.optimization?.minimizer)
+      ? config.optimization.minimizer.filter(
+          (plugin) => plugin?.constructor?.name !== 'TerserPlugin'
+        )
+      : [];
+
+    existingMinimizers.push(
+      new TerserPlugin({
+        extractComments: false,
+        terserOptions: {
+          compress: {
+            drop_console: true,
+            drop_debugger: true,
+          },
+          format: {
+            comments: false,
+          },
+          mangle: true,
+          module: true,
+        },
+      })
+    );
+
+    const existingSplitChunks = config.optimization?.splitChunks || {};
+
+    config.optimization = {
+      ...config.optimization,
+      minimize: true,
+      minimizer: existingMinimizers,
+      usedExports: true,
+      sideEffects: true,
+      splitChunks: {
+        ...existingSplitChunks,
+        chunks: 'all',
+        maxInitialRequests:
+          existingSplitChunks.maxInitialRequests &&
+          existingSplitChunks.maxInitialRequests < 4
+            ? existingSplitChunks.maxInitialRequests
+            : 4,
+      },
+    };
   }
 
   // Polyfill Node.js core modules used by some dependencies
