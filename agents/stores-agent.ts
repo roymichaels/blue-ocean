@@ -3,6 +3,7 @@ import type { Store } from '@/types';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { buildTopic } from '@/utils/wakuTopics';
 import storeRepository from '@/services/storeRepository';
+import reputationService, { type ScoreUpdateListener } from './reputation-service';
 
 const getTransportCrypto = () =>
   typeof globalThis !== 'undefined' && globalThis.crypto ? globalThis.crypto : undefined;
@@ -36,30 +37,22 @@ async function loadWakuDeps(): Promise<{ publish: PublishFn; makeSignedWakuMessa
 
 // TODO:TODO-111 Extend StoresAgent to track multi-tenant metrics and avoid namespace collisions for shared storefronts.
 // TODO:REC-211 Publish reputation score updates via analytics topic so UI dashboards can react in real time.
-interface Metrics {
-  reviewSum: number;
-  reviewCount: number;
-  reliability: number;
-  score: number;
-}
-
 type StoreRemovalPayload = { id: string; store: Store | null };
 
 type StoreChangeType = 'store.created' | 'store.updated';
 
 class StoresAgent {
-  private reputation: Record<string, Metrics> = {};
-  private subscribers: Set<(id: string, score: number) => void> = new Set();
-
   constructor() {
     storeRepository.on('store.created', ({ store }) => {
+      reputationService.hydrate(store.id, store);
       void this.broadcastStoreChange('store.created', store);
     });
     storeRepository.on('store.updated', ({ store }) => {
+      reputationService.hydrate(store.id, store);
       void this.broadcastStoreChange('store.updated', store);
     });
     storeRepository.on('store.removed', ({ id, store }) => {
-      delete this.reputation[id];
+      reputationService.clear(id);
       void this.broadcastStoreRemoval({ id, store });
     });
   }
@@ -69,31 +62,19 @@ class StoresAgent {
     return ensureWallet('Please connect your NEAR wallet to manage stores.');
   }
 
-  private calculateScore(id: string): number {
-    const m = this.reputation[id];
-    const avg = m.reviewCount > 0 ? m.reviewSum / m.reviewCount : 0;
-    return (avg + m.reliability * 5) / 2;
-  }
-
   async recordReview(storeId: string, rating: number) {
-    if (!this.reputation[storeId]) {
-      this.reputation[storeId] = { reviewSum: 0, reviewCount: 0, reliability: 0, score: 0 };
-    }
-    const m = this.reputation[storeId];
-    m.reviewSum += rating;
-    m.reviewCount += 1;
-    const newScore = this.calculateScore(storeId);
+    const { score: newScore } = reputationService.recordReview(storeId, rating);
     const store = await storeRepository.select(storeId);
     if (store) {
       try {
         const result = await storeRepository.save({ ...store, reputation: newScore });
         const confirmed = result.store.reputation ?? newScore;
-        m.score = confirmed;
-        this.subscribers.forEach((cb) => cb(storeId, confirmed));
+        reputationService.confirmScore(storeId, confirmed);
       } catch {
-        m.reviewSum -= rating;
-        m.reviewCount -= 1;
+        reputationService.rollbackReview(storeId, rating);
       }
+    } else {
+      reputationService.rollbackReview(storeId, rating);
     }
   }
 
@@ -101,33 +82,30 @@ class StoresAgent {
     const store = await storeRepository.findByOwner(owner);
     if (store) {
       const id = store.id;
-      if (!this.reputation[id]) {
-        this.reputation[id] = { reviewSum: 0, reviewCount: 0, reliability: 0, score: 0 };
-      }
-      const prev = this.reputation[id].reliability;
-      this.reputation[id].reliability = reliability;
-      const newScore = this.calculateScore(id);
+      const { score: newScore, previousReliability, previousScore } = reputationService.setReliability(
+        id,
+        reliability,
+      );
       try {
         const result = await storeRepository.save({ ...store, reputation: newScore });
         const confirmed = result.store.reputation ?? newScore;
-        this.reputation[id].score = confirmed;
-        this.subscribers.forEach((cb) => cb(id, confirmed));
+        reputationService.confirmScore(id, confirmed);
       } catch {
-        this.reputation[id].reliability = prev;
+        reputationService.restoreReliability(id, previousReliability, previousScore);
       }
     }
   }
 
   getReputationScore(id: string): number {
-    return this.reputation[id]?.score || 0;
+    return reputationService.getScore(id);
   }
 
-  subscribe(cb: (id: string, score: number) => void) {
-    this.subscribers.add(cb);
+  subscribe(cb: ScoreUpdateListener): () => void {
+    return reputationService.subscribe(cb);
   }
 
-  unsubscribe(cb: (id: string, score: number) => void) {
-    this.subscribers.delete(cb);
+  unsubscribe(cb: ScoreUpdateListener) {
+    reputationService.unsubscribe(cb);
   }
 
   async add(item: Store): Promise<void> {
