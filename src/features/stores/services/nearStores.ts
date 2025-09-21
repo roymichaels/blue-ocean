@@ -21,12 +21,21 @@ import {
 } from './storeCache';
 
 
-const DISABLED = false;
-
 const defaultDeps = createDefaultStoreServiceDeps();
 
 function resolveDeps(deps?: StoreServiceDeps): StoreServiceDeps {
   return deps ?? defaultDeps;
+}
+
+type StoreListener = (stores: ReadonlyArray<Store>) => void;
+type StoreErrorListener = (error: unknown) => void;
+
+export interface StoreListStream {
+  read(): Promise<ReadonlyArray<Store>>;
+  getSnapshot(): ReadonlyArray<Store>;
+  subscribe(listener: StoreListener): () => void;
+  onError(listener: StoreErrorListener): () => void;
+  [Symbol.asyncIterator](): AsyncIterator<ReadonlyArray<Store>>;
 }
 
 export const storesWarmCache = {
@@ -75,6 +84,9 @@ async function persistStore(store: Store, sid: string) {
   const json = canonicalJson(store);
   await setValue(STORE_CACHE_ADDRESS, storeCacheKey(store.id, sid), json);
   await setValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(store.id), json);
+  try {
+    storeCacheRepository.mutate({ id: store.id, value: store });
+  } catch {}
 }
 
 export function selectStore(
@@ -114,39 +126,265 @@ export async function selectStore(
     return null;
   }
 }
-export async function listStores(
-  storeId: string,
-  deps?: StoreServiceDeps,
-): Promise<Store[]> {
-  const sid = requireStoreId(storeId);
-  try {
-    const values = storeCacheRepository.list();
-    if (sid === 'default') return values;
-    const filtered = values.filter((store) => requireStoreId(store.id) === sid);
-    if (filtered.length > 0) return filtered;
-  } catch {}
-  const items = await listValues(STORE_CACHE_ADDRESS);
-  const res: Store[] = [];
-  for (const i of items) {
-    if (!i.key.startsWith(`${STORE_CACHE_ADDRESS}:${sid}:`)) continue;
+const storeStreams = new WeakMap<StoreServiceDeps, Map<string, StoreListStream>>();
+const chainSyncTasks = new WeakMap<StoreServiceDeps, Promise<void>>();
+
+function scheduleChainSync(deps: StoreServiceDeps): void {
+  if (chainSyncTasks.has(deps)) return;
+  const task = (async () => {
     try {
-      res.push(JSON.parse(i.value) as Store);
-    } catch {}
-  }
-  if (res.length > 0 || DISABLED) return res;
-  try {
-    const resolved = resolveDeps(deps);
-    resolved.chain.assertNearChain();
-    const chainRes = await resolved.contract.listStores();
-    const mapped = chainRes.map(fromChain);
-    for (const s of mapped) {
-      await persistStore(s, requireStoreId(s.id));
+      try {
+        deps.chain.assertNearChain();
+      } catch {
+        return;
+      }
+      const chainRes = await deps.contract.listStores();
+      const mapped = chainRes.map(fromChain);
+      await Promise.all(
+        mapped.map(async (store) => {
+          try {
+            await persistStore(store, requireStoreId(store.id));
+          } catch (err) {
+            errorLog('Failed to persist store from chain sync', err);
+          }
+        }),
+      );
+    } catch (err) {
+      errorLog('Failed to sync stores from chain', err);
+    } finally {
+      chainSyncTasks.delete(deps);
     }
-    return mapped;
-  } catch {
-    return res;
+  })();
+  chainSyncTasks.set(deps, task);
+}
+
+function createStoreListStream(
+  storeId: string,
+  deps: StoreServiceDeps,
+): StoreListStream {
+  const sid = requireStoreId(storeId);
+  const listeners = new Set<StoreListener>();
+  const errorListeners = new Set<StoreErrorListener>();
+  const state = new Map<string, Store>();
+  let current: ReadonlyArray<Store> = [];
+  let hasValue = false;
+
+  function cloneStore(store: Store): Store {
+    return { ...store };
   }
-  return res;
+
+  function emitError(err: unknown) {
+    for (const listener of errorListeners) {
+      try {
+        listener(err);
+      } catch {}
+    }
+  }
+
+  function snapshot(): ReadonlyArray<Store> {
+    return Array.from(state.values());
+  }
+
+  function notify() {
+    const value = snapshot();
+    current = value;
+    hasValue = true;
+    for (const listener of listeners) {
+      try {
+        listener(value);
+      } catch (err) {
+        emitError(err);
+      }
+    }
+  }
+
+  function replaceState(list: Store[]) {
+    state.clear();
+    for (const item of list) {
+      if (!item || typeof item.id !== 'string' || item.id.length === 0) continue;
+      state.set(item.id, cloneStore(item));
+    }
+    notify();
+  }
+
+  const filter = (id: string, value: Store | undefined) => {
+    if (sid === 'default') return true;
+    if (value) return requireStoreId(value.id) === sid;
+    return state.has(id);
+  };
+
+  try {
+    storeCacheRepository.subscribe(filter, (id, value) => {
+      if (value) {
+        state.set(id, cloneStore(value));
+      } else if (!state.has(id)) {
+        return;
+      } else {
+        state.delete(id);
+      }
+      notify();
+    });
+  } catch (err) {
+    emitError(err);
+  }
+
+  (async () => {
+    try {
+      const cached = storeCacheRepository.list((id, value) => filter(id, value));
+      replaceState(cached);
+    } catch {
+      // ignore cache hydration errors
+    }
+    if (state.size === 0) {
+      try {
+        const items = await listValues(STORE_CACHE_ADDRESS);
+        const res: Store[] = [];
+        const specificPrefix = `${STORE_CACHE_ADDRESS}:${sid}:`;
+        for (const item of items) {
+          if (sid !== 'default' && !item.key.startsWith(specificPrefix)) continue;
+          if (sid === 'default' && !item.key.startsWith(`${STORE_CACHE_ADDRESS}:default:`)) continue;
+          try {
+            const parsed = JSON.parse(item.value) as Store;
+            if (sid !== 'default' && requireStoreId(parsed.id) !== sid) continue;
+            res.push(parsed);
+          } catch (err) {
+            errorLog('Invalid store data', err);
+          }
+        }
+        if (res.length > 0) {
+          replaceState(res);
+        }
+      } catch (err) {
+        errorLog('Failed to load stores from KV', err);
+      }
+    }
+    if (!hasValue) {
+      replaceState([]);
+    }
+  })().catch((err) => emitError(err));
+
+  scheduleChainSync(deps);
+
+  return {
+    async read() {
+      if (hasValue) return current;
+      return new Promise<ReadonlyArray<Store>>((resolve, reject) => {
+        let unsub: (() => void) | null = null;
+        let offError: (() => void) | null = null;
+        const handleValue = (value: ReadonlyArray<Store>) => {
+          if (unsub) unsub();
+          if (offError) offError();
+          resolve(value);
+        };
+        const handleError = (err: unknown) => {
+          if (unsub) unsub();
+          if (offError) offError();
+          reject(err);
+        };
+        unsub = this.subscribe(handleValue);
+        offError = this.onError(handleError);
+      });
+    },
+    getSnapshot() {
+      return current;
+    },
+    subscribe(listener: StoreListener) {
+      listeners.add(listener);
+      if (hasValue) {
+        try {
+          listener(current);
+        } catch (err) {
+          emitError(err);
+        }
+      }
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    onError(listener: StoreErrorListener) {
+      errorListeners.add(listener);
+      return () => {
+        errorListeners.delete(listener);
+      };
+    },
+    [Symbol.asyncIterator]() {
+      let done = false;
+      const queue: ReadonlyArray<Store>[] = [];
+      const pending: Array<{
+        resolve: (value: IteratorResult<ReadonlyArray<Store>>) => void;
+        reject: (reason?: unknown) => void;
+      }> = [];
+
+      const push = (value: ReadonlyArray<Store>) => {
+        if (pending.length > 0) {
+          const waiter = pending.shift();
+          waiter?.resolve({ value, done: false });
+          return;
+        }
+        queue.length = 0;
+        queue.push(value);
+      };
+
+      const fail = (err: unknown) => {
+        while (pending.length > 0) {
+          const waiter = pending.shift();
+          waiter?.reject(err);
+        }
+      };
+
+      const stop = () => {
+        if (done) return;
+        done = true;
+        valueUnsub();
+        errorUnsub();
+      };
+
+      const valueUnsub = this.subscribe((value) => {
+        push(value);
+      });
+      const errorUnsub = this.onError((err) => {
+        fail(err);
+      });
+
+      return {
+        next: () => {
+          if (done) return Promise.resolve({ value: undefined, done: true });
+          if (queue.length > 0) {
+            const value = queue.shift()!;
+            return Promise.resolve({ value, done: false });
+          }
+          return new Promise<IteratorResult<ReadonlyArray<Store>>>((resolve, reject) => {
+            pending.push({ resolve, reject });
+          });
+        },
+        return: () => {
+          stop();
+          return Promise.resolve({ value: undefined, done: true });
+        },
+        throw: (err?: unknown) => {
+          stop();
+          return Promise.reject(err);
+        },
+      };
+    },
+  };
+}
+
+export function listStores(storeId: string, deps?: StoreServiceDeps): StoreListStream {
+  const resolved = resolveDeps(deps);
+  const sid = requireStoreId(storeId);
+  let perDeps = storeStreams.get(resolved);
+  if (!perDeps) {
+    perDeps = new Map();
+    storeStreams.set(resolved, perDeps);
+  }
+  let stream = perDeps.get(sid);
+  if (!stream) {
+    stream = createStoreListStream(sid, resolved);
+    perDeps.set(sid, stream);
+  }
+  scheduleChainSync(resolved);
+  return stream;
 }
 
 export async function addStore(
@@ -196,6 +434,9 @@ export async function removeStore(
   await resolved.storeChainClient.submitMutation('remove', { id });
   await removeValue(STORE_CACHE_ADDRESS, storeCacheKey(id, sid));
   await removeValue(STORE_CACHE_ADDRESS, storeCacheIndexKey(id));
+  try {
+    storeCacheRepository.mutate({ id, op: 'delete' });
+  } catch {}
 }
 
 export const getStore = selectStore;
@@ -219,7 +460,7 @@ export function createStoreService(
 ): {
   mintStore: (name: string) => Promise<MintStoreResult>;
   selectStore: (arg1: string, arg2?: string) => Promise<Store | null>;
-  listStores: (storeId: string) => Promise<Store[]>;
+  listStores: (storeId: string) => StoreListStream;
   addStore: (store: Store, sid?: string) => Promise<void>;
   updateStore: (store: Store, sid?: string) => Promise<void>;
   removeStore: (arg1: string, arg2?: string) => Promise<void>;

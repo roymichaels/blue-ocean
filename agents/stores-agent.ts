@@ -123,7 +123,11 @@ class StoresAgent {
 
   async updateReputationByOwner(owner: string, reliability: number): Promise<void> {
     const services = await getStoreServices();
-    const stores = await services.listStores('default');
+    const stream = services.listStores('default');
+    let stores = stream.getSnapshot();
+    if (stores.length === 0) {
+      stores = await stream.read();
+    }
     const store = stores.find((s) => s.owner === owner);
     if (store) {
       const id = store.id;
@@ -186,7 +190,7 @@ class StoresAgent {
   async selectStore(id: string): Promise<Store | null> {
     const services = await getStoreServices();
     const store = await services.selectStore(id);
-    return store ? JSON.parse(JSON.stringify(store)) : null;
+    return store ? { ...store } : null;
   }
 
   /**
@@ -194,8 +198,12 @@ class StoresAgent {
    */
   async getStores(): Promise<Store[]> {
     const services = await getStoreServices();
-    const list = await services.listStores('default');
-    return list.map((s) => JSON.parse(JSON.stringify(s)));
+    const stream = services.listStores('default');
+    let list = stream.getSnapshot();
+    if (list.length === 0) {
+      list = await stream.read();
+    }
+    return list.map((s) => ({ ...s }));
   }
 
   private async broadcastCreated(store: Store): Promise<void> {

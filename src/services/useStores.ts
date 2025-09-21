@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useState } from 'react';
 import chain from '@/services/chain';
-import { Store } from '@/types';
+import type { Store } from '@/types';
+import type { StoreListStream } from '@/features/stores/services/nearStores';
 
-let listStores: ((storeId: string) => Promise<Store[]>) | undefined;
+let listStores: ((storeId: string) => StoreListStream) | undefined;
 let setStore: ((storeId: string, store: Store) => Promise<void>) | undefined;
 let removeStore: ((storeId: string, id: string) => Promise<void>) | undefined;
 if (chain === 'near') {
@@ -22,37 +23,88 @@ if (chain === 'near') {
 }
 
 export function useStores(storeId: string) {
-  return useQuery({
-    queryKey: ['stores', storeId],
-    queryFn: () => (listStores ? listStores(storeId) : Promise.resolve([])),
-    select: (data) => data ?? [],
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-  });
+  const [data, setData] = useState<Store[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+
+  useEffect(() => {
+    if (!listStores) {
+      setData([]);
+      setIsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    const stream = listStores(storeId);
+    setError(null);
+    const snapshot = stream.getSnapshot();
+    if (snapshot.length > 0) {
+      setData([...snapshot]);
+      setIsLoading(false);
+    } else {
+      setData([]);
+      setIsLoading(true);
+    }
+    stream
+      .read()
+      .then((value) => {
+        if (cancelled) return;
+        setData([...value]);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err);
+        setIsLoading(false);
+      });
+    const unsubscribe = stream.subscribe((value) => {
+      if (cancelled) return;
+      setData([...value]);
+    });
+    const offError = stream.onError((err) => {
+      if (cancelled) return;
+      setError(err);
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+      offError();
+    };
+  }, [storeId]);
+
+  return { data, isLoading, error };
 }
 
 export function useStoreMutations(storeId: string) {
-  const queryClient = useQueryClient();
+  const [pending, setPending] = useState(0);
 
-  const upsert = useMutation({
-    mutationFn: (store: Store) =>
-      setStore ? setStore(storeId, store) : Promise.resolve(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stores', storeId] });
-    },
-  });
+  const run = useCallback(async <T>(action: () => Promise<T>): Promise<T> => {
+    setPending((count) => count + 1);
+    try {
+      return await action();
+    } finally {
+      setPending((count) => Math.max(0, count - 1));
+    }
+  }, []);
 
-  const remove = useMutation({
-    mutationFn: (id: string) =>
-      removeStore ? removeStore(storeId, id) : Promise.resolve(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stores', storeId] });
+  const upsert = useCallback(
+    (store: Store) => {
+      if (!setStore) return Promise.resolve();
+      return run(() => setStore(storeId, store));
     },
-  });
+    [run, storeId],
+  );
+
+  const remove = useCallback(
+    (id: string) => {
+      if (!removeStore) return Promise.resolve();
+      return run(() => removeStore(storeId, id));
+    },
+    [run, storeId],
+  );
 
   return {
-    setStore: upsert.mutateAsync,
-    removeStore: remove.mutateAsync,
-    isPending: upsert.isPending || remove.isPending,
+    setStore: upsert,
+    removeStore: remove,
+    isPending: pending > 0,
   };
 }
