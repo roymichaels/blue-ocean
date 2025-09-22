@@ -1,13 +1,13 @@
-﻿import { Buffer } from 'buffer';
-import * as SecureStore from 'expo-secure-store';
+import { Buffer } from 'buffer';
 import { getPublicKey, utils } from '@noble/ed25519';
+import { getItem, setItem } from './storage';
 
 const KEY_NAME = 'ephemeral-ed25519';
 let memoryKey: string | null = null;
 
 async function getPrivateKeyHex(): Promise<string> {
   try {
-    const stored = await SecureStore.getItemAsync(KEY_NAME);
+    const stored = await getItem(KEY_NAME);
     if (stored) {
       memoryKey = stored;
       return stored;
@@ -20,9 +20,9 @@ async function getPrivateKeyHex(): Promise<string> {
   const hex = Buffer.from(privBytes).toString('hex');
   memoryKey = hex;
   try {
-    await SecureStore.setItemAsync(KEY_NAME, hex);
+    await setItem(KEY_NAME, hex);
   } catch {
-    // fall back to in-memory key when SecureStore unavailable
+    // fall back to in-memory key when persistent storage is unavailable
   }
   return hex;
 }

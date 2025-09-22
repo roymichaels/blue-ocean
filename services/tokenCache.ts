@@ -1,11 +1,11 @@
-import * as SecureStore from 'expo-secure-store';
 import type { SessionToken } from '@/services/session';
+import { deleteItem, getItem, setItem } from './storage';
 
 const INDEX_KEY = 'session-token-index';
 
 async function readIndex(): Promise<string[]> {
   try {
-    const raw = await SecureStore.getItemAsync(INDEX_KEY);
+    const raw = await getItem(INDEX_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -14,7 +14,7 @@ async function readIndex(): Promise<string[]> {
 
 async function writeIndex(list: string[]): Promise<void> {
   try {
-    await SecureStore.setItemAsync(INDEX_KEY, JSON.stringify(list));
+    await setItem(INDEX_KEY, JSON.stringify(list));
   } catch {}
 }
 
@@ -28,10 +28,7 @@ export async function saveSession(record: SessionToken): Promise<void> {
       ...(record.checkoutNonce ? { checkoutNonce: record.checkoutNonce } : {}),
       ...(record.sealed ? { sealed: record.sealed } : {}),
     } satisfies SessionToken;
-    await SecureStore.setItemAsync(
-      `session-${record.token}`,
-      JSON.stringify(payload),
-    );
+    await setItem(`session-${record.token}`, JSON.stringify(payload));
     const idx = await readIndex();
     if (!idx.includes(record.token)) {
       idx.push(record.token);
@@ -45,7 +42,7 @@ export async function loadSessions(): Promise<SessionToken[]> {
   const out: SessionToken[] = [];
   for (const token of idx) {
     try {
-      const raw = await SecureStore.getItemAsync(`session-${token}`);
+      const raw = await getItem(`session-${token}`);
       if (!raw) continue;
       const parsed = JSON.parse(raw) as Partial<SessionToken> & {
         token?: unknown;
@@ -106,7 +103,7 @@ export async function loadSessions(): Promise<SessionToken[]> {
 
 export async function removeSession(token: string): Promise<void> {
   try {
-    await SecureStore.deleteItemAsync(`session-${token}`);
+    await deleteItem(`session-${token}`);
     const idx = await readIndex();
     const next = idx.filter((t) => t !== token);
     await writeIndex(next);
