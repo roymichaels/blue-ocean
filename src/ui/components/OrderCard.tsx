@@ -4,7 +4,7 @@ import type { Order } from '@/data/commerce';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 import { Card } from './Card';
 import { InlineBadge } from './InlineBadge';
-import { formatOrderTimestamp } from '@/utils/date';
+import { formatOrderTimestamp } from '@/logic/utils/date';
 
 const statusLabels: Record<Order['status'], { label: string; tone: 'default' | 'success' | 'warning' }> = {
   processing: { label: 'In progress', tone: 'warning' },

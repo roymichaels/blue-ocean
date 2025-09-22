@@ -6,7 +6,24 @@ module.exports = [
   // Base rules for app code (exclude tests)
   {
     files: ['**/*.ts', '**/*.tsx'],
-    ignores: ['tests/**', 'docs/.vitepress/**'],
+    ignores: [
+      'docs/.vitepress/**',
+      'coverage/**',
+      'config/**',
+      'constants/**',
+      'contracts/**',
+      'agents/**',
+      'infra/**',
+      'indexers/**',
+      'lib/**',
+      'relayer/**',
+      'schemas/**',
+      'scripts/**',
+      'contexts/**',
+      'types/**',
+      'utils/**',
+      'web/**',
+    ],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -56,7 +73,7 @@ module.exports = [
       'no-restricted-imports': [
         'error',
         {
-          patterns: ['../src/**', '../app/**', '../../src/**', '../../app/**'],
+          patterns: ['../src/**', '../../src/**'],
         },
       ],
     },
@@ -72,99 +89,6 @@ module.exports = [
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
-    },
-  },
-  // Feature boundaries
-  {
-    files: ['src/features/**/*.ts', 'src/features/**/*.tsx'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-    },
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            '@features/*/components/*',
-            '@features/*/hooks/*',
-            '@features/*/services/*',
-          ],
-        },
-      ],
-    },
-  },
-  // Prevent tabs from importing services directly
-  {
-    files: ['app/\\(tabs\\)/**/*.ts', 'app/\\(tabs\\)/**/*.tsx'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-    },
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: ['@services/**'],
-        },
-      ],
-    },
-  },
-  // Non type-aware rules for tests
-  {
-    files: ['tests/**/*.ts', 'tests/**/*.tsx'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
-    },
-    plugins: {
-      'react-hooks': reactHooks,
-      '@typescript-eslint': tsPlugin,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: "Literal[value=/\\(tabs\\)/]",
-          message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
-        },
-        {
-          selector: "TemplateElement[value.raw=/\\(tabs\\)/]",
-          message: "Avoid using the tabs route group; use root-relative '/' paths instead.",
-        },
-        {
-          selector: "Literal[value^='/']",
-          message: 'Use routes helper functions instead of hard-coded paths.',
-        },
-        {
-          selector: "TemplateElement[value.raw^='/']",
-          message: 'Use routes helper functions instead of hard-coded paths.',
-        },
-      ],
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: ['../src/**', '../app/**', '../../src/**', '../../app/**'],
-        },
-      ],
     },
   },
 ];

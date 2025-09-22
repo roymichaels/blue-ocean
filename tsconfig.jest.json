@@ -8,100 +8,37 @@
                                       ],
                             "jsx":  "react-jsx",
                             "paths":  {
-                                          "@app/*":  [
-                                                         "app/*"
-                                                     ],
-                                          "@features/*":  [
-                                                              "src/features/*"
-                                                          ],
-                                          "@shared/*":  [
-                                                            "src/shared/*"
-                                                        ],
-                                          "@ui/*":  [
-                                                        "src/ui/*"
-                                                    ],
-                                          "@providers/*":  [
-                                                               "src/providers/*"
-                                                           ],
-                                          "@/*":  [
-                                                      "*"
-                                                  ],
-                                          "@/auth/*":  [
-                                                           "src/auth/*"
-                                                       ],
-                                          "@/features/*":  [
-                                                               "src/features/*"
-                                                           ],
-                                          "@/shared/*":  [
-                                                             "src/shared/*"
+                                          "@/application/*":  [
+                                                                 "src/application/*"
+                                                             ],
+                                          "@/logic/*":  [
+                                                             "src/logic/*"
                                                          ],
+                                          "@/data/*":  [
+                                                            "src/data/*"
+                                                        ],
                                           "@/ui/*":  [
-                                                         "src/ui/*"
-                                                     ],
-                                          "@/ui":  [
-                                                       "src/ui/index"
-                                                   ],
-                                          "@/layout/*":  [
-                                                             "src/layout/*"
-                                                         ],
-                                          "@/core/*":  [
-                                                           "src/core/*"
-                                                       ],
-                                          "@/services":  [
-                                                             "src/services/index"
-                                                         ],
-                                          "@/services/*":  [
-                                                               "src/services/*",
-                                                               "services/*"
-                                                           ],
-                                          "@/billing":  [
-                                                            "src/billing/index"
-                                                        ],
-                                          "@/billing/*":  [
-                                                              "src/billing/*"
-                                                          ],
-                                          "@/utils/*":  [
-                                                            "src/utils/*",
-                                                            "utils/*"
-                                                        ],
-                                          "@/providers/*":  [
-                                                                "src/providers/*"
-                                                            ],
-                                          "@/providers":  [
-                                                              "src/providers/index"
-                                                          ],
-                                          "@/i18n":  [
-                                                         "src/i18n"
-                                                     ],
-                                          "@/schemas/*":  [
-                                                              "schemas/*"
-                                                          ],
-                                          "@/constants/*":  [
-                                                                "constants/*"
-                                                            ],
-                                          "src/*":  [
-                                                        "src/*"
-                                                    ],
-                                          "@waku/sdk":  [
-                                                            "tests/types/waku-sdk"
-                                                        ],
-                                          "@noble/hashes/sha256":  [
-                                                                       "tests/nobleSha256Mock"
-                                                                   ],
+                                                          "src/ui/*"
+                                                      ],
                                           "@noble/hashes/sha512":  [
-                                                                       "tests/nobleSha512Mock"
-                                                                   ]
+                                                                       "types/@noble/hashes/sha512"
+                                                                   ],
+                                          "@noble/ed25519":  [
+                                                                "types/@noble/ed25519/index"
+                                                            ],
+                                          "metro-runtime/src/modules/HMRClient":  [
+                                                                                    "types/metro-runtime/src/modules/HMRClient"
+                                                                                ]
                                       },
                             "moduleResolution":  "Bundler"
                         },
     "include":  [
-                    "tests",
+                    "App.tsx",
+                    "index.ts",
+                    "HMRClient.ts",
+                    "polyfills.native.ts",
+                    "polyfills.web.ts",
                     "src",
-                    "services",
-                    "app",
-                    "constants",
-                    "types",
-                    "scripts",
-                    "jest.config.js"
+                    "types"
                 ]
 }
