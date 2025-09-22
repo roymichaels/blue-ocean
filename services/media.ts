@@ -1,6 +1,5 @@
 import { errorLog } from '@/utils/logger';
 import PinataService from './pinata';
-import * as VideoThumbnails from 'expo-video-thumbnails';
 
 class MediaService {
   private static instance: MediaService;
@@ -116,16 +115,11 @@ class MediaService {
   /**
    * Generate a thumbnail for a video at the given time in ms
    */
-  async generateVideoThumbnail(uri: string, timeMs = 1000): Promise<string | null> {
-    try {
-      const { uri: thumbnailUri } = await VideoThumbnails.getThumbnailAsync(uri, {
-        time: timeMs,
-      });
-      return thumbnailUri;
-    } catch (error) {
-      errorLog('Error generating video thumbnail:', error);
-      return null;
-    }
+  async generateVideoThumbnail(_uri: string, _timeMs = 1000): Promise<string | null> {
+    // Thumbnail generation previously depended on expo-video-thumbnails which pulled in
+    // heavy native code. The lean preview build skips thumbnails entirely to avoid the
+    // native dependency surface, so callers should gracefully handle a null response.
+    return null;
   }
 }
 

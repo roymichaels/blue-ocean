@@ -21,12 +21,7 @@
       "output": "single"
     },
     "plugins": [
-      "expo-router",
-      "expo-font",
-      "expo-audio",
-      "expo-secure-store",
-      "expo-video",
-      "expo-web-browser"
+      "expo-router"
     ],
     "extra": {
       "router": {
