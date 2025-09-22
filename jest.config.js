@@ -32,6 +32,7 @@ const cfg = {
         '@noble/ed25519',
         'react-native',
         'react-native-reanimated',
+        'react-native-worklets',
         'expo',
         'expo-linear-gradient',
         'react-native-svg',
