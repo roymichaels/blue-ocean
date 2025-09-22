@@ -113,6 +113,7 @@ Use this checklist before inviting shoppers. Mark each line once validated and r
 - [ ] `EXPO_PUBLIC_NEAR_WALLET_URL` and `EXPO_PUBLIC_NEAR_WALLET_REDIRECT_URL` are correct for the chosen network
 - [ ] `EXPO_PUBLIC_NEAR_RPC_URL` (optional) overrides the RPC endpoint if you run your own node
 - [ ] `EXPO_PUBLIC_DEBUG_LOGS` is set appropriately for the environment (`false` in production)
+- [ ] `CACHE_SECRET` is a random 32+ character value stored in your secrets manager for cache encryption
 
 ### Contract deployment & relayer
 
