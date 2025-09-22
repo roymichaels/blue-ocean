@@ -25,3 +25,6 @@ dist-ssr
 dump.sql
 .state/
 .env
+coverage/
+
+coverage-backup.tar.gz
