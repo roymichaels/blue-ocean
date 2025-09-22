@@ -4,7 +4,6 @@
 - **Bundle target**: ✅ 148.96 KB gzip (520.04 KB raw) across 8 JS chunks (`dist/bundle-report.json`).
 - **Core runtime**: Expo 54, React 19 (web alias to Preact), React Native 0.81, react-native-web-lite for web shell.
 - **Entry strategy**: Platform-specific bootstrap (Expo register on native, direct `AppRegistry` on web) with lazy tab screens.
-- **Native plugins trimmed**: Removed expo-audio, expo-video, expo-font, expo-secure-store, and expo-web-browser. Preview builds now rely on pure JS fallbacks so no extra native modules are linked.
 
 ## Performance hardening
 - Hermes runtime remains enabled on iOS/Android via Expo SDK 54 defaults; `app.json` now explicitly enables Proguard and resource shrinking for Android release builds.
@@ -34,7 +33,7 @@ All commands pass on the shipping commit.
 ## Security & resilience checklist
 - ✅ Error boundary catches render failures and offers manual retry.
 - ✅ Network client factory centralizes live/mock switching and sanitizes base URL input.
-- ✅ No direct secret storage; runtime configuration pulled from `app.json` extras or environment variables and cached through a lightweight local storage shim instead of native keychain bindings.
+- ✅ No direct secret storage; runtime configuration pulled from `app.json` extras or environment variables.
 - ✅ Local storage access wrapped in try/catch with in-memory fallback to avoid crashes in restricted contexts.
 - ✅ Dependency surface minimized—no crypto, wallet, or router packages included in the lightweight build.
 

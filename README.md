@@ -9,7 +9,6 @@ without sacrificing usability.
 - **Mock + live modes** – toggle between bundled demo data and live network calls from the Profile tab. No backend is required to
   try the product and the preference persists in local storage (or an in-memory fallback on native).
 - **Slim bundle** – aggressive Metro optimizations, Hermes, Prettier tree-shaking, and lean dependencies (Preact + react-native-web-lite on web) keep the gzipped web bundle under 150 KB.
-- **Zero optional Expo plugins** – audio/video playback, font loading, secure storage, and web browser helpers now fall back to lightweight JS stubs so no native plugins need to be installed for this preview build.
 - **Modern UX** – native-feeling tabs, skeletons, haptics, and responsive layouts inspired by major consumer apps.
 - **Modular architecture** – UI → Logic → Data layers keep concerns isolated and testable.
 - **Tooling ready** – ESLint, Prettier, TypeScript, Jest, and a one-command Docker dev environment.

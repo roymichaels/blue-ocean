@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -23,32 +23,10 @@ import Animated, {
   runOnJS,
   withTiming,
 } from 'react-native-reanimated';
+import { VideoView, createVideoPlayer } from '../utils/video';
 import { useTheme } from '@/ui/ThemeProvider';
 
 const { width, height } = Dimensions.get('window');
-
-function VideoContent({ uri }: { uri: string }) {
-  if (Platform.OS === 'web') {
-    return (
-      <View style={styles.webVideoContainer}>
-        {React.createElement('video', {
-          src: uri,
-          controls: true,
-          autoPlay: true,
-          style: { width: '100%', height: '100%' },
-        })}
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.videoPlaceholder}>
-      <Text style={styles.videoPlaceholderText}>
-        Video playback is not available in this build.
-      </Text>
-    </View>
-  );
-}
 
 interface MediaItem {
   id: string;
@@ -76,10 +54,25 @@ export default function FullScreenMediaViewer({
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const [player, setPlayer] = useState<any>(null);
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   const currentMedia = media[currentIndex];
+
+  useEffect(() => {
+    if (currentMedia.type === 'video') {
+      const p = createVideoPlayer({ uri: currentMedia.uri });
+      if (visible) {
+        p.play();
+      }
+      setPlayer(p);
+      return () => {
+        p.remove();
+        setPlayer(null);
+      };
+    }
+  }, [currentMedia, visible]);
 
   useEffect(() => {
     // Update current index when initialIndex changes
@@ -309,7 +302,15 @@ export default function FullScreenMediaViewer({
             onPress={toggleControls}
           >
             {currentMedia.type === 'video' ? (
-              <VideoContent uri={currentMedia.uri} />
+              player && (
+                <VideoView
+                  player={player}
+                  style={styles.media}
+                  nativeControls
+                  contentFit="contain"
+                  allowsFullscreen
+                />
+              )
             ) : (
               <PinchGestureHandler onGestureEvent={pinchHandler}>
                 <Animated.View style={styles.gestureContainer}>
@@ -435,25 +436,6 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  webVideoContainer: {
-    width,
-    height,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  videoPlaceholder: {
-    width,
-    height,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  videoPlaceholderText: {
-    color: 'rgba(255, 255, 255, 0.75)',
-    fontSize: 16,
-    textAlign: 'center',
   },
   gestureContainer: {
     flex: 1,
