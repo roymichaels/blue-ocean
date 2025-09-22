@@ -26,6 +26,5 @@
 | components/HomeCards.tsx | TODO-122 | REC-222 | Skeleton loading and image prefetching. |
 | components/NotificationPopup.tsx | TODO-123 | REC-223 | Toast stacking and motion normalization. |
 | components/admin/AdminList.tsx | TODO-124 | REC-224 | Inline approvals and virtualization memoization. |
-| pages/index.tsx | TODO-125 | REC-225 | Personalization enhancements and asset prefetch. |
-| app/index.tsx | TODO-126 | REC-226 | Bundle splitting and warm-start personalization. |
+| app/index.tsx | TODO-125, TODO-126 | REC-225, REC-226 | Personalization enhancements, asset prefetch, bundle splitting, and warm-start personalization. |
 | tests/adminAgent.test.ts | TODO-127 | REC-227 | Add revocation coverage and browser polyfill parity. |
