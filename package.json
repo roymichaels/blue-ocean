@@ -3,6 +3,11 @@
   "main": "index.ts",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "relayer",
+    "indexers/lake"
+  ],
   "scripts": {
     "build:sdk-near": "cd packages/sdk-near && npx tsc",
     "dev": "npm run build:sdk-near && expo start",
@@ -24,8 +29,8 @@
   "dependencies": {
     "@babel/plugin-transform-template-literals": "^7.27.1",
     "@babel/runtime": "^7.28.4",
-    "@blue-ocean/sdk-near": "link:packages/sdk-near",
-    "@blue-ocean/utils": "file:packages/utils",
+    "@blue-ocean/sdk-near": "workspace:*",
+    "@blue-ocean/utils": "workspace:*",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.2",
     "@expo/webpack-config": "^19.0.1",

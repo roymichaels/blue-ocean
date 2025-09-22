@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "buffer": "^6.0.3",
-    "@blue-ocean/utils": "file:../utils",
+    "@blue-ocean/utils": "workspace:*",
     "canonicalize": "^2.1.0"
   }
 }
