@@ -32,11 +32,40 @@ import { LaunchGateProvider } from '@/features/launchGate';
  * 11. `CurrencyProvider` – stores selected currency.
  * 12. `NotificationProvider` – listens for notifications and displays popups.
  */
-export default function AppProviders({ children }: React.PropsWithChildren) {
+type ShowNotification = ReturnType<typeof useNotificationActions>['showNotification'];
+
+interface NotificationRegistrarProps {
+  onReady: (showNotification: ShowNotification | null) => void;
+}
+
+function NotificationActionsRegistrar({ onReady }: NotificationRegistrarProps) {
   const { showNotification } = useNotificationActions();
+
+  React.useEffect(() => {
+    onReady(showNotification);
+    return () => onReady(null);
+  }, [onReady, showNotification]);
+
+  return null;
+}
+
+export default function AppProviders({ children }: React.PropsWithChildren) {
+  const [showNotification, setShowNotification] = React.useState<
+    ShowNotification | null
+  >(null);
+
+  const handleNotificationReady = React.useCallback(
+    (notification: ShowNotification | null) => {
+      // Defer binding the error handler until the NotificationProvider has
+      // mounted so the boundary always uses a live `showNotification` ref.
+      setShowNotification(() => notification);
+    },
+    [],
+  );
+
   const handleBoundaryError = React.useCallback(
     (error: Error, info: React.ErrorInfo) => {
-      showNotification('Error', error.message, 'error');
+      showNotification?.('Error', error.message, 'error');
       void reportError(error, {
         context: 'error-boundary',
         componentStack: info?.componentStack,
@@ -57,6 +86,9 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
                       <AuthModalProvider>
                         <CurrencyProvider>
                           <NotificationProvider>
+                            <NotificationActionsRegistrar
+                              onReady={handleNotificationReady}
+                            />
                             <LaunchGateProvider>{children}</LaunchGateProvider>
                           </NotificationProvider>
                         </CurrencyProvider>
