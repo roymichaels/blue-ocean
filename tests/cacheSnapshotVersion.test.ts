@@ -25,3 +25,27 @@ describe('cache snapshot schema version', () => {
     expect(data).toEqual({ foo: 'bar' });
   });
 });
+
+describe('cache secret configuration', () => {
+  const originalSecret = process.env.CACHE_SECRET;
+
+  afterEach(() => {
+    jest.resetModules();
+    if (originalSecret === undefined) {
+      delete process.env.CACHE_SECRET;
+    } else {
+      process.env.CACHE_SECRET = originalSecret;
+    }
+  });
+
+  it('throws a descriptive error when secret is missing in Node runtimes', () => {
+    jest.resetModules();
+    delete process.env.CACHE_SECRET;
+
+    expect(() => {
+      jest.isolateModules(() => {
+        require('@/services/cache');
+      });
+    }).toThrowError(/CACHE_SECRET is required/);
+  });
+});

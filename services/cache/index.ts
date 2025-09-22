@@ -23,8 +23,16 @@ const memorySnapshots = new Map<string, { hash: string; version: number; data: u
 const CACHE_DIR = isNodeRuntime && pathModule && typeof process.cwd === 'function'
   ? config.CACHE_DIR || pathModule.join(process.cwd(), '.cache')
   : '.cache';
-const SECRET = config.CACHE_SECRET || 'blue-ocean';
-const KEY = cryptoModule ? cryptoModule.createHash('sha256').update(SECRET).digest() : null;
+const SECRET = config.CACHE_SECRET;
+const hasSecret = typeof SECRET === 'string' && SECRET.trim().length > 0;
+
+if (isNodeRuntime && !hasSecret) {
+  throw new Error(
+    'CACHE_SECRET is required when running the persistent cache. Provide a secure random value via the CACHE_SECRET environment variable or config.CACHE_SECRET.',
+  );
+}
+
+const KEY = hasSecret && cryptoModule ? cryptoModule.createHash('sha256').update(SECRET!).digest() : null;
 
 function filePath(key: string): string {
   if (!pathModule) return key;

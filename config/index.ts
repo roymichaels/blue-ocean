@@ -45,7 +45,10 @@ const envSchema = z.object({
   AWS_ACCESS_KEY_ID: z.string().optional().default(''),
   AWS_SECRET_ACCESS_KEY: z.string().optional().default(''),
   CACHE_DIR: z.string().optional().default(''),
-  CACHE_SECRET: z.string().optional().default('blue-ocean'),
+  CACHE_SECRET: z
+    .string()
+    .min(1, 'CACHE_SECRET must not be empty')
+    .optional(),
 });
 
 export type Config = z.infer<typeof envSchema>;
