@@ -19,76 +19,26 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@blue-ocean/sdk-near": [
-        "packages/sdk-near/src"
+      "@/application/*": [
+        "src/application/*"
       ],
-      "@app/*": [
-        "app/*"
+      "@/logic/*": [
+        "src/logic/*"
       ],
-      "@features/*": [
-        "src/features/*"
-      ],
-      "@ui/*": [
-        "src/ui/*"
-      ],
-      "@shared/*": [
-        "src/shared/*"
-      ],
-      "@providers/*": [
-        "src/providers/*"
-      ],
-      "@/auth/*": [
-        "src/auth/*"
-      ],
-      "@/features/*": [
-        "src/features/*"
-      ],
-      "@/shared/*": [
-        "src/shared/*"
+      "@/data/*": [
+        "src/data/*"
       ],
       "@/ui/*": [
         "src/ui/*"
       ],
-      "@/ui": [
-        "src/ui/index.ts"
+      "@noble/hashes/sha512": [
+        "types/@noble/hashes/sha512"
       ],
-      "@/layout/*": [
-        "src/layout/*"
+      "@noble/ed25519": [
+        "types/@noble/ed25519/index"
       ],
-      "@/core/*": [
-        "src/core/*"
-      ],
-      "@/services": [
-        "src/services/index.ts"
-      ],
-      "@/services/*": [
-        "src/services/*",
-        "services/*"
-      ],
-      "@/billing": [
-        "src/billing/index.ts"
-      ],
-      "@/billing/*": [
-        "src/billing/*"
-      ],
-      "@/utils/*": [
-        "src/utils/*",
-        "utils/*"
-      ],
-      "@/providers": [
-        "src/providers/index.ts"
-      ],
-      "@/providers/*": [
-        "src/providers/*"
-      ],
-      "@/schemas/*": [
-        "schemas/*"
-      ],
-      "@/i18n": [
-        "src/i18n.ts"
-      ],
-      "@/*": [
-        "./*"
+      "metro-runtime/src/modules/HMRClient": [
+        "types/metro-runtime/src/modules/HMRClient"
       ],
       "@expo/metro-runtime/src/HMRClient": [
         "./HMRClient.ts"
@@ -102,13 +52,35 @@
     ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "App.tsx",
+    "index.ts",
+    "HMRClient.ts",
+    "polyfills.native.ts",
+    "polyfills.web.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.ts",
     "nativewind-env.d.ts",
-    "types/wasm.d.ts",
-    "types/lucide-react-native.d.ts",
     "types/**/*.d.ts"
   ],
-  "exclude": ["tests"],
+  "exclude": [
+    "coverage",
+    "node_modules",
+    "agents",
+    "config",
+    "constants",
+    "contracts",
+    "contexts",
+    "infra",
+    "indexers",
+    "lib",
+    "relayer",
+    "schemas",
+    "scripts",
+    "tests",
+    "types/**/*.ts",
+    "utils",
+    "web"
+  ],
   "extends": "expo/tsconfig.base.json"
 }

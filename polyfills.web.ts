@@ -1,4 +1,8 @@
-import { debugLog } from './utils/logger';
+const debugLog = (...messages: unknown[]) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.debug('[polyfill]', ...messages);
+  }
+};
 // Ensure Expo Modules web shims are loaded so globalThis.expo is defined
 try {
   // Side-effect import to setup globalThis.expo (SharedObject, etc.)

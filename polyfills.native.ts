@@ -1,4 +1,9 @@
-import { debugLog } from './utils/logger';
+const debugLog = (...messages: unknown[]) => {
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.debug('[polyfill]', ...messages);
+  }
+};
 import 'react-native-url-polyfill/auto';
 import { sha512 } from '@noble/hashes/sha512';
 import { etc as edUtils } from '@noble/ed25519';
