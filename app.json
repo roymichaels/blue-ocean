@@ -12,10 +12,6 @@
     "ios": {
       "supportsTablet": true
     },
-    "android": {
-      "enableProguardInReleaseBuilds": true,
-      "enableShrinkResources": true
-    },
     "web": {
       "bundler": "metro",
       "output": "single"
