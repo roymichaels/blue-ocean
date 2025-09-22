@@ -4,7 +4,7 @@ import type { MessagePreview } from '@/data/commerce';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 import { Card } from './Card';
 import { InlineBadge } from './InlineBadge';
-import { formatRelativeTime } from '@/utils/date';
+import { formatRelativeTime } from '@/logic/formatters/date';
 
 interface MessageThreadCardProps {
   message: MessagePreview;

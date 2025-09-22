@@ -8,7 +8,6 @@ config.resolver = {
   alias: {
     ...(config.resolver?.alias || {}),
     '@': path.resolve(__dirname, 'src'),
-    '@/*': path.resolve(__dirname, 'src'),
     'metro-transform-plugins/src/inline-plugin.js': path.resolve(
       __dirname,
       'node_modules/metro-transform-plugins/private/inline-plugin.js'

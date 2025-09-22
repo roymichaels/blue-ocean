@@ -1,7 +1,11 @@
-import { debugLog } from './utils/logger';
 import 'react-native-url-polyfill/auto';
 import { sha512 } from '@noble/hashes/sha512';
 import { etc as edUtils } from '@noble/ed25519';
+
+const log = (...args: unknown[]) => {
+  // eslint-disable-next-line no-console
+  console.warn('[polyfills/native]', ...args);
+};
 
 try {
   // MUST be require() on native
@@ -9,7 +13,7 @@ try {
   // web-crypto polyfill for RN only
   require('expo-standard-web-crypto');
 } catch (err) {
-  debugLog('❌ Native polyfills load failed:', err);
+  log('❌ Native polyfills load failed:', err);
 }
 
 // Noble needs sync sha512
@@ -32,5 +36,5 @@ try {
     tslib.default = tslib;
   }
 } catch (err) {
-  debugLog('❌ tslib polyfill failed (native):', err);
+  log('❌ tslib polyfill failed (native):', err);
 }

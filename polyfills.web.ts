@@ -1,4 +1,11 @@
-import { debugLog } from './utils/logger';
+import { sha512 } from '@noble/hashes/sha512';
+import { etc as edUtils } from '@noble/ed25519';
+
+const log = (...args: unknown[]) => {
+  // eslint-disable-next-line no-console
+  console.warn('[polyfills/web]', ...args);
+};
+
 // Ensure Expo Modules web shims are loaded so globalThis.expo is defined
 try {
   // Side-effect import to setup globalThis.expo (SharedObject, etc.)
@@ -12,8 +19,6 @@ try {
     g.expo.SharedObject = class {};
   }
 } catch {}
-import { sha512 } from '@noble/hashes/sha512';
-import { etc as edUtils } from '@noble/ed25519';
 
 // On web, URL is natively supported; skip react-native-url-polyfill.
 // On web, browser already has crypto.subtle. Do NOT import expo-standard-web-crypto here.
@@ -45,7 +50,7 @@ try {
     return originalPromisify(fn);
   };
 } catch (err) {
-  debugLog('ℹ️ web Buffer/process polyfill skipped:', err);
+  log('ℹ️ web Buffer/process polyfill skipped:', err);
 }
 
 // Keep the tslib shim to be safe on web too
