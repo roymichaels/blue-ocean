@@ -122,7 +122,6 @@
     "@babel/plugin-transform-class-static-block": "^7.28.3",
     "@babel/plugin-transform-modules-commonjs": "^7.27.1",
     "@storybook/react": "^8.5.3",
-    "@expo/cli": "^0.26.9",
     "@faker-js/faker": "^8.4.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.1",
