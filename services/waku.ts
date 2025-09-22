@@ -64,6 +64,8 @@ const MAX_GZ_PAYLOAD = 200 * 1024; // 200KB
 const PROMPT_TTI_MS = 2500; // 2.5s
 const NONCE_BYTE_LENGTH = 12;
 const KEY_EPOCH_INTERVAL_MS = 10 * 60 * 1000;
+const PUBLISHER_KEY_STORAGE_KEY = 'waku_ephemeral_key';
+const PUBLISHER_KEY_GLOBAL_SYMBOL = Symbol.for('waku.publisherKey');
 
 function toHex(bytes: Uint8Array): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -72,6 +74,149 @@ function toHex(bytes: Uint8Array): string {
 function randomHex(byteLength = NONCE_BYTE_LENGTH): string {
   return toHex(randomBytes(byteLength));
 }
+
+function isReactNativeEnv(): boolean {
+  return (
+    typeof navigator !== 'undefined' &&
+    typeof navigator.product === 'string' &&
+    navigator.product === 'ReactNative'
+  );
+}
+
+function getGlobalPublisherKey(): string | null {
+  const globalKey = (globalThis as Record<PropertyKey, unknown>)[
+    PUBLISHER_KEY_GLOBAL_SYMBOL
+  ];
+  return typeof globalKey === 'string' ? globalKey : null;
+}
+
+function cachePublisherKey(key: string): string {
+  (globalThis as Record<PropertyKey, unknown>)[
+    PUBLISHER_KEY_GLOBAL_SYMBOL
+  ] = key;
+  cachedPublisherKey = key;
+  return key;
+}
+
+async function randomBytesReactNative(): Promise<Uint8Array> {
+  try {
+    const randomModule: typeof import('expo-random') = await import(
+      'expo-random'
+    );
+    if (typeof randomModule.getRandomBytesAsync === 'function') {
+      const result = await randomModule.getRandomBytesAsync(32);
+      if (result instanceof Uint8Array) return result;
+      if (Array.isArray(result)) return Uint8Array.from(result);
+    }
+  } catch (err) {
+    logger.warn({ err }, 'expo-random unavailable for RN key generation');
+  }
+  try {
+    await import('react-native-get-random-values');
+    const cryptoLike = (
+      globalThis as { crypto?: { getRandomValues?: (arr: Uint8Array) => void } }
+    ).crypto;
+    if (cryptoLike && typeof cryptoLike.getRandomValues === 'function') {
+      const arr = new Uint8Array(32);
+      cryptoLike.getRandomValues(arr);
+      return arr;
+    }
+  } catch (err) {
+    logger.warn(
+      { err },
+      'react-native-get-random-values unavailable for RN key generation'
+    );
+  }
+  return randomBytes(32);
+}
+
+function randomBytesBrowser(): Uint8Array {
+  const cryptoLike = (
+    globalThis as { crypto?: { getRandomValues?: (arr: Uint8Array) => void } }
+  ).crypto;
+  if (cryptoLike && typeof cryptoLike.getRandomValues === 'function') {
+    const arr = new Uint8Array(32);
+    cryptoLike.getRandomValues(arr);
+    return arr;
+  }
+  return randomBytes(32);
+}
+
+function ensureHexKey(bytes: Uint8Array): string {
+  return `hex:${toHex(bytes)}`;
+}
+
+async function loadReactNativePublisherKey(): Promise<string | null> {
+  try {
+    const secureStore: typeof import('expo-secure-store') = await import(
+      'expo-secure-store'
+    );
+    const existing = await secureStore.getItemAsync(PUBLISHER_KEY_STORAGE_KEY);
+    if (existing) return cachePublisherKey(existing);
+    const bytes = await randomBytesReactNative();
+    const key = ensureHexKey(bytes);
+    await secureStore.setItemAsync(PUBLISHER_KEY_STORAGE_KEY, key);
+    return cachePublisherKey(key);
+  } catch (err) {
+    logger.warn({ err }, 'Failed to resolve React Native publisher key');
+    return null;
+  }
+}
+
+function resolveBrowserPublisherKey(): string | null {
+  try {
+    if (
+      typeof window === 'undefined' ||
+      typeof window.localStorage === 'undefined'
+    ) {
+      return null;
+    }
+    const existing = window.localStorage.getItem(PUBLISHER_KEY_STORAGE_KEY);
+    if (existing) return cachePublisherKey(existing);
+    const key = ensureHexKey(randomBytesBrowser());
+    window.localStorage.setItem(PUBLISHER_KEY_STORAGE_KEY, key);
+    return cachePublisherKey(key);
+  } catch (err) {
+    logger.warn({ err }, 'Failed to use localStorage for publisher key');
+    return null;
+  }
+}
+
+function resolveNodePublisherKey(): string | null {
+  try {
+    const nodeCrypto: typeof import('crypto') = require('crypto');
+    const key = `hex:${nodeCrypto.randomBytes(32).toString('hex')}`;
+    return cachePublisherKey(key);
+  } catch (err) {
+    logger.warn({ err }, 'Failed to use node crypto for publisher key');
+    return null;
+  }
+}
+
+function resolveFallbackPublisherKey(): string {
+  const existing = getGlobalPublisherKey();
+  if (existing) return existing;
+  return cachePublisherKey(ensureHexKey(randomBytes(32)));
+}
+
+async function computePublisherKey(): Promise<string> {
+  if (PUB) return cachePublisherKey(PUB);
+  if (strict) throw new Error('WAKU_PUBLISHER_KEY required in strict/prod.');
+  const globalKey = getGlobalPublisherKey();
+  if (globalKey) return cachePublisherKey(globalKey);
+  if (isReactNativeEnv()) {
+    const rnKey = await loadReactNativePublisherKey();
+    if (rnKey) return rnKey;
+  }
+  const browserKey = resolveBrowserPublisherKey();
+  if (browserKey) return browserKey;
+  const nodeKey = resolveNodePublisherKey();
+  if (nodeKey) return nodeKey;
+  return resolveFallbackPublisherKey();
+}
+
+let cachedPublisherKey: string | null = null;
+let publisherKeyPromise: Promise<string> | null = null;
 type PersistStoreFn = (storeId: string, store: Store) => Promise<void>;
 
 let persistStoreImpl: PersistStoreFn | null = null;
@@ -135,30 +280,18 @@ function enrichEnvelope(message: unknown): Record<string, unknown> {
   return { ...base, ts, nonce, keyEpoch };
 }
 
-function getPublisherKey(): string {
-  if (PUB) return PUB;
-  if (strict) throw new Error('WAKU_PUBLISHER_KEY required in strict/prod.');
-  try {
-    const k =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('waku_ephemeral_key') ||
-          (localStorage.setItem(
-            'waku_ephemeral_key',
-            'hex:' +
-              Array.from(crypto.getRandomValues(new Uint8Array(32)))
-                .map((b) => b.toString(16).padStart(2, '0'))
-                .join('')
-          ),
-          localStorage.getItem('waku_ephemeral_key')!)
-        : 'hex:' + require('crypto').randomBytes(32).toString('hex');
-    return k;
-  } catch {
-    return 'hex:' + '0'.repeat(64);
+export async function getPublisherKey(): Promise<string> {
+  if (cachedPublisherKey) return cachedPublisherKey;
+  if (!publisherKeyPromise) {
+    publisherKeyPromise = computePublisherKey();
   }
+  const key = await publisherKeyPromise;
+  cachedPublisherKey = key;
+  return key;
 }
 
 async function startNode(): Promise<LightNode | null> {
-  getPublisherKey();
+  await getPublisherKey();
   const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
   let node: LightNode | null = null;
   try {
