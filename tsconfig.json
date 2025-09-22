@@ -19,76 +19,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@blue-ocean/sdk-near": [
-        "packages/sdk-near/src"
-      ],
-      "@app/*": [
-        "app/*"
-      ],
-      "@features/*": [
-        "src/features/*"
-      ],
-      "@ui/*": [
-        "src/ui/*"
-      ],
-      "@shared/*": [
-        "src/shared/*"
-      ],
-      "@providers/*": [
-        "src/providers/*"
-      ],
-      "@/auth/*": [
-        "src/auth/*"
-      ],
-      "@/features/*": [
-        "src/features/*"
-      ],
-      "@/shared/*": [
-        "src/shared/*"
-      ],
-      "@/ui/*": [
-        "src/ui/*"
-      ],
-      "@/ui": [
-        "src/ui/index.ts"
-      ],
-      "@/layout/*": [
-        "src/layout/*"
-      ],
-      "@/core/*": [
-        "src/core/*"
-      ],
-      "@/services": [
-        "src/services/index.ts"
-      ],
-      "@/services/*": [
-        "src/services/*",
-        "services/*"
-      ],
-      "@/billing": [
-        "src/billing/index.ts"
-      ],
-      "@/billing/*": [
-        "src/billing/*"
-      ],
-      "@/utils/*": [
-        "src/utils/*",
-        "utils/*"
-      ],
-      "@/providers": [
-        "src/providers/index.ts"
-      ],
-      "@/providers/*": [
-        "src/providers/*"
-      ],
-      "@/schemas/*": [
-        "schemas/*"
-      ],
-      "@/i18n": [
-        "src/i18n.ts"
-      ],
       "@/*": [
-        "./*"
+        "src/*"
       ],
       "@expo/metro-runtime/src/HMRClient": [
         "./HMRClient.ts"
@@ -102,13 +34,16 @@
     ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "nativewind-env.d.ts",
-    "types/wasm.d.ts",
-    "types/lucide-react-native.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "App.tsx",
+    "index.ts",
+    "HMRClient.ts",
+    "polyfills.native.ts",
+    "polyfills.web.ts",
     "types/**/*.d.ts"
   ],
-  "exclude": ["tests"],
   "extends": "expo/tsconfig.base.json"
 }

@@ -1,107 +1,18 @@
 {
-    "extends":  "./tsconfig.json",
-    "compilerOptions":  {
-                            "baseUrl":  ".",
-                            "types":  [
-                                          "jest",
-                                          "node"
-                                      ],
-                            "jsx":  "react-jsx",
-                            "paths":  {
-                                          "@app/*":  [
-                                                         "app/*"
-                                                     ],
-                                          "@features/*":  [
-                                                              "src/features/*"
-                                                          ],
-                                          "@shared/*":  [
-                                                            "src/shared/*"
-                                                        ],
-                                          "@ui/*":  [
-                                                        "src/ui/*"
-                                                    ],
-                                          "@providers/*":  [
-                                                               "src/providers/*"
-                                                           ],
-                                          "@/*":  [
-                                                      "*"
-                                                  ],
-                                          "@/auth/*":  [
-                                                           "src/auth/*"
-                                                       ],
-                                          "@/features/*":  [
-                                                               "src/features/*"
-                                                           ],
-                                          "@/shared/*":  [
-                                                             "src/shared/*"
-                                                         ],
-                                          "@/ui/*":  [
-                                                         "src/ui/*"
-                                                     ],
-                                          "@/ui":  [
-                                                       "src/ui/index"
-                                                   ],
-                                          "@/layout/*":  [
-                                                             "src/layout/*"
-                                                         ],
-                                          "@/core/*":  [
-                                                           "src/core/*"
-                                                       ],
-                                          "@/services":  [
-                                                             "src/services/index"
-                                                         ],
-                                          "@/services/*":  [
-                                                               "src/services/*",
-                                                               "services/*"
-                                                           ],
-                                          "@/billing":  [
-                                                            "src/billing/index"
-                                                        ],
-                                          "@/billing/*":  [
-                                                              "src/billing/*"
-                                                          ],
-                                          "@/utils/*":  [
-                                                            "src/utils/*",
-                                                            "utils/*"
-                                                        ],
-                                          "@/providers/*":  [
-                                                                "src/providers/*"
-                                                            ],
-                                          "@/providers":  [
-                                                              "src/providers/index"
-                                                          ],
-                                          "@/i18n":  [
-                                                         "src/i18n"
-                                                     ],
-                                          "@/schemas/*":  [
-                                                              "schemas/*"
-                                                          ],
-                                          "@/constants/*":  [
-                                                                "constants/*"
-                                                            ],
-                                          "src/*":  [
-                                                        "src/*"
-                                                    ],
-                                          "@waku/sdk":  [
-                                                            "tests/types/waku-sdk"
-                                                        ],
-                                          "@noble/hashes/sha256":  [
-                                                                       "tests/nobleSha256Mock"
-                                                                   ],
-                                          "@noble/hashes/sha512":  [
-                                                                       "tests/nobleSha512Mock"
-                                                                   ]
-                                      },
-                            "moduleResolution":  "Bundler"
-                        },
-    "include":  [
-                    "tests",
-                    "src",
-                    "services",
-                    "app",
-                    "constants",
-                    "types",
-                    "scripts",
-                    "jest.config.js"
-                ]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": [
+      "jest",
+      "node"
+    ],
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src",
+    "tests",
+    "App.tsx",
+    "index.ts",
+    "jest.config.js"
+  ]
 }
