@@ -42,24 +42,15 @@ export function useNotificationSubscription(
     }
   }, [isLoggedIn, user]);
 
-  useEffect(() => {
-    if (isLoggedIn && user) {
-      refreshNotifications();
-      setupRealtimeSubscription();
-      setupWakuSubscription();
-    } else {
-      setUnreadCount(0);
-      cleanupSubscription();
-      cleanupWakuSubscription();
+  const cleanupSubscription = useCallback(() => {
+    if (notificationSubscription.current) {
+      const notificationService = NotificationService.getInstance();
+      notificationService.unsubscribeFromNotifications(notificationSubscription.current);
+      notificationSubscription.current = null;
     }
-    return () => {
-      cleanupSubscription();
-      cleanupWakuSubscription();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, user, refreshNotifications]);
+  }, []);
 
-  const setupRealtimeSubscription = () => {
+  const setupRealtimeSubscription = useCallback(() => {
     if (!user) return;
     const notificationService = NotificationService.getInstance();
     cleanupSubscription();
@@ -80,23 +71,18 @@ export function useNotificationSubscription(
         );
       },
     );
-  };
+  }, [cleanupSubscription, onNotification, user]);
 
-  const cleanupSubscription = () => {
-    if (notificationSubscription.current) {
-      const notificationService = NotificationService.getInstance();
-      notificationService.unsubscribeFromNotifications(notificationSubscription.current);
-      notificationSubscription.current = null;
-    }
-  };
-
-  const setupWakuSubscription = async () => {
-    if (!user) return;
+  const cleanupWakuSubscription = useCallback(() => {
     if (wakuUnsub.current) {
       wakuUnsub.current();
       wakuUnsub.current = null;
     }
-    wakuUnsub.current = await waku.subscribeNotifications((message) => {
+  }, []);
+
+  const handleWakuNotification = useCallback(
+    (message: string) => {
+      if (!user) return;
       try {
         const payload = parseNotificationWakuPayload(JSON.parse(message));
         if (!payload) return;
@@ -123,15 +109,66 @@ export function useNotificationSubscription(
       } catch (err) {
         errorLog('Failed to parse notification', err);
       }
-    });
-  };
+    },
+    [onNotification, user],
+  );
 
-  const cleanupWakuSubscription = () => {
-    if (wakuUnsub.current) {
-      wakuUnsub.current();
-      wakuUnsub.current = null;
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      void refreshNotifications();
+      setupRealtimeSubscription();
+    } else {
+      setUnreadCount(0);
+      cleanupSubscription();
+      cleanupWakuSubscription();
     }
-  };
+    return () => {
+      cleanupSubscription();
+      cleanupWakuSubscription();
+    };
+  }, [
+    cleanupSubscription,
+    cleanupWakuSubscription,
+    isLoggedIn,
+    refreshNotifications,
+    setupRealtimeSubscription,
+    user,
+  ]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !user) {
+      return;
+    }
+    if (waku.status !== 'connected') {
+      cleanupWakuSubscription();
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      cleanupWakuSubscription();
+      const unsub = await waku.subscribeNotifications((message) => {
+        handleWakuNotification(message);
+      });
+      if (cancelled) {
+        unsub();
+        return;
+      }
+      wakuUnsub.current = unsub;
+    })().catch((err) => {
+      errorLog('Failed to subscribe to Waku notifications', err);
+    });
+    return () => {
+      cancelled = true;
+      cleanupWakuSubscription();
+    };
+  }, [
+    cleanupWakuSubscription,
+    handleWakuNotification,
+    isLoggedIn,
+    user,
+    waku,
+    waku.status,
+  ]);
 
   return { unreadCount, refreshNotifications };
 }
