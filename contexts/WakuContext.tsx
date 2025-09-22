@@ -72,7 +72,91 @@ const NOTIFICATION_TOPIC = '/blue-ocean/notifications/1';
 
 export function WakuProvider({ children }: { children: React.ReactNode }) {
   const nodeRef = useRef<LightNode>();
+  const nodeWaitersRef = useRef<((node: LightNode) => void)[]>([]);
+  const subscriptionsRef = useRef(
+    new Map<symbol, {
+      id: symbol;
+      active: boolean;
+      cleanup?: (() => void) | undefined;
+      setup: (node: LightNode) => Promise<(() => void) | void> | (() => void);
+    }>(),
+  );
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+
+  const resolveNodeWaiters = useCallback((node: LightNode) => {
+    if (nodeWaitersRef.current.length === 0) return;
+    const waiters = [...nodeWaitersRef.current];
+    nodeWaitersRef.current = [];
+    for (const resolve of waiters) {
+      try {
+        resolve(node);
+      } catch (err) {
+        errorLog('Failed to resolve Waku waiter', err);
+      }
+    }
+  }, []);
+
+  const awaitNode = useCallback(async (): Promise<LightNode> => {
+    if (nodeRef.current) return nodeRef.current;
+    return await new Promise<LightNode>((resolve) => {
+      nodeWaitersRef.current.push(resolve);
+    });
+  }, []);
+
+  const bindSubscription = useCallback(
+    async (id: symbol, nodeOverride?: LightNode) => {
+      const entry = subscriptionsRef.current.get(id);
+      if (!entry || !entry.active) return;
+      const node = nodeOverride ?? (await awaitNode());
+      if (!entry.active) return;
+      if (entry.cleanup) {
+        try {
+          entry.cleanup();
+        } catch (err) {
+          errorLog('Failed to cleanup Waku subscription', err);
+        }
+        entry.cleanup = undefined;
+      }
+      try {
+        const cleanup = await entry.setup(node);
+        if (!entry.active) {
+          if (typeof cleanup === 'function') cleanup();
+          return;
+        }
+        entry.cleanup = typeof cleanup === 'function' ? cleanup : undefined;
+      } catch (err) {
+        errorLog('Failed to bind Waku subscription', err);
+      }
+    },
+    [awaitNode],
+  );
+
+  const registerSubscription = useCallback(
+    async (
+      setup: (node: LightNode) => Promise<(() => void) | void> | (() => void),
+    ): Promise<() => void> => {
+      const id = Symbol('waku-sub');
+      const entry = { id, active: true, setup };
+      subscriptionsRef.current.set(id, entry);
+      void bindSubscription(id);
+      const unsubscribe = () => {
+        const current = subscriptionsRef.current.get(id);
+        if (!current) return;
+        current.active = false;
+        subscriptionsRef.current.delete(id);
+        if (current.cleanup) {
+          try {
+            current.cleanup();
+          } catch (err) {
+            errorLog('Failed to cleanup Waku subscription', err);
+          }
+          current.cleanup = undefined;
+        }
+      };
+      return unsubscribe;
+    },
+    [bindSubscription],
+  );
 
   const connect = useCallback(async () => {
     try {
@@ -86,6 +170,11 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       await waitForRemotePeer(node, [Protocols.Relay, Protocols.Store]);
       nodeRef.current = node;
       setStatus('connected');
+      resolveNodeWaiters(node);
+      for (const entry of subscriptionsRef.current.values()) {
+        if (!entry.active) continue;
+        void bindSubscription(entry.id, node);
+      }
       const client = await getClient();
       void flush(async (topic, payload) => {
         const encoder = client.createEncoder({ contentTopic: topic });
@@ -96,7 +185,7 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
       nodeRef.current = undefined;
       setStatus('disconnected');
     }
-  }, []);
+  }, [bindSubscription, resolveNodeWaiters]);
 
   useEffect(() => {
     void connect();
@@ -144,44 +233,45 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
     peerPublicKey: string,
     cb: (msg: ChatMessage) => void,
   ): Promise<() => void> => {
-    if (!nodeRef.current) return () => {};
-    const client = await getClient();
-    const topic = await chatTopic(roomId, peerPublicKey);
-    const decoder = client.createDecoder({ contentTopic: topic });
-    const handler = async (wakuMsg: DecodedMessage) => {
-      if (!wakuMsg.payload) return;
-      try {
-        const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
-        const schema = wakuMessageSchema.extend({ payload: z.string() });
-        const signed = await verifyBeforeWrite(raw, schema, undefined, topic);
-        if (!signed) return;
-        const text = await decryptMessage(signed.payload, roomId, peerPublicKey);
-        const chat: ChatMessage = {
-          id: Date.now().toString(),
-          senderId: signed.sender.publicKey,
-          senderName: signed.sender.publicKey,
-          message: text,
-          timestamp: Date.now(),
-          isAdmin: false,
-        };
-        const db = DatabaseService.getInstance();
-        await db.sendChatMessage(roomId, { ...chat, message: signed.payload });
-        cb(chat);
-      } catch {
-        /* ignore malformed messages */
-      }
-    };
-    const maybeUnsub = (nodeRef.current.relay as any).addObserver(handler, [decoder]) as
-      | (() => void)
-      | void;
-    return () => {
-      if (typeof maybeUnsub === 'function') {
-        maybeUnsub();
-      } else {
-        (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
-      }
-    };
-  }, []);
+    return registerSubscription(async (node) => {
+      const client = await getClient();
+      const topic = await chatTopic(roomId, peerPublicKey);
+      const decoder = client.createDecoder({ contentTopic: topic });
+      const handler = async (wakuMsg: DecodedMessage) => {
+        if (!wakuMsg.payload) return;
+        try {
+          const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
+          const schema = wakuMessageSchema.extend({ payload: z.string() });
+          const signed = await verifyBeforeWrite(raw, schema, undefined, topic);
+          if (!signed) return;
+          const text = await decryptMessage(signed.payload, roomId, peerPublicKey);
+          const chat: ChatMessage = {
+            id: Date.now().toString(),
+            senderId: signed.sender.publicKey,
+            senderName: signed.sender.publicKey,
+            message: text,
+            timestamp: Date.now(),
+            isAdmin: false,
+          };
+          const db = DatabaseService.getInstance();
+          await db.sendChatMessage(roomId, { ...chat, message: signed.payload });
+          cb(chat);
+        } catch {
+          /* ignore malformed messages */
+        }
+      };
+      const maybeUnsub = (node.relay as any).addObserver(handler, [decoder]) as
+        | (() => void)
+        | void;
+      return () => {
+        if (typeof maybeUnsub === 'function') {
+          maybeUnsub();
+        } else {
+          (node.relay as any)?.deleteObserver?.(handler);
+        }
+      };
+    });
+  }, [registerSubscription]);
 
   const fetchHistory = useCallback(async (
     roomId: string,
@@ -249,66 +339,68 @@ export function WakuProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const subscribeSystem = useCallback(async (cb: (msg: string) => void) => {
-    if (!nodeRef.current) return () => {};
-    const client = await getClient();
-    const decoder = client.createDecoder({ contentTopic: SYSTEM_TOPIC });
-    const handler = async (wakuMsg: DecodedMessage) => {
-      if (!wakuMsg.payload) return;
-      try {
-        const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
-        const schema = wakuMessageSchema.extend({ payload: z.string() });
-        const signed = await verifyBeforeWrite(raw, schema, undefined, SYSTEM_TOPIC);
-        if (!signed) {
-          errorLog('Dropping unverified system message', raw);
-          return;
+    return registerSubscription(async (node) => {
+      const client = await getClient();
+      const decoder = client.createDecoder({ contentTopic: SYSTEM_TOPIC });
+      const handler = async (wakuMsg: DecodedMessage) => {
+        if (!wakuMsg.payload) return;
+        try {
+          const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
+          const schema = wakuMessageSchema.extend({ payload: z.string() });
+          const signed = await verifyBeforeWrite(raw, schema, undefined, SYSTEM_TOPIC);
+          if (!signed) {
+            errorLog('Dropping unverified system message', raw);
+            return;
+          }
+          cb(signed.payload);
+        } catch (err) {
+          errorLog('Malformed system message', err);
         }
-        cb(signed.payload);
-      } catch (err) {
-        errorLog('Malformed system message', err);
-      }
-    };
-    const maybeUnsub = (nodeRef.current.relay as any).addObserver(handler, [decoder]) as
-      | (() => void)
-      | void;
-    return () => {
-      if (typeof maybeUnsub === 'function') {
-        maybeUnsub();
-      } else {
-        (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
-      }
-    };
-  }, []);
+      };
+      const maybeUnsub = (node.relay as any).addObserver(handler, [decoder]) as
+        | (() => void)
+        | void;
+      return () => {
+        if (typeof maybeUnsub === 'function') {
+          maybeUnsub();
+        } else {
+          (node.relay as any)?.deleteObserver?.(handler);
+        }
+      };
+    });
+  }, [registerSubscription]);
 
   const subscribeNotifications = useCallback(async (cb: (msg: string) => void) => {
-    if (!nodeRef.current) return () => {};
-    const client = await getClient();
-    const decoder = client.createDecoder({ contentTopic: NOTIFICATION_TOPIC });
-    const handler = async (wakuMsg: DecodedMessage) => {
-      if (!wakuMsg.payload) return;
-      try {
-        const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
-        const schema = wakuMessageSchema.extend({ payload: z.string() });
-        const signed = await verifyBeforeWrite(raw, schema, undefined, NOTIFICATION_TOPIC);
-        if (!signed) {
-          errorLog('Dropping unverified notification message', raw);
-          return;
+    return registerSubscription(async (node) => {
+      const client = await getClient();
+      const decoder = client.createDecoder({ contentTopic: NOTIFICATION_TOPIC });
+      const handler = async (wakuMsg: DecodedMessage) => {
+        if (!wakuMsg.payload) return;
+        try {
+          const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
+          const schema = wakuMessageSchema.extend({ payload: z.string() });
+          const signed = await verifyBeforeWrite(raw, schema, undefined, NOTIFICATION_TOPIC);
+          if (!signed) {
+            errorLog('Dropping unverified notification message', raw);
+            return;
+          }
+          cb(signed.payload);
+        } catch (err) {
+          errorLog('Malformed notification message', err);
         }
-        cb(signed.payload);
-      } catch (err) {
-        errorLog('Malformed notification message', err);
-      }
-    };
-    const maybeUnsub = (nodeRef.current.relay as any).addObserver(handler, [decoder]) as
-      | (() => void)
-      | void;
-    return () => {
-      if (typeof maybeUnsub === 'function') {
-        maybeUnsub();
-      } else {
-        (nodeRef.current?.relay as any)?.deleteObserver?.(handler);
-      }
-    };
-  }, []);
+      };
+      const maybeUnsub = (node.relay as any).addObserver(handler, [decoder]) as
+        | (() => void)
+        | void;
+      return () => {
+        if (typeof maybeUnsub === 'function') {
+          maybeUnsub();
+        } else {
+          (node.relay as any)?.deleteObserver?.(handler);
+        }
+      };
+    });
+  }, [registerSubscription]);
 
   const getPeerSummary = useCallback(() => {
     const node = nodeRef.current as any;
