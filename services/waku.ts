@@ -54,7 +54,9 @@ const PUB =
   '';
 
 let cachedNode: LightNode | null = null;
-const receivedIds = new Set<string>();
+export const RECEIVED_ID_TTL_MS = 5 * 60 * 1000;
+const RECEIVED_ID_MAX_ENTRIES = 1024;
+const receivedIds = new Map<string, number>();
 let reconnectAttempt = 0;
 let lakeStarted = false;
 
@@ -90,6 +92,28 @@ async function persistStore(storeId: string, store: Store): Promise<void> {
   } catch (err) {
     errorLog('Failed to persist store from lake event', err);
   }
+}
+
+function pruneReceivedIds(now: number): void {
+  if (receivedIds.size === 0) return;
+  for (const [id, seenAt] of receivedIds) {
+    if (now - seenAt > RECEIVED_ID_TTL_MS) {
+      receivedIds.delete(id);
+    } else {
+      break;
+    }
+  }
+}
+
+function rememberMessageId(id: string, now: number): boolean {
+  if (receivedIds.has(id)) return false;
+  receivedIds.set(id, now);
+  while (receivedIds.size > RECEIVED_ID_MAX_ENTRIES) {
+    const oldest = receivedIds.keys().next().value;
+    if (oldest === undefined) break;
+    receivedIds.delete(oldest);
+  }
+  return true;
 }
 
 function computeKeyEpoch(ts: number): number {
@@ -316,8 +340,9 @@ export async function subscribeWithAck(
         wakuDecryptErrorCounter.inc({ reason: 'decode_failure' });
         return;
       }
-      if (msg.id && receivedIds.has(msg.id)) return;
-      if (msg.id) receivedIds.add(msg.id);
+      const now = Date.now();
+      pruneReceivedIds(now);
+      if (msg.id && !rememberMessageId(msg.id, now)) return;
       cb(msg);
       if (msg.id) await sendAck(topic, msg.id);
     } catch (err) {
