@@ -40,21 +40,36 @@ function HomeOptions() {
   const isRTL = I18nManager.isRTL;
   const gapPx = width >= 768 ? spacing.spacer16 : spacing.spacer12;
   const horizontalPadding = spacing.spacer16;
+  const minTileSize = 140;
 
   const [containerWidth, setContainerWidth] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [prompted, setPrompted] = useState(false);
 
-  // Always render 4 columns; tiles shrink/expand as needed
-  const cols = 4;
+  const effectiveWidth = containerWidth || width;
+
+  const cols = useMemo(() => {
+    if (effectiveWidth >= 768) {
+      return 4;
+    }
+
+    const usableWidth = Math.max(0, effectiveWidth - horizontalPadding * 2);
+    if (!usableWidth) {
+      return 1;
+    }
+
+    const maxByWidth = Math.floor((usableWidth + gapPx) / (minTileSize + gapPx));
+
+    return Math.max(1, Math.min(2, maxByWidth));
+  }, [effectiveWidth, gapPx, horizontalPadding, minTileSize]);
 
   const tileSize = useMemo(() => {
-    const cw = (containerWidth || width) - horizontalPadding * 2;
+    const cw = Math.max(0, effectiveWidth - horizontalPadding * 2);
     const totalGaps = gapPx * Math.max(0, cols - 1);
-    const raw = (cw - totalGaps) / cols;
-    // Keep 4 columns by allowing tiles to shrink freely
-    return Math.max(1, Math.floor(raw));
-  }, [containerWidth, width, gapPx]);
+    const raw = cols ? (cw - totalGaps) / cols : cw;
+
+    return Math.max(minTileSize, Math.floor(raw));
+  }, [cols, effectiveWidth, gapPx, horizontalPadding, minTileSize]);
 
   const onLayoutGrid = useCallback((e: any) => {
     const w = e?.nativeEvent?.layout?.width;
@@ -140,12 +155,23 @@ function HomeOptions() {
   ];
 
   const renderCard = ({ key, title, icon, action, testID }: (typeof options)[number]) => (
-    <View key={key} style={{ width: tileSize }}>
+    <View
+      key={key}
+      style={{
+        width: tileSize,
+        flexBasis: tileSize,
+        minWidth: minTileSize,
+      }}
+    >
       <Card
         style={[
           styles.card,
           // Square tile on desktop: width controlled by parent, height via aspectRatio
-          { width: tileSize, height: tileSize },
+          {
+            width: tileSize,
+            height: isDesktop ? tileSize : undefined,
+            aspectRatio: isDesktop ? 1 : undefined,
+          },
           isDesktop ? styles.cardDesktop : styles.cardMobile,
         ]}
       >
