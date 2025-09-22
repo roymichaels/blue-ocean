@@ -1,110 +1,407 @@
-# Blue Ocean Expo App
+# Blue Ocean
 
-An Expo + React Native experience for exploring the Blue Ocean marketplace. The app now focuses on a lightweight offline-first
-mock that can flip to a live API at runtime. It launches fast, ships a polished bottom tab navigation, and keeps the bundle tiny
-without sacrificing usability.
+Blue Ocean is an underground gadgets platform for web3, privacy, and security services. It lets communities spin up stores to trade devices and accessories without centralized oversight.
+Autonomous agents communicate over the Waku peer‑to‑peer network, keep their state in memory, and hydrate from message history on boot. Configuration such as debug logging or Waku bootstrap peers can be customized through `EXPO_PUBLIC_*` environment variables, but defaults are provided for a zero‑config experience. All data is replicated via Waku topics and NEAR smart contracts; the app does not use a local SQLite database. When configured, the key‑value store writes to an S3‑compatible bucket using the lightweight `minio` client.
 
-## Highlights
+Upcoming roles include a driver network and other specialized agents that extend supply‑chain coverage. These additions align with Blue Ocean’s strategic goals for 2025 to grow into a resilient, privacy‑preserving marketplace.
 
-- **Mock + live modes** – toggle between bundled demo data and live network calls from the Profile tab. No backend is required to
-  try the product and the preference persists in local storage (or an in-memory fallback on native).
-- **Slim bundle** – aggressive Metro optimizations, Hermes, Prettier tree-shaking, and lean dependencies (Preact + react-native-web-lite on web) keep the gzipped web bundle under 150 KB.
-- **Modern UX** – native-feeling tabs, skeletons, haptics, and responsive layouts inspired by major consumer apps.
-- **Modular architecture** – UI → Logic → Data layers keep concerns isolated and testable.
-- **Tooling ready** – ESLint, Prettier, TypeScript, Jest, and a one-command Docker dev environment.
+See [docs/architecture.md](docs/architecture.md) for a high-level architecture overview, [docs/routes.md](docs/routes.md) for route and role details, and [docs/onboarding.md](docs/onboarding.md) for a tenant-facing onboarding guide.
 
-## Quick start
+## Developer portal
 
-```bash
+Blue Ocean ships with a self-hostable VitePress site under `docs/` that bundles quickstarts, operations manuals, and an interactive API playground.
+
+```sh
+yarn docs:dev       # live reload documentation during authoring
+yarn docs:build     # generate static assets in docs/.vitepress/dist
+yarn docs:preview   # preview the built site locally
+```
+
+Point a static web server at `docs/.vitepress/dist` to publish the portal under your own domain. The [API playground](docs/api-playground.md) lets you try agent endpoints with mock or live payloads, and the [opt-in telemetry guide](docs/telemetry-opt-in.md) captures the consent workflow for analytics events.
+
+## Quickstart
+
+Use **Yarn** for dependency management and running scripts.
+
+```sh
 yarn install
-yarn dev            # start Expo (mock mode by default)
+yarn dev        # mobile
+yarn dev:web    # web
+yarn lint && yarn typecheck
 ```
 
-Optional helpers:
+Metro's web bundler requires `it-all` and `it-pipe` to be listed explicitly in
+`dependencies`; both packages are included in `package.json` for web builds.
 
-```bash
-yarn dev:mock       # explicit mock mode
-yarn dev:live       # start in live mode (requires EXPO_PUBLIC_API_URL)
-yarn web            # Expo web dev server
-yarn lint           # ESLint
-yarn typecheck      # tsc --noEmit
-yarn test           # Jest (jest-expo preset)
-yarn build:web      # static web export + bundle report (dist/bundle-report.json)
+The app also uses the open-source [`@shopify/flash-list`](https://github.com/Shopify/flash-list) package solely for local list virtualization. It is independent of Shopify's platform and does not require a Shopify account or any access to Shopify APIs.
+
+When the app loads you'll see the global header and bottom tab bar (Home, Stores, Cart, Orders, Profile).
+
+## Tenant Support
+
+Operational incidents and merchant requests are coordinated through our
+encrypted Signal channel. Join the group and introduce your tenant name so the
+on-call agent can provision access:
+
+- Signal: [https://signal.group/#CjQKI7jzY8p1KZmuVz9pZLZ0Gz7Qn06YwT5cFVk1osZ-cZc7b2G1o6qOaG2nP3p2qk](https://signal.group/#CjQKI7jzY8p1KZmuVz9pZLZ0Gz7Qn06YwT5cFVk1osZ-cZc7b2G1o6qOaG2nP3p2qk)
+- Fallback: send a PGP encrypted message to `support@blueocean.local` using the
+  public key in [`docs/pgp-support.asc`](docs/pgp-support.asc).
+
+Please avoid email without encryption; the Signal room is monitored 24/7 for
+urgent production issues.
+
+## Design Tokens
+
+Shared design tokens are re-exported from `src/shared/ui/tokens.ts`. Import `spacing`, `radius`, `colors`, `zIndex`, and `shadows` to keep styles consistent across components.
+
+```ts
+import { spacing, radius, zIndex, shadows } from '@/shared/ui/tokens';
+
+const styles = StyleSheet.create({
+  button: {
+    padding: spacing.spacer16,
+    borderRadius: radius.md,
+    zIndex: zIndex.dropdown,
+    ...shadows.sm.web,
+  },
+});
 ```
 
-## Modes
+Tokens are also available at runtime through the `useTheme()` hook, which merges the current light/dark mode with any overrides:
 
-The app reads `EXPO_PUBLIC_APP_MODE` (and `extra.appMode` in `app.json`) to choose between:
-
-- **mock** – uses curated marketplace data defined in `src/data/commerce/mockData.ts`. Perfect for demos or offline review.
-- **live** – lazily creates a network client. Set `EXPO_PUBLIC_API_URL=https://your-domain/api` to point at production. Failed
-  requests automatically fall back to mock responses so the UI stays usable.
-
-You can flip modes at runtime from the **Profile → Live data mode** switch. The value persists to `localStorage` on web and falls back to an in-memory cache on native.
-
-## Project structure
-
-```
-App.tsx                 Root component with lightweight tab navigator + lazy screens
-src/application         Providers, app configuration helpers, error boundary
-src/data/commerce       Data contracts + clients (mock + live wrappers)
-src/logic/hooks         Hooks that connect UI to the data layer
-src/ui                  Theming, primitives, screen components, layout helpers
-src/platformEntry.*     Platform-specific bootstrappers (Expo native vs. direct AppRegistry on web)
-scripts/report-bundle.js  Web bundle size reporter used by `yarn build:web`
+```ts
+const { tokens, colors } = useTheme();
+// tokens.spacing.spacer16, colors.text.primary, ...
 ```
 
-The UI layer stays declarative and stateless, the logic layer manages data fetching, and the data layer encapsulates adapters.
 
-## Developer experience
+## Setup Guide
 
-- **Lint** – `yarn lint` (ESLint + React Hooks rules)
-- **Typecheck** – `yarn typecheck`
-- **Tests** – `yarn test` (jest-expo with Testing Library)
-- **Format** – Prettier config lives in `package.json` (run through your editor or `npx prettier`).
-- **Docker** – build once, run anywhere:
+1. **Install dependencies**
 
-  ```bash
-  docker build -t blue-ocean .
-  docker run --rm -it -p 19000-19002:19000-19002 blue-ocean
-  ```
+   ```sh
+   yarn install
+   ```
 
-## Live API contract
+2. **Set up environment files**
 
-When `EXPO_PUBLIC_API_URL` is defined, the app expects REST endpoints:
+   ```sh
+   cp .env.example .env          # public defaults
+   touch .env.local              # secrets (git-ignored)
+   ```
 
-- `GET /feed` → `CommerceFeed`
-- `GET /stores` → `Store[]`
-- `GET /orders` → `Order[]`
-- `GET /messages` → `MessagePreview[]`
-- `GET /search?term=` → `CommerceSearchResult`
+   Public `EXPO_PUBLIC_*` values live in `.env`. API keys, RPC URLs, and other
+   secrets belong in `.env.local`. See
+   [Environment Variables](#environment-variables).
 
-Missing or failing endpoints automatically fall back to the bundled mock client. Implementing the API later does not require UI
-changes—only the data layer swaps from mock to live responses.
+3. **Start the Expo project**
 
-## Bundle reporting
+   - **Web**: `yarn dev:web`
+   - **Mobile**: `yarn dev`
 
-`yarn build:web` exports the Expo web build using Metro, then runs `scripts/report-bundle.js`. The script prints the raw + gzip
-sizes for each JavaScript asset and stores a machine-readable report at `dist/bundle-report.json` for the final audit.
+4. **Connect a NEAR wallet**
 
-## Environment variables
+   - Install a NEAR wallet such as [MyNearWallet](https://my.near.org).
+   - When the app loads, tap the wallet button to open the NEAR Wallet Selector and sign in.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `EXPO_PUBLIC_APP_MODE` | `mock` | Default mode on startup. Overridden by the persisted preference (localStorage on web, in-memory fallback on native). |
-| `EXPO_PUBLIC_API_URL` | – | Optional base URL for live mode. |
+5. **Admin onboarding**
 
-You can extend `app.json` → `expo.extra` with more values and read them inside providers if you need additional configuration.
+   - Enable `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2=1` to roll out the join-request flow, or stage specific wallets with `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY=<wallet1,wallet2>` while the flag stays off. Flip `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK=1` for an instant kill switch if a regression appears.
+   - The first signed `admin.joinRequested` message seeds the admin list; subsequent wallets must be approved from **Admin → Requests**.
 
-## Deployment
+All data is ephemeral and synchronized between peers over Waku and written to NEAR smart contracts when needed; no external services or local database are required. All state is held in memory and hydrated from the Waku message history on boot. No database setup or SQL migrations are required, and all prior SQLite migration files have been removed from this repository.
 
-- **Web** – `yarn build:web` creates `dist/` with static assets and a bundle report.
-- **Mobile** – Use Expo Application Services (EAS) or `expo run:android` / `expo run:ios` to create native binaries. Hermes,
-  Proguard, and resource shrinking are enabled in `app.json`.
+### Development
 
-## Contributing
+Run the linter and TypeScript checker before committing:
 
-1. Fork and clone the repo.
-2. Install dependencies with `yarn install`.
-3. Make changes, add tests, and run the checks (`yarn lint && yarn typecheck && yarn test`).
-4. Commit and open a PR summarizing the architecture or UX impact.
+```sh
+yarn lint && yarn typecheck
+```
+
+The project uses Husky and `lint-staged` to run these checks on staged files.
+Install the Git hooks after cloning:
+
+```sh
+yarn husky install
+```
+
+### Environment Variables
+
+The app ships with sensible defaults and runs without a `.env` file. Public
+overrides such as `EXPO_PUBLIC_*` values live in `.env` (copy from
+`.env.example`). Secrets like RPC URLs or API keys should be placed in
+`.env.local`, which is git-ignored.
+
+Common variables include:
+
+| Variable | Required | Description |
+| -------- | -------- | ----------- |
+| `NEAR_RPC_URL` | no | Primary NEAR RPC endpoint used for blockchain calls. Overrides tenant setting. |
+| `NEAR_LAKE_BUCKET` | no | S3 bucket for NEAR Lake key-value storage. |
+| `NEAR_LAKE_REGION` | no | Region for the NEAR Lake bucket (default `eu-central-1`). |
+| `NEAR_LAKE_ENDPOINT` | no | Custom S3-compatible endpoint for NEAR Lake. |
+| `NEAR_ACCESS_KEY` | no | Access key for the NEAR Lake S3 bucket. |
+| `NEAR_SECRET_KEY` | no | Secret key for the NEAR Lake S3 bucket. |
+| `EXPO_PUBLIC_CONTRACT_ID` | yes | Marketplace contract account the app interacts with. |
+| `EXPO_PUBLIC_DEBUG_LOGS` | no | Set to `true` to enable verbose logging. |
+| `EXPO_PUBLIC_PINATA_API_KEY` | no | Pinata API key for authenticated uploads. |
+| `EXPO_PUBLIC_PINATA_SECRET_API_KEY` | no | Pinata API secret for authenticated uploads. |
+| `EXPO_PUBLIC_PINATA_JWT` | no | Pinata JWT used by the app and `scripts/pinata-upload.ts`. |
+| `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2` | no | Feature flag for canarying role-aware admin bootstrap. |
+| `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY` | no | Comma-separated NEAR accounts that should opt into the admin join-request flow while the global flag is off. |
+| `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK` | no | Set to `1` to disable the role-aware bootstrap logic immediately (feature kill switch). |
+
+The OrderPayment factory contract address is configured by admins through the
+**Admin → Settings** dashboard and does not require an environment variable.
+
+`NEAR_STRICT` remains permissive in development, so local runs skip strict NEAR validation.
+
+- `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2` – enables the role-aware admin bootstrap canary (optional)
+- `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY` – comma-separated allowlist for staged rollouts (optional)
+- `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK` – emergency kill-switch for the bootstrap flow (optional)
+- `NEAR_RPC_URL` – primary NEAR RPC endpoint used for blockchain calls (optional; overrides tenant setting)
+- `EXPO_PUBLIC_CONTRACT_ID` – marketplace contract account the app interacts with (required)
+- `EXPO_PUBLIC_DEBUG_LOGS` – enable verbose logging (`true`/`false`, default `false`)
+- `EXPO_PUBLIC_PINATA_API_KEY` – Pinata API key for uploads (optional)
+- `EXPO_PUBLIC_PINATA_SECRET_API_KEY` – Pinata secret API key for uploads (optional)
+- `EXPO_PUBLIC_PINATA_JWT` – Pinata JWT used by `scripts/pinata-upload.ts` to pin assets (optional)
+
+These values are read at build time and cannot be changed from the UI.
+
+Run a quick persistence check with:
+
+```sh
+node -r ts-node/register scripts/kv-smoke.js
+```
+
+The script writes a test value using `nearKvStore`, spawns a new process, and
+verifies the value is still available, ensuring the S3-backed store is
+configured correctly.
+
+### Secure Key Management
+
+Store sensitive values such as `NEAR_RPC_URL` in a
+dedicated secrets manager (e.g., AWS Secrets Manager, Hashicorp Vault). Inject
+them as environment variables at runtime; the app will throw on startup if
+required keys are missing. The OrderPayment factory address is managed via the
+admin dashboard. Avoid
+committing secrets to source control. See
+[`docs/secure-key-management.md`](docs/secure-key-management.md) for
+additional guidance.
+
+### Wallet Allowlist
+
+Admin privileges are controlled by a list of wallet addresses stored in the
+on-chain settings contract. Use the **Admin → Settings** screen or
+`SettingsAgent.setAdmins()` to add or remove addresses. Each admin is assigned
+explicit scopes such as `admin:settings`, `admin:users`, or `admin:orders`
+to limit privileges. Only wallets in this allowlist with the proper scope can
+manage the associated resources.
+
+### Credit Card Checkout
+
+Storing a MoonPay publishable key in settings populates
+`useAppInfo().fiatKey` and enables the `MoonPayModal` component for credit card
+purchases. Without this key the MoonPay UI is hidden. Pass the wallet address,
+coin and USD amount to display the widget in a modal and pre-fill the fiat
+amount.
+
+
+Some dependencies rely on Node.js globals like `Buffer`, `process`, and
+`crypto.subtle`. Platform-specific polyfills (`polyfills.native.ts` and
+`polyfills.web.ts`) provide these shims and **must only be imported once** from
+the app entry point (`index.ts`). Importing polyfills elsewhere can lead to
+inconsistent execution environments.
+
+The native polyfill also pulls in `react-native-get-random-values` and
+`expo-standard-web-crypto` so `crypto.getRandomValues` and `crypto.subtle` are
+available globally. Both variants expose a synchronous SHA-512 implementation
+for `@noble/ed25519` so key generation works in every environment.
+
+### Hot Reloading
+
+Metro resolves both `@expo/metro-runtime/src/HMRClient` and
+`@expo/metro-runtime/src/HMRClient.ts` to the local `HMRClient.ts` wrapper.
+TypeScript and webpack use the same aliases so all tools reference the wrapper
+consistently. Polyfills are initialized at the app entry point, so the HMR
+runtime runs within the already-prepared environment.
+
+### Debugging & Logs
+
+Call `debugLog()` for development-only messages. When
+`EXPO_PUBLIC_DEBUG_LOGS=true` is set in `.env`, these messages are printed using
+`console.debug`; otherwise they are suppressed. `errorLog()` always outputs
+errors regardless of the flag. The value is evaluated at build time, so rebuild
+after changing it.
+
+### Session Persistence
+
+User sessions are stored using `@react-native-async-storage/async-storage`.
+On native platforms this uses the native AsyncStorage implementation and falls
+back to `window.localStorage` when running on the web. This ensures
+authentication state persists across reloads on every platform.
+
+### Peer-to-Peer Synchronization
+
+Settings, users, products and orders are now managed through NEAR-based
+services rather than Waku. Each domain has a small agent that reads and writes
+state via its corresponding NEAR contract or service, keeping a local in-memory cache for
+fast access.
+
+Waku is only used for lightweight messaging such as chat and notification
+payloads. Room keys used to encrypt chats are cached in an LRU map to keep
+memory usage bounded, and encryption/decryption helpers now throw if a key
+cannot be derived instead of returning plaintext.
+
+### Web Notes
+
+Fast Refresh can cause issues with Expo Router when running in the browser.
+Disable it by setting `fastRefresh: false` in your web configuration.
+The Waku chat integration is also not available on the web; the
+`WakuContext.web.tsx` file provides a stub so the rest of the app can build
+without the Waku SDK.
+
+
+## Running the Project
+
+Start the Expo development server with:
+
+```sh
+yarn dev
+```
+
+For web only, use `yarn dev:web`.
+
+### Running the Agents
+
+The synchronization agents are part of the Expo app. When the development server
+is running and the app is opened, each agent joins its Waku topic and begins
+replicating data in memory. There is no separate service to launch.
+
+### Building the Web PWA
+
+Export the web build using Expo:
+
+```sh
+yarn build:web
+```
+
+After exporting, serve `dist/` with any static host.
+
+### IPFS Deployment Guide
+
+Use the IPFS-friendly Vite build to create static assets with relative paths so
+the app works from any gateway.
+
+1. **Build**
+
+   ```sh
+   yarn build:web
+   ```
+
+2. **Preview locally**
+
+   ```sh
+   yarn preview
+   ```
+
+   Then open `http://localhost:4173/` and navigate within the app (no deep links).
+
+3. **Upload to IPFS**
+
+   ```sh
+   ipfs add -r dist
+   ```
+
+   Pin the returned CID using your pinning service (e.g., Pinata) to publish it.
+
+#### Pin `dist/` Checklist
+
+1. `yarn build:web`
+2. `node scripts/assert-relative-assets.js`
+3. Pin the entire `dist/` folder to your IPFS node or pinning service
+4. Record the returned CID for later reference
+
+#### Gateway Test Steps
+
+1. Open `https://ipfs.io/ipfs/<CID>/` and ensure the app loads
+2. Repeat with another gateway such as `https://dweb.link/ipfs/<CID>/`
+3. Navigate to a route like `/#/product/1` to confirm hash routing
+
+Deep links require additional rewrite support.
+
+## Debugging Tips
+
+- Set `EXPO_PUBLIC_DEBUG_LOGS=true` to emit verbose agent logs.
+- Run `expo start -c` to clear caches when Metro behaves oddly.
+- Use React Native Debugger or Chrome DevTools for network inspection.
+- Prefix commands with `DEBUG=waku:*` to trace Waku network traffic.
+
+## Troubleshooting
+
+### Content Security Policy
+
+If the web app fails to load because of CSP errors (for example `Refused to connect to 'ws://localhost:19000'` or complaints about `unsafe-eval`), ensure your `Content-Security-Policy` header permits the Expo development endpoints and WebSocket connections. The webpack configuration uses `devtool: 'source-map'` to avoid `eval`, but strict policies may still require allowing `blob:` URLs and `ws://` origins.
+
+### Bundler Aliases
+
+Module resolution relies on custom aliases defined in `metro.config.js` and `webpack.config.js`. If the bundler cannot find modules like `@expo/metro-runtime/src/HMRClient` or `@noble/hashes`, verify those aliases exist and clear caches with `expo start -c`.
+
+## Web Smoke Test
+
+Verify the exported web build serves the root page correctly:
+
+```sh
+yarn build:web
+node tests/web-smoke.js
+```
+
+The script starts a temporary server for `dist/` and asserts the home page includes the `#root` marker.
+
+## Runbooks & Checklists
+
+- [Incident Runbook](docs/incident-runbook.md)
+- [QA Checklist](docs/checklists/qa.md)
+- [Rollout Checklist](docs/checklists/rollout.md)
+
+## Apple Pay Integration
+
+The project uses MoonPay for purchasing crypto with a credit card. Configure the key via **Admin → Settings** or the `SettingsAgent` CLI. To accept Apple Pay directly in the app, install the Expo Stripe payments package and configure your merchant identifier.
+
+1. Install the library:
+```sh
+yarn add expo-payments-stripe
+```
+2. Add the plugin to **app.json**:
+```json
+{
+  "expo": {
+    "plugins": [["expo-payments-stripe", { "merchantIdentifier": "merchant.com.example" }]]
+  }
+}
+```
+3. Initialize Stripe when the app launches:
+```ts
+import { initStripe } from "expo-payments-stripe";
+
+initStripe({
+  publishableKey: "<your-stripe-key>",
+  merchantIdentifier: "merchant.com.example",
+});
+```
+4. Use `presentApplePay` from the library when the user checks out.
+
+Refer to the Expo Stripe documentation for full setup details.
+
+## Legacy
+
+The previous `supabase/` directory and its SQL schema have been removed.
+All data is handled in-memory, synchronized over Waku, and persisted to NEAR when necessary; no local database is used.
+
+## License
+
+This project is proprietary and not open source. All rights reserved.
+See [LICENSE](LICENSE) for details.
+
+***End of Document***
