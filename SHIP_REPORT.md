@@ -6,7 +6,7 @@
 - **Entry strategy**: Platform-specific bootstrap (Expo register on native, direct `AppRegistry` on web) with lazy tab screens.
 
 ## Performance hardening
-- Hermes enabled for iOS/Android; Proguard + resource shrink active on Android builds (`app.json`).
+- Hermes runtime remains enabled on iOS/Android via Expo SDK 54 defaults; `app.json` now explicitly enables Proguard and resource shrinking for Android release builds.
 - Metro minifier tuned for aggressive compression (inline requires, drop console/debugger, toplevel mangling, pure getters).
 - Web builds alias React/React DOM to Preact and React Native Web to react-native-web-lite.
 - Tab screens lazy-loaded via `React.lazy` + Suspense skeleton fallbacks.
