@@ -22,7 +22,7 @@ yarn add near-api-js @near-wallet-selector/core @near-wallet-selector/near-walle
 
 ### Init
 ```ts
-// apps/web/services/near.ts
+// services/near.ts (in your client app)
 import { setupWalletSelector } from '@near-wallet-selector/core';
 import { setupNearWallet } from '@near-wallet-selector/near-wallet';
 
@@ -46,7 +46,7 @@ export async function getAccountId(): Promise<string | null> {
 
 ### Connect UI
 ```tsx
-// apps/web/app/_layout.tsx
+// Example usage in your app layout
 useEffect(() => { initNear() }, []);
 <WalletButton />
 ```
