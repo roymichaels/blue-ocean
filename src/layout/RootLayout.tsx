@@ -14,9 +14,9 @@ import { Portal } from '@/ui/primitives';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
 import { useTenant } from '@/contexts/TenantContext';
-import { getShopTenantId } from '@/services/config';
+import { getShopTenantId } from '@/hooks/config';
 import { useLaunchGate } from '@/features/launchGate';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { OpsDrawer } from '@/features/opsDrawer';
 import { isOpsDrawerEnabled, isDriverChatEnabled } from '@/config/featureFlags';
 

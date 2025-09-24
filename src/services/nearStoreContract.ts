@@ -1,6 +1,6 @@
 import { providers } from 'near-api-js';
 import { Buffer } from 'buffer';
-import { nearConfig } from '@/services/config';
+import { nearConfig } from '@/hooks/config';
 import { getAccountId, getSelector } from './walletSelector';
 
 export interface ChainStore {

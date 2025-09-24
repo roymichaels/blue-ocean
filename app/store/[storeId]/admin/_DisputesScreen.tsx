@@ -4,11 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useAppRouter } from '@/services';
-import ordersAgent from '../../../../agents/orders-agent';
+import { useAppRouter } from '@/hooks';
+import ordersAgent from '@/agents/orders-agent';
 import { Order } from '../../../../types';
-import DisputeEvidence from '../../../../components/DisputeEvidence';
-import DisputeResolver from '../../../../components/DisputeResolver';
+import DisputeEvidence from '@/components/DisputeEvidence';
+import DisputeResolver from '@/components/DisputeResolver';
 import commonStyles from '@/constants/styles';
 import { t } from '@/i18n';
 

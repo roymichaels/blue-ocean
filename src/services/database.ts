@@ -1,19 +1,19 @@
 // @ts-nocheck
 import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import usersAgent from '../agents/users-agent';
+import usersAgent from '@/agents/users-agent';
 import categoriesAgent, {
   getCategories as fetchCategories,
   selectCategory as fetchCategory,
-} from '../agents/categories-agent';
+} from '@/agents/categories-agent';
 import productsAgent, {
   getProducts as fetchProducts,
   selectProduct as fetchProduct,
-} from '../agents/products-agent';
-import ordersAgent from '../agents/orders-agent';
-import deliveryAgent from '../agents/delivery-agent';
-import SettingsAgent from '../agents/settings-agent';
-import reviewAgent from '../agents/review-agent';
+} from '@/agents/products-agent';
+import ordersAgent from '@/agents/orders-agent';
+import deliveryAgent from '@/agents/delivery-agent';
+import SettingsAgent from '@/agents/settings-agent';
+import reviewAgent from '@/agents/review-agent';
 import chain, { chainAdapter } from '@/services/chain';
 import { getPrivateKey } from '@/services/localIdentity';
 import { aesEncrypt, aesDecrypt } from '@/utils/encryption';

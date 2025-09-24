@@ -1,5 +1,5 @@
-import usersAgent from '../agents/users-agent';
-import SettingsAgent from '../agents/settings-agent';
+import usersAgent from '@/agents/users-agent';
+import SettingsAgent from '@/agents/settings-agent';
 
 jest.mock('../utils/validateNearAddress', () => ({
   __esModule: true,

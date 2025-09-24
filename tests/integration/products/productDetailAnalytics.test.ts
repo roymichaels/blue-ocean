@@ -22,14 +22,14 @@ jest.mock('@/features/products/hooks/useProduct', () => ({
 }));
 
 const mockUseProductPricing = jest.fn();
-jest.mock('@/services/useProductPricing', () => ({
+jest.mock('@/hooks/useProductPricing', () => ({
   __esModule: true,
   useProductPricing: (...args: any[]) => mockUseProductPricing(...args),
   default: (...args: any[]) => mockUseProductPricing(...args),
 }));
 
 const mockUseProductMedia = jest.fn();
-jest.mock('@/services/useProductMedia', () => ({
+jest.mock('@/hooks/useProductMedia', () => ({
   __esModule: true,
   useProductMedia: (...args: any[]) => mockUseProductMedia(...args),
   default: (...args: any[]) => mockUseProductMedia(...args),

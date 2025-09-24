@@ -4,10 +4,10 @@ import { Stack } from '@/ui/layout';
 import { spacing } from '@/ui/tokens';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { Store as StoreIcon, Truck } from 'lucide-react-native';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { routes } from '@/utils/routes';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useStores } from '@/services/useStores';
+import { useStores } from '@/hooks/useStores';
 import ServiceCard from './ServiceCard';
 
 export default function HomeServices() {

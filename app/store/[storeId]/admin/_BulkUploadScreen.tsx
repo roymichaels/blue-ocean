@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Alert } from 'react-native';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import { AdminBulkUploader } from '@/features/products';
 import { useAuth } from '@/features/auth/AuthContext';
 

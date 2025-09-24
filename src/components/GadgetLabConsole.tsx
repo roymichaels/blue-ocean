@@ -7,7 +7,7 @@ import { useWaku } from '@/contexts/WakuContext';
 import { useWallet } from '@/contexts/WalletProvider';
 import { useQueryClient } from '@tanstack/react-query';
 import useReducedMotion from '@/shared/hooks/useReducedMotion';
-import { getChain, getNetworkId, getTransport } from '@/services/config';
+import { getChain, getNetworkId, getTransport } from '@/hooks/config';
 import { registry } from '@/services/monitoring';
 import type { RegistrySnapshot } from '@/utils/localMetrics';
 

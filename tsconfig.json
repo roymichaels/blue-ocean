@@ -58,12 +58,32 @@
       "@/core/*": [
         "src/core/*"
       ],
-      "@/services": [
-        "src/services/index.ts"
+      "@/agents/*": [
+        "src/agents/*"
+      ],
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/config": [
+        "src/config/index.ts"
+      ],
+      "@/config/*": [
+        "src/config/*"
+      ],
+      "@/constants/*": [
+        "src/constants/*"
+      ],
+      "@/contexts/*": [
+        "src/contexts/*"
+      ],
+      "@/hooks": [
+        "src/hooks/index.ts"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
       ],
       "@/services/*": [
-        "src/services/*",
-        "services/*"
+        "src/services/*"
       ],
       "@/billing": [
         "src/billing/index.ts"
@@ -72,8 +92,7 @@
         "src/billing/*"
       ],
       "@/utils/*": [
-        "src/utils/*",
-        "utils/*"
+        "src/utils/*"
       ],
       "@/providers": [
         "src/providers/index.ts"
@@ -82,10 +101,16 @@
         "src/providers/*"
       ],
       "@/schemas/*": [
-        "schemas/*"
+        "src/schemas/*"
       ],
       "@/i18n": [
         "src/i18n.ts"
+      ],
+      "@/types": [
+        "src/types/index.ts"
+      ],
+      "@/types/*": [
+        "src/types/*"
       ],
       "@/*": [
         "./*"
@@ -105,9 +130,9 @@
     "**/*.ts",
     "**/*.tsx",
     "nativewind-env.d.ts",
-    "types/wasm.d.ts",
-    "types/lucide-react-native.d.ts",
-    "types/**/*.d.ts"
+    "src/types/wasm.d.ts",
+    "src/types/lucide-react-native.d.ts",
+    "src/types/**/*.d.ts"
   ],
   "exclude": ["tests"],
   "extends": "expo/tsconfig.base.json"

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Product, Category } from '@/types';
-import { useProducts } from '@/services/useProducts';
-import { useCategories } from '@/services/useCategories';
+import { useProducts } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
 import { errorLog, debugLog } from '@/utils/logger';
 
 export function useHome(tenantId: string | null) {

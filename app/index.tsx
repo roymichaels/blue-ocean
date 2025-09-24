@@ -39,7 +39,7 @@ import HeroCallout from '@/features/home/components/HeroCallout';
 import ErrorBoundary from 'src/shared/ErrorBoundary';
 import HomeError from '@/features/home/screens/HomeError';
 import AdminOnboardingChecklist from '@/features/home/components/AdminOnboardingChecklist';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import eventBus from '@/services/eventBus';
 import { localIndex } from '@/services/localIndex';
 import { isReviewsEnabled } from '@/config/featureFlags';

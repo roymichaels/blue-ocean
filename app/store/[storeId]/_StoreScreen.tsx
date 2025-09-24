@@ -9,17 +9,17 @@ import {
   ProductGrid,
   ProductCardSkeleton,
 } from '@/features/products';
-import { useProducts, useCategories, useStoreReviews } from '@/services';
+import { useProducts, useCategories, useStoreReviews } from '@/hooks';
 import { useStoreProfile } from '@/features/stores/hooks/useStoreProfile';
 import type { Product } from '@/types';
 import { spacing, radius } from '@/shared/ui/tokens';
 import EmptyState from '@/shared/ui/EmptyState';
 import { useNotificationActions } from '@/components/NotificationContext';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
-import { openDM } from '@/services/openDM';
-import { openProduct } from '@/services/openProduct';
+import { openDM } from '@/hooks/openDM';
+import { openProduct } from '@/hooks/openProduct';
 import { isDriverChatEnabled } from '@/config/featureFlags';
 import { AlertTriangle } from 'lucide-react-native';
 

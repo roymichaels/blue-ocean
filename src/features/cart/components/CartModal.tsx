@@ -61,7 +61,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNotifications } from '@/components/NotificationContext';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useLaunchGate } from '@/features/launchGate';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import {
@@ -76,7 +76,7 @@ import NotificationService from '@/services/notification';
 import SettingsAgent from '@/agents/settings-agent';
 import { errorLog } from '@/utils/logger';
 import { persistCheckoutIntent, clearCheckoutIntent } from '../services/orderIntent';
-import { getDocsUrl } from '@/services/config';
+import { getDocsUrl } from '@/hooks/config';
 
 const PRODUCT_CACHE_TOPIC = '/blue-ocean/products/1';
 

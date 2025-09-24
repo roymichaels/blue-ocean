@@ -2,7 +2,7 @@ import { errorLog } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../utils/appConfig';
 import { fetchSettings } from '@/services/nearSettings';
-import { getNetworkId } from '@/services/config';
+import { getNetworkId } from '@/hooks/config';
 
 export let TENANT = 'blue-ocean';
 

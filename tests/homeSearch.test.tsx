@@ -44,7 +44,7 @@ jest.mock('@/contexts/AppInfoContext', () => ({
 }));
 
 const mockUseAppRouter = jest.fn();
-jest.mock('@/services/useAppRouter', () => ({
+jest.mock('@/hooks/useAppRouter', () => ({
   useAppRouter: () => mockUseAppRouter(),
 }));
 

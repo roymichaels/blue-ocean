@@ -1,7 +1,7 @@
-import NotificationService from '../services/notification';
+import NotificationService from '@/services/notification';
 import { setTranslations } from '@/i18n';
 
-jest.mock('../agents/notifications-agent', () => ({
+jest.mock('@/agents/notifications-agent', () => ({
   getAll: jest.fn().mockResolvedValue([
     {
       id: '1',

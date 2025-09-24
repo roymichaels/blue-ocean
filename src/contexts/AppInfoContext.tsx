@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
-import SettingsAgent from '../agents/settings-agent';
+import SettingsAgent from '@/agents/settings-agent';
 import chain from '@/services/chain';
 
 let fetchSettings: (() => Promise<any>) | undefined;

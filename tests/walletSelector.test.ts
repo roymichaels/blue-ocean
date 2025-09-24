@@ -1,4 +1,4 @@
-import { getHealthyRpcUrl } from '../services/walletSelector';
+import { getHealthyRpcUrl } from '@/services/walletSelector';
 
 describe('getHealthyRpcUrl', () => {
   const originalFetch = global.fetch;

@@ -12,8 +12,8 @@ jest.mock('expo-router', () => {
   };
 });
 
-jest.mock('@/services/navigation', () => {
-  const actual = jest.requireActual('@/services/navigation');
+jest.mock('@/hooks/navigation', () => {
+  const actual = jest.requireActual('@/hooks/navigation');
   return {
     ...actual,
     push: jest.fn(actual.push),
@@ -90,7 +90,7 @@ jest.mock('@/features/stores/components/OrderRevenueMetrics', () => {
 
 describe('StoreDashboardScreen', () => {
   const { useLocalSearchParams } = require('expo-router');
-  const navigation = require('@/services/navigation');
+  const navigation = require('@/hooks/navigation');
   const { getStore } = require('@/features/stores/services/nearStores');
   const { listProducts } = require('@/features/products/services/nearProducts');
   const { useAuth } = require('@/features/auth/AuthContext');

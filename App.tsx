@@ -7,14 +7,14 @@ import { ctx } from './router-ctx.web';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui';
 import AppProviders from '@/providers/AppProviders';
-import { isRouterEnabled } from '@/services/config';
+import { isRouterEnabled } from '@/hooks/config';
 import { initSessionTokens } from '@/services/session';
 import { initErrorReporter } from '@/services/errorReporter';
 import { errorLog, setDebugLogsEnabled } from '@/utils/logger';
 import {
   ensureAdminAgentSubscription,
   stopAdminAgentSubscription,
-} from '@/services/adminSubscription';
+} from '@/hooks/adminSubscription';
 
 const USE_ROUTER = isRouterEnabled();
 

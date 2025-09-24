@@ -2,7 +2,7 @@ import { selectProduct } from '@/agents/products-agent';
 import type { Product } from '@/types';
 import DatabaseService from '@/services/database';
 import { prefetchStoreBundle } from '@/features/stores/services/prefetch';
-import { push } from '@/services/navigation';
+import { push } from '@/hooks/navigation';
 import { errorLog } from '@/utils/logger';
 
 interface ProductCache {

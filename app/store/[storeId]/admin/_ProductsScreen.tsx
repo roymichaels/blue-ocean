@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/ui/ThemeProvider';
 import type { Product } from '@/types';
-import { useProducts } from '@/services/useProducts';
+import { useProducts } from '@/hooks/useProducts';
 import { productsWarmCache } from '@/features/products/services/nearProducts';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui/primitives';

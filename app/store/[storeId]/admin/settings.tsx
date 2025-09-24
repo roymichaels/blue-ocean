@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { Spinner } from '@/ui/primitives';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import RequireWallet from '../../../../components/RequireWallet';
+import RequireWallet from '@/components/RequireWallet';
 
 const SettingsScreen = React.lazy(() => import('./_SettingsScreen'));
 

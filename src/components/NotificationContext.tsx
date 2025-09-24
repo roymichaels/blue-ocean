@@ -4,7 +4,7 @@ import AgentError from '@/types/AgentError';
 import { useNotificationSubscription } from '@/features/notifications';
 import NotificationService from '@/services/notification';
 import eventBus from '@/services/eventBus';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import { uuid } from '@/utils/uuid';
 
 interface NotificationState {

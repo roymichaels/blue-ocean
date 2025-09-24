@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'expo-router';
-import { stripTabsPrefix } from '@/services/navigation';
+import { stripTabsPrefix } from '@/hooks/navigation';
 import { loadTenantSettings } from '@/constants/tenant';
 
 interface TenantContextType {

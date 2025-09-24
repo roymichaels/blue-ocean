@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import CartService from '@/features/cart/services/cart';
 import { Product, PricingTier } from '@/types';
 import { useProduct } from './useProduct';
-import { useProductPricing } from '@/services/useProductPricing';
-import { useProductMedia } from '@/services/useProductMedia';
+import { useProductPricing } from '@/hooks/useProductPricing';
+import { useProductMedia } from '@/hooks/useProductMedia';
 import eventBus from '@/services/eventBus';
 
 interface ProductDetailResult {

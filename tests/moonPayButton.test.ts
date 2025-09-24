@@ -10,7 +10,7 @@ jest.mock('@/ui/ThemeProvider', () => ({
   useTheme: () => ({ colors: { gold: 'gold', text: { inverse: '#fff' } } }),
 }));
 
-jest.mock('../contexts/AppInfoContext', () => ({
+jest.mock('@/contexts/AppInfoContext', () => ({
   useAppInfo: jest.fn(),
 }));
 
@@ -44,7 +44,7 @@ describe('MoonPayButton', () => {
   });
 
   it('computes NEAR amount and renders modal', async () => {
-    const { useAppInfo } = require('../contexts/AppInfoContext');
+    const { useAppInfo } = require('@/contexts/AppInfoContext');
     (useAppInfo as jest.Mock).mockReturnValue({
       fiatKey: 'key',
       setFiatKey: jest.fn(),
@@ -67,7 +67,7 @@ describe('MoonPayButton', () => {
   });
 
   it('renders nothing without moonpay key', async () => {
-    const { useAppInfo } = require('../contexts/AppInfoContext');
+    const { useAppInfo } = require('@/contexts/AppInfoContext');
     (useAppInfo as jest.Mock).mockReturnValue({
       fiatKey: undefined,
       setFiatKey: jest.fn(),
@@ -84,7 +84,7 @@ describe('MoonPayButton', () => {
     const { isMoonPayEnabled } = require('@/config/featureFlags');
     (isMoonPayEnabled as jest.Mock).mockReturnValueOnce(false);
 
-    const { useAppInfo } = require('../contexts/AppInfoContext');
+    const { useAppInfo } = require('@/contexts/AppInfoContext');
     (useAppInfo as jest.Mock).mockReturnValue({
       fiatKey: 'key',
       setFiatKey: jest.fn(),

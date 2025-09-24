@@ -112,7 +112,7 @@ jest.mock('@/services/warmCache', () => ({
 }));
 
 const getDocsUrlMock = jest.fn();
-jest.mock('@/services/config', () => ({
+jest.mock('@/hooks/config', () => ({
   getDocsUrl: (...args: any[]) => getDocsUrlMock(...args),
 }));
 

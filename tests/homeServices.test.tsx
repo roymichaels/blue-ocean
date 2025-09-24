@@ -25,7 +25,7 @@ jest.mock('@/ui/ThemeProvider', () => ({
 }));
 
 const mockAppRouter = { push: jest.fn() };
-jest.mock('@/services/useAppRouter', () => ({
+jest.mock('@/hooks/useAppRouter', () => ({
   useAppRouter: () => mockAppRouter,
 }));
 
@@ -35,7 +35,7 @@ jest.mock('@/features/auth/AuthContext', () => ({
 }));
 
 const mockUseStores = jest.fn();
-jest.mock('@/services/useStores', () => ({
+jest.mock('@/hooks/useStores', () => ({
   useStores: () => mockUseStores(),
 }));
 

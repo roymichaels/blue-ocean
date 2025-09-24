@@ -7,7 +7,7 @@ import {
   replace as navigationReplace,
   back as navigationBack,
   canGoBack as navigationCanGoBack,
-} from '@/services/navigation';
+} from '@/hooks/navigation';
 
 function warnGroupPath(path: unknown) {
   if (__DEV__ && typeof path === 'string' && /(\([^/]+\))/g.test(path)) {

@@ -6,11 +6,11 @@ import EmptyState from '@/shared/ui/EmptyState';
 const mockPush = jest.fn();
 const mockUseStores = jest.fn();
 
-jest.mock('@/services/useStores', () => ({
+jest.mock('@/hooks/useStores', () => ({
   useStores: () => mockUseStores(),
 }));
 
-jest.mock('@/services/useAppRouter', () => ({
+jest.mock('@/hooks/useAppRouter', () => ({
   useAppRouter: () => ({ push: mockPush }),
 }));
 

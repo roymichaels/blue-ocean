@@ -1,4 +1,4 @@
-import { ReputationService } from '../agents/reputation-service';
+import { ReputationService } from '@/agents/reputation-service';
 
 const STORE_ID = 'store-1';
 

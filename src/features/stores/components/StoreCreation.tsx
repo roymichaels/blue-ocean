@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { Heading, Text, Button, Card, TextField, Badge, Spinner } from '@/ui/primitives';
 import storesAgent from '@/agents/stores-agent';

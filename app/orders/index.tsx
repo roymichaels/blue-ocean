@@ -10,7 +10,7 @@ import { Order } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { AlertTriangle, RefreshCw, ShoppingCart } from 'lucide-react-native';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 
 const PAGE_SIZE = 20;
 

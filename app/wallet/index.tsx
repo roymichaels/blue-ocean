@@ -5,7 +5,7 @@ import { Card, Heading, Text, Button } from '@/ui/primitives';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { useWallet } from '@/contexts/WalletProvider';
 import { useLaunchGate } from '@/features/launchGate';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { useWalletSessions } from '@/auth/wallet';
 import SettingsAgent from '@/agents/settings-agent';
 import { CHECKOUT_SCOPE, getSession } from '@/services/session';

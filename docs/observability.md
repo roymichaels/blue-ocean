@@ -25,7 +25,7 @@ Key metrics:
 - `auth_invalid_scope_total` – Counter of auth scope checks with invalid scopes.
 - `delivery_notifications_backlog` – Gauge tracking queued delivery updates (alerts when > 100).
 
-Use `withMonitoring` from [`services/monitoring.ts`](../services/monitoring.ts) to
+Use `withMonitoring` from [`src/services/monitoring.ts`](../src/services/monitoring.ts) to
 wrap asynchronous service calls. The helper records latency, increments the
 failure counter on errors and emits structured logs via the shared logger.
 

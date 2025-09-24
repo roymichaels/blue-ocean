@@ -43,10 +43,10 @@ if (typeof (globalThis as any).setImmediate !== 'function') {
     setTimeout(fn, 0, ...args);
 }
 
-const deliveryAgent = require('../../agents/delivery-agent').default;
+const deliveryAgent = require('@/agents/delivery-agent').default;
 const { publish } = require('@/services/waku');
 const featureFlags = require('@/config/featureFlags');
-const { E_BACKLOG } = require('../../agents/delivery-agent');
+const { E_BACKLOG } = require('@/agents/delivery-agent');
 
 function flushMicrotasks() {
   return new Promise((resolve) => setImmediate(resolve));

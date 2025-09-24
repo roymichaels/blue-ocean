@@ -8,7 +8,7 @@ jest.mock('@/services/nearSettings');
 jest.mock('@/services/chain', () => ({ __esModule: true, assertNearChain: jest.fn() }));
 jest.mock('../utils/ensureNearWallet', () => jest.fn().mockResolvedValue(undefined));
 
-import SettingsAgent from '../agents/settings-agent';
+import SettingsAgent from '@/agents/settings-agent';
 import { __clear } from './nearKvMock';
 import * as nearSettings from '@/services/nearSettings';
 const directSetAdmins = nearSettings.setAdmins;

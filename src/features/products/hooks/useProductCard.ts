@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import CartService from '@/features/cart/services/cart';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Product, PricingTier } from '@/types';
-import { usePricingTiers } from '@/services/usePricingTiers';
+import { usePricingTiers } from '@/hooks/usePricingTiers';
 
 export function useProductCard(product: Product) {
   const [isInWishlist, setIsInWishlist] = useState(false);

@@ -41,9 +41,9 @@ const loadStoresAgent = () => {
       default: storeRepositoryMock,
     };
   });
-  let agent: typeof import('../agents/stores-agent').default;
+  let agent: typeof import('@/agents/stores-agent').default;
   jest.isolateModules(() => {
-    agent = require('../agents/stores-agent').default;
+    agent = require('@/agents/stores-agent').default;
   });
   if (!storeRepositoryMock) {
     throw new Error('store repository mock not initialized');

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { jest } from '@jest/globals';
 import React from 'react';
 import { insertConfig } from './testUtils';
-import { loadTenantSettings } from '../constants/tenant';
+import { loadTenantSettings } from '@/constants/tenant';
 
 import { etc } from '@noble/ed25519';
 import { sha512 } from '@noble/hashes/sha512';

@@ -5,7 +5,7 @@ import '@near-wallet-selector/wallet-utils';
 import * as nearAPI from 'near-api-js';
 import { Buffer } from 'buffer';
 import { useEffect, useState } from 'react';
-import { nearConfig } from '@/services/config';
+import { nearConfig } from '@/hooks/config';
 import { getNearRpcUrls } from '@/utils/appConfig';
 
 // Ensure FailoverRpcProvider is available as a constructor

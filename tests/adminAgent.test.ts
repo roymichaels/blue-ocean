@@ -1,4 +1,4 @@
-import { AdminAgent } from '../agents/admin-agent';
+import { AdminAgent } from '@/agents/admin-agent';
 import { __clear } from './nearKvMock';
 import { sign, getPublicKey, utils } from '@noble/ed25519';
 import { canonicalJson } from '@/utils/serialization';

@@ -21,7 +21,7 @@ import { serviceLatency, serviceFailures } from '@/utils/observability';
 import { wakuDecryptErrorCounter } from './monitoring';
 import { initLake } from './nearLake';
 import { topicFor } from '@blue-ocean/utils';
-import { getNetworkId, getContractId } from '@/services/config';
+import { getNetworkId, getContractId } from '@/hooks/config';
 import { randomBytes } from '@noble/hashes/utils';
 
 import type { Store } from '@/types';

@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import {
   ArrowLeft,
   Plus,
@@ -20,11 +20,11 @@ import {
 } from 'lucide-react-native';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';
-import { useCurrency } from '../../../../contexts/CurrencyContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import DatabaseService from '@/services/database';
 import { PricingTier } from '../../../../types';
 import { Spinner } from '@/ui/primitives';
-import InfoModal from '../../../../components/InfoModal';
+import InfoModal from '@/components/InfoModal';
 import { PricingTierFormModal } from '@/features/products';
 import Card from '@/ui/primitives/Card';
 
