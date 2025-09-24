@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Modal,
   View,
@@ -39,6 +39,7 @@ import SubcategoryPicker from './SubcategoryPicker';
 import { useCategories } from '@/hooks';
 import { useAppRouter } from '@/hooks';
 import { Spinner } from '@/ui/primitives';
+import LabeledInput from '@/components/form/LabeledInput';
 
 interface ProductFormModalProps {
   visible: boolean;
@@ -89,6 +90,12 @@ export default function ProductFormModal({
     type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
   const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
+  const updateProduct = useCallback(
+    <K extends keyof Product>(key: K, value: Partial<Product>[K]) => {
+      setEditingProduct((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
 
   useEffect(() => {
     if (visible) {
@@ -133,19 +140,19 @@ export default function ProductFormModal({
   };
 
   const selectCategory = (id: string) => {
-    setEditingProduct({ ...editingProduct, category: id, subcategory: '' });
+    setEditingProduct((prev) => ({ ...prev, category: id, subcategory: '' }));
     const category = categories.find(c => c.id === id);
     setAvailableSubcategories(category?.subcategories || []);
     setShowCategorySelector(false);
   };
 
   const selectSubcategory = (id: string) => {
-    setEditingProduct({ ...editingProduct, subcategory: id });
+    setEditingProduct((prev) => ({ ...prev, subcategory: id }));
     setShowSubcategorySelector(false);
   };
 
   const selectPricingTier = (id: string) => {
-    setEditingProduct({ ...editingProduct, pricingTier: id });
+    setEditingProduct((prev) => ({ ...prev, pricingTier: id }));
     setShowPricingTierSelector(false);
   };
 
@@ -315,20 +322,12 @@ export default function ProductFormModal({
 
           <ScrollView style={styles.modalContent}>
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תמונות (CID או URL, שורה לכל פריט)</Text>
-              <TextInput
-                multiline
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                  height: 80,
-                  textAlignVertical: 'top'
-                }]}
+              <LabeledInput
+                label="תמונות (CID או URL, שורה לכל פריט)"
                 value={imageUrls}
                 onChangeText={(text) => {
                   setImageUrls(text);
-                  const first = text.split('\n').map(s => s.trim()).find(Boolean) || null;
+                  const first = text.split('\n').map((s) => s.trim()).find(Boolean) || null;
                   if (first && pinata.isCidOrUrl(first)) {
                     setImagePreview(first);
                   } else {
@@ -337,7 +336,9 @@ export default function ProductFormModal({
                   setImageError(null);
                 }}
                 placeholder="ipfs://..."
-                textAlign="right"
+                multiline
+                numberOfLines={4}
+                labelStyle={styles.formLabel}
               />
               {imagePreview ? (
                 <Image source={{ uri: toHttpUrl(imagePreview) }} style={styles.mediaPreview} />
@@ -350,20 +351,12 @@ export default function ProductFormModal({
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>סרטונים (CID או URL, שורה לכל פריט)</Text>
-              <TextInput
-                multiline
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                  height: 80,
-                  textAlignVertical: 'top'
-                }]}
+              <LabeledInput
+                label="סרטונים (CID או URL, שורה לכל פריט)"
                 value={videoUrls}
                 onChangeText={(text) => {
                   setVideoUrls(text);
-                  const first = text.split('\n').map(s => s.trim()).find(Boolean) || null;
+                  const first = text.split('\n').map((s) => s.trim()).find(Boolean) || null;
                   if (first && pinata.isCidOrUrl(first)) {
                     setVideoPreview(first);
                   } else {
@@ -372,7 +365,9 @@ export default function ProductFormModal({
                   setVideoError(null);
                 }}
                 placeholder="ipfs://..."
-                textAlign="right"
+                multiline
+                numberOfLines={4}
+                labelStyle={styles.formLabel}
               />
               {videoPreview ? (
                 Platform.OS === 'web' ? (
@@ -420,33 +415,23 @@ export default function ProductFormModal({
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם המוצר *</Text>
-              <TextInput
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={editingProduct.name}
-                onChangeText={text => setEditingProduct({ ...editingProduct, name: text })}
+              <LabeledInput
+                label="שם המוצר *"
+                value={editingProduct.name ?? ''}
+                onChangeText={(text) => updateProduct('name', text)}
                 placeholder="הכנס שם מוצר"
-                textAlign="right"
+                labelStyle={styles.formLabel}
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר *</Text>
-              <TextInput
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={editingProduct.price?.toString()}
-                onChangeText={text => setEditingProduct({ ...editingProduct, price: parseFloat(text) || 0 })}
+              <LabeledInput
+                label="מחיר *"
+                value={editingProduct.price != null ? editingProduct.price.toString() : ''}
+                onChangeText={(text) => updateProduct('price', Number.parseFloat(text) || 0)}
                 placeholder="הכנס מחיר"
                 keyboardType="numeric"
-                textAlign="right"
+                labelStyle={styles.formLabel}
               />
             </View>
 
@@ -470,19 +455,14 @@ export default function ProductFormModal({
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תיאור *</Text>
-              <TextInput
-                style={[styles.formInput, styles.textArea, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={editingProduct.description}
-                onChangeText={text => setEditingProduct({ ...editingProduct, description: text })}
+              <LabeledInput
+                label="תיאור *"
+                value={editingProduct.description ?? ''}
+                onChangeText={(text) => updateProduct('description', text)}
                 placeholder="הכנס תיאור מוצר"
                 multiline
                 numberOfLines={4}
-                textAlign="right"
+                labelStyle={styles.formLabel}
               />
             </View>
 
@@ -589,36 +569,26 @@ export default function ProductFormModal({
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מלאי *</Text>
-              <TextInput
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={editingProduct.stock?.toString()}
-                onChangeText={text => setEditingProduct({ ...editingProduct, stock: parseInt(text) || 0 })}
+              <LabeledInput
+                label="מלאי *"
+                value={editingProduct.stock != null ? editingProduct.stock.toString() : ''}
+                onChangeText={(text) => updateProduct('stock', Number.parseInt(text, 10) || 0)}
                 placeholder="הכנס כמות במלאי"
                 keyboardType="numeric"
-                textAlign="right"
+                labelStyle={styles.formLabel}
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תגיות (אופציונלי)</Text>
-              <TextInput
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={editingProduct.badges?.join(', ')}
-                onChangeText={text => {
-                  const badges = text.split(',').map(b => b.trim()).filter(b => b);
-                  setEditingProduct({ ...editingProduct, badges });
+              <LabeledInput
+                label="תגיות (אופציונלי)"
+                value={editingProduct.badges?.join(', ') ?? ''}
+                onChangeText={(text) => {
+                  const badges = text.split(',').map((b) => b.trim()).filter((b) => b);
+                  updateProduct('badges', badges);
                 }}
                 placeholder="הכנס תגיות מופרדות בפסיקים (למשל: חדש, מבצע, מומלץ)"
-                textAlign="right"
+                labelStyle={styles.formLabel}
               />
             </View>
 
@@ -796,8 +766,6 @@ const styles = StyleSheet.create({
   modalContent: { padding: 16 },
   formGroup: { marginBottom: 20 },
   formLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
-  formInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },
-  textArea: { height: 100, textAlignVertical: 'top' },
   modalActions: { gap: 16, marginTop: 20, marginBottom: 40 },
   saveButton: { borderRadius: 12, paddingVertical: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   saveButtonText: { fontSize: 16, fontWeight: '600', marginLeft: 8 },

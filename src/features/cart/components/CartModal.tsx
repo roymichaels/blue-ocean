@@ -10,7 +10,6 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
   Linking,
@@ -64,6 +63,7 @@ import { useLaunchGate } from '@/features/launchGate';
 import { useAppRouter } from '@/hooks';
 import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import LabeledInput from '@/components/form/LabeledInput';
 import {
   getCheckoutRequestScopes,
   getSession,
@@ -226,6 +226,12 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     postalCode: '',
     notes: '',
   });
+  const updateShippingAddress = useCallback(
+    <K extends keyof ShippingAddress>(key: K, value: ShippingAddress[K]) => {
+      setShippingAddress((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderIds, setOrderIds] = useState<string[]>([]);
@@ -786,140 +792,55 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </Text>
         </View>
 
-        <View style={styles.formGroup}>
-          <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-            {t('cart.fullName')}
-          </Text>
-          <TextInput
-            style={[
-              styles.formInput,
-              {
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary,
-                color: colors.text.primary,
-              },
-            ]}
-            value={shippingAddress.name}
-            onChangeText={(text) => setShippingAddress({ ...shippingAddress, name: text })}
-            placeholder={t('cart.fullNamePlaceholder')}
-            textAlign="right"
-            placeholderTextColor={colors.text.tertiary}
-          />
-        </View>
+        <LabeledInput
+          label={t('cart.fullName')}
+          value={shippingAddress.name}
+          onChangeText={(text) => updateShippingAddress('name', text)}
+          placeholder={t('cart.fullNamePlaceholder')}
+        />
 
-        <View style={styles.formGroup}>
-          <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-            {t('cart.phone')}
-          </Text>
-          <TextInput
-            style={[
-              styles.formInput,
-              {
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary,
-                color: colors.text.primary,
-              },
-            ]}
-            value={shippingAddress.phone}
-            onChangeText={(text) => setShippingAddress({ ...shippingAddress, phone: text })}
-            placeholder={t('cart.phonePlaceholder')}
-            keyboardType="phone-pad"
-            textAlign="right"
-            placeholderTextColor={colors.text.tertiary}
-          />
-        </View>
+        <LabeledInput
+          label={t('cart.phone')}
+          value={shippingAddress.phone}
+          onChangeText={(text) => updateShippingAddress('phone', text)}
+          placeholder={t('cart.phonePlaceholder')}
+          keyboardType="phone-pad"
+        />
 
-        <View style={styles.formGroup}>
-          <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-            {t('cart.streetAddress')}
-          </Text>
-          <TextInput
-            style={[
-              styles.formInput,
-              {
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary,
-                color: colors.text.primary,
-              },
-            ]}
-            value={shippingAddress.street}
-            onChangeText={(text) => setShippingAddress({ ...shippingAddress, street: text })}
-            placeholder={t('cart.streetAddressPlaceholder')}
-            textAlign="right"
-            placeholderTextColor={colors.text.tertiary}
-          />
-        </View>
+        <LabeledInput
+          label={t('cart.streetAddress')}
+          value={shippingAddress.street}
+          onChangeText={(text) => updateShippingAddress('street', text)}
+          placeholder={t('cart.streetAddressPlaceholder')}
+        />
 
         <View style={styles.formRow}>
-          <View style={styles.formGroupHalf}>
-            <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-              {t('cart.city')}
-            </Text>
-            <TextInput
-              style={[
-                styles.formInput,
-                {
-                  backgroundColor: colors.surface.primary,
-                  borderColor: colors.border.primary,
-                  color: colors.text.primary,
-                },
-              ]}
-              value={shippingAddress.city}
-              onChangeText={(text) => setShippingAddress({ ...shippingAddress, city: text })}
-              placeholder={t('cart.cityPlaceholder')}
-              textAlign="right"
-              placeholderTextColor={colors.text.tertiary}
-            />
-          </View>
+          <LabeledInput
+            label={t('cart.city')}
+            value={shippingAddress.city}
+            onChangeText={(text) => updateShippingAddress('city', text)}
+            placeholder={t('cart.cityPlaceholder')}
+            containerStyle={styles.formGroupHalf}
+          />
 
-          <View style={styles.formGroupHalf}>
-            <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-              {t('cart.postalCode')}
-            </Text>
-            <TextInput
-              style={[
-                styles.formInput,
-                {
-                  backgroundColor: colors.surface.primary,
-                  borderColor: colors.border.primary,
-                  color: colors.text.primary,
-                },
-              ]}
-              value={shippingAddress.postalCode}
-              onChangeText={(text) =>
-                setShippingAddress({ ...shippingAddress, postalCode: text })
-              }
-              placeholder={t('cart.postalCodePlaceholder')}
-              keyboardType="numeric"
-              textAlign="right"
-              placeholderTextColor={colors.text.tertiary}
-            />
-          </View>
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={[styles.formLabel, { color: colors.text.primary }]}>
-            {t('cart.notes')}
-          </Text>
-          <TextInput
-            style={[
-              styles.formInput,
-              styles.textArea,
-              {
-                backgroundColor: colors.surface.primary,
-                borderColor: colors.border.primary,
-                color: colors.text.primary,
-              },
-            ]}
-            value={shippingAddress.notes}
-            onChangeText={(text) => setShippingAddress({ ...shippingAddress, notes: text })}
-            placeholder={t('cart.notesPlaceholder')}
-            multiline
-            numberOfLines={3}
-            textAlign="right"
-            placeholderTextColor={colors.text.tertiary}
+          <LabeledInput
+            label={t('cart.postalCode')}
+            value={shippingAddress.postalCode}
+            onChangeText={(text) => updateShippingAddress('postalCode', text)}
+            placeholder={t('cart.postalCodePlaceholder')}
+            keyboardType="numeric"
+            containerStyle={styles.formGroupHalf}
           />
         </View>
+
+        <LabeledInput
+          label={t('cart.notes')}
+          value={shippingAddress.notes}
+          onChangeText={(text) => updateShippingAddress('notes', text)}
+          placeholder={t('cart.notesPlaceholder')}
+          multiline
+          numberOfLines={3}
+        />
 
         <View
           style={[
@@ -1728,18 +1649,8 @@ const styles = StyleSheet.create({
   checkoutForm: { flex: 1, padding: 16 },
   checkoutHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, justifyContent: 'center' },
   checkoutTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 8 },
-  formGroup: { marginBottom: 16 },
   formRow: { flexDirection: 'row', gap: 12 },
   formGroupHalf: { flex: 1 },
-  formLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
-  formInput: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-  textArea: { height: 80, textAlignVertical: 'top' },
   orderSummary: { borderRadius: 12, padding: 16, marginVertical: 24, borderWidth: 1 },
   summaryTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12, textAlign: 'right' },
   summaryItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
