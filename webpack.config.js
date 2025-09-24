@@ -149,7 +149,6 @@ module.exports = async function (env, argv) {
       'node_modules/react-native-url-polyfill'
     ),
     tslib: require.resolve('tslib'),
-    'tslib/modules/index.js': path.resolve(__dirname, 'tslib-polyfill.js'),
   };
 
   if (!config.module.rules.some((r) => String(r.test) === '/\\.mjs$/')) {

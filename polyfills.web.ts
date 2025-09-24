@@ -1,4 +1,11 @@
+import {
+  ensureEd25519SyncHash,
+  ensureNodeLikeGlobals,
+  ensureTslibDefault,
+  type GlobalLike,
+} from './polyfills/shared';
 import { debugLog } from './utils/logger';
+
 // Ensure Expo Modules web shims are loaded so globalThis.expo is defined
 try {
   // Side-effect import to setup globalThis.expo (SharedObject, etc.)
@@ -6,28 +13,20 @@ try {
 } catch {}
 // Minimal fallback if the shim didn't set it for some reason
 try {
-  const g: any = globalThis as any;
+  const g = globalThis as GlobalLike & { expo?: Record<string, unknown> };
   if (!g.expo) g.expo = {};
   if (!g.expo.SharedObject) {
     g.expo.SharedObject = class {};
   }
 } catch {}
-import { sha512 } from '@noble/hashes/sha512';
-import { etc as edUtils } from '@noble/ed25519';
 
 // On web, URL is natively supported; skip react-native-url-polyfill.
 // On web, browser already has crypto.subtle. Do NOT import expo-standard-web-crypto here.
-// Noble needs sync sha512
-if (!edUtils.sha512Sync) edUtils.sha512Sync = sha512;
+ensureEd25519SyncHash();
 
 // Optional: only add Buffer/process if you need them on web
 try {
-  if (typeof (globalThis as any).Buffer === 'undefined') {
-    (globalThis as any).Buffer = require('buffer').Buffer;
-  }
-  if (typeof (globalThis as any).process === 'undefined') {
-    (globalThis as any).process = require('process');
-  }
+  ensureNodeLikeGlobals(globalThis as unknown as GlobalLike);
   // Some compiled libs (e.g., expo-router build output) may be transformed
   // with the classic JSX runtime and expect a global React identifier.
   // Ensure React is available as a global on web to avoid ReferenceError.
@@ -49,13 +48,5 @@ try {
 }
 
 // Keep the tslib shim to be safe on web too
-try {
-  // Prefer the standard entry; webpack alias maps modules/index.js to a CJS shim
-  const tslib = require('tslib');
-  if (tslib && !('default' in tslib)) {
-    // @ts-ignore
-    tslib.default = tslib;
-  }
-} catch {
-  // Quietly ignore; modern builds usually don't require this
-}
+ensureTslibDefault('tslib');
+ensureTslibDefault('tslib/modules/index.js');
