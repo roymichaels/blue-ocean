@@ -8,6 +8,7 @@ import {
 } from '@/features/cart/services/nearCart';
 import ensureNearWallet from '../utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
+import { jsonClone } from '@/utils/jsonClone';
 
 assertNearChain();
 
@@ -40,7 +41,7 @@ class CartAgent {
    */
   async selectCartItem(id: string): Promise<CartItem | null> {
     const item = await getCartItem(id);
-    return item ? JSON.parse(JSON.stringify(item)) : null;
+    return item ? jsonClone(item) : null;
   }
 
   /**
@@ -48,7 +49,7 @@ class CartAgent {
    */
   async getCartItems(): Promise<CartItem[]> {
     const list = await listCartItems();
-    return list.map((c) => JSON.parse(JSON.stringify(c)));
+    return list.map((c) => jsonClone(c));
   }
 }
 

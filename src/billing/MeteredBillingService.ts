@@ -7,6 +7,7 @@ import { canonicalJson } from '@/utils/serialization';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import { uuid } from '@/utils/uuid';
 import { errorLog } from '@/utils/logger';
+import { jsonClone } from '@/utils/jsonClone';
 import type {
   BillingPayment,
   BillingSummary,
@@ -53,7 +54,7 @@ function pseudonymizeWallet(address: string, tenantId: string): string {
 function sanitizeMetadata(metadata?: Record<string, unknown>): Record<string, unknown> | undefined {
   if (!metadata) return undefined;
   try {
-    return JSON.parse(JSON.stringify(metadata));
+    return jsonClone(metadata);
   } catch {
     return undefined;
   }
