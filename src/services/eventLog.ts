@@ -1,11 +1,10 @@
 // @ts-nocheck
 import { errorLog } from '@/utils/logger';
-import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import { uuid } from '../utils/uuid';
 import { OrderStatus } from '../types';
-import config from '@/config';
 import { canonicalJson } from '@/utils/serialization';
+import { ensureRelayNode } from '@/services/wakuNode';
 
 export type OrderEventType =
   | 'order.created'
@@ -26,26 +25,7 @@ export interface OrderEvent {
 }
 
 const ORDER_TOPIC = '/blue-ocean/orders/1';
-let node: LightNode | null = null;
-
-async function ensureNode(): Promise<LightNode | null> {
-  if (node) return node;
-  try {
-    if ((config.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
-      return null;
-    }
-    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-    node = await createLightNode({});
-    if (!node) return null;
-    await node.start();
-    await waitForRemotePeer(node, [Protocols.Relay]);
-    return node;
-  } catch (err) {
-    errorLog('Failed to start Waku node', err);
-    node = null;
-    return null;
-  }
-}
+const ensureNode = ensureRelayNode;
 
 export async function logOrderEvent(
   event: Omit<OrderEvent, 'id'>,
