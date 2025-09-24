@@ -9,42 +9,28 @@ const GLOBAL_STYLE_RULES = `
   body { background: #0b0b0b; }
 `;
 
-function injectGlobalStyles() {
-  const style = document.createElement('style');
-  style.innerHTML = GLOBAL_STYLE_RULES;
-  document.head.appendChild(style);
-}
+if (typeof document !== 'undefined') {
+  try {
+    const style = document.createElement('style');
+    style.textContent = GLOBAL_STYLE_RULES;
+    document.head.appendChild(style);
 
-function ensureRootContainer(): HTMLElement {
-  const rootElement =
-    document.getElementById('root') ?? document.getElementById('app-root');
-  if (rootElement instanceof HTMLElement) {
-    return rootElement;
+    const existingRoot =
+      document.getElementById('root') ?? document.getElementById('app-root');
+    const root =
+      existingRoot instanceof HTMLElement
+        ? existingRoot
+        : document.body.appendChild(
+            Object.assign(document.createElement('div'), { id: 'root' }),
+          );
+
+    AppRegistry.registerComponent('main', () => App);
+    AppRegistry.runApplication('main', {
+      rootTag: root,
+      initialProps: {},
+      hydrate: false,
+    } as any);
+  } catch (err) {
+    console.error('Failed to start app', err);
   }
-
-  const root = document.createElement('div');
-  root.id = 'root';
-  document.body.appendChild(root);
-  return root;
-}
-
-function bootstrap() {
-  if (typeof document === 'undefined') {
-    return;
-  }
-
-  injectGlobalStyles();
-  const root = ensureRootContainer();
-  AppRegistry.registerComponent('main', () => App);
-  AppRegistry.runApplication('main', {
-    rootTag: root,
-    initialProps: {},
-    hydrate: false,
-  } as any);
-}
-
-try {
-  bootstrap();
-} catch (err) {
-  console.error('Failed to start app', err);
 }
