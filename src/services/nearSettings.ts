@@ -2,7 +2,6 @@ import { debugLog, errorLog } from '@/utils/logger';
 import { assertNearChain } from './chain';
 import { getValue, setValue, listValues } from './nearKvStore';
 import config from '@/config';
-import type { LightNode } from '@waku/sdk';
 import { getClient } from '@/utils/transport';
 import type { SettingsWriteEvent } from '../types/waku';
 import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
@@ -12,11 +11,13 @@ import { canonicalJson } from '@/utils/serialization';
 import { makeSignedWakuMessage } from '@/utils/wakuSigning';
 import type { AdminScope } from '@/types';
 import { ALL_ADMIN_SCOPES } from '@/types';
+import { ensureRelayNode } from '@/services/wakuNode';
 
 assertNearChain();
 
 const ADDRESS = 'settings';
 const SETTINGS_TOPIC = '/blue-ocean/settings/1';
+const ensureNode = ensureRelayNode;
 
 async function assertAdmin(actor: string): Promise<void> {
   if (!actor) {
@@ -54,27 +55,6 @@ export interface NearSettings {
 
 export async function getSetting(key: string): Promise<string | null> {
   return await getValue(ADDRESS, key);
-}
-
-let node: LightNode | null = null;
-
-async function ensureNode(): Promise<LightNode | null> {
-  if (node) return node;
-  try {
-    if ((config.EXPO_PUBLIC_TRANSPORT || '').toLowerCase() !== 'waku') {
-      return null;
-    }
-    const { createLightNode, waitForRemotePeer, Protocols } = await getClient();
-    node = await createLightNode({} as any);
-    if (!node) return null;
-    await node.start();
-    await waitForRemotePeer(node, [Protocols.Relay]);
-    return node;
-  } catch (err) {
-    errorLog('Failed to start Waku node', err);
-    node = null;
-    return null;
-  }
 }
 
 async function emit(event: SettingsWriteEvent) {
