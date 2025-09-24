@@ -22,21 +22,6 @@
       "@blue-ocean/sdk-near": [
         "packages/sdk-near/src"
       ],
-      "@app/*": [
-        "app/*"
-      ],
-      "@features/*": [
-        "src/features/*"
-      ],
-      "@ui/*": [
-        "src/ui/*"
-      ],
-      "@shared/*": [
-        "src/shared/*"
-      ],
-      "@providers/*": [
-        "src/providers/*"
-      ],
       "@/auth/*": [
         "src/auth/*"
       ],

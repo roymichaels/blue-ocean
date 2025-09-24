@@ -8,21 +8,6 @@
                                       ],
                             "jsx":  "react-jsx",
                             "paths":  {
-                                          "@app/*":  [
-                                                         "app/*"
-                                                     ],
-                                          "@features/*":  [
-                                                              "src/features/*"
-                                                          ],
-                                          "@shared/*":  [
-                                                            "src/shared/*"
-                                                        ],
-                                          "@ui/*":  [
-                                                        "src/ui/*"
-                                                    ],
-                                          "@providers/*":  [
-                                                               "src/providers/*"
-                                                           ],
                                           "@/*":  [
                                                       "*"
                                                   ],

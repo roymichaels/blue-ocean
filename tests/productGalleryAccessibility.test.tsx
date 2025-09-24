@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import ProductDetailScreen from '@app/store/[storeId]/product/_ProductScreen';
+import ProductDetailScreen from '@/app/store/[storeId]/product/_ProductScreen';
 
 let mockSmartImage: jest.Mock;
 const mockUseProductDetail = jest.fn();

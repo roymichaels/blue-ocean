@@ -51,7 +51,7 @@ jest.mock('@/contexts/WalletProvider', () => ({
   useWallet: () => ({ address: 'test', connect: jest.fn() }),
 }));
 
-jest.mock('@features/auth/AuthContext', () => ({
+jest.mock('@/features/auth/AuthContext', () => ({
   useAuth: () => ({ isStoreOwner: false }),
 }));
 
@@ -75,8 +75,8 @@ jest.mock('@/ui/ThemeProvider', () => {
 });
 
 jest.mock('@/components/BannerFormModal', () => () => null);
-jest.mock('@features/cart', () => ({ CartModal: () => null }));
-jest.mock('@features/products', () => ({
+jest.mock('@/features/cart', () => ({ CartModal: () => null }));
+jest.mock('@/features/products', () => ({
   ProductFormModal: () => null,
   ProductCard: () => null,
   ProductCardSkeleton: () => null,
@@ -119,7 +119,7 @@ jest.mock('@/features/home/hooks/useHomeModals', () => ({
 jest.mock('@/features/home/hooks/useHomeData', () => ({
   useHomeData: () => ({ fallbackCategories: [], fallbackBanners: [] }),
 }));
-import HomeScreen from '@app/index';
+import HomeScreen from '@/app/index';
 
 describe('HomeScreen render', () => {
   beforeEach(() => {

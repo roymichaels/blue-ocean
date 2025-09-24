@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import ProductDetailScreen from '@app/store/[storeId]/product/_ProductScreen';
+import ProductDetailScreen from '@/app/store/[storeId]/product/_ProductScreen';
 
 type Variant = { id?: string; color?: string; stock?: number };
 type MediaItem = { uri: string };
