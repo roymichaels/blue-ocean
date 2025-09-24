@@ -1,5 +1,6 @@
 import type { Product } from '@/types';
 import { canonicalJson } from '@/utils/serialization';
+import { jsonClone } from '@/utils/jsonClone';
 import { verifyBeforeWrite } from '../utils/verifyMessageSignature';
 import { productUpdatedSchema } from '../schemas/waku/product.updated';
 import { errorLog } from '@/utils/logger';
@@ -274,13 +275,13 @@ class ProductsAgent {
   async selectProduct(id: string): Promise<Product | null> {
     await this.ensureCache();
     const cached = this.cache.get(id);
-    if (cached) return JSON.parse(JSON.stringify(cached));
+    if (cached) return jsonClone(cached);
     const nearProducts = await loadNearProducts();
     const prod = await nearProducts.getProduct('default', id);
     if (prod) {
       this.cache.set(id, prod);
       this.summaries.set(id, { rating: prod.rating, reviews: prod.reviews });
-      return JSON.parse(JSON.stringify(prod));
+      return jsonClone(prod);
     }
     return null;
   }
@@ -290,9 +291,7 @@ class ProductsAgent {
    */
   async getProducts(): Promise<Product[]> {
     await this.ensureCache();
-    return Array.from(this.cache.values()).map((p) =>
-      JSON.parse(JSON.stringify(p)),
-    );
+    return Array.from(this.cache.values()).map((p) => jsonClone(p));
   }
 
   /**

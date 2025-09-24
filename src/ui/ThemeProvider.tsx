@@ -1,4 +1,5 @@
 import { errorLog } from '@/utils/logger';
+import { jsonClone } from '@/utils/jsonClone';
 import React, {
   createContext,
   useState,
@@ -210,7 +211,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       // Attempt to clone the translation object; if the JSON is malformed this
       // will throw and be caught below.
       const raw = language === 'en' ? enTranslations : heTranslations;
-      const parsed = JSON.parse(JSON.stringify(raw));
+      const parsed = jsonClone(raw);
 
       setTranslationsState(parsed);
       setGlobalTranslations(parsed);
@@ -222,7 +223,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       // Any IO or JSON parse errors default the app back to English so the UI
       // remains usable.
       errorLog(error);
-      const fallback = JSON.parse(JSON.stringify(enTranslations));
+      const fallback = jsonClone(enTranslations);
       setTranslationsState(fallback);
       setGlobalTranslations(fallback);
       setIsRTL(false);

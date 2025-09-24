@@ -8,6 +8,7 @@ import {
 } from '@/features/products/services/nearCategories';
 import ensureNearWallet from '@/utils/ensureNearWallet';
 import { normalizeMessage } from '../lib/normalizeMessage';
+import { jsonClone } from '@/utils/jsonClone';
 
 assertNearChain();
 
@@ -40,7 +41,7 @@ class CategoriesAgent {
    */
   async selectCategory(storeId: string, id: string): Promise<Category | null> {
     const cat = await getCategory(storeId, id);
-    return cat ? JSON.parse(JSON.stringify(cat)) : null;
+    return cat ? jsonClone(cat) : null;
   }
 
   /**
@@ -48,7 +49,7 @@ class CategoriesAgent {
    */
   async getCategories(storeId: string): Promise<Category[]> {
     const list = await listCategories(storeId);
-    return list.map((c) => JSON.parse(JSON.stringify(c)));
+    return list.map((c) => jsonClone(c));
   }
 }
 
