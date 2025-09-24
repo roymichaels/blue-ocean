@@ -17,21 +17,11 @@ import {
 } from '@/hooks/adminSubscription';
 
 const USE_ROUTER = isRouterEnabled();
+const FALLBACK_STYLE = { flex: 1, alignItems: 'center', justifyContent: 'center' };
 
-function RouterApp() {
-  return <ExpoRoot context={ctx} />;
-}
-
-function FallbackScreen() {
+export default function App() {
   const { t } = useLanguage();
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>{t('app.routerDisabled')}</Text>
-    </View>
-  );
-}
 
-function MainApp() {
   useEffect(() => {
     void initSessionTokens();
 
@@ -55,19 +45,21 @@ function MainApp() {
     };
   }, []);
 
+  const screen = USE_ROUTER ? (
+    <ExpoRoot context={ctx} />
+  ) : (
+    <View style={FALLBACK_STYLE}>
+      <Text>{t('app.routerDisabled')}</Text>
+    </View>
+  );
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <React.Suspense fallback={<Spinner />}>
-          <AppProviders>
-            {USE_ROUTER ? <RouterApp /> : <FallbackScreen />}
-          </AppProviders>
+          <AppProviders>{screen}</AppProviders>
         </React.Suspense>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
-}
-
-export default function App() {
-  return <MainApp />;
 }
