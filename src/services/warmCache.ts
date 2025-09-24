@@ -58,19 +58,7 @@ function getClockSkewGuardMs() {
   return 60_000;
 }
 
-var hitStatsStore: Map<string, { hits: number; total: number }> | undefined;
-function getHitStats() {
-  if (!hitStatsStore) {
-    hitStatsStore = new Map();
-  }
-  return hitStatsStore;
-}
-
-let _hitStats: Map<string, { hits: number; total: number }> = new Map();
-
-function getHitStats(): Map<string, { hits: number; total: number }> {
-  return _hitStats;
-}
+const hitStats = new Map<string, { hits: number; total: number }>();
 
 function normalizeMessage<T>(msg: DiffMessage<T>, source: MessageSource): DiffMessage<T> {
   const now = Date.now();
@@ -95,7 +83,7 @@ export function createWarmCache<T>(
   const buffer: { msg: DiffMessage<T>; source: MessageSource }[] = [];
   const reconcilers = new Map<string, (id: string, value: T | undefined) => void>();
   const stats = { hits: 0, total: 0 };
-  getHitStats().set(topic, stats);
+  hitStats.set(topic, stats);
   const endHydration = cacheHydrationHistogram.startTimer({ cache: topic });
   const lagThreshold = options.lagThresholdMs ?? getDefaultLagThreshold();
   const metricLabels = { cache: topic } as const;
@@ -301,7 +289,7 @@ export function createWarmCache<T>(
 }
 
 export function getCacheHitRatio(topic: string): number {
-  const s = getHitStats().get(topic);
+  const s = hitStats.get(topic);
   if (!s || s.total === 0) return 0;
   return s.hits / s.total;
 }
