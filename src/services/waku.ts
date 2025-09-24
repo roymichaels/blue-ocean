@@ -67,6 +67,8 @@ const KEY_EPOCH_INTERVAL_MS = 10 * 60 * 1000;
 const PUBLISHER_KEY_STORAGE_KEY = 'waku_ephemeral_key';
 const PUBLISHER_KEY_GLOBAL_SYMBOL = Symbol.for('waku.publisherKey');
 
+type WakuClient = Awaited<ReturnType<typeof getClient>>;
+
 function toHex(bytes: Uint8Array): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
@@ -199,19 +201,25 @@ function resolveFallbackPublisherKey(): string {
   return cachePublisherKey(ensureHexKey(randomBytes(32)));
 }
 
+type PublisherKeyResolver = () => string | null | Promise<string | null>;
+
+const publisherKeyResolvers: PublisherKeyResolver[] = [
+  () => {
+    const globalKey = getGlobalPublisherKey();
+    return globalKey ? cachePublisherKey(globalKey) : null;
+  },
+  async () => (isReactNativeEnv() ? loadReactNativePublisherKey() : null),
+  () => resolveBrowserPublisherKey(),
+  () => resolveNodePublisherKey(),
+];
+
 async function computePublisherKey(): Promise<string> {
   if (PUB) return cachePublisherKey(PUB);
   if (strict) throw new Error('WAKU_PUBLISHER_KEY required in strict/prod.');
-  const globalKey = getGlobalPublisherKey();
-  if (globalKey) return cachePublisherKey(globalKey);
-  if (isReactNativeEnv()) {
-    const rnKey = await loadReactNativePublisherKey();
-    if (rnKey) return rnKey;
+  for (const resolveKey of publisherKeyResolvers) {
+    const key = await resolveKey();
+    if (key) return key;
   }
-  const browserKey = resolveBrowserPublisherKey();
-  if (browserKey) return browserKey;
-  const nodeKey = resolveNodePublisherKey();
-  if (nodeKey) return nodeKey;
   return resolveFallbackPublisherKey();
 }
 
@@ -401,6 +409,30 @@ async function sendAck(topic: string, id: string): Promise<void> {
   });
 }
 
+async function decodeWakuPayload(
+  topic: string,
+  payload: Uint8Array,
+  client: WakuClient,
+): Promise<any | null> {
+  try {
+    const allowedEpochs = getSupportedKeyEpochs();
+    const { plaintext } = await decrypt(topic, payload, { allowedEpochs });
+    try {
+      return JSON.parse(client.bytesToUtf8(plaintext));
+    } catch {
+      wakuDecryptErrorCounter.inc({ reason: 'decode_failure' });
+      return null;
+    }
+  } catch (err) {
+    if (err instanceof WakuDecryptError) {
+      wakuDecryptErrorCounter.inc({ reason: err.code });
+    } else {
+      wakuDecryptErrorCounter.inc({ reason: 'unknown' });
+    }
+    return null;
+  }
+}
+
 export async function publish(topic: string, message: any): Promise<string> {
   const client = await getClient();
   const id = message?.id || Date.now().toString();
@@ -464,26 +496,15 @@ export async function subscribeWithAck(
   const handler = async (wakuMsg: any) => {
     if (!wakuMsg.payload) return;
     try {
-      const allowedEpochs = getSupportedKeyEpochs();
-      const { plaintext } = await decrypt(topic, wakuMsg.payload, { allowedEpochs });
-      let msg: any;
-      try {
-        msg = JSON.parse(client.bytesToUtf8(plaintext));
-      } catch {
-        wakuDecryptErrorCounter.inc({ reason: 'decode_failure' });
-        return;
-      }
+      const msg = await decodeWakuPayload(topic, wakuMsg.payload, client);
+      if (!msg) return;
       const now = Date.now();
       pruneReceivedIds(now);
       if (msg.id && !rememberMessageId(msg.id, now)) return;
       cb(msg);
       if (msg.id) await sendAck(topic, msg.id);
-    } catch (err) {
-      if (err instanceof WakuDecryptError) {
-        wakuDecryptErrorCounter.inc({ reason: err.code });
-      } else {
-        wakuDecryptErrorCounter.inc({ reason: 'unknown' });
-      }
+    } catch {
+      wakuDecryptErrorCounter.inc({ reason: 'unknown' });
     }
   };
   const maybeUnsub = (node.relay as any).addObserver(handler, [decoder]) as
@@ -513,22 +534,8 @@ export async function fetchHistory(
     const messages = res.messages || [];
     for (const wakuMsg of messages) {
       if (!wakuMsg.payload) continue;
-      try {
-        const allowedEpochs = getSupportedKeyEpochs();
-        const { plaintext } = await decrypt(topic, wakuMsg.payload, { allowedEpochs });
-        try {
-          const msg = JSON.parse(client.bytesToUtf8(plaintext));
-          cb(msg);
-        } catch {
-          wakuDecryptErrorCounter.inc({ reason: 'decode_failure' });
-        }
-      } catch (err) {
-        if (err instanceof WakuDecryptError) {
-          wakuDecryptErrorCounter.inc({ reason: err.code });
-        } else {
-          wakuDecryptErrorCounter.inc({ reason: 'unknown' });
-        }
-      }
+      const msg = await decodeWakuPayload(topic, wakuMsg.payload, client);
+      if (msg) cb(msg);
     }
     if (!res.next) break;
     cursor = res.next;
