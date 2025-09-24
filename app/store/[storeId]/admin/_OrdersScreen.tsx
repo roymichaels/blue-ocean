@@ -11,13 +11,13 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import type { Order, OrderStatus } from '@/types';
-import { useOrders } from '@/services/useOrders';
+import { useOrders } from '@/hooks/useOrders';
 import { ordersWarmCache } from '@/services/nearOrders';
 import ordersAgent, { ALLOWED_STATUS_TRANSITIONS } from '@/agents/orders-agent';
 import { Badge, Spinner } from '@/ui/primitives';
 import { useLaunchGate } from '@/features/launchGate/LaunchGateContext';
 import OrderTrackingModal from '@/components/OrderTrackingModal';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import { promptCancelOrder } from '@/features/orders/adminActions';
 import { useActionNonceGuard } from '@/features/orders/actionNonceGuard';
 

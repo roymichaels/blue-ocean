@@ -5,10 +5,10 @@ import { Heading, Text, TextField, Divider } from '@/ui/primitives';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { spacing, radius, typography } from '@/ui/tokens';
 import { useTenant } from '@/contexts/TenantContext';
-import { useProducts, useStores } from '@/services';
+import { useProducts, useStores } from '@/hooks';
 import { useWallet } from '@/contexts/WalletProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import search, {
   type SearchDomain,
   type SearchResult,
@@ -16,7 +16,7 @@ import search, {
   type StoreFilters,
   type OrderFilters,
   type MessageFilters,
-} from '@/services/search';
+} from '@/hooks/search';
 import { ordersWarmCache } from '@/services/nearOrders';
 import DatabaseService from '@/services/database';
 import { errorLog } from '@/utils/logger';

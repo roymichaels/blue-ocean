@@ -69,7 +69,7 @@ jest.mock('@/components/NotificationContext', () => ({
   useNotificationActions: () => ({ showNotification: jest.fn() }),
 }));
 
-jest.mock('@/services/useAppRouter', () => ({
+jest.mock('@/hooks/useAppRouter', () => ({
   useAppRouter: () => ({ push: jest.fn(), back: jest.fn() }),
 }));
 
@@ -81,7 +81,7 @@ jest.mock('@/features/auth/AuthModalContext', () => ({
   useAuthModal: () => ({ openAuthModal: jest.fn() }),
 }));
 
-jest.mock('@/services/openDM', () => ({
+jest.mock('@/hooks/openDM', () => ({
   openDM: jest.fn(),
 }));
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { Text, Button, Card } from '@/ui';
 import { Server } from 'lucide-react-native';
-import SettingsAgent from '../../agents/settings-agent';
+import SettingsAgent from '../@/agents/settings-agent';
 import { errorLog } from '@/utils/logger';
 
 interface Props {

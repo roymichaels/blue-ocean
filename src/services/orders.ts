@@ -11,7 +11,7 @@
 // TODO:KYC-009 include ts/nonce on any KYC-related messages
 
 import { errorLog, debugLog } from '@/utils/logger';
-import ordersAgent from '../agents/orders-agent';
+import ordersAgent from '@/agents/orders-agent';
 import usersAgent from '@/agents/users-agent';
 import eventBus from './eventBus';
 import {

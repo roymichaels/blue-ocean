@@ -1,7 +1,7 @@
 import { init, signIn, signMessage, useAccount, useAccountId, getAccountId, getPublicKey, getSelector } from '@/services/walletSelector';
 import { payPrivately as nearPayPrivately } from '@blue-ocean/sdk-near';
 import { listOrdersBySeller as nearListOrdersBySeller, listOrdersByBuyer as nearListOrdersByBuyer } from '@/services/nearOrders';
-import { getNetworkId } from '@/services/config';
+import { getNetworkId } from '@/hooks/config';
 import config from '@/config';
 import type { ChainAdapter } from './ChainAdapter';
 import { canonicalJson } from '@/utils/serialization';

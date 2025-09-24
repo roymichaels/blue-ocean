@@ -23,8 +23,8 @@ function run(code) {
   return res.stdout.trim();
 }
 
-run("const kv=require('./services/nearKvStore'); (async()=>{await kv.setValue('smoke','ping','pong');})();");
-const out = run("const kv=require('./services/nearKvStore'); (async()=>{const v=await kv.getValue('smoke','ping'); console.log(v ?? '')})();");
+run("const kv=require('./src/services/nearKvStore'); (async()=>{await kv.setValue('smoke','ping','pong');})();");
+const out = run("const kv=require('./src/services/nearKvStore'); (async()=>{const v=await kv.getValue('smoke','ping'); console.log(v ?? '')})();");
 
 if (out !== 'pong') {
   console.error('Persistence check failed');

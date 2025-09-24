@@ -20,15 +20,15 @@ const orders: Record<string, any> = {
   },
 };
 
-jest.mock('../agents/orders-agent', () => ({
+jest.mock('@/agents/orders-agent', () => ({
   get: jest.fn(async (id: string) => orders[id] || null),
 }));
 
-jest.mock('../agents/products-agent', () => ({
+jest.mock('@/agents/products-agent', () => ({
   get: jest.fn(async () => ({ id: 'p1', storeId: 's1' })),
 }));
 
-jest.mock('../agents/stores-agent', () => ({
+jest.mock('@/agents/stores-agent', () => ({
   recordReview: jest.fn(async () => {}),
 }));
 
@@ -38,7 +38,7 @@ jest.mock('@/features/auth/services/nearAuth', () => ({
   signIn: jest.fn().mockResolvedValue(undefined),
 }));
 
-import reviewAgent from '../agents/review-agent';
+import reviewAgent from '@/agents/review-agent';
 
 describe('reviewAgent', () => {
   const base: Review = {

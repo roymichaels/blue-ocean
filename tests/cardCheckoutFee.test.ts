@@ -141,7 +141,7 @@ jest.mock('@/features/products/services/nearProducts', () => ({
 
 jest.mock('@/services/eventLog', () => ({ logOrderEvent: jest.fn() }));
 
-jest.mock('../agents/orders-agent', () => ({
+jest.mock('@/agents/orders-agent', () => ({
   subscribe: jest.fn(),
   add: jest.fn(),
   get: jest.fn(),

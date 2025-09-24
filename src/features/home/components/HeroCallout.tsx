@@ -6,12 +6,12 @@ import {
   useWindowDimensions,
   Platform,
 } from 'react-native';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Button, Heading, Text } from '@/ui/primitives';
 import { Stack } from '@/ui/layout';
 import { spacing, typography } from '@/ui/tokens';
-import { getShopTenantId } from '@/services/config';
+import { getShopTenantId } from '@/hooks/config';
 import { routes } from '@/utils/routes';
 import { useWallet } from '@/contexts/WalletProvider';
 import guard from '@/utils/guard';

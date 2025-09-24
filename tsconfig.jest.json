@@ -47,12 +47,32 @@
                                           "@/core/*":  [
                                                            "src/core/*"
                                                        ],
-                                          "@/services":  [
-                                                             "src/services/index"
-                                                         ],
+                                          "@/agents/*":  [
+                                                              "src/agents/*"
+                                                          ],
+                                          "@/components/*":  [
+                                                                  "src/components/*"
+                                                              ],
+                                          "@/config":  [
+                                                           "src/config/index"
+                                                       ],
+                                          "@/config/*":  [
+                                                            "src/config/*"
+                                                        ],
+                                          "@/constants/*":  [
+                                                               "src/constants/*"
+                                                           ],
+                                          "@/contexts/*":  [
+                                                              "src/contexts/*"
+                                                          ],
+                                          "@/hooks":  [
+                                                         "src/hooks/index"
+                                                     ],
+                                          "@/hooks/*":  [
+                                                            "src/hooks/*"
+                                                        ],
                                           "@/services/*":  [
-                                                               "src/services/*",
-                                                               "services/*"
+                                                               "src/services/*"
                                                            ],
                                           "@/billing":  [
                                                             "src/billing/index"
@@ -61,8 +81,7 @@
                                                               "src/billing/*"
                                                           ],
                                           "@/utils/*":  [
-                                                            "src/utils/*",
-                                                            "utils/*"
+                                                            "src/utils/*"
                                                         ],
                                           "@/providers/*":  [
                                                                 "src/providers/*"
@@ -74,11 +93,14 @@
                                                          "src/i18n"
                                                      ],
                                           "@/schemas/*":  [
-                                                              "schemas/*"
+                                                              "src/schemas/*"
                                                           ],
-                                          "@/constants/*":  [
-                                                                "constants/*"
-                                                            ],
+                                          "@/types":  [
+                                                           "src/types/index"
+                                                       ],
+                                          "@/types/*":  [
+                                                             "src/types/*"
+                                                         ],
                                           "src/*":  [
                                                         "src/*"
                                                     ],
@@ -97,10 +119,9 @@
     "include":  [
                     "tests",
                     "src",
-                    "services",
+                    "src/hooks",
+                    "src/services",
                     "app",
-                    "constants",
-                    "types",
                     "scripts",
                     "jest.config.js"
                 ]

@@ -16,11 +16,11 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import CartService from '@/features/cart/services/cart';
 import { useNotificationActions } from '@/components/NotificationContext';
 import EmptyState from '@/shared/ui/EmptyState';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { useProductDetail } from '@/features/products/hooks/useProductDetail';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useAuthModal } from '@/features/auth/AuthModalContext';
-import { openDM } from '@/services/openDM';
+import { openDM } from '@/hooks/openDM';
 import { isDriverChatEnabled } from '@/config/featureFlags';
 import { AlertTriangle, Heart, MessageCircle, Minus, Plus, ShoppingCart } from 'lucide-react-native';
 

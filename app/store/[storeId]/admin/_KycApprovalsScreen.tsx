@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, FileText, ShieldCheck, Smartphone, Video, Circle as XCircle } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import SettingsAgent from '@/agents/settings-agent';
 import usersAgent from '@/agents/users-agent';
 import type { User, KycArtifact } from '@/types';

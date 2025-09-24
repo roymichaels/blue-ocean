@@ -11,7 +11,7 @@ import { chainAdapter } from '@/services/chain';
 import { Order } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { AlertTriangle, RefreshCw, ShoppingCart } from 'lucide-react-native';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { ordersWarmCache } from '@/services/nearOrders';
 import { loadKycReceipt } from '@/services/kycReceipts';
 import { getPublicKeyHex } from '@/services/localIdentity';

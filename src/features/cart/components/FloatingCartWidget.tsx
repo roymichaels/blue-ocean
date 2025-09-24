@@ -14,7 +14,7 @@ import { ShoppingCart, X, Plus, Minus } from 'lucide-react-native';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/ui/ThemeProvider';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import useCart from '../hooks/useCart';
 import { spacing, radius, zIndex, typography } from '@/shared/ui/tokens';
 import debounce from '@/utils/debounce';

@@ -4,8 +4,8 @@ import { View, StyleSheet, Pressable, Platform, useWindowDimensions } from 'reac
 import { Text, Chip } from '@/ui';
 import SmartImage from './SmartImage';
 import { Search, Bell, Globe } from 'lucide-react-native';
-import { useAppRouter } from '@/services';
-import { getShopTenantId } from '@/services/config';
+import { useAppRouter } from '@/hooks';
+import { getShopTenantId } from '@/hooks/config';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';

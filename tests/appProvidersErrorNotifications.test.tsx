@@ -147,7 +147,7 @@ jest.mock('@/services/eventBus', () => ({
   track: jest.fn(),
 }));
 
-jest.mock('@/services/useAppRouter', () => ({
+jest.mock('@/hooks/useAppRouter', () => ({
   useAppRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
 }));
 

@@ -10,7 +10,7 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
 import { Spinner } from '@/ui/primitives';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import type { Order, Product, User } from '@/types';
 import { ordersWarmCache } from '@/services/nearOrders';
 import { productsWarmCache } from '@/features/products/services/nearProducts';

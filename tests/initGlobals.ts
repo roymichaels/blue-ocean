@@ -102,7 +102,7 @@ class MinioClientStub {
 }
 
 (globalThis as any).require = (id: string) => {
-  if (id === '@/config' || id === '../config') {
+  if (id === '@/config' || id === '../config' || id === '../src/config') {
     return configStub;
   }
   if (id === 'minio') {

@@ -2,7 +2,7 @@
 import { debugLog, errorLog } from '@/utils/logger';
 import { uuid } from '../utils/uuid';
 import { Notification } from '../types';
-import notificationsAgent from '../agents/notifications-agent';
+import notificationsAgent from '@/agents/notifications-agent';
 import type { NotificationEvent } from '../types/waku';
 import { t } from '@/i18n';
 import eventBus from '@/services/eventBus';

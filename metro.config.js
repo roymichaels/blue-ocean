@@ -19,8 +19,17 @@ config.resolver.extraNodeModules = {
 config.resolver.alias = {
   ...(config.resolver.alias || {}),
   '@blue-ocean/sdk-near': path.resolve(__dirname, 'packages/sdk-near/src'),
+  '@/agents': path.resolve(__dirname, 'src/agents'),
   '@/auth': path.resolve(__dirname, 'src/auth'),
-  '@/schemas': path.resolve(__dirname, 'schemas'),
+  '@/components': path.resolve(__dirname, 'src/components'),
+  '@/config': path.resolve(__dirname, 'src/config'),
+  '@/constants': path.resolve(__dirname, 'src/constants'),
+  '@/contexts': path.resolve(__dirname, 'src/contexts'),
+  '@/hooks': path.resolve(__dirname, 'src/hooks'),
+  '@/schemas': path.resolve(__dirname, 'src/schemas'),
+  '@/services': path.resolve(__dirname, 'src/services'),
+  '@/types': path.resolve(__dirname, 'src/types'),
+  '@/utils': path.resolve(__dirname, 'src/utils'),
 };
 
 if (!config.resolver.sourceExts.includes('mjs'))

@@ -1,7 +1,7 @@
 import type { WalletSelector } from '@near-wallet-selector/core';
 import type { chainAdapter as ChainAdapter } from '@/services/chain';
 import type { getSelector } from '@/services/walletSelector';
-import type { nearConfig } from '@/services/config';
+import type { nearConfig } from '@/hooks/config';
 import { canonicalJson } from '@/utils/serialization';
 
 export interface MintStoreResult {

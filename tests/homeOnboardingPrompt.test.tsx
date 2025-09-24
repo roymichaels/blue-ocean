@@ -21,7 +21,7 @@ jest.mock('@/ui/ThemeProvider', () => ({
 }));
 
 const mockAppRouter = { push: jest.fn() };
-jest.mock('@/services/useAppRouter', () => ({ useAppRouter: () => mockAppRouter }));
+jest.mock('@/hooks/useAppRouter', () => ({ useAppRouter: () => mockAppRouter }));
 
 const mockWallet = { address: '0xabc', connect: jest.fn() };
 jest.mock('@/contexts/WalletProvider', () => ({
@@ -29,7 +29,7 @@ jest.mock('@/contexts/WalletProvider', () => ({
 }));
 
 const mockUseStores = jest.fn();
-jest.mock('@/services/useStores', () => ({
+jest.mock('@/hooks/useStores', () => ({
   useStores: () => mockUseStores(),
 }));
 

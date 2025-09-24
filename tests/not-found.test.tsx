@@ -9,15 +9,15 @@ jest.mock('expo-router', () => {
     Stack: { Screen: () => null },
     useRouter: () => router,
     Redirect: ({ href }: any) => {
-      const { replace } = require('@/services/navigation');
+      const { replace } = require('@/hooks/navigation');
       replace(href);
       return null;
     },
   };
 });
 
-jest.mock('@/services/navigation', () => {
-  const actual = jest.requireActual('@/services/navigation');
+jest.mock('@/hooks/navigation', () => {
+  const actual = jest.requireActual('@/hooks/navigation');
   return {
     ...actual,
     push: jest.fn(actual.push),
@@ -26,7 +26,7 @@ jest.mock('@/services/navigation', () => {
 });
 
 describe('NotFoundScreen', () => {
-  const navigation = require('@/services/navigation');
+  const navigation = require('@/hooks/navigation');
   const { TouchableOpacity } = require('react-native');
   const originalDev = (globalThis as any).__DEV__;
   const TAB_GROUP = '(' + 'tabs' + ')';

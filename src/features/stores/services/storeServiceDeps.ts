@@ -1,7 +1,7 @@
 import { assertNearChain, chainAdapter } from '@/services/chain';
 import { listStores as contractListStores } from '@/services/nearStoreContract';
 import { getSelector } from '@/services/walletSelector';
-import { nearConfig } from '@/services/config';
+import { nearConfig } from '@/hooks/config';
 import {
   createStoreChainClient,
   type StoreChainClient,

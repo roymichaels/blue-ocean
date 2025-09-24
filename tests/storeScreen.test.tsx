@@ -53,15 +53,15 @@ jest.mock('@/services', () => ({
   useStoreReviews: (...args: any[]) => mockUseStoreReviews(...args),
 }));
 
-jest.mock('@/services/useAppRouter', () => ({
+jest.mock('@/hooks/useAppRouter', () => ({
   useAppRouter: () => mockUseAppRouter,
 }));
 
-jest.mock('@/services/openDM', () => ({
+jest.mock('@/hooks/openDM', () => ({
   openDM: (...args: any[]) => mockOpenDM(...args),
 }));
 
-jest.mock('@/services/openProduct', () => ({
+jest.mock('@/hooks/openProduct', () => ({
   openProduct: (...args: any[]) => mockOpenProduct(...args),
 }));
 

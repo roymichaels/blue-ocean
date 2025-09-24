@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { usePathname as usePathnameRaw, useLocalSearchParams as useLocalSearchParamsRaw } from 'expo-router';
-import { stripTabsPrefix } from '@/services/navigation';
-import { useAppRouter } from '@/services';
+import { stripTabsPrefix } from '@/hooks/navigation';
+import { useAppRouter } from '@/hooks';
 import { useWallet } from '@/contexts/WalletProvider';
 import { useAuth } from '@/features/auth/AuthContext';
 

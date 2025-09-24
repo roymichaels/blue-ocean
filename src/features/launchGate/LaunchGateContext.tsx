@@ -10,7 +10,7 @@ import React, {
 import { AppState, AppStateStatus } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useWallet } from '@/contexts/WalletProvider';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { useNotificationActions } from '@/components/NotificationContext';
 import { sessionEvents } from '@/services/session';
 import { queryClient } from '@/providers/queryClient';

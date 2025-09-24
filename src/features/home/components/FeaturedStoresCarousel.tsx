@@ -1,8 +1,8 @@
 import React, { useMemo, useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ShoppingBag } from 'lucide-react-native';
-import { useStores } from '@/services/useStores';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useStores } from '@/hooks/useStores';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
 import { Container, ScrollArea, Stack } from '@/ui/layout';
 import { Spinner } from '@/ui/primitives';

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Product, PricingTier } from '@/types';
-import { usePricingTiers } from '@/services/usePricingTiers';
+import { usePricingTiers } from '@/hooks/usePricingTiers';
 
 export function useProductPricing(product: Product | null, quantity: number) {
   const { data: pricingTiers = [] } = usePricingTiers();

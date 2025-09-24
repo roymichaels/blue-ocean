@@ -4,10 +4,10 @@ import { Text, Portal, Overlay } from '@/ui';
 import { useTheme } from '@/ui/ThemeProvider';
 import { useLanguage } from '@/ui/ThemeProvider';
 import { useAppInfo } from '../contexts/AppInfoContext';
-import { useAppRouter } from '@/services';
-import { useProducts } from '@/services/useProducts';
+import { useAppRouter } from '@/hooks';
+import { useProducts } from '@/hooks/useProducts';
 import { spacing, radius, typography } from '@/ui/tokens';
-import { useOrders } from '@/services/useOrders';
+import { useOrders } from '@/hooks/useOrders';
 
 interface CommandPaletteProps {
   visible: boolean;

@@ -12,15 +12,15 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import { ArrowLeft, Plus, Truck, ChevronDown } from 'lucide-react-native';
-import FullScreenMediaViewer from '../../../../components/FullScreenMediaViewer';
+import FullScreenMediaViewer from '@/components/FullScreenMediaViewer';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import { DeliveryJob, User } from '../../../../types';
 import commonStyles from '@/constants/styles';
-import SmartImage from '../../../../components/SmartImage';
+import SmartImage from '@/components/SmartImage';
 
 export default function AdminDeliveriesScreen() {
   const { isStoreOwner } = useAuth();

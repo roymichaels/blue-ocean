@@ -65,7 +65,7 @@ jest.mock('@/utils/observability', () => require('@/tests/__mocks__/utils/observ
 // global logger used by services/waku
 ;(global as any).logger = { info: jest.fn(), error: jest.fn() };
 
-const notificationsAgent = require('../agents/notifications-agent').default;
+const notificationsAgent = require('@/agents/notifications-agent').default;
 
 describe('notifications pipeline', () => {
   beforeEach(() => {

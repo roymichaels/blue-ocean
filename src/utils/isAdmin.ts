@@ -1,5 +1,5 @@
 import { chainAdapter } from '@/services/chain';
-import SettingsAgent from '../agents/settings-agent';
+import SettingsAgent from '@/agents/settings-agent';
 import type { AdminScope } from '@/types';
 
 export default async function isAdmin(scope?: AdminScope): Promise<boolean> {

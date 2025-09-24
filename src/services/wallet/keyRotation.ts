@@ -1,5 +1,5 @@
 import { connect, keyStores, KeyPair } from 'near-api-js';
-import { getNetworkId } from '@/services/config';
+import { getNetworkId } from '@/hooks/config';
 
 /**
  * Rotate the access key for an account. Generates a new key pair,

@@ -36,8 +36,8 @@ import InfoModal from '@/components/InfoModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import PricingTierFormModal from "./PricingTierFormModal";
 import SubcategoryPicker from './SubcategoryPicker';
-import { useCategories } from '@/services';
-import { useAppRouter } from '@/services';
+import { useCategories } from '@/hooks';
+import { useAppRouter } from '@/hooks';
 import { Spinner } from '@/ui/primitives';
 
 interface ProductFormModalProps {

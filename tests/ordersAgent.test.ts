@@ -17,16 +17,16 @@ jest.mock('@/services/nearOrders', () => ({
   listOrdersBySeller: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('../agents/stores-agent', () => ({ updateReputationByOwner: jest.fn() }));
+jest.mock('@/agents/stores-agent', () => ({ updateReputationByOwner: jest.fn() }));
 
 const deliveryAgentMock = { handleOrderEvent: jest.fn(), handleDeliveryEvent: jest.fn() };
-jest.mock('../agents/delivery-agent', () => ({
+jest.mock('@/agents/delivery-agent', () => ({
   __esModule: true,
   default: deliveryAgentMock,
 }));
 
 const getAdminsWithScopeMock = jest.fn().mockResolvedValue(['admin']);
-jest.mock('../agents/settings-agent', () => ({
+jest.mock('@/agents/settings-agent', () => ({
   __esModule: true,
   default: {
     getInstance: () => ({ getAdminsWithScope: getAdminsWithScopeMock }),
@@ -69,9 +69,9 @@ const sellerPubEd = Buffer.from(sellerKey.publicKey).toString('hex');
   publicKey: sellerKey.publicKey,
 });
 
-const notificationsAgent = require('../agents/notifications-agent').default;
+const notificationsAgent = require('@/agents/notifications-agent').default;
 jest.spyOn(notificationsAgent, 'broadcast').mockResolvedValue(undefined);
-const ordersAgent = require('../agents/orders-agent').default;
+const ordersAgent = require('@/agents/orders-agent').default;
 const nearAuth = require('@/features/auth/services/nearAuth');
 const eventBus = require('@/services/eventBus');
 

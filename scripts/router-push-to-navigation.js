@@ -6,8 +6,8 @@ async function run() {
     'app/**/*.{ts,tsx,js,jsx}',
     'apps/**/*.{ts,tsx,js,jsx}',
     'src/**/*.{ts,tsx,js,jsx}',
-    'components/**/*.{ts,tsx,js,jsx}',
-    'contexts/**/*.{ts,tsx,js,jsx}',
+    'src/components/**/*.{ts,tsx,js,jsx}',
+    'src/contexts/**/*.{ts,tsx,js,jsx}',
   ], {
     ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
   });
@@ -19,13 +19,13 @@ async function run() {
 
     let updated = text.replace(pushRegex, (_m, quote, path) => `navigation.push(${quote}${path}${quote})`);
 
-    if (!updated.match(/import\s+\*\s+as\s+navigation\s+from\s+['"]@\/services\/navigation['"]/)) {
+    if (!updated.match(/import\s+\*\s+as\s+navigation\s+from\s+['"]@\/hooks\/navigation['"]/)) {
       const lines = updated.split('\n');
       let lastImport = -1;
       for (let i = 0; i < lines.length; i++) {
         if (/^import\s/.test(lines[i])) lastImport = i;
       }
-      lines.splice(lastImport + 1, 0, "import * as navigation from '@/services/navigation';");
+      lines.splice(lastImport + 1, 0, "import * as navigation from '@/hooks/navigation';");
       updated = lines.join('\n');
     }
 

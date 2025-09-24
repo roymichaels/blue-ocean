@@ -9,7 +9,7 @@ import HomeServices from '@/features/home/components/HomeServices';
 import FeaturedStoresCarousel from '@/features/home/components/FeaturedStoresCarousel';
 import { Product } from '@/types';
 import { styles } from './HomeProducts.styles';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 
 type Props = {
   products: Product[];

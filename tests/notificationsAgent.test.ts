@@ -27,7 +27,7 @@ jest.mock('@/utils/transport', () => ({
   })),
 }));
 
-const agentModule = require('../agents/notifications-agent');
+const agentModule = require('@/agents/notifications-agent');
 const notificationsAgent = agentModule.default;
 const { E_BACKLOG } = agentModule;
 

@@ -1,5 +1,5 @@
 import { Redirect, Stack } from 'expo-router';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import { useLanguage } from '@/ui/ThemeProvider';
 

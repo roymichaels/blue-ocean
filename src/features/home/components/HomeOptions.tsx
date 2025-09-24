@@ -16,13 +16,13 @@ import { Stack } from '@/ui/layout';
 import { radius, shadows, spacing } from '@/ui/tokens';
 import { Store, Truck, Briefcase, Code2 } from 'lucide-react-native';
 import { useLanguage, useTheme } from '@/ui/ThemeProvider';
-import { useAppRouter } from '@/services/useAppRouter';
+import { useAppRouter } from '@/hooks/useAppRouter';
 import { routes } from '@/utils/routes';
 import { useWallet } from '@/contexts/WalletProvider';
 import guard from '@/utils/guard';
-import { getShopTenantId, getDocsUrl } from '@/services/config';
+import { getShopTenantId, getDocsUrl } from '@/hooks/config';
 import { prefetchStoreBundle } from '@/features/stores/services/prefetch';
-import { useStores } from '@/services/useStores';
+import { useStores } from '@/hooks/useStores';
 import InfoModal from '@/components/InfoModal';
 
 function HomeOptions() {

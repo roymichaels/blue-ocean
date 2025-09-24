@@ -21,7 +21,7 @@ jest.mock('expo-router', () => ({
   useSegments: () => [],
 }));
 
-jest.mock('@/services/navigation', () => ({ stripTabsPrefix: (s: string) => s }));
+jest.mock('@/hooks/navigation', () => ({ stripTabsPrefix: (s: string) => s }));
 jest.mock('@/ui/ThemeProvider', () => ({ useLanguage: () => ({ t: (s: string) => s }) }));
 jest.mock('@/utils/logger', () => ({ debugLog: jest.fn() }));
 jest.mock('@/ui/primitives', () => ({ Spinner: () => 'spinner' }));

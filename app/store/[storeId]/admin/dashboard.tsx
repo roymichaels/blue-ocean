@@ -1,10 +1,10 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { Spinner } from '@/ui/primitives';
 import ErrorBoundary from '@/shared/ErrorBoundary';
-import RequireWallet from '../../../../components/RequireWallet';
+import RequireWallet from '@/components/RequireWallet';
 import { View, Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import { useAuth } from '@/features/auth/AuthContext';
 import OrderRevenueMetrics from '@/features/stores/components/OrderRevenueMetrics';
 import FeeDashboard from '@/features/billing/components/FeeDashboard';

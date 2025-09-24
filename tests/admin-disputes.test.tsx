@@ -1,8 +1,8 @@
 import OrderService from '@/services/orders';
-import ordersAgent from '../agents/orders-agent';
+import ordersAgent from '@/agents/orders-agent';
 import { adminResolve } from '@/services/nearContract';
 
-jest.mock('../agents/orders-agent', () => ({
+jest.mock('@/agents/orders-agent', () => ({
   get: jest.fn(),
   update: jest.fn(),
   subscribe: jest.fn(),

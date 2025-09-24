@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Lucide from 'lucide-react-native';
 import { usePathname } from 'expo-router';
 import { useTheme, useLanguage } from '@/ui/ThemeProvider';
-import { useAppRouter } from '@/services';
+import { useAppRouter } from '@/hooks';
 import { spacing, typography, radius } from '@/shared/ui/tokens';
 
 export interface NavItem {

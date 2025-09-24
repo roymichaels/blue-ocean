@@ -39,7 +39,7 @@ jest.mock('@/contexts/CurrencyContext', () => ({
   useCurrency: () => ({ currencySymbol: '₪' }),
 }));
 
-jest.mock('@/services/useAppRouter', () => ({
+jest.mock('@/hooks/useAppRouter', () => ({
   useAppRouter: () => ({
     push: mockPush,
     replace: jest.fn(),
@@ -206,11 +206,11 @@ jest.mock('@/ui/primitives/Divider', () => ({
   default: () => null,
 }));
 
-jest.mock('@/services/useProducts', () => ({
+jest.mock('@/hooks/useProducts', () => ({
   useProducts: () => ({ data: sampleProducts }),
 }));
 
-jest.mock('@/services/useStores', () => ({
+jest.mock('@/hooks/useStores', () => ({
   useStores: () => ({ data: sampleStores }),
 }));
 
