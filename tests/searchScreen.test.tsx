@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import SearchScreen from '@app/search';
+import SearchScreen from '@/app/search';
 import type { Order, Product, Store, ChatRoom, ChatMessage } from '@/types';
 
 jest.mock('expo-secure-store');

@@ -93,9 +93,9 @@ module.exports = [
         'error',
         {
           patterns: [
-            '@features/*/components/*',
-            '@features/*/hooks/*',
-            '@features/*/services/*',
+            '@/features/*/components/*',
+            '@/features/*/hooks/*',
+            '@/features/*/services/*',
           ],
         },
       ],

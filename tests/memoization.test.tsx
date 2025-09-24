@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import ProductGrid from '@features/home/components/ProductGrid';
+import ProductGrid from '@/features/home/components/ProductGrid';
 import { Product } from '@/types';
 
 jest.mock('@/ui/ThemeProvider', () => ({
@@ -16,7 +16,7 @@ jest.mock('@/ui/ThemeProvider', () => ({
 }));
 
 let productCardRender = 0;
-jest.mock('@features/products', () => ({
+jest.mock('@/features/products', () => ({
   ProductCard: (props: any) => {
     productCardRender++;
     return React.createElement('view', props);

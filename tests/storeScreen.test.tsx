@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import StoreScreen from '@app/store/[storeId]';
+import StoreScreen from '@/app/store/[storeId]';
 
 const mockUseStoreProfile = jest.fn();
 const mockUseProducts = jest.fn();

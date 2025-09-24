@@ -134,7 +134,7 @@ jest.mock('@/features/home/components/ProductGrid', () => ({
   default: (props: any) => mockProductGrid(props),
 }));
 
-import HomeScreen from '@app/index';
+import HomeScreen from '@/app/index';
 import { localIndex } from '@/services/localIndex';
 
 const baseProducts: Product[] = [

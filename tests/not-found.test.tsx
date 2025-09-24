@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import NotFoundScreen from '@app/+not-found';
+import NotFoundScreen from '@/app/+not-found';
 
 jest.mock('expo-router', () => {
   const router = { replace: jest.fn(), push: jest.fn(), back: jest.fn() };

@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import AdminDeliveriesScreen from '@app/store/[storeId]/admin/_DeliveriesScreen';
+import AdminDeliveriesScreen from '@/app/store/[storeId]/admin/_DeliveriesScreen';
 
 jest.mock('@/utils/logger', () => ({
   errorLog: jest.fn(),

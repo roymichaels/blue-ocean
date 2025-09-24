@@ -17,7 +17,7 @@ jest.mock('react-native-safe-area-context', () => {
     SafeAreaView: ({ children }: any) => React.createElement(React.Fragment, null, children),
   };
 });
-jest.mock('@features/auth/AuthContext', () => ({
+jest.mock('@/features/auth/AuthContext', () => ({
   useAuth: () => ({ isStoreOwner: false }),
 }));
 jest.mock('@/contexts/WalletProvider', () => ({
@@ -34,7 +34,7 @@ jest.mock('@/contexts/AppInfoContext', () => ({
   useAppInfo: () => ({ appName: 'Test', logoCid: null }),
 }));
 let categoryChipsThrows = true;
-jest.mock('@features/home/components/CategoryChips', () => {
+jest.mock('@/features/home/components/CategoryChips', () => {
   const React = require('react');
   return () => {
     if (categoryChipsThrows) {
@@ -43,12 +43,12 @@ jest.mock('@features/home/components/CategoryChips', () => {
     return null;
   };
 });
-jest.mock('@features/home/components/ProductGrid', () => () => null);
-jest.mock('@ui/primitives', () => ({ Spinner: () => null }));
-jest.mock('@shared/ui/EmptyState', () => () => null);
+jest.mock('@/features/home/components/ProductGrid', () => () => null);
+jest.mock('@/ui/primitives', () => ({ Spinner: () => null }));
+jest.mock('@/shared/ui/EmptyState', () => () => null);
 jest.mock('@/components/BannerFormModal', () => () => null);
-jest.mock('@features/cart', () => ({ CartModal: () => null }));
-jest.mock('@features/products', () => ({ ProductFormModal: () => null }));
+jest.mock('@/features/cart', () => ({ CartModal: () => null }));
+jest.mock('@/features/products', () => ({ ProductFormModal: () => null }));
 jest.mock('@/components/SmartImage', () => () => null);
 jest.mock('@/components/InfoModal', () => (props: any) => {
   InfoModalMock(props);
@@ -56,11 +56,11 @@ jest.mock('@/components/InfoModal', () => (props: any) => {
 });
 jest.mock('@/services/database', () => ({}));
 jest.mock('@/services/chain', () => ({ __esModule: true, default: 'near' }));
-jest.mock('@features/products/services/nearCategories', () => ({
+jest.mock('@/features/products/services/nearCategories', () => ({
   listCategories: jest.fn().mockResolvedValue([]),
 }));
 let homeErrorList: (Error | null)[] = [null];
-jest.mock('@features/home/hooks/useHome', () => {
+jest.mock('@/features/home/hooks/useHome', () => {
   const React = require('react');
   return {
     useHome: () => {
@@ -81,7 +81,7 @@ jest.mock('@features/home/hooks/useHome', () => {
     },
   };
 });
-jest.mock('@features/home/hooks/useHomeBanners', () => ({
+jest.mock('@/features/home/hooks/useHomeBanners', () => ({
   useHomeBanners: () => ({
     heroBanners: [],
     refreshing: false,
@@ -91,7 +91,7 @@ jest.mock('@features/home/hooks/useHomeBanners', () => ({
     error: null,
   }),
 }));
-jest.mock('@features/home/hooks/useHomeFilters', () => ({
+jest.mock('@/features/home/hooks/useHomeFilters', () => ({
   useHomeFilters: () => ({
     filteredProducts: [],
     searchQuery: '',
@@ -110,7 +110,7 @@ jest.mock('@features/home/hooks/useHomeFilters', () => ({
   }),
 }));
 
-const HomeScreen = require('@app/index').default;
+const HomeScreen = require('@/app/index').default;
 
 describe('HomeScreen error handling', () => {
   it('shows fallback and keeps app shell when child throws', () => {
