@@ -1,5 +1,5 @@
 import { errorLog } from '@/utils/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Modal,
   View,
@@ -7,15 +7,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  TextInput,
   SafeAreaView,
 } from 'react-native';
 import { X, Save, Trash2 } from 'lucide-react-native';
-import { PricingTier } from '@/types';
+import { PricingTier, PricingTierRule } from '@/types';
 import { useTheme } from '@/ui/ThemeProvider';
 import DatabaseService from '@/services/database';
 import InfoModal from '@/components/InfoModal';
 import { Spinner } from '@/ui/primitives';
+import LabeledInput from '@/components/form/LabeledInput';
 
 interface PricingTierFormModalProps {
   visible: boolean;
@@ -24,6 +24,15 @@ interface PricingTierFormModalProps {
   onSaved?: (tier: PricingTier, isNew: boolean) => void;
   onDeleted?: (id: string) => void;
 }
+
+const createEmptyRule = (): PricingTierRule => ({
+  id: '',
+  tierId: '',
+  minQty: 1,
+  maxQty: 1,
+  pricePerBaseUnit: undefined,
+  discountPct: undefined,
+});
 
 export default function PricingTierFormModal({
   visible,
@@ -38,9 +47,7 @@ export default function PricingTierFormModal({
     id: '',
     name: '',
     description: '',
-    rules: [
-      { minQty: 1, maxQty: 1, pricePerBaseUnit: undefined, discountPct: undefined } as any,
-    ],
+    rules: [createEmptyRule()],
   });
   const [loading, setLoading] = useState(false);
   const [infoModal, setInfoModal] = useState({
@@ -49,6 +56,32 @@ export default function PricingTierFormModal({
     message: '',
     type: 'info' as 'success' | 'error' | 'info' | 'warning',
   });
+  const updateFormData = useCallback(
+    <K extends keyof PricingTier>(key: K, value: Partial<PricingTier>[K]) => {
+      setFormData((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
+  const updateRuleField = useCallback(
+    <K extends keyof PricingTierRule>(index: number, key: K, value: PricingTierRule[K]) => {
+      setFormData((prev) => {
+        const rules = [...(prev.rules || [])];
+        if (!rules[index]) {
+          return prev;
+        }
+        rules[index] = { ...rules[index], [key]: value };
+        return { ...prev, rules };
+      });
+    },
+    [],
+  );
+  const removeRule = useCallback((index: number) => {
+    setFormData((prev) => {
+      const rules = [...(prev.rules || [])];
+      rules.splice(index, 1);
+      return { ...prev, rules };
+    });
+  }, []);
 
   useEffect(() => {
     if (visible) {
@@ -60,9 +93,7 @@ export default function PricingTierFormModal({
           id: '',
           name: '',
           description: '',
-          rules: [
-            { minQty: 1, maxQty: 1, pricePerBaseUnit: undefined, discountPct: undefined } as any,
-          ],
+          rules: [createEmptyRule()],
         });
       }
     }
@@ -161,160 +192,99 @@ export default function PricingTierFormModal({
           </View>
 
           <ScrollView style={styles.modalContent}>
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>מזהה מדרג *</Text>
-              <TextInput
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={formData.id}
-                onChangeText={text => setFormData({ ...formData, id: text })}
-                placeholder="הכנס מזהה מדרג (באנגלית, לדוגמה: bulk_discount)"
-                textAlign="right"
-                editable={!editingTier}
-              />
-            </View>
+            <LabeledInput
+              label="מזהה מדרג *"
+              value={formData.id ?? ''}
+              onChangeText={(text) => updateFormData('id', text)}
+              placeholder="הכנס מזהה מדרג (באנגלית, לדוגמה: bulk_discount)"
+              editable={!editingTier}
+              labelStyle={styles.fieldLabel}
+            />
 
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>שם המדרג *</Text>
-              <TextInput
-                style={[styles.formInput, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={formData.name}
-                onChangeText={text => setFormData({ ...formData, name: text })}
-                placeholder="הכנס שם מדרג (לדוגמה: הנחת כמות)"
-                textAlign="right"
-              />
-            </View>
+            <LabeledInput
+              label="שם המדרג *"
+              value={formData.name ?? ''}
+              onChangeText={(text) => updateFormData('name', text)}
+              placeholder="הכנס שם מדרג (לדוגמה: הנחת כמות)"
+              labelStyle={styles.fieldLabel}
+            />
 
             {formData.rules?.map((rule, idx) => (
               <View key={idx} style={styles.formRow}>
-                <View style={styles.formGroupHalf}>
-                  <Text style={[styles.formLabel, { color: colors.text.primary }]}>מינימום</Text>
-                  <TextInput
-                    style={[styles.formInput, {
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.surface.primary,
-                      color: colors.text.primary,
-                    }]}
-                    value={rule.minQty.toString()}
-                    onChangeText={text => {
-                      const updated = [...(formData.rules || [])];
-                      updated[idx].minQty = parseInt(text) || 1;
-                      setFormData({ ...formData, rules: updated });
-                    }}
-                    keyboardType="numeric"
-                    textAlign="right"
-                  />
-                </View>
-                <View style={styles.formGroupHalf}>
-                  <Text style={[styles.formLabel, { color: colors.text.primary }]}>מקסימום</Text>
-                  <TextInput
-                    style={[styles.formInput, {
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.surface.primary,
-                      color: colors.text.primary,
-                    }]}
-                    value={rule.maxQty.toString()}
-                    onChangeText={text => {
-                      const updated = [...(formData.rules || [])];
-                      updated[idx].maxQty = parseInt(text) || 0;
-                      setFormData({ ...formData, rules: updated });
-                    }}
-                    keyboardType="numeric"
-                    textAlign="right"
-                  />
-                </View>
-                <View style={styles.formGroupHalf}>
-                  <Text style={[styles.formLabel, { color: colors.text.primary }]}>מחיר ליחידה</Text>
-                  <TextInput
-                    style={[styles.formInput, {
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.surface.primary,
-                      color: colors.text.primary,
-                    }]}
-                    value={rule.pricePerBaseUnit?.toString() || ''}
-                    onChangeText={text => {
-                      const updated = [...(formData.rules || [])];
-                      updated[idx].pricePerBaseUnit = text ? parseFloat(text) : undefined;
-                      setFormData({ ...formData, rules: updated });
-                    }}
-                    keyboardType="numeric"
-                    textAlign="right"
-                  />
-                </View>
-                <View style={styles.formGroupHalf}>
-                  <Text style={[styles.formLabel, { color: colors.text.primary }]}>הנחה %</Text>
-                  <TextInput
-                    style={[styles.formInput, {
-                      borderColor: colors.border.primary,
-                      backgroundColor: colors.surface.primary,
-                      color: colors.text.primary,
-                    }]}
-                    value={rule.discountPct?.toString() || ''}
-                    onChangeText={text => {
-                      const updated = [...(formData.rules || [])];
-                      updated[idx].discountPct = text ? parseFloat(text) : undefined;
-                      setFormData({ ...formData, rules: updated });
-                    }}
-                    keyboardType="numeric"
-                    textAlign="right"
-                  />
-                </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    const updated = [...(formData.rules || [])];
-                    updated.splice(idx, 1);
-                    setFormData({ ...formData, rules: updated });
-                  }}
-                >
+                <LabeledInput
+                  label="מינימום"
+                  value={rule.minQty.toString()}
+                  onChangeText={(text) =>
+                    updateRuleField(idx, 'minQty', Number.parseInt(text, 10) || 1)
+                  }
+                  keyboardType="numeric"
+                  containerStyle={styles.formGroupHalf}
+                  labelStyle={styles.fieldLabel}
+                />
+                <LabeledInput
+                  label="מקסימום"
+                  value={rule.maxQty.toString()}
+                  onChangeText={(text) =>
+                    updateRuleField(idx, 'maxQty', Number.parseInt(text, 10) || 0)
+                  }
+                  keyboardType="numeric"
+                  containerStyle={styles.formGroupHalf}
+                  labelStyle={styles.fieldLabel}
+                />
+                <LabeledInput
+                  label="מחיר ליחידה"
+                  value={rule.pricePerBaseUnit?.toString() || ''}
+                  onChangeText={(text) =>
+                    updateRuleField(
+                      idx,
+                      'pricePerBaseUnit',
+                      text ? Number.parseFloat(text) : undefined,
+                    )
+                  }
+                  keyboardType="numeric"
+                  containerStyle={styles.formGroupHalf}
+                  labelStyle={styles.fieldLabel}
+                />
+                <LabeledInput
+                  label="הנחה %"
+                  value={rule.discountPct?.toString() || ''}
+                  onChangeText={(text) =>
+                    updateRuleField(
+                      idx,
+                      'discountPct',
+                      text ? Number.parseFloat(text) : undefined,
+                    )
+                  }
+                  keyboardType="numeric"
+                  containerStyle={styles.formGroupHalf}
+                  labelStyle={styles.fieldLabel}
+                />
+                <TouchableOpacity onPress={() => removeRule(idx)}>
                   <Trash2 size={20} color={colors.status.error} />
                 </TouchableOpacity>
               </View>
             ))}
             <TouchableOpacity
               onPress={() =>
-                setFormData({
-                  ...formData,
-                  rules: [
-                    ...(formData.rules || []),
-                    {
-                      id: '',
-                      tierId: '',
-                      minQty: 1,
-                      maxQty: 1,
-                      pricePerBaseUnit: undefined,
-                      discountPct: undefined,
-                    },
-                  ],
-                })
+                setFormData((prev) => ({
+                  ...prev,
+                  rules: [...(prev.rules || []), createEmptyRule()],
+                }))
               }
               style={styles.addRuleButton}
             >
               <Text style={[styles.addRuleText, { color: colors.gold }]}>הוסף כלל</Text>
             </TouchableOpacity>
 
-            <View style={styles.formGroup}>
-              <Text style={[styles.formLabel, { color: colors.text.primary }]}>תיאור *</Text>
-              <TextInput
-                style={[styles.formInput, styles.textArea, {
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.surface.primary,
-                  color: colors.text.primary,
-                }]}
-                value={formData.description}
-                onChangeText={text => setFormData({ ...formData, description: text })}
-                placeholder="הכנס תיאור מדרג (לדוגמה: מחיר מיוחד של 8₪ ליחידה בקנייה של 5 פריטים ומעלה)"
-                multiline
-                numberOfLines={4}
-                textAlign="right"
-              />
-            </View>
+            <LabeledInput
+              label="תיאור *"
+              value={formData.description ?? ''}
+              onChangeText={(text) => updateFormData('description', text)}
+              placeholder="הכנס תיאור מדרג (לדוגמה: מחיר מיוחד של 8₪ ליחידה בקנייה של 5 פריטים ומעלה)"
+              multiline
+              numberOfLines={4}
+              labelStyle={styles.fieldLabel}
+            />
 
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -370,12 +340,9 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 18, fontWeight: 'bold' },
   modalContent: { padding: 16 },
-  formGroup: { marginBottom: 20 },
   formRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 12 },
   formGroupHalf: { flex: 1 },
-  formLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
-  formInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },
-  textArea: { height: 100, textAlignVertical: 'top' },
+  fieldLabel: { fontSize: 16, fontWeight: '600', textAlign: 'right' },
   addRuleButton: { marginBottom: 10 },
   addRuleText: { fontWeight: '600' },
   modalActions: { gap: 16, marginTop: 20, marginBottom: 40 },
