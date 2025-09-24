@@ -34,8 +34,7 @@ function FallbackScreen() {
 function MainApp() {
   useEffect(() => {
     void initSessionTokens();
-  }, []);
-  useEffect(() => {
+
     setDebugLogsEnabled(true);
     const cleanupReporter = initErrorReporter({
       tags: {
@@ -45,16 +44,17 @@ function MainApp() {
         nodeEnv: process.env.NODE_ENV,
       },
     });
-    return cleanupReporter;
-  }, []);
-  useEffect(() => {
+
     void ensureAdminAgentSubscription().catch((err) => {
       errorLog('Failed to initialize admin agent subscription', err);
     });
+
     return () => {
       stopAdminAgentSubscription();
+      cleanupReporter();
     };
   }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
