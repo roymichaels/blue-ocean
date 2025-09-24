@@ -101,6 +101,21 @@ type InfoModalState = {
   autoClose?: boolean;
 };
 
+function buildInfoModalState(
+  overrides: Partial<Omit<InfoModalState, 'visible'>> &
+    Pick<InfoModalState, 'title' | 'message'>,
+): InfoModalState {
+  return {
+    visible: true,
+    title: overrides.title,
+    message: overrides.message,
+    type: overrides.type ?? 'info',
+    buttonText: overrides.buttonText,
+    onConfirm: overrides.onConfirm,
+    autoClose: overrides.autoClose ?? true,
+  };
+}
+
 function isInsufficientFundsError(error: unknown): boolean {
   const patterns = [
     'insufficient funds',
@@ -245,6 +260,32 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const { requireUnlock } = useLaunchGate();
   const moonPayEnabled = useMemo(() => isMoonPayEnabled(), []);
+  const paymentOptions = useMemo(
+    () => [
+      {
+        key: 'cash',
+        emoji: '💰',
+        title: t('cart.cashOnDelivery'),
+        description: t('cart.cashOnDeliveryDesc'),
+        state: 'selected' as const,
+      },
+      {
+        key: 'card',
+        emoji: '💳',
+        title: t('cart.creditCard'),
+        description: t('cart.comingSoon'),
+        state: 'disabled' as const,
+      },
+      {
+        key: 'apps',
+        emoji: '📱',
+        title: t('cart.paymentApps'),
+        description: t('cart.comingSoon'),
+        state: 'disabled' as const,
+      },
+    ],
+    [t],
+  );
 
   const openTopUpInstructions = useCallback(() => {
     setInfoModal((prev) => ({ ...prev, visible: false }));
@@ -273,6 +314,15 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     type: 'info',
     autoClose: true,
   });
+  const showInfoModal = useCallback(
+    (
+      overrides: Partial<Omit<InfoModalState, 'visible'>> &
+        Pick<InfoModalState, 'title' | 'message'>,
+    ) => {
+      setInfoModal(buildInfoModalState(overrides));
+    },
+    [],
+  );
   const [confirmModal, setConfirmModal] = useState({
     visible: false,
     title: '',
@@ -368,8 +418,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         void eventBus.track('checkout.scopePrompt', { status: 'failed', message });
         errorLog('Checkout scope request failed', err);
         setCheckoutScopeGranted(false);
-        setInfoModal({
-          visible: true,
+        showInfoModal({
           title: t('common.error'),
           message: t(
             'cart.checkoutScopeRequired',
@@ -428,10 +477,90 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       0
     );
 
+  const shippingSummaryCard = (onEdit: () => void) => (
+    <View
+      style={[
+        styles.shippingAddressSummary,
+        { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+      ]}
+    >
+      <View style={styles.summaryHeader}>
+        <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
+          {t('cart.shippingAddress')}
+        </Text>
+        <TouchableOpacity onPress={onEdit}>
+          <Text style={[styles.editLink, { color: colors.gold }]}>{t('common.edit')}</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={[styles.addressText, { color: colors.text.primary }]}>
+        {shippingAddress.name}
+        {'\n'}
+        {shippingAddress.street}
+        {'\n'}
+        {shippingAddress.city} {shippingAddress.postalCode}
+        {'\n'}
+        {shippingAddress.phone}
+      </Text>
+      {!!shippingAddress.notes && (
+        <Text style={[styles.notesText, { color: colors.text.secondary }]}>
+          {t('cart.notes')}: {shippingAddress.notes}
+        </Text>
+      )}
+    </View>
+  );
+
+  const renderStoreSummaryCard = (
+    storeId: string,
+    items: CartItem[],
+    { header, onEdit }: { header: string; onEdit?: () => void },
+  ) => (
+    <View
+      key={storeId}
+      style={[
+        styles.orderSummary,
+        { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
+      ]}
+    >
+      <View style={styles.summaryHeader}>
+        <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>{header}</Text>
+        {onEdit ? (
+          <TouchableOpacity onPress={onEdit}>
+            <Text style={[styles.editLink, { color: colors.gold }]}>{t('common.edit')}</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      {items.map((item) => (
+        <View key={item.id} style={styles.summaryItem}>
+          <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>
+            {item.product.name} x{item.quantity}
+          </Text>
+          <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>
+            {currencySymbol}
+            {((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
+          </Text>
+        </View>
+      ))}
+      <View
+        style={[
+          styles.summaryRow,
+          styles.summaryTotal,
+          { borderTopColor: colors.border.primary },
+        ]}
+      >
+        <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}>
+          {t('cart.storeTotal')}
+        </Text>
+        <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
+          {currencySymbol}
+          {getGroupTotal(items).toFixed(2)}
+        </Text>
+      </View>
+    </View>
+  );
+
   const goToShipping = () => {
     if (!isLoggedIn) {
-      setInfoModal({
-        visible: true,
+      showInfoModal({
         title: t('cart.loginRequiredTitle'),
         message: t('cart.loginRequiredMessage'),
         type: 'info',
@@ -439,8 +568,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return;
     }
     if (!cartItems.length) {
-      setInfoModal({
-        visible: true,
+      showInfoModal({
         title: t('cart.emptyCartTitle'),
         message: t('cart.emptyCartMessage'),
         type: 'warning',
@@ -452,8 +580,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       (i) => (i.effectiveQty ?? i.quantity) > (i.product.stock ?? Infinity)
     );
     if (overstock) {
-      setInfoModal({
-        visible: true,
+      showInfoModal({
         title: t('cart.outOfStockTitle'),
         message: t('cart.outOfStockMessage'),
         type: 'warning',
@@ -494,8 +621,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           },
         });
       } else {
-        setInfoModal({
-          visible: true,
+        showInfoModal({
           title: t('kyc.verification'),
           message,
           type: 'warning',
@@ -534,8 +660,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
 
   const validateShippingAddress = (): boolean => {
     if (!shippingAddress.name.trim()) {
-      setInfoModal({
-        visible: true,
+      showInfoModal({
         title: t('common.error'),
         message: t('cart.enterFullName'),
         type: 'error',
@@ -543,8 +668,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return false;
     }
     if (!shippingAddress.phone.trim()) {
-      setInfoModal({
-        visible: true,
+      showInfoModal({
         title: t('common.error'),
         message: t('cart.enterPhone'),
         type: 'error',
@@ -552,8 +676,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return false;
     }
     if (!shippingAddress.street.trim()) {
-      setInfoModal({
-        visible: true,
+      showInfoModal({
         title: t('common.error'),
         message: t('cart.enterStreet'),
         type: 'error',
@@ -561,8 +684,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       return false;
     }
     if (!shippingAddress.city.trim()) {
-      setInfoModal({
-        visible: true,
+      showInfoModal({
         title: t('common.error'),
         message: t('cart.enterCity'),
         type: 'error',
@@ -583,8 +705,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       const message = error instanceof Error ? error.message : String(error);
       void eventBus.track('checkout.stepUp', { status: 'failed', message });
       errorLog('Checkout step-up failed', error);
-      setInfoModal({
-        visible: true,
+      showInfoModal({
         title: t('common.error'),
         message: t(
           'cart.checkoutStepUpFailed',
@@ -636,15 +757,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
       setTimeout(() => onClose(), 5000);
     } catch (error: any) {
       if (error?.message === 'ERR_DUPLICATE_NONCE') {
-        setInfoModal({
-          visible: true,
+        showInfoModal({
           title: t('common.error'),
           message: t('cart.paymentAlreadyProcessing'),
           type: 'warning',
         });
       } else if (isInsufficientFundsError(error)) {
-        setInfoModal({
-          visible: true,
+        showInfoModal({
           title: t('cart.insufficientFundsTitle', 'Insufficient funds'),
           message: t(
             'cart.insufficientFundsMessage',
@@ -656,15 +775,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           autoClose: false,
         });
       } else if (error?.message === '{E_EXPIRED}' || error?.message === '{E_SCOPE}') {
-        setInfoModal({
-          visible: true,
+        showInfoModal({
           title: t('common.error'),
           message: t('cart.invalidSession'),
           type: 'error',
         });
       } else {
-        setInfoModal({
-          visible: true,
+        showInfoModal({
           title: t('common.error'),
           message: t('cart.orderCreationError'),
           type: 'error',
@@ -931,70 +1048,45 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
         </View>
 
         <View style={styles.paymentOptions}>
-          <TouchableOpacity
-            style={[
-              styles.paymentOption,
-              styles.selectedPaymentOption,
-              { backgroundColor: colors.interactive.secondary, borderColor: colors.gold },
-            ]}
-          >
-            <View style={[styles.paymentOptionIcon, { backgroundColor: colors.surface.secondary }]}>
-              <Text style={styles.paymentOptionEmoji}>💰</Text>
-            </View>
-            <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}> 
-                {t('cart.cashOnDelivery')}
-              </Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}> 
-                {t('cart.cashOnDeliveryDesc')}
-              </Text>
-            </View>
-            <View style={styles.paymentOptionCheck}>
-              <Check size={20} color={colors.gold} />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.paymentOption,
-              styles.disabledPaymentOption,
-              { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
-            ]}
-            disabled
-          >
-            <View style={[styles.paymentOptionIcon, { backgroundColor: colors.surface.secondary }]}>
-              <Text style={styles.paymentOptionEmoji}>💳</Text>
-            </View>
-            <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}> 
-                {t('cart.creditCard')}
-              </Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}> 
-                {t('cart.comingSoon')}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.paymentOption,
-              styles.disabledPaymentOption,
-              { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
-            ]}
-            disabled
-          >
-            <View style={[styles.paymentOptionIcon, { backgroundColor: colors.surface.secondary }]}>
-              <Text style={styles.paymentOptionEmoji}>📱</Text>
-            </View>
-            <View style={styles.paymentOptionInfo}>
-              <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}> 
-                {t('cart.paymentApps')}
-              </Text>
-              <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}> 
-                {t('cart.comingSoon')}
-              </Text>
-            </View>
-          </TouchableOpacity>
+          {paymentOptions.map((option) => {
+            const isSelected = option.state === 'selected';
+            const isDisabled = option.state === 'disabled';
+            return (
+              <TouchableOpacity
+                key={option.key}
+                style={[
+                  styles.paymentOption,
+                  isSelected ? styles.selectedPaymentOption : styles.disabledPaymentOption,
+                  {
+                    backgroundColor: isSelected
+                      ? colors.interactive.secondary
+                      : colors.surface.primary,
+                    borderColor: isSelected ? colors.gold : colors.border.primary,
+                  },
+                ]}
+                disabled={isDisabled}
+              >
+                <View
+                  style={[styles.paymentOptionIcon, { backgroundColor: colors.surface.secondary }]}
+                >
+                  <Text style={styles.paymentOptionEmoji}>{option.emoji}</Text>
+                </View>
+                <View style={styles.paymentOptionInfo}>
+                  <Text style={[styles.paymentOptionTitle, { color: colors.text.primary }]}>
+                    {option.title}
+                  </Text>
+                  <Text style={[styles.paymentOptionDescription, { color: colors.text.secondary }]}>
+                    {option.description}
+                  </Text>
+                </View>
+                {isSelected ? (
+                  <View style={styles.paymentOptionCheck}>
+                    <Check size={20} color={colors.gold} />
+                  </View>
+                ) : null}
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {moonPayEnabled ? (
@@ -1008,77 +1100,13 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           />
         )}
 
-        <View
-          style={[
-            styles.shippingAddressSummary,
-            { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
-          ]}
-        >
-          <View style={styles.summaryHeader}>
-            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
-              {t('cart.shippingAddress')}
-            </Text>
-            <TouchableOpacity onPress={() => setCheckoutStep('shipping')}>
-              <Text style={[styles.editLink, { color: colors.gold }]}>
-                {t('common.edit')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={[styles.addressText, { color: colors.text.primary }]}>
-            {shippingAddress.name}
-            {'\n'}
-            {shippingAddress.street}
-            {'\n'}
-            {shippingAddress.city} {shippingAddress.postalCode}
-            {'\n'}
-            {shippingAddress.phone}
-          </Text>
-          {!!shippingAddress.notes && (
-            <Text style={[styles.notesText, { color: colors.text.secondary }]}> 
-              {t('cart.notes')}: {shippingAddress.notes}
-            </Text>
-          )}
-        </View>
+        {shippingSummaryCard(() => setCheckoutStep('shipping'))}
 
-        {Object.entries(groupedItems).map(([storeId, items]) => (
-          <View
-            key={storeId}
-            style={[
-              styles.orderSummary,
-              { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
-            ]}
-          >
-            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}> 
-              {stores[storeId]?.name || t('cart.storeFallback')}
-            </Text>
-            {items.map((item) => (
-              <View key={item.id} style={styles.summaryItem}>
-                <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>
-                  {item.product.name} x{item.quantity}
-                </Text>
-                <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>
-                  {currencySymbol}
-                  {((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
-                </Text>
-              </View>
-            ))}
-            <View
-              style={[
-                styles.summaryRow,
-                styles.summaryTotal,
-                { borderTopColor: colors.border.primary },
-              ]}
-            >
-              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}> 
-                {t('cart.storeTotal')}
-              </Text>
-              <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
-                {currencySymbol}
-                {getGroupTotal(items).toFixed(2)}
-              </Text>
-            </View>
-          </View>
-        ))}
+        {Object.entries(groupedItems).map(([storeId, items]) =>
+          renderStoreSummaryCard(storeId, items, {
+            header: stores[storeId]?.name || t('cart.storeFallback'),
+          }),
+        )}
 
         <View
           style={[
@@ -1150,38 +1178,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
             {t('cart.reviewOrderMessage')}
           </Text>
         </View>
-
-        <View
-          style={[
-            styles.shippingAddressSummary,
-            { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
-          ]}
-        >
-          <View style={styles.summaryHeader}>
-            <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
-              {t('cart.shippingAddress')}
-            </Text>
-            <TouchableOpacity onPress={() => setCheckoutStep('shipping')}>
-              <Text style={[styles.editLink, { color: colors.gold }]}>
-                {t('common.edit')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={[styles.addressText, { color: colors.text.primary }]}> 
-            {shippingAddress.name}
-            {'\n'}
-            {shippingAddress.street}
-            {'\n'}
-            {shippingAddress.city} {shippingAddress.postalCode}
-            {'\n'}
-            {shippingAddress.phone}
-          </Text>
-          {!!shippingAddress.notes && (
-            <Text style={[styles.notesText, { color: colors.text.secondary }]}> 
-              {t('cart.notes')}: {shippingAddress.notes}
-            </Text>
-          )}
-        </View>
+        {shippingSummaryCard(() => setCheckoutStep('shipping'))}
 
         <View
           style={[
@@ -1207,52 +1204,12 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
           </View>
         </View>
 
-        {Object.entries(groupedItems).map(([storeId, items]) => (
-          <View
-            key={storeId}
-            style={[
-              styles.orderSummary,
-              { backgroundColor: colors.surface.primary, borderColor: colors.border.primary },
-            ]}
-          >
-            <View style={styles.summaryHeader}>
-              <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>
-                {t('cart.itemsFromStore', { store: stores[storeId]?.name || '' })}
-              </Text>
-              <TouchableOpacity onPress={() => setCheckoutStep('cart')}>
-                <Text style={[styles.editLink, { color: colors.gold }]}>
-                  {t('common.edit')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {items.map((item) => (
-              <View key={item.id} style={styles.summaryItem}>
-                <Text style={[styles.summaryItemName, { color: colors.text.primary }]}>
-                  {item.product.name} x{item.quantity}
-                </Text>
-                <Text style={[styles.summaryItemPrice, { color: colors.gold }]}>
-                  {currencySymbol}
-                  {((item.unitPrice ?? item.product.price) * item.quantity).toFixed(2)}
-                </Text>
-              </View>
-            ))}
-            <View
-              style={[
-                styles.summaryRow,
-                styles.summaryTotal,
-                { borderTopColor: colors.border.primary },
-              ]}
-            >
-              <Text style={[styles.summaryTotalLabel, { color: colors.text.primary }]}> 
-                {t('cart.storeTotal')}
-              </Text>
-              <Text style={[styles.summaryTotalValue, { color: colors.gold }]}>
-                {currencySymbol}
-                {getGroupTotal(items).toFixed(2)}
-              </Text>
-            </View>
-          </View>
-        ))}
+        {Object.entries(groupedItems).map(([storeId, items]) =>
+          renderStoreSummaryCard(storeId, items, {
+            header: t('cart.itemsFromStore', { store: stores[storeId]?.name || '' }),
+            onEdit: () => setCheckoutStep('cart'),
+          }),
+        )}
 
         <View
           style={[
