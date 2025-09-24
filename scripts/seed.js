@@ -1,17 +1,48 @@
 #!/usr/bin/env node
 require('dotenv/config');
 
-try {
-  require('ts-node/register');
-} catch (err) {
-  console.error('ts-node is required to run this script');
-  process.exit(1);
-}
-
 const { faker } = require('@faker-js/faker');
-const { store } = require('../lib/memoryStore');
 const fs = require('fs');
 const path = require('path');
+
+const SEED_DIR = path.join(__dirname, '../assets/seed');
+const SEED_PATH = path.join(SEED_DIR, 'seed-data.json');
+
+function createEmptyStore() {
+  return {
+    users: [],
+    products: [],
+    stores: [],
+    orders: [],
+    notifications: [],
+    tenantSettings: {},
+  };
+}
+
+function loadSeedData() {
+  if (!fs.existsSync(SEED_PATH)) {
+    return createEmptyStore();
+  }
+
+  try {
+    const data = JSON.parse(fs.readFileSync(SEED_PATH, 'utf8'));
+    const store = createEmptyStore();
+    if (Array.isArray(data.users)) store.users.push(...data.users);
+    if (Array.isArray(data.products)) store.products.push(...data.products);
+    if (Array.isArray(data.stores)) store.stores.push(...data.stores);
+    if (Array.isArray(data.orders)) store.orders.push(...data.orders);
+    if (Array.isArray(data.notifications)) store.notifications.push(...data.notifications);
+    if (data.tenantSettings && typeof data.tenantSettings === 'object') {
+      store.tenantSettings = { ...data.tenantSettings };
+    }
+    return store;
+  } catch (err) {
+    console.error('Failed to load seed data', err);
+    return createEmptyStore();
+  }
+}
+
+const store = loadSeedData();
 
 async function seed() {
   const tenants = ['blue-ocean', 'thebull'];
@@ -123,8 +154,7 @@ async function seed() {
   }
 
   // Write seed data to JSON fixture
-  const outputPath = path.join(__dirname, '../assets/seed');
-  fs.mkdirSync(outputPath, { recursive: true });
+  fs.mkdirSync(SEED_DIR, { recursive: true });
   const seedData = {
     users: store.users,
     stores: store.stores,
@@ -134,7 +164,7 @@ async function seed() {
     tenantSettings: store.tenantSettings,
   };
   fs.writeFileSync(
-    path.join(outputPath, 'seed-data.json'),
+    SEED_PATH,
     JSON.stringify(seedData, null, 2),
   );
 
