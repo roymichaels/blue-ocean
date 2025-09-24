@@ -14,20 +14,25 @@ assertNearChain();
 // TODO:TODO-113 Expand CategoriesAgent to coordinate cross-channel taxonomy sync when stores sell in multiple marketplaces.
 // TODO:REC-213 Share wallet guard copy through localization dictionaries to keep admin prompts consistent.
 class CategoriesAgent {
+  private static clone(category: Category): Category {
+    return JSON.parse(JSON.stringify(category));
+  }
+
   private async ensureWallet() {
     await ensureNearWallet('Please connect your NEAR wallet to manage categories.');
   }
 
-  async add(storeId: string, item: Category): Promise<void> {
+  private async write(storeId: string, item: Category): Promise<void> {
     await this.ensureWallet();
-    const normalized = normalizeMessage<Category>('Category', item);
-    await setCategory(storeId, normalized);
+    await setCategory(storeId, normalizeMessage<Category>('Category', item));
+  }
+
+  async add(storeId: string, item: Category): Promise<void> {
+    await this.write(storeId, item);
   }
 
   async update(storeId: string, item: Category): Promise<void> {
-    await this.ensureWallet();
-    const normalized = normalizeMessage<Category>('Category', item);
-    await setCategory(storeId, normalized);
+    await this.write(storeId, item);
   }
 
   async remove(storeId: string, id: string): Promise<void> {
@@ -40,7 +45,7 @@ class CategoriesAgent {
    */
   async selectCategory(storeId: string, id: string): Promise<Category | null> {
     const cat = await getCategory(storeId, id);
-    return cat ? JSON.parse(JSON.stringify(cat)) : null;
+    return cat ? CategoriesAgent.clone(cat) : null;
   }
 
   /**
@@ -48,7 +53,7 @@ class CategoriesAgent {
    */
   async getCategories(storeId: string): Promise<Category[]> {
     const list = await listCategories(storeId);
-    return list.map((c) => JSON.parse(JSON.stringify(c)));
+    return list.map(CategoriesAgent.clone);
   }
 }
 
