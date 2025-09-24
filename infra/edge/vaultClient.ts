@@ -1,4 +1,3 @@
-import axios, { AxiosError, type AxiosInstance } from 'axios';
 import { randomBytes } from 'crypto';
 import type { VaultKeyRecord, VaultKeyRing, VaultKeyStatus } from './types';
 
@@ -23,20 +22,51 @@ function cloneKey(record: VaultKeyRecord | null): VaultKeyRecord | null {
 }
 
 export class VaultClient {
-  private readonly http: AxiosInstance;
+  private readonly baseUrl: string;
+  private readonly defaultHeaders: HeadersInit;
+  private readonly timeoutMs: number;
   private readonly mountPath: string;
 
   constructor(options: VaultClientOptions) {
-    const baseURL = options.baseUrl.replace(/\/$/, '');
-    this.http = axios.create({
-      baseURL,
-      timeout: options.timeoutMs ?? 5000,
-      headers: {
-        'X-Vault-Token': options.token,
-        ...(options.namespace ? { 'X-Vault-Namespace': options.namespace } : {}),
-      },
-    });
+    this.baseUrl = options.baseUrl.replace(/\/$/, '');
+    this.timeoutMs = options.timeoutMs ?? 5000;
+    this.defaultHeaders = {
+      'X-Vault-Token': options.token,
+      ...(options.namespace ? { 'X-Vault-Namespace': options.namespace } : {}),
+    } satisfies HeadersInit;
     this.mountPath = stripSlashes(options.mountPath ?? 'secret');
+  }
+
+  private mergeHeaders(extra?: HeadersInit): Headers {
+    const headers = new Headers(this.defaultHeaders);
+    if (!extra) {
+      return headers;
+    }
+    const additional = extra instanceof Headers ? extra : new Headers(extra);
+    additional.forEach((value, key) => {
+      headers.set(key, value);
+    });
+    return headers;
+  }
+
+  private async send(path: string, init?: RequestInit): Promise<Response> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        ...init,
+        headers: this.mergeHeaders(init?.headers),
+        signal: controller.signal,
+      });
+      return response;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Vault request timed out after ${this.timeoutMs}ms`);
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   private path(functionName: string): string {
@@ -78,24 +108,32 @@ export class VaultClient {
   }
 
   async readKeyRing(functionName: string): Promise<VaultKeyRing> {
-    try {
-      const response = await this.http.get(this.path(functionName));
-      const payload = response.data?.data?.data ?? response.data?.data ?? response.data;
-      return this.deserialize(payload);
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        const error = err as AxiosError;
-        if (error.response?.status === 404) {
-          return {
-            active: null,
-            pending: null,
-            retired: [],
-            updatedAt: new Date().toISOString(),
-          };
-        }
-      }
-      throw err;
+    const response = await this.send(this.path(functionName));
+    if (response.status === 404) {
+      return {
+        active: null,
+        pending: null,
+        retired: [],
+        updatedAt: new Date().toISOString(),
+      };
     }
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(
+        `Vault request failed with status ${response.status}: ${text || response.statusText}`,
+      );
+    }
+    if (!text) {
+      return this.deserialize(null);
+    }
+    let json: any;
+    try {
+      json = JSON.parse(text);
+    } catch (error) {
+      throw new Error(`Vault returned invalid JSON: ${(error as Error).message}`);
+    }
+    const payload = json?.data?.data ?? json?.data ?? json;
+    return this.deserialize(payload);
   }
 
   async writeKeyRing(functionName: string, ring: VaultKeyRing): Promise<void> {
@@ -107,7 +145,19 @@ export class VaultClient {
         updatedAt: new Date().toISOString(),
       },
     };
-    await this.http.post(this.path(functionName), payload);
+    const response = await this.send(this.path(functionName), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(
+        `Vault request failed with status ${response.status}: ${body || response.statusText}`,
+      );
+    }
   }
 
   createKeyRecord(
