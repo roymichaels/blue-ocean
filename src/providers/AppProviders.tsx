@@ -14,6 +14,7 @@ import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { NotificationProvider } from '@/components/NotificationContext';
 import { reportError } from '@/services/errorReporter';
 import { LaunchGateProvider } from '@/features/launchGate';
+import { composeProviders, type ProviderConfig } from './composeProviders';
 
 /**
  * Composes the core providers used across the app.
@@ -73,34 +74,28 @@ export default function AppProviders({ children }: React.PropsWithChildren) {
     },
     [showNotification],
   );
-  return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <CheckedQueryClientProvider client={queryClient}>
-          <WalletProvider>
-            <AppInfoProvider>
-              <ConfigProvider>
-                <ErrorBoundary onError={handleBoundaryError}>
-                  <WakuProvider>
-                    <AuthProvider>
-                      <AuthModalProvider>
-                        <CurrencyProvider>
-                          <NotificationProvider>
-                            <NotificationActionsRegistrar
-                              onReady={handleNotificationReady}
-                            />
-                            <LaunchGateProvider>{children}</LaunchGateProvider>
-                          </NotificationProvider>
-                        </CurrencyProvider>
-                      </AuthModalProvider>
-                    </AuthProvider>
-                  </WakuProvider>
-                </ErrorBoundary>
-              </ConfigProvider>
-            </AppInfoProvider>
-          </WalletProvider>
-        </CheckedQueryClientProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+  const providerTree = React.useMemo<ProviderConfig[]>(
+    () => [
+      { component: ThemeProvider },
+      { component: LanguageProvider },
+      { component: CheckedQueryClientProvider, props: { client: queryClient } },
+      { component: WalletProvider },
+      { component: AppInfoProvider },
+      { component: ConfigProvider },
+      { component: ErrorBoundary, props: { onError: handleBoundaryError } },
+      { component: WakuProvider },
+      { component: AuthProvider },
+      { component: AuthModalProvider },
+      { component: CurrencyProvider },
+      { component: NotificationProvider },
+    ],
+    [handleBoundaryError],
   );
+
+  return composeProviders(providerTree, (
+    <>
+      <NotificationActionsRegistrar onReady={handleNotificationReady} />
+      <LaunchGateProvider>{children}</LaunchGateProvider>
+    </>
+  ));
 }
