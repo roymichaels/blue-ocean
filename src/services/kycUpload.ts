@@ -3,23 +3,12 @@ import { sha256 } from '@noble/hashes/sha256';
 import { canonicalJson } from '@/utils/serialization';
 import { deriveSharedKey, deriveChatSalt, aesEncrypt } from '@/utils/encryption';
 import { cleanupTrackedKycCapturedPaths } from '@/utils/kycTemp';
+import { deleteFile, deleteIfTemporary, readFileAsBuffer, writeTempFile } from '@/utils/fileAccess';
 import { getEd25519KeyPair } from './localIdentity';
 import { sign } from '@noble/ed25519';
 import { randomBytes } from '@noble/hashes/utils';
 import type { KycArtifact, KycArtifactType } from '@/types';
 import PinataService from './pinata';
-import * as FileSystem from 'expo-file-system';
-
-type ExpoFsExtras = {
-  EncodingType?: {
-    Base64?: string;
-    UTF8?: string;
-  };
-  cacheDirectory?: string;
-  temporaryDirectory?: string;
-};
-
-const expoFs = FileSystem as typeof FileSystem & ExpoFsExtras;
 
 export interface KycUploadFile {
   uri: string;
@@ -45,93 +34,6 @@ export interface EncryptedKycBundle {
 }
 
 const INFO_LABEL = 'kyc.v2';
-
-function toFilePath(uri: string): string {
-  return uri.startsWith('file://') ? uri.replace('file://', '') : uri;
-}
-
-async function readBinary(uri: string): Promise<Buffer> {
-  if (typeof FileSystem.readAsStringAsync === 'function') {
-    const base64Encoding = expoFs.EncodingType?.Base64 ?? 'base64';
-    const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: base64Encoding as any,
-    });
-    return Buffer.from(base64, 'base64');
-  }
-  const fs = await import('fs/promises');
-  const data = await fs.readFile(toFilePath(uri));
-  return Buffer.from(data);
-}
-
-function randomSuffix(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-async function writeTemp(contents: string): Promise<string> {
-  if (
-    typeof FileSystem.writeAsStringAsync === 'function' &&
-    typeof expoFs.cacheDirectory === 'string'
-  ) {
-    const path = `${expoFs.cacheDirectory}kyc-${randomSuffix()}.json`;
-    const utf8Encoding = expoFs.EncodingType?.UTF8 ?? 'utf8';
-    await FileSystem.writeAsStringAsync(path, contents, {
-      encoding: utf8Encoding as any,
-    });
-    return path;
-  }
-  const fs = await import('fs/promises');
-  const os = await import('os');
-  const path = await import('path');
-  const filePath = path.join(os.tmpdir(), `kyc-${randomSuffix()}.json`);
-  await fs.writeFile(filePath, contents, 'utf8');
-  return filePath;
-}
-
-async function removeFile(uri: string): Promise<void> {
-  if (!uri) return;
-  if (typeof FileSystem.deleteAsync === 'function') {
-    try {
-      await FileSystem.deleteAsync(uri, { idempotent: true });
-      return;
-    } catch {}
-  }
-  try {
-    const fs = await import('fs/promises');
-    await fs.unlink(toFilePath(uri));
-  } catch {}
-}
-
-async function cleanupSource(uri: string): Promise<void> {
-  if (!uri) return;
-  if (
-    typeof FileSystem.deleteAsync === 'function' &&
-    (typeof expoFs.cacheDirectory === 'string' ||
-      typeof expoFs.temporaryDirectory === 'string')
-  ) {
-    const { cacheDirectory, temporaryDirectory } = expoFs;
-    if (
-      (cacheDirectory && uri.startsWith(cacheDirectory)) ||
-      (temporaryDirectory && uri.startsWith(temporaryDirectory))
-    ) {
-      try {
-        await FileSystem.deleteAsync(uri, { idempotent: true });
-      } catch {}
-    }
-    return;
-  }
-  try {
-    const os = await import('os');
-    const tmpDir = os.tmpdir();
-    const path = toFilePath(uri);
-    if (path.startsWith(tmpDir)) {
-      const fs = await import('fs/promises');
-      await fs.unlink(path);
-    }
-  } catch {}
-}
 
 function ensureIpfs(uri: string, fallback: string): string {
   if (!uri) return fallback;
@@ -173,7 +75,7 @@ export async function encryptForTenant(
   for (const file of files) {
     const name = file.name || 'document';
     const type = file.type || 'application/octet-stream';
-    const buffer = await readBinary(file.uri);
+    const buffer = await readFileAsBuffer(file.uri);
     const bytes = buffer instanceof Uint8Array ? new Uint8Array(buffer) : Uint8Array.from(buffer);
     const hash = Buffer.from(sha256(bytes)).toString('hex');
     const base64 = Buffer.from(bytes).toString('base64');
@@ -226,16 +128,16 @@ export async function encryptForTenant(
   const cipher = await aesEncrypt(canonicalJson(payload), key);
   const encryptedBody = canonicalJson({ version: 1, cipher });
 
-  const tempPath = await writeTemp(encryptedBody);
+  const tempPath = await writeTempFile(encryptedBody, { prefix: 'kyc', extension: 'json' });
   let uploaded: string | null = null;
   try {
     const pinata = PinataService.getInstance();
     uploaded = await pinata.uploadFile(tempPath, `kyc-${Date.now()}.json`);
 
     await cleanupTrackedKycCapturedPaths(enriched.map(({ sourceUri }) => sourceUri));
-    await Promise.all(enriched.map(({ sourceUri }) => cleanupSource(sourceUri)));
+    await Promise.all(enriched.map(({ sourceUri }) => deleteIfTemporary(sourceUri)));
   } finally {
-    await removeFile(tempPath);
+    await deleteFile(tempPath, { allowContentScheme: true });
   }
 
   const encryptedBodyBytes = Buffer.from(encryptedBody);

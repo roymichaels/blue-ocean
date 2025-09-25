@@ -1,41 +1,10 @@
-import * as FileSystem from 'expo-file-system';
+import { deleteFile } from '@/utils/fileAccess';
 
 const trackedPaths = new Set<string>();
 
 function isTrackableUri(uri: string): boolean {
   if (!uri) return false;
   return uri.startsWith('file://') || uri.startsWith('/') || uri.startsWith('content://');
-}
-
-function toExpoUri(uri: string): string {
-  if (uri.startsWith('file://') || uri.startsWith('content://')) {
-    return uri;
-  }
-  return `file://${uri}`;
-}
-
-function toFsPath(uri: string): string {
-  return uri.startsWith('file://') ? uri.slice('file://'.length) : uri;
-}
-
-async function deleteUri(uri: string): Promise<void> {
-  const expoUri = toExpoUri(uri);
-
-  if (typeof FileSystem.deleteAsync === 'function') {
-    try {
-      await FileSystem.deleteAsync(expoUri, { idempotent: true });
-      return;
-    } catch {}
-  }
-
-  if (uri.startsWith('content://')) {
-    return;
-  }
-
-  try {
-    const fs = await import('fs/promises');
-    await fs.unlink(toFsPath(uri));
-  } catch {}
 }
 
 export function trackKycCapturedPath(uri?: string | null): void {
@@ -70,7 +39,7 @@ export async function cleanupTrackedKycCapturedPaths(
 
   await Promise.all(
     [...targets].map(async (uri) => {
-      await deleteUri(uri);
+      await deleteFile(uri);
       trackedPaths.delete(uri);
     }),
   );
