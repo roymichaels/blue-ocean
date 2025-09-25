@@ -7,7 +7,7 @@ import { assertNearChain } from '@/services/chain';
 import { getUser, setUser, listUsers, removeUser } from '@/features/auth/services/nearUsers';
 import { getPublicKeyHex } from '@/services/localIdentity';
 import SettingsAgent from './settings-agent';
-import ensureNearWallet from '@/utils/ensureNearWallet';
+import { createWalletGuard } from '@/utils/createWalletGuard';
 import validateNearAddress from '@/utils/validateNearAddress';
 import { verifyMessageSignature } from '@/utils/verifyMessageSignature';
 import type { WakuMessage } from '@/types/waku';
@@ -38,12 +38,9 @@ export type UsersAgentMessage =
 // TODO:TODO-109 Add audit-trail friendly storage of KYC transitions to meet regional compliance requirements.
 // TODO:REC-209 Evaluate using capability tokens instead of wallet prompts for privileged user mutations.
 class UsersAgent {
-  private async ensureWallet() {
-    const { address, publicKey } = await ensureNearWallet(
-      'Please connect your NEAR wallet to manage users.',
-    );
-    return { address, publicKey };
-  }
+  private ensureWallet = createWalletGuard(
+    'Please connect your NEAR wallet to manage users.',
+  );
 
   async add(user: User): Promise<void> {
     const normalized = normalizeMessage<User>('User', user);

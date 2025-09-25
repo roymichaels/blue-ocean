@@ -4,7 +4,7 @@ import { addReview, getReviews } from '@/features/reviews/services/nearReviews';
 import ordersAgent from './orders-agent';
 import { selectProduct } from './products-agent';
 import storesAgent from './stores-agent';
-import ensureNearWallet from '../utils/ensureNearWallet';
+import { createWalletGuard } from '@/utils/createWalletGuard';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import AgentError from '@/types/AgentError';
 
@@ -17,9 +17,9 @@ const TOPIC = '/blue-ocean/reviews/1';
 class ReviewAgent {
   private subscribers: Set<(r: Review) => void> = new Set();
 
-  private async ensureWallet() {
-    await ensureNearWallet('Please connect your NEAR wallet to manage reviews.');
-  }
+  private ensureWallet = createWalletGuard(
+    'Please connect your NEAR wallet to manage reviews.',
+  );
 
   async add(review: Review): Promise<void> {
     await this.ensureWallet();

@@ -6,7 +6,7 @@ import {
   listCartItems,
   removeCartItem,
 } from '@/features/cart/services/nearCart';
-import ensureNearWallet from '../utils/ensureNearWallet';
+import { createWalletGuard } from '@/utils/createWalletGuard';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { jsonClone } from '@/utils/jsonClone';
 
@@ -15,9 +15,9 @@ assertNearChain();
 // TODO:TODO-112 Extend CartAgent to support multi-store contexts without clobbering per-tenant line items.
 // TODO:REC-212 Move wallet prompt handling into a shared UX utility for consistent localization and messaging.
 class CartAgent {
-  private async ensureWallet() {
-    await ensureNearWallet('Please connect your NEAR wallet to manage your cart.');
-  }
+  private ensureWallet = createWalletGuard(
+    'Please connect your NEAR wallet to manage your cart.',
+  );
 
   async add(item: CartItem): Promise<void> {
     await this.ensureWallet();
