@@ -11,7 +11,7 @@ import {
   setAdminPublicKeys as storeAdminPublicKeys,
   subscribeToSettingsWrites,
 } from '@/services/nearSettings';
-import ensureNearWallet from '../utils/ensureNearWallet';
+import { createWalletGuard } from '@/utils/createWalletGuard';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { canonicalJson } from '@/utils/serialization';
 import type { AdminScope } from '@/types';
@@ -67,9 +67,9 @@ class SettingsAgent {
     });
   }
 
-  private async ensureWallet() {
-    await ensureNearWallet('Please connect your NEAR wallet to manage settings.');
-  }
+  private ensureWallet = createWalletGuard(
+    'Please connect your NEAR wallet to manage settings.',
+  );
 
   async set(key: string, value: string): Promise<void> {
     await this.ensureWallet();

@@ -6,7 +6,7 @@ import {
   listCategories,
   removeCategory,
 } from '@/features/products/services/nearCategories';
-import ensureNearWallet from '@/utils/ensureNearWallet';
+import { createWalletGuard } from '@/utils/createWalletGuard';
 import { normalizeMessage } from '../lib/normalizeMessage';
 import { jsonClone } from '@/utils/jsonClone';
 
@@ -15,9 +15,9 @@ assertNearChain();
 // TODO:TODO-113 Expand CategoriesAgent to coordinate cross-channel taxonomy sync when stores sell in multiple marketplaces.
 // TODO:REC-213 Share wallet guard copy through localization dictionaries to keep admin prompts consistent.
 class CategoriesAgent {
-  private async ensureWallet() {
-    await ensureNearWallet('Please connect your NEAR wallet to manage categories.');
-  }
+  private ensureWallet = createWalletGuard(
+    'Please connect your NEAR wallet to manage categories.',
+  );
 
   async add(storeId: string, item: Category): Promise<void> {
     await this.ensureWallet();

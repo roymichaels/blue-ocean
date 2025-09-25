@@ -2,7 +2,7 @@ import { uuid } from '@/utils/uuid';
 import { Report } from '@/types';
 import { assertNearChain } from '@/services/chain';
 import { addReport, listReports, removeReport } from '@/features/reviews/services/nearReports';
-import ensureNearWallet from '@/utils/ensureNearWallet';
+import { createWalletGuard } from '@/utils/createWalletGuard';
 import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
@@ -10,12 +10,9 @@ assertNearChain();
 // TODO:TODO-116 Add rate limiting and abuse heuristics to ModerationAgent to prevent automated spam reports.
 // TODO:REC-216 Feed moderation events into analytics topics so trust & safety dashboards stay up to date.
 class ModerationAgent {
-  private async ensureWallet() {
-    const { address, publicKey } = await ensureNearWallet(
-      'Please connect your NEAR wallet to report items.',
-    );
-    return { address, publicKey };
-  }
+  private ensureWallet = createWalletGuard(
+    'Please connect your NEAR wallet to report items.',
+  );
 
   async reportProduct(productId: string, reason: string): Promise<void> {
     const { address } = await this.ensureWallet();

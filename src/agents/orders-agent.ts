@@ -34,7 +34,7 @@ assertNearChain();
 import { encryptShippingInfo } from '../utils/shippingCrypto';
 import { sha256 } from '@noble/hashes/sha256';
 import { logOrderEvent } from '@/services/eventLog';
-import ensureNearWallet from '../utils/ensureNearWallet';
+import { createWalletGuard } from '@/utils/createWalletGuard';
 import eventBus from '@/services/eventBus';
 import { errorLog, warnLog } from '../utils/logger';
 import type { LightNode } from '@waku/sdk';
@@ -179,9 +179,9 @@ class OrdersAgent {
     });
   }
 
-  private async ensureWallet() {
-    await ensureNearWallet('Please connect your NEAR wallet to manage orders.');
-  }
+  private ensureWallet = createWalletGuard(
+    'Please connect your NEAR wallet to manage orders.',
+  );
 
   private async ensureAuthorized(order: Order) {
     await this.ensureWallet();

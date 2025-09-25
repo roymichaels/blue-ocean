@@ -16,7 +16,7 @@ import { normalizeMessage } from '../lib/normalizeMessage';
 
 assertNearChain();
 import { publish, isWakuDisabled } from '@/services/waku';
-import ensureNearWallet from '../utils/ensureNearWallet';
+import { createWalletGuard } from '@/utils/createWalletGuard';
 import { errorLog } from '../utils/logger';
 import { buildTopic } from '../utils/wakuTopics';
 import {
@@ -64,9 +64,9 @@ class NotificationsAgent {
     onDrained(() => this.resume('waku'));
   }
 
-  private async ensureWallet() {
-    await ensureNearWallet('Please connect your NEAR wallet to send notifications.');
-  }
+  private ensureWallet = createWalletGuard(
+    'Please connect your NEAR wallet to send notifications.',
+  );
 
   async add(item: Notification, storeId = '1'): Promise<void> {
     if (!isNotificationsPipelineEnabled(item.userId)) return;
