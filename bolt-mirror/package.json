@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "prebolt": "node scripts/check-no-near.js && tsc -p tsconfig.bolt.json",
+    "prebolt": "node scripts/check-no-near.cjs && tsc -p tsconfig.bolt.json",
     "dev": "node -e \"console.log('bolt backend mirror; no dev server')\""
   },
   "devDependencies": { "typescript": "^5.4.0" },

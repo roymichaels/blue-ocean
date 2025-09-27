@@ -1,6 +1,6 @@
-﻿{
+{
   "extends": "./tsconfig.json",
-  "compilerOptions": {
+  "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["src/*"] },
     "noEmit": true,
     "skipLibCheck": true
   },
