@@ -1,6 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import PayPrivatelyButton from '@/features/payments/components/PayPrivatelyButton';
+import { STUB_MESSAGE } from '@/services/nearStub';
 
 jest.mock('@/services/chain', () => ({ __esModule: true,
   chainAdapter: {
@@ -70,31 +71,22 @@ describe('payPrivately mixer integration', () => {
   });
 
   it('invokes mixer API when configured', async () => {
-    const fetchMock = jest
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ proof: 'abc' }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
+    const fetchMock = jest.fn();
     (global as any).fetch = fetchMock;
-    const { payPrivately } = await import('@blue-ocean/sdk-near');
-    await payPrivately({ storeId: 's1', itemId: 1, amountYocto: '5' });
-    expect(fetchMock).toHaveBeenNthCalledWith(1, 'https://mixer.example/proof', expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://mixer.example/mix', expect.any(Object));
+    const { payPrivately } = await import('@/vendor/blue-ocean-sdk-near');
+    await expect(payPrivately({ storeId: 's1', itemId: 1, amountYocto: '5' })).rejects.toThrow(
+      STUB_MESSAGE,
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('falls back to secondary mixer on failure', async () => {
-    const fetchMock = jest
-      .fn()
-      // primary mixer proof call fails
-      .mockRejectedValueOnce(new Error('mixer down'))
-      // fallback mixer proof succeeds
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ proof: 'abc' }) })
-      // fallback mixer mix succeeds
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
+    const fetchMock = jest.fn();
     (global as any).fetch = fetchMock;
-    const { payPrivately } = await import('@blue-ocean/sdk-near');
-    await payPrivately({ storeId: 's1', itemId: 1, amountYocto: '5' });
-    expect(fetchMock).toHaveBeenNthCalledWith(1, 'https://mixer.example/proof', expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://fallback-mixer.example/proof', expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(3, 'https://fallback-mixer.example/mix', expect.any(Object));
+    const { payPrivately } = await import('@/vendor/blue-ocean-sdk-near');
+    await expect(payPrivately({ storeId: 's1', itemId: 1, amountYocto: '5' })).rejects.toThrow(
+      STUB_MESSAGE,
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

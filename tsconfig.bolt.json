@@ -1,4 +1,4 @@
-﻿{
+{
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
@@ -14,18 +14,12 @@
     "src/services/nearStub.ts",
     "src/services/__mocks__/nearSettings.ts",
     "src/config/**/*.ts",
-    "packages/utils/src/**/*.ts",
-    "packages/sdk-near/src/**/*.ts",
-    "scripts/check-no-near.js",
-    "db/**/*"
+    "scripts/check-no-near.js"
   ],
   "exclude": [
     "app/**/*",
-    "ui/**/*",
     "src/components/**/*",
     "src/agents/**/*",
-    "pages/**/*",
-    "styles/**/*",
     "tests/**/*",
     "__tests__/**/*",
     "assets/**/*",

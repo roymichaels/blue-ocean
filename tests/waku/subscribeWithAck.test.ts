@@ -30,7 +30,7 @@ jest.mock('@/utils/wakuCrypto', () => {
   };
 });
 
-jest.mock('@blue-ocean/utils', () => ({
+jest.mock('@/vendor/blue-ocean-utils', () => ({
   __esModule: true,
   topicFor: jest.fn(() => '/mock/topic'),
 }));

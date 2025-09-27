@@ -1,1 +1,0 @@
--- No-op migration placeholder for Bolt. Intentionally empty.\n

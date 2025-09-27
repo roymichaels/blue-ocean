@@ -20,16 +20,14 @@ jest.mock('@/utils/transport', () => ({
   })),
 }));
 
-import { hydrateMessages } from '../packages/sdk-near/src/waku';
+import { hydrateMessages } from '@/vendor/blue-ocean-sdk-near/waku';
+import { STUB_MESSAGE } from '@/services/nearStub';
 
 const TOPIC = '/blueocean/testnet/test/listings';
 
-describe('hydrate_messages', () => {
-  it('populates_cache_without_duplicates', async () => {
-    const first = await hydrateMessages(TOPIC);
-    expect(first).toHaveLength(2);
-    const second = await hydrateMessages(TOPIC);
-    expect(second).toHaveLength(2);
-    expect(mockQueryGenerator).toHaveBeenCalledTimes(2);
+  describe('hydrate_messages', () => {
+    it('throws while NEAR integration is stubbed out', async () => {
+      await expect(hydrateMessages(TOPIC)).rejects.toThrow(STUB_MESSAGE);
+      expect(mockQueryGenerator).not.toHaveBeenCalled();
+    });
   });
-});

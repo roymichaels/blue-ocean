@@ -1,5 +1,5 @@
 import type { Store } from '@/types';
-import { requireStoreId } from '@blue-ocean/utils';
+import { requireStoreId } from '@/vendor/blue-ocean-utils';
 import { canonicalJson } from '@/utils/serialization';
 import { listValues, setValue } from '@/services/nearKvStore';
 import {
