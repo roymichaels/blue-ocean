@@ -1,7 +1,6 @@
-// STUB: NEAR SDK removed. Do not implement here. Bolt will supply Supabase integration next phase.
 const STUB_MESSAGE = 'NEAR removed; pending Supabase refactor';
 const notImplemented = (name: string): never => {
-  throw new Error('NotImplemented: ' + name + ' (' + STUB_MESSAGE + ')');
+  throw new Error(`NotImplemented: ${name} (${STUB_MESSAGE})`);
 };
 
 export interface Listing {
@@ -27,15 +26,15 @@ export async function getListings(_storeId: string): Promise<Listing[]> {
   return notImplemented('sdk-near:getListings');
 }
 
-export async function addListing(_args: AddListingArgs): Promise<any> {
+export async function addListing(_args: AddListingArgs): Promise<never> {
   return notImplemented('sdk-near:addListing');
 }
 
-export async function buyListing(_args: BuyListingArgs): Promise<any> {
+export async function buyListing(_args: BuyListingArgs): Promise<never> {
   return notImplemented('sdk-near:buyListing');
 }
 
-export async function payPrivately(_args: BuyListingArgs): Promise<any> {
+export async function payPrivately(_args: BuyListingArgs): Promise<never> {
   return notImplemented('sdk-near:payPrivately');
 }
 

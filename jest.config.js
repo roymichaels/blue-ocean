@@ -37,8 +37,6 @@ const cfg = {
         'expo-linear-gradient',
         'react-native-svg',
         'lucide-react-native',
-        '@blue-ocean/utils',
-        '@blue-ocean/sdk-near',
         '@waku/.*',
         'uuid',
       ].join('|') +
@@ -46,22 +44,12 @@ const cfg = {
   ],
 
   collectCoverage: true,
-  collectCoverageFrom: [
-    '<rootDir>/contracts/**/*.ts',
-    '<rootDir>/services/**/*.ts',
-    '<rootDir>/src/ui/**/*.{ts,tsx}',
-  ],
+  collectCoverageFrom: ['<rootDir>/src/services/**/*.ts', '<rootDir>/src/ui/**/*.{ts,tsx}'],
 
   ...(isCI
     ? {
         coverageThreshold: {
-          './contracts/': {
-            statements: 80,
-            branches: 80,
-            functions: 80,
-            lines: 80,
-          },
-          './services/': {
+          './src/services/': {
             statements: 70,
             branches: 70,
             functions: 70,
@@ -97,6 +85,7 @@ const cfg = {
     '^@/constants/(.*)$': '<rootDir>/src/constants/$1',
     '^@/contexts/(.*)$': '<rootDir>/src/contexts/$1',
     '^@/features/(.*)$': '<rootDir>/src/features/$1',
+    '^@/vendor/(.*)$': '<rootDir>/src/vendor/$1',
     '^@/shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@/ui/(.*)$': '<rootDir>/src/ui/$1',
     '^@/ui$': '<rootDir>/src/ui/index',

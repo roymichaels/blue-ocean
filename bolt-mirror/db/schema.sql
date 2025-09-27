@@ -1,1 +1,0 @@
--- Canonical schema scaffold (empty). Owned by Bolt next phase.\n

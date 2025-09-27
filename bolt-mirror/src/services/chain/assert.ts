@@ -1,2 +1,0 @@
-export { assertNearChain } from '../chain';
-
