@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+.next/
+.out/
+coverage/
+assets/**/*
+docs/**/*
+tests/**/*
+__tests__/**/*

@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/services/**/*",
+    "src/config/**/*",
+    "db/**/*",
+    "scripts/check-no-near.js",
+    ".env*"
+  ],
+  "exclude": [
+    "app/**/*",
+    "ui/**/*",
+    "src/components/**/*",
+    "pages/**/*",
+    "styles/**/*",
+    "tests/**/*",
+    "__tests__/**/*",
+    "assets/**/*",
+    "docs/**/*",
+    "node_modules/**/*"
+  ]
+}
