@@ -1,41 +1,6 @@
-import { debugLog, errorLog } from '@/utils/logger';
-import { assertNearChain } from './chain';
-import { getValue, setValue, listValues } from './nearKvStore';
-import config from '@/config';
-import { getClient } from '@/utils/transport';
-import type { SettingsWriteEvent } from '../types/waku';
-import { settingsWriteEventSchema, wakuMessageSchema } from '../schemas/waku';
-import { verifyBeforeWrite } from '../utils/verifyMessageSignature';
-import { z } from 'zod';
-import { canonicalJson } from '@/utils/serialization';
-import { makeSignedWakuMessage } from '@/utils/wakuSigning';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
 import type { AdminScope } from '@/types';
-import { ALL_ADMIN_SCOPES } from '@/types';
-import { ensureRelayNode } from '@/services/wakuNode';
-
-assertNearChain();
-
-const ADDRESS = 'settings';
-const SETTINGS_TOPIC = '/blue-ocean/settings/1';
-const ensureNode = ensureRelayNode;
-
-async function assertAdmin(actor: string): Promise<void> {
-  if (!actor) {
-    throw new Error('Admin wallet address required');
-  }
-  const admins = await getAdmins();
-  if (admins.length === 0) {
-    return;
-  }
-  if (!admins.includes(actor)) {
-    throw new Error('Admin wallet address required');
-  }
-  const scopes = await getAdminScopes();
-  const allowed = scopes[actor] ?? [];
-  if (allowed.length > 0 && !allowed.includes('admin:settings')) {
-    throw new Error('Admin wallet address required');
-  }
-}
+import { notImplemented } from '@/services/nearStub';
 
 export interface NearSettings {
   tenantId: string;
@@ -53,200 +18,71 @@ export interface NearSettings {
   paymentFactoryAddress?: string;
 }
 
-export async function getSetting(key: string): Promise<string | null> {
-  return await getValue(ADDRESS, key);
-}
-
-async function emit(event: SettingsWriteEvent) {
-  const n = await ensureNode();
-  if (!n) return;
-  try {
-    const msg = await makeSignedWakuMessage(event.type, event, 'admin');
-
-    const client = await getClient();
-    const encoder = client.createEncoder({
-      contentTopic: SETTINGS_TOPIC,
-    } as any);
-    await n.lightPush.send(encoder, {
-      payload: client.utf8ToBytes(canonicalJson(msg)),
-    });
-  } catch (err) {
-    errorLog('Failed to broadcast settings.write', err);
-  }
-}
-
-export async function subscribeToSettingsWrites(
-  cb: (event: SettingsWriteEvent) => void,
-): Promise<() => void> {
-  const n = await ensureNode();
-  if (!n) return () => {};
-  const client = await getClient();
-  const decoder = client.createDecoder(SETTINGS_TOPIC, undefined as any);
-  const handler = async (wakuMsg: any) => {
-    if (!wakuMsg.payload) return;
-    try {
-      const raw = JSON.parse(client.bytesToUtf8(wakuMsg.payload));
-      const schema = wakuMessageSchema.extend({
-        type: z.literal('settings.write'),
-        payload: settingsWriteEventSchema,
-      });
-      const adminKeys = await getAdminPublicKeys();
-      const signed = await verifyBeforeWrite(raw, schema, adminKeys, SETTINGS_TOPIC);
-      if (!signed) return;
-      cb(signed.payload);
-    } catch (err) {
-      errorLog('Failed to process settings.write', err);
-    }
-  };
-  const maybeUnsub = (n.relay as any).addObserver(handler, [decoder]) as
-    | (() => void)
-    | void;
-  return () => {
-    if (typeof maybeUnsub === 'function') {
-      maybeUnsub();
-    } else {
-      (n.relay as any)?.deleteObserver?.(handler);
-    }
-  };
+export async function getSetting(_key: string): Promise<string | null> {
+  return notImplemented('getSetting');
 }
 
 export async function setSetting(
-  key: string,
-  value: string,
-  actor: string,
-) {
-  await assertAdmin(actor);
-  const res = await setValue(ADDRESS, key, value);
-  await emit({
-    type: 'settings.write',
-    key,
-    value,
-    actor,
-    timestamp: Date.now(),
-  });
-  return res;
+  _key: string,
+  _value: string,
+  _actor?: string,
+): Promise<void> {
+  return notImplemented('setSetting');
 }
 
-export async function listSettings(): Promise<{ key: string; value: string }[]> {
-  return await listValues(ADDRESS);
+export async function listSettings(): Promise<Array<{ key: string; value: string }>> {
+  return notImplemented('listSettings');
 }
 
 export async function fetchSettings(): Promise<NearSettings> {
-  const entries = await listSettings();
-  const map: Record<string, string> = {};
-  for (const { key, value } of entries) {
-    map[key] = value;
-  }
-  const envFiat = config.EXPO_PUBLIC_MOONPAY_PUBLISHABLE_KEY;
-  if (envFiat) {
-    map['fiatKey'] = envFiat;
-  }
-  let feeBps = 0;
-  if (map['feeBps'] !== undefined) {
-    const parsed = Number(map['feeBps']);
-    if (Number.isNaN(parsed)) {
-      debugLog(
-        `Invalid feeBps value "${map['feeBps']}"; defaulting to 0`,
-      );
-    } else {
-      feeBps = parsed;
-    }
-  }
-  const admins = map['admins'] ? JSON.parse(map['admins']) : [];
-  const adminScopes = map['adminScopes'] ? JSON.parse(map['adminScopes']) : {};
-  if (Object.keys(adminScopes).length === 0 && admins.length > 0) {
-    admins.forEach((a: string) => {
-      adminScopes[a] = ALL_ADMIN_SCOPES;
-    });
-  }
-  return {
-    tenantId: map['tenantId'] ?? 'blue-ocean',
-    appName: map['appName'] ?? 'Blue Ocean',
-    theme: { primary: map['theme.primary'] ?? '#B99C5A' },
-    brand: { logoCid: map['brand.logoCid'] ?? '' },
-    fiatKey: map['fiatKey'],
-    feeAddress: map['feeAddress'] ?? '',
-    feeBps,
-    admins,
-    adminScopes,
-    adminPublicKeys: map['adminPublicKeys']
-      ? JSON.parse(map['adminPublicKeys'])
-      : [],
-    rpcUrl: map['rpcUrl'] ?? '',
-    rpcFallbackUrls: map['rpcFallbackUrls']
-      ? JSON.parse(map['rpcFallbackUrls'])
-      : [],
-    paymentFactoryAddress: map['paymentFactoryAddress'] ?? '',
-  };
+  return notImplemented('fetchSettings');
 }
 
 export async function getFeeBps(): Promise<number> {
-  const raw = await getSetting('feeBps');
-  const parsed = Number(raw);
-  return Number.isNaN(parsed) ? 0 : parsed;
+  return notImplemented('getFeeBps');
 }
 
-export async function setFeeBps(value: number, actor: string): Promise<void> {
-  await setSetting('feeBps', String(value), actor);
+export async function setFeeBps(_value: number, _actor: string): Promise<void> {
+  return notImplemented('setFeeBps');
 }
 
 export async function getAdmins(): Promise<string[]> {
-  const raw = await getSetting('admins');
-  try {
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return notImplemented('getAdmins');
 }
 
 export async function getAdminScopes(): Promise<Record<string, AdminScope[]>> {
-  const raw = await getSetting('adminScopes');
-  try {
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
+  return notImplemented('getAdminScopes');
 }
 
 export async function setAdminScopes(
-  scopes: Record<string, AdminScope[]>,
-  actor: string,
+  _scopes: Record<string, AdminScope[]>,
+  _actor: string,
 ): Promise<void> {
-  await setSetting('adminScopes', canonicalJson(scopes), actor);
+  return notImplemented('setAdminScopes');
 }
 
-export async function setAdmins(admins: string[], actor: string): Promise<void> {
-  await setSetting('admins', canonicalJson(admins), actor);
-  const scopes: Record<string, AdminScope[]> = {};
-  admins.forEach((a) => {
-    scopes[a] = ALL_ADMIN_SCOPES;
-  });
-  await setAdminScopes(scopes, actor);
+export async function setAdmins(_admins: string[], _actor: string): Promise<void> {
+  return notImplemented('setAdmins');
 }
 
 export async function getAdminPublicKeys(): Promise<string[]> {
-  const raw = await getSetting('adminPublicKeys');
-  try {
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return notImplemented('getAdminPublicKeys');
 }
 
-export async function setAdminPublicKeys(
-  keys: string[],
-  actor: string,
-): Promise<void> {
-  await setSetting('adminPublicKeys', canonicalJson(keys), actor);
+export async function setAdminPublicKeys(_keys: string[], _actor: string): Promise<void> {
+  return notImplemented('setAdminPublicKeys');
 }
 
 export async function getPaymentFactoryAddress(): Promise<string> {
-  return (await getSetting('paymentFactoryAddress')) || '';
+  return notImplemented('getPaymentFactoryAddress');
 }
 
-export async function setPaymentFactoryAddress(
-  address: string,
-  actor: string,
-): Promise<void> {
-  await setSetting('paymentFactoryAddress', address, actor);
+export async function setPaymentFactoryAddress(_address: string, _actor: string): Promise<void> {
+  return notImplemented('setPaymentFactoryAddress');
+}
+
+export async function subscribeToSettingsWrites(
+  _cb: (event: unknown) => void,
+): Promise<() => void> {
+  return notImplemented('subscribeToSettingsWrites');
 }

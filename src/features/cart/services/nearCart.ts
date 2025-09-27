@@ -1,26 +1,19 @@
-import { getValue, setValue, listValues, removeValue } from '@/services/nearKvStore';
-import { CartItem } from '@/types';
-import { assertNearChain } from '@/services/chain';
-import { canonicalJson } from '@/utils/serialization';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+import type { CartItem } from '@/types';
+import { notImplemented } from '@/services/nearStub';
 
-assertNearChain();
-
-const ADDRESS = 'cart';
-
-export async function getCartItem(id: string): Promise<CartItem | null> {
-  const res = await getValue(ADDRESS, id);
-  return res ? (JSON.parse(res) as CartItem) : null;
+export async function getCartItem(_id: string): Promise<CartItem | null> {
+  return notImplemented('getCartItem');
 }
 
-export async function setCartItem(item: CartItem) {
-  await setValue(ADDRESS, item.id, canonicalJson(item));
+export async function setCartItem(_item: CartItem): Promise<void> {
+  return notImplemented('setCartItem');
 }
 
-export async function removeCartItem(id: string) {
-  await removeValue(ADDRESS, id);
+export async function removeCartItem(_id: string): Promise<void> {
+  return notImplemented('removeCartItem');
 }
 
 export async function listCartItems(): Promise<CartItem[]> {
-  const items = await listValues(ADDRESS);
-  return items.map((i) => JSON.parse(i.value) as CartItem);
+  return notImplemented('listCartItems');
 }

@@ -1,9 +1,6 @@
-import CHAIN from '@/config/chain';
-
-export function assertNearChain(): void {
-  if (CHAIN !== 'near') {
-    throw new Error('BlueOcean is NEAR-only. Set EXPO_PUBLIC_CHAIN=near');
-  }
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+export function assertNearChain(): never {
+  throw new Error('NotImplemented: assertNearChain (NEAR removed; pending Supabase refactor)');
 }
 
 export default assertNearChain;

@@ -1,19 +1,17 @@
-import { assertNearChain, chainAdapter } from '@/services/chain';
-import { listStores as contractListStores } from '@/services/nearStoreContract';
-import { getSelector } from '@/services/walletSelector';
-import { nearConfig } from '@/hooks/config';
-import {
-  createStoreChainClient,
-  type StoreChainClient,
-} from './storeChainClient';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+import type { chainAdapter as ChainAdapter } from '@/services/chain';
+import type { getSelector } from '@/services/walletSelector';
+import type { nearConfig } from '@/hooks/config';
+import type { StoreChainClient } from './storeChainClient';
+import { notImplemented } from '@/services/nearStub';
 
 export interface StoreServiceDeps {
   chain: {
     assertNearChain: () => void;
-    chainAdapter: typeof chainAdapter;
+    chainAdapter: typeof ChainAdapter;
   };
   contract: {
-    listStores: typeof contractListStores;
+    listStores: (...args: any[]) => any;
   };
   walletSelector: {
     getSelector: typeof getSelector;
@@ -26,21 +24,5 @@ export interface StoreServiceDeps {
 }
 
 export function createDefaultStoreServiceDeps(): StoreServiceDeps {
-  const config = {
-    nearConfig,
-    loadAppConfig: async () => (await import('@/config')).default,
-  } as const;
-  return {
-    chain: { assertNearChain, chainAdapter },
-    contract: { listStores: contractListStores },
-    walletSelector: { getSelector },
-    config,
-    storeChainClient: createStoreChainClient({
-      assertNearChain,
-      getSelector,
-      nearConfig,
-      chainAdapter,
-      loadAppConfig: config.loadAppConfig,
-    }),
-  };
+  return notImplemented('createDefaultStoreServiceDeps');
 }

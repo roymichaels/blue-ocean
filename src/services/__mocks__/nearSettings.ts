@@ -1,59 +1,34 @@
-import { canonicalJson } from '@/utils/serialization';
-import { ALL_ADMIN_SCOPES } from '@/types';
-import type { AdminScope } from '@/types';
+// STUB: NEAR removed test helper. Bolt will replace with Supabase-backed mocks.
+import { notImplemented } from '@/services/nearStub';
 
-const store: Record<string, string> = {};
-
-export async function getSetting(key: string): Promise<string | null> {
-  return store[key] ?? null;
+export async function getSetting(_key: string): Promise<string | null> {
+  return notImplemented('mock:getSetting');
 }
 
-export async function setSetting(key: string, value: string): Promise<void> {
-  store[key] = value;
+export async function setSetting(_key: string, _value: string): Promise<void> {
+  return notImplemented('mock:setSetting');
 }
 
 export async function getAdmins(): Promise<string[]> {
-  return store['admins'] ? JSON.parse(store['admins']) : [];
+  return notImplemented('mock:getAdmins');
 }
 
-export async function setAdmins(admins: string[]): Promise<void> {
-  store['admins'] = canonicalJson(admins);
-  const scopes: Record<string, AdminScope[]> = {};
-  admins.forEach((a) => {
-    scopes[a] = ALL_ADMIN_SCOPES;
-  });
-  store['adminScopes'] = canonicalJson(scopes);
+export async function setAdmins(_admins: string[]): Promise<void> {
+  return notImplemented('mock:setAdmins');
 }
 
-export async function getAdminScopes(): Promise<Record<string, AdminScope[]>> {
-  return store['adminScopes'] ? JSON.parse(store['adminScopes']) : {};
+export async function getAdminScopes(): Promise<Record<string, unknown>> {
+  return notImplemented('mock:getAdminScopes');
 }
 
-export async function setAdminScopes(scopes: Record<string, AdminScope[]>): Promise<void> {
-  store['adminScopes'] = canonicalJson(scopes);
+export async function setAdminScopes(_scopes: Record<string, unknown>): Promise<void> {
+  return notImplemented('mock:setAdminScopes');
 }
 
 export async function fetchSettings() {
-  return {
-    tenantId: store['tenantId'] ?? 'blue-ocean',
-    appName: store['appName'] ?? 'Blue Ocean',
-    theme: { primary: store['theme.primary'] ?? '#B99C5A' },
-    brand: { logoCid: store['brand.logoCid'] ?? '' },
-    fiatKey: store['fiatKey'],
-    feeAddress: store['feeAddress'] ?? '',
-    feeBps: store['feeBps'] ? Number(store['feeBps']) : 0,
-    admins: store['admins'] ? JSON.parse(store['admins']) : [],
-    adminScopes: store['adminScopes'] ? JSON.parse(store['adminScopes']) : {},
-    rpcUrl: store['rpcUrl'] ?? '',
-    rpcFallbackUrls: store['rpcFallbackUrls']
-      ? JSON.parse(store['rpcFallbackUrls'])
-      : [],
-    paymentFactoryAddress: store['paymentFactoryAddress'],
-  };
+  return notImplemented('mock:fetchSettings');
 }
 
-export const subscribeToSettingsWrites = jest
-  .fn()
-  .mockResolvedValue(() => {});
+export const subscribeToSettingsWrites = async () => notImplemented('mock:subscribeToSettingsWrites');
 
-export const __store = store;
+export const __store = {} as Record<string, string>;

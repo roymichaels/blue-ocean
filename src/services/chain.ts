@@ -1,24 +1,49 @@
-const chain = 'near';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+import { notImplemented } from '@/services/nearStub';
+
+const chain = 'bolt';
 
 export const chainAdapter = {
-  async init() { throw new Error('Unsupported chain'); },
-  async openModal() { throw new Error('Unsupported chain'); },
-  useAccount() { return null; },
-  useAccountId() { return null; },
-  getAccountId() { return null; },
-  getPublicKey() { return null; },
-  getSelector() { return null; },
-  async getBalance() { return '0'; },
-  async signMessage() { throw new Error('Unsupported chain'); },
-  async listOrdersBySeller() { throw new Error('Unsupported chain'); },
-  async listOrdersByBuyer() { throw new Error('Unsupported chain'); },
-  async payPrivately() { throw new Error('Unsupported chain'); },
+  async init(): Promise<never> {
+    return notImplemented('chainAdapter.init');
+  },
+  async openModal(): Promise<never> {
+    return notImplemented('chainAdapter.openModal');
+  },
+  useAccount(): string | null {
+    return notImplemented('chainAdapter.useAccount');
+  },
+  useAccountId(): string | null {
+    return notImplemented('chainAdapter.useAccountId');
+  },
+  getAccountId(): string | null {
+    return notImplemented('chainAdapter.getAccountId');
+  },
+  getPublicKey(): string | null {
+    return notImplemented('chainAdapter.getPublicKey');
+  },
+  getSelector(): never {
+    return notImplemented('chainAdapter.getSelector');
+  },
+  async getBalance(): Promise<string> {
+    return notImplemented('chainAdapter.getBalance');
+  },
+  async signMessage(): Promise<string> {
+    return notImplemented('chainAdapter.signMessage');
+  },
+  async listOrdersBySeller(): Promise<never> {
+    return notImplemented('chainAdapter.listOrdersBySeller');
+  },
+  async listOrdersByBuyer(): Promise<never> {
+    return notImplemented('chainAdapter.listOrdersByBuyer');
+  },
+  async payPrivately(): Promise<never> {
+    return notImplemented('chainAdapter.payPrivately');
+  },
 };
 
-export function assertNearChain(): void {
-  if (chain !== 'near') {
-    throw new Error('BlueOcean is NEAR-only. Set EXPO_PUBLIC_CHAIN=near');
-  }
+export function assertNearChain(): never {
+  return notImplemented('assertNearChain');
 }
 
 export default chain;

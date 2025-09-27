@@ -1,15 +1,3 @@
-import canonicalize from 'canonicalize';
-
-/**
- * Serialize a value using canonical JSON encoding so that
- * equivalent objects produce the same string representation.
- */
-export function serializeCanonical(value: unknown): string {
-  const result = canonicalize(value);
-  return result ?? '';
+export function canonicalJson(value: unknown): string {
+  return JSON.stringify(value);
 }
-
-export const canonicalJson = serializeCanonical;
-
-export default serializeCanonical;
-

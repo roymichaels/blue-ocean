@@ -1,21 +1,15 @@
-import { setValue, listValues, removeValue } from '@/services/nearKvStore';
-import { Report } from '@/types';
-import { assertNearChain } from '@/services/chain';
-import { canonicalJson } from '@/utils/serialization';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+import type { Report } from '@/types';
+import { notImplemented } from '@/services/nearStub';
 
-assertNearChain();
-
-const ADDRESS = 'reports';
-
-export async function addReport(report: Report) {
-  await setValue(ADDRESS, report.id, canonicalJson(report));
+export async function addReport(_report: Report): Promise<void> {
+  return notImplemented('addReport');
 }
 
 export async function listReports(): Promise<Report[]> {
-  const items = await listValues(ADDRESS);
-  return items.map((i) => JSON.parse(i.value) as Report);
+  return notImplemented('listReports');
 }
 
-export async function removeReport(id: string) {
-  await removeValue(ADDRESS, id);
+export async function removeReport(_id: string): Promise<void> {
+  return notImplemented('removeReport');
 }

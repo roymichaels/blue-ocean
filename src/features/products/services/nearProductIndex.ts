@@ -1,34 +1,22 @@
-import { Buffer } from 'buffer';
-import { ProductIndexItem } from '@/types';
-import { chainAdapter, assertNearChain } from '@/services/chain';
-import { canonicalJson } from '@/utils/serialization';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+import type { ProductIndexItem } from '@/types';
+import { notImplemented } from '@/services/nearStub';
 
-assertNearChain();
-
-export function encodeProductIndexItem(item: ProductIndexItem): string {
-  return canonicalJson(item);
+export function encodeProductIndexItem(_item: ProductIndexItem): string {
+  return notImplemented('encodeProductIndexItem');
 }
 
 export function decodeProductIndexItem(
-  id: string,
-  data: string,
+  _id: string,
+  _data: string,
 ): ProductIndexItem {
-  const parsed = JSON.parse(data);
-  return { id, ...parsed };
+  return notImplemented('decodeProductIndexItem');
 }
 
-function buildBatch(items: ProductIndexItem[]): string {
-  return canonicalJson(items);
+export async function setProductBatch(_items: ProductIndexItem[]): Promise<void> {
+  return notImplemented('setProductBatch');
 }
 
-export async function setProductBatch(
-  items: ProductIndexItem[],
-): Promise<void> {
-  const payload = buildBatch(items);
-  await chainAdapter.signMessage?.(Buffer.from(payload));
+export function estimateSetProductBatch(_items: ProductIndexItem[]): number {
+  return notImplemented('estimateSetProductBatch');
 }
-
-export function estimateSetProductBatch(items: ProductIndexItem[]): number {
-  return buildBatch(items).length;
-}
-

@@ -1,16 +1,6 @@
-import { chainAdapter } from '@/services/chain';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+import { notImplemented } from '@/services/nearStub';
 
-// Ensures a NEAR wallet session, prompting sign-in if necessary.
-export default async function ensureNearWallet(errorMessage: string) {
-  let address = chainAdapter.getAccountId();
-  let publicKey = chainAdapter.getPublicKey();
-  if (!address || !publicKey) {
-    await chainAdapter.openModal();
-    address = chainAdapter.getAccountId();
-    publicKey = chainAdapter.getPublicKey();
-  }
-  if (!address || !publicKey) {
-    throw new Error(errorMessage);
-  }
-  return { address, publicKey };
+export default function ensureNearWallet(_message?: string): Promise<never> {
+  return Promise.resolve().then(() => notImplemented('ensureNearWallet'));
 }

@@ -1,31 +1,19 @@
-import { getValue, setValue, listValues } from '@/services/nearKvStore';
-import { Review } from '@/types';
-import { assertNearChain } from '@/services/chain';
-import { canonicalJson } from '@/utils/serialization';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+import type { Review } from '@/types';
+import { notImplemented } from '@/services/nearStub';
 
-assertNearChain();
-
-const ADDRESS = 'reviews';
-
-export async function getReviews(productId: string): Promise<Review[]> {
-  const res = await getValue(ADDRESS, productId);
-  return res ? (JSON.parse(res) as Review[]) : [];
+export async function getReviews(_productId: string): Promise<Review[]> {
+  return notImplemented('getReviews');
 }
 
-export async function addReview(review: Review) {
-  const existing = await getReviews(review.productId);
-  const updated = [...existing, review];
-  await setValue(ADDRESS, review.productId, canonicalJson(updated));
+export async function addReview(_review: Review): Promise<void> {
+  return notImplemented('addReview');
 }
 
 export async function listAllReviews(): Promise<Review[]> {
-  const items = await listValues(ADDRESS);
-  return items.flatMap((i) => JSON.parse(i.value) as Review[]);
+  return notImplemented('listAllReviews');
 }
 
-export async function removeReview(productId: string, reviewId: string) {
-  const existing = await getReviews(productId);
-  const updated = existing.filter((r) => r.id !== reviewId);
-  await setValue(ADDRESS, productId, canonicalJson(updated));
+export async function removeReview(_productId: string, _reviewId: string): Promise<void> {
+  return notImplemented('removeReview');
 }
-

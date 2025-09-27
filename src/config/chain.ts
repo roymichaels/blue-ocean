@@ -1,9 +1,8 @@
-export const CHAIN = (process.env.EXPO_PUBLIC_CHAIN || 'near').toLowerCase() as 'near';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+export const CHAIN = 'bolt' as const;
 
-
-if (CHAIN !== 'near') {
-  throw new Error('BlueOcean is NEAR-only. Set EXPO_PUBLIC_CHAIN=near');
+export function assertNearChain(): never {
+  throw new Error('NotImplemented: assertNearChain (NEAR removed; pending Supabase refactor)');
 }
 
-export default CHAIN as 'near';
-
+export default CHAIN;

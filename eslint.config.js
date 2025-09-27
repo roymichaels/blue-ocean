@@ -1,6 +1,12 @@
-const tsParser = require('@typescript-eslint/parser');
+﻿const tsParser = require('@typescript-eslint/parser');
 const tsPlugin = require('@typescript-eslint/eslint-plugin');
 const reactHooks = require('eslint-plugin-react-hooks');
+
+const baseParserOptions = {
+  ecmaVersion: 'latest',
+  sourceType: 'module',
+  project: './tsconfig.json',
+};
 
 module.exports = [
   // Base rules for app code (exclude tests)
@@ -9,11 +15,7 @@ module.exports = [
     ignores: ['tests/**', 'docs/.vitepress/**'],
     languageOptions: {
       parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json',
-      },
+      parserOptions: baseParserOptions,
     },
     plugins: {
       'react-hooks': reactHooks,
@@ -53,10 +55,37 @@ module.exports = [
           message: 'Use routes helper functions instead of hard-coded paths.',
         },
       ],
+    },
+  },
+  // Backend/service scope: block NEAR libraries from returning
+  {
+    files: [
+      'src/services/**/*.ts',
+      'src/services/**/*.tsx',
+      'src/config/**/*.ts',
+      'src/lib/**/*.ts',
+      'src/api/**/*.ts',
+      'packages/utils/src/**/*.ts',
+      'packages/sdk-near/src/**/*.ts',
+      'scripts/check-no-near.js',
+      'db/**/*.ts',
+    ],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: baseParserOptions,
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    rules: {
       'no-restricted-imports': [
         'error',
         {
-          patterns: ['../src/**', '../app/**', '../../src/**', '../../app/**'],
+          paths: [
+            { name: 'near-api-js', message: 'NEAR removed' },
+            { name: '@near/*', message: 'NEAR removed' },
+            { name: 'near-lake-framework', message: 'NEAR removed' },
+          ],
         },
       ],
     },
@@ -79,11 +108,7 @@ module.exports = [
     files: ['src/features/**/*.ts', 'src/features/**/*.tsx'],
     languageOptions: {
       parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json',
-      },
+      parserOptions: baseParserOptions,
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
@@ -106,11 +131,7 @@ module.exports = [
     files: ['app/\\(tabs\\)/**/*.ts', 'app/\\(tabs\\)/**/*.tsx'],
     languageOptions: {
       parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json',
-      },
+      parserOptions: baseParserOptions,
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
@@ -122,6 +143,13 @@ module.exports = [
           patterns: ['@services/**'],
         },
       ],
+    },
+  },
+  // Allow stub + Waku internals to reference NEAR strings
+  {
+    files: ['src/services/_adapters/near_replacement.*', 'src/services/waku/**', 'src/services/nearStub.ts'],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
   // Non type-aware rules for tests

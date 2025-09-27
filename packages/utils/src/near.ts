@@ -1,78 +1,47 @@
-import { Account, Near, connect, keyStores } from 'near-api-js';
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+const STUB_MESSAGE = 'NEAR removed; pending Supabase refactor';
 
-const DEFAULT_GAS = BigInt('150000000000000'); // 150 Tgas
-
-/**
- * Create a NEAR connection using near-api-js.
- * Defaults to the public testnet configuration.
- */
-export async function makeNear(
-  networkId = 'testnet',
-): Promise<Near> {
-  const nodeUrl = networkId === 'mainnet'
-    ? 'https://rpc.mainnet.near.org'
-    : 'https://rpc.testnet.near.org';
-  const walletUrl = networkId === 'mainnet'
-    ? 'https://app.mynearwallet.com'
-    : 'https://testnet.mynearwallet.com';
-  const helperUrl = networkId === 'mainnet'
-    ? 'https://helper.mainnet.near.org'
-    : 'https://helper.testnet.near.org';
-
-  return connect({
-    networkId,
-    nodeUrl,
-    walletUrl,
-    helperUrl,
-    deps: { keyStore: new keyStores.InMemoryKeyStore() },
-  });
+export class NotImplementedError extends Error {
+  constructor(message = STUB_MESSAGE) {
+    super(message);
+    this.name = 'NotImplementedError';
+  }
 }
 
-interface CallOptions {
+const throwNotImplemented = (name: string): never => {
+  throw new NotImplementedError('NotImplemented: ' + name + ' (' + STUB_MESSAGE + ')');
+};
+
+export async function makeNear(_networkId = 'testnet'): Promise<never> {
+  return throwNotImplemented('makeNear');
+}
+
+export interface CallOptions {
   gas?: bigint;
   deposit?: bigint;
 }
 
-/**
- * Execute a change method on a contract.
- *
- * @param account NEAR account used to sign the transaction.
- * @param contractId Target contract account id.
- * @param methodName Contract method to call.
- * @param args Arguments to pass to the method.
- * @param options Optional gas and deposit overrides.
- */
 export async function callFunction(
-  account: Account,
-  contractId: string,
-  methodName: string,
-  args: object = {},
-  options: CallOptions = {},
-) {
-  const { gas = DEFAULT_GAS, deposit = BigInt(0) } = options;
-  return account.functionCall({
-    contractId,
-    methodName,
-    args,
-    gas,
-    attachedDeposit: deposit,
-  });
+  _account: unknown,
+  _contractId: string,
+  _methodName: string,
+  _args: object = {},
+  _options: CallOptions = {},
+): Promise<never> {
+  return throwNotImplemented('callFunction');
 }
 
-/**
- * Execute a view method on a contract without requiring a wallet.
- *
- * @param near Active Near connection.
- * @param contractId Target contract account id.
- * @param methodName Contract view method to call.
- * @param args Arguments to pass to the method.
- */
 export async function viewFunction(
-  near: Near,
-  contractId: string,
-  methodName: string,
-  args: object = {},
-) {
-  const account = await near.account('dontcare');
-  return account.viewFunction({ contractId, methodName, args });
+  _near: unknown,
+  _contractId: string,
+  _methodName: string,
+  _args: object = {},
+): Promise<never> {
+  return throwNotImplemented('viewFunction');
 }
+
+export default {
+  makeNear,
+  callFunction,
+  viewFunction,
+};

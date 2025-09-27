@@ -1,3 +1,5 @@
+// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+
 export interface LakeInitConfig {
   s3BucketName: string;
   s3RegionName: string;
@@ -6,19 +8,24 @@ export interface LakeInitConfig {
   onBlock?: (msg: unknown) => Promise<void> | void;
 }
 
+const warn = (name: string) => {
+  if (typeof console !== 'undefined' && console.warn) {
+    console.warn('NotImplemented: ' + name + ' (NEAR removed; pending Supabase refactor)');
+  }
+};
+
 export function initLake(_config: LakeInitConfig): void {
-  // Browser builds do not stream NEAR Lake directly.
+  warn('initLake');
 }
 
-export function onLakeError(_cb: (err: unknown) => void) {
-  return () => {
-    /* no-op */
-  };
+export function onLakeError(_cb: (err: unknown) => void): () => void {
+  warn('onLakeError');
+  return () => {};
 }
-
-export default initLake;
 
 export const lakeMonitor = {
-  on: () => {},
-  off: () => {},
+  on: (..._args: any[]) => warn('lakeMonitor.on'),
+  off: (..._args: any[]) => warn('lakeMonitor.off'),
 };
+
+export { initLake as default };
