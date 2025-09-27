@@ -11,7 +11,7 @@ async function main() {
   const files = await globby(patterns, { cwd: root, absolute: true });
 
   if (!files.length) {
-    console.error('No dist/**/index.js files found. Did you run yarn build:web?');
+    console.error('No dist/**/index.js files found. Did you run npm run build:web?');
     process.exit(1);
   }
 

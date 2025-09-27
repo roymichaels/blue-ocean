@@ -12,22 +12,22 @@ See [docs/architecture.md](docs/architecture.md) for a high-level architecture o
 Blue Ocean ships with a self-hostable VitePress site under `docs/` that bundles quickstarts, operations manuals, and an interactive API playground.
 
 ```sh
-yarn docs:dev       # live reload documentation during authoring
-yarn docs:build     # generate static assets in docs/.vitepress/dist
-yarn docs:preview   # preview the built site locally
+npm run docs:dev       # live reload documentation during authoring
+npm run docs:build     # generate static assets in docs/.vitepress/dist
+npm run docs:preview   # preview the built site locally
 ```
 
 Point a static web server at `docs/.vitepress/dist` to publish the portal under your own domain. The [API playground](docs/api-playground.md) lets you try agent endpoints with mock or live payloads, and the [opt-in telemetry guide](docs/telemetry-opt-in.md) captures the consent workflow for analytics events.
 
 ## Quickstart
 
-Use **Yarn** for dependency management and running scripts.
+Use **npm** for dependency management and running scripts.
 
 ```sh
-yarn install
-yarn dev        # mobile
-yarn dev:web    # web
-yarn lint && yarn typecheck
+npm install
+npm run start   # Expo dev server (mobile)
+npm run dev     # Web
+npm run lint && npm run typecheck
 ```
 
 Metro's web bundler requires `it-all` and `it-pipe` to be listed explicitly in
@@ -80,7 +80,7 @@ const { tokens, colors } = useTheme();
 1. **Install dependencies**
 
    ```sh
-   yarn install
+   npm install
    ```
 
 2. **Set up environment files**
@@ -96,8 +96,8 @@ const { tokens, colors } = useTheme();
 
 3. **Start the Expo project**
 
-   - **Web**: `yarn dev:web`
-   - **Mobile**: `yarn dev`
+   - **Web**: `npm run dev`
+   - **Mobile**: `npm run start`
 
 4. **Connect a NEAR wallet**
 
@@ -116,14 +116,7 @@ All data is ephemeral and synchronized between peers over Waku and written to NE
 Run the linter and TypeScript checker before committing:
 
 ```sh
-yarn lint && yarn typecheck
-```
-
-The project uses Husky and `lint-staged` to run these checks on staged files.
-Install the Git hooks after cloning:
-
-```sh
-yarn husky install
+npm run lint && npm run typecheck
 ```
 
 ### Environment Variables
@@ -268,10 +261,10 @@ without the Waku SDK.
 Start the Expo development server with:
 
 ```sh
-yarn dev
+npm run start
 ```
 
-For web only, use `yarn dev:web`.
+For web-only runs, use `npm run dev`.
 
 ### Running the Agents
 
@@ -284,7 +277,7 @@ replicating data in memory. There is no separate service to launch.
 Export the web build using Expo:
 
 ```sh
-yarn build:web
+npm run build:web
 ```
 
 After exporting, serve `dist/` with any static host.
@@ -297,13 +290,13 @@ the app works from any gateway.
 1. **Build**
 
    ```sh
-   yarn build:web
+   npm run build:web
    ```
 
 2. **Preview locally**
 
    ```sh
-   yarn preview
+   npm run preview:web
    ```
 
    Then open `http://localhost:4173/` and navigate within the app (no deep links).
@@ -318,7 +311,7 @@ the app works from any gateway.
 
 #### Pin `dist/` Checklist
 
-1. `yarn build:web`
+1. `npm run build:web`
 2. `node scripts/assert-relative-assets.js`
 3. Pin the entire `dist/` folder to your IPFS node or pinning service
 4. Record the returned CID for later reference
@@ -353,7 +346,7 @@ Module resolution relies on custom aliases defined in `metro.config.js` and `web
 Verify the exported web build serves the root page correctly:
 
 ```sh
-yarn build:web
+npm run build:web
 node tests/web-smoke.js
 ```
 
@@ -371,7 +364,7 @@ The project uses MoonPay for purchasing crypto with a credit card. Configure the
 
 1. Install the library:
 ```sh
-yarn add expo-payments-stripe
+npm install expo-payments-stripe
 ```
 2. Add the plugin to **app.json**:
 ```json

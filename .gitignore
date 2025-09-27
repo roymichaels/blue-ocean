@@ -17,9 +17,9 @@ expo-export/
 
 # Package manager locks we do not commit
 bun.lockb
-package-lock.json
 pnpm-lock.yaml
 yarn.lock
+package-lock.json
 
 # Environment and state files
 .env*

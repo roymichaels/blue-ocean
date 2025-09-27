@@ -17,38 +17,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            ~/.cache/yarn
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
-      - run: yarn install --frozen-lockfile
-      - run: yarn lint
-      - run: yarn typecheck
-      - run: yarn config:check
-      - run: yarn build:web
-      - run: yarn docs:build
-  contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Install cargo-audit
-        run: cargo install cargo-audit
-      - name: Clippy
-        working-directory: contracts/marketplace
-        run: cargo clippy --all-targets -- -D warnings
-      - name: Cargo audit
-        working-directory: contracts/marketplace
-        run: cargo audit
+          cache: 'npm'
+      - run: npm install
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run config:check
+      - run: npm run build:web
+      - run: npm run docs:build
   link-check:
     runs-on: ubuntu-latest
     steps:

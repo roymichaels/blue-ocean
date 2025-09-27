@@ -45,4 +45,4 @@ async function createDraft() {
 - CORS errors are reported as generic failures. Run the docs on the same origin or configure `Access-Control-Allow-Origin` for
   the docs hostname during local testing.
 - When running behind a reverse proxy with a sub-path (e.g. `/docs`), update the `base` option in `.vitepress/config.ts` and
-  rebuild with `yarn docs:build` so relative asset URLs resolve correctly.
+  rebuild with `npm run docs:build` so relative asset URLs resolve correctly.
