@@ -1,0 +1,124 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-native",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": [
+      "react",
+      "jest",
+      "node"
+    ],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@blue-ocean/sdk-near": [
+        "packages/sdk-near/src"
+      ],
+      "@/auth/*": [
+        "src/auth/*"
+      ],
+      "@/features/*": [
+        "src/features/*"
+      ],
+      "@/shared/*": [
+        "src/shared/*"
+      ],
+      "@/ui/*": [
+        "src/ui/*"
+      ],
+      "@/ui": [
+        "src/ui/index.ts"
+      ],
+      "@/layout/*": [
+        "src/layout/*"
+      ],
+      "@/core/*": [
+        "src/core/*"
+      ],
+      "@/agents/*": [
+        "src/agents/*"
+      ],
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/config": [
+        "src/config/index.ts"
+      ],
+      "@/config/*": [
+        "src/config/*"
+      ],
+      "@/constants/*": [
+        "src/constants/*"
+      ],
+      "@/contexts/*": [
+        "src/contexts/*"
+      ],
+      "@/hooks": [
+        "src/hooks/index.ts"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
+      ],
+      "@/services/*": [
+        "src/services/*"
+      ],
+      "@/billing": [
+        "src/billing/index.ts"
+      ],
+      "@/billing/*": [
+        "src/billing/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/providers": [
+        "src/providers/index.ts"
+      ],
+      "@/providers/*": [
+        "src/providers/*"
+      ],
+      "@/schemas/*": [
+        "src/schemas/*"
+      ],
+      "@/i18n": [
+        "src/i18n.ts"
+      ],
+      "@/types": [
+        "src/types/index.ts"
+      ],
+      "@/types/*": [
+        "src/types/*"
+      ],
+      "@/*": [
+        "./*"
+      ],
+      "@expo/metro-runtime/src/HMRClient": [
+        "./HMRClient.ts"
+      ],
+      "@expo/metro-runtime/src/HMRClient.ts": [
+        "./HMRClient.ts"
+      ]
+    },
+    "customConditions": [
+      "browser"
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "nativewind-env.d.ts",
+    "src/types/wasm.d.ts",
+    "src/types/lucide-react-native.d.ts",
+    "src/types/**/*.d.ts"
+  ],
+  "exclude": ["tests"],
+  "extends": "expo/tsconfig.base.json"
+}

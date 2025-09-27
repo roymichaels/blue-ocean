@@ -1,0 +1,12 @@
+{
+  "name": "blue-ocean-bolt-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "prebolt": "node scripts/check-no-near.js && tsc -p tsconfig.bolt.json",
+    "dev": "node -e \"console.log('bolt backend mirror; no dev server')\""
+  },
+  "devDependencies": { "typescript": "^5.4.0" },
+  "engines": { "node": ">=18" }
+}

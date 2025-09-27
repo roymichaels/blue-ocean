@@ -1,0 +1,34 @@
+﻿{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/services/near*.ts",
+    "src/services/**/near*.ts",
+    "src/services/chain.ts",
+    "src/services/wallet/**/*.ts",
+    "src/services/nearStub.ts",
+    "src/services/__mocks__/nearSettings.ts",
+    "src/config/**/*.ts",
+    "packages/utils/src/**/*.ts",
+    "packages/sdk-near/src/**/*.ts",
+    "scripts/check-no-near.js",
+    "db/**/*"
+  ],
+  "exclude": [
+    "app/**/*",
+    "ui/**/*",
+    "src/components/**/*",
+    "src/agents/**/*",
+    "pages/**/*",
+    "styles/**/*",
+    "tests/**/*",
+    "__tests__/**/*",
+    "assets/**/*",
+    "docs/**/*",
+    "node_modules/**/*",
+    "src/services/waku.ts"
+  ]
+}

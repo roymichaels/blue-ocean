@@ -1,0 +1,101 @@
+// TODO:KYC-020 metrics: kyc_requests_total, kyc_approvals_total, kyc_receipts_hydrated_total, kyc_dm_backlog_gauge
+
+import pino from 'pino';
+import { LocalMetricRegistry, MetricLabels } from '@/utils/localMetrics';
+
+export const registry = new LocalMetricRegistry({ anonymizeLabels: true });
+export const logger = pino({ name: 'monitoring' });
+
+export const latencyHistogram = registry.createHistogram({
+  name: 'service_latency_ms',
+  help: 'Service call latency (ms)',
+  labelNames: ['service', 'stage', 'order_id', 'order_nonce'],
+  anonymizeLabels: false,
+});
+
+export const failureCounter = registry.createCounter({
+  name: 'service_failures_total',
+  help: 'Service call failures',
+  labelNames: ['service'],
+  anonymizeLabels: false,
+});
+
+export const adminUnauthorizedAttempts = registry.createCounter({
+  name: 'admin_unauthorized_attempts_total',
+  help: 'Unauthorized admin actions',
+});
+
+export const adminCountGauge = registry.createGauge({
+  name: 'admin_count',
+  help: 'Number of registered admins',
+});
+
+export const cacheHydrationHistogram = registry.createHistogram({
+  name: 'cache_hydration_ms',
+  help: 'Time to hydrate cache (ms)',
+  labelNames: ['cache'],
+});
+
+export const cacheHitRatioGauge = registry.createGauge({
+  name: 'cache_hit_ratio',
+  help: 'Cache hit ratio (hits/total)',
+  labelNames: ['cache'],
+});
+
+export const cacheLagGauge = registry.createGauge({
+  name: 'cache_sync_lag_ms',
+  help: 'Measured lag between diff timestamp and apply time (ms)',
+  labelNames: ['cache'],
+});
+
+export const cacheLagAlertCounter = registry.createCounter({
+  name: 'cache_sync_lag_alert_total',
+  help: 'Number of times cache lag exceeded the alert threshold',
+  labelNames: ['cache'],
+});
+
+export const wakuDecryptErrorCounter = registry.createCounter({
+  name: 'waku_decrypt_errors_total',
+  help: 'Count of Waku decrypt failures by reason',
+  labelNames: ['reason'],
+});
+
+export const authRateLimitCounter = registry.createCounter({
+  name: 'auth_rate_limit_total',
+  help: 'Number of auth requests rejected due to rate limiting',
+});
+
+export const authScopeRequestCounter = registry.createCounter({
+  name: 'auth_scope_requests_total',
+  help: 'Total auth scope requests',
+});
+
+export const authInvalidScopeCounter = registry.createCounter({
+  name: 'auth_invalid_scope_total',
+  help: 'Auth scope requests with invalid scopes',
+  labelNames: ['scope'],
+});
+
+export const checkoutTokenIntegrity = registry.createCounter({
+  name: 'checkout_token_integrity_total',
+  help: 'Checkout attempts grouped by token validity and success',
+  labelNames: ['token_valid', 'success'],
+  anonymizeLabels: false,
+});
+
+export async function withMonitoring<T>(
+  service: string,
+  fn: () => Promise<T>,
+  labels: MetricLabels = {},
+): Promise<T> {
+  const timer = latencyHistogram.startTimer({ service, ...labels });
+  try {
+    return await fn();
+  } catch (err) {
+    failureCounter.inc({ service });
+    logger.error({ service, ...labels, err }, 'service failure');
+    throw err;
+  } finally {
+    timer();
+  }
+}

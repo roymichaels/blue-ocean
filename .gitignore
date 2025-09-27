@@ -28,3 +28,14 @@ dump.sql
 coverage/
 
 coverage-backup.tar.gz
+node_modules/
+dist/
+build/
+.next/
+.out/
+coverage/
+expo-export/
+.expo/
+.turbo/
+**/.cache/
+bolt-backend.zip
