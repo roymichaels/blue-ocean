@@ -4,27 +4,29 @@
 
 expo-env.d.ts
 # @end expo-cli
-node_modules/
-.expo/
-dist/
 bun.lockb
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
-dist
-dist-ssr
-*.local
-
-# Rust build artifacts
-**/target/
-
-
 
 # Environment files
 .env*
 dump.sql
 .state/
-.env
+
+# Node / Expo artifacts
+node_modules/
+.expo/
+.expo-shared/
+.turbo/
+dist/
+build/
+.next/
+.out/
 coverage/
+expo-export/
+**/.cache/
+*.log
 
 coverage-backup.tar.gz
+bolt-backend.zip

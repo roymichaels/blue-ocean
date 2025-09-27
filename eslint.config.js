@@ -65,10 +65,9 @@ module.exports = [
       'src/config/**/*.ts',
       'src/lib/**/*.ts',
       'src/api/**/*.ts',
-      'packages/utils/src/**/*.ts',
-      'packages/sdk-near/src/**/*.ts',
       'scripts/check-no-near.js',
       'db/**/*.ts',
+      'src/vendor/**/*.ts',
     ],
     languageOptions: {
       parser: tsParser,

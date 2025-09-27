@@ -1,113 +1,22 @@
 {
-    "extends":  "./tsconfig.json",
-    "compilerOptions":  {
-                            "baseUrl":  ".",
-                            "types":  [
-                                          "jest",
-                                          "node"
-                                      ],
-                            "jsx":  "react-jsx",
-                            "paths":  {
-                                          "@/*":  [
-                                                      "*"
-                                                  ],
-                                          "@/auth/*":  [
-                                                           "src/auth/*"
-                                                       ],
-                                          "@/features/*":  [
-                                                               "src/features/*"
-                                                           ],
-                                          "@/shared/*":  [
-                                                             "src/shared/*"
-                                                         ],
-                                          "@/ui/*":  [
-                                                         "src/ui/*"
-                                                     ],
-                                          "@/ui":  [
-                                                       "src/ui/index"
-                                                   ],
-                                          "@/layout/*":  [
-                                                             "src/layout/*"
-                                                         ],
-                                          "@/core/*":  [
-                                                           "src/core/*"
-                                                       ],
-                                          "@/agents/*":  [
-                                                              "src/agents/*"
-                                                          ],
-                                          "@/components/*":  [
-                                                                  "src/components/*"
-                                                              ],
-                                          "@/config":  [
-                                                           "src/config/index"
-                                                       ],
-                                          "@/config/*":  [
-                                                            "src/config/*"
-                                                        ],
-                                          "@/constants/*":  [
-                                                               "src/constants/*"
-                                                           ],
-                                          "@/contexts/*":  [
-                                                              "src/contexts/*"
-                                                          ],
-                                          "@/hooks":  [
-                                                         "src/hooks/index"
-                                                     ],
-                                          "@/hooks/*":  [
-                                                            "src/hooks/*"
-                                                        ],
-                                          "@/services/*":  [
-                                                               "src/services/*"
-                                                           ],
-                                          "@/billing":  [
-                                                            "src/billing/index"
-                                                        ],
-                                          "@/billing/*":  [
-                                                              "src/billing/*"
-                                                          ],
-                                          "@/utils/*":  [
-                                                            "src/utils/*"
-                                                        ],
-                                          "@/providers/*":  [
-                                                                "src/providers/*"
-                                                            ],
-                                          "@/providers":  [
-                                                              "src/providers/index"
-                                                          ],
-                                          "@/i18n":  [
-                                                         "src/i18n"
-                                                     ],
-                                          "@/schemas/*":  [
-                                                              "src/schemas/*"
-                                                          ],
-                                          "@/types":  [
-                                                           "src/types/index"
-                                                       ],
-                                          "@/types/*":  [
-                                                             "src/types/*"
-                                                         ],
-                                          "src/*":  [
-                                                        "src/*"
-                                                    ],
-                                          "@waku/sdk":  [
-                                                            "tests/types/waku-sdk"
-                                                        ],
-                                          "@noble/hashes/sha256":  [
-                                                                       "tests/nobleSha256Mock"
-                                                                   ],
-                                          "@noble/hashes/sha512":  [
-                                                                       "tests/nobleSha512Mock"
-                                                                   ]
-                                      },
-                            "moduleResolution":  "Bundler"
-                        },
-    "include":  [
-                    "tests",
-                    "src",
-                    "src/hooks",
-                    "src/services",
-                    "app",
-                    "scripts",
-                    "jest.config.js"
-                ]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["jest", "node"],
+    "paths": {
+      "@/*": ["src/*"],
+      "@expo/metro-runtime/src/HMRClient": ["./HMRClient.ts"],
+      "@expo/metro-runtime/src/HMRClient.ts": ["./HMRClient.ts"],
+      "@waku/sdk": ["tests/types/waku-sdk"],
+      "@noble/hashes/sha256": ["tests/nobleSha256Mock"],
+      "@noble/hashes/sha512": ["tests/nobleSha512Mock"]
+    }
+  },
+  "include": [
+    "tests",
+    "src",
+    "app",
+    "scripts",
+    "jest.config.js"
+  ]
 }

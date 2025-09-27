@@ -37,8 +37,6 @@ const cfg = {
         'expo-linear-gradient',
         'react-native-svg',
         'lucide-react-native',
-        '@blue-ocean/utils',
-        '@blue-ocean/sdk-near',
         '@waku/.*',
         'uuid',
       ].join('|') +
@@ -115,7 +113,8 @@ const cfg = {
     '^@/schemas/(.*)$': '<rootDir>/src/schemas/$1',
     '^@/types$': '<rootDir>/src/types/index',
     '^@/types/(.*)$': '<rootDir>/src/types/$1',
-    '^@/(.*)$': '<rootDir>/$1',
+    '^@/vendor/(.*)$': '<rootDir>/src/vendor/$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
     '^src/(.*)$': '<rootDir>/src/$1',
     '^@waku/sdk$': '<rootDir>/tests/wakuSdkMock.js',
 
@@ -145,7 +144,6 @@ const cfg = {
     '<rootDir>/tests/admin-store-detail.test.tsx',
     '<rootDir>/tests/not-found.test.tsx',
     '<rootDir>/tests/wakuErrorLogging.test.ts',
-    '<rootDir>/tests/wakuHydration.test.ts',
     '<rootDir>/tests/nearAdapter.test.ts',
     '<rootDir>/tests/adminAgent.test.ts',
     '<rootDir>/tests/waku/**/*.test.ts',

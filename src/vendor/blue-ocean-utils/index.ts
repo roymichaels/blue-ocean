@@ -1,4 +1,16 @@
-// STUB: NEAR removed. Do not implement here. Bolt will replace with Supabase.
+export type EventType = 'listings' | 'orders';
+
+export function topicFor(network: string, storeId: string, type: EventType): string {
+  return [network, storeId, type].filter(Boolean).join('.');
+}
+
+export function requireStoreId(storeId?: string | null): string {
+  if (!storeId) {
+    throw new Error('storeId is required');
+  }
+  return storeId;
+}
+
 const STUB_MESSAGE = 'NEAR removed; pending Supabase refactor';
 
 export class NotImplementedError extends Error {
@@ -9,7 +21,7 @@ export class NotImplementedError extends Error {
 }
 
 const throwNotImplemented = (name: string): never => {
-  throw new NotImplementedError('NotImplemented: ' + name + ' (' + STUB_MESSAGE + ')');
+  throw new NotImplementedError(`NotImplemented: ${name} (${STUB_MESSAGE})`);
 };
 
 export async function makeNear(_networkId = 'testnet'): Promise<never> {
@@ -41,6 +53,8 @@ export async function viewFunction(
 }
 
 export default {
+  topicFor,
+  requireStoreId,
   makeNear,
   callFunction,
   viewFunction,

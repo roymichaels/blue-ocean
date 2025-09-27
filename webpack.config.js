@@ -126,8 +126,7 @@ module.exports = async function (env, argv) {
     '@/services': path.resolve(__dirname, 'src/services'),
     '@/types': path.resolve(__dirname, 'src/types'),
     '@/utils': path.resolve(__dirname, 'src/utils'),
-    '@blue-ocean/sdk-near': path.resolve(__dirname, 'packages/sdk-near/src'),
-    '@blue-ocean/sdk-near': path.resolve(__dirname, 'packages/sdk-near/dist'),
+    '@/vendor': path.resolve(__dirname, 'src/vendor'),
     'expo-router/_ctx': path.resolve(__dirname, 'router-ctx.web.js'),
     'expo-router/_ctx.web': path.resolve(__dirname, 'router-ctx.web.js'),
     'expo-router/_ctx.web.js': path.resolve(__dirname, 'router-ctx.web.js'),
@@ -139,7 +138,6 @@ module.exports = async function (env, argv) {
     '@waku/core/lib/message/version_0': version0,
     '@waku/core/lib/message/version-0': version0,
     '@waku/core$': wakuCore,
-    '@blue-ocean/utils': path.resolve(__dirname, 'shims/bo-utils.js'),
     'fs/promises': false,
     // Avoid bundling Node-only NEAR provider in web builds
     '@near-js/providers': false,

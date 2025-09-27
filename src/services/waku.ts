@@ -2,7 +2,6 @@
 // TODO:CORE-023 derive shared keys per-tenant (replace per-process secret)
 
 import type { LightNode } from '@waku/sdk';
-import type { types } from 'near-lake-framework';
 import { getClient } from '@/utils/transport';
 import { errorLog } from '@/utils/logger';
 import { gzipSize } from '@/utils/gzipSize';
@@ -20,7 +19,7 @@ import {
 import { serviceLatency, serviceFailures } from '@/utils/observability';
 import { wakuDecryptErrorCounter } from './monitoring';
 import { initLake } from './nearLake';
-import { topicFor } from '@blue-ocean/utils';
+import { topicFor } from '@/vendor/blue-ocean-utils';
 import { getNetworkId, getContractId } from '@/hooks/config';
 import { randomBytes } from '@noble/hashes/utils';
 
@@ -68,6 +67,7 @@ const PUBLISHER_KEY_STORAGE_KEY = 'waku_ephemeral_key';
 const PUBLISHER_KEY_GLOBAL_SYMBOL = Symbol.for('waku.publisherKey');
 
 type WakuClient = Awaited<ReturnType<typeof getClient>>;
+type LakeStreamerMessage = unknown;
 
 function toHex(bytes: Uint8Array): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -549,7 +549,7 @@ function dedupeKey(tx: string, i: number) {
   return `${tx}:${i}`;
 }
 
-async function handleLakeBlock(msg: types.StreamerMessage) {
+async function handleLakeBlock(msg: LakeStreamerMessage) {
   const network = getNetworkId() || 'testnet';
   const contract = getContractId();
   const blockHeight = msg.block.header.height;
