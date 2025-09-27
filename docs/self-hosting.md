@@ -6,8 +6,8 @@ registry. The build is deterministic and requires only Node.js.
 ## Build locally
 
 ```sh
-yarn install
-yarn docs:build
+npm install
+npm run docs:build
 ```
 
 The static site is emitted to `docs/.vitepress/dist`. Serve it locally to confirm routing and assets:
@@ -47,15 +47,15 @@ export default defineConfig({
 });
 ```
 
-Rebuild with `yarn docs:build` so that generated asset URLs respect the new base. Configure your proxy to rewrite `/docs` to the
+Rebuild with `npm run docs:build` so that generated asset URLs respect the new base. Configure your proxy to rewrite `/docs` to the
 static directory.
 
 ## Continuous publishing
 
 Automate builds with your CI provider:
 
-1. Install dependencies with `yarn install --frozen-lockfile`.
-2. Run `yarn docs:build` to produce the site.
+1. Install dependencies with `npm ci`.
+2. Run `npm run docs:build` to produce the site.
 3. Upload `docs/.vitepress/dist` as a build artifact, container layer, or direct deployable.
 
 The link checker workflow defined in `.github/workflows/ci.yml` ensures internal and external references remain valid between

@@ -54,7 +54,7 @@ All tenants publish metrics to `/blue-ocean/{tenantId}/analytics/1`. Replace
 1. Install the Waku SDK if it is not already available:
 
    ```sh
-   yarn add @waku/sdk
+   npm install @waku/sdk
    ```
 
 2. Bootstrap a light node, wait for a relay peer, and register a relay observer

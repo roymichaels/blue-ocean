@@ -33,4 +33,4 @@ All topics are dual-written with tenant scopes so downstream relays can subscrib
 * `tests/auth/adminRecovery.test.ts` covers code generation, request/verify flows, rate limiting, and replay handling.
 * `tests/waku/recoveryHistory.test.ts` replays stored events to guarantee idempotency.
 
-Use `yarn jest --config tests/jest.unit.config.js --testPathPattern=auth/adminRecovery.test.ts` to re-run the suite locally.
+Use `npm run test -- --config tests/jest.unit.config.js --testPathPattern=auth/adminRecovery.test.ts` to re-run the suite locally.

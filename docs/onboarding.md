@@ -9,7 +9,7 @@ Give your community a working Blue Ocean storefront in a single afternoon. This 
 This playbook is intended for tenant administrators who manage their own NEAR accounts and control the storefront configuration. You should:
 
 - Have access to a NEAR wallet with enough funds to pay for contract deployment and initial transactions.
-- Be able to run Node.js 18+, Yarn, and the NEAR CLI from your workstation.
+- Be able to run Node.js 18+, npm, and the NEAR CLI from your workstation.
 - Know the marketplace contract account (or be ready to deploy one) and own the admin keys that should control the tenant.
 
 ## 1. Prepare your wallet
@@ -18,7 +18,7 @@ This playbook is intended for tenant administrators who manage their own NEAR ac
 2. **Secure your seed phrase.** Store the recovery phrase offline before proceeding. Require hardware-backed authentication where possible.
 3. **Fund the account.** Keep at least 3 Ⓝ available for contract deployment fees, storage staking, and initial listings.
 4. **Enable admin bootstrap canary.** Set `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2=1` once your canary wallet has tested the join request flow end-to-end. To stage the rollout, supply `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_CANARY=<wallet1,wallet2>` while the global flag remains off, and keep `EXPO_PUBLIC_FEATURE_ADMIN_BOOTSTRAP_V2_ROLLBACK=1` ready as an instant kill switch.
-5. **Sign in through the app.** Launch Blue Ocean (`yarn dev` or `yarn dev:web`) and use the Profile → **Connect Wallet** action to link your account. Confirm the `Admin` tab is visible before moving forward.
+5. **Sign in through the app.** Launch Blue Ocean (`npm run start` or `npm run dev`) and use the Profile → **Connect Wallet** action to link your account. Confirm the `Admin` tab is visible before moving forward.
 
 > Tip: enable verbose logs during onboarding by setting `EXPO_PUBLIC_DEBUG_LOGS=true` so you can watch Waku agent events in the console.
 
@@ -31,7 +31,7 @@ This playbook is intended for tenant administrators who manage their own NEAR ac
    touch .env.local
    ```
 2. **Populate tenant values.** Open `.env` and `.env.local` and fill in the variables from the checklist below (contract, relayer, wallet URLs, etc.).
-3. **Run the config doctor.** Execute `yarn config:check` to ensure every required key is present and correctly typed.
+3. **Run the config doctor.** Execute `npm run config:check` to ensure every required key is present and correctly typed.
 4. **Verify feature toggles.** Review optional flags such as `EXPO_PUBLIC_FEATURE_WALLET` or `EXPO_PUBLIC_FEATURE_UI_V2` and enable them only if your rollout plan requires the beta experiences.
 5. **Share read-only values with your team.** Public `EXPO_PUBLIC_*` keys can be safely distributed to store managers who run the dashboard. Keep anything non-public inside your secrets manager.
 
@@ -103,7 +103,7 @@ If you already have a contract account provisioned, update `EXPO_PUBLIC_CONTRACT
 
 ### Environment variables
 
-Use this checklist before inviting shoppers. Mark each line once validated and run `yarn config:check` afterwards.
+Use this checklist before inviting shoppers. Mark each line once validated and run `npm run config:check` afterwards.
 
 - [ ] `EXPO_PUBLIC_CHAIN=near`
 - [ ] `EXPO_PUBLIC_NETWORK` is set (`testnet` for staging, `mainnet` for production)

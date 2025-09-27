@@ -1,7 +1,7 @@
 # Sprint Verification - Tabs, Search, Filters
 
 ## Environment Setup
-- `yarn dev:web` used to boot the Expo web app.
+- `npm run dev` used to boot the Expo web app.
 - Installed Playwright and system dependencies to enable headless browser testing.
 - Encountered repeated `ENOSPC` errors indicating the system limit for file watchers was reached while Metro Bundler initialized.
 - Attempts to increase `fs.inotify` limits and run with `CHOKIDAR_USEPOLLING=1` still resulted in `ENOSPC`.

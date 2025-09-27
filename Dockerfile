@@ -4,11 +4,11 @@ FROM node:20-slim
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and yarn.lock first to leverage Docker cache
-COPY package.json yarn.lock ./
+# Copy package metadata first to leverage Docker cache
+COPY package.json package-lock.json* ./
 
 # Install dependencies
-RUN yarn install --frozen-lockfile
+RUN npm install
 
 # Copy the rest of the application source
 COPY . .
@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 19000 19001 19002
 
 # Default command runs the development server
-CMD ["yarn", "dev"]
+CMD ["npm", "run", "dev"]

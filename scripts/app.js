@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /*
   Unified project CLI: `node scripts/app.js <task> [subtask]`
-  Also exposed as `yarn app <task> [subtask]` and wired into npm scripts.
+  Works with npm by running `npm run app -- <task> [subtask]` if you wire an
+  `app` script in package.json.
 */
 const { spawn } = require('child_process');
 const path = require('path');
@@ -55,84 +56,14 @@ function runNode(file, args = []) {
   return run(process.execPath, [file, ...args]);
 }
 
-function spawnBg(command, args = [], opts = {}) {
-  const spawnOpts = {
-    stdio: 'inherit',
-    cwd: root,
-    shell: false,
-    ...opts,
-  };
-  let cmd = command;
-  let cmdArgs = args;
-  if (isWin) {
-    if (/\.(cmd|bat)$/i.test(command)) {
-      cmd = 'cmd.exe';
-      cmdArgs = ['/d', '/s', '/c', command, ...args];
-    }
-    if (/\.(ps1)$/i.test(command)) {
-      cmd = 'powershell.exe';
-      cmdArgs = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', command, ...args];
-    }
-  }
-  return spawn(cmd, cmdArgs, spawnOpts);
-}
-
 async function main() {
   const [task = 'help', sub = ''] = process.argv.slice(2);
 
   switch (task) {
     case 'dev': {
-      // Start indexer + relayer in background, then Expo as the foreground process
-      const children = [];
-      async function ensureInstalled(dir) {
-        const nm = path.join(root, dir, 'node_modules');
-        try {
-          require('fs').accessSync(nm);
-        } catch {
-          await run(isWin ? 'yarn.cmd' : 'yarn', ['--cwd', dir], { env: { ...process.env } });
-        }
-      }
-      const hasReal = (val) => !!val && !String(val).includes('<') && !String(val).includes('...');
-      const shouldStartIndexer = hasReal(process.env.CONTRACT_ID || process.env.EXPO_PUBLIC_CONTRACT_ID);
-      const shouldStartRelayer = hasReal(process.env.RELAYER_ACCOUNT_ID) && hasReal(process.env.RELAYER_PRIVATE_KEY) && hasReal(process.env.CONTRACT_ID);
-      try {
-        if (shouldStartIndexer) {
-          await ensureInstalled('indexers/lake');
-          // Lake indexer
-          children.push(
-            spawnBg(isWin ? 'yarn.cmd' : 'yarn', ['--cwd', 'indexers/lake', 'dev'], {
-              env: { ...process.env },
-            })
-          );
-        }
-      } catch {}
-      try {
-        if (shouldStartRelayer) {
-          await ensureInstalled('relayer');
-          // Relayer service
-          children.push(
-            spawnBg(isWin ? 'yarn.cmd' : 'yarn', ['--cwd', 'relayer', 'dev'], {
-              env: { ...process.env },
-            })
-          );
-        }
-      } catch {}
-
-      const cleanup = () => {
-        for (const c of children) {
-          if (c && !c.killed) {
-            try { c.kill('SIGTERM'); } catch {}
-          }
-        }
-      };
-      process.on('SIGINT', cleanup);
-      process.on('SIGTERM', cleanup);
-      process.on('exit', cleanup);
-
       const code = await run(bin('expo'), ['start', ...process.argv.slice(3)], {
         env: { ...process.env, EXPO_WEB_BUNDLER: 'webpack', EXPO_ROUTER_APP_ROOT: 'app', EXPO_PROJECT_ROOT: root },
       });
-      cleanup();
       return process.exit(code);
     }
 
@@ -203,76 +134,6 @@ async function main() {
       return process.exit(0);
     }
 
-    case 'docker': {
-      if (sub === 'dev') {
-        return process.exit(await run(isWin ? 'docker.exe' : 'docker', ['compose', 'up']));
-      }
-      if (sub === 'build') {
-        return process.exit(
-          await run(isWin ? 'docker.exe' : 'docker', [
-            'compose',
-            'run',
-            '--rm',
-            'app',
-            'yarn',
-            'build',
-          ])
-        );
-      }
-      if (sub === 'preview') {
-        return process.exit(
-          await run(isWin ? 'docker.exe' : 'docker', [
-            'compose',
-            'run',
-            '--rm',
-            '-p',
-            '4173:4173',
-            'app',
-            isWin ? 'npx.cmd' : 'npx',
-            'serve@14.2.0',
-            'dist',
-            '-l',
-            '4173',
-          ])
-        );
-      }
-      return usage('docker');
-    }
-
-    case 'indexer': {
-      if (sub === 'dev') {
-        return process.exit(await run(isWin ? 'yarn.cmd' : 'yarn', ['--cwd', 'indexers/lake', 'dev']));
-      }
-      return usage('indexer');
-    }
-
-    case 'relayer': {
-      if (sub === 'dev') {
-        return process.exit(await run(isWin ? 'yarn.cmd' : 'yarn', ['--cwd', 'relayer', 'dev']));
-      }
-      return usage('relayer');
-    }
-
-    case 'contract': {
-      if (sub === 'build') {
-        return process.exit(
-          await run(isWin ? 'cargo.exe' : 'cargo', [
-            'build',
-            '--manifest-path',
-            'contracts/marketplace/Cargo.toml',
-            '--release',
-          ])
-        );
-      }
-      if (sub === 'deploy') {
-        // Requires bash (e.g., Git Bash on Windows)
-        return process.exit(
-          await run(isWin ? 'bash.exe' : 'bash', ['scripts/deploy-marketplace.sh'], { shell: false })
-        );
-      }
-      return usage('contract');
-    }
-
     case 'help':
     default:
       return usage();
@@ -283,7 +144,7 @@ function usage(scope) {
   const lines = [
     '',
     'Usage:',
-    '  yarn app <task> [subtask]',
+    '  npm run app -- <task> [subtask]',
     '',
     'Common tasks:',
     '  dev                  Start Expo dev server (native/web)',
@@ -296,15 +157,6 @@ function usage(scope) {
     '  typecheck            Run TypeScript without emit',
     '  test                 Run Jest tests',
     '  doctor               Run depcheck, knip, ts-prune',
-    '',
-    'Advanced:',
-    '  docker dev           Compose dev environment',
-    '  docker build         Run web build inside Docker',
-    '  docker preview       Serve dist from Docker',
-    '  indexer dev          Start the lake indexer',
-    '  relayer dev          Start the relayer service',
-    '  contract build       Build contracts (Rust)',
-    '  contract deploy      Deploy marketplace contract',
     '',
   ];
 
