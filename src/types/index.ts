@@ -356,6 +356,53 @@ export interface DeliveryJob {
   updatedAt: string;
 }
 
+export type DispatchAssignmentStatus =
+  | 'available'
+  | 'en_route'
+  | 'delivering'
+  | 'completed'
+  | 'offline';
+
+export interface DispatchAssignment {
+  id: string;
+  storeId: string;
+  driverId: string;
+  driverName: string;
+  zoneId: string;
+  zoneName: string;
+  status: DispatchAssignmentStatus;
+  ordersInFlight: number;
+  lastSeenAt: string;
+  orderValue: number;
+  createdAt: string;
+  completedAt?: string;
+  capacity?: number;
+}
+
+export interface InventorySnapshot {
+  id: string;
+  storeId: string;
+  productId: string;
+  productName: string;
+  zoneId: string;
+  zoneName: string;
+  quantity: number;
+  threshold: number;
+  restockEta?: string;
+  velocity?: number;
+  unit?: string;
+  lastUpdated: string;
+}
+
+export interface ServiceZone {
+  id: string;
+  storeId: string;
+  name: string;
+  targetDrivers: number;
+  activeOrders: number;
+  serviceLevelMinutes: number;
+}
+
 export interface ShippingAddress {
   id?: string;
   name: string;
