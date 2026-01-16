@@ -331,6 +331,26 @@ Deep links require additional rewrite support.
 - Use React Native Debugger or Chrome DevTools for network inspection.
 - Prefix commands with `DEBUG=waku:*` to trace Waku network traffic.
 
+### Web (IPFS-safe) build
+
+- **Build:**
+
+  ```sh
+  npm run web:release
+  ```
+
+- **Local preview:**
+
+  ```sh
+  npm run web:preview
+  ```
+
+  Then open `http://localhost:4173/` and navigate within the app (no deep links).
+
+- **Upload:** Manually pin the `dist/` folder to Pinata.
+
+Deep links require additional rewrite support.
+
 ## Troubleshooting
 
 ### Content Security Policy
